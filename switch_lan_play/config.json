@@ -1,0 +1,19 @@
+{
+    "name": "Switch LAN Play",
+    "version": "0.2.1-1",
+    "slug": "switch-lan-play",
+    "description": "Nintendo Switch Lan Play",
+    "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+    "startup": "before",
+    "boot": "auto",
+    "host_network":true,
+    "host_ipc":true,
+    "host_dbus":true,
+    "options": {
+      "server": null
+    },
+    "schema": {
+      "server":"str"
+    },
+    "ports": {}
+  }
