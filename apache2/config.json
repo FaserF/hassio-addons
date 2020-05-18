@@ -9,7 +9,6 @@
     "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
     "map": ["share:rw", "ssl"],
     "ingress": true,
-    "ingress_port": 0,
     "panel_icon": "mdi:web-box",
     "options": {
       "website_name":null,

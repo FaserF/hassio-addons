@@ -14,6 +14,7 @@ if [ $ssl = "true" ]; then
     echo "You have activated SSL. SSL Settings will be applied"
     mkdir /etc/apache2/sites-enabled
     sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
+    echo "Listen 8099" >> /etc/apache2/httpd.conf
     echo "Include /etc/apache2/sites-enabled/*.conf" >> /etc/apache2/httpd.conf
     echo "<VirtualHost *:80>" > /etc/apache2/sites-enabled/000-default.conf
     echo "ServerName $website_name"  >> /etc/apache2/sites-enabled/000-default.conf
