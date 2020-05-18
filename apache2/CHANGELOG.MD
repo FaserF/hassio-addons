@@ -1,9 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+- added mariadb-client to docker image
+
 ## 1.1.0
 
 - New Icon
-- Fixed Ingress Support
+- Prepared Ingress Support
 
 ## 1.0.1
 
