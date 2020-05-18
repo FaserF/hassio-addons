@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+- added php-mcrypt, php-zip
+- Ingress is now supported
+
 ## 1.1.1
 
 - added mariadb-client to docker image
