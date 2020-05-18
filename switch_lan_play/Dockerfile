@@ -15,7 +15,4 @@ RUN apk -U --no-cache add build-base
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-#COPY lan-play-tinkerboard /
-#RUN chmod a+x /lan-play-tinkerboard
-
 CMD [ "/run.sh" ]

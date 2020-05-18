@@ -10,6 +10,8 @@ The Apache HTTP Server Project is an effort to develop and maintain an open-sour
 The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.
 The Apache HTTP Server is a project of The Apache Software Foundation.
 
+This docker image comes with: apache2, apache2-mariadb, apache2-php7.3.18, apache2-ssl
+
 ## Installation
 
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.

@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -9,6 +9,8 @@
     "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
     "map": ["share:rw", "ssl"],
     "ingress": true,
+    "ingress_port": 0,
+    "panel_icon": "mdi:web-box",
     "options": {
       "website_name":null,
       "ssl": true,
