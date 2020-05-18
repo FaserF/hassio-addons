@@ -12,8 +12,6 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 
 ## Installation
 
-WARNING: SSL and MariaDB Integration isnt working right now. Apache2 fully works!
-
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
 Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
@@ -29,16 +27,17 @@ If you want to integrate your website with a mariadb database. Please ensure tha
 Example add-on configuration:
 
 ```yaml
-mariadb_filename: test
+website_name: mywebsite.ddns.net
 ssl: true
+certfile: fullchain.pem
+keyfile: privkey.pem
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
-### Option: `mariadb_filename`
+### Option: `website_name`
 
-This option is optional. Please paste a mariadb dump to /share/database.sql and name this option to your database.
-To disable it set it to "off"
+This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesnt matter.
 
 ### Option: `ssl`
 

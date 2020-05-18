@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -8,15 +8,18 @@
     "boot": "auto",
     "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
     "map": ["share:rw", "ssl"],
-    "services": ["mysql:want"],
     "ingress": true,
     "options": {
-      "mariadb_filename":"off",
-      "ssl": false
+      "website_name":null,
+      "ssl": true,
+      "certfile": "fullchain.pem",
+      "keyfile": "privkey.pem"
     },
     "schema": {
-      "mariadb_filename":"str",
-      "ssl": "bool"
+      "website_name":"str",
+      "ssl": "bool",
+      "certfile": "str",
+      "keyfile": "str"
     },
     "ports": {
       "80/tcp": 80,
