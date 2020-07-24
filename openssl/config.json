@@ -8,8 +8,7 @@
     "startup": "application",
     "boot": "auto",
     "map": ["ssl:rw"],
-    "ingress": true,
-    "panel_icon": "mdi:web-box",
+    "ingress": false,
     "options": {
       "website_name":null
     },
