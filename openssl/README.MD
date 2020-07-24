@@ -1,26 +1,29 @@
-# Home Assistant Community Add-on: Apache2
+# Home Assistant Community Add-on: OpenSSL
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
-Apache2 Webserver for Homeassistant OS
+OpenSSL - Self signed certificates for Homeassistant OS
 
 ## About
 
-The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.
-The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.
-The Apache HTTP Server is a project of The Apache Software Foundation.
+OpenSSL is a software library for applications that secure communications over computer networks against eavesdropping or need to identify the party at the other end. It is widely used by Internet servers, including the majority of HTTPS websites.
 
-This docker image comes with: apache2, apache2-mariadb, apache2-php7.3.18, apache2-ssl
+OpenSSL contains an open-source implementation of the SSL and TLS protocols. The core library, written in the C programming language, implements basic cryptographic functions and provides various utility functions. Wrappers allowing the use of the OpenSSL library in a variety of computer languages are available.
+
+The OpenSSL Software Foundation (OSF) represents the OpenSSL project in most legal capacities including contributor license agreements, managing donations, and so on. OpenSSL Software Services (OSS) also represents the OpenSSL project, for Support Contracts.
 
 ## Installation
 
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
 Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
-Put your website files to /share/htdocs
-Example File where your index.html should be: /share/htdocs/index.html
+After starting the addon, a self signed certificate will be created and placed to:
+/ssl/key_openssl.pem
+/ssl/cert_openssl.pem
 
-If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
+These can then be used by other addons, for example my apache2 webserver addon.
+If the certificates are about to expire, just restart the addone once and new certificates will be created.
+WARNING: After restarting the addon, old certificates named as above will be deleted and overwritten!
 
 ## Configuration
 
@@ -29,31 +32,14 @@ If you want to integrate your website with a mariadb database. Please ensure tha
 Example add-on configuration:
 
 ```yaml
-document_root: /share/htdocs
 website_name: mywebsite.ddns.net
-ssl: true
-certfile: fullchain.pem
-keyfile: privkey.pem
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
-### Option: `document_root`
-
-This option is needed. Change it depending where your root webfolder is on your homeassistant installation.
-
 ### Option: `website_name`
 
-This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesnt matter.
-
-### Option: `ssl`
-
-Enables/Disables SSL (HTTPS) on the web interface of Bookstack
-Panel. Set it `true` to enable it, `false` otherwise.
-
-If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/openssl
-
-**Note**: _The files MUST be stored in `/ssl/`, which is the default_
+This option is needed. This will be the website name for the self signed certificate.
 
 ## Support
 
@@ -64,14 +50,14 @@ Please keep in mind, that this software is only tested on armv7 running on a Tin
 
 ## Authors & contributors
 
-The original program is from the Apache Project. For more informatios please visit this page: https://httpd.apache.org/
+The original program is from the OpenSSL Project. For more informatios please visit this page: https://www.openssl.org/
 The hassio addon is brought to you by [FaserF].
 
 ## License
 
 MIT License
 
-Copyright (c) 2019-2020 FaserF & The Apache Project
+Copyright (c) 2019-2020 FaserF & The OpenSSL Project
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -95,10 +81,10 @@ SOFTWARE.
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[commits]: https://github.com/FaserF/apache2/commits/master
-[contributors]: https://github.com/FaserF/hassio-addons/apache2/graphs/contributors
+[commits]: https://github.com/FaserF/openssl/commits/master
+[contributors]: https://github.com/FaserF/hassio-addons/openssl/graphs/contributors
 [FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [issue]: https://github.com/FaserF/hassio-addons/issues
-[repository]: https://github.com/FaserF/hassio-addons/apache2
+[repository]: https://github.com/FaserF/hassio-addons/openssl
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2020.svg

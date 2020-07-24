@@ -1,0 +1,18 @@
+  {
+    "name": "OpenSSL",
+    "version": "1.0.0",
+    "slug": "openssl",
+    "description": "OpenSSL - Self signed certificates",
+    "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+    "startup": "application",
+    "boot": "auto",
+    "map": ["ssl:rw"],
+    "ingress": true,
+    "panel_icon": "mdi:web-box",
+    "options": {
+      "website_name":null
+    },
+    "schema": {
+      "website_name":"str"
+    }
+  }
