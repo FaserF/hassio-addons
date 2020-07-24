@@ -19,6 +19,14 @@ fi
 
 if [ $ssl = "true" ]; then
     echo "You have activated SSL. SSL Settings will be applied"
+    if ! test -f "$certfile"; then
+      echo "Cannot find certificate file $certfile"
+      exit 1
+    fi
+    if ! test -f "$key_file"; then
+      echo "Cannot find certificate key file $key_file"
+      exit 1
+    fi
     mkdir /etc/apache2/sites-enabled
     sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
     echo "Listen 8099" >> /etc/apache2/httpd.conf
