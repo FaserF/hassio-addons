@@ -2,6 +2,7 @@
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
+keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
 
 rm -r /var/www/localhost/htdocs/

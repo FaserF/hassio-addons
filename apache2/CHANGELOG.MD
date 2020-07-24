@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- new option document_root -> Allowing the user to decide the document root folder
+- added default index.html if the user has no webfiles in the correct folder
+
 ## 1.1.2
 
 - added php-mcrypt, php-zip
