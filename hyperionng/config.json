@@ -3,6 +3,7 @@
     "version": "2.0.0-alpha.5-1",
     "slug": "hyperion-ng",
     "description": "Hyperion Next Generation",
+    "url": "https://github.com/FaserF/hassio-addons/tree/master/hyperionng",
     "webui": "http://[HOST]:[PORT:8090]",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "services",

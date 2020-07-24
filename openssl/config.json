@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "slug": "openssl",
     "description": "OpenSSL - Self signed certificates",
+    "url": "https://github.com/FaserF/hassio-addons/tree/master/openssl",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
     "boot": "auto",
