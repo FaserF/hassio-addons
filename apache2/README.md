@@ -4,6 +4,8 @@
 
 Apache2 Webserver for Homeassistant OS
 
+![Ingress Support](images/ingress.png)
+
 ## About
 
 The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.
@@ -54,6 +56,11 @@ Panel. Set it `true` to enable it, `false` otherwise.
 If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/openssl
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
+
+## Ingress
+
+This addon supports Homeassistant Ingress. Until now it seems only to work if you enable SSL!
+And also I am sorry, but I cant support all your websites. Basic HTML Websites will work great with ingress, the more advanced the page is, the harder it is to support ingress.
 
 ## Support
 
