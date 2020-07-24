@@ -8,6 +8,8 @@ Hyperion.NG for Homeassistant OS
 
 ## About
 
+THIS ADDON IS NOW DEPRECATED, AS I AM NOT USING HYPERION ANYMORE. YOU CAN FORK MY GIT AND TRY TO FIX AND IMPROVE IT YOURSELF. I WONT SUPPORT IT ANYMORE, SORRY.
+
 WARNING! This addon seems not to work right now!!!
 
 Hyperion is an opensource Bias or Ambient Lighting implementation which you might know from TV manufacturers. It supports many LED devices and video grabbers. The project is still in a alpha development stage (no stable release available). For more informations please visit: https://github.com/hyperion-project/hyperion.ng
@@ -23,10 +25,7 @@ The format of the version is based on the original HyperionNG github releases ad
 
 ## Support
 
-Got questions?
-
-You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Tinkerboard.
+THIS ADDON IS NOW DEPRECATED, AS I AM NOT USING HYPERION ANYMORE. YOU CAN FORK MY GIT AND TRY TO FIX AND IMPROVE IT YOURSELF. I WONT SUPPORT IT ANYMORE, SORRY.
 
 ## Authors & contributors
 
