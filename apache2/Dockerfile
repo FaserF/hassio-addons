@@ -12,5 +12,7 @@ RUN apk --no-cache add mariadb-client
 
 # Copy data for add-on
 COPY run.sh /
+COPY index.html /
 RUN chmod a+x /run.sh
+RUN chmod a+x /index.sh
 CMD [ "/run.sh" ]

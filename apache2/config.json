@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -11,12 +11,14 @@
     "ingress": true,
     "panel_icon": "mdi:web-box",
     "options": {
+      "document_root": "/share/htdocs",
       "website_name":null,
       "ssl": true,
       "certfile": "fullchain.pem",
       "keyfile": "privkey.pem"
     },
     "schema": {
+      "document_root":"str",
       "website_name":"str",
       "ssl": "bool",
       "certfile": "str",

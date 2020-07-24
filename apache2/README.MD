@@ -29,6 +29,7 @@ If you want to integrate your website with a mariadb database. Please ensure tha
 Example add-on configuration:
 
 ```yaml
+document_root: /share/htdocs
 website_name: mywebsite.ddns.net
 ssl: true
 certfile: fullchain.pem
@@ -36,6 +37,10 @@ keyfile: privkey.pem
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
+
+### Option: `document_root`
+
+This option is needed. Change it depending where your root webfolder is on your homeassistant installation.
 
 ### Option: `website_name`
 

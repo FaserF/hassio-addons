@@ -2,12 +2,18 @@
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
-keyfile=$(bashio::config 'keyfile')
+DocumentRoot=$(bashio::config 'document_root')
 
-if [ -d /var/www/localhost/htdocs/ ]; then
-    rm -r /var/www/localhost/htdocs/
-    #Create Shortcut to shared html folder
-    ln -s /share/htdocs /var/www/localhost/
+rm -r /var/www/localhost/htdocs/
+
+if [ ! -d $DocumentRoot ]; then
+  echo "You haven't put your website to $DocumentRoot"
+  echo "A default website will now be used"
+  mkdir /var/www/localhost/htdocs/
+  cp /index.html /var/www/localhost/htdocs/
+else
+  #Create Shortcut to shared html folder
+  ln -s $DocumentRoot /var/www/localhost/
 fi
 
 if [ $ssl = "true" ]; then
