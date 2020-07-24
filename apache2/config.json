@@ -3,6 +3,7 @@
     "version": "1.2.0",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
+    "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
     "boot": "auto",
