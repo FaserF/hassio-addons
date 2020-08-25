@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+- enabled use of .htaccess files
+
 ## 1.2.0
 
 - new option document_root -> Allowing the user to decide the document root folder

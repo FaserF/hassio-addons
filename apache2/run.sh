@@ -61,6 +61,7 @@ if [ $ssl = "true" ]; then
 else
     echo "SSL is deactivated"
 fi
+sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 echo "Here is your web file architecture."
 ls -l /var/www/localhost/htdocs/
