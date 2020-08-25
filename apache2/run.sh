@@ -19,12 +19,12 @@ fi
 
 if [ $ssl = "true" ]; then
     echo "You have activated SSL. SSL Settings will be applied"
-    if [ ! -f $certfile ]; then
+    if [ ! -f /ssl/$certfile ]; then
       echo "Cannot find certificate file $certfile"
       exit 1
     fi
-    if [ ! -f $key_file ]; then
-      echo "Cannot find certificate key file $key_file"
+    if [ ! -f /ssl/$keyfile ]; then
+      echo "Cannot find certificate key file $keyfile"
       exit 1
     fi
     mkdir /etc/apache2/sites-enabled
