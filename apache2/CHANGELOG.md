@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.2
+- hotfix update for ssl path not working
+
 ## 1.2.1
 - enabled use of .htaccess files
 
