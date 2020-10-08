@@ -11,6 +11,8 @@ Apache2 Webserver for Homeassistant OS
 A simple Python script which provides a Bluetooth to MQTT gateway, easily extensible via custom workers.  
 See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information (supported devices, features and much more).
 
+This can be used, to improve the realiability of bluetooth thermostats. See https://github.com/home-assistant/core/issues/28601 for more informations.
+
 ## Installation
 
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.

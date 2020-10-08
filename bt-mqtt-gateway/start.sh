@@ -12,11 +12,12 @@ if ! [ -f $config_path ]; then
     exit 1
 fi
 
+echo "Found config file at $config_path . Copying it now."
 cp $config_path /config.yaml
 
 cd /application
 if [ "$DEBUG" = 'true' ]; then
-    echo "Start in debug mode"
+    echo "Start bt-mqtt gateway in debug mode"
     python3 ./gateway.py -d
     status=$?
     echo "Gateway died..."
