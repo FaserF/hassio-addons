@@ -22,7 +22,7 @@ Please make sure that a MQTT Addon is being installed already.
 ## Configuration
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
-Until now these config options do NOTHING! they are not implemented yet, but planned.
+Until now these config options do NOTHING! they are not implemented yet, but planned!!!
 
 Example add-on configuration:
 
@@ -40,6 +40,7 @@ This option is needed. Change it depending where your config file is on your hom
 ### Option: `debug`
 
 Setting this option to "true" will start the addon in debugging mode. Default: false
+-> To enable debugging mode, please create an empty file at /share/bt-mqtt-gateway-debug.txt 
 
 ## Support
 
