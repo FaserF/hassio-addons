@@ -19,7 +19,8 @@ RUN apk add --no-cache git \
     mosquitto \
     haveged \
     net-tools\
-    libressl-dev
+    libressl-dev \
+    ncurses
 
 RUN python3 -m pip install --upgrade paho-mqtt tornado git+https://github.com/drbild/sslpsk.git pycryptodomex
 
