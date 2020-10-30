@@ -16,7 +16,8 @@ setup () {
 	pushd scripts >/dev/null || exit
 	if [ "$accept_eula" = "true" ]; then
 		echo "EULA was accpeted - starting setup_checks	 script"
-		touch scripts/eula_accepted
+		ls -l
+		touch ./eula_accepted
 		. ./setup_checks.sh
 	else
 		echo "EULA wasnt accepted. Exiting. You can find the EULA here: https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/setup_checks.sh#L18"
@@ -24,11 +25,11 @@ setup () {
 	fi
 	screen_minor=$(screen --version | cut -d . -f 2)
 	if [ "$screen_minor" -gt 5 ]; then
-		screen_with_log="sudo screen -L -Logfile"
+		screen_with_log="screen -L -Logfile"
 	elif [ "$screen_minor" -eq 5 ]; then
-		screen_with_log="sudo screen -L"
+		screen_with_log="screen -L"
 	else
-		screen_with_log="sudo screen -L -t"
+		screen_with_log="screen -L -t"
 	fi
 	echo "======================================================"
 	echo -n "  Starting AP in a screen"
@@ -52,12 +53,12 @@ setup () {
 cleanup () {
 	echo "======================================================"
 	echo "Cleaning up..."
-	sudo screen -S smarthack-web          -X stuff '^C'
-	sudo screen -S smarthack-mqtt         -X stuff '^C'
-	sudo screen -S smarthack-psk          -X stuff '^C'
-	sudo screen -S smarthack-udp          -X stuff '^C'
+	screen -S smarthack-web          -X stuff '^C'
+	screen -S smarthack-mqtt         -X stuff '^C'
+	screen -S smarthack-psk          -X stuff '^C'
+	screen -S smarthack-udp          -X stuff '^C'
 	echo "Closing AP"
-	sudo pkill hostapd
+	pkill hostapd
 	echo "Exiting..."
 	popd >/dev/null || exit
 }
@@ -159,7 +160,7 @@ while true; do
 		fi
 		echo
 		echo "HAVE FUN!"
-		sudo mv *.log "$backupfolder/"
+		mv *.log "$backupfolder/"
 		echo "Addon will now be stopped. If you want to flash another one, be sure to restart the addon."
 		echo "======================================================"
 		break
