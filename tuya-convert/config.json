@@ -12,10 +12,12 @@
     "ingress": false,
     "options": {
       "backup_path": "/share/tuya-convert/",
-      "firmware": "tasmota.bin"
+      "firmware": "tasmota.bin",
+      "accept_eula": false
     },
     "schema": {
       "backup_path":"str",
-      "firmware": "str"
+      "firmware": "str",
+      "accept_eula": "bool"
     }
   }

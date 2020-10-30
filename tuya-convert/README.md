@@ -32,6 +32,7 @@ Example add-on configuration:
 ```yaml
 backup_path: /share/tuya-convert
 firmware: tasmota.bin
+accept_eula: true
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
@@ -43,6 +44,10 @@ This option is needed. Change it depending where your firmware backup location s
 ### Option: `firmware`
 
 This option is needed. Change it depending what custom firmware you want to install. You have the option between "tasmota.bin" and "espurna.bin".
+
+### Option: `accept_eula`
+
+This option is needed. The software will only start if you are setting it to true. You can read the EULA agreement from tuya-convert here: https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/setup_checks.sh#L18
 
 ## Support
 

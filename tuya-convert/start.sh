@@ -1,6 +1,7 @@
 #!/usr/bin/env bashio
 backup_path=$(bashio::config 'backup_path')
 selection=$(bashio::config 'firmware')
+accept_eula=$(bashio::config 'accept_eula')
 
 echo "Downloading files from github.... wait a few minutes"
 git clone https://github.com/ct-Open-Source/tuya-convert
@@ -14,6 +15,12 @@ normal=$(tput sgr0)
 setup () {
 	echo "tuya-convert $(git describe --tags)"
 	pushd scripts >/dev/null || exit
+	if [ "$accept_eula" = "true" ]; then
+		touch eula_accepted
+	else
+		echo "EULA wasnt accepted. Exiting. You can find the EULA here: https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/setup_checks.sh#L18"
+		exit
+	fi
 	. ./setup_checks.sh
 	screen_minor=$(screen --version | cut -d . -f 2)
 	if [ "$screen_minor" -gt 5 ]; then
