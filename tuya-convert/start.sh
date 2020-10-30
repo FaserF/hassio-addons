@@ -10,7 +10,8 @@ echo "starting flash script"
 
 bold=$(tput bold)
 normal=$(tput sgr0)
-. ./config.txt
+echo "$bold" > config.txt
+echo "$normal" >> config.txt
 
 setup () {
 	echo "tuya-convert $(git describe --tags)"
