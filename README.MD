@@ -2,7 +2,7 @@
 
 ## About
 
-In the Subfolders you can find all my custom addons for homeassistant (former known as hassio)
+In the Subfolders you can find all my custom addons for homeassistant os (former known as hassio).
 
 ## Installation
 
@@ -14,7 +14,7 @@ Just add my repo to the hassio addons repositorys: https://github.com/FaserF/has
 Got questions?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Tinkerboard.
+Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## License
 

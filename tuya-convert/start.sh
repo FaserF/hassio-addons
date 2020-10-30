@@ -7,8 +7,6 @@ git clone https://github.com/ct-Open-Source/tuya-convert
 cd tuya-convert
 echo "starting flash script"
 
-bold=$(tput bold)
-normal=$(tput sgr0)
 . ./config.txt
 
 setup () {
