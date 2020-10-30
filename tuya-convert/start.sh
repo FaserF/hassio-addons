@@ -6,17 +6,16 @@ accept_eula=$(bashio::config 'accept_eula')
 echo "Downloading files from github.... wait a few minutes"
 git clone https://github.com/ct-Open-Source/tuya-convert
 cd tuya-convert
-echo "starting flash script"
 
-bold=$(tput bold)
-normal=$(tput sgr0)
-echo "$bold" > ./config.txt
-echo "$normal" >> ./config.txt
+bold=$(tput -T bold)
+normal=$(tput -T sgr0)
+. ./config.txt
 
 setup () {
 	echo "tuya-convert $(git describe --tags)"
 	pushd scripts >/dev/null || exit
 	if [ "$accept_eula" = "true" ]; then
+		echo "EULA was accpeted - starting setup_checks script"
 		touch scripts/eula_accepted
 		. ./setup_checks.sh
 	else

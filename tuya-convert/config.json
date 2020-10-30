@@ -13,11 +13,11 @@
     "options": {
       "backup_path": "/share/tuya-convert/",
       "firmware": "tasmota.bin",
-      "accept_eula": false
+      "accept_eula": "false"
     },
     "schema": {
       "backup_path":"str",
       "firmware": "str",
-      "accept_eula": "bool"
+      "accept_eula": "str"
     }
   }
