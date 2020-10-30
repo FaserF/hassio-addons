@@ -1,6 +1,5 @@
 #!/usr/bin/env bashio
 backup_path=$(bashio::config 'backup_path')
-backupfolder="$backup_path/$timestamp"
 selection=$(bashio::config 'firmware')
 
 echo "Downloading files from github.... wait a few minutes"
@@ -104,6 +103,7 @@ while true; do
 	echo "Fetching firmware backup"
 	sleep 2
 	timestamp=$(date +%Y%m%d_%H%M%S)
+	backupfolder="$backup_path/$timestamp"
 	mkdir -p "$backupfolder"
 	pushd "$backupfolder" >/dev/null || exit
 

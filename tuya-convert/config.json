@@ -1,6 +1,6 @@
   {
-    "name": "tuya-convert",
-    "version": "0.0.1",
+    "name": "tuya-convert BETA",
+    "version": "0.0.2",
     "slug": "tuya-convert",
     "description": "Tuya Convert - Flash Tuya/Smart Life devices with open Source software",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/tuya-convert",
@@ -10,7 +10,6 @@
     "map": ["share:rw"],
     "host_network": true,
     "ingress": false,
-    "panel_icon": "mdi:bluetooth-transfer",
     "options": {
       "backup_path": "/share/tuya-convert/",
       "firmware": "tasmota.bin"
