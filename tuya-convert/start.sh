@@ -10,19 +10,19 @@ echo "starting flash script"
 
 bold=$(tput bold)
 normal=$(tput sgr0)
-echo "$bold" > config.txt
-echo "$normal" >> config.txt
+echo "$bold" > ./config.txt
+echo "$normal" >> ./config.txt
 
 setup () {
 	echo "tuya-convert $(git describe --tags)"
 	pushd scripts >/dev/null || exit
 	if [ "$accept_eula" = "true" ]; then
-		touch eula_accepted
+		touch scripts/eula_accepted
+		. ./setup_checks.sh
 	else
 		echo "EULA wasnt accepted. Exiting. You can find the EULA here: https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/setup_checks.sh#L18"
 		exit
 	fi
-	. ./setup_checks.sh
 	screen_minor=$(screen --version | cut -d . -f 2)
 	if [ "$screen_minor" -gt 5 ]; then
 		screen_with_log="sudo screen -L -Logfile"
