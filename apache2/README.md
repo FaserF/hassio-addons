@@ -43,6 +43,7 @@ keyfile: privkey.pem
 ### Option: `document_root`
 
 This option is needed. Change it depending where your root webfolder is on your homeassistant installation.
+Note: it has to be somewhere in the /share or /media folder! Other folders are not visible to this addon.
 
 ### Option: `website_name`
 

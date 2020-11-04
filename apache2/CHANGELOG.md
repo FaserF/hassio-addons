@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.3
+- add /media folder as a root folder option
+
 ## 1.2.2
 - hotfix update for ssl path not working
 
