@@ -32,7 +32,9 @@ Example add-on configuration:
 
 ```yaml
 document_root: /share/htdocs
-php_ini: /share/php.ini
+php_ini: /share/apache2/php.ini
+default_conf: /share/apache2/000-default.conf
+default_ssl_conf: /share/apache2/000-default-le-ssl.conf
 website_name: mywebsite.ddns.net
 ssl: true
 certfile: fullchain.pem
@@ -55,7 +57,17 @@ default -> the default php7 php.ini file will be used
 
 get_file -> copies the default php7 php.ini file from the addon to /share/apache2addon_php.ini
 
-path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/php.ini
+path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
+
+### Option: `default_conf` & `default_ssl_conf`
+
+You can choose between the following options:
+
+default -> the default apache2 addon file will be used
+
+path/to/your/new/php.ini -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf  /// More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts
+
+Please note, that I wont give any support if you are using custom apache2 config files and are recieving any apache2 errors!
 
 ### Option: `website_name`
 

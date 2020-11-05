@@ -5,6 +5,8 @@ certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
 phpini=$(bashio::config 'php_ini')
+default_conf=$(bashio::config 'default_conf')
+default_ssl_conf=$(bashio::config 'default_ssl_conf')
 
 echo "Connected drives:"
 fdisk -l
@@ -33,11 +35,11 @@ if [ $phpini != "default" ]; then
     echo "Your custom php.ini at $phpini will be used."
     cp $phpini /etc/php7/php.ini
   else
-    You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead.
+    echo "You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead."
   fi
 fi
 
-if [ $ssl = "true" ]; then
+if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
     echo "You have activated SSL. SSL Settings will be applied"
     if [ ! -f /ssl/$certfile ]; then
       echo "Cannot find certificate file $certfile"
@@ -50,7 +52,6 @@ if [ $ssl = "true" ]; then
     mkdir /etc/apache2/sites-enabled
     sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
     echo "Listen 8099" >> /etc/apache2/httpd.conf
-    echo "Include /etc/apache2/sites-enabled/*.conf" >> /etc/apache2/httpd.conf
     echo "<VirtualHost *:80>" > /etc/apache2/sites-enabled/000-default.conf
     echo "ServerName $website_name"  >> /etc/apache2/sites-enabled/000-default.conf
     echo "ServerAdmin webmaster@localhost"  >> /etc/apache2/sites-enabled/000-default.conf
@@ -81,7 +82,30 @@ if [ $ssl = "true" ]; then
 else
     echo "SSL is deactivated"
 fi
+if [ "$ssl" = "true" ] || [ "$default_conf" != "default" ]; then
+  echo "Include /etc/apache2/sites-enabled/*.conf" >> /etc/apache2/httpd.conf
+fi
 sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
+
+if [ "$default_conf" != "default" ]; then
+  if [ -f $default_conf ]; then
+    cp $default_conf /etc/apache2/sites-enabled/000-default.conf
+    echo "Your custom apache config at $default_conf will be used."
+  else
+    echo "Cant find your custom file $default_conf - be sure you have choosed the full path. Exiting now..."
+    exit 1
+  fi
+fi
+
+if [ "$default_ssl_conf" != "default" ]; then
+  if [ -f $default_ssl_conf ]; then
+    cp $default_ssl_conf /etc/apache2/sites-enabled/000-default-le-ssl.conf
+    echo "Your custom apache config at $default_ssl_conf will be used."
+  else
+    echo "Cant find your custom file $default_ssl_conf - be sure you have choosed the full path. Exiting now..."
+    exit 1
+  fi
+fi
 
 echo "Here is your web file architecture."
 ls -l /var/www/localhost/htdocs/

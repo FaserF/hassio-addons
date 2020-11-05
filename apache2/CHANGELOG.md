@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.0
+- allow the usage of custom apache2 config files
+
 ## 1.3.0
 - allow the usage of a custom php.ini file
 
