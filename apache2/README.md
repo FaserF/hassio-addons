@@ -32,6 +32,7 @@ Example add-on configuration:
 
 ```yaml
 document_root: /share/htdocs
+php_ini: /share/php.ini
 website_name: mywebsite.ddns.net
 ssl: true
 certfile: fullchain.pem
@@ -43,7 +44,18 @@ keyfile: privkey.pem
 ### Option: `document_root`
 
 This option is needed. Change it depending where your root webfolder is on your homeassistant installation.
+
 Note: it has to be somewhere in the /share or /media folder! Other folders are not visible to this addon.
+
+### Option: `php_ini`
+
+You can choose between the following options:
+
+default -> the default php7 php.ini file will be used
+
+get_file -> copies the default php7 php.ini file from the addon to /share/apache2addon_php.ini
+
+path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/php.ini
 
 ### Option: `website_name`
 

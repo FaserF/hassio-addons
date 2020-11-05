@@ -4,6 +4,17 @@ website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
+phpini=$(bashio::config 'php_ini')
+
+echo "Connected drives:"
+fdisk -l
+
+if [ $phpini = "get_file" ]; then
+  cp /etc/php7/php.ini /share/apache2addon_php.ini
+  echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
+  echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
+  exit 1
+fi
 
 rm -r /var/www/localhost/htdocs/
 
@@ -15,6 +26,15 @@ if [ ! -d $DocumentRoot ]; then
 else
   #Create Shortcut to shared html folder
   ln -s $DocumentRoot /var/www/localhost/
+fi
+
+if [ $phpini != "default" ]; then
+  if [ -f $phpini ]; then
+    echo "Your custom php.ini at $phpini will be used."
+    cp $phpini /etc/php7/php.ini
+  else
+    You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead.
+  fi
 fi
 
 if [ $ssl = "true" ]; then

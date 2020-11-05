@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "1.2.3",
+    "version": "1.3.0",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
@@ -13,6 +13,7 @@
     "panel_icon": "mdi:web-box",
     "options": {
       "document_root": "/share/htdocs",
+      "php_ini": "default",
       "website_name":null,
       "ssl": true,
       "certfile": "fullchain.pem",
@@ -20,6 +21,7 @@
     },
     "schema": {
       "document_root":"str",
+      "php_ini":"str",
       "website_name":"str",
       "ssl": "bool",
       "certfile": "str",

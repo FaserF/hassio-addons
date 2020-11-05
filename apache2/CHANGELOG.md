@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+- allow the usage of a custom php.ini file
+
 ## 1.2.3
 - add /media folder as a root folder option
 
