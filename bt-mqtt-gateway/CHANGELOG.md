@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Let this addon access host_dbus (hopefully this fixes the bluetooth connection issue)
+
 ## 1.0.3
 
 - Let this addon run at the host network (hopefully this fixes the bluetooth connection issue)

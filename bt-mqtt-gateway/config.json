@@ -1,6 +1,6 @@
   {
     "name": "bt-mqtt-gateway",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "slug": "bt-mqtt-gateway",
     "description": "Bluetooth-MQTT-Gateway",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway",
@@ -9,6 +9,7 @@
     "startup": "services",
     "boot": "auto",
     "map": ["share:rw"],
+    "host_dbus": true,
     "ingress": false,
     "panel_icon": "mdi:bluetooth-transfer",
     "options": {
