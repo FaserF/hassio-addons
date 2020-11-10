@@ -20,7 +20,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 MIT License
 
-Copyright (c) 2019-2020 FaserF & The Apache Project
+Copyright (c) 2019-2020 FaserF
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
