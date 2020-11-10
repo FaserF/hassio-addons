@@ -34,7 +34,7 @@ if [ $phpini != "default" ]; then
   if [ -f $phpini ]; then
     echo "Your custom php.ini at $phpini will be used."
     rm /etc/php7/php.ini
-    cp $phpini /etc/php7/
+    cp $phpini /etc/php7/php.ini
   else
     echo "You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead."
   fi
