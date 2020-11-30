@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.0
+- add PHP7-PDO package
+
 ## 1.4.0
 - allow the usage of custom apache2 config files
 

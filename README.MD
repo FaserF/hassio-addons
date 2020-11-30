@@ -9,6 +9,36 @@ In the Subfolders you can find all my custom addons for homeassistant os (former
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
 Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
+## Add-On List
+
+# Apache2
+Webserver Addon with MariaDB Access: https://github.com/FaserF/hassio-addons/tree/master/apache2
+Support: Yes
+
+# bt-mqtt-gateway
+Bluetooth to MQTT Gateway: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
+Support: Limited (not used by me anymore)
+
+# hyperionng
+Hyperion Next Generation - control your LEDs via GPIO for example: https://github.com/FaserF/hassio-addons/tree/master/hyperionng
+Support: No
+
+# OpenSSL
+Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/openssl
+Support: Yes
+
+# Silverstrike
+Personal finance management made easy: https://github.com/FaserF/hassio-addons/tree/master/silverstrike
+Support: Yes
+
+# Switch-LAN-Play
+Nintendo Switch LAN Play - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
+Support: Yes
+
+# Tuya-Convert
+Free your cloud IOT Devices with Tuya-Convert: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
+Support: No
+
 ## Support
 
 Got questions?

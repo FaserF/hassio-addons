@@ -12,7 +12,8 @@ The Apache HTTP Server Project is an effort to develop and maintain an open-sour
 The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.
 The Apache HTTP Server is a project of The Apache Software Foundation.
 
-This docker image comes with: apache2, apache2-mariadb, apache2-php7.3.18, apache2-ssl
+This docker image comes with: apache2, apache2-mariadb, apache2-php7.3.18, apache2-ssl, mariadb-client
+The following php7 extensions will be installed: php7 php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo
 
 ## Installation
 
@@ -92,7 +93,7 @@ And also I am sorry, but I cant support all your websites. Basic HTML Websites w
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Tinkerboard.
+Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## Authors & contributors
 
