@@ -66,7 +66,10 @@ You can choose between the following options:
 
 default -> the default apache2 addon file will be used
 
-path/to/your/new/php.ini -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf  /// More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts
+get_config -> Get a copy of the default apache2 addon config file to your /share folder.
+
+path/to/your/new/apache2.conf -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf  
+/// More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts
 
 Please note, that I wont give any support if you are using custom apache2 config files and are recieving any apache2 errors!
 

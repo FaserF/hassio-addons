@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1
+- add option to recieve a apache2 config copy
+- fix PHP7-PDO syntax error in Dockerfile
+
 ## 1.5.0
 - add PHP7-PDO package
 

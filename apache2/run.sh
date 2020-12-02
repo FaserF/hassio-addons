@@ -88,7 +88,15 @@ if [ "$ssl" = "true" ] || [ "$default_conf" != "default" ]; then
 fi
 sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
-if [ "$default_conf" != "default" ]; then
+if [ "$default_conf" = "get_config" ]; then
+    cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
+    echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
+    if [ "$default_ssl_conf" != "get_config" ]; then
+      echo "Exiting now..."
+    fi
+fi
+
+if [ "$default_conf" != "default" ] || [ "$default_conf" != "get_config" ]; then
   if [ -f $default_conf ]; then
     cp $default_conf /etc/apache2/sites-enabled/000-default.conf
     echo "Your custom apache config at $default_conf will be used."
@@ -96,6 +104,12 @@ if [ "$default_conf" != "default" ]; then
     echo "Cant find your custom file $default_conf - be sure you have choosed the full path. Exiting now..."
     exit 1
   fi
+fi
+
+if [ "$default_ssl_conf" = "get_config" ]; then
+    cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
+    echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default-le-ssl.conf ."
+    echo "Exiting now..."
 fi
 
 if [ "$default_ssl_conf" != "default" ]; then
