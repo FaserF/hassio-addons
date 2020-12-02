@@ -8,9 +8,6 @@ phpini=$(bashio::config 'php_ini')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 
-echo "Connected drives:"
-fdisk -l
-
 if [ $phpini = "get_file" ]; then
   cp /etc/php7/php.ini /share/apache2addon_php.ini
   echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
@@ -96,12 +93,12 @@ if [ "$default_conf" = "get_config" ]; then
     fi
 fi
 
-if [ "$default_conf" != "default" ] && [ "$default_conf" != "get_config" ]; then
+if [ "$default_conf" != "default" ]; then
   if [ -f $default_conf ]; then
     cp $default_conf /etc/apache2/sites-enabled/000-default.conf
     echo "Your custom apache config at $default_conf will be used."
   else
-    echo "Cant find your custom file $default_conf - be sure you have choosed the full path. Exiting now..."
+    echo "Cant find your custom file $default_conf - be sure you have choosen the full path. Exiting now..."
     exit 1
   fi
 fi
@@ -117,7 +114,7 @@ if [ "$default_ssl_conf" != "default" ]; then
     cp $default_ssl_conf /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "Your custom apache config at $default_ssl_conf will be used."
   else
-    echo "Cant find your custom file $default_ssl_conf - be sure you have choosed the full path. Exiting now..."
+    echo "Cant find your custom file $default_ssl_conf - be sure you have choosen the full path. Exiting now..."
     exit 1
   fi
 fi
