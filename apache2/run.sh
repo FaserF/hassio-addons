@@ -86,27 +86,37 @@ fi
 sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
+  if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
     cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
     echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
-    if [ "$default_ssl_conf" != "get_config" ]; then
-      echo "Exiting now..."
-    fi
+  fi
+  if [ -f /etc/apache2/httpd.conf ]; then
+    cp /etc/apache2/httpd.conf /share/httpd.conf
+    echo "You have requested a copy of the apache2 config. You can now find it at /share/httpd.conf ."
+  fi
+  if [ "$default_ssl_conf" != "get_config" ]; then
+    echo "Exiting now..."
+    exit 0
+  fi
 fi
 
-if [ "$default_conf" != "default" ]; then
+if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then 
   if [ -f $default_conf ]; then
     cp $default_conf /etc/apache2/sites-enabled/000-default.conf
     echo "Your custom apache config at $default_conf will be used."
   else
-    echo "Cant find your custom file $default_conf - be sure you have choosen the full path. Exiting now..."
+    echo "Cant find your custom 000-default.conf file $default_conf - be sure you have choosen the full path. Exiting now..."
     exit 1
   fi
 fi
 
 if [ "$default_ssl_conf" = "get_config" ]; then
+  if [ -f /etc/apache2/httpd.conf ]; then
     cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
     echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default-le-ssl.conf ."
-    echo "Exiting now..."
+  fi
+  echo "Exiting now..."
+  exit 0
 fi
 
 if [ "$default_ssl_conf" != "default" ]; then
@@ -114,7 +124,7 @@ if [ "$default_ssl_conf" != "default" ]; then
     cp $default_ssl_conf /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "Your custom apache config at $default_ssl_conf will be used."
   else
-    echo "Cant find your custom file $default_ssl_conf - be sure you have choosen the full path. Exiting now..."
+    echo "Cant find your custom 000-default-le-ssl.conf file $default_ssl_conf - be sure you have choosen the full path. Exiting now..."
     exit 1
   fi
 fi
