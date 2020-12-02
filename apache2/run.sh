@@ -96,7 +96,7 @@ if [ "$default_conf" = "get_config" ]; then
     fi
 fi
 
-if [ "$default_conf" != "default" ] || [ "$default_conf" != "get_config" ]; then
+if [ "$default_conf" != "default" ] && [ "$default_conf" != "get_config" ]; then
   if [ -f $default_conf ]; then
     cp $default_conf /etc/apache2/sites-enabled/000-default.conf
     echo "Your custom apache config at $default_conf will be used."
