@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.0
+- add php7-iconv and php7-dom support
+
 ## 1.5.1
 - add option to recieve a apache2 config copy
 - fix PHP7-PDO syntax error in Dockerfile
