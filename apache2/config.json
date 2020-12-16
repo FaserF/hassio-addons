@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "slug": "apache2",
     "description": "Apache2 Webserver Addon ",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",

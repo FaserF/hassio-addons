@@ -13,7 +13,7 @@ The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most p
 The Apache HTTP Server is a project of The Apache Software Foundation.
 
 This docker image comes with: apache2, apache2-mariadb, apache2-php7.3.18, apache2-ssl, mariadb-client
-The following php7 extensions will be installed: php7 php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo
+The following php7 extensions will be installed: php7 php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-session php7-fileinfo
 
 ## Installation
 
