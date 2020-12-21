@@ -7,6 +7,7 @@ DocumentRoot=$(bashio::config 'document_root')
 phpini=$(bashio::config 'php_ini')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
+webrootdocker=/var/www/localhost/htdocs/
 
 if [ $phpini = "get_file" ]; then
   cp /etc/php7/php.ini /share/apache2addon_php.ini
@@ -15,17 +16,20 @@ if [ $phpini = "get_file" ]; then
   exit 1
 fi
 
-rm -r /var/www/localhost/htdocs/
+rm -r $webrootdocker
 
 if [ ! -d $DocumentRoot ]; then
   echo "You haven't put your website to $DocumentRoot"
   echo "A default website will now be used"
-  mkdir /var/www/localhost/htdocs/
-  cp /index.html /var/www/localhost/htdocs/
+  mkdir $webrootdocker
+  cp /index.html $webrootdocker
 else
   #Create Shortcut to shared html folder
-  ln -s $DocumentRoot /var/www/localhost/
+  ln -s $DocumentRoot /var/www/localhost/htdocs
 fi
+
+#Set 711 rights to web folders
+find $DocumentRoot -type d -exec chmod 711 {} \;
 
 if [ $phpini != "default" ]; then
   if [ -f $phpini ]; then
@@ -53,7 +57,7 @@ if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
     echo "<VirtualHost *:80>" > /etc/apache2/sites-enabled/000-default.conf
     echo "ServerName $website_name"  >> /etc/apache2/sites-enabled/000-default.conf
     echo "ServerAdmin webmaster@localhost"  >> /etc/apache2/sites-enabled/000-default.conf
-    echo "DocumentRoot /var/www/localhost/htdocs/"  >> /etc/apache2/sites-enabled/000-default.conf
+    echo "DocumentRoot $webrootdocker"  >> /etc/apache2/sites-enabled/000-default.conf
 
     echo "#Redirect http to https"  >> /etc/apache2/sites-enabled/000-default.conf
     echo "    RewriteEngine On"  >> /etc/apache2/sites-enabled/000-default.conf
@@ -69,7 +73,7 @@ if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
     echo "<VirtualHost *:443>"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "ServerName $website_name"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "ServerAdmin webmaster@localhost"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
-    echo "DocumentRoot /var/www/localhost/htdocs/"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
+    echo "DocumentRoot $webrootdocker"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
 
     echo "    ErrorLog /var/log/error.log"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "        #CustomLog /var/log/access.log combined"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
@@ -78,15 +82,19 @@ if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
     echo "</VirtualHost>"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "</IfModule>"  >> /etc/apache2/sites-enabled/000-default-le-ssl.conf
 else
-    echo "SSL is deactivated"
+    echo "SSL is deactivated and/or you are using a custom config."
 fi
 if [ "$ssl" = "true" ] || [ "$default_conf" != "default" ]; then
   echo "Include /etc/apache2/sites-enabled/*.conf" >> /etc/apache2/httpd.conf
 fi
+
 sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
   if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
+    if [ -d /etc/apache2/sites-enabled ]; then
+    mkdir /etc/apache2/sites-enabled
+    fi
     cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
     echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
   fi
@@ -102,6 +110,9 @@ fi
 
 if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then 
   if [ -f $default_conf ]; then
+    if [ -d /etc/apache2/sites-enabled ]; then
+    mkdir /etc/apache2/sites-enabled
+    fi
     cp $default_conf /etc/apache2/sites-enabled/000-default.conf
     echo "Your custom apache config at $default_conf will be used."
   else
@@ -121,6 +132,9 @@ fi
 
 if [ "$default_ssl_conf" != "default" ]; then
   if [ -f $default_ssl_conf ]; then
+    if [ -d /etc/apache2/sites-enabled ]; then
+    mkdir /etc/apache2/sites-enabled
+    fi
     cp $default_ssl_conf /etc/apache2/sites-enabled/000-default-le-ssl.conf
     echo "Your custom apache config at $default_ssl_conf will be used."
   else
@@ -130,7 +144,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 fi
 
 echo "Here is your web file architecture."
-ls -l /var/www/localhost/htdocs/
+ls -l $webrootdocker
 
 echo "Starting Apache2 - This is the last message in the log. If no error occured your web server should work."
 exec /usr/sbin/httpd -D FOREGROUND

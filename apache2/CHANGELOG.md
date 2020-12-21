@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.1
+- fixed error: can't find custom web root folder
+
 ## 1.7.0
 - add php7-session php7-intl php7-soap php7-session php7-fileinfo support
 
