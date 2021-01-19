@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.2
+- fixed error: can't find custom config
+
 ## 1.7.1
 - fixed error: can't find custom web root folder
 
