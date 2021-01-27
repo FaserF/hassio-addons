@@ -17,11 +17,11 @@ The following php7 extensions will be installed: php7 php7-fpm php7-mysqli php7-
 
 ## Installation
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
 Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
-Put your website files to /share/htdocs
-Example File where your index.html should be: /share/htdocs/index.html
+Put your website files to /share/htdocs<br /> 
+Example File where your index.html should be: /share/htdocs/index.html <br /> 
 
 If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
 
@@ -32,10 +32,23 @@ If you want to integrate your website with a mariadb database. Please ensure tha
 Example add-on configuration:
 
 ```yaml
-document_root: /share/htdocs
+document_root: /media/apache2
 php_ini: /share/apache2/php.ini
 default_conf: /share/apache2/000-default.conf
-default_ssl_conf: /share/apache2/000-default-le-ssl.conf
+default_ssl_conf: get_file
+website_name: itdoesntmatter_as_ssl_is_set_to_false
+ssl: false
+certfile: itdoesntmatter_as_ssl_is_set_to_false
+keyfile: itdoesntmatter_as_ssl_is_set_to_false
+```
+<br /> 
+Recommended Example add-on configuration:
+
+```yaml
+document_root: /share/htdocs
+php_ini: default
+default_conf: default
+default_ssl_conf: default
 website_name: mywebsite.ddns.net
 ssl: true
 certfile: fullchain.pem
@@ -68,9 +81,8 @@ default -> the default apache2 addon file will be used
 
 get_config -> Get a copy of the default apache2 addon config file to your /share folder.
 
-path/to/your/new/apache2.conf -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf  
-/// More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts
-
+path/to/your/new/apache2.conf -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf <br />
+More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts<br /> <br /> 
 Please note, that I wont give any support if you are using custom apache2 config files and are recieving any apache2 errors!
 
 ### Option: `website_name`
@@ -79,8 +91,7 @@ This option is needed, if you enable ssl to true. If you are not using SSL put a
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS) on the web interface of Bookstack
-Panel. Set it `true` to enable it, `false` otherwise.
+Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
 
 If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/openssl
 
@@ -93,9 +104,9 @@ And also I am sorry, but I cant support all your websites. Basic HTML Websites w
 
 ## Support
 
-Got questions?
+Got questions or problems?
 
-You could [open an issue here][issue] GitHub.
+You can [open an issue here][issue] GitHub.
 Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## Authors & contributors
@@ -127,14 +138,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[commits]: https://github.com/FaserF/apache2/commits/master
-[contributors]: https://github.com/FaserF/hassio-addons/apache2/graphs/contributors
-[FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
+[FaserF]: https://github.com/FaserF/
 [issue]: https://github.com/FaserF/hassio-addons/issues
 [repository]: https://github.com/FaserF/hassio-addons/apache2
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2020.svg
