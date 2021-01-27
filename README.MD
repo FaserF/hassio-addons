@@ -6,7 +6,7 @@ In the Subfolders you can find all my custom addons for homeassistant os (former
 
 ## Installation
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
 Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
 ## Add-On List
@@ -22,9 +22,10 @@ Bluetooth to MQTT Gateway: https://github.com/FaserF/hassio-addons/tree/master/b
 Support: Limited (not used by me anymore)
 
 ### hyperionng
-Hyperion Next Generation - control your LEDs via GPIO for example: https://github.com/FaserF/hassio-addons/tree/master/hyperionng
+~~Hyperion Next Generation - control your LEDs via GPIO PINs: https://github.com/FaserF/hassio-addons/tree/master/hyperionng~~ <br /> 
+DEPRECATED, please have a look at: https://github.com/petersendev/hassio-addons/tree/master/hyperion
 
-Support: No
+Support: No (Deprecated, as I am not using it anymore)
 
 ### OpenSSL
 Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/openssl
@@ -32,9 +33,9 @@ Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/op
 Support: Yes
 
 ### Silverstrike
-Personal finance management made easy: https://github.com/FaserF/hassio-addons/tree/master/silverstrike
+~~Personal finance management made easy: https://github.com/FaserF/hassio-addons/tree/master/silverstrike~~
 
-Support: Yes
+Support: No (Deprecated, as I am not using it anymore)
 
 ### Switch-LAN-Play
 Nintendo Switch LAN Play - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
@@ -50,7 +51,7 @@ Support: No
 
 Got questions?
 
-You can [open an issue here][issue] GitHub.
+You can [open an issue here][issue] GitHub. <br /> 
 Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## License
