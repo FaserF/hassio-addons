@@ -93,7 +93,7 @@ This option is needed, if you enable ssl to true. If you are not using SSL put a
 
 Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
 
-If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/openssl
+If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/tree/master/openssl
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
