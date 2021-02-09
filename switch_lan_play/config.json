@@ -5,7 +5,7 @@
     "description": "Nintendo Switch Lan Play",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
-    "startup": "before",
+    "startup": "application",
     "boot": "auto",
     "panel_icon": "mdi:local-area-network",
     "host_network":true,
