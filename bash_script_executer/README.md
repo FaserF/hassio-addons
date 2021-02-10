@@ -54,12 +54,15 @@ Example Automation: <br />
 ```yaml
   - alias: "Run Bash Script with Addon Bash Script Executer"
     trigger:
-    - platform: time
-      at: '00:02:00'
+      - platform: time
+        at: '00:02:00'
+      - platform: time_pattern
+        minutes: '/90'
+        seconds: 0
     action:
-    - service: hassio.addon_start
-      data:
-        addon: 605cee21_bashscriptexecuter
+      - service: hassio.addon_start
+        data:
+          addon: 605cee21_bashscriptexecuter
 ```
 
 ## Support
