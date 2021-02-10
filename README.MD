@@ -16,6 +16,11 @@ Webserver Addon with MariaDB Access: https://github.com/FaserF/hassio-addons/tre
 
 Support: Yes
 
+### Apache2
+This is a simple Docker Image to execute personal scripts: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
+
+Support: Yes
+
 ### bt-mqtt-gateway
 Bluetooth to MQTT Gateway: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
 

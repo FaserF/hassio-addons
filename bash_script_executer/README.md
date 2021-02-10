@@ -20,6 +20,8 @@ Example File where your script could be: /share/scripts/script.sh
 
 ## Configuration
 
+**I am recommending to disable "Start on boot" and the Watchdog option from HA for this addon!**<br /> 
+
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
 Example add-on configuration:
@@ -57,7 +59,7 @@ Example Automation: <br />
     action:
     - service: hassio.addon_start
       data:
-        addon: addonid_bashscriptexecuter
+        addon: 605cee21_bashscriptexecuter
 ```
 
 ## Support
