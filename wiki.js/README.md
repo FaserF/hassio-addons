@@ -1,5 +1,5 @@
 # Home Assistant Community Add-on: Wiki.js
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield]
 ![Project Maintenance][maintenance-shield]
 
 Wiki.js for Homeassistant OS
@@ -51,7 +51,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from the Requarks Team [NGPixel][NGPixel]. For more informatios please visit this page: https://github.com/Requarks/wiki
+The original program is from the Requarks Team [NGPixel][NGPixel]. For more informations, please visit this page: https://github.com/Requarks/wiki
 The hassio addon is brought to you by [FaserF].
 
 ## License
@@ -83,7 +83,6 @@ SOFTWARE.
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [FaserF]: https://github.com/FaserF/
 [issue]: https://github.com/FaserF/hassio-addons/issues
 [repository]: https://github.com/FaserF/hassio-addons/wiki.js
