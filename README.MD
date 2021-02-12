@@ -52,6 +52,11 @@ Free your cloud IOT Devices with Tuya-Convert: https://github.com/FaserF/hassio-
 
 Support: No
 
+### Wiki.JS
+The most powerful and extensible open source Wiki software: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
+
+Support: Yes
+
 ## Support
 
 Got questions?
@@ -63,7 +68,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 MIT License
 
-Copyright (c) 2019-2020 FaserF
+Copyright (c) 2019-2021 FaserF
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
