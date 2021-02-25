@@ -12,7 +12,11 @@ Just add my repo to the hassio addons repositorys: https://github.com/FaserF/has
 ## Add-On List
 
 ### Apache2
-Webserver Addon with MariaDB Access: https://github.com/FaserF/hassio-addons/tree/master/apache2
+Webserver Addon 
+Comes in three variants:
+Minimal (Useful for minimal websites with no PHP usage): https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
+Minimal with MariaDB Access (Comes with MariaDB Client, PHP MariaDB and some important PHP modules): https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
+Normal (comes with the most used PHP Extensions, MariaDB): https://github.com/FaserF/hassio-addons/tree/master/apache2
 
 Support: Yes
 

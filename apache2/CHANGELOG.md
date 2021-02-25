@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0
+- add php7-xml support
+- this addon is now available in three variants:
+Minimal
+Minimal with MariaDB
+this "normal" version with common used PHP Modules
+
 ## 1.7.2
 - fixed error: can't find custom config
 
