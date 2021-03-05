@@ -16,13 +16,13 @@
     },
     "schema": {
       "script_path":"str",
-      "script_argument1":"str",
-      "script_argument2":"str",
+      "script_argument1":"str?",
+      "script_argument2":"str?",
       "script_path2":"str",
-      "script2_argument1":"str",
-      "script2_argument2":"str",
+      "script2_argument1":"str?",
+      "script2_argument2":"str?",
       "script_path3":"str",
-      "script3_argument1":"str",
-      "script3_argument2":"str"
+      "script3_argument1":"str?",
+      "script3_argument2":"str?"
     }
   }
