@@ -28,8 +28,14 @@ Example add-on configuration:
 
 ```yaml
 script_path: /share/scripts/script.sh
+script_argument1: myFirstArgument
+script_argument2: AnotherVariable
 script_path2: false
+script2_argument1:
+script2_argument2: 
 script_path3: false
+script3_argument2: 
+script3_argument2: 
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
@@ -37,6 +43,10 @@ script_path3: false
 ### Option: `script_path`
 
 This option is needed. Change it depending where your script is or change it to "false" to leave it empty.
+
+### Option: `scriptX_argumentX`
+
+This option is optional. You can submit up to two arguments to your script with this option.
 
 ### Option: `script_path2`
 
