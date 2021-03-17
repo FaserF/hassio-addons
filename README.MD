@@ -21,7 +21,7 @@ Normal (comes with the most used PHP Extensions, MariaDB): https://github.com/Fa
 Support: Yes
 
 ### Bash Script Executer
-This is a simple Docker Image to execute personal scripts: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
+This is a simple Docker Image to execute bash scripts within Homeassistant OS: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
 
 Support: Yes
 

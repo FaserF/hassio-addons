@@ -13,7 +13,6 @@
     "panel_icon": "mdi:web-box",
     "options": {
       "document_root": "/share/htdocs",
-      "php_ini": "default",
       "default_conf": "default",
       "default_ssl_conf": "default",
       "website_name":null,
@@ -23,7 +22,6 @@
     },
     "schema": {
       "document_root":"str",
-      "php_ini":"str",
       "default_conf":"str",
       "default_ssl_conf":"str",
       "website_name":"str",
