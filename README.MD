@@ -36,6 +36,11 @@ DEPRECATED, please have a look at: https://github.com/petersendev/hassio-addons/
 
 Support: No (Deprecated, as I am not using it anymore)
 
+### Netbook.xyz
+PXE Booting Service: https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz
+
+Support: Yes
+
 ### OpenSSL
 Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/openssl
 
