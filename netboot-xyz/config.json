@@ -1,6 +1,6 @@
   {
-    "name": "Netboot.xyz - PXE Server",
-    "version": "1.0.0",
+    "name": "Netboot.xyz",
+    "version": "1.0.1",
     "slug": "netboot-xyz",
     "description": "PXE Server to deploy a OS in your local network",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz",
@@ -8,17 +8,23 @@
     "host_network": true,
     "webui": "http://[HOST]:[PORT:3000]",
     "ingress": true,
+    "full_access": true,
+    "privileged":[
+      "NET_ADMIN"
+    ],
     "map": ["media:rw"],
     "startup": "application",
     "boot": "auto",
     "panel_icon": "mdi:download-network",
     "options": {
-      "path": "/media/netboot-image",
-      "path_config": "/media/netboot-config"
+      "path": "/media/netboot/image",
+      "path_config": "/media/netboot/config",
+      "dhcp_range": "192.168.178.200"
     },
     "schema": {
       "path": "str",
-      "path_config": "str"
+      "path_config": "str",
+      "dhcp_range": "str"
     },
     "ports": {
       "3000": 3000,

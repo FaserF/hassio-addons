@@ -10,6 +10,7 @@ RUN \
  echo "**** install runtime packages ****" && \
  apk add --no-cache \
 	curl \
+	dnsmasq \
 	jq \
 	nginx \
 	nodejs \
@@ -32,10 +33,6 @@ RUN \
 	build-dependencies && \
  rm -rf \
 	/tmp/*
-
-#creating neccessary netboot folders
-RUN mkdir /assets
-RUN mkdir /config
 
 # copy local files
 COPY root/ /

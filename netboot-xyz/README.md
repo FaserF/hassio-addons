@@ -24,6 +24,7 @@ Example add-on configuration:
 ```yaml
 path: /media/netboot-image
 path_config: /media/netboot-config
+dhcp_range: 192.168.178.200
 ```
 <br /> 
 
@@ -41,9 +42,27 @@ This option is needed. Change it depending where your netboot.xyz config files a
 
 Note: it has to be somewhere in the /media folder! Other folders are not visible to this addon.
 
+### Option: `dhcp_range`
+
+This option is needed. Change it depending to your network. Try using a higher IP in the last range (f.e. 100 or 200)
+
 ## Ingress
 
 This addon supports Homeassistant Ingress. But it seems to be buggy.
+
+## Post-Installation
+Before booting for the first time, I recommend having a look at the netboot config.<br /> 
+Go to http://YOUR-HOMEASSISTANT-IP:3000 -> Menus -> boot.cfg<br /> 
+
+### Windows
+Change the following line depending to your WinPE location: <br /> 
+set win_base_url http://YOUR-SERVER-IP:PORT/WinPE <br /> 
+
+example if you are hosting your extracted files directly on the netboot.xyz server: <br /> 
+set win_base_url ${live_endpoint}/windows <br /> 
+
+More informations: <br /> 
+https://netboot.xyz/faq/windows/
 
 ## Support
 
