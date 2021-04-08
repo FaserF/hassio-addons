@@ -66,6 +66,11 @@ The most powerful and extensible open source Wiki software: https://github.com/F
 
 Support: Yes
 
+### xqrepack
+These scripts allow you to modify the Xiaomi R3600 firmware image to make sure SSH and UART access is always enabled.: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
+
+Support: Yes
+
 ## Support
 
 Got questions?
