@@ -12,24 +12,6 @@ The default root password is password. Please remember to login to the router an
 
 ⚠ The script also tries its best to remove or disable phone-home binaries, and also the smart controller (AIoT) parts, leaving you with a (close to) OpenWRT router that you can configure via UCI or /etc/config. Between preserving stock functionality and privacy concerns, I would err on the side of caution and rather that some functionality be sacrificed for a router that I have more confidence to connect to the Internet.
 
-Note that in order to get SSH access to the router initially, you need to downgrade to version 1.0.17 and exploit it first. Once you have SSH, you can use this repacking method to maintain SSH access for newer versions.
-
-Please visit @geekman original repo of this program: https://github.com/geekman/xqrepack
-
-# Home Assistant Community Add-on: xqrepack
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
-![Project Maintenance][maintenance-shield]
-
-xqrepack - Repack and rebuild MiWifi Images to gain SSH access and other stuff.
-
-## About
-
-These scripts allow you to modify the Xiaomi R3600 firmware image to make sure SSH and UART access is always enabled.
-
-The default root password is password. Please remember to login to the router and change that after the upgrade. Your router settings like IP address and SSIDs are stored in the nvram and should stay the same.
-
-⚠ The script also tries its best to remove or disable phone-home binaries, and also the smart controller (AIoT) parts, leaving you with a (close to) OpenWRT router that you can configure via UCI or /etc/config. Between preserving stock functionality and privacy concerns, I would err on the side of caution and rather that some functionality be sacrificed for a router that I have more confidence to connect to the Internet.
-
 Note that in order to get SSH access to the router initially, you need to downgrade to version 1.0.17 and exploit it first. Once you have SSH, you can use this repacking method to maintain SSH access for newer versions.<br /> 
 
 Please visit @geekman original repo of this program: https://github.com/geekman/xqrepack
