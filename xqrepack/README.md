@@ -6,7 +6,7 @@ xqrepack - Repack and rebuild MiWifi Images to gain SSH access and other stuff.
 
 ## About
 
-These scripts allow you to modify the Xiaomi R3600 firmware image to make sure SSH and UART access is always enabled.
+These scripts allow you to modify the Xiaomi R3600 (AX3600) / rm1800 (AX1800) firmware image to make sure SSH and UART access is always enabled.
 
 The default root password is password. Please remember to login to the router and change that after the upgrade. Your router settings like IP address and SSIDs are stored in the nvram and should stay the same.
 
@@ -29,9 +29,19 @@ The new firmware will be at your "firmware_path" folder and will be called "r360
 
 Example add-on configuration:
 
+### AX3600
+
 ```yaml
 firmware_path: /share/miwifi_firmware/
-firmware_name: miwifi_r3600_all_f1e60_1.0.424.bin
+firmware_name: miwifi_r3600_firmware_02d97_1.1.15.bin
+```
+<br /> 
+
+### AX1800
+
+```yaml
+firmware_path: /share/miwifi_firmware/
+firmware_name: miwifi_rm1800_firmware_df7e3_1.0.385.bin
 ```
 <br /> 
 
@@ -39,24 +49,25 @@ firmware_name: miwifi_r3600_all_f1e60_1.0.424.bin
 
 ### Option: `firmware_path`
 
-This option is needed. Change it depending where your firmware files folder is.
+This option is needed. Change it depending where your firmware files folder is.<br /> 
 
 Note: it has to be somewhere in the /share folder! Other folders are not visible to this addon.
 
 ### Option: `firmware_name`
 
-This option is needed. Change it depending what your firmware file is called.
+This option is needed. Change it depending what your firmware file is called.<br /> 
+NOTE: Please keep the name rm1800 inside the firmware file, if you are using a image for the AX1800. This is needed, as the modifying process for AX1800 is different than for the AX3600!
 
 ## Support
 
 Got questions or problems?
 
-You can [open an issue here][issue] GitHub.
+You can [open an issue here][issue] GitHub.<br /> 
 Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from @geekman. For more informatios please visit this page: https://github.com/geekman/xqrepack
+The original program is from @geekman. For more informations please visit this page: https://github.com/geekman/xqrepack
 The hassio addon is brought to you by [FaserF].
 
 ## License
