@@ -8,8 +8,8 @@ Apache2 Webserver for Homeassistant OS
 
 ## About
 
-The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.
-The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.
+The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.<br /> 
+The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.<br /> 
 The Apache HTTP Server is a project of The Apache Software Foundation.
 
 
@@ -18,8 +18,8 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 ### Full Version
 The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP modules. <br /> 
 This docker image comes with: apache2 php7-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
-The following php7 extensions will be installed: php7 php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-fileinfo php7-xml
-And it comes with php7 locales.
+The following php7 extensions will be installed: php7 php7-dev php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-fileinfo php7-xml<br /> 
+And it comes with php7 locales and [Mosquitto-PHP](https://github.com/mgdm/Mosquitto-PHP).
 
 ### Minimal Version
 The [Minimal Version](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) of the Apache2 Addon without MariaDB and with no PHP modules. <br /> 
@@ -28,7 +28,7 @@ This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi
 ### Minimal Version with MariaDB
 The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br /> 
 This docker image comes with: apache2 php7-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
-The following php7 extensions will be installed: php7 php7-mysqli php7-opcache php7-curl php7-json php7-mcrypt php7-zip
+The following php7 extensions will be installed: php7 php7-mysqli php7-opcache php7-curl php7-json php7-mbstring php7-mcrypt php7-zip
 
 ## Installation
 

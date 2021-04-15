@@ -2,6 +2,7 @@
 
 ## 2.0.1
 - add php7-locales support
+- add Mosquitto-PHP support
 
 ## 2.0.0
 - add php7-xml support
