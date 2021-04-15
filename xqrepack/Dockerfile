@@ -15,7 +15,7 @@ WORKDIR /xqrepack
 
 RUN wget -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh
 RUN wget -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
-RUN wget -O /xqrepack/xqflash https://raw.githubusercontent.com/geekman/xqrepack/master/xqflash
+#RUN wget -O /xqrepack/xqflash https://raw.githubusercontent.com/geekman/xqrepack/master/xqflash
 
 # Copy data for add-on
 COPY run.sh /
