@@ -57,7 +57,7 @@ The hassio addon is brought to you by [FaserF].
 
 MIT License
 
-Copyright (c) 2019-2010 FaserF & The OpenSSL Project
+Copyright (c) 2019-2021 FaserF & The OpenSSL Project
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
