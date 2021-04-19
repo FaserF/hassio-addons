@@ -30,12 +30,15 @@ Example add-on configuration:
 script_path: /share/scripts/script.sh
 script_argument1: myFirstArgument
 script_argument2: AnotherVariable
+script_argument3: AnotherVariable
 script_path2: false
 script2_argument1:
 script2_argument2: 
+script2_argument3: 
 script_path3: false
 script3_argument2: 
 script3_argument2: 
+script3_argument3: 
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
@@ -46,7 +49,7 @@ This option is needed. Change it depending where your script is or change it to 
 
 ### Option: `scriptX_argumentX`
 
-This option is optional. You can submit up to two arguments to your script with this option.
+This option is optional. You can submit up to three arguments to your script with this option.
 
 ### Option: `script_path2`
 
