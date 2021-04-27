@@ -6,22 +6,19 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3009
 RUN \
-    apt-get update \
+    apt-get update -y \
     \
     && apt-get install -y --no-install-recommends \
-        dirmngr gnupg wget build-essential \
+        dirmngr gnupg apt-transport-https ca-certificates software-properties-common curl build-essential \
     && apt-get clean
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
-RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-RUN cat /etc/apt/sources.list.d/mongodb-org-4.4.list
-RUN apt-get -y update && apt install -y curl && curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN \
-    apt-get update \
-    \
-    && apt-get install -y --no-install-recommends \
+RUN curl -fsSL https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
+RUN add-apt-repository 'deb https://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main'
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get update -y
+RUN apt-get install -y --no-install-recommends \
         mongodb-org nodejs fontconfig graphicsmagick \
     && apt-get clean
 RUN npm install -g inherits n && n 12.18.4
