@@ -9,17 +9,20 @@ RUN \
     apt-get update \
     \
     && apt-get install -y --no-install-recommends \
-        dirmngr gnupg
+        dirmngr gnupg wget build-essential \
     && apt-get clean
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-RUN echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" | tee /etc/apt/sources.list.d/mongodb-org-4.0.list
-RUN apt -y update && apt install -y curl && curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+RUN wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
+RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+RUN cat /etc/apt/sources.list.d/mongodb-org-4.4.list
+RUN apt-get -y update && apt install -y curl && curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN \
     apt-get update \
     \
     && apt-get install -y --no-install-recommends \
-        build-essential mongodb-org nodejs fontconfig graphicsmagick
+        mongodb-org nodejs fontconfig graphicsmagick \
     && apt-get clean
 RUN npm install -g inherits n && n 12.18.4
 RUN curl -L https://releases.rocket.chat/latest/download -o /tmp/rocket.chat.tgz
