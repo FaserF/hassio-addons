@@ -17,7 +17,7 @@ RUN \
 #RUN phpenmod libmcrypt
 
 # add ttrss as the only nginx site
-ADD ttrss.nginx.conf /etc/nginx/sites-available/ttrss
+#ADD ttrss.nginx.conf /etc/nginx/sites-available/ttrss
 RUN ln -s /etc/nginx/sites-available/ttrss /etc/nginx/sites-enabled/ttrss
 RUN rm /etc/nginx/sites-enabled/default
 
@@ -25,12 +25,9 @@ RUN rm /etc/nginx/sites-enabled/default
 WORKDIR /var/www
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/* \
     && curl -SL https://git.tt-rss.org/fox/tt-rss/archive/master.tar.gz | tar xzC /var/www --strip-components 1 \
-    && apt-get purge -y --auto-remove curl \
-    && chown www-data:www-data -R /var/www
-RUN cp config.php-dist config.php
-
-# expose only nginx HTTP port
-EXPOSE 80
+    && chown www-data:www-data -R /var/www \
+    && chmod 775 -R /var/www
+#RUN cp config.php-dist config.php
 
 # Copy data for add-on
 COPY run.sh /
