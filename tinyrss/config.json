@@ -1,0 +1,33 @@
+  {
+    "name": "Tiny Tiny RSS",
+    "version": "1.0.0",
+    "slug": "ttrss",
+    "description": "Tiny Tiny RSS",
+    "url": "https://github.com/FaserF/hassio-addons/tree/master/ttrss",
+    "arch": ["armhf", "armv7", "aarch64", "amd64"],
+    "services": ["mysql:need"],
+    "startup": "application",
+    "boot": "auto",
+    "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
+    "ingress": true,
+    "panel_icon": "mdi:rss-box",
+    "options": {
+      "ssl": true,
+      "certfile": "fullchain.pem",
+      "keyfile": "privkey.pem"
+    },
+    "schema": {
+      "ssl": "bool",
+      "certfile": "str",
+      "keyfile": "str",
+      "reset_database": "bool?"
+    },
+    "ports": {
+      "80/tcp": 83,
+      "443/tcp": 445
+    },
+    "ports_description": {
+      "80/tcp": "HTTP Entrance port",
+      "443/tcp": "HTTPS/SSL Entrance port"
+    }
+  }

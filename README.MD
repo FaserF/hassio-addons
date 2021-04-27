@@ -56,6 +56,11 @@ Nintendo Switch LAN Play - for hacked switches: https://github.com/FaserF/hassio
 
 Support: Yes
 
+### Tiny Tiny RSS
+Tiny Tiny RSS: https://github.com/FaserF/hassio-addons/tree/master/ttrss
+
+Support: Limited (not used by me)
+
 ### Tuya-Convert
 Free your cloud IOT Devices with Tuya-Convert: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
 
