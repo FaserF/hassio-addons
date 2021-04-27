@@ -1,0 +1,26 @@
+  {
+    "name": "Rocket.Chat",
+    "version": "1.0.0",
+    "slug": "rocket-chat",
+    "description": "Self hosted Chat Client with great features.",
+    "url": "https://github.com/FaserF/hassio-addons/tree/master/rocket.chat",
+    "arch": ["armhf", "armv7", "aarch64", "amd64"],
+    "webui": "http://[HOST]:[PORT:3000]",
+    "ingress": true,
+    "map": ["media:rw"],
+    "startup": "application",
+    "boot": "auto",
+    "panel_icon": "mdi:download-network",
+    "options": {
+    
+    },
+    "schema": {
+
+    },
+    "ports": {
+      "3000": 3000
+    },
+    "ports_description": {
+      "3000": "Web configuration interface - DO NOT CHANGE!"
+    }
+  }
