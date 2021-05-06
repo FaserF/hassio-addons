@@ -5,6 +5,8 @@ certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
 phpini=$(bashio::config 'php_ini')
+username=$(bashio::config 'username')
+password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
@@ -28,8 +30,16 @@ else
   ln -s $DocumentRoot /var/www/localhost/htdocs
 fi
 
-#Set 711 rights to web folders
-find $DocumentRoot -type d -exec chmod 711 {} \;
+#Set rights to web folders and create user
+find $DocumentRoot -type d -exec chmod 771 {} \;
+if [ ! -z "$username" ] && [ ! -z "$password" ]; then
+  adduser -S $username -G www-data
+  echo "$username:$password" | chpasswd $username
+  find $webrootdocker -type d -exec chown $username:www-data -R {} \;
+  find $webrootdocker -type f -exec chown $username:www-data -R {} \;
+else
+  echo "No username and/or password was provided. Skipping account set up."
+fi
 
 if [ $phpini != "default" ]; then
   if [ -f $phpini ]; then

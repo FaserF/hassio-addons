@@ -1,8 +1,8 @@
   {
     "name": "Apache2",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "slug": "apache2",
-    "description": "Apache2 Webserver Addon ",
+    "description": "OpenSource Webserver",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
@@ -27,6 +27,8 @@
       "default_conf":"str",
       "default_ssl_conf":"str",
       "website_name":"str",
+      "username":"str?",
+      "password":"str?",
       "ssl": "bool",
       "certfile": "str",
       "keyfile": "str"

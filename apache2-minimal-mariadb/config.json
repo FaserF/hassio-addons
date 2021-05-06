@@ -1,8 +1,8 @@
   {
-    "name": "Apache2 Minimal with MariaDB",
-    "version": "2.0.1",
+    "name": "Apache2 Minimal with MariaDB Client",
+    "version": "2.0.2",
     "slug": "apache2-minimal-mariadb",
-    "description": "Apache2 Webserver Addon with MariaDB and some PHP Modules",
+    "description": "Webserver with MariaDB Client and some PHP Modules",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
@@ -27,6 +27,8 @@
       "default_conf":"str",
       "default_ssl_conf":"str",
       "website_name":"str",
+      "username":"str?",
+      "password":"str?",
       "ssl": "bool",
       "certfile": "str",
       "keyfile": "str"

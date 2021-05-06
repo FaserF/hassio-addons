@@ -52,6 +52,8 @@ php_ini: /share/apache2/php.ini
 default_conf: /share/apache2/000-default.conf
 default_ssl_conf: get_file
 website_name: itdoesntmatter_as_ssl_is_set_to_false
+username: apache
+password: mySecretPassword
 ssl: false
 certfile: itdoesntmatter_as_ssl_is_set_to_false
 keyfile: itdoesntmatter_as_ssl_is_set_to_false
@@ -103,6 +105,14 @@ Please note, that I wont give any support if you are using custom apache2 config
 ### Option: `website_name`
 
 This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesnt matter.
+
+### Option: `username`
+
+This option is optional. Set a username to access the webfiles.
+
+### Option: `password`
+
+This option is optional. Set a password to access the webfiles.
 
 ### Option: `ssl`
 
