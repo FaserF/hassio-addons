@@ -33,6 +33,10 @@ RUN wget https://github.com/mgdm/Mosquitto-PHP/archive/refs/heads/master.zip \
       && make install \
       && cd .. && rm -r Mosquitto-PHP-master
 
+#Configure Logging
+RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf
+RUN echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
+
 # Copy data for add-on
 COPY run.sh /
 COPY index.html /

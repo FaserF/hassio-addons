@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.3
+- Enable Apache Foreground Logging
+
 ## 2.0.2
 - ability to set a username and password to access the webfiles
 
@@ -49,29 +52,23 @@ this "normal" version with common used PHP Modules
 - enabled use of .htaccess files
 
 ## 1.2.0
-
 - new option document_root -> Allowing the user to decide the document root folder
 - added default index.html if the user has no webfiles in the correct folder
 
 ## 1.1.2
-
 - added php-mcrypt, php-zip
 - Ingress is now supported
 
 ## 1.1.1
-
 - added mariadb-client to docker image
 
 ## 1.1.0
-
 - New Icon
 - Prepared Ingress Support
 
 ## 1.0.1
-
 - Fixed SSL
 - Removed MariaDB Options
 
 ## 1.0.0
-
 - Initial release

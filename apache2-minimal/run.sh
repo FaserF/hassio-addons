@@ -162,5 +162,5 @@ fi
 echo "Here is your web file architecture."
 ls -l $webrootdocker
 
-echo "Starting Apache2 - This is the last message in the log. If no error occured your web server should work."
+echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND
