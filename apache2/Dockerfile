@@ -8,7 +8,8 @@ RUN mkdir /run/apache2
 
 RUN apk update && apk upgrade
 RUN apk --no-cache add apache2 php7-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php7 php7-dev php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-fileinfo php7-xml mosquitto mosquitto-dev
+RUN apk --no-cache add php7 php7-dev php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-fileinfo php7-xml php7-ctype
+RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 
 #Add php7 locales

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4
+- add php7-ctype support
+
 ## 2.0.3
 - Enable Apache Foreground Logging
 
