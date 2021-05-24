@@ -9,10 +9,10 @@ Nintendo Switch LAN-Play Client for Homeassistant OS
 ## About
 
 To play with your CFW Nintendo Switch online, you can use this addon + a public or private Server. This addon can be used, to stop running the lan play client on a Desktop PC/Laptop. 
-This is just the Client Software and NOT the Server Sotware.
+This is just the Client Software and NOT the Server Sotware. To use a lan-play server with Homeassistant OS, please have a look at my other addon: https://github.com/FaserF/hassio-addons/switch_lan_play_server
 
 This docker image will self-compile the latest lan-play software and run it based on your architecture. More information can be found here: https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view
-The first start can take up to 10 minutes because of this! Depending on your hardware.
+The first installation can take up to 10 minutes because of this! Depending on your hardware.
 
 ## Installation
 
@@ -77,11 +77,11 @@ SOFTWARE.
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[commits]: https://github.com/FaserF/hassio-switch-lan-play/commits/master
-[contributors]: https://github.com/FaserF/hassio-switch-lan-play/graphs/contributors
+[commits]: https://github.com/FaserF/hassio-addons/commits/master
+[contributors]: https://github.com/FaserF/hassio-addons/graphs/contributors
 [FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
-[issue]: https://github.com/FaserF/hassio-switch-lan-play/issues
-[releases]: https://github.com/FaserF/hassio-switch-lan-play/releases
-[repository]: https://github.com/FaserF/hassio-switch-lan-play
+[issue]: https://github.com/FaserF/hassio-addons/issues
+[releases]: https://github.com/FaserF/hassio-addons/releases
+[repository]: https://github.com/FaserF/hassio-addons/switch_lan_play_server
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
