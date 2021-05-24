@@ -1,15 +1,15 @@
-# Home Assistant Community Add-on: Switch LAN-Play
+# Home Assistant Community Add-on: Nintendo Switch LAN-Play Client
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
-Nintendo Switch LAN-Play for Homeassistant OS
+Nintendo Switch LAN-Play Client for Homeassistant OS
 
 ![The Lan-Play Home Home Assistant Add-on](images/screenshot.png)
 
 ## About
 
-To play with your friends, you and your friends should run lan-play client connecting to the same Server on your PC, and set static IP on your Switch.
-Your PC and Switch must be connected to the same router.
+To play with your CFW Nintendo Switch online, you can use this addon + a public or private Server. This addon can be used, to stop running the lan play client on a Desktop PC/Laptop. 
+This is just the Client Software and NOT the Server Sotware.
 
 This docker image will self-compile the latest lan-play software and run it based on your architecture. More information can be found here: https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view
 The first start can take up to 10 minutes because of this! Depending on your hardware.
@@ -37,17 +37,12 @@ This option is mandatory. Please write here your server you want to connect to w
 
 **Note**: If you leave this empty there will be issues.
 
-## Changelog & Releases
-
-This repository keeps a change log using [GitHub's releases][releases]
-functionality. The format of the log is based on the original lan-play github releases added with a "-Number" for the ha addon version-
-
 ## Support
 
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Tinkerboard.
+Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ## Authors & contributors
 
@@ -58,7 +53,7 @@ The hassio addon is brought to you by [FaserF].
 
 MIT License
 
-Copyright (c) 2019-2020 FaserF & spacemeowx2
+Copyright (c) 2019-2021 FaserF & spacemeowx2
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -89,4 +84,4 @@ SOFTWARE.
 [issue]: https://github.com/FaserF/hassio-switch-lan-play/issues
 [releases]: https://github.com/FaserF/hassio-switch-lan-play/releases
 [repository]: https://github.com/FaserF/hassio-switch-lan-play
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2020.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg

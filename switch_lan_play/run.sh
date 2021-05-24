@@ -3,7 +3,6 @@
 #VARIABLES
 server=$(bashio::config 'server')
 
-echo "Switch LAN Play Homeassistant Add-On"
 echo "for more informations or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
 
 if [ ! -f /data/lan-play ]; then
@@ -12,7 +11,7 @@ if [ ! -f /data/lan-play ]; then
     cd switch-lan-play
     mkdir build
     cd build
-    echo "Compiling latest lan-play for this linux architecture"
+    echo "Compiling latest lan-play client for this linux architecture"
     echo "This may take a while...."
     cmake .. >/dev/null 2>&1
     make >/dev/null 2>&1
@@ -21,9 +20,10 @@ if [ ! -f /data/lan-play ]; then
     chmod +x lan-play
     cp lan-play /data/
 else
-    echo "Lan-play is already compiled and installed."
-    echo "If you want to install the latest lan-play, please reinstall this addon"
+    echo "Lan-play client is already compiled and installed."
+    echo "If you want to install the latest lan-play client, please reinstall this addon"
 fi
 
-echo "Starting lan-play with the server: $server"
+echo "Starting lan-play Client with the server: $server"
+echo "To Connect your switch with this client have a look at https://github.com/spacemeowx2/switch-lan-play#2-switch"
 ./data/lan-play --relay-server-addr $server
