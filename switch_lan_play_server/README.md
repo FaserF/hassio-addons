@@ -40,6 +40,15 @@ This option is optional. If you wont set up a password, no authentification will
 
 **Note**: If you leave this empty there will be issues.
 
+## Homeassistant Sensor
+To get a HA Sensor with the current count of people online on your server, add the following in your configuration.yaml
+
+sensor:
+  - platform: rest
+    resource: http://{YOUR_SERVER_IP}:11451/info
+    method: GET
+    unit_of_measurement: people
+
 ## Support
 
 Got questions?
