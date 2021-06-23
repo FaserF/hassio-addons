@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0
+- bump hassio-addon-base to V10.0.0
+
 ## 2.0.3
 - Enable Apache Foreground Logging
 

@@ -1,6 +1,6 @@
   {
     "name": "Apache2",
-    "version": "2.0.4",
+    "version": "2.1.0",
     "slug": "apache2",
     "description": "OpenSource Webserver",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",

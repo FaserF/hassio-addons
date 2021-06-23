@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+- bump hassio-addon-base to V10.0.0
+
 ## 1.1.1
 - Added the option to submit up to three arguments to the scripts
 

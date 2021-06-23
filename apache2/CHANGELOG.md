@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.0
+- bump hassio-addon-base to V10.0.0
+- fixed an issue in the php7-locales which resulted in an issue while installing the addon
+
 ## 2.0.4
 - add php7-ctype support
 

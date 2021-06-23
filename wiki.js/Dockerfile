@@ -5,7 +5,7 @@ FROM ${BUILD_FROM}
 RUN apk --no-cache add nodejs wget tar mariadb-client
 
 WORKDIR /wiki
-RUN wget https://github.com/Requarks/wiki/releases/download/2.5.191/wiki-js.tar.gz
+RUN wget https://github.com/Requarks/wiki/releases/download/2.5.201/wiki-js.tar.gz
 
 RUN tar xzf wiki-js.tar.gz -C /wiki
 RUN rm wiki-js.tar.gz

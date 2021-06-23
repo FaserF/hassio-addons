@@ -12,13 +12,9 @@ RUN apk --no-cache add php7 php7-dev php7-fpm php7-mysqli php7-opcache php7-gd p
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 
-#Add php7 locales
-ENV MUSL_LOCALE_DEPS cmake make musl-dev gcc gettext-dev libintl 
-ENV MUSL_LOCPATH /usr/share/i18n/locales/musl
-
-RUN apk add --no-cache \
-    $MUSL_LOCALE_DEPS \
-    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
+#musl-locales/php7-locales
+RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl 
+RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
       && cd musl-locales-master \
       && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \

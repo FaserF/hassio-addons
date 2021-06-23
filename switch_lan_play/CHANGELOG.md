@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0
+- bump hassio-addon-base to V10.0.0
+
 ## 1.0.0
 - Stop using the lan play versioning cheme and use my own instead
 - rewritten the Dockerfile to stop building the client on every addon restart
