@@ -58,8 +58,13 @@ Support: Yes
 
 Support: No (Deprecated, as I am not using it anymore)
 
-### Switch-LAN-Play
-Nintendo Switch LAN Play - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
+### Switch-LAN-Play Client
+Nintendo Switch LAN Play Client - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
+
+Support: Yes
+
+### Switch-LAN-Play Server
+Nintendo Switch LAN Play Server - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
 
 Support: Yes
 

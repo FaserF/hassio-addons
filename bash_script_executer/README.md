@@ -12,8 +12,10 @@ This docker image comes with: busybox-extras curl grep coreutils sed xmlstarlet
 
 ## Installation
 
+[![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+<br /> 
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
-Just add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
 Put your scripts somewhere in the /share/ folder. Other folders are not visible to this addon.<br /> 
 Example File where your script could be: /share/scripts/script.sh

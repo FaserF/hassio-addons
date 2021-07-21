@@ -4,8 +4,6 @@
 
 Freenom DNS Updater for Homeassistant OS
 
-![Ingress Support](images/ingress.png)
-
 ## About
 
 Freenom is a (free) Registrar provider. This is a docker image based on @maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).<br /> 

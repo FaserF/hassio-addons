@@ -6,7 +6,6 @@ ENV LANG C.UTF-8
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
-RUN apk update && apk upgrade
 RUN apk --no-cache add apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
 
 #Configure Logging
