@@ -1,6 +1,6 @@
   {
     "name": "tuya-convert BETA",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "slug": "tuya-convert",
     "description": "Tuya Convert - Flash Tuya/Smart Life devices with open Source software",
     "url": "https://github.com/FaserF/hassio-addons/tree/master/tuya-convert",
@@ -9,6 +9,9 @@
     "boot": "auto",
     "map": ["share:rw"],
     "host_network": true,
+    "privileged":[
+      "NET_ADMIN"
+    ],
     "ingress": false,
     "options": {
       "backup_path": "/share/tuya-convert/",
