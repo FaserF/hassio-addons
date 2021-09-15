@@ -1,0 +1,19 @@
+{
+  "name": "Assistant Relay",
+  "version": "0.8.0",
+  "slug": "assistant_relay",
+  "description": "Send (broadcast) commands to your Google Assistant via REST command",
+  "arch": ["amd64", "armv7"],
+  "startup": "services",
+  "url": "https://github.com/FaserF/Assistant-Relay-for-Hassio",
+  "boot": "auto",
+  "options": {
+  },
+  "schema": {},
+  "ports": {
+    "3000/tcp": 3000
+  },
+  "webui":"http://[HOST]:[PORT:3000]",
+  "ingress": true,
+  "panel_icon": "mdi:google-assistant"
+}

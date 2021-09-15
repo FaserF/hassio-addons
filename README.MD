@@ -22,6 +22,12 @@ Normal (comes with the most used PHP Extensions, MariaDB): https://github.com/Fa
 
 Support: Yes
 
+### Assistant Relay
+Assistant Relay is a Node.js server that exposes the Google Assistant as a REST API.: https://github.com/FaserF/hassio-addons/tree/master/assistant_relay<br /> 
+Beta Version: https://github.com/FaserF/hassio-addons/tree/master/assistant_relay_beta
+
+Support: No (Deprecated by the original devs, only security patch suport by me)
+
 ### Bash Script Executer
 This is a simple Docker Image to execute bash scripts within Homeassistant OS: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
 
