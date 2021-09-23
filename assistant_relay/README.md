@@ -20,11 +20,6 @@ It also supports the Google Home Broadcast command so you can send audio notific
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
 Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
 
-Put your website files to /share/htdocs<br /> 
-Example File where your index.html should be: /share/htdocs/index.html <br /> 
-
-If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
-
 ## Configuration
 
 1. You do not need to configure anything at the add-on page. Click "Start" to run the add-on
