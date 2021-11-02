@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.3
+- bump hassio-addon-base to V10.2.0
+
 ## 2.1.2
 - bump hassio-addon-base to V10.1.0
 

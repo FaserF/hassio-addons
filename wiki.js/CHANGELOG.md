@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.5
+- bump hassio-addon-base to V10.2.0
+
 ## 1.1.4
 - update wiki.js to 2.5.219
 
