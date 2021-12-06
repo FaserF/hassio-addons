@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.7
+- update alpine base image to 11.0.0
+
 ## 0.0.6
 - update alpine base image to 10.2.0
 

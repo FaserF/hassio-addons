@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:10.2.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:11.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -15,7 +15,7 @@ RUN \
         mariadb-client
 
 WORKDIR /wiki
-RUN wget https://github.com/Requarks/wiki/releases/download/2.5.219/wiki-js.tar.gz
+RUN wget https://github.com/Requarks/wiki/releases/download/2.5.254/wiki-js.tar.gz
 
 RUN tar xzf wiki-js.tar.gz -C /wiki
 RUN rm wiki-js.tar.gz
