@@ -86,4 +86,4 @@ SOFTWARE.
 [issue]: https://github.com/FaserF/hassio-addons/issues
 [releases]: https://github.com/FaserF/hassio-addons/releases
 [repository]: https://github.com/FaserF/hassio-addons/switch_lan_play_server
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg

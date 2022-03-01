@@ -57,7 +57,7 @@ As the official dev has stopped maintaining it I WILL NOT give any support! This
 
 The updated hassio addon is brought to you by [FaserF].
 
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-no-red.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-no-red.svg
