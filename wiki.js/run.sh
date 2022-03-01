@@ -9,6 +9,18 @@ declare password
 declare port
 declare username
 
+if [ $ssl = "true" ]; then
+    echo "You have activated SSL. SSL Settings will be applied"
+    if [ ! -f /ssl/$certfile ]; then
+      echo "Cannot find certificate file $certfile . Turn off SSL or check for if the file really exists at /ssl/"
+      exit 1
+    fi
+    if [ ! -f /ssl/$keyfile ]; then
+      echo "Cannot find certificate key file $keyfile . Turn off SSL or check for if the file really exists at /ssl/"
+      exit 1
+    fi
+fi
+
 # Require MySQL service to be available
 #if ! bashio::services.available "mysql"; then
 #    bashio::log.error \

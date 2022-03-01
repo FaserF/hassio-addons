@@ -15,7 +15,7 @@ RUN \
         mariadb-client
 
 WORKDIR /wiki
-RUN wget https://github.com/Requarks/wiki/releases/download/v2.5.275/wiki-js.tar.gz
+RUN wget https://github.com/Requarks/wiki/releases/download/v2.5.276/wiki-js.tar.gz
 
 RUN tar xzf wiki-js.tar.gz -C /wiki
 RUN rm wiki-js.tar.gz
