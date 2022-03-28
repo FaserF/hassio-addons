@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.3
+- bump hassio-addon-base to V11.1.1
+
 ## 1.2.2
 - improve missing certificate warnings
 - Update Wiki.JS to 2.5.276
