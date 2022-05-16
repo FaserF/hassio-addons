@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.2.4
+- fix SSL not working (certificate wont be detected)
 - bump hassio-addon-base to V11.1.2
 - Update Wiki.JS to 2.5.282
 
