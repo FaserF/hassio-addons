@@ -110,11 +110,15 @@ This option is needed, if you enable ssl to true. If you are not using SSL put a
 
 ### Option: `username`
 
-This option is optional. Set a username to access the webfiles.
+This option is optional. This user is for accessing web files (NOT the website itself). It will change the owner of all web files from "root" to this new owner.
+
+This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#Authentification-for-your-website)
 
 ### Option: `password`
 
-This option is optional. Set a password to access the webfiles.
+This option is optional. Some self hosted web sites require an authentification password to access files within the docker image. #50
+
+This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#Authentification-for-your-website)
 
 ### Option: `ssl`
 
@@ -123,6 +127,18 @@ Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `
 If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/tree/master/openssl
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
+
+## Authentification for your website
+Use a .htaccess file in combination with a .htpasswd file for this: https://www.htaccessredirect.net/ 
+
+Example .htaccess file: 
+
+```bash
+AuthType Basic
+AuthName "My Webserver Authentification"
+AuthUserFile /share/.htpasswd
+Require valid-user
+```
 
 ## Ingress
 
