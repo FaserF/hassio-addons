@@ -100,7 +100,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 MIT License
 
-Copyright (c) 2019-2021 FaserF
+Copyright (c) 2019-2022 FaserF
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
