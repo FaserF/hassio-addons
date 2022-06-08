@@ -6,8 +6,8 @@ ENV LANG C.UTF-8
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
-RUN apk --no-cache add apache2 php8-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php8 php8-dev php8-fpm php8-mysqli php8-opcache php8-gd php8-zlib php8-curl php8-phar php8-json php8-mbstring php8-mcrypt php8-zip php8-pdo php8-pdo_mysql php8-iconv php8-dom php8-session php8-intl php8-soap php8-fileinfo php8-xml php8-ctype
+RUN apk --no-cache add apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
+RUN apk --no-cache add php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd zlib php81-curl php81-phar php81-mbstring php81-pecl-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml php81-ctype
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 

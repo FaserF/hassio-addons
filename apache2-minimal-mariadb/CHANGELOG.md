@@ -1,8 +1,8 @@
 # Changelog
 
-## 2.3.1
+## 2.4.0
 - fix update error
-- bump PHP to PHP8
+- bump PHP to PHP8.1
 
 ## 2.3.0
 - bump hassio-addon-base to V12.0.0
