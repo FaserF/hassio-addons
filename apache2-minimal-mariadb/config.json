@@ -10,6 +10,7 @@
     "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
     "map": ["share:rw", "media:rw", "ssl"],
     "ingress": true,
+    "init": false,
     "panel_icon": "mdi:web-box",
     "options": {
       "document_root": "/share/htdocs",

@@ -9,6 +9,7 @@
     "boot": "auto",
     "map": ["share:rw"],
     "ingress": false,
+    "init": false,
     "panel_icon": "mdi:web-box",
     "options": {
       "config_file":null,

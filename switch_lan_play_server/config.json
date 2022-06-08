@@ -8,6 +8,7 @@
     "startup": "application",
     "boot": "auto",
     "panel_icon": "mdi:local-area-network",
+    "init": false,
     "options": {
     },
     "schema": {

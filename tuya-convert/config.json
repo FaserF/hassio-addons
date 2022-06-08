@@ -9,6 +9,7 @@
     "boot": "auto",
     "map": ["share:rw"],
     "host_network": true,
+    "init": false,
     "privileged":[
       "NET_ADMIN"
     ],

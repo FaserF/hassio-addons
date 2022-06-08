@@ -7,6 +7,7 @@
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
     "boot": "auto",
+    "init": false,
     "panel_icon": "mdi:local-area-network",
     "host_network":true,
     "host_ipc":true,

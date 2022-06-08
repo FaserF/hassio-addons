@@ -9,6 +9,7 @@
     "boot": "auto",
     "map": ["ssl:rw"],
     "ingress": false,
+    "init": false,
     "options": {
       "website_name":null
     },

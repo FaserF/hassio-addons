@@ -8,6 +8,7 @@
     "startup": "application",
     "boot": "auto",
     "map": ["share:rw"],
+    "init": false,
     "panel_icon": "mdi:web-box",
     "options": {
       "script_path": "/share/scripts/mycoolscript.sh",

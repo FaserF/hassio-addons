@@ -11,6 +11,7 @@
     "webui": "[PROTO:ssl]://[HOST]:[PORT:3000]",
     "map": ["ssl"],
     "ingress": true,
+    "init": false,
     "panel_icon": "mdi:wikipedia",
     "options": {
       "ssl": true,
