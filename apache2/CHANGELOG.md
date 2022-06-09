@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.1
+- fix custom php path not working since php8.1 update
+
 ## 2.4.0
 - fix update error
 - bump PHP to PHP8.1

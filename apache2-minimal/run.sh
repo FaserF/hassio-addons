@@ -4,19 +4,11 @@ website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
-phpini=$(bashio::config 'php_ini')
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-
-if [ $phpini = "get_file" ]; then
-  cp /etc/php7/php.ini /share/apache2addon_php.ini
-  echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
-  echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
-  exit 1
-fi
 
 rm -r $webrootdocker
 
@@ -39,16 +31,6 @@ if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! $username = "null" ] && [
   find $webrootdocker -type f -exec chown $username:www-data -R {} \;
 else
   echo "No username and/or password was provided. Skipping account set up."
-fi
-
-if [ $phpini != "default" ]; then
-  if [ -f $phpini ]; then
-    echo "Your custom php.ini at $phpini will be used."
-    rm /etc/php7/php.ini
-    cp $phpini /etc/php7/php.ini
-  else
-    echo "You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead."
-  fi
 fi
 
 if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
