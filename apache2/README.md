@@ -17,9 +17,9 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 
 ### Full Version
 The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP modules. <br /> 
-This docker image comes with: apache2 php7-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
-The following php7 extensions will be installed: php7 php7-dev php7-fpm php7-mysqli php7-opcache php7-gd php7-zlib php7-curl php7-phar php7-json php7-mbstring php7-mcrypt php7-zip php7-pdo php7-pdo_mysql php7-iconv php7-dom php7-session php7-intl php7-soap php7-fileinfo php7-xml<br /> 
-And it comes with php7 locales and [Mosquitto-PHP](https://github.com/mgdm/Mosquitto-PHP).
+This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
+The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd php81-zlib php81-curl php81-phar php81-json php81-mbstring php81-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml<br /> 
+And it comes with php locales.
 
 ### Minimal Version
 The [Minimal Version](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) of the Apache2 Addon without MariaDB and with no PHP modules. <br /> 
@@ -27,8 +27,8 @@ This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi
 
 ### Minimal Version with MariaDB
 The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br /> 
-This docker image comes with: apache2 php7-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
-The following php7 extensions will be installed: php7 php7-mysqli php7-opcache php7-curl php7-json php7-mbstring php7-mcrypt php7-zip
+This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
+The following php81 extensions will be installed: php81 php81-mysqli php81-opcache php81-curl php81-json php81-mbstring php81-mcrypt php81-zip
 
 ## Installation
 
@@ -86,9 +86,9 @@ Note: it has to be somewhere in the /share or /media folder! Other folders are n
 
 You can choose between the following options:
 
-default -> the default php7 php.ini file will be used
+default -> the default php81 php.ini file will be used
 
-get_file -> copies the default php7 php.ini file from the addon to /share/apache2addon_php.ini
+get_file -> copies the default php81 php.ini file from the addon to /share/apache2addon_php.ini
 
 path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
 
