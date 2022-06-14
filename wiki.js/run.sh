@@ -60,8 +60,8 @@ echo "  enabled: $ssl" >> /wiki/config.yml
 echo "  port: 3443" >> /wiki/config.yml
 echo "  provider: custom" >> /wiki/config.yml
 echo "  format: pem" >> /wiki/config.yml
-echo "  key: $keyfile" >> /wiki/config.yml
-echo "  cert: $certfile" >> /wiki/config.yml
+echo "  key: /ssl/$keyfile" >> /wiki/config.yml
+echo "  cert: /ssl/$certfile" >> /wiki/config.yml
 echo "pool:" >> /wiki/config.yml
 echo "bindIP: 0.0.0.0" >> /wiki/config.yml
 echo "logLevel: $log_level" >> /wiki/config.yml
