@@ -1,32 +1,13 @@
 ---
-#######################################
-#######################################
-## Dependabot automerge dependencies ##
-#######################################
-#######################################
+name: "Dependabot Automerge - Action"
 
-#
-# Documentation:
-# https://medium.com/@toufik.airane/automerge-github-dependabot-alerts-with-github-actions-7cd6f5763750
-#
+on:
+  pull_request:
 
-######################
-# name of the action #
-######################
-name: automerge on pull request
-
-###############
-# When to run #
-###############
-on: [pull_request]
-
-#################
-# Start the job #
-#################
 jobs:
-  automerge:
-    name: automerge dependabot
+  worker:
     runs-on: ubuntu-latest
+
     if: github.actor == 'dependabot[bot]'
     steps:
       #- name: Wait for CI/CT/CD to succeed
@@ -45,19 +26,19 @@ jobs:
       #    checkName: MegaLinter
       #    ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: merge
-        if: steps.wait-for-build.outputs.conclusion == 'success' || steps.wait-for-build.outputs.conclusion == 'skipped' && steps.wait-for-ci.outputs.conclusion == 'success'
+      - name: automerge
         uses: actions/github-script@v6
         with:
           script: |
-            github.pulls.createReview({
+            github.pullRequests.createReview({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
               pull_number: context.payload.pull_request.number,
               event: 'APPROVE'
             })
-            github.pulls.merge({
+            github.pullRequests.merge({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
               pull_number: context.payload.pull_request.number
             })
+          github-token: ${{github.token}}
