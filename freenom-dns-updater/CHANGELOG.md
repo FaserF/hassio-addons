@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+- Update Homeassistant Addon Base Python to 9.0.0
+
 ## 1.1.1
 - Fix openssl-dev error while installing
 

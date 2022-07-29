@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:12.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:12.2.2
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV LANG C.UTF-8
@@ -12,7 +12,7 @@ RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 
 #musl-locales/php-locales
-RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl 
+RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl
 RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
       && cd musl-locales-master \
