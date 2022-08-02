@@ -46,7 +46,7 @@
 
 ## 2.0.1
 - add php7-locales support
-- add Mosquitto-PHP support
+- add Mosquito-PHP support
 
 ## 2.0.0
 - add php7-xml support
@@ -68,7 +68,7 @@ this "normal" version with common used PHP Modules
 - add php7-iconv and php7-dom support
 
 ## 1.5.1
-- add option to recieve a apache2 config copy
+- add option to receive a apache2 config copy
 - fix PHP7-PDO syntax error in Dockerfile
 
 ## 1.5.0

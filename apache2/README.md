@@ -8,37 +8,37 @@ Apache2 Webserver for Homeassistant OS
 
 ## About
 
-The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.<br /> 
-The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.<br /> 
+The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.<br />
+The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.<br />
 The Apache HTTP Server is a project of The Apache Software Foundation.
 
 
 ## Different Versions
 
 ### Full Version
-The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP modules. <br /> 
-This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
-The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd php81-zlib php81-curl php81-phar php81-json php81-mbstring php81-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml<br /> 
+The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP modules. <br />
+This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
+The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd php81-zlib php81-curl php81-phar php81-json php81-mbstring php81-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml<br />
 And it comes with php locales.
 
 ### Minimal Version
-The [Minimal Version](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) of the Apache2 Addon without MariaDB and with no PHP modules. <br /> 
+The [Minimal Version](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) of the Apache2 Addon without MariaDB and with no PHP modules. <br />
 This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
 
 ### Minimal Version with MariaDB
-The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br /> 
-This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br /> 
+The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br />
+This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
 The following php81 extensions will be installed: php81 php81-mysqli php81-opcache php81-curl php81-json php81-mbstring php81-mcrypt php81-zip
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br /> 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
-Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+<br />
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
-Put your website files to /share/htdocs<br /> 
-Example File where your index.html should be: /share/htdocs/index.html <br /> 
+Put your website files to /share/htdocs<br />
+Example File where your index.html should be: /share/htdocs/index.html <br />
 
 If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
 
@@ -60,7 +60,7 @@ ssl: false
 certfile: itdoesntmatter_as_ssl_is_set_to_false
 keyfile: itdoesntmatter_as_ssl_is_set_to_false
 ```
-<br /> 
+<br />
 Recommended Example add-on configuration:
 
 ```yaml
@@ -101,8 +101,8 @@ default -> the default apache2 addon file will be used
 get_config -> Get a copy of the default apache2 addon config file to your /share folder.
 
 path/to/your/new/apache2.conf -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf <br />
-More Information: https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts<br /> <br /> 
-Please note, that I wont give any support if you are using custom apache2 config files and are recieving any apache2 errors!
+More Information: <https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts><br /> <br />
+Please note, that I wont give any support if you are using custom apache2 config files and are receiving any apache2 errors!
 
 ### Option: `website_name`
 
@@ -124,14 +124,14 @@ This is NOT used for authentification for your website. If you want this have a 
 
 Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
 
-If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/tree/master/openssl
+If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
 ## Authentification for your website
-Use a .htaccess file in combination with a .htpasswd file for this: https://www.htaccessredirect.net/ 
+Use a .htaccess file in combination with a .htpasswd file for this: <https://www.htaccessredirect.net/>
 
-Example .htaccess file: 
+Example .htaccess file:
 
 ```bash
 AuthType Basic
@@ -154,7 +154,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from the Apache Project. For more informatios please visit this page: https://httpd.apache.org/
+The original program is from the Apache Project. For more informatios please visit this page: <https://httpd.apache.org/>
 The hassio addon is brought to you by [FaserF].
 
 ## License

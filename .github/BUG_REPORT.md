@@ -3,14 +3,14 @@ about: Report an issue with one of the add-ons in this repository
 labels: bug
 assignees: FaserF
 body:
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         This issue form is for reporting bugs only!
 
         If you have a feature or enhancement request, please use the feature request template.
 
-  - type: textarea
+- type: textarea
     validations:
       required: true
     attributes:
@@ -20,11 +20,11 @@ body:
         maintainers. Tell us what you were trying to do and what happened.
 
         Provide a clear and concise description of what the problem is.
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         ## Environment
-  - type: dropdown
+- type: dropdown
     validations:
       required: true
     attributes:
@@ -44,7 +44,7 @@ body:
         - Wiki.JS
         - xqrepack
         - Other
-  - type: input
+- type: input
     id: version
     validations:
       required: true
@@ -53,13 +53,13 @@ body:
       placeholder: 1.2.3
       description: >
         Can be found in the Supervisor panel -> Addons -> AddonName -> Version.
-  - type: input
+- type: input
     attributes:
       label: What was the last working version of Addon?
       placeholder: 1.2.3
       description: >
         If known, otherwise leave blank.
-  - type: dropdown
+- type: dropdown
     validations:
       required: true
     attributes:
@@ -70,16 +70,16 @@ body:
         - Home Assistant OS
         - Home Assistant Supervised
         - Other
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         # Details
-  - type: textarea
+- type: textarea
     attributes:
       label: Anything in the logs that might be useful for us?
       description: For example, error message, or stack traces.
       render: txt
-  - type: textarea
+- type: textarea
     attributes:
       label: Additional information
       description: >

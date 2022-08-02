@@ -3,14 +3,14 @@ about: Report a feature request for one of the add-ons in this repository
 labels: enhancement
 assignees: FaserF
 body:
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         This issue form is for feature requests / ideas only!
 
         If you have a issue, please use the bug template.
 
-  - type: textarea
+- type: textarea
     validations:
       required: true
     attributes:
@@ -19,11 +19,11 @@ body:
         Describe the the idea of your feature request
 
         Provide a clear and concise description of what the idea is.
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         # Details
-  - type: dropdown
+- type: dropdown
     validations:
       required: true
     attributes:
@@ -43,7 +43,7 @@ body:
         - Wiki.JS
         - xqrepack
         - Other
-  - type: textarea
+- type: textarea
     attributes:
       label: Additional information
       description: >

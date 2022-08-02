@@ -3,9 +3,9 @@ config_file=$(bashio::config 'config_file')
 update_time_in_seconds=$(bashio::config 'update_time_in_seconds')
 
 if [ ! -f $config_file ]; then
-  echo "Seems there is no config file at $config_file"
-  echo "Check the path again. Exiting script now"
-  exit 1
+	echo "Seems there is no config file at $config_file"
+	echo "Check the path again. Exiting script now"
+	exit 1
 fi
 
 fdu update $config_file

@@ -7,12 +7,10 @@
   "startup": "services",
   "url": "https://github.com/FaserF/Assistant-Relay-for-Hassio",
   "boot": "auto",
-  "options": {
-  },
-  "schema": {
-  },
+  "options": {},
+  "schema": {},
   "host_network": true,
-  "webui":"http://[HOST]:[PORT:3000]",
+  "webui": "http://[HOST]:[PORT:3000]",
   "ingress": true,
   "panel_icon": "mdi:google-assistant"
 }
