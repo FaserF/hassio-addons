@@ -15,9 +15,9 @@ The OpenSSL Software Foundation (OSF) represents the OpenSSL project in most leg
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br /> 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
-Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+<br />
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 After starting the addon, a self signed certificate will be created and placed to:
 /ssl/key_openssl.pem
@@ -52,7 +52,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Tin
 
 ## Authors & contributors
 
-The original program is from the OpenSSL Project. For more informatios please visit this page: https://www.openssl.org/
+The original program is from the OpenSSL Project. For more informatios please visit this page: <https://www.openssl.org/>
 The hassio addon is brought to you by [FaserF].
 
 ## License
@@ -83,10 +83,7 @@ SOFTWARE.
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[commits]: https://github.com/FaserF/openssl/commits/master
-[contributors]: https://github.com/FaserF/hassio-addons/openssl/graphs/contributors
 [FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [issue]: https://github.com/FaserF/hassio-addons/issues
-[repository]: https://github.com/FaserF/hassio-addons/openssl
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg

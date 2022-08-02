@@ -12,9 +12,9 @@ Make documentation a joy to write using Wiki.js's beautiful and intuitive interf
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br /> 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
-Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+<br />
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 Please ensure that the MariaDB Addon is installed!
 
@@ -36,7 +36,7 @@ keyfile: privkey.pem
 
 Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
 
-If you need a self-signed certificate, have a look at my openssl addon: https://github.com/FaserF/hassio-addons/tree/master/openssl
+If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
@@ -53,7 +53,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from the Requarks Team [NGPixel][NGPixel]. For more informations, please visit this page: https://github.com/Requarks/wiki
+The original program is from the Requarks Team [NGPixel][NGPixel]. For more informations, please visit this page: <https://github.com/Requarks/wiki>
 The hassio addon is brought to you by [FaserF].
 
 ## License
@@ -87,5 +87,4 @@ SOFTWARE.
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [FaserF]: https://github.com/FaserF/
 [issue]: https://github.com/FaserF/hassio-addons/issues
-[repository]: https://github.com/FaserF/hassio-addons/wiki.js
 [NGPixel]: https://github.com/NGPixel

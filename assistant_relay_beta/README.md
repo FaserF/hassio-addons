@@ -5,31 +5,31 @@
 Assistant Relay BETA for Homeassistant OS
 
 ## About
-!This is the beta version!<br /> 
+!This is the beta version!<br />
 
-Assistant Relay is no longer maintained by Apipa169, therefore this fork exists. I will NOT FIX ANY BUGS! This fork is just to keep the base images up to date to reduce security issues.<br /> 
-<br /> 
-This add-on brings Assistant Relay (by greghesp) to Hass.io. The original Hassio Addon was by Apipa169, but he stopped maintaining it.<br /> 
-Assistant Relay is a Node.js server that exposes the Google Assistant as a REST API.<br /> 
-Send Assistant Relay any query you would send the Google Assistant SDK, and get a response back.<br /> 
+Assistant Relay is no longer maintained by Apipa169, therefore this fork exists. I will NOT FIX ANY BUGS! This fork is just to keep the base images up to date to reduce security issues.<br />
+<br />
+This add-on brings Assistant Relay (by greghesp) to Hass.io. The original Hassio Addon was by Apipa169, but he stopped maintaining it.<br />
+Assistant Relay is a Node.js server that exposes the Google Assistant as a REST API.<br />
+Send Assistant Relay any query you would send the Google Assistant SDK, and get a response back.<br />
 It also supports the Google Home Broadcast command so you can send audio notifications to your Google Home devices, without interrupting music.
 
 ## Known v4 issues
-- Starting the add-on can be a bit slow. 
+- Starting the add-on can be a bit slow.
 - The first time you start the addon you will get the error "Error: Required port not given". A restart of the add-on will solve this.
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br /> 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br /> 
-Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+<br />
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 ## Configuration
 
 1. You do not need to configure anything at the add-on page. Click "Start" to run the add-on
 2. Check the log below to see if it's running.
-3. In the browser go to http://[IP]:3000 in your browser.
+3. In the browser go to <http://[IP>]:3000 in your browser.
 4. Follow the instructions in the browser.
 5. You can now use Assistant Relay.
 
@@ -53,8 +53,8 @@ As the official dev has stopped maintaining it I WILL NOT give any support! This
 
 ## Authors & contributors
 
-- This add-on is using (the awesome) [Assistant Relay](https://github.com/greghesp/assistant-relay) made by Greghesp.<br /> 
-- The original HA Addon was made by [Apipa169](https://github.com/Apipa169/Assistant-Relay-for-Hassio)<br /> 
+- This add-on is using (the awesome) [Assistant Relay](https://github.com/greghesp/assistant-relay) made by Greghesp.<br />
+- The original HA Addon was made by [Apipa169](https://github.com/Apipa169/Assistant-Relay-for-Hassio)<br />
 
 The updated hassio addon is brought to you by [FaserF].
 
@@ -65,4 +65,3 @@ The updated hassio addon is brought to you by [FaserF].
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-no-red.svg
 [FaserF]: https://github.com/FaserF/
-[issue]: https://github.com/FaserF/hassio-addons/issues

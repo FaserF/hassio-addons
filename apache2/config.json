@@ -1,45 +1,45 @@
-  {
-    "name": "Apache2",
-    "version": "2.4.2",
-    "slug": "apache2",
-    "description": "OpenSource Webserver",
-    "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
-    "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
-    "startup": "application",
-    "boot": "auto",
-    "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
-    "map": ["share:rw", "media:rw", "ssl"],
-    "ingress": true,
-    "init": false,
-    "panel_icon": "mdi:web-box",
-    "options": {
-      "document_root": "/share/htdocs",
-      "php_ini": "default",
-      "default_conf": "default",
-      "default_ssl_conf": "default",
-      "website_name":null,
-      "ssl": true,
-      "certfile": "fullchain.pem",
-      "keyfile": "privkey.pem"
-    },
-    "schema": {
-      "document_root":"str",
-      "php_ini":"str",
-      "default_conf":"str",
-      "default_ssl_conf":"str",
-      "website_name":"str",
-      "username":"str?",
-      "password":"str?",
-      "ssl": "bool",
-      "certfile": "str",
-      "keyfile": "str"
-    },
-    "ports": {
-      "80/tcp": 80,
-      "443": 443
-    },
-    "ports_description": {
-      "80/tcp": "Web interface http",
-      "443/tcp": "SSL Web interface"
-    }
+{
+  "name": "Apache2",
+  "version": "2.4.2",
+  "slug": "apache2",
+  "description": "OpenSource Webserver",
+  "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
+  "boot": "auto",
+  "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
+  "map": ["share:rw", "media:rw", "ssl"],
+  "ingress": true,
+  "init": false,
+  "panel_icon": "mdi:web-box",
+  "options": {
+    "document_root": "/share/htdocs",
+    "php_ini": "default",
+    "default_conf": "default",
+    "default_ssl_conf": "default",
+    "website_name": null,
+    "ssl": true,
+    "certfile": "fullchain.pem",
+    "keyfile": "privkey.pem"
+  },
+  "schema": {
+    "document_root": "str",
+    "php_ini": "str",
+    "default_conf": "str",
+    "default_ssl_conf": "str",
+    "website_name": "str",
+    "username": "str?",
+    "password": "str?",
+    "ssl": "bool",
+    "certfile": "str",
+    "keyfile": "str"
+  },
+  "ports": {
+    "80/tcp": 80,
+    "443": 443
+  },
+  "ports_description": {
+    "80/tcp": "Web interface http",
+    "443/tcp": "SSL Web interface"
   }
+}

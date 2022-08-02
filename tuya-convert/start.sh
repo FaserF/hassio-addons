@@ -12,7 +12,7 @@ echo selection=$selection >>config.txt
 echo backupfolder=$backup_path >>config.txt
 
 if [ "$accept_eula" = "true" ]; then
-	echo "EULA was accpeted - starting script"
+	echo "EULA was accepted - starting script"
 	touch ./scripts/eula_accepted
 	ls -l
 	./start_flash.sh

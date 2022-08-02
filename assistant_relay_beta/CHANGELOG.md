@@ -1,5 +1,5 @@
 ## Assistant Relay v4 (DEV!)
-**- Breaking change** 
+**- Breaking change**
 
 You will need to do the setup again
 

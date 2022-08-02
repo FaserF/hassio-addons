@@ -9,7 +9,7 @@
 ## 2.4.0
 - fix update error
 - bump PHP to PHP8.1
-- drop support for Mosquitto-PHP (not supported by the original dev anymore and incompatible with PHP8.1)
+- drop support for Mosquito-PHP (not supported by the original dev anymore and incompatible with PHP8.1)
 
 ## 2.3.0
 - bump hassio-addon-base to V12.0.0
