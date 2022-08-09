@@ -8,7 +8,7 @@ RUN mkdir /run/apache2
 
 RUN apk --no-cache add apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
 RUN apk --no-cache add php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd zlib php81-curl php81-phar php81-mbstring php8-pecl-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml php81-ctype
-RUN apk --no-cache add mosquito mosquito-dev
+RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 
 #musl-locales/php-locales

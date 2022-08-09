@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.3
+- fix installation error caused by mosquitto
+
 ## 2.4.2
 - bump hassio-addon-base to V12.2.2
 
@@ -46,7 +49,7 @@
 
 ## 2.0.1
 - add php7-locales support
-- add Mosquito-PHP support
+- add Mosquitto-PHP support
 
 ## 2.0.0
 - add php7-xml support
