@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.4
+- add support for xdebug
+
 ## 2.4.3
 - fix installation error caused by mosquitto
 
