@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+- bump hassio-addon-base to V12.2.3
+- Update Wiki.JS to 2.5.287
+
 ## 1.3.2
 - bump hassio-addon-base to V12.2.2
 - Update Wiki.JS to 2.5.285
