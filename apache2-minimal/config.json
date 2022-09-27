@@ -27,7 +27,7 @@
     "default_ssl_conf": "str",
     "website_name": "str",
     "username": "str?",
-    "password": "str?",
+    "password": "password?",
     "ssl": "bool",
     "certfile": "str",
     "keyfile": "str"
