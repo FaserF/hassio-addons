@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.5
+- add support for pdo_sqlite
+- bump hassio-addon-base to V12.2.4
+
 ## 2.4.4
 - add support for xdebug
 
