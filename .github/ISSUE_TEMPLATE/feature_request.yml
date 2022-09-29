@@ -22,12 +22,29 @@ body:
     attributes:
       value: |
         ## Environment
-  - type: input
-    id: integration_name
+  - type: dropdown
+    validations:
+      required: true
     attributes:
       label: For which Add-On
       description: >
         The name of the Addon you are wishing a new feature. For example: Apache2
+      options:
+        - Apache2
+        - Apache2-Minimal-MariaDB
+        - Apache2-Minimal
+        - Assistant Relay
+        - Bash_Script_Executer
+        - BT-MQTT-Gateway
+        - Freenom-DNS-Updater
+        - Netboot-XYZ
+        - OpenSSL
+        - Switch_LAN_Play
+        - Switch_LAN_Play_Server
+        - Tuya-Convert
+        - Wiki.JS
+        - xqrepack
+        - Other
   - type: markdown
     attributes:
       value: |
