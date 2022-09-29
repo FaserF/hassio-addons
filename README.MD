@@ -94,7 +94,7 @@ Support: Yes
 Got questions?
 
 You can [open an issue here][issue] GitHub. <br /> 
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on amd64 running on a Fujitsu Futro S740.
 
 ## License
 

@@ -1,20 +1,45 @@
----
 name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: enhancement
-assignees: FaserF
+description: Suggest an idea for this project for one of FaserF's Custom Addon's
+title: "[Feature Request]: "
+labels: ["enhancement"]
+assignees:
+  - FaserF
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This feature request request form is for feature requests only!
 
----
-
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+        If you have a bug or issue request, please use the bug report template!
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: The request
+      description: >-
+        A clear and concise description of what you want to happen.
+  - type: markdown
+    attributes:
+      value: |
+        ## Environment
+  - type: input
+    id: integration_name
+    attributes:
+      label: For which Add-On
+      description: >
+        The name of the Addon you are wishing a new feature. For example: Apache2
+  - type: markdown
+    attributes:
+      value: |
+        # Details
+  - type: textarea
+    attributes:
+      label: Is your feature request related to a problem?
+      render: txt
+      description: >-
+        A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: >
+        If you have any additional information for us, use the field below.

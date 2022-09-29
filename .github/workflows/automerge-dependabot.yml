@@ -4,41 +4,18 @@ name: "Dependabot Automerge - Action"
 on:
   pull_request:
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
-  worker:
+  auto-merge:
+    name: DependabotMerge
     runs-on: ubuntu-latest
-
-    if: github.actor == 'dependabot[bot]'
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is dependabot
     steps:
-      #- name: Wait for CI/CT/CD to succeed
-      #  uses: fountainhead/action-wait-for-check@v1.0.0
-      #  id: wait-for-build
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    checkName: Tests + Deploy Docker Image - DEV
-      #    ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      #- name: Wait for CI/CT/CD to succeed pt2
-      #  uses: fountainhead/action-wait-for-check@v1.0.0
-      #  id: wait-for-ci
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    checkName: MegaLinter
-      #    ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: automerge
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.pullRequests.createReview({
-              owner: context.payload.repository.owner.login,
-              repo: context.payload.repository.name,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE'
-            })
-            github.pullRequests.merge({
-              owner: context.payload.repository.owner.login,
-              repo: context.payload.repository.name,
-              pull_number: context.payload.pull_request.number
-            })
-          github-token: ${{github.token}}
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL" # Use Github CLI to merge automatically the PR
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
