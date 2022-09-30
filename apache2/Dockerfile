@@ -1,7 +1,6 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:12.2.4
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.4
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ENV LANG C.UTF-8
 
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2

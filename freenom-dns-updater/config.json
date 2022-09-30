@@ -1,6 +1,6 @@
 {
   "name": "Freenom-dns-updater",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "slug": "freenom-dns-updater",
   "description": "Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, Auto renew domains and more",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater",

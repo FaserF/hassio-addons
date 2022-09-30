@@ -1,7 +1,6 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base-python/amd64:8.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:9.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ENV LANG C.UTF-8
 
 #Prepare Node Stuff
 ENV NODE_VERSION 16.9.1

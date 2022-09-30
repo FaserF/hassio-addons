@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2
+- bump hassio-addon-base to V12.2.4
+- Improve docker base installation
+
 ## 1.4.1
 - bump hassio-addon-base to V12.2.2
 

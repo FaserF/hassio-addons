@@ -1,7 +1,6 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:12.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.4
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ENV LANG C.UTF-8
 
 # Install requirements for add-on
 RUN apk -U --no-cache add libpcap-dev

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.8
+- bump hassio-addon-base to V12.2.4
+
 ## 0.0.7
 - update alpine base image to 11.0.0
 
