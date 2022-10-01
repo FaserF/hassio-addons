@@ -2,6 +2,7 @@
 
 ## 2.4.6
 - fixed an error where config parameters could not be read and lead to an error after starting the addon
+- fixed an error with php opcache
 
 ## 2.4.5
 - add support for pdo_sqlite

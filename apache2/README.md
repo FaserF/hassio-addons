@@ -18,7 +18,7 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 ### Full Version
 The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP 8.1 modules. <br />
 This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
-The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd php81-zlib php81-curl php81-phar php81-json php81-mbstring php81-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml<br />
+The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd zlib php81-curl php81-phar php81-mbstring php8-pecl-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml php81-ctype php81-pecl-xdebug php81-pdo_sqlite<br />
 Mosquitto & Mosquitto Dev<br />
 And it comes with php locales.
 
@@ -123,7 +123,7 @@ This is NOT used for authentification for your website. If you want this have a 
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
+Enables/Disables SSL (HTTPS) on the web interface.
 
 If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
