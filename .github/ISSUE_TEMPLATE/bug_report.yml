@@ -37,11 +37,14 @@ body:
 
         [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
   - type: input
+    id: version_integration
+    validations:
+      required: true
     attributes:
-      label: What was the last working version of Home Assistant Core?
-      placeholder: core-
+      label: What version of the addon has the issue?
+      placeholder: 
       description: >
-        If known, otherwise leave blank.
+        The version of the addon you are currently using.
   - type: dropdown
     validations:
       required: true
