@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/usr/bin/with-contenv bashio
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')

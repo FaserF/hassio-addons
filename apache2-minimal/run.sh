@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/usr/bin/with-contenv bashio
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
@@ -14,6 +14,7 @@ rm -r $webrootdocker
 
 if [ ! -d $DocumentRoot ]; then
 	echo "You haven't put your website to $DocumentRoot"
+	echo "DEBUGGING: $certfile $website_name $ssl"
 	echo "A default website will now be used"
 	mkdir $webrootdocker
 	cp /index.html $webrootdocker
