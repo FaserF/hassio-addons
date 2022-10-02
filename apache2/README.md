@@ -4,7 +4,7 @@
 
 Apache2 Webserver for Homeassistant OS
 
-![Ingress Support](images/ingress.png)
+![Ingress Support](../images/apache2/ingress.png)
 
 ## About
 

@@ -160,6 +160,8 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
+mkdir /usr/lib/php81/modules/opcache
+
 echo "Here is your web file architecture."
 ls -l $webrootdocker
 

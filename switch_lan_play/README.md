@@ -4,7 +4,7 @@
 
 Nintendo Switch LAN-Play Client for Homeassistant OS
 
-![The Lan-Play Home Home Assistant Add-on](images/screenshot.png)
+![The Lan-Play Home Home Assistant Add-on](../images/switch_lan_play/screenshot.png)
 
 ## About
 

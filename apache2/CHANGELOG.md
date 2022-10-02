@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.7
+- fixed opcache creation dir error
+- free up some more space by outsourcing addon screenshots
+
 ## 2.4.6
 - fixed an error where config parameters could not be read and lead to an error after starting the addon
 - fixed an error with php opcache
