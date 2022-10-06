@@ -59,6 +59,11 @@ Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/op
 
 Support: Yes
 
+### pterodactyl
+Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl
+
+Support: Yes
+
 ### Silverstrike
 ~~Personal finance management made easy: https://github.com/FaserF/hassio-addons/tree/master/silverstrike~~
 
