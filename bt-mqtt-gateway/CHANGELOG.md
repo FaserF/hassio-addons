@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+- Fixed an installation issue
+
 ## 1.1.0
 - Fixed an issue where the config file wont be detected correctly
 - Rebase the dockerfile on hassio addon base to be independent from the original Dockerfile

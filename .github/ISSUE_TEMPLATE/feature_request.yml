@@ -39,6 +39,7 @@ body:
         - Freenom-DNS-Updater
         - Netboot-XYZ
         - OpenSSL
+        - pterodactyl
         - Switch_LAN_Play
         - Switch_LAN_Play_Server
         - Tuya-Convert
