@@ -6,11 +6,9 @@ FROM ${BUILD_FROM}
 #RUN mkdir -p '/opt/freenom_dns_updater'
 #COPY . /opt/freenom_dns_updater/
 #WORKDIR /opt/freenom_dns_updater
+RUN apk add --no-cache zlib openssl-dev binutils py3-pip
 RUN pip install freenom-dns-updater
 #RUN rm -rf /opt/freenom_dns_updater
-
-#apk add
-RUN apk add --no-cache zlib openssl-dev binutils
 
 # Copy data for add-on
 #ENTRYPOINT [ "fdu" ]
