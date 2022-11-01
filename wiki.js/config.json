@@ -33,7 +33,7 @@
     "ssl": "bool",
     "certfile": "str",
     "keyfile": "str",
-    "log_level": "list(error|warn|info|verbose|debug|silly)?",
+    "log_level": "list(error|warn|info|debug)?",
     "reset_database": "bool?"
   },
   "ports": {

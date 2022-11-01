@@ -1,5 +1,5 @@
 # Home Assistant Community Add-on: pterodactyl Panel
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 ![Project Maintenance][maintenance-shield]
 
 pterodactyl Panel Gameserver for Homeassistant OS
@@ -18,9 +18,11 @@ Stop settling for less. Make game servers a first class citizen on your platform
 The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
+## Configuration
+
 The MariaDB Integration is needed before installing this one!
 
-## Configuration
+Afterwards create a new user in the MariaDB Addon called "pterodactyl" with full permissions on the database "panel"
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
@@ -46,7 +48,7 @@ keyfile: privkey.pem
 
 ### Option: `password`
 
-This option is required. The password to sign in after installation.
+This option is required. The password for the mariadb "pterodactyl" user.
 
 ### Option: `ssl`
 
@@ -55,6 +57,10 @@ Enables/Disables SSL (HTTPS) on the web interface.
 If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
+
+### Option: `reset_database`
+
+Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
 
 ## Ingress
 

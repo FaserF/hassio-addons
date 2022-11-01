@@ -1,5 +1,5 @@
 # Home Assistant Community Add-on: pterodactyl Wings (Daemon)
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 ![Project Maintenance][maintenance-shield]
 
 pterodactyl Wings (Daemon) Gameserver for Homeassistant OS
@@ -27,34 +27,17 @@ The MariaDB Integration is needed before installing this one!
 Example add-on configuration:
 
 ```yaml
-password: mySecretPassword
-ssl: false
-certfile: itdoesntmatter_as_ssl_is_set_to_false
-keyfile: itdoesntmatter_as_ssl_is_set_to_false
+config_file: /share/path/to/config.yml
 ```
 <br />
-Recommended Example add-on configuration:
-
-```yaml
-password: mySecretPassword
-ssl: true
-certfile: fullchain.pem
-keyfile: privkey.pem
-```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
-### Option: `password`
+### Option: `config_file`
 
-This option is required. The password to sign in after installation.
+This option is required. The path to your config.yml file.
 
-### Option: `ssl`
-
-Enables/Disables SSL (HTTPS) on the web interface.
-
-If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
-
-**Note**: _The files MUST be stored in `/ssl/`, which is the default_
+**Note**: _The file MUST be stored somewhere within the `/share/` folder_
 
 ## Ingress
 
@@ -101,6 +84,5 @@ SOFTWARE.
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [FaserF]: https://github.com/FaserF/
 [issue]: https://github.com/FaserF/hassio-addons/issues

@@ -14,12 +14,14 @@ RUN apk add yarn;
 
 RUN \
     curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz \
+    #tar -xzvf panel.tar.gz; \
     chmod -R 755 storage/* bootstrap/cache; \
     find storage -type d > .storage.tmpl; \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
     cp .env.example .env; \
     composer install --ansi --no-dev --optimize-autoloader; \
-    chown -R nginx:nginx *;
+    chown -R nginx:nginx *; \
+    rm -rf panel.tar.gz;
 
 RUN \
     yarn install --production; \

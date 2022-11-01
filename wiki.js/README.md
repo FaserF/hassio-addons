@@ -40,6 +40,10 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
+### Option: `reset_database`
+
+Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
+
 ## Ingress
 
 This addon currently does not fully support ingress! Hopefully that will come soon.
