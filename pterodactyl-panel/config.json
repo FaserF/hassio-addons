@@ -1,15 +1,12 @@
 {
-  "name": "pterodactyl Gameserver",
-  "version": "0.1.0",
-  "slug": "pterodactyl",
+  "name": "pterodactyl Panel Gameserver",
+  "version": "1.0.0",
+  "slug": "pterodactyl_panel",
   "description": "OpenSource Gameserver",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/pterodactyl",
   "arch": [
-    "armhf",
-    "armv7",
     "aarch64",
-    "amd64",
-    "i386"
+    "amd64"
   ],
   "startup": "application",
   "boot": "auto",
@@ -23,16 +20,19 @@
   "init": false,
   "panel_icon": "mdi:controller",
   "options": {
+    "config_file": null,
     "password": null,
     "ssl": true,
     "certfile": "fullchain.pem",
     "keyfile": "privkey.pem"
   },
   "schema": {
+    "config_file": "str",
     "password": "password",
     "ssl": "bool",
     "certfile": "str",
-    "keyfile": "str"
+    "keyfile": "str",
+    "reset_database": "bool?"
   },
   "ports": {
     "80/tcp": 80,

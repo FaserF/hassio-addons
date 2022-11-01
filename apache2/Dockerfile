@@ -14,9 +14,9 @@ RUN apk --no-cache add mariadb-client
 RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl
 RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
-      && cd musl-locales-master \
-      && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-      && cd .. && rm -r musl-locales-master
+    && cd musl-locales-master \
+    && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+    && cd .. && rm -r musl-locales-master
 
 #Configure Logging
 RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf

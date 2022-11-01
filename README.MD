@@ -60,7 +60,9 @@ Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/op
 Support: Yes
 
 ### pterodactyl
-Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl
+Opensource GameServer: 
+Panel: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
+Wings (Daemon): https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings
 
 Support: Yes
 
