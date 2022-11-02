@@ -29,9 +29,9 @@ else
 	echo "${db} database does not exist, creating it now"
 	#echo "CREATE USER IF NOT EXISTS 'pterodactyl'' IDENTIFIED BY '${password_mariadb}';" |
 	#	mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
-	echo "CREATE DATABASE IF NOT EXISTS panel;" |
+	echo "CREATE DATABASE IF NOT EXISTS ${db};" |
 		mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
-	echo "GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl' WITH GRANT OPTION;"|
+	echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' WITH GRANT OPTION;"|
 		mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
 fi
 
@@ -41,9 +41,9 @@ cat .storage.tmpl | while read line; do
     mkdir -p "/data/${line}"
 done
 
-cd /var/www/html
+cd /var/www/html/
 
-ls -l /var/www/html
+ls -d -l /var/www/html/
 
 # Generate config file if it doesnt exist
 if [ ! -e /data/pterodactyl.conf ]; then
@@ -93,7 +93,7 @@ fi
 echo "--- Starting Pterodactyl Panel ---"
 
 # Run these as jobs and monitor their pid status
-/usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 & php_service_pid=$!
+/usr/sbin/php81-fpm7 --nodaemonize -c /etc/php81 & php_service_pid=$!
 /usr/sbin/nginx -g "daemon off;" & nginx_service_pid=$!
 
 ## Start ##
