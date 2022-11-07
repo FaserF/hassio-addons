@@ -35,38 +35,29 @@ else
 		mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
 fi
 
-# Runs the initial configuration on every startup
-echo ""
-cat .storage.tmpl | while read line; do
-    mkdir -p "/data/${line}"
-done
+if [ $host = "localhost" ]; then
+    host=127.0.0.1
+fi
 
 cd /var/www/html/
 
-ls -d -l /var/www/html/
-
-# Generate config file if it doesnt exist
-if [ ! -e /data/pterodactyl.conf ]; then
-    echo ""
-    echo "[setup] Generating Application Key..."
-
-    # Generate base template
-    touch /data/pterodactyl.conf
-    echo "##" > /data/pterodactyl.conf
-    echo "# Generated on:" $(date +"%B %d %Y, %H:%M:%S") >> /data/pterodactyl.conf
-    echo "# This file was generated on first start and contains " >> /data/pterodactyl.conf
-    echo "# the key for sensitive information. All panel configuration " >> /data/pterodactyl.conf
-    echo "# can be done here using the normal method (NGINX not included!)," >> /data/pterodactyl.conf
-    echo "# or using Docker's environment variables parameter." >> /data/pterodactyl.conf
-    echo "##" >> /data/pterodactyl.conf
-    echo "" >> /data/pterodactyl.conf
-    echo "APP_KEY=ChameMeAsS00nAsPossible" >> /data/pterodactyl.conf
-
-    sleep 1
-    php81 artisan key:generate --force --no-interaction
-
-    echo "[setup] Application Key Generated"
+echo "[setup] Comparing environment settings file from /share/pterodactyl/.env"
+setup_user=false
+if [ ! -d /share/pterodactyl/ ]; then
+    mkdir /share/pterodactyl/
 fi
+if [ ! -f /share/pterodactyl/.env ]; then
+    echo "No old config file found, starting first setup of pterodactyl"
+    echo "[setup] Generating Application Key..."
+    php81 artisan key:generate --no-interaction --force
+    echo "[setup] Application Key Generated"
+    cp .env /share/pterodactyl/.env
+    setup_user=true
+else
+    echo "config file exists, skipping first setup of pterodactyl and using existing config from /share/pterodactyl/.env"
+    cp /share/pterodactyl/.env .env
+fi
+
 echo ""
 echo "[setup] Clearing cache/views..."
 
@@ -74,27 +65,51 @@ php81 artisan view:clear
 php81 artisan config:clear
 
 echo ""
-echo "[setup] Migrating/Seeding database..."
+echo "[setup] Setup database credentials..."
+php81 artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}"
 
-php81 artisan migrate --seed --force
-
-# Restore /data directory ownership to nginx.
-chown -R nginx:nginx /data/
-
-# Checks if SSL certificate and key exists, otherwise default to http traffic
-if [ -f "${SSL_CERT}" ] && [ -f "${SSL_CERT_KEY}" ]; then
-    envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
-    < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
-else
-    echo "[setup] Warning: SSL Certificate was not specified or doesnt exist, using HTTP."
-    cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
+if [ $setup_user = "true" ]; then
+    echo "[setup] Migrating/Seeding database..."
+    php81 artisan migrate --seed --no-interaction --force
 fi
 
-echo "--- Starting Pterodactyl Panel ---"
+if [ ! -f /share/pterodactyl/nginx_default.conf ]; then
+    # Checks if SSL certificate and key exists, otherwise default to http traffic
+    if bashio::config.true 'ssl'; then
+        echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT},${SSL_CERT_KEY}."
+        envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
+        < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
+    else
+        echo "[setup] Warning: SSL Certificate was not specified or doesnt exist, using HTTP."
+        cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
+    fi
+    cp /etc/nginx/conf.d/default.conf /share/pterodactyl/nginx_default.conf
+else
+    cp /share/pterodactyl/nginx_default.conf /etc/nginx/conf.d/default.conf
+fi
+
+echo "[start] Starting nginx and php - afterwards Pterodactyl will be started"
+#chown -R nginx:nginx /var/www/html/
+# Restore /data directory ownership to nginx.
+if [ ! -d /data/storage/logs/ ]; then
+    mkdir -p /data/storage/logs/
+fi
+#chown -R nginx:nginx /data/
 
 # Run these as jobs and monitor their pid status
-/usr/sbin/php81-fpm7 --nodaemonize -c /etc/php81 & php_service_pid=$!
+/usr/sbin/php-fpm81 --nodaemonize -c /etc/php81 & php_service_pid=$!
 /usr/sbin/nginx -g "daemon off;" & nginx_service_pid=$!
+
+if [ $setup_user = "true" ]; then
+    echo "[setup] Creating default user..."
+    php81 artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
+
+    echo "For the first login use admin@example.com / admin as user and your database password to sign in."
+    echo "Please ensure to change these credentials as soon as possible."
+fi
+
+echo "[start] Starting Pterodactyl Panel"
 
 ## Start ##
 exec php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+#exec tail -f /var/log/nginx/pterodactyl.app-error.log

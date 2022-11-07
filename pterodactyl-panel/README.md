@@ -8,6 +8,8 @@ pterodactyl Panel Gameserver for Homeassistant OS
 
 ## About
 
+WARNING: Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.
+
 Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.<br />
 Stop settling for less. Make game servers a first class citizen on your platform.
 
