@@ -22,12 +22,6 @@ Normal (comes with the most used PHP Extensions, MariaDB): https://github.com/Fa
 
 Support: Yes
 
-### Assistant Relay
-Assistant Relay is a Node.js server that exposes the Google Assistant as a REST API.: https://github.com/FaserF/hassio-addons/tree/master/assistant_relay<br /> 
-Beta Version: https://github.com/FaserF/hassio-addons/tree/master/assistant_relay_beta
-
-Support: No (Deprecated by the original devs, only security patch suport by me)
-
 ### Bash Script Executer
 This is a simple Docker Image to execute bash scripts within Homeassistant OS: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
 
@@ -78,6 +72,11 @@ Support: Yes
 
 ### Switch-LAN-Play Server
 Nintendo Switch LAN Play Server - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
+
+Support: Yes
+
+### Tado Auto Assist
+A python script that automatically adjusts the temperature in your home at leaving or arriving based on your settings from tado app and automatically switch off the heating (activating Open Window Mode) in the room where tado TRV detects an open window: https://github.com/FaserF/hassio-addons/tree/master/tado_aa
 
 Support: Yes
 
