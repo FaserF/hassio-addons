@@ -4,20 +4,12 @@
   "slug": "pterodactyl_panel",
   "description": "OpenSource Gameserver",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/pterodactyl",
-  "arch": [
-    "aarch64",
-    "amd64"
-  ],
-  "services": [
-    "mysql:need"
-  ],
+  "arch": ["aarch64", "amd64"],
+  "services": ["mysql:need"],
   "startup": "application",
   "boot": "auto",
   "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
-  "map": [
-    "share:rw",
-    "ssl"
-  ],
+  "map": ["share:rw", "ssl"],
   "ingress": true,
   "init": false,
   "panel_icon": "mdi:controller",
@@ -42,4 +34,4 @@
     "80/tcp": "Web interface http",
     "443/tcp": "SSL Web interface"
   }
-} 
+}

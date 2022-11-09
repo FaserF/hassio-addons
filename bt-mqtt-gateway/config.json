@@ -7,9 +7,7 @@
   "host_network": true,
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
   "startup": "services",
-  "services": [
-    "mqtt:want"
-  ],
+  "services": ["mqtt:want"],
   "boot": "auto",
   "map": ["share"],
   "init": false,
