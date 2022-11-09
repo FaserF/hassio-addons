@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.5
+- bump hassio-addon-base to V12.2.6
+- Update Wiki.JS to 2.5.291
+
 ## 1.3.4
 - bump hassio-addon-base to V12.2.4
 - Add support for 32bit CPUs
