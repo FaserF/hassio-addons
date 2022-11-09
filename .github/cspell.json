@@ -1,11 +1,5 @@
 {
   "language": "en,de",
-  "words": [
-    "mosquitto"
-  ],
-  "ignorePaths": [
-    ".github/*",
-    ".git",
-    ".gitignore"
-  ]
+  "words": ["mosquitto"],
+  "ignorePaths": [".github/*", ".git", ".gitignore"]
 }

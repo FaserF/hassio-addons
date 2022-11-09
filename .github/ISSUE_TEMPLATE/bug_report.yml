@@ -42,7 +42,7 @@ body:
       required: true
     attributes:
       label: What version of the addon has the issue?
-      placeholder: 
+      placeholder:
       description: >
         The version of the addon you are currently using.
   - type: dropdown

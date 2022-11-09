@@ -30,7 +30,7 @@ password: mySecretPassword
 
 ### Option: `username`
 
-Defines your tado username (usually your email adress).
+Defines your tado username (usually your email address).
 
 ### Option: `password`
 
