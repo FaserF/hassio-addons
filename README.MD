@@ -56,6 +56,7 @@ Support: Yes
 ### pterodactyl
 Opensource GameServer: 
 Panel: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
+
 Wings (Daemon): https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings
 
 Support: Yes
