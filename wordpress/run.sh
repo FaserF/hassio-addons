@@ -3,14 +3,14 @@
 
 [ -f /run-pre.sh ] && /run-pre.sh
 
-if [ ! -d /usr/html ] ; then
-  echo "[i] Creating directories..."
-  mkdir -p /usr/html
-  echo "[i] Fixing permissions..."
-  chown -R nginx:nginx /usr/html
+if [ ! -d /usr/html ]; then
+	echo "[i] Creating directories..."
+	mkdir -p /usr/html
+	echo "[i] Fixing permissions..."
+	chown -R nginx:nginx /usr/html
 else
-  echo "[i] Fixing permissions..."
-  chown -R nginx:nginx /usr/html
+	echo "[i] Fixing permissions..."
+	chown -R nginx:nginx /usr/html
 fi
 
 chown -R nginx:www-data /usr/html
