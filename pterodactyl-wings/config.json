@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "slug": "pterodactyl_wings",
   "description": "OpenSource Gameserver",
-  "url": "https://github.com/FaserF/hassio-addons/tree/master/pterodactyl",
+  "url": "https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings",
   "arch": ["aarch64", "amd64"],
   "startup": "application",
   "boot": "auto",
