@@ -2,7 +2,7 @@
 
 ## 2.4.8
 - bump hassio-addon-base to V12.2.7
-- add support for pecl ssh2
+- prepare support for pecl ssh2 (not working yet)
 
 ## 2.4.7
 - fixed opcache creation dir error
