@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.8
+- bump hassio-addon-base to V12.2.7
+- add support for pecl ssh2
+
 ## 2.4.7
 - fixed opcache creation dir error
 - free up some more space by outsourcing addon screenshots

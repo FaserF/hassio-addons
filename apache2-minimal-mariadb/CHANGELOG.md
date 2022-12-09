@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.8
+- bump hassio-addon-base to V12.2.7
+
 ## 2.4.6
 - fixed an error where config parameters could not be read and lead to an error after starting the addon
 
