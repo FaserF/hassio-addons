@@ -8,7 +8,8 @@ pterodactyl Panel Gameserver for Homeassistant OS
 
 ## About
 
-WARNING: Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.
+**WARNING: Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.**
+**For me I am unable to login until now. Seems to have something to do with redis, but I dont get what exactly.**
 
 Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.<br />
 Stop settling for less. Make game servers a first class citizen on your platform.
@@ -31,7 +32,7 @@ Afterwards create a new user in the MariaDB Addon called "pterodactyl" with full
 Example add-on configuration:
 
 ```yaml
-password: mySecretPassword
+password: your_MariaDB_password
 ssl: false
 certfile: itdoesntmatter_as_ssl_is_set_to_false
 keyfile: itdoesntmatter_as_ssl_is_set_to_false
@@ -40,7 +41,7 @@ keyfile: itdoesntmatter_as_ssl_is_set_to_false
 Recommended Example add-on configuration:
 
 ```yaml
-password: mySecretPassword
+password: your_MariaDB_password
 ssl: true
 certfile: fullchain.pem
 keyfile: privkey.pem
@@ -63,6 +64,18 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 ### Option: `reset_database`
 
 Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
+
+### Option: `password`
+
+This option is required. Your MariaDB password for the pterodactyl user.
+
+**Note**: _The file MUST be stored somewhere within the `/share/` folder_
+
+## Default Login Credentials
+
+E-Mail: admin@example.com
+Username: admin
+Password: the password defined in the option `password`
 
 ## Ingress
 

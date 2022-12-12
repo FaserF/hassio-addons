@@ -22,7 +22,7 @@ if bashio::config.true 'reset_database'; then
 	bashio::addon.option 'reset_database'
 fi
 
-echo "${db} database does not exist, creating it now"
+echo "preparing database ${db}"
 #echo "CREATE USER IF NOT EXISTS 'pterodactyl'' IDENTIFIED BY '${password_mariadb}';" |
 #	mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
 echo "CREATE DATABASE IF NOT EXISTS ${db};" |
@@ -46,6 +46,8 @@ if [ ! -f /share/pterodactyl/.env ]; then
 	echo "[setup] Generating Application Key..."
 	php81 artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
+	$hostname = hostname
+	echo "REDIS_HOST=$hostname" > .env
 	cp .env /share/pterodactyl/.env
 	setup_user=true
 else
@@ -84,23 +86,7 @@ else
 	cp /share/pterodactyl/nginx_default.conf /etc/nginx/conf.d/default.conf
 fi
 
-
 #php81 artisan p:environment:mail list
-
-echo "[start] Creating Log Folder"
-#chown -R nginx:nginx /var/www/html/
-# Restore /data directory ownership to nginx.
-if [ ! -d /data/storage/logs/ ]; then
-	mkdir -p /data/storage/logs/
-fi
-chown -R nginx:nginx /data/
-
-echo "[start] Starting nginx and php - afterwards Pterodactyl will be started"
-# Run these as jobs and monitor their pid status
-/usr/sbin/php-fpm81 --nodaemonize -c /etc/php81 &
-php_service_pid=$!
-/usr/sbin/nginx -g "daemon off;" &
-nginx_service_pid=$!
 
 if [ $setup_user = "true" ]; then
 	echo "[setup] Creating default user..."
@@ -110,11 +96,35 @@ if [ $setup_user = "true" ]; then
 	echo "Please ensure to change these credentials as soon as possible."
 fi
 
+# Open REDIS Server Port
+#echo "[setup] Open Redis ports"
+#iptables -A INPUT -s 127.0.0.1 -p tcp --dport 6379 -m state --state NEW,ESTABLISHED -j ACCEPT
+#iptables -A OUTPUT -d 127.0.0.1 -p tcp --sport 6379 -m state --state RELASTED,ESTABLISHED -j ACCEPT
+
+echo "[setup] Creating Log Folder"
+#chown -R nginx:nginx /var/www/html/
+# Restore /data directory ownership to nginx.
+if [ ! -d /data/storage/logs/ ]; then
+	mkdir -p /data/storage/logs/
+fi
+chown -R nginx:nginx /data/
+
+echo "[start] Starting nginx and php"
+# Run these as jobs and monitor their pid status
+/usr/sbin/php-fpm81 --nodaemonize -c /etc/php81 &
+php_service_pid=$!
+/usr/sbin/nginx -g "daemon off;" &
+nginx_service_pid=$!
+
+echo "[start] Starting predis"
+php81 artisan config:cache
+
 echo "[start] Starting Pterodactyl Panel"
 
 ## Start ##
 chown -R nginx:nginx /var/www/*
-ls -l /var/www/html/
-ls -l /var/www/localhost/
-exec php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
-#exec tail -f /var/log/nginx/pterodactyl.app-error.log
+echo " " > /var/log/nginx/pterodactyl.app-error.log
+echo " " > /var/www/html/storage/logs/laravel-$(date +%F).log
+exec php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
+exec tail -f /var/log/nginx/pterodactyl.app-error.log &
+exec tail -f /var/www/html/storage/logs/laravel-$(date +%F).log

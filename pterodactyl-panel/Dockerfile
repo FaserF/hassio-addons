@@ -4,7 +4,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.0.0
 FROM ${BUILD_FROM} as base
 
 RUN \
-    apk --update add curl gettext mariadb-client nginx php81 php81 php81-bcmath php81-common php81-dom php81-fileinfo \
+    apk --update add redis curl gettext mariadb-client nginx php81 php81 php81-bcmath php81-common php81-dom php81-fileinfo \
     php81-fpm php81-gd php81-pecl-memcached php81-mbstring php81-openssl php81-pdo php81-phar php81-json php81-sodium \
     php81-pdo_mysql php81-session php81-simplexml php81-tokenizer php81-ctype php81-zlib php81-zip php81-xmlwriter \
     tini \
