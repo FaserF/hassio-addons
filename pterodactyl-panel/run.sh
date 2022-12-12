@@ -47,7 +47,7 @@ if [ ! -f /share/pterodactyl/.env ]; then
 	php81 artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
 	$hostname = hostname
-	echo "REDIS_HOST=$hostname" > .env
+	echo "REDIS_HOST=$hostname" >.env
 	cp .env /share/pterodactyl/.env
 	setup_user=true
 else
@@ -123,8 +123,8 @@ echo "[start] Starting Pterodactyl Panel"
 
 ## Start ##
 chown -R nginx:nginx /var/www/*
-echo " " > /var/log/nginx/pterodactyl.app-error.log
-echo " " > /var/www/html/storage/logs/laravel-$(date +%F).log
+echo " " >/var/log/nginx/pterodactyl.app-error.log
+echo " " >/var/www/html/storage/logs/laravel-$(date +%F).log
 exec php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
 exec tail -f /var/log/nginx/pterodactyl.app-error.log &
 exec tail -f /var/www/html/storage/logs/laravel-$(date +%F).log
