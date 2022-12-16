@@ -12,9 +12,11 @@
   "init": false,
   "panel_icon": "mdi:bridge",
   "options": {
-    "config_path": "/share/matterbridge.toml"
+    "config_path": "/share/matterbridge.toml",
+    "log_level": "info"
   },
   "schema": {
-    "config_path": "str"
+    "config_path": "str",
+    "log_level": "list(info|debug)?"
   }
 }

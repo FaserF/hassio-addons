@@ -21,4 +21,5 @@ RUN mkdir /etc/matterbridge \
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
+RUN chmod a+x /bin/matterbridge
 CMD [ "/run.sh" ]
