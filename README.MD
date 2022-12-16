@@ -16,45 +16,50 @@ Just click the link above or add my repo to the hassio addons repositorys: https
 ### Apache2
 Webserver Addon 
 Comes in three variants:
-Minimal (Useful for minimal websites with no PHP usage): https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal<br /> 
-Minimal with MariaDB Access (Comes with MariaDB Client, PHP MariaDB and some important PHP modules): https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb<br /> 
-Normal (comes with the most used PHP Extensions, MariaDB): https://github.com/FaserF/hassio-addons/tree/master/apache2
-
+[Minimal (Useful for minimal websites with no PHP usage)] (https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)<br />
+[Minimal with MariaDB Access (Comes with MariaDB Client, PHP MariaDB and some important PHP modules)] (https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb)<br />
+[Normal (comes with the most used PHP Extensions, MariaDB)] (https://github.com/FaserF/hassio-addons/tree/master/apache2)<br />
 Support: Yes
 
 ### Bash Script Executer
-This is a simple Docker Image to execute bash scripts within Homeassistant OS: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
+[This is a simple Docker Image to execute bash scripts within Homeassistant OS] (https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer)<br />
 
 Support: Yes
 
 ### bt-mqtt-gateway
-Bluetooth to MQTT Gateway: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
+[Bluetooth to MQTT Gateway] (https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway)<br />
 
 Support: Limited (not used by me anymore)
 
 ### Freenom DNS Updater
-This is a simple Docker Image to update domain stuff in your freenom registrar: https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater
+[This is a simple Docker Image to update domain stuff in your freenom registrar] (https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater)<br />
 
 Support: Yes
 
 ### hyperionng
 ~~Hyperion Next Generation - control your LEDs via GPIO PINs: https://github.com/FaserF/hassio-addons/tree/master/hyperionng~~ <br /> 
-DEPRECATED, please have a look at: https://github.com/petersendev/hassio-addons/tree/master/hyperion
+[DEPRECATED, please have a look at this] (https://github.com/petersendev/hassio-addons/tree/master/hyperion)<br />
 
 Support: No (Deprecated, as I am not using it anymore)
 
+### Matterbridge
+[A simple chat bridge] (https://github.com/FaserF/hassio-addons/tree/master/matterbridge)<br />
+
+Support: Yes
+
 ### Netbook.xyz
-PXE Booting Service: https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz
+[PXE Booting Service] (https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz)<br />
 
 Support: Yes
 
 ### OpenSSL
-Self signed certificates: https://github.com/FaserF/hassio-addons/tree/master/openssl
+[Self signed certificates] (https://github.com/FaserF/hassio-addons/tree/master/openssl)<br />
 
 Support: Yes
 
 ### pterodactyl
-Opensource GameServer: 
+Opensource GameServer.
+
 Panel: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
 
 Wings (Daemon): https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings

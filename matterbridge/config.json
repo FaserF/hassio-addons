@@ -1,0 +1,20 @@
+{
+  "name": "Matterbridge",
+  "version": "1.0.0",
+  "slug": "matterbridge",
+  "description": "A simple chat bridge",
+  "url": "https://github.com/FaserF/hassio-addons/tree/master/matterbridge",
+  "arch": ["armhf", "armv7", "aarch64", "amd64"],
+  "startup": "application",
+  "boot": "auto",
+  "map": ["share:rw"],
+  "ingress": false,
+  "init": false,
+  "panel_icon": "mdi:bridge",
+  "options": {
+    "config_path": "/share/matterbridge.toml"
+  },
+  "schema": {
+    "config_path": "str"
+  }
+}
