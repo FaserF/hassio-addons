@@ -37,9 +37,11 @@ body:
         - Bash_Script_Executer
         - BT-MQTT-Gateway
         - Freenom-DNS-Updater
+        - Matterbridge
         - Netboot-XYZ
         - OpenSSL
-        - pterodactyl
+        - pterodactyl-panel
+        - pterodactyl-wings
         - Switch_LAN_Play
         - Switch_LAN_Play_Server
         - Tuya-Convert

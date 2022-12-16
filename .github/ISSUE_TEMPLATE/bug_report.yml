@@ -74,6 +74,7 @@ body:
         - Bash_Script_Executer
         - BT-MQTT-Gateway
         - Freenom-DNS-Updater
+        - Matterbridge
         - Netboot-XYZ
         - OpenSSL
         - pterodactyl-panel
