@@ -14,7 +14,7 @@ parameter="-conf /etc/matterbridge/matterbridge.toml"
 if [ $log_level = "debug" ]; then
 	parameter="${parameter} -debug"
 fi
-echo "" > /var/log/matterbridge.log
+echo "" >/var/log/matterbridge.log
 
 echo "Starting Matterbridge..."
 exec /bin/matterbridge ${parameter} &
