@@ -1,9 +1,9 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.4
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.1.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
 RUN \
-apk add --no-cache \
+    apk add --no-cache \
     wget python3 python3-dev py3-pip lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils
 
 #Install Pip Dependencies

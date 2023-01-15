@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.4
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.1.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -14,9 +14,9 @@ RUN apk -U --no-cache add build-base
 
 #Install SLP
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git \
-&& cd switch-lan-play/server \
-&& npm install \
-&& npm run build
+    && cd switch-lan-play/server \
+    && npm install \
+    && npm run build
 
 # Copy data for add-on
 COPY run.sh /

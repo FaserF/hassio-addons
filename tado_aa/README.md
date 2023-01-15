@@ -48,7 +48,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 The original program is from [adrianslabu]. For more informations, please visit this page: <https://github.com/adrianslabu/tado_aa>
 The hassio addon is brought to you by [FaserF].
 
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2023.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg

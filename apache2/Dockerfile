@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.7
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.1.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -21,7 +21,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
 # Install ssh2 extension
 #RUN apk --no-cache add libssh2-dev php81-pear zlib-dev build-base
 #RUN pecl channel-update pecl.php.net \
-#    && pecl install ssh2-1.3.1 
+#    && pecl install ssh2-1.3.1
 #RUN docker-php-ext-enable ssh2
 #From here beginning most likely needed
 #RUN apk --no-cache add libssh2-dev

@@ -35,12 +35,12 @@ script_argument2: AnotherVariable
 script_argument3: AnotherVariable
 script_path2: false
 script2_argument1:
-script2_argument2: 
-script2_argument3: 
+script2_argument2:
+script2_argument3:
 script_path3: false
-script3_argument2: 
-script3_argument2: 
-script3_argument3: 
+script3_argument2:
+script3_argument2:
+script3_argument3:
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
@@ -115,7 +115,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2023.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg

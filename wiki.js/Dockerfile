@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.1.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -9,13 +9,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003
 RUN \
     apk add --no-cache \
-        nodejs \
-        wget \
-        tar \
-        mariadb-client
+    nodejs \
+    wget \
+    tar \
+    mariadb-client
 
 WORKDIR /wiki
-RUN wget https://github.com/Requarks/wiki/releases/download/v2.5.294/wiki-js.tar.gz
+RUN wget https://github.com/Requarks/wiki/releases/download/v2.5.295/wiki-js.tar.gz
 
 RUN tar xzf wiki-js.tar.gz -C /wiki
 RUN rm wiki-js.tar.gz

@@ -6,7 +6,7 @@ Bluetooth-MQTT-Gateway for Homeassistant OS
 
 ## About
 
-A simple Python script which provides a Bluetooth to MQTT gateway, easily extensible via custom workers.  
+A simple Python script which provides a Bluetooth to MQTT gateway, easily extensible via custom workers.
 See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information (supported devices, features and much more).
 
 This can be used, to improve the realiability of bluetooth thermostats. See <https://github.com/home-assistant/core/issues/28601> for more informations.
@@ -85,4 +85,4 @@ SOFTWARE.
 [FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [issue]: https://github.com/FaserF/hassio-addons/issues
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2023.svg
