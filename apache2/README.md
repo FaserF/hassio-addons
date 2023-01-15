@@ -113,13 +113,13 @@ This option is needed, if you enable ssl to true. If you are not using SSL put a
 
 This option is optional. This user is for accessing web files (NOT the website itself). It will change the owner of all web files from "root" to this new owner.
 
-This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#Authentification-for-your-website)
+This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#authentification-for-your-website)
 
 ### Option: `password`
 
 This option is optional. Some self hosted web sites require an authentification password to access files within the docker image. #50
 
-This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#Authentification-for-your-website)
+This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#authentification-for-your-website)
 
 ### Option: `ssl`
 

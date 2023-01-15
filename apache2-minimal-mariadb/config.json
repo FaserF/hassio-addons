@@ -4,21 +4,11 @@
   "slug": "apache2-minimal-mariadb",
   "description": "Webserver with MariaDB Client and some PHP Modules",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb",
-  "arch": [
-    "armhf",
-    "armv7",
-    "aarch64",
-    "amd64",
-    "i386"
-  ],
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
   "startup": "application",
   "boot": "auto",
   "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
-  "map": [
-    "share:rw",
-    "media:rw",
-    "ssl"
-  ],
+  "map": ["share:rw", "media:rw", "ssl"],
   "ingress": true,
   "init": false,
   "panel_icon": "mdi:web-box",
