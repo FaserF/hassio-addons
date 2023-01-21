@@ -1,0 +1,18 @@
+name: Add comment on new github issues
+on:
+  issues:
+    types:
+      - labeled
+jobs:
+  add-comment:
+    if: github.event.label.name == ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Add comment
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            It looks like you have not used a github issue template and created a blank issue instead. Please note that we cannot support you if you dont provide the neccessary informations. For this we created issue templates.
