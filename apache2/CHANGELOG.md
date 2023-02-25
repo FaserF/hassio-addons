@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.6.0
+- add support for init_commands to use custom php, perl and so on modules
+
 ## 2.5.1
 - bump hassio-addon-base to V13.1.2
 - potentially fixes temporary download issues with an older Alpine version

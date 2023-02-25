@@ -129,6 +129,13 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
+### Option: `init_commands`
+
+This option is optional. If you need some special packages or commands, you can use this option to install/use them. #124
+This option is only supported in the full apache2 addon.
+
+If you are encountering any issues, please remove this option before submitting a bug report!
+
 ## Authentification for your website
 Use a .htaccess file in combination with a .htpasswd file for this: <https://www.htaccessredirect.net/>
 

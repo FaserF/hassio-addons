@@ -19,6 +19,14 @@ if [ $phpini = "get_file" ]; then
 	exit 1
 fi
 
+if bashio::config.has_value 'init_commands'; then
+	echo "Detected custom init commands. Running them now."
+    while read -r cmd; do
+        eval "${cmd}" \
+            || bashio::exit.nok "Failed executing init command: ${cmd}"
+    done <<< "$(bashio::config 'init_commands')"
+fi
+
 rm -r $webrootdocker
 
 if [ ! -d $DocumentRoot ]; then

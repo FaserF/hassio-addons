@@ -1,6 +1,6 @@
 {
   "name": "Apache2",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "slug": "apache2",
   "description": "OpenSource Webserver",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
@@ -30,7 +30,8 @@
     "website_name": null,
     "ssl": true,
     "certfile": "fullchain.pem",
-    "keyfile": "privkey.pem"
+    "keyfile": "privkey.pem",
+    "init_commands": []
   },
   "schema": {
     "document_root": "str",
@@ -42,7 +43,8 @@
     "password": "password?",
     "ssl": "bool",
     "certfile": "str",
-    "keyfile": "str"
+    "keyfile": "str",
+    "init_commands": "str"
   },
   "ports": {
     "80/tcp": 80,
