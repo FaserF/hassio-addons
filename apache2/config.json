@@ -44,7 +44,7 @@
     "ssl": "bool",
     "certfile": "str",
     "keyfile": "str",
-    "init_commands": "str"
+    "init_commands": "str?"
   },
   "ports": {
     "80/tcp": 80,
