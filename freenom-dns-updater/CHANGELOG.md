@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.3
+- fixed config file cannot be read
+
 ## 1.2.2
 - fixed installation error
 
