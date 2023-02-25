@@ -1,14 +1,24 @@
 {
   "name": "Apache2 Minimal",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "slug": "apache2-minimal",
   "description": "Webserver without PHP and minimal extra modules",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "arch": [
+    "armhf",
+    "armv7",
+    "aarch64",
+    "amd64",
+    "i386"
+  ],
   "startup": "application",
   "boot": "auto",
   "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
-  "map": ["share:rw", "media:rw", "ssl"],
+  "map": [
+    "share:rw",
+    "media:rw",
+    "ssl"
+  ],
   "ingress": true,
   "init": false,
   "panel_icon": "mdi:web-box",
