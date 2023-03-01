@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.6.1
+- fix addon wont start on empty init_commands parameter
+
 ## 2.6.0
 - add support for init_commands to use custom php, perl and so on modules
 

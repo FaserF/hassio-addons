@@ -1,8 +1,8 @@
 {
   "name": "Apache2",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "slug": "apache2",
-  "description": "OpenSource Webserver",
+  "description": "OpenSource Webserver with PHP and MariaDB",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/apache2",
   "arch": [
     "armhf",
@@ -31,7 +31,9 @@
     "ssl": true,
     "certfile": "fullchain.pem",
     "keyfile": "privkey.pem",
-    "init_commands": []
+    "init_commands": [
+      null
+    ]
   },
   "schema": {
     "document_root": "str",
