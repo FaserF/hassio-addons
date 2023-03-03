@@ -132,7 +132,6 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 ### Option: `init_commands`
 
 This option is optional. If you need some special packages or commands, you can use this option to install/use them. #124
-This option is only supported in the full apache2 addon.
 
 If you are encountering any issues, please remove this option before submitting a bug report!
 

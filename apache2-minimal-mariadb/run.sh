@@ -19,6 +19,14 @@ if [ $phpini = "get_file" ]; then
 	exit 1
 fi
 
+if bashio::config.has_value 'init_commands'; then
+	echo "Detected custom init commands. Running them now."
+    while read -r cmd; do
+        eval "${cmd}" \
+            || bashio::exit.nok "Failed executing init command: ${cmd}"
+    done <<< "$(bashio::config 'init_commands')"
+fi
+
 rm -r $webrootdocker
 
 if [ ! -d $DocumentRoot ]; then
@@ -32,14 +40,16 @@ else
 fi
 
 #Set rights to web folders and create user
-find $DocumentRoot -type d -exec chmod 771 {} \;
-if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! $username = "null" ] && [ ! $password = "null" ]; then
-	adduser -S $username -G www-data
-	echo "$username:$password" | chpasswd $username
-	find $webrootdocker -type d -exec chown $username:www-data -R {} \;
-	find $webrootdocker -type f -exec chown $username:www-data -R {} \;
-else
-	echo "No username and/or password was provided. Skipping account set up."
+if [ -d $DocumentRoot ]; then
+	find $DocumentRoot -type d -exec chmod 771 {} \;
+	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! $username = "null" ] && [ ! $password = "null" ]; then
+		adduser -S $username -G www-data
+		echo "$username:$password" | chpasswd $username
+		find $webrootdocker -type d -exec chown $username:www-data -R {} \;
+		find $webrootdocker -type f -exec chown $username:www-data -R {} \;
+	else
+		echo "No username and/or password was provided. Skipping account set up."
+	fi
 fi
 
 if [ $phpini != "default" ]; then
