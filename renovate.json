@@ -12,18 +12,12 @@
   "commitMessagePrefix": "⬆️",
   "packageRules": [
     {
-      "matchDatasources": [
-        "repology"
-      ],
-      "automerge": true
-    },
-    {
       "groupName": "Add-on base image",
       "matchDatasources": [
         "docker"
       ],
       "matchDepNames": [
-        "ghcr.io/hassio-addons/debian-base"
+        "ghcr.io/hassio-addons/base"
       ]
     },
     {
@@ -32,11 +26,60 @@
         "docker"
       ],
       "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base"
+      ],
+      "automerge": true
+    },
+    {
+      "groupName": "Add-on Debian base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/debian-base"
+      ]
+    },
+    {
+      "groupName": "Add-on Debian base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major",
         "minor",
         "patch"
       ],
       "matchDepNames": [
         "ghcr.io/hassio-addons/debian-base"
+      ],
+      "automerge": true
+    },
+    {
+      "groupName": "Add-on python base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base-python"
+      ]
+    },
+    {
+      "groupName": "Add-on python base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base-python"
       ],
       "automerge": true
     }
