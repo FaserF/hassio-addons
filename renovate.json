@@ -1,43 +1,25 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "no-stale"
-  ],
+  "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "packageRules": [
     {
-      "matchDatasources": [
-        "repology"
-      ],
+      "matchDatasources": ["repology"],
       "automerge": true
     },
     {
       "groupName": "Add-on base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/debian-base"
-      ]
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"]
     },
     {
       "groupName": "Add-on base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/debian-base"
-      ],
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"],
       "automerge": true
     }
   ]
