@@ -10,6 +10,40 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
+  "regexManagers": [
+    {
+      "fileMatch": [
+        "/Dockerfile$",
+        "/build.yaml$"
+      ],
+      "matchStringsStrategy": "any",
+      "matchStrings": [
+        "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
+        "(aarch64|amd64|armhf|armv7|i386):\\s[\"']?(?<depName>.*?):(?<currentValue>.*?)[\"']?\\s"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "fileMatch": [
+        "/Dockerfile$"
+      ],
+      "matchStrings": [
+        "RUN wget https://github.com/Requarks/wiki/releases/download/?(?<currentValue>.+?)?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "requarks/wiki"
+    },
+    {
+      "fileMatch": [
+        "/Dockerfile$"
+      ],
+      "matchStrings": [
+        "RUN wget https://github.com/42wim/matterbridge/archive/refs/tags/?(?<currentValue>.+?)?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "42wim/matterbridge"
+    }
+  ],
   "packageRules": [
     {
       "groupName": "Add-on base image",
