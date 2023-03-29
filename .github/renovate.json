@@ -86,7 +86,7 @@
       "matchDepNames": [
         "requarks/wiki"
       ],
-      "automerge": true
+      "automerge": false
     },
     {
       "groupName": "Matterbridge",
@@ -96,7 +96,7 @@
       "matchDepNames": [
         "42wim/matterbridge"
       ],
-      "automerge": true
+      "automerge": false
     }
   ]
 }
