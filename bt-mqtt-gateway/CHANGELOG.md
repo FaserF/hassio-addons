@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+- bump hassio-addon-base python to V10.0.0
+
 ## 1.1.1
 - Fixed an installation issue
 

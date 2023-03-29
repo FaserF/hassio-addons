@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+- bump hassio-addon-base python to V10.0.0
+
 ## 1.2.3
 - fixed config file cannot be read
 
