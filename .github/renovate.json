@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "rebaseWhen": "behind-base-branch",
+  "dependencyDashboard": true,
+  "labels": [
+    "dependencies",
+    "no-stale"
+  ],
+  "commitMessagePrefix": "⬆️",
+  "packageRules": [
+    {
+      "groupName": "Add-on base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base"
+      ],
+      "automerge": true,
+      "ignoreTests": true
+    },
+    {
+      "groupName": "Add-on Debian base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/debian-base"
+      ],
+      "automerge": true,
+      "ignoreTests": true
+    },
+    {
+      "groupName": "Add-on python base image",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base-python"
+      ],
+      "automerge": true,
+      "ignoreTests": true
+    },
+    {
+      "groupName": "Wiki.JS",
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchDepNames": [
+        "requarks/wiki"
+      ],
+      "automerge": true
+    },
+    {
+      "groupName": "Matterbridge",
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchDepNames": [
+        "42wim/matterbridge"
+      ],
+      "automerge": true
+    }
+  ]
+}
