@@ -28,20 +28,20 @@
         "/Dockerfile$"
       ],
       "matchStrings": [
-        "RUN wget https://github.com/Requarks/wiki/releases/download/?(?<currentValue>.+?)?\\s+"
+        "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "requarks/wiki"
+      "depNameTemplate": "42wim/matterbridge"
     },
     {
       "fileMatch": [
         "/Dockerfile$"
       ],
       "matchStrings": [
-        "RUN wget https://github.com/42wim/matterbridge/archive/refs/tags/?(?<currentValue>.+?)?\\s+"
+        "ARG WIKIJS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "42wim/matterbridge"
+      "depNameTemplate": "requarks/wiki"
     }
   ],
   "packageRules": [
