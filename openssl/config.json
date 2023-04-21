@@ -1,13 +1,21 @@
 {
   "name": "OpenSSL",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "slug": "openssl",
   "description": "OpenSSL - Self signed certificates",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/openssl",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "arch": [
+    "armhf",
+    "armv7",
+    "aarch64",
+    "amd64",
+    "i386"
+  ],
   "startup": "application",
   "boot": "auto",
-  "map": ["ssl:rw"],
+  "map": [
+    "ssl:rw"
+  ],
   "ingress": false,
   "init": false,
   "options": {

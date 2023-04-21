@@ -1,4 +1,4 @@
 # Changelog
 
-## 1.0.0
-- Initial release
+## 0.X.X
+- Beta Testing Release

@@ -1,10 +1,16 @@
 {
   "name": "Switch LAN Play Client",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "slug": "switch-lan-play",
   "description": "Nintendo Switch Lan Play - Client",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "arch": [
+    "armhf",
+    "armv7",
+    "aarch64",
+    "amd64",
+    "i386"
+  ],
   "startup": "application",
   "boot": "auto",
   "init": false,
