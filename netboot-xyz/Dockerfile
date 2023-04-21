@@ -2,37 +2,30 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.2.2
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
+ARG NETBOOTXYZ_VERSION="0.6.6"
+
 RUN \
-	echo "**** install build packages ****" && \
-	mkdir /app && \
-	apk add --no-cache --virtual=build-dependencies \
-	nodejs-npm && \
-	echo "**** install runtime packages ****" && \
-	apk add --no-cache \
-	curl \
-	dnsmasq \
-	jq \
-	nginx \
-	nodejs \
-	tftp-hpa && \
-	echo "**** install WebApp ****" && \
-	if [ -z ${WEBAPP_VERSION+x} ]; then \
-	WEBAPP_VERSION=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" \
-	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
-	fi && \
-	curl -o \
-	/tmp/webapp.tar.gz -L \
-	"https://github.com/netbootxyz/webapp/archive/${WEBAPP_VERSION}.tar.gz" && \
-	tar xf \
-	/tmp/webapp.tar.gz -C \
-	/app/ --strip-components=1 && \
-	npm config set unsafe-perm true && \
-	npm install --prefix /app && \
-	echo "**** cleanup ****" && \
-	apk del --purge \
-	build-dependencies && \
-	rm -rf \
-	/tmp/*
+  echo "**** install runtime packages ****" && \
+  apk add --no-cache \
+    nginx \
+    nodejs \
+    tftp-hpa && \
+  echo "**** install build packages ****" && \
+  apk add --no-cache --virtual=build-dependencies \
+    npm && \
+  echo "**** install WebApp ****" && \
+  curl -o \
+  /tmp/webapp.tar.gz -L \
+    "https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz" && \
+  tar xf \
+  /tmp/webapp.tar.gz -C \
+    /app/ --strip-components=1 && \
+  npm install --prefix /app && \
+  echo "**** cleanup ****" && \
+  apk del --purge \
+    build-dependencies && \
+  rm -rf \
+    /tmp/*
 
 # copy local files
 COPY root/ /

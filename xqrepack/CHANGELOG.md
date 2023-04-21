@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1
+- bump hassio-addon-base to the latest version
+
 ## 1.5.0
 - bump hassio-addon-base to V13.1.0
 
