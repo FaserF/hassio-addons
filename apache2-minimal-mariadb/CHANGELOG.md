@@ -2,7 +2,7 @@
 
 ## 2.6.3
 - bump hassio-addon-base to latest release
-- update php-pecl-mcrypt
+- remove php-pecl-mcrypt for now (got obsolet by alpine)
 
 ## 2.6.2
 - add support for init_commands to use custom php, perl and so on modules

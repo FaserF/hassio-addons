@@ -2,7 +2,7 @@
 
 ## 2.6.3
 - bump hassio-addon-base to latest release
-- update php-pecl-mcrypt
+- remove php-pecl-mcrypt for now (got obsolet by alpine)
 
 ## 2.6.2
 - now really fix addon wont start on empty init_commands parameter
