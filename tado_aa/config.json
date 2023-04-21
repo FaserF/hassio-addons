@@ -18,10 +18,14 @@
   "panel_icon": "mdi:wikipedia",
   "options": {
     "username": null,
-    "password": null
+    "password": null,
+    "minTemp": 5,
+    "maxTemp": 25
   },
   "schema": {
     "username": "str",
-    "password": "password"
+    "password": "password",
+    "minTemp": "int",
+    "maxTemp": "int"
   }
 }

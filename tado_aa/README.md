@@ -24,6 +24,8 @@ Example add-on configuration:
 ```yaml
 username: my@email.com
 password: mySecretPassword
+minTemp: 5
+maxTemp: 25
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
@@ -35,6 +37,14 @@ Defines your tado username (usually your email address).
 ### Option: `password`
 
 Defines your tado password.
+
+### Option: `minTemp`
+
+Defines your minimal Temperature Tado should set. (Optional)
+
+### Option: `maxTemp`
+
+Defines your maximal Temperature Tado should set. (Optional)
 
 ## Support
 
