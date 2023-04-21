@@ -1,1 +1,1 @@
-freenom-dns-updater==1.1.1
+freenom-dns-updater==1.2.9
