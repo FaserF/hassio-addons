@@ -4,23 +4,14 @@
   "slug": "netboot-xyz",
   "description": "PXE Server to deploy a OS in your local network",
   "url": "https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz",
-  "arch": [
-    "armhf",
-    "armv7",
-    "aarch64",
-    "amd64"
-  ],
+  "arch": ["armhf", "armv7", "aarch64", "amd64"],
   "host_network": true,
   "webui": "http://[HOST]:[PORT:3000]",
   "ingress": true,
   "init": false,
   "full_access": true,
-  "privileged": [
-    "NET_ADMIN"
-  ],
-  "map": [
-    "media:rw"
-  ],
+  "privileged": ["NET_ADMIN"],
+  "map": ["media:rw"],
   "startup": "application",
   "boot": "auto",
   "panel_icon": "mdi:download-network",
