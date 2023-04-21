@@ -6,7 +6,7 @@ FROM ${BUILD_FROM}
 RUN mkdir /run/apache2
 
 RUN apk --no-cache add apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php81 php81-mysqli php81-opcache php81-curl php81-mbstring php8-pecl-mcrypt php81-zip
+RUN apk --no-cache add php81 php81-mysqli php81-opcache php81-curl php81-mbstring php81-pecl-mcrypt php81-zip
 RUN apk --no-cache add mariadb-client
 
 #Configure Logging
