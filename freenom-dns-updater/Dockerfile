@@ -7,7 +7,7 @@ FROM ${BUILD_FROM}
 #COPY . /opt/freenom_dns_updater/
 #WORKDIR /opt/freenom_dns_updater
 RUN apk add --no-cache zlib openssl-dev binutils py3-pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
 #RUN rm -rf /opt/freenom_dns_updater
 
 # Copy data for add-on

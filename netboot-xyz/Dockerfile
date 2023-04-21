@@ -13,10 +13,8 @@ RUN \
   echo "**** install build packages ****" && \
   apk add --no-cache --virtual=build-dependencies \
     npm && \
-  echo "**** install WebApp ****" && \
-  curl -o \
-  /tmp/webapp.tar.gz -L \
-    "https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz" && \
+  echo "**** install WebApp version ${NETBOOTXYZ_VERSION} ****" && \
+  curl -o /tmp/webapp.tar.gz -L https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz && \
   tar xf \
   /tmp/webapp.tar.gz -C \
     /app/ --strip-components=1 && \
