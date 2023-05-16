@@ -46,7 +46,7 @@ if [ ! -f /share/pterodactyl/.env ]; then
 	echo "[setup] Generating Application Key..."
 	php81 artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
-	$hostname = hostname
+	hostname="hostname"
 	echo "REDIS_HOST=$hostname" >.env
 	cp .env /share/pterodactyl/.env
 	setup_user=true
