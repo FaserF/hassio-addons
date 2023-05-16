@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+- bump hassio-addon-base to V14.0.0
+- autorelease new version updates on addon base updates
+
 ## 1.4.1
 - bump hassio-addon-base to the latest version
 

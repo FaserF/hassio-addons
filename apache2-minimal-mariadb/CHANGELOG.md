@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.0
+- bump hassio-addon-base to V14.0.0
+- autorelease new version updates on addon base updates
+
 ## 2.6.3
 - bump hassio-addon-base to latest release
 - remove php-pecl-mcrypt for now (got obsolet by alpine)

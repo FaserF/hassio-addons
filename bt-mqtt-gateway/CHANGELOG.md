@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+- bump hassio-addon-base to V14.0.0
+- autorelease new version updates on addon base updates
+- auto bump dependency updates for bt-mqtt-gateway python module
+
 ## 1.2.1
 - bump hassio-addon-base to latest release
 

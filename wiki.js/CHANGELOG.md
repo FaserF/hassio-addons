@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+- bump hassio-addon-base to V14.0.0
+- autorelease new version updates on addon base updates
+- auto bump dependency updates for wiki.js module
+
 ## 1.4.4
 - bump hassio-addon-base to the latest version
 
