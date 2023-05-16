@@ -5,11 +5,11 @@ slug: tado_aa
 description: Tado Auto-Assist for Geofencing and Open Window Detection
 url: https://github.com/FaserF/hassio-addons/tree/master/tado_aa
 arch:
-- armhf
-- armv7
-- aarch64
-- amd64
-- i386
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
 startup: application
 boot: auto
 ingress: false

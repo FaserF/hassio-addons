@@ -5,14 +5,14 @@ slug: matterbridge
 description: A simple chat bridge
 url: https://github.com/FaserF/hassio-addons/tree/master/matterbridge
 arch:
-- armhf
-- armv7
-- aarch64
-- amd64
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
 startup: application
 boot: auto
 map:
-- share:rw
+  - share:rw
 ingress: false
 init: false
 panel_icon: mdi:bridge

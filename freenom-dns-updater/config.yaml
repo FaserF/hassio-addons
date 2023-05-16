@@ -2,19 +2,20 @@
 name: Freenom-dns-updater
 version: 1.4.0
 slug: freenom-dns-updater
-description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
+description:
+  Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
   a domain's dns record, Auto renew domains and more
 url: https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater
 arch:
-- armhf
-- armv7
-- aarch64
-- amd64
-- i386
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
 startup: application
 boot: auto
 map:
-- share:rw
+  - share:rw
 ingress: false
 init: false
 panel_icon: mdi:web-box
