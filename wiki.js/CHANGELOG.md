@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1
+- update Wiki.JS to 2.5.299
+
 ## 1.5.0
 - bump hassio-addon-base to V14.0.0
 - autorelease new version updates on addon base updates
