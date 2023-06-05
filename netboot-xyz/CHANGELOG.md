@@ -4,6 +4,7 @@
 - bump hassio-addon-base to V14.0.0
 - autorelease new version updates on addon base updates
 - auto bump dependency updates for netboot-xyz module
+- update netboot-xyz to V0.6.7
 
 ## 1.4.1
 - bump hassio-addon-base to latest release

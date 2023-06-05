@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.2
+- fix Wiki.JS start by downgrading NodeJS to Version 16.20
+
 ## 1.5.1
 - update Wiki.JS to 2.5.299
 
