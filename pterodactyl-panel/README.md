@@ -73,7 +73,7 @@ This option is required. Your MariaDB password for the pterodactyl user.
 
 ## Default Login Credentials
 
-E-Mail: admin@example.com
+E-Mail: <admin@example.com>
 Username: admin
 Password: the password defined in the option `password`
 
