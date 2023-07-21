@@ -17,7 +17,8 @@ jobs:
       - name: "Retrieve version & increment it"
         id: version
         run: |
-          for configfile in */*config.yaml; do
+          configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+          for configfile in $configFiles; do
               OLD_VERSION=$(cat $configfile | grep 'version: ' | head -1 | sed s/"version: "//)
               NEW_VERSION=$(echo $OLD_VERSION | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')
               sed -i "s/$OLD_VERSION/$NEW_VERSION/g" $configfile
