@@ -33,15 +33,10 @@ jobs:
         id: changelog
         run: |
           find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \; | while read -r file; do
-            last_version=$(grep -oP '(?<=## )\d+\.\d+\.\d+' $file | sort -rV | head -n1)
-            major=$(echo "$last_version" | cut -d '.' -f 1)
-            minor=$(echo "$last_version" | cut -d '.' -f 2)
-            patch=$(echo "$last_version" | cut -d '.' -f 3)
-            ((patch++))
-            new_version="$major.$minor.$patch"
-              sed -i '/# Changelog/a \ ' "$file"
-              sed -i "/# Changelog/a \\## $new_version \n - automatically update hassio-addon-base to the latest version" "$file"
-              echo "Added changelog auto text for $file"
+            new_version=$(grep -oP '(?<=## )\d+\.\d+\.\d+' $file | sort -rV | head -n1 | awk -F. '{$NF+=1; OFS="."; print $0}' )
+            sed -i '/# Changelog/a \ ' "$file"
+            sed -i "/# Changelog/a \\## $new_version \n - automatically update hassio-addon-base to the latest version" "$file"
+            echo "Added changelog auto text for $file"
           done
       - name: Commit & Push
         uses: actions-js/push@v1.4
