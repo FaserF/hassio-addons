@@ -1,4 +1,7 @@
 # Changelog
+## 1 5 3 
+ - automatically update hassio-addon-base to the latest version
+ 
 
 ## 1.5.2
 - fix Wiki.JS start by downgrading NodeJS to Version 16.20

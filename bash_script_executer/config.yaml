@@ -1,6 +1,6 @@
 ---
 name: Bash Script Executer
-version: 1.6.0
+version: 1.6.1
 slug: bashscriptexecuter
 description: Execute your own bash scripts via Docker Container
 url: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer

@@ -1,6 +1,6 @@
 ---
 name: Apache2 Minimal
-version: 2.7.0
+version: 2.7.1
 slug: apache2-minimal
 description: OpenSource Webserver without PHP and minimal extra modules
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal

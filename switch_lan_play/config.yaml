@@ -1,6 +1,6 @@
 ---
 name: Switch LAN Play Client
-version: 1.5.0
+version: 1.5.1
 slug: switch-lan-play
 description: Nintendo Switch Lan Play - Client
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
