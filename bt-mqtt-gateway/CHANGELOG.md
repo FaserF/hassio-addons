@@ -2,6 +2,9 @@
 ## 1 3 1 
  - automatically update hassio-addon-base to the latest version
  
+## 1 3 1 
+ - automatically update hassio-addon-base to the latest version
+ 
 
 ## 1.3.0
 - bump hassio-addon-base to V14.0.0
