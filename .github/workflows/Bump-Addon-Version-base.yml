@@ -32,11 +32,20 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
+          repo_url="https://api.github.com/repos/hassio-addons/addon-base"
+          response=$(curl -s "$repo_url/releases")
+          latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | head -n1)
           find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \; | while read -r file; do
             new_version=$(grep -oP '(?<=## )\d+\.\d+\.\d+' $file | sort -rV | head -n1 | awk -F. '{$NF+=1; OFS="."; print $0}' )
+            major=$(echo "$new_version" | cut -d '.' -f 1)
+            minor=$(echo "$new_version" | cut -d '.' -f 2)
+            patch=$(echo "$new_version" | cut -d '.' -f 3)
+            ((patch++))
+            new_version="$major.$minor.$patch"
+
             sed -i '/# Changelog/a \ ' "$file"
-            sed -i "/# Changelog/a \\## $new_version \n - automatically update hassio-addon-base to the latest version" "$file"
-            echo "Added changelog auto text for $file"
+            sed -i "/# Changelog/a \\## $new_version \n - automatically update hassio-addon-base to version $latest_version" "$file"
+            echo "Added changelog auto text for $file and base version $latest_version"
           done
       - name: Commit & Push
         uses: actions-js/push@v1.4
