@@ -1,5 +1,5 @@
 ---
-name: Automatically bump version on addon base updates
+name: Automatically bump version on addon base updates and changelog
 
 permissions:
   contents: write
