@@ -1,8 +1,4 @@
 # Changelog
-## 0.3.4
- - automatically update wikijs to version v2.5.300
-
-
 ## 0.3.3
 - automatically update hassio-addon-base to version v14.0.8
 
