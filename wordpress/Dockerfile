@@ -1,9 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:14.1.0
-# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-
-# Create directory for apache2 to store PID file
-RUN mkdir /run/apache2
 
 RUN apk add --no-cache bash curl less vim nginx ca-certificates git tzdata zip \
     libmcrypt-dev zlib-dev gmp-dev \
@@ -12,7 +8,7 @@ RUN apk add --no-cache bash curl less vim nginx ca-certificates git tzdata zip \
     php81-pdo_mysql php81-mysqli php81-session \
     php81-gd php81-iconv php81-gmp php81-zip \
     php81-curl php81-opcache php81-ctype php81-apcu \
-    php81-intl php81-bcmath php81-dom php81-mbstring php81-xmlreader mysql-client curl && apk add -u musl && \
+    php81-intl php81-bcmath php81-dom php81-mbstring php81-xmlreader mysql-client curl && \
     rm -rf /var/cache/apk/*
 
 RUN sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php81/php.ini && \
@@ -21,13 +17,20 @@ RUN sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php81/php.ini && \
     sed -i "s/nginx:x:100:101:nginx:\/var\/lib\/nginx:\/sbin\/nologin/nginx:x:100:101:nginx:\/usr:\/bin\/bash/g" /etc/passwd- && \
     ln -s /sbin/php-fpm7 /sbin/php-fpm
 
-ADD files/nginx.conf /etc/nginx/
-ADD files/php-fpm.conf /etc/php81/
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/bin/wp-cli && chown nginx:nginx /usr/bin/wp-cli
+# Copy nginx and php-fpm configuration files
+COPY files/nginx.conf /etc/nginx/
+COPY files/php-fpm.conf /etc/php81/
 
-VOLUME ["/usr/html"]
+# Install WP-CLI
+RUN curl -o /usr/bin/wp-cli https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x /usr/bin/wp-cli && chown nginx:nginx /usr/bin/wp-cli
 
-# Copy data for add-on
+# Define the volume and set working directory
+VOLUME ["/var/www/html"]
+WORKDIR /var/www/html
+
+# Copy data for the add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
+
+# Define the command to run when the container starts
 CMD [ "/run.sh" ]
