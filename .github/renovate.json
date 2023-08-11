@@ -66,19 +66,19 @@
       "groupName": "Wiki.JS",
       "matchDatasources": ["github-releases"],
       "matchDepNames": ["requarks/wiki"],
-      "automerge": false
+      "automerge": true
     },
     {
       "groupName": "Matterbridge",
       "matchDatasources": ["github-releases"],
       "matchDepNames": ["42wim/matterbridge"],
-      "automerge": false
+      "automerge": true
     },
     {
-      "groupName": "Matterbridge",
+      "groupName": "Netbootxyz",
       "matchDatasources": ["github-releases"],
       "matchDepNames": ["netbootxyz/webapp"],
-      "automerge": false
+      "automerge": true
     },
     {
       "matchManagers": ["pip_requirements"],
