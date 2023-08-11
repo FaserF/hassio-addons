@@ -118,7 +118,7 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar \
 # ABOVE is everything for the old NoteJS Version
 
 WORKDIR /wiki
-ARG WIKIJS_VERSION="v2.5.299"
+ARG WIKIJS_VERSION="v2.5.300"
 RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wiki-js.tar.gz
 
 RUN tar xzf wiki-js.tar.gz -C /wiki
