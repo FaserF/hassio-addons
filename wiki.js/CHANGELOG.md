@@ -1,6 +1,6 @@
 # Changelog
 ## 1.5.6
- - automatically update wikijs to version v2.5.300
+- automatically update wikijs to version v2.5.300
 
 
 ## 1.5.5
