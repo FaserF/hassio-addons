@@ -1,12 +1,12 @@
 # Changelog
+## 2.7.5
+- add php81-tokenizer module
+
 ## 2.7.4
 - automatically update hassio-addon-base to version v14.0.8
 
-
 ## 2.7.3
-- automatically update hassio-addon-base to version v14.0.8
-
-
+- automatically update hassio-addon-base to version v14.0.7
 
 ## 2.7.2
 - automatically update hassio-addon-base to version 14.0.5
