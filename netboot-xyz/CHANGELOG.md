@@ -1,19 +1,17 @@
 # Changelog
+
 ## 1.5.6
 - automatically update hassio-addon-base to version v14.2.2
-
+- update netbootxyz to 0.6.9
 
 ## 1.5.5
 - automatically update hassio-addon-base to version v14.1.3
 
-
 ## 1.5.4
 - automatically update hassio-addon-base to version v14.0.8
 
-
 ## 1.5.3
 - automatically update hassio-addon-base to version v14.0.8
-
 
 ## 1.5.2
 - automatically update hassio-addon-base to the latest version

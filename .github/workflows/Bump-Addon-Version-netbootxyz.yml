@@ -1,5 +1,5 @@
 ---
-name: Automatically bump version on addon base updates and changelog
+name: Automatically bump version on netbootxyz updates and changelog
 
 permissions:
   contents: write
@@ -12,7 +12,7 @@ on:
 jobs:
   version:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, 'Update ghcr.io/hassio-addons/base-python') }} # Detect that the base addon has been updated
+    if: ${{ contains(github.event.head_commit.message, 'Update dependency netbootxyz/webapp') }} # Detect that the netbootxyz version has been updated
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
       - name: "Retrieve version & increment it"
         id: version
         run: |
-          configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+          configFiles=$(find netboot-xyz -name 'config.yaml' -print0 | xargs -r0 echo)
           for configfile in $configFiles; do
               OLD_VERSION=$(cat $configfile | grep 'version: ' | head -1 | sed s/"version: "//)
               NEW_VERSION=$(echo $OLD_VERSION | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')
@@ -32,18 +32,18 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
-          repo_url="https://api.github.com/repos/hassio-addons/addon-base"
+          repo_url="https://api.github.com/repos/netbootxyz/webapp"
           response=$(curl -s "$repo_url/releases")
           latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
-          find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \; | while read -r file; do
+          find netboot-xyz -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \; | while read -r file; do
             current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
             if [ -n "$current_version" ]; then
                 IFS='.' read -r major minor patch <<< "$current_version"
                 ((patch++))
                 new_version="$major.$minor.$patch"
 
-                sed -i "/# Changelog/a \\## $new_version\\n- automatically update hassio-addon-base to version $latest_version\n" "$file"
-                echo "Added changelog auto text for $file and base version $latest_version"
+                sed -i "/# Changelog/a \\## $new_version\\n- automatically update netboot-xyz to version $latest_version\n\n" "$file"
+                echo "Added changelog auto text for $file and netboot-xyz version $latest_version"
             else
                 echo "No valid version found in $file"
             fi
@@ -54,4 +54,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
           force: true
-          message: "Increment addon version due to addon base update"
+          message: "Increment addon version due to netboot-xyz update"
