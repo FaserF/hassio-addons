@@ -1,4 +1,8 @@
 # Changelog
+## 1.3.8
+- Fix: Do not allow unsupported min/max temp values
+- update tado_aa python module to the latest version
+
 ## 1.3.7
 - automatically update hassio-addon-base to version v14.3.1
 
