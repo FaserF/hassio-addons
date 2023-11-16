@@ -1,4 +1,8 @@
 # Changelog
+## 1.5.9
+- automatically update netboot-xyz to version 0.7.0
+
+
 ## 1.5.8
 - automatically update hassio-addon-base to version v14.3.2
 
