@@ -7,6 +7,7 @@ ARG NETBOOTXYZ_VERSION="0.7.0"
 RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
+    dnsmasq \
     nginx \
     nodejs \
     tftp-hpa && \
@@ -29,6 +30,9 @@ COPY root/ /
 
 # app runs on port 3000
 EXPOSE 3000
+
+# Ensure all run files from the services are executable
+RUN chmod a+x /etc/services.d/*/run
 
 # Configure DNSMASQ
 RUN chmod a+x /etc/cont-init.d/*
