@@ -1,4 +1,7 @@
 # Changelog
+## 1.2.8
+- automatically update hassio-addon-base to version v14.3.2
+
 ## 1.2.7
 - automatically update hassio-addon-base to version v14.3.1
 
