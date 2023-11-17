@@ -1,14 +1,11 @@
 # Changelog
-## 1.5.9
+## 1.6.0
 - automatically update netboot-xyz to version 0.7.0
-
-
-## 1.5.8
 - automatically update hassio-addon-base to version v14.3.2
+- fix permission issues after starting addon - thanks to Nicolas Guilloux
 
 ## 1.5.7
 - automatically update hassio-addon-base to version v14.3.1
-
 
 ## 1.5.6
 - automatically update hassio-addon-base to version v14.2.2
