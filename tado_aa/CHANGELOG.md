@@ -1,5 +1,5 @@
 # Changelog
-## 1.3.10
+## 1.3.9-2
 - fix min & maxtemp options in GUI and config file
 - this fixes that new users could not see the addon
 
