@@ -17,18 +17,8 @@ init: false
 options:
   username:
   password:
-  minTemp:
-    description: "Minimum Temperature (between 5 and 25)"
-    default: 5
-    example: 5
-    min: 5
-    max: 25
-  maxTemp:
-    description: "Maximum Temperature (between 5 and 25)"
-    default: 25
-    example: 25
-    min: 5
-    max: 25
+  minTemp: int(5, 25)
+  maxTemp: int(5, 25)
 schema:
   username: str
   password: password
