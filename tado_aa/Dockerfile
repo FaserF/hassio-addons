@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3003
 RUN apk add --no-cache wget unzip sed py3-pip
-RUN pip install python-tado
+RUN pip install python-tado==0.17.3
 
 RUN wget https://github.com/adrianslabu/tado_aa/archive/refs/heads/main.zip
 RUN unzip main.zip && rm main.zip && cp tado_aa-main/tado_aa.py / && rm -r tado_aa-main
