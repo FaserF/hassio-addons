@@ -38,7 +38,7 @@ jobs:
           files=$(find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
           echo "$files" | while IFS= read -r file; do
               current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | { head -n1; })
-              echo "Adding changelog for $file"
+              echo "Adding changelog for $file and current version $current_version"
               if [ -n "$current_version" ]; then
                   IFS='.' read -r major minor patch <<< "$current_version"
                   ((patch++))

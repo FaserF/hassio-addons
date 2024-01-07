@@ -1,5 +1,8 @@
 # Changelog
 ## 1.6.0
+- Placeholder to fix GitHub Workflow?
+
+## 1.6.0
 - automatically update netboot-xyz to version 0.7.0
 - automatically update hassio-addon-base to version v14.3.2
 - fix permission issues after starting addon - thanks to Nicolas Guilloux
