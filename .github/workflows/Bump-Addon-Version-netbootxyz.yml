@@ -48,7 +48,6 @@ jobs:
                 else
                   echo "Error while writing changelog auto text for $file with new version $new_version and netboot-xyz version $latest_version"
                 fi
-
             else
                 echo "No valid version found in $file"
             fi
