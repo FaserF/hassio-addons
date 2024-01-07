@@ -35,18 +35,19 @@ jobs:
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
           latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
-          find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \; | while read -r file; do
-            current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
-            if [ -n "$current_version" ]; then
-                IFS='.' read -r major minor patch <<< "$current_version"
-                ((patch++))
-                new_version="$major.$minor.$patch"
+          files=$(find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
+          echo "$files" | while IFS= read -r file; do
+              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | { head -n1; })
+              if [ -n "$current_version" ]; then
+                  IFS='.' read -r major minor patch <<< "$current_version"
+                  ((patch++))
+                  new_version="$major.$minor.$patch"
 
-                sed -i "/# Changelog/a \\## $new_version\\n- automatically update hassio-addon-base to version $latest_version\n" "$file"
-                echo "Added changelog auto text for $file and base version $latest_version"
-            else
-                echo "No valid version found in $file"
-            fi
+                  sed -i "/# Changelog/a \\## $new_version\\n- automatically update hassio-addon-base to version $latest_version\n" "$file"
+                  echo "Added changelog auto text for $file and base version $latest_version"
+              else
+                  echo "No valid version found in $file"
+              fi
           done
       - name: Commit & Push
         uses: actions-js/push@v1.4
