@@ -8,22 +8,17 @@
 ## 1.5.9
 - automatically update hassio-addon-base to version v14.2.2
 
-
 ## 1.5.8
 - automatically update hassio-addon-base to version v14.1.3
-
 
 ## 1.5.7
 - automatically update hassio-addon-base to version v14.0.8
 
-
 ## 1.5.6
 - automatically update wikijs to version v2.5.300
 
-
 ## 1.5.5
 - automatically update hassio-addon-base to version v14.0.8
-
 
 ## 1.5.4
 - automatically update hassio-addon-base to the latest version

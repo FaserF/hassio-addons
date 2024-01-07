@@ -8,18 +8,14 @@
 ## 1.6.6
 - automatically update hassio-addon-base to version v14.2.2
 
-
 ## 1.6.5
 - automatically update hassio-addon-base to version v14.1.3
-
 
 ## 1.6.4
 - automatically update hassio-addon-base to version v14.0.8
 
-
 ## 1.6.3
 - automatically update hassio-addon-base to version v14.0.8
-
 
 ## 1.6.2
 - automatically update hassio-addon-base to the latest version

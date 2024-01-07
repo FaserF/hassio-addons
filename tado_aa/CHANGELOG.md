@@ -1,7 +1,4 @@
 # Changelog
-- update hassio-addon-base to version v15.0.3
-- bump python-tado to version 0.17.3
-
 ## 1.3.9-2
 - fix min & maxtemp options in GUI and config file
 - this fixes that new users could not see the addon
