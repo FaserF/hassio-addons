@@ -11,20 +11,8 @@
 - automatically update hassio-addon-base to version v14.2.2
 - update netbootxyz to 0.6.9
 
-## 1.5.5
-- automatically update hassio-addon-base to version v14.1.3
-
-## 1.5.4
-- automatically update hassio-addon-base to version v14.0.8
-
-## 1.5.3
-- automatically update hassio-addon-base to version v14.0.8
-
-## 1.5.2
-- automatically update hassio-addon-base to the latest version
-
-## 1.5.1
-- automatically update hassio-addon-base to the latest version
+## 1.5.1 - 1.5.5
+- automatically update hassio-addon-base to the latest versions
 
 ## 1.5.0
 - bump hassio-addon-base to V14.0.0
@@ -36,35 +24,8 @@
 - bump hassio-addon-base to latest release
 - fix installation
 
-## 1.4.0
-- bump hassio-addon-base to V13.1.0
-
-## 1.3.2
-- bump hassio-addon-base to V12.2.4
-
-## 1.3.1
-- bump hassio-addon-base to V12.2.2
-
-## 1.3.0
-- bump hassio-addon-base to V12.0.0
-
-## 1.2.1
-- bump hassio-addon-base to V11.1.1
-
-## 1.2.0
-- bump hassio-addon-base to V11.0.0
-
-## 1.1.3
-- bump hassio-addon-base to V10.2.0
-
-## 1.1.2
-- bump hassio-addon-base to V10.1.0
-
-## 1.1.1
-- bump hassio-addon-base to V10.0.1
-
-## 1.1.0
-- bump hassio-addon-base to V10.0.0
+## 1.1.0 - 1.4.0
+- bump hassio-addon-base to latest versions
 
 ## 1.0.2
 - Fixed permission issues
