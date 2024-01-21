@@ -43,10 +43,10 @@ jobs:
                 new_version="$major.$minor.$patch"
                 echo "Generated new version $new_version"
 
-                if sed -i "/# Changelog/a \\## $new_version\\n- automatically update netboot-xyz to version $latest_version\n" "$file" ; then
-                  echo "Added changelog auto text for $file with new version $new_version and netboot-xyz version $latest_version"
+                if sed -i "/# Changelog/a \\## $new_version\\n- automatically update wikijs to version $latest_version\n" "$file" ; then
+                  echo "Added changelog auto text for $file with new version $new_version and wikijs version $latest_version"
                 else
-                  echo "Error while writing changelog auto text for $file with new version $new_version and netboot-xyz version $latest_version"
+                  echo "Error while writing changelog auto text for $file with new version $new_version and wikijs version $latest_version"
                 fi
             else
                 echo "No valid version found in $file"
