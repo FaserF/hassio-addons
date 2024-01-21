@@ -1,9 +1,12 @@
 # Changelog
-## 1.3.9-2
-- fix min & maxtemp options in GUI and config file
-- this fixes that new users could not see the addon
+## 1.4.0
+- update hassio-addon-base to version v15.0.4
+- bump python-tado to version 0.17.3
+- Switch python to venv to allow pip moduls on newer addon base version
 
 ## 1.3.9
+- fix min & maxtemp options in GUI and config file
+- this fixes that new users could not see the addon
 - automatically update hassio-addon-base to version v14.3.2
 
 ## 1.3.8
