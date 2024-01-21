@@ -86,4 +86,4 @@ SOFTWARE.
 [FaserF]: https://github.com/FaserF/
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [issue]: https://github.com/FaserF/hassio-addons/issues
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2024.svg
