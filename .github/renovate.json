@@ -56,6 +56,13 @@
   ],
   "packageRules": [
     {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "automerge": true,
+      "ignoreTests": true
+    },
+    {
       "groupName": "Add-on base image",
       "matchDatasources": [
         "docker"
