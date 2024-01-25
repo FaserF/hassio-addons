@@ -1,4 +1,7 @@
 # Changelog
+## 1.5.0
+- fix freenom-dns-update with latest base OS release
+
 ## 1.4.9
 - bump hassio-addon-base to version v15.0.5
 
