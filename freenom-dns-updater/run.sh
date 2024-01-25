@@ -8,6 +8,8 @@ if [ ! -f $config_file ]; then
 	exit 1
 fi
 
+source ./venv/bin/activate
+
 fdu update $config_file
 
 echo "Starting FDU every $update_time_in_seconds with the config file $config_file"

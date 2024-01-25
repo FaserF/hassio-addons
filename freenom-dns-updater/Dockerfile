@@ -7,7 +7,13 @@ FROM ${BUILD_FROM}
 #COPY . /opt/freenom_dns_updater/
 #WORKDIR /opt/freenom_dns_updater
 RUN apk add --no-cache zlib openssl-dev binutils py3-pip
-RUN pip install freenom-dns-updater
+
+# Prepare venv
+RUN python3 -m venv venv
+
+# Install python-tado via pip
+RUN source ./venv/bin/activate && \
+    pip install freenom-dns-updater==1.2.9
 #RUN rm -rf /opt/freenom_dns_updater
 
 # Copy data for add-on
