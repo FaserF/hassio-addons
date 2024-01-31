@@ -1,4 +1,7 @@
 # Changelog
+## 1.6.3
+- automatically update wikijs to version v2.5.301
+
 ## 1.6.2
 - bump hassio-addon-base to version v15.0.5
 
