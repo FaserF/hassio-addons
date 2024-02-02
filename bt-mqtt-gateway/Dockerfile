@@ -11,10 +11,16 @@ RUN wget https://github.com/zewelor/bt-mqtt-gateway/archive/refs/heads/master.zi
 RUN unzip -d /tmp/ master.zip \
 && rm -r master.zip \
 && cp -r /tmp/bt-mqtt-gateway-master/* /application
-RUN cd /application \
+# Prepare venv
+RUN python3 -m venv venv
+
+# Install pip modules
+RUN source ./venv/bin/activate \
+&& cd /application \
 && apk add --no-cache py3-pip \
 && pip install --no-cache-dir -r requirements.txt \
 && pip install --no-cache-dir `./gateway.py -r all`
+
 RUN apk del build-dependencies wget unzip
 
 #COPY /tmp/bt-mqtt-gateway-master/* /application

@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.0
+- fix pip installation failed
+
 ## 1.3.9
 - bump hassio-addon-base to version v15.0.5
 

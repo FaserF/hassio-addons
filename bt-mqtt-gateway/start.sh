@@ -16,6 +16,8 @@ cd /application
 echo "Found config file at $config_path . Copying it now."
 cp $config_path config.yaml
 
+source ./venv/bin/activate
+
 if [ "$DEBUG" = 'true' ]; then
 	echo "Start bt-mqtt gateway in debug mode"
 	python3 ./gateway.py -d
