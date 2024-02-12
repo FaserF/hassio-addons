@@ -18,12 +18,10 @@ RUN python3 -m venv venv
 RUN source ./venv/bin/activate \
 && cd /application \
 && apk add --no-cache py3-pip \
-&& pip install --no-cache-dir -r requirements.txt \
+&& pip install --no-cache-dir -r ./requirements.txt \
 && pip install --no-cache-dir `./gateway.py -r all`
 
 RUN apk del build-dependencies wget unzip
-
-#COPY /tmp/bt-mqtt-gateway-master/* /application
 
 # Copy data for add-on
 COPY start.sh /

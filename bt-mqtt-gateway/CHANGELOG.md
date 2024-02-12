@@ -1,4 +1,9 @@
 # Changelog
+## 1.4.1
+- fix python virtual environment
+- bump hassio-addon-base to version v15.0.6
+- Deprecation Warning by original developer! Please prefer using Bluetooth Proxy
+
 ## 1.4.0
 - fix pip installation failed
 
