@@ -9,6 +9,7 @@ RUN apk --no-cache add apache2 php82-apache2 libxml2-dev apache2-utils apache2-m
 RUN apk --no-cache add php82 php82-dev php82-fpm php82-mysqli php82-opcache php82-gd zlib php82-curl php82-phar php82-mbstring php82-zip php82-pdo php82-pdo_mysql php82-iconv php82-dom php82-session php82-intl php82-soap php82-fileinfo php82-xml php82-ctype php82-pecl-xdebug php82-pdo_sqlite php82-tokenizer php82-exif
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
+RUN apk --no-cache add ffmpeg
 
 #musl-locales/php-locales
 RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl
