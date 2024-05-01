@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.1
+- bump hassio-addon-base to version v15.0.8
+
 ## 1.4.0
 - update hassio-addon-base to version v15.0.4
 - bump python-tado to version 0.17.3
