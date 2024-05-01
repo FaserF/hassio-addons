@@ -3,6 +3,7 @@
 - bump hassio-addon-base to version v15.0.8
 - bump PHP and PHP extensions to 8.2
 - add php-exif module
+- add ffmpeg package
 
 ## 2.7.10
 - bump hassio-addon-base to version v15.0.5
