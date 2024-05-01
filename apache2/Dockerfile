@@ -5,8 +5,8 @@ FROM ${BUILD_FROM}
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
-RUN apk --no-cache add apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd zlib php81-curl php81-phar php81-mbstring php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml php81-ctype php81-pecl-xdebug php81-pdo_sqlite php81-tokenizer
+RUN apk --no-cache add apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
+RUN apk --no-cache add php82 php82-dev php82-fpm php82-mysqli php82-opcache php82-gd zlib php82-curl php82-phar php82-mbstring php82-zip php82-pdo php82-pdo_mysql php82-iconv php82-dom php82-session php82-intl php82-soap php82-fileinfo php82-xml php82-ctype php82-pecl-xdebug php82-pdo_sqlite php82-tokenizer php82-exif
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 
@@ -19,7 +19,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
     && cd .. && rm -r musl-locales-master
 
 # Install ssh2 extension
-#RUN apk --no-cache add libssh2-dev php81-pear zlib-dev build-base
+#RUN apk --no-cache add libssh2-dev php82-pear zlib-dev build-base
 #RUN pecl channel-update pecl.php.net \
 #    && pecl install ssh2-1.3.1
 #RUN docker-php-ext-enable ssh2
@@ -28,7 +28,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
 #RUN wget -O ssh2.tgz https://pecl.php.net/get/ssh2-1.3.1.tgz \
 #    && mkdir ssh2 && tar vxzf ssh2.tgz -C ssh2 --strip-components 1 \
 #    && cd ../ssh2 && phpize81 \
-#    && ./configure --with-ssh2 --with-php-config=/etc/php81/php.ini \
+#    && ./configure --with-ssh2 --with-php-config=/etc/php82/php.ini \
 #    && make && make install \
 #    && cd ../ && rm -rf ssh2.tgz ssh2
 

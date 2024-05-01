@@ -17,8 +17,8 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 
 ### Full Version
 The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP 8.1 modules. <br />
-This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
-The following php81 extensions will be installed: php81 php81-dev php81-fpm php81-mysqli php81-opcache php81-gd zlib php81-curl php81-phar php81-mbstring php8-pecl-mcrypt php81-zip php81-pdo php81-pdo_mysql php81-iconv php81-dom php81-session php81-intl php81-soap php81-fileinfo php81-xml php81-ctype php81-pecl-xdebug php81-pdo_sqlite php81-tokenizer<br />
+This docker image comes with: apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
+The following php82 extensions will be installed: php82 php82-dev php82-fpm php82-mysqli php82-opcache php82-gd zlib php82-curl php82-phar php82-mbstring php8-pecl-mcrypt php82-zip php82-pdo php82-pdo_mysql php82-iconv php82-dom php82-session php82-intl php82-soap php82-fileinfo php82-xml php82-ctype php82-pecl-xdebug php82-pdo_sqlite php82-tokenizer php82-exif<br />
 Mosquitto & Mosquitto Dev<br />
 And it comes with php locales.
 
@@ -28,8 +28,8 @@ This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi
 
 ### Minimal Version with MariaDB
 The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br />
-This docker image comes with: apache2 php81-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
-The following php81 extensions will be installed: php81 php81-mysqli php81-opcache php81-curl php81-json php81-mbstring php81-mcrypt php81-zip
+This docker image comes with: apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
+The following php82 extensions will be installed: php82 php82-mysqli php82-opcache php82-curl php82-json php82-mbstring php82-mcrypt php82-zip
 
 ## Installation
 
@@ -87,9 +87,9 @@ Note: it has to be somewhere in the /share or /media folder! Other folders are n
 
 You can choose between the following options:
 
-default -> the default php81 php.ini file will be used
+default -> the default php82 php.ini file will be used
 
-get_file -> copies the default php81 php.ini file from the addon to /share/apache2addon_php.ini
+get_file -> copies the default php82 php.ini file from the addon to /share/apache2addon_php.ini
 
 path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
 
