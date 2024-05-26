@@ -52,27 +52,23 @@ jobs:
               if [ -n "$current_version" ]; then
                   IFS='.' read -r major minor patch <<< "$current_version"
                   echo "Got major $major , minor $minor , patch $patch"
-                  if [ -n "$patch" ]; then
-                      ((patch++))
-                      echo "Incremented Patch version to $((patch))"
-                      new_version="$major.$minor.$((patch))"
-                      echo "New version: $new_version"
-          
-                      echo "Running sed command to update changelog..."
-          
-                      sed -i "/# Changelog/a \\
-                      ## $new_version\\
-                      - automatically update addon-base to version $latest_version\\
-                      " "$file"
-                      sed_exit_code=$?
-          
-                      if [ $sed_exit_code -eq 0 ]; then
-                          echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                      else
-                          echo "Error while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                      fi
+                  ((patch = patch + 1))
+                  echo "Incremented Patch version to $((patch))"
+                  new_version="$major.$minor.$((patch))"
+                  echo "New version: $new_version"
+      
+                  echo "Running sed command to update changelog..."
+      
+                  sed -i "/# Changelog/a \\
+                  ## $new_version\\
+                  - automatically update addon-base to version $latest_version\\
+                  " "$file"
+                  sed_exit_code=$?
+      
+                  if [ $sed_exit_code -eq 0 ]; then
+                      echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
                   else
-                      echo "Error while parsing patch version number in $current_version"
+                      echo "Error while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
                   fi
               else
                   echo "No valid version found in $file"
