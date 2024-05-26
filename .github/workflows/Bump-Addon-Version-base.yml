@@ -32,9 +32,6 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
-          set -e  # Beendet das Skript bei jedem Fehler
-          set -x  # Aktiviert die Debug-Ausgabe
-          
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
           latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
@@ -54,6 +51,7 @@ jobs:
           
               if [ -n "$current_version" ]; then
                   IFS='.' read -r major minor patch <<< "$current_version"
+                  echo "Got major $major , minor $minor , patch $patch"
                   if [ -n "$patch" ]; then
                       ((patch++))
                       new_version="$major.$minor.$patch"
@@ -61,21 +59,12 @@ jobs:
           
                       # Debugging the sed command
                       echo "Running sed command to update changelog..."
-                      
-                      # Display file content before sed command
-                      echo "File content before sed command:"
-                      cat "$file"
           
-                      # Correcting the sed command with proper escaping
                       sed -i "/# Changelog/a \\
-          ## $new_version\\
-          - automatically update addon-base to version $latest_version\\
-          " "$file"
+                      ## $new_version\\
+                      - automatically update addon-base to version $latest_version\\
+                      " "$file"
                       sed_exit_code=$?
-          
-                      # Display file content after sed command
-                      echo "File content after sed command:"
-                      cat "$file"
           
                       if [ $sed_exit_code -eq 0 ]; then
                           echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
@@ -85,17 +74,11 @@ jobs:
                       fi
                   else
                       echo "Error while parsing patch version number in $current_version"
-                      exit 1
                   fi
               else
                   echo "No valid version found in $file"
-                  exit 1
               fi
           done
-          
-          set +x  # Deaktiviert die Debug-Ausgabe
-
-
       - name: Commit & Push
         uses: actions-js/push@v1.5
         with:
