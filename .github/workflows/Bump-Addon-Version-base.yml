@@ -56,8 +56,16 @@ jobs:
                       sed_command="sed '/# Changelog/a \\## $new_version\\n- automatically update addon-base to version $latest_version\\n' \"$file\""
                       echo "Sed command: $sed_command"
                       
+                      # Display file content before sed command
+                      echo "File content before sed command:"
+                      cat "$file"
+          
                       sed_output=$(eval $sed_command 2>&1)
                       sed_exit_code=$?
+          
+                      # Display file content after sed command
+                      echo "File content after sed command:"
+                      cat "$file"
           
                       if [ $sed_exit_code -eq 0 ]; then
                           echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
@@ -75,6 +83,7 @@ jobs:
                   exit 1
               fi
           done
+
       - name: Commit & Push
         uses: actions-js/push@v1.5
         with:
