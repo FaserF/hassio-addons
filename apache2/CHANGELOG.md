@@ -1,4 +1,7 @@
 # Changelog
+        ## 2.8.2
+        - automatically update addon-base to version v16.0.0
+        
 ## 2.8.1
 - Hotfix for using wrong PHP path
 
