@@ -52,12 +52,18 @@ jobs:
                       echo "New version: $new_version"
           
                       # Debugging the sed command
-                      sed_debug=$(sed "/# Changelog/a \\## $new_version\\n- automatically update addon-base to version $latest_version\\n" "$file" 2>&1)
-                      if [ $? -eq 0 ]; then
+                      echo "Running sed command to update changelog..."
+                      sed_command="sed '/# Changelog/a \\## $new_version\\n- automatically update addon-base to version $latest_version\\n' \"$file\""
+                      echo "Sed command: $sed_command"
+                      
+                      sed_output=$(eval $sed_command 2>&1)
+                      sed_exit_code=$?
+          
+                      if [ $sed_exit_code -eq 0 ]; then
                           echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
                       else
                           echo "Error while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                          echo "sed command output: $sed_debug"
+                          echo "Sed command output: $sed_output"
                           exit 1
                       fi
                   else
