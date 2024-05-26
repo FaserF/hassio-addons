@@ -32,6 +32,9 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
+          set -x  # Aktiviert die Debug-Ausgabe
+          set -e  # Beendet das Skript bei jedem Fehler
+          
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
           latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
@@ -41,6 +44,11 @@ jobs:
           echo "Found files: $files"
           
           echo "$files" | while IFS= read -r file; do
+              if [ ! -w "$file" ]; then
+                  echo "File $file is not writable"
+                  exit 1
+              fi
+          
               current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
               echo "Processing $file, current version: $current_version"
           
@@ -83,6 +91,9 @@ jobs:
                   exit 1
               fi
           done
+          
+          set +x  # Deaktiviert die Debug-Ausgabe
+
 
       - name: Commit & Push
         uses: actions-js/push@v1.5
