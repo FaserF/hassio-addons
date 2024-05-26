@@ -53,11 +53,11 @@ jobs:
                   IFS='.' read -r major minor patch <<< "$current_version"
                   echo "Got major $major , minor $minor , patch $patch"
                   if [ -n "$patch" ]; then
-                      ((patch++))
-                      new_version="$major.$minor.$patch"
+                      $((patch++))
+                      echo "Incremented Patch version to $((patch))"
+                      new_version="$major.$minor.$((patch))"
                       echo "New version: $new_version"
           
-                      # Debugging the sed command
                       echo "Running sed command to update changelog..."
           
                       sed -i "/# Changelog/a \\
@@ -70,7 +70,6 @@ jobs:
                           echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
                       else
                           echo "Error while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                          exit 1
                       fi
                   else
                       echo "Error while parsing patch version number in $current_version"
