@@ -112,7 +112,7 @@ Please keep in mind, that this software is only tested on amd64 running on a Fuj
 
 MIT License
 
-Copyright (c) 2019-2023 FaserF
+Copyright (c) 2019-2024 FaserF
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
