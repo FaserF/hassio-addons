@@ -32,8 +32,8 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
-          set -x  # Aktiviert die Debug-Ausgabe
           set -e  # Beendet das Skript bei jedem Fehler
+          set -x  # Aktiviert die Debug-Ausgabe
           
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
@@ -61,19 +61,16 @@ jobs:
           
                       # Debugging the sed command
                       echo "Running sed command to update changelog..."
-                      # Correcting the sed command with proper escaping
-                      sed_command="sed -i '/# Changelog/a \\
-          ## $new_version\\
-          - automatically update addon-base to version $latest_version\\
-          ' \"$file\""
-                      echo "Sed command: $sed_command"
                       
                       # Display file content before sed command
                       echo "File content before sed command:"
                       cat "$file"
           
-                      # Execute the sed command
-                      eval $sed_command
+                      # Correcting the sed command with proper escaping
+                      sed -i "/# Changelog/a \\
+          ## $new_version\\
+          - automatically update addon-base to version $latest_version\\
+          " "$file"
                       sed_exit_code=$?
           
                       # Display file content after sed command
@@ -97,6 +94,7 @@ jobs:
           done
           
           set +x  # Deaktiviert die Debug-Ausgabe
+
 
       - name: Commit & Push
         uses: actions-js/push@v1.5
