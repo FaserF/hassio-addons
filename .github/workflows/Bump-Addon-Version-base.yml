@@ -61,14 +61,19 @@ jobs:
           
                       # Debugging the sed command
                       echo "Running sed command to update changelog..."
-                      sed_command="sed '/# Changelog/a \\## $new_version\\n- automatically update addon-base to version $latest_version\\n' \"$file\""
+                      # Correcting the sed command with proper escaping
+                      sed_command="sed -i '/# Changelog/a \\
+          ## $new_version\\
+          - automatically update addon-base to version $latest_version\\
+          ' \"$file\""
                       echo "Sed command: $sed_command"
                       
                       # Display file content before sed command
                       echo "File content before sed command:"
                       cat "$file"
           
-                      sed_output=$(eval $sed_command 2>&1)
+                      # Execute the sed command
+                      eval $sed_command
                       sed_exit_code=$?
           
                       # Display file content after sed command
@@ -79,7 +84,6 @@ jobs:
                           echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
                       else
                           echo "Error while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                          echo "Sed command output: $sed_output"
                           exit 1
                       fi
                   else
@@ -93,7 +97,6 @@ jobs:
           done
           
           set +x  # Deaktiviert die Debug-Ausgabe
-
 
       - name: Commit & Push
         uses: actions-js/push@v1.5
