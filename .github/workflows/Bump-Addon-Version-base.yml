@@ -53,7 +53,7 @@ jobs:
                   IFS='.' read -r major minor patch <<< "$current_version"
                   echo "Got major $major , minor $minor , patch $patch"
                   if [ -n "$patch" ]; then
-                      $((patch++))
+                      ((patch++))
                       echo "Incremented Patch version to $((patch))"
                       new_version="$major.$minor.$((patch))"
                       echo "New version: $new_version"
