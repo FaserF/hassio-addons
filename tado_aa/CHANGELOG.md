@@ -1,6 +1,10 @@
 # Changelog
-        ## 1.4.2
-        - automatically update addon-base to version v16.0.0
+## 1.4.3
+- display more terminal output by default
+- new log_level option
+
+## 1.4.2
+- automatically update addon-base to version v16.0.0
 
 ## 1.4.1
 - bump hassio-addon-base to version v15.0.8
