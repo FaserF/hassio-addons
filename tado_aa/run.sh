@@ -14,7 +14,7 @@ source ./venv/bin/activate
 
 echo "Starting Tado Auto Assist python script from adrianslabu/tado_aa"
 if [ $log_level != "minimal" ]; then
-    python3 -u /tado_aa.py
+	python3 -u /tado_aa.py
 else
-    python3 /tado_aa.py
+	python3 /tado_aa.py
 fi
