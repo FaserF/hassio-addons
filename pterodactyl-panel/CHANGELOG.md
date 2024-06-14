@@ -1,4 +1,10 @@
 # Changelog
+## 0.5.0
+- update addon-base to version v16.0.1
+- update PHP & PHP modules to 8.2
+- improved debugging
+- fixed error while installing the addon
+
 ## 0.4.1
 - link fixes
 
