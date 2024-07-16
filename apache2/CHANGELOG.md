@@ -1,4 +1,7 @@
 # Changelog
+t## 2.8.2
+	- automatically update addon-base to version v16.1.3
+
         ## 2.8.2
         - automatically update addon-base to version v16.0.0
 

@@ -1,4 +1,7 @@
 # Changelog
+t## 0.5.1
+	- automatically update addon-base to version v16.1.3
+
 ## 0.5.0
 - update addon-base to version v16.0.1
 - update PHP & PHP modules to 8.2

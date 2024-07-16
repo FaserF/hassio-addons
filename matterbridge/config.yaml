@@ -1,6 +1,6 @@
 ---
 name: Matterbridge
-version: 1.2.11
+version: 1.2.12
 slug: matterbridge
 description: A simple chat bridge
 url: https://github.com/FaserF/hassio-addons/tree/master/matterbridge
