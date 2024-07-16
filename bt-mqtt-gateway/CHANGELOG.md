@@ -1,9 +1,9 @@
 # Changelog
-t## 1.4.2
-	- automatically update addon-base to version v16.1.3
+## 1.4.3
+- automatically update addon-base to version v16.1.3
 
-        ## 1.4.2
-        - automatically update addon-base to version v16.0.0
+## 1.4.2
+- automatically update addon-base to version v16.0.0
 
 ## 1.4.1
 - fix python virtual environment

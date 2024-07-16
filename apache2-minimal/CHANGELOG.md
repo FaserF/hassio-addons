@@ -1,9 +1,9 @@
 # Changelog
-t## 2.8.1
-	- automatically update addon-base to version v16.1.3
+## 2.8.3
+- automatically update addon-base to version v16.1.3
 
-        ## 2.8.1
-        - automatically update addon-base to version v16.0.0
+## 2.8.1
+- automatically update addon-base to version v16.0.0
 
 ## 2.8.0
 - bump hassio-addon-base to version v15.0.8

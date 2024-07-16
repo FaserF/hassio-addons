@@ -1,6 +1,6 @@
 # Changelog
-t## 1.4.4
-	- automatically update addon-base to version v16.1.3
+## 1.4.5
+- automatically update addon-base to version v16.1.3
 
 ## 1.4.3
 - display more terminal output by default
