@@ -29,7 +29,7 @@ Support: Yes
 ### bt-mqtt-gateway
 [Bluetooth to MQTT Gateway] (https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway)<br />
 
-Support: Limited (not used by me anymore)
+Support: No (Deprecated from the original developer)
 
 ### Freenom DNS Updater
 [This is a simple Docker Image to update domain stuff in your freenom registrar] (https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater)<br />

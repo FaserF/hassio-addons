@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.4
+- This addon is obsolete and wont be supported anymore! Please use bluetooth-proxy instead!
+
 ## 1.4.3
 - automatically update addon-base to version v16.1.3
 
