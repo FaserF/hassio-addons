@@ -1,4 +1,7 @@
 # Changelog
+## 2.8.5
+- automatically update addon-base to version v16.2.1
+
 ## 2.8.4
 - fix phppath import
 

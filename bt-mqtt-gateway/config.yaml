@@ -1,6 +1,6 @@
 ---
 name: bt-mqtt-gateway
-version: 1.4.4
+version: 1.4.5
 slug: bt-mqtt-gateway
 description: Bluetooth-MQTT-Gateway
 url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
