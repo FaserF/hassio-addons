@@ -10,7 +10,7 @@ password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php81/php.ini
+phppath=/etc/php82/php.ini
 
 if [ $phpini = "get_file" ]; then
 	cp $phppath /share/apache2addon_php.ini
