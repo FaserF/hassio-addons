@@ -1,4 +1,8 @@
 # Changelog
+## 2.9.0
+- add php-xmlwriter
+- update php 8.2 and modules to php 8.3
+
 ## 2.8.4
 - automatically update addon-base to version v16.2.1
 

@@ -1,4 +1,7 @@
 # Changelog
+## 2.9.0
+- nothing new, just bumping version to stay similar with other apache addons
+
 ## 2.8.4
 - automatically update addon-base to version v16.2.1
 

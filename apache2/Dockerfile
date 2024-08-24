@@ -5,8 +5,8 @@ FROM ${BUILD_FROM}
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
-RUN apk --no-cache add apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php82 php82-dev php82-fpm php82-mysqli php82-opcache php82-gd zlib php82-curl php82-phar php82-mbstring php82-zip php82-pdo php82-pdo_mysql php82-iconv php82-dom php82-session php82-intl php82-soap php82-fileinfo php82-xml php82-ctype php82-pecl-xdebug php82-pdo_sqlite php82-tokenizer php82-exif php82-xmlwriter
+RUN apk --no-cache add apache2 php83-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
+RUN apk --no-cache add php83 php83-dev php83-fpm php83-mysqli php83-opcache php83-gd zlib php83-curl php83-phar php83-mbstring php83-zip php83-pdo php83-pdo_mysql php83-iconv php83-dom php83-session php83-intl php83-soap php83-fileinfo php83-xml php83-ctype php83-pecl-xdebug php83-pdo_sqlite php83-tokenizer php83-exif php83-xmlwriter
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 RUN apk --no-cache add ffmpeg
@@ -20,7 +20,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
     && cd .. && rm -r musl-locales-master
 
 # Install ssh2 extension
-#RUN apk --no-cache add libssh2-dev php82-pear zlib-dev build-base
+#RUN apk --no-cache add libssh2-dev php83-pear zlib-dev build-base
 #RUN pecl channel-update pecl.php.net \
 #    && pecl install ssh2-1.3.1
 #RUN docker-php-ext-enable ssh2
@@ -29,7 +29,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
 #RUN wget -O ssh2.tgz https://pecl.php.net/get/ssh2-1.3.1.tgz \
 #    && mkdir ssh2 && tar vxzf ssh2.tgz -C ssh2 --strip-components 1 \
 #    && cd ../ssh2 && phpize81 \
-#    && ./configure --with-ssh2 --with-php-config=/etc/php82/php.ini \
+#    && ./configure --with-ssh2 --with-php-config=/etc/php83/php.ini \
 #    && make && make install \
 #    && cd ../ && rm -rf ssh2.tgz ssh2
 

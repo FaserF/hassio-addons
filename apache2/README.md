@@ -16,9 +16,9 @@ The Apache HTTP Server is a project of The Apache Software Foundation.
 ## Different Versions
 
 ### Full Version
-The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP 8.1 modules. <br />
-This docker image comes with: apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client ffmpeg<br />
-The following php82 extensions will be installed: php82 php82-dev php82-fpm php82-mysqli php82-opcache php82-gd zlib php82-curl php82-phar php82-mbstring php8-pecl-mcrypt php82-zip php82-pdo php82-pdo_mysql php82-iconv php82-dom php82-session php82-intl php82-soap php82-fileinfo php82-xml php82-ctype php82-pecl-xdebug php82-pdo_sqlite php82-tokenizer php82-exif<br />
+The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP 8 modules. <br />
+This docker image comes with: apache2 php83-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client ffmpeg<br />
+The following php83 extensions will be installed: php83 php83-dev php83-fpm php83-mysqli php83-opcache php83-gd zlib php83-curl php83-phar php83-mbstring php83-zip php83-pdo php83-pdo_mysql php83-iconv php83-dom php83-session php83-intl php83-soap php83-fileinfo php83-xml php83-ctype php83-pecl-xdebug php83-pdo_sqlite php83-tokenizer php83-exif php83-xmlwriter<br />
 Mosquitto & Mosquitto Dev<br />
 And it comes with php locales.
 
@@ -28,8 +28,8 @@ This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi
 
 ### Minimal Version with MariaDB
 The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br />
-This docker image comes with: apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
-The following php82 extensions will be installed: php82 php82-mysqli php82-opcache php82-curl php82-json php82-mbstring php82-mcrypt php82-zip
+This docker image comes with: apache2 php83-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
+The following php83 extensions will be installed: php83 php83-mysqli php83-opcache php83-curl php83-mbstring php83-zip
 
 ## Installation
 
@@ -87,9 +87,9 @@ Note: it has to be somewhere in the /share or /media folder! Other folders are n
 
 You can choose between the following options:
 
-default -> the default php82 php.ini file will be used
+default -> the default php83 php.ini file will be used
 
-get_file -> copies the default php82 php.ini file from the addon to /share/apache2addon_php.ini
+get_file -> copies the default php83 php.ini file from the addon to /share/apache2addon_php.ini
 
 path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
 

@@ -5,8 +5,8 @@ FROM ${BUILD_FROM}
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
-RUN apk --no-cache add apache2 php82-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php82 php82-mysqli php82-opcache php82-curl php82-mbstring php82-zip
+RUN apk --no-cache add apache2 php83-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
+RUN apk --no-cache add php83 php83-mysqli php83-opcache php83-curl php83-mbstring php83-zip
 RUN apk --no-cache add mariadb-client
 
 #Configure Logging
