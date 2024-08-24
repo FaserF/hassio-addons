@@ -58,7 +58,7 @@
         "/Dockerfile$"
       ],
       "matchStrings": [
-        "RUN apk --no-cache add (?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
+        "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
         "php(?<currentValue>\\d+)"
       ],
       "datasourceTemplate": "alpine",
