@@ -58,10 +58,11 @@
         "/Dockerfile$"
       ],
       "matchStrings": [
-        "RUN apk --no-cache add (?<packages>php[0-9]+(?:-[a-z0-9-]+)*(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)"
+        "RUN apk --no-cache add (?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
+        "php(?<currentValue>\\d+)"
       ],
       "datasourceTemplate": "alpine",
-      "versioningTemplate": "regex:^(?<major>\\d+)(?<minor>\\d+)"
+      "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
     }
   ],
   "packageRules": [
