@@ -10,7 +10,7 @@ password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php82/php.ini
+phppath=/etc/php83/php.ini
 
 if [ $phpini = "get_file" ]; then
 	cp $phppath /share/apache2addon_php.ini
@@ -170,7 +170,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
-mkdir /usr/lib/php82/modules/opcache
+mkdir /usr/lib/php83/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l $webrootdocker
