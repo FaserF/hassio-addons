@@ -2,7 +2,7 @@
 name: SAP ABAP Cloud Developer Trial
 version: 1.0.0
 slug: sap
-description: OpenSource Webserver with PHP and MariaDB
+description: SAP ABAP Cloud Developer Trial
 url: https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-developer-trial
 arch:
   - amd64
