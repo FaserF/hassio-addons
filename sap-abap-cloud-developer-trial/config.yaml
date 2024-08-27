@@ -1,0 +1,28 @@
+---
+name: SAP ABAP Cloud Developer Trial
+version: 1.0.0
+slug: sap
+description: OpenSource Webserver with PHP and MariaDB
+url: https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-developer-trial
+arch:
+  - amd64
+startup: services
+boot: auto
+webui: http://[HOST]:[PORT:8443]
+ingress: true
+init: false
+panel_icon: mdi:database-edit
+ports:
+  3200/tcp: 3200
+  3300/tcp: 3300
+  8443/tcp: 8443
+  30213/tcp: 30213
+  50000/tcp: 50000
+  50001/tcp: 50001
+ports_description:
+  3200/tcp: "3200"
+  3300/tcp: "3300"
+  8443/tcp: HTTPS Web Pot
+  30213/tcp: "30213"
+  50000/tcp: "50000"
+  50001/tcp: "50001"
