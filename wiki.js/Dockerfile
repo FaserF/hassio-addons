@@ -19,7 +19,7 @@ RUN ARCH= && alpineArch="$(apk --print-arch)" && \
     case "${alpineArch##*-}" in \
         x86_64) \
           ARCH='x64' \
-          CHECKSUM="b3f80fe7d0f1af6fe25ffedc7237ca519965d08fc800eab29cf45cd5b90cdb26" \
+          CHECKSUM="6966b7e2e62a6c2f9d096697af980d02b83d92e23a68463f28f8fec9b408d093" \
           ;; \
         *) \
           echo "Unsupported architecture"; exit 1 ;; \
