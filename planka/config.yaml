@@ -1,0 +1,39 @@
+---
+name: Planka
+version: 1.0.0
+slug: planka
+description: Open-source project management software
+url: https://github.com/FaserF/hassio-addons/tree/master/planka
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: application
+boot: auto
+webui: http://[HOST]:[PORT:1337]
+ports:
+  1337/tcp: 1337
+map:
+  - ssl:rw
+  - media:rw
+  - share:rw
+ingress: true
+init: false
+panel_icon: mdi:trello
+options:
+  init_commands: []
+  database_url: postgres://plankauser:plankapassword@db/plankadb
+  port: 1337
+  secret_key: mysecretkey
+schema:
+  database_url:
+    type: str
+    default: postgres://plankauser:plankapassword@db/plankadb
+  port:
+    type: int
+    default: 1337
+  secret_key:
+    type: str
+    default: mysecretkey
