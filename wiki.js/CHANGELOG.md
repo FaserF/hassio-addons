@@ -1,9 +1,8 @@
 # Changelog
-## 1.7.2
+## 2.0.0
 - automatically update addon-base to version v16.3.1
-
-## 1.7.1
 - automatically update wikijs to version v2.5.304
+- update Node.JS to v22.9.0
 
 ## 1.7.0
 - automatically update addon-base to version v16.3.0

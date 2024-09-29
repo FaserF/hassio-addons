@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 RUN apk add --no-cache wget tar mariadb-client
 
-ENV NODE_VERSION 16.20.0
+ENV NODE_VERSION 22.9.0
 
 # Separate steps for better debugging
 RUN addgroup -g 1000 node && \
