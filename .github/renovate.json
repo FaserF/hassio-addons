@@ -1,21 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "no-stale"
-  ],
+  "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "regexManagers": [
     {
-      "fileMatch": [
-        "/Dockerfile$",
-        "/build.yaml$"
-      ],
+      "fileMatch": ["/Dockerfile$", "/build.yaml$"],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -24,9 +16,7 @@
       "datasourceTemplate": "docker"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
         "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -34,9 +24,7 @@
       "depNameTemplate": "42wim/matterbridge"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
         "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -44,9 +32,7 @@
       "depNameTemplate": "netbootxyz/webapp"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
         "ARG WIKIJS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -54,9 +40,7 @@
       "depNameTemplate": "requarks/wiki"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
         "ARG PLANKA_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -64,9 +48,7 @@
       "depNameTemplate": "plankanban/planka"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
         "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
         "php(?<currentValue>\\d+)"
@@ -77,108 +59,68 @@
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/base"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/base"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on Debian base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/debian-base"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on python base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/base-python"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/base-python"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Wiki.JS",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "requarks/wiki"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["requarks/wiki"],
       "automerge": true
     },
     {
       "groupName": "Planka",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "plankanban/planka"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["plankanban/planka"],
       "automerge": true
     },
     {
       "groupName": "Matterbridge",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "42wim/matterbridge"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["42wim/matterbridge"],
       "automerge": true
     },
     {
       "groupName": "Netbootxyz",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "netbootxyz/webapp"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["netbootxyz/webapp"],
       "automerge": true
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
-      "addLabels": [
-        "python"
-      ],
+      "matchManagers": ["pip_requirements"],
+      "addLabels": ["python"],
       "rangeStrategy": "pin"
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
+      "matchManagers": ["pip_requirements"],
       "automerge": true
     },
     {
       "groupName": "PHP Packages",
-      "matchDatasources": [
-        "alpine"
-      ],
-      "matchPackagePatterns": [
-        "php\\d+"
-      ],
+      "matchDatasources": ["alpine"],
+      "matchPackagePatterns": ["php\\d+"],
       "automerge": true
     }
   ]
