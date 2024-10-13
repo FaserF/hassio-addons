@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.2
+- automatically update wikijs to version v2.5.305
+
 ## 2.0.1
 - automatically update addon-base to version v16.3.2
 
