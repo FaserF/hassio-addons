@@ -1,4 +1,7 @@
 # Changelog
+## 2.10.0
+- add multiple PHP extensions: php83-simplexml php83-gd php83-json php83-imap php83-apcu
+
 ## 2.9.7
 - automatically update addon-base to version v16.3.5
 
