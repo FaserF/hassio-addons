@@ -1,4 +1,7 @@
 # Changelog
+## 2.10.0
+- nothing changed. Just following versioning from apache full version
+
 ## 2.9.6
 - automatically update addon-base to version v16.3.5
 
