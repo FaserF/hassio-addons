@@ -7,11 +7,12 @@ RUN mkdir /run/apache2
 
 RUN apk --no-cache add apache2 php83-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
 RUN apk --no-cache add php83 php83-dev php83-fpm php83-mysqli php83-opcache php83-gd zlib php83-curl php83-phar php83-mbstring php83-zip php83-pdo php83-pdo_mysql php83-iconv php83-dom php83-session php83-intl php83-soap php83-fileinfo php83-xml php83-ctype php83-pecl-xdebug php83-pdo_sqlite php83-tokenizer php83-exif php83-xmlwriter php83-cgi
-RUN apk --no-cache add php83-simplexml 
-RUN apk --no-cache add php83-gd php83-json 
-#RUN apk --no-cache add php83-php_posix 
-RUN apk --no-cache add php83-imap 
-RUN apk --no-cache add php83-apcu
+RUN apk --no-cache add \
+    php83-simplexml \
+    php83-gd \
+    php83-json \
+    php83-imap \
+    php83-apcu
 RUN apk --no-cache add mosquitto mosquitto-dev
 RUN apk --no-cache add mariadb-client
 RUN apk --no-cache add ffmpeg
