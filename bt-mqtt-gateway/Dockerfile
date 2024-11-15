@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:15.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:15.0.3
 FROM ${BUILD_FROM}
 
 RUN mkdir /application
