@@ -1,6 +1,5 @@
 #!/usr/bin/with-contenv bashio
 config_path=$(bashio::config 'config_path')
-# log_level=$(bashio::config 'log_level')
 
 if ! [ -f $config_path ]; then
 	echo "There is no $config_path file! Please create one for your needs!"
@@ -11,6 +10,6 @@ echo "Found config file at $config_path . Copying it now."
 cp $config_path /etc/snclient/snclient_local.ini
 
 echo "Starting SNClient..."
-exec snclient daemon
+exec snclient server
 echo "SNClien started"
 exec tail -f /var/log/snclient/snclient.log
