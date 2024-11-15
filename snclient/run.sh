@@ -17,6 +17,6 @@
 # echo "" >/var/log/matterbridge.log
 
 echo "Starting SNClient..."
-exec snclient server
-echo "SNClien started
+exec snclient daemon
+echo "SNClien started"
 exec tail -f /var/log/snclient/snclient.log
