@@ -5,9 +5,8 @@ ARG LSB_RELEASE=bookworm
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-USER root
-
 # Install SNClient
+RUN apt-get update -y
 RUN id
 RUN pwd
 RUN curl -v "https://labs.consol.de/repo/stable/RPM-GPG-KEY" -o /etc/apt/auth.conf.d/labs.consol.de-RPM-GPG-KEY
