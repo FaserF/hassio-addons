@@ -10,7 +10,6 @@ RUN curl -v "https://labs.consol.de/repo/stable/RPM-GPG-KEY" -o /etc/apt/auth.co
 RUN echo "deb [signed-by=/etc/apt/auth.conf.d/labs.consol.de-RPM-GPG-KEY] http://labs.consol.de/repo/testing/debian ${LSB_RELEASE} main" > /etc/apt/sources.list.d/labs-consol-testing.list
 RUN apt-get update -y
 RUN apt-get install snclient -y
-RUN touch /etc/snclient/snclient_local.ini
 
 EXPOSE 8443
 

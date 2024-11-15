@@ -9,7 +9,12 @@ arch:
   - amd64
 startup: application
 boot: auto
-ingress: true
+map:
+  - share
+options:
+  config_path: "/share/snclient_local.ini"
+schema:
+  config_path: str
 init: false
 full_access: true
 ports:
