@@ -6,9 +6,6 @@ ARG LSB_RELEASE=bookworm
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install SNClient
-RUN apt-get update -y
-RUN id
-RUN pwd
 RUN curl -v "https://labs.consol.de/repo/stable/RPM-GPG-KEY" -o /etc/apt/auth.conf.d/labs.consol.de-RPM-GPG-KEY
 RUN echo "deb [signed-by=/etc/apt/auth.conf.d/labs.consol.de-RPM-GPG-KEY] http://labs.consol.de/repo/testing/debian ${LSB_RELEASE} main" > /etc/apt/sources.list.d/labs-consol-testing.list
 RUN apt-get update -y

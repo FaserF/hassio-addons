@@ -17,5 +17,6 @@ log_level=$(bashio::config 'log_level')
 # echo "" >/var/log/matterbridge.log
 
 echo "Starting SNClient..."
-exec snclient daemon
+exec snclient 
+echo "SNClien started
 exec tail -f /var/log/snclient/snclient.log
