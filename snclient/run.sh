@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bashio
-config_path=$(bashio::config 'config_path')
-log_level=$(bashio::config 'log_level')
+# config_path=$(bashio::config 'config_path')
+# log_level=$(bashio::config 'log_level')
 
 # if ! [ -f $config_path ]; then
 # 	echo "There is no $config_path file! Please create one for your needs! See here for an example: https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample"
