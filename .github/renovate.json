@@ -42,6 +42,14 @@
     {
       "fileMatch": ["/Dockerfile$"],
       "matchStrings": [
+        "ARG PLANKA_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "plankanban/planka"
+    },
+    {
+      "fileMatch": ["/Dockerfile$"],
+      "matchStrings": [
         "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
         "php(?<currentValue>\\d+)"
       ],
@@ -80,6 +88,12 @@
       "groupName": "Wiki.JS",
       "matchDatasources": ["github-releases"],
       "matchDepNames": ["requarks/wiki"],
+      "automerge": true
+    },
+    {
+      "groupName": "Planka",
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["plankanban/planka"],
       "automerge": true
     },
     {
