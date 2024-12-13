@@ -1,4 +1,7 @@
 # Changelog
+## 1.6.17
+- automatically update addon-base to version v17.0.1
+
 ## 1.6.16
 - automatically update addon-base to version v17.0.0
 
