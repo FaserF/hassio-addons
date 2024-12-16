@@ -40,7 +40,7 @@ username=$(bashio::services "mysql" "username")
 if bashio::config.true 'reset_database'; then
 	bashio::log.warning 'Recreating database'
 	echo "DROP DATABASE IF EXISTS wiki;" |
-		mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}"
+		mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}" --skip_ssl
 
 	#Remove reset_database option
 	bashio::addon.option 'reset_database'
@@ -71,7 +71,7 @@ echo "dataPath: ./data" >>/wiki/config.yml
 
 # Create database if not exists
 echo "CREATE DATABASE IF NOT EXISTS wiki;" |
-	mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}"
+	mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}" --skip_ssl
 
 echo "Starting Wiki.JS"
 node server
