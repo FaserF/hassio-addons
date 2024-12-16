@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:16.3.6
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:17.0.1
 FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -97,7 +97,7 @@ RUN export GNUPGHOME="$(mktemp -d)" && \
     yarn --version
 
 WORKDIR /wiki
-ARG WIKIJS_VERSION="v2.5.305"
+ARG WIKIJS_VERSION="v2.5.303"
 RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wiki-js.tar.gz && \
     tar xzf wiki-js.tar.gz -C /wiki && \
     rm wiki-js.tar.gz && \
