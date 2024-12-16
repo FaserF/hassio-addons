@@ -62,6 +62,8 @@ if [ $phpini != "default" ]; then
 	fi
 fi
 
+	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
+
 if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
 	echo "You have activated SSL. SSL Settings will be applied"
 	if [ ! -f /ssl/$certfile ]; then
@@ -73,7 +75,6 @@ if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
 		exit 1
 	fi
 	mkdir /etc/apache2/sites-enabled
-	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
 	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf
 	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default.conf
