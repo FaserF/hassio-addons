@@ -1,7 +1,8 @@
 # Changelog
 ## 2.0.9
 - switch mysql syntax to mariadb
-- disable mariadb ssl -> fixes addon not starting
+- disable mariadb ssl -> fixes addon not starting on initial setup
+- downgrade addon base to 16.3.6 to switch to older mariadb version -> fixes addon not starting
 
 ## 2.0.8
 - automatically update addon-base to version v17.0.1
