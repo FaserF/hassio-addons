@@ -21,7 +21,7 @@ if [ $ssl = "true" ]; then
 	fi
 fi
 
-# Require MySQL service to be available
+# Require mariadb service to be available
 #if ! bashio::services.available "mysql"; then
 #    bashio::log.error \
 #        "This add-on requires the MariaDB core add-on 2.0 or newer!"
@@ -40,7 +40,7 @@ username=$(bashio::services "mysql" "username")
 if bashio::config.true 'reset_database'; then
 	bashio::log.warning 'Recreating database'
 	echo "DROP DATABASE IF EXISTS wiki;" |
-		mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
+		mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}"
 
 	#Remove reset_database option
 	bashio::addon.option 'reset_database'
@@ -71,7 +71,7 @@ echo "dataPath: ./data" >>/wiki/config.yml
 
 # Create database if not exists
 echo "CREATE DATABASE IF NOT EXISTS wiki;" |
-	mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}"
+	mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}"
 
 echo "Starting Wiki.JS"
 node server

@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.9
+- switch mysql syntax to mariadb -> fixes addon not starting
+
 ## 2.0.8
 - automatically update addon-base to version v17.0.1
 
