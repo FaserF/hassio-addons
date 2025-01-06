@@ -1,4 +1,9 @@
 # Changelog
+## 2.11.0
+- automatically update addon-base to version v17.0.2
+- update php and it's modules to 8.4
+- add support for php84-simplexml
+
 ## 2.10.3
 - automatically update addon-base to version v17.0.1
 
