@@ -97,7 +97,7 @@ RUN export GNUPGHOME="$(mktemp -d)" && \
     yarn --version
 
 WORKDIR /wiki
-ARG WIKIJS_VERSION="v2.5.303"
+ARG WIKIJS_VERSION="v2.5.306"
 RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wiki-js.tar.gz && \
     tar xzf wiki-js.tar.gz -C /wiki && \
     rm wiki-js.tar.gz && \
