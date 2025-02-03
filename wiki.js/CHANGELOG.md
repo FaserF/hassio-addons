@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.10
+- automatically update wikijs to version v2.5.306
+
 ## 2.0.9
 - switch mysql syntax to mariadb
 - disable mariadb ssl -> fixes addon not starting on initial setup
