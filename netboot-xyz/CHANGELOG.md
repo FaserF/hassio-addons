@@ -1,4 +1,7 @@
 # Changelog
+## 1.7.9
+- automatically update netboot-xyz to version 0.7.5
+
 ## 1.7.8
 - automatically update netboot-xyz to version 0.7.4
 
