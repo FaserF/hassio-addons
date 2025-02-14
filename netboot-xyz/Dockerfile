@@ -2,7 +2,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:17.1.4
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-ARG NETBOOTXYZ_VERSION="0.7.4"
+ARG NETBOOTXYZ_VERSION="0.7.5"
 
 RUN \
   echo "**** install runtime packages ****" && \
