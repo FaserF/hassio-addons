@@ -60,12 +60,13 @@ jobs:
           version=${{ steps.information.outputs.version }}
           echo "Using imagetemplate '$imagetemplate'"
           clean_version=$(echo "$version" | sed 's/^://')
+          echo "Using version '$clean_version' as tag"
 
-          echo "::set-output name=armhf::${imagetemplate/\{arch\}/armhf}:${clean_version}"
-          echo "::set-output name=armv7::${imagetemplate/\{arch\}/armv7}:${clean_version}"
-          echo "::set-output name=aarch64::${imagetemplate/\{arch\}/aarch64}:${clean_version}"
-          echo "::set-output name=amd64::${imagetemplate/\{arch\}/amd64}:${clean_version}"
-          echo "::set-output name=i386::${imagetemplate/\{arch\}/i386}:${clean_version}"
+          echo "armhf=${imagetemplate/\{arch\}/armhf}:${clean_version}" >> $GITHUB_ENV
+          echo "armv7=${imagetemplate/\{arch\}/armv7}:${clean_version}" >> $GITHUB_ENV
+          echo "aarch64=${imagetemplate/\{arch\}/aarch64}:${clean_version}" >> $GITHUB_ENV
+          echo "amd64=${imagetemplate/\{arch\}/amd64}:${clean_version}" >> $GITHUB_ENV
+          echo "i386=${imagetemplate/\{arch\}/i386}:${clean_version}" >> $GITHUB_ENV
 
       - name: 🏷️ Create addon labels
         id: labels
@@ -94,28 +95,28 @@ jobs:
           amd64_labels=$(printf "$labels\nio.hass.arch=amd64")
           i386_labels=$(printf "$labels\nio.hass.arch=i386")
 
-          # allow multiline outputs, see https://github.community/t/set-output-truncates-multiline-strings/16852
+          # allow multiline outputs
           armhf_labels="${armhf_labels//$'\n'/'%0A'}"
           armv7_labels="${armv7_labels//$'\n'/'%0A'}"
           aarch64_labels="${aarch64_labels//$'\n'/'%0A'}"
           amd64_labels="${amd64_labels//$'\n'/'%0A'}"
           i386_labels="${i386_labels//$'\n'/'%0A'}"
 
-          echo "::set-output name=armhf::$armhf_labels"
-          echo "::set-output name=armv7::$armv7_labels"
-          echo "::set-output name=aarch64::$aarch64_labels"
-          echo "::set-output name=amd64::$amd64_labels"
-          echo "::set-output name=i386::$i386_labels"
+          echo "armhf_labels=${armhf_labels}" >> $GITHUB_ENV
+          echo "armv7_labels=${armv7_labels}" >> $GITHUB_ENV
+          echo "aarch64_labels=${aarch64_labels}" >> $GITHUB_ENV
+          echo "amd64_labels=${amd64_labels}" >> $GITHUB_ENV
+          echo "i386_labels=${i386_labels}" >> $GITHUB_ENV
 
       - name: 💽 Create addon build-args
         id: build_args
         shell: bash
         run: |
-          echo "::set-output name=armhf::BUILD_FROM=$(yq -r '.build_from.armhf // ""' ${{ steps.information.outputs.build }})"
-          echo "::set-output name=armv7::BUILD_FROM=$(yq -r '.build_from.armv7 // ""' ${{ steps.information.outputs.build }})"
-          echo "::set-output name=aarch64::BUILD_FROM=$(yq -r '.build_from.aarch64  // ""' ${{ steps.information.outputs.build }})"
-          echo "::set-output name=amd64::BUILD_FROM=$(yq -r '.build_from.amd64  // ""' ${{ steps.information.outputs.build }})"
-          echo "::set-output name=i386::BUILD_FROM=$(yq -r '.build_from.i386  // ""' ${{ steps.information.outputs.build }})"
+          echo "armhf_BUILD_FROM=$(yq -r '.build_from.armhf // ""' ${{ steps.information.outputs.build }})" >> $GITHUB_ENV
+          echo "armv7_BUILD_FROM=$(yq -r '.build_from.armv7 // ""' ${{ steps.information.outputs.build }})" >> $GITHUB_ENV
+          echo "aarch64_BUILD_FROM=$(yq -r '.build_from.aarch64  // ""' ${{ steps.information.outputs.build }})" >> $GITHUB_ENV
+          echo "amd64_BUILD_FROM=$(yq -r '.build_from.amd64  // ""' ${{ steps.information.outputs.build }})" >> $GITHUB_ENV
+          echo "i386_BUILD_FROM=$(yq -r '.build_from.i386  // ""' ${{ steps.information.outputs.build }})" >> $GITHUB_ENV
 
       - name: 🏗️ Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -131,10 +132,10 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armhf }}
+          tags: ${{ env.armhf }}
           labels: |
-            ${{ steps.labels.outputs.armhf }}
-          build-args: ${{ steps.build_args.outputs.armhf }}
+            ${{ env.armhf_labels }}
+          build-args: ${{ env.armhf_BUILD_FROM }}
           cache-from: type=local,src=/tmp/buildx-cache/armhf
           cache-to: type=local,dest=/tmp/buildx-cache-new/armhf
 
@@ -146,10 +147,10 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armv7 }}
+          tags: ${{ env.armv7 }}
           labels: |
-            ${{ steps.labels.outputs.armv7 }}
-          build-args: ${{ steps.build_args.outputs.armv7 }}
+            ${{ env.armv7_labels }}
+          build-args: ${{ env.armv7_BUILD_FROM }}
           cache-from: type=local,src=/tmp/buildx-cache/armv7
           cache-to: type=local,dest=/tmp/buildx-cache-new/armv7
 
@@ -161,10 +162,10 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.aarch64 }}
+          tags: ${{ env.aarch64 }}
           labels: |
-            ${{ steps.labels.outputs.aarch64 }}
-          build-args: ${{ steps.build_args.outputs.aarch64 }}
+            ${{ env.aarch64_labels }}
+          build-args: ${{ env.aarch64_BUILD_FROM }}
           cache-from: type=local,src=/tmp/buildx-cache/aarch64
           cache-to: type=local,dest=/tmp/buildx-cache-new/aarch64
 
@@ -176,10 +177,10 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.amd64 }}
+          tags: ${{ env.amd64 }}
           labels: |
-            ${{ steps.labels.outputs.amd64 }}
-          build-args: ${{ steps.build_args.outputs.amd64 }}
+            ${{ env.amd64_labels }}
+          build-args: ${{ env.amd64_BUILD_FROM }}
           cache-from: type=local,src=/tmp/buildx-cache/amd64
           cache-to: type=local,dest=/tmp/buildx-cache-new/amd64
 
@@ -191,10 +192,10 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.i386 }}
+          tags: ${{ env.i386 }}
           labels: |
-            ${{ steps.labels.outputs.i386 }}
-          build-args: ${{ steps.build_args.outputs.i386 }}
+            ${{ env.i386_labels }}
+          build-args: ${{ env.i386_BUILD_FROM }}
           cache-from: type=local,src=/tmp/buildx-cache/i386
           cache-to: type=local,dest=/tmp/buildx-cache-new/i386
 
@@ -215,21 +216,21 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.information.outputs.armhf }}" = 'true' ]; then
-            docker push ${{ steps.tags.outputs.armhf }}
+            docker push ${{ env.armhf }}
           fi
 
           if [ "${{ steps.information.outputs.armv7 }}" = 'true' ]; then
-            docker push ${{ steps.tags.outputs.armv7 }}
+            docker push ${{ env.armv7 }}
           fi
 
           if [ "${{ steps.information.outputs.aarch64 }}" = 'true' ]; then
-            docker push ${{ steps.tags.outputs.aarch64 }}
+            docker push ${{ env.aarch64 }}
           fi
 
           if [ "${{ steps.information.outputs.amd64 }}" = 'true' ]; then
-            docker push ${{ steps.tags.outputs.amd64 }}
+            docker push ${{ env.amd64 }}
           fi
 
           if [ "${{ steps.information.outputs.i386 }}" = 'true' ]; then
-            docker push ${{ steps.tags.outputs.i386 }}
+            docker push ${{ env.i386 }}
           fi
