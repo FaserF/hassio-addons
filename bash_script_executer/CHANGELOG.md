@@ -1,4 +1,7 @@
 # Changelog
+## 1.6.23
+- Dummy update to test new GitHub deployment workflow
+
 ## 1.6.22
 - automatically update addon-base to version v17.0.1
 
