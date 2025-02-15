@@ -123,7 +123,7 @@ jobs:
 
       - name: 💿 Build Addon - armhf
         if: ${{ steps.information.outputs.armhf == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.addon }}
           push: false
@@ -138,7 +138,7 @@ jobs:
 
       - name: 💿 Build Addon - armv7
         if: ${{ steps.information.outputs.armv7 == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.addon }}
           push: false
@@ -153,7 +153,7 @@ jobs:
 
       - name: 💿 Build Addon - aarch64
         if: ${{ steps.information.outputs.aarch64 == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.addon }}
           push: false
@@ -168,7 +168,7 @@ jobs:
 
       - name: 💿 Build Addon - amd64
         if: ${{ steps.information.outputs.amd64 == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.addon }}
           push: false
@@ -183,7 +183,7 @@ jobs:
 
       - name: 💿 Build Addon - i386
         if: ${{ steps.information.outputs.i386 == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.addon }}
           push: false
