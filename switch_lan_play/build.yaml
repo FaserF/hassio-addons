@@ -1,6 +1,6 @@
 build_from:
-  armhf: "ghcr.io/hassio-addons/base:17.1.5"
-  armv7: "ghcr.io/hassio-addons/base:17.1.5"
-  aarch64: "ghcr.io/hassio-addons/base:17.1.5"
-  amd64: "ghcr.io/hassio-addons/base:17.1.5"
-  i386: "ghcr.io/hassio-addons/base:17.1.5"
+  armhf: "ghcr.io/hassio-addons/base:17.2.0"
+  armv7: "ghcr.io/hassio-addons/base:17.2.0"
+  aarch64: "ghcr.io/hassio-addons/base:17.2.0"
+  amd64: "ghcr.io/hassio-addons/base:17.2.0"
+  i386: "ghcr.io/hassio-addons/base:17.2.0"
