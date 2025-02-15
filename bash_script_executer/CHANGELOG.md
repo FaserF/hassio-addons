@@ -73,7 +73,7 @@
 - bump hassio-addon-base to latest release
 
 ## 1.5.0
-- bump hassio-addon-base to V13.1.0
+- bump hassio addon-base to V13.1.0
 
 ## 1.4.2
 - bump hassio-addon-base to V12.2.4

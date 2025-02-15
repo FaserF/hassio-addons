@@ -129,7 +129,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armhf }}
+          tags: ${{ steps.tags.outputs.armhf | replace(':', '') }}
           labels: |
             ${{ steps.labels.outputs.armhf }}
           build-args: ${{ steps.build_args.outputs.armhf }}
@@ -144,7 +144,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armv7 }}
+          tags: ${{ steps.tags.outputs.armv7 | replace(':', '') }}
           labels: |
             ${{ steps.labels.outputs.armv7 }}
           build-args: ${{ steps.build_args.outputs.armv7 }}
@@ -159,7 +159,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.aarch64 }}
+          tags: ${{ steps.tags.outputs.aarch64 | replace(':', '') }}
           labels: |
             ${{ steps.labels.outputs.aarch64 }}
           build-args: ${{ steps.build_args.outputs.aarch64 }}
@@ -174,7 +174,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.amd64 }}
+          tags: ${{ steps.tags.outputs.amd64 | replace(':', '') }}
           labels: |
             ${{ steps.labels.outputs.amd64 }}
           build-args: ${{ steps.build_args.outputs.amd64 }}
@@ -189,7 +189,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.i386 }}
+          tags: ${{ steps.tags.outputs.i386 | replace(':', '') }}
           labels: |
             ${{ steps.labels.outputs.i386 }}
           build-args: ${{ steps.build_args.outputs.i386 }}
