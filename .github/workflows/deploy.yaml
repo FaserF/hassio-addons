@@ -59,14 +59,12 @@ jobs:
           imagetemplate=${{ steps.information.outputs.image }}
           version=${{ steps.information.outputs.version }}
           echo "Using imagetemplate '$imagetemplate'"
-          clean_version=$(echo "$version" | sed 's/^://')
-          echo "Using version '$clean_version' as tag"
 
-          echo "armhf=${imagetemplate/\{arch\}/armhf}:${clean_version}" >> $GITHUB_ENV
-          echo "armv7=${imagetemplate/\{arch\}/armv7}:${clean_version}" >> $GITHUB_ENV
-          echo "aarch64=${imagetemplate/\{arch\}/aarch64}:${clean_version}" >> $GITHUB_ENV
-          echo "amd64=${imagetemplate/\{arch\}/amd64}:${clean_version}" >> $GITHUB_ENV
-          echo "i386=${imagetemplate/\{arch\}/i386}:${clean_version}" >> $GITHUB_ENV
+          echo "armhf=${imagetemplate/\{arch\}/armhf}:${version}" >> $GITHUB_ENV
+          echo "armv7=${imagetemplate/\{arch\}/armv7}:${version}" >> $GITHUB_ENV
+          echo "aarch64=${imagetemplate/\{arch\}/aarch64}:${version}" >> $GITHUB_ENV
+          echo "amd64=${imagetemplate/\{arch\}/amd64}:${version}" >> $GITHUB_ENV
+          echo "i386=${imagetemplate/\{arch\}/i386}:${version}" >> $GITHUB_ENV
 
       - name: 🏷️ Create addon labels
         id: labels
@@ -78,10 +76,18 @@ jobs:
           labels=$(printf "$labels\nio.hass.type=addon")
           labels=$(printf "$labels\nio.hass.url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/main/${{ matrix.addon }}")
 
+          # Ensure that version doesn't start with a colon or empty string
+          if [[ "${{ steps.information.outputs.version }}" == ":"* ]]; then
+            version="${{ steps.information.outputs.version:1 }}${version:1}"
+          else
+            version="${{ steps.information.outputs.version }}"
+          fi
+          echo "Using version '$version' as tag"
+
           labels=$(printf "$labels\norg.opencontainers.image.title=${{ steps.information.outputs.name }}")
           labels=$(printf "$labels\norg.opencontainers.image.description=${{ steps.information.outputs.description }}")
           labels=$(printf "$labels\norg.opencontainers.image.version=${{ steps.information.outputs.version }}")
-          labels=$(printf "$labels\norg.opencontainers.image.authors=Poeschl <Poeschl@users.noreply.github.com>")
+          labels=$(printf "$labels\norg.opencontainers.image.authors=FaserF <github@fabiseitz.de>")
           labels=$(printf "$labels\norg.opencontainers.image.url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}")
           labels=$(printf "$labels\norg.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/main/${{ matrix.addon }}")
           labels=$(printf "$labels\norg.opencontainers.image.created=$(date -Is)")
