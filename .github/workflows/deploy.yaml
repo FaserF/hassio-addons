@@ -3,11 +3,11 @@ on:
   push:
     branches:
       - master
-  #workflow_run:
-    #workflows: ["CI"]
-    #branches: [master]
-    #types:
-    #  - completed
+  workflow_run:
+    workflows: ["CI"]
+    branches: [master]
+    types:
+      - completed
 
 jobs:
   check-addon-changes:
@@ -59,11 +59,13 @@ jobs:
           imagetemplate=${{ steps.information.outputs.image }}
           version=${{ steps.information.outputs.version }}
           echo "Using imagetemplate '$imagetemplate'"
-          echo "::set-output name=armhf::${imagetemplate/\{arch\}/armhf}:${version}"
-          echo "::set-output name=armv7::${imagetemplate/\{arch\}/armv7}:${version}"
-          echo "::set-output name=aarch64::${imagetemplate/\{arch\}/aarch64}:${version}"
-          echo "::set-output name=amd64::${imagetemplate/\{arch\}/amd64}:${version}"
-          echo "::set-output name=i386::${imagetemplate/\{arch\}/i386}:${version}"
+          clean_version=$(echo "$version" | sed 's/^://')
+
+          echo "::set-output name=armhf::${imagetemplate/\{arch\}/armhf}:${clean_version}"
+          echo "::set-output name=armv7::${imagetemplate/\{arch\}/armv7}:${clean_version}"
+          echo "::set-output name=aarch64::${imagetemplate/\{arch\}/aarch64}:${clean_version}"
+          echo "::set-output name=amd64::${imagetemplate/\{arch\}/amd64}:${clean_version}"
+          echo "::set-output name=i386::${imagetemplate/\{arch\}/i386}:${clean_version}"
 
       - name: 🏷️ Create addon labels
         id: labels
@@ -129,7 +131,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armhf | replace(':', '') }}
+          tags: ${{ steps.tags.outputs.armhf }}
           labels: |
             ${{ steps.labels.outputs.armhf }}
           build-args: ${{ steps.build_args.outputs.armhf }}
@@ -144,7 +146,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.armv7 | replace(':', '') }}
+          tags: ${{ steps.tags.outputs.armv7 }}
           labels: |
             ${{ steps.labels.outputs.armv7 }}
           build-args: ${{ steps.build_args.outputs.armv7 }}
@@ -159,7 +161,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.aarch64 | replace(':', '') }}
+          tags: ${{ steps.tags.outputs.aarch64 }}
           labels: |
             ${{ steps.labels.outputs.aarch64 }}
           build-args: ${{ steps.build_args.outputs.aarch64 }}
@@ -174,7 +176,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.amd64 | replace(':', '') }}
+          tags: ${{ steps.tags.outputs.amd64 }}
           labels: |
             ${{ steps.labels.outputs.amd64 }}
           build-args: ${{ steps.build_args.outputs.amd64 }}
@@ -189,7 +191,7 @@ jobs:
           push: false
           load: true
           file: ${{ matrix.addon }}/Dockerfile
-          tags: ${{ steps.tags.outputs.i386 | replace(':', '') }}
+          tags: ${{ steps.tags.outputs.i386 }}
           labels: |
             ${{ steps.labels.outputs.i386 }}
           build-args: ${{ steps.build_args.outputs.i386 }}
