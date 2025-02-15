@@ -1,0 +1,14 @@
+# Those are the addon path filters used in the workflows to determine which addon needs to be build.
+#
+apache2: apache2/**
+apache2-minimal: apache2-minimal/**
+apache2-minimal-mariadb: apache2-minimal-mariadb/**
+bash_script_executer: bash_script_executer/**
+bt-mqtt-gateway: bt-mqtt-gateway/**
+matterbridge: matterbridge/**
+netboot-xyz: netboot-xyz/**
+openssl: openssl/**
+switch_lan_play: switch_lan_play/**
+switch_lan_play_server: switch_lan_play_server/**
+tado_aa: tado_aa/**
+wiki.js: wiki.js/**
