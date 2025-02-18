@@ -1,4 +1,8 @@
 # Changelog
+## 2.0.11
+PLEASE SWITCH TO https://github.com/jdeath/homeassistant-addons/tree/main/wikijs
+- Downgrade to addon-base v17.1.5 since the latest 17.2.X version breaks the installation
+
 ## 2.0.10
 - Automatically updated addon-base to version v17.2.1
 

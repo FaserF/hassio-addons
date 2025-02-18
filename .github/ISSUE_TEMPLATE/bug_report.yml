@@ -82,7 +82,6 @@ body:
         - Switch_LAN_Play
         - Switch_LAN_Play_Server
         - Tuya-Convert
-        - Wiki.JS
         - xqrepack
         - Other
   - type: markdown

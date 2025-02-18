@@ -94,7 +94,7 @@ Support: No
 ### Wiki.JS
 The most powerful and extensible open source Wiki software: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
 
-Support: Yes
+Support: No, please use (https://github.com/jdeath/homeassistant-addons/tree/main/wikijs)[https://github.com/jdeath/homeassistant-addons/tree/main/wikijs] instead
 
 ### xqrepack
 These scripts allow you to modify the Xiaomi R3600 firmware image to make sure SSH and UART access is always enabled.: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
