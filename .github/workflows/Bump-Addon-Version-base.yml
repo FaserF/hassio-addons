@@ -56,8 +56,15 @@ jobs:
               fi
               echo " Try recieving major minor patch number from '$OLD_VERSION'"
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
-              echo " Got '$IFS', increasing patch number now."
-              ((patch++))
+              if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
+                  echo "❌ Error: Failed to parse version components from '$OLD_VERSION'. Got: '$major' '$minor' '$patch'"
+                  exit 1
+              fi
+              echo " Got '$major' '$minor' '$patch', increasing patch number now."
+              if ! ((patch++)); then
+                  echo "❌ Error: Patch version increment failed!"
+                  exit 1
+              fi
               NEW_VERSION="$major.$minor.$patch"
               echo " Updating $configfile from $OLD_VERSION to $NEW_VERSION"
               echo "SED command: sed -i.bak \"s/^version: $OLD_VERSION/version: $NEW_VERSION/\" \"$configfile\""
