@@ -1,4 +1,7 @@
 # Changelog
+## 2.11.1
+- Automatically updated addon-base to version v17.2.1
+
 ## 2.11.0
 - automatically update addon-base to version v17.0.2
 - update php and it's modules to 8.4
