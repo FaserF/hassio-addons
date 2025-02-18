@@ -54,7 +54,9 @@ jobs:
                   echo "❌ Error: Version format in $configfile is invalid: '$OLD_VERSION'"
                   exit 1
               fi
+              echo " Try recieving major minor patch number from '$OLD_VERSION'"
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
+              echo " Got '$IFS', increasing patch number now."
               ((patch++))
               NEW_VERSION="$major.$minor.$patch"
               echo " Updating $configfile from $OLD_VERSION to $NEW_VERSION"
