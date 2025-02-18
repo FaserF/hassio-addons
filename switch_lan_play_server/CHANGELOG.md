@@ -1,5 +1,5 @@
 # Changelog
-## 1.5.23
+## 1.5.22
 - automatically update addon-base to version v17.2.1
 
 ## 1.5.22

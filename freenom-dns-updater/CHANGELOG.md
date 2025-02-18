@@ -1,9 +1,7 @@
 # Changelog
-## 1.5.14
-- automatically update addon-base to version v17.2.1
-
-## 1.5.13
+## 1.6.4
 - automatically update addon-base to version v17.0.1
+- (Strange version jump due to now fixed bug in GitHub Workflows)
 
 ## 1.5.12
 - automatically update addon-base to version v17.0.0

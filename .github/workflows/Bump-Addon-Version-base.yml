@@ -78,8 +78,7 @@ jobs:
               fi
               NEW_VERSION="$major.$minor.$patch"
               echo " Updating $configfile from $OLD_VERSION to $NEW_VERSION"
-              echo "SED command: sed -i.bak \"s/^version: $OLD_VERSION/version: $NEW_VERSION/\" \"$configfile\""
-              sed -i.bak "s/^version: $OLD_VERSION/version: $NEW_VERSION/" "$configfile" || {
+              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" "$configfile"
                   echo "❌ Error: Failed to update version in $configfile"
                   echo "OLD_VERSION: $OLD_VERSION"
                   echo "NEW_VERSION: $NEW_VERSION"
@@ -98,43 +97,54 @@ jobs:
       - name: "Update Changelog"
         id: changelog
         run: |
+          set -e
+          echo "🔄 Starting changelog version increment process..."
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
           latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
           files=$(find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
-
-          echo "Latest version from repo: $latest_version"
-          echo "Found files: $files"
-
-          echo "$files" | while IFS= read -r file; do
-              if [ ! -w "$file" ]; then
-                  echo "File $file is not writable"
+          if [[ -z "$files" ]]; then
+              echo "❌ Error: No CHANGELOG.md files found!"
+              exit 1
+          fi
+          echo "✅ Latest version from repo: $latest_version"
+          echo "✅ Found files: $files"
+          while IFS= read -r file; do
+              echo "--------------------------------------------"
+              echo "📄 Processing: $file"
+              if [[ ! -f "$file" ]]; then
+                  echo "❌ Error: $file not found!"
                   exit 1
               fi
-
-              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
-              echo "Processing $file, current version: $current_version"
-
-              if [ -n "$current_version" ]; then
-                  IFS='.' read -r major minor patch <<< "$current_version"
-                  echo "Got major $major , minor $minor , patch $patch"
-                  ((patch = patch + 1))
-                  echo "Incremented Patch version to $((patch))"
-                  new_version="$major.$minor.$((patch))"
-                  echo "New version: $new_version"
-
-                  sed -i "/# Changelog/a \\## $new_version\\n- automatically update addon-base to version $latest_version\\n" "$file"
-                  sed_exit_code=$?
-
-                  if [ $sed_exit_code -eq 0 ]; then
-                      echo "Added changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                  else
-                      echo "Error $sed_exit_code while writing changelog auto text for $file with new version $new_version and addon-base version $latest_version"
-                  fi
-              else
-                  echo "No valid version found in $file"
+              if [[ ! -w "$file" ]]; then
+                  echo "❌ Error: $file is not writable!"
+                  exit 1
               fi
-          done
+              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
+              if [[ -z "$current_version" ]]; then
+                  echo "⚠️ Warning: No valid version found in $file"
+                  continue
+              fi
+              echo "🔹 Found current version: $current_version"
+              IFS='.' read -r major minor patch <<< "$current_version"
+              if [[ -z "$patch" || ! "$patch" =~ ^[0-9]+$ ]]; then
+                  echo "❌ Error: Patch version is invalid: '$patch'"
+                  exit 1
+              fi
+              patch=$((patch + 1))
+              new_version="$major.$minor.$patch"
+              echo "🔹 Incremented Patch version to: $new_version"
+              echo "Updating $file with new version $new_version and addon-base version $latest_version..."
+              sed -i "/# Changelog/a \\## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" "$file"
+              if grep -q "## $new_version" "$file"; then
+                  echo "✅ Successfully updated $file with version $new_version"
+              else
+                  echo "❌ Error: Failed to update $file!"
+                  exit 1
+              fi
+          done <<< "$files"
+          echo "🎉 Version increment process completed successfully!"
+
       - name: Commit & Push
         uses: actions-js/push@v1.5
         with:
