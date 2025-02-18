@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.10
+- automatically update addon-base to version v17.2.1
+
 ## 2.0.9
 - switch mysql syntax to mariadb
 - disable mariadb ssl -> fixes addon not starting on initial setup

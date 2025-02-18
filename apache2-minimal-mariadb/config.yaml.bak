@@ -1,8 +1,8 @@
-name: Apache2 Minimal
-version: 2.11.1
-slug: apache2-minimal
-description: OpenSource Webserver without PHP and minimal extra modules
-url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
+name: Apache2 Minimal with MariaDB Client
+version: 2.11.0
+slug: apache2-minimal-mariadb
+description: Webserver with MariaDB Client and some PHP Modules
+url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
 arch:
   - armhf
   - armv7
@@ -21,6 +21,7 @@ init: false
 panel_icon: mdi:web-box
 options:
   document_root: /share/htdocs
+  php_ini: default
   default_conf: default
   default_ssl_conf: default
   website_name: null
@@ -30,6 +31,7 @@ options:
   init_commands: []
 schema:
   document_root: str
+  php_ini: str
   default_conf: str
   default_ssl_conf: str
   website_name: str
