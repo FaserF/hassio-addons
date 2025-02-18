@@ -22,33 +22,48 @@ jobs:
       - name: "Retrieve version & increment it"
         id: version
         run: |
+          set -e  # Kill script directly on error
+          echo "Starting version increment process..."
           configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+          if [[ -z "$configFiles" ]]; then
+              echo "Error: No config.yaml files found!"
+              exit 0
+          fi
           echo "Found config files: $configFiles"
-
           for configfile in $configFiles; do
+              echo "--------------------------------------------"
               echo "Processing: $configfile"
               if [ ! -f "$configfile" ]; then
-                  echo "Error: $configfile not found!"
+                  echo "❌ Error: $configfile not found!"
                   exit 1
               fi
               if [ ! -r "$configfile" ]; then
-                  echo "Error: $configfile is not readable!"
+                  echo "❌ Error: $configfile is not readable! Trying to fix permissions..."
+                  chmod +r "$configfile" || { echo "❌ Failed to fix permissions!"; exit 1; }
+              fi
+              OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              if [[ -z "$OLD_VERSION" ]]; then
+                  echo "❌ Error: Could not extract a valid version from $configfile"
+                  echo "🔍 File content:"
+                  cat "$configfile"
                   exit 1
               fi
-
-              OLD_VERSION=$(grep 'version: ' "$configfile" | head -1 | sed s/"version: "//)
+              echo "🔹 Extracted OLD_VERSION: '$OLD_VERSION'"
               if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                  echo "Error: Version format in $configfile is invalid: $OLD_VERSION"
+                  echo "❌ Error: Version format in $configfile is invalid: '$OLD_VERSION'"
                   exit 1
               fi
-
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
               ((patch++))
               NEW_VERSION="$major.$minor.$patch"
-              echo "Updating $configfile from $OLD_VERSION to $NEW_VERSION"
-
-              sed -i "s/$OLD_VERSION/$NEW_VERSION/g" "$configfile"
+              echo "🔹 Updating $configfile from $OLD_VERSION to $NEW_VERSION"
+              sed -i "s/version: $OLD_VERSION/version: $NEW_VERSION/g" "$configfile" || {
+                  echo "❌ Error: Failed to update version in $configfile";
+                  exit 1;
+              }
+              echo "✅ Successfully updated $configfile to version $NEW_VERSION"
           done
+          echo "🎉 Version increment process completed successfully!"
       - name: "Update Changelog"
         id: changelog
         run: |
