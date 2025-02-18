@@ -22,7 +22,6 @@ jobs:
       - name: "Retrieve version & increment it"
         id: version
         run: |
-          set -e
           echo "Starting version increment process..."
           configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
           if [[ -z "$configFiles" ]]; then
@@ -41,6 +40,7 @@ jobs:
                   echo "❌ Error: $configfile is not readable! Trying to fix permissions..."
                   chmod +r "$configfile" || { echo "❌ Failed to fix permissions!"; exit 1; }
               fi
+              sed -i 's/\r$//' "$configfile"  # Remove Windows line breaks (CRLF -> LF)
               OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
               if [[ -z "$OLD_VERSION" ]]; then
                   echo "❌ Error: Could not extract a valid version from $configfile"
@@ -57,7 +57,10 @@ jobs:
               ((patch++))
               NEW_VERSION="$major.$minor.$patch"
               echo "🔹 Updating $configfile from $OLD_VERSION to $NEW_VERSION"
-              sed -i.bak -E "s/^[[:space:]]*version:[[:space:]]+$OLD_VERSION/    version: $NEW_VERSION/" "$configfile"
+              sed -i.bak -E "s/^([[:space:]]*version:[[:space:]]*)$OLD_VERSION/\1$NEW_VERSION/" "$configfile" || {
+                  echo "❌ Error: Failed to update version in $configfile"
+                  exit 1
+              }
               NEW_VERSION_CHECK=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
               if [[ "$NEW_VERSION_CHECK" != "$NEW_VERSION" ]]; then
                   echo "❌ Error: Version update failed in $configfile!"
