@@ -23,14 +23,31 @@ jobs:
         id: version
         run: |
           configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+          echo "Found config files: $configFiles"
+
           for configfile in $configFiles; do
-              echo "Incrementing $configfile"
-              OLD_VERSION=$(cat $configfile | grep 'version: ' | head -1 | sed s/"version: "//)
+              echo "Processing: $configfile"
+              if [ ! -f "$configfile" ]; then
+                  echo "Error: $configfile not found!"
+                  exit 1
+              fi
+              if [ ! -r "$configfile" ]; then
+                  echo "Error: $configfile is not readable!"
+                  exit 1
+              fi
+
+              OLD_VERSION=$(grep 'version: ' "$configfile" | head -1 | sed s/"version: "//)
+              if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "Error: Version format in $configfile is invalid: $OLD_VERSION"
+                  exit 1
+              fi
+
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
               ((patch++))
               NEW_VERSION="$major.$minor.$patch"
-              sed -i "s/$OLD_VERSION/$NEW_VERSION/g" $configfile
-              echo "Incremented addon $configfile from version $OLD_VERSION to $NEW_VERSION"
+              echo "Updating $configfile from $OLD_VERSION to $NEW_VERSION"
+
+              sed -i "s/$OLD_VERSION/$NEW_VERSION/g" "$configfile"
           done
       - name: "Update Changelog"
         id: changelog
