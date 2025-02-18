@@ -66,6 +66,33 @@ jobs:
           echo "amd64=${imagetemplate/\{arch\}/amd64}:${version}" >> $GITHUB_ENV
           echo "i386=${imagetemplate/\{arch\}/i386}:${version}" >> $GITHUB_ENV
 
+          echo "Tag for armhf: ${{ env.armhf }}"
+          echo "Tag for armv7: ${{ env.armv7 }}"
+          echo "Tag for aarch64: ${{ env.aarch64 }}"
+          echo "Tag for amd64: ${{ env.amd64 }}"
+          echo "Tag for i386: ${{ env.i386 }}"
+
+          if [[ ! "${{ env.armhf }}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(:[a-z0-9]+([._-][a-z0-9]+)*)?$ ]]; then
+            echo "ERROR: Invalid tag format for armhf: ${{ env.armhf }}"
+            exit 1
+          fi
+          if [[ ! "${{ env.armv7 }}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(:[a-z0-9]+([._-][a-z0-9]+)*)?$ ]]; then
+            echo "ERROR: Invalid tag format for armv7: ${{ env.armv7 }}"
+            exit 1
+          fi
+          if [[ ! "${{ env.aarch64 }}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(:[a-z0-9]+([._-][a-z0-9]+)*)?$ ]]; then
+            echo "ERROR: Invalid tag format for aarch64: ${{ env.aarch64 }}"
+            exit 1
+          fi
+          if [[ ! "${{ env.amd64 }}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(:[a-z0-9]+([._-][a-z0-9]+)*)?$ ]]; then
+            echo "ERROR: Invalid tag format for amd64: ${{ env.amd64 }}"
+            exit 1
+          fi
+          if [[ ! "${{ env.i386 }}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(:[a-z0-9]+([._-][a-z0-9]+)*)?$ ]]; then
+            echo "ERROR: Invalid tag format for i386: ${{ env.i386 }}"
+            exit 1
+          fi
+
       - name: 🏷️ Create addon labels
         id: labels
         shell: bash
