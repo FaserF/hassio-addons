@@ -24,6 +24,7 @@ jobs:
         run: |
           configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
           for configfile in $configFiles; do
+              echo "Incrementing $configfile"
               OLD_VERSION=$(cat $configfile | grep 'version: ' | head -1 | sed s/"version: "//)
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
               ((patch++))
