@@ -145,7 +145,6 @@ jobs:
               fi
           done <<< "$files"
           echo "🎉 Version increment process completed successfully!"
-
       - name: Commit & Push
         uses: actions-js/push@v1.5
         with:
