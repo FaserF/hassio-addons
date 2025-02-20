@@ -66,10 +66,10 @@ jobs:
         with:
           filters: .github/paths-filter.yml
 
-  correct-CRLF:
-    if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
-    needs: check-addon-changes
-    uses: ./.github/workflows/weekly_crlftolf.yaml
+#  correct-CRLF:
+#    if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
+#    needs: check-addon-changes
+#    uses: ./.github/workflows/weekly_crlftolf.yaml
 
   make-executable:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
