@@ -73,7 +73,7 @@ jobs:
 
   make-executable:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
-    needs: [check-addon-changes, correct-CRLF]
+    needs: [check-addon-changes] # , correct-CRLF
     runs-on: ubuntu-latest
     strategy: 
       fail-fast: false
@@ -117,7 +117,7 @@ jobs:
 
   build:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
-    needs: [check-addon-changes, make-executable, correct-CRLF]
+    needs: [check-addon-changes, make-executable] # , correct-CRLF
     runs-on: ubuntu-latest
     environment: CR_PAT
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
