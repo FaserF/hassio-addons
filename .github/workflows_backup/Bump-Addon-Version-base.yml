@@ -1,0 +1,154 @@
+---
+name: Automatically bump version on addon base updates and changelog
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.head_commit.message, 'Update ghcr.io/hassio-addons/base-python') }} # Detect that the base addon has been updated
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: "true"
+          fetch-depth: 0
+      - name: "Retrieve version & increment it"
+        id: version
+        run: |
+          set -e
+          echo "Starting version increment process..."
+          configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+          if [[ -z "$configFiles" ]]; then
+              echo "Error: No config.yaml files found!"
+              exit 0
+          fi
+          echo "Found config files: $configFiles"
+          for configfile in $configFiles; do
+              echo "--------------------------------------------"
+              echo "Processing: $configfile"
+              if [ ! -f "$configfile" ]; then
+                  echo "❌ Error: $configfile not found!"
+                  exit 1
+              fi
+              if [ ! -r "$configfile" ]; then
+                  echo "❌ Error: $configfile is not readable! Trying to fix permissions..."
+                  chmod +r "$configfile" || { echo "❌ Failed to fix permissions!"; exit 1; }
+              fi
+              sed -i 's/\r$//' "$configfile"  # Remove Windows line breaks (CRLF -> LF)
+              OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              if [[ -z "$OLD_VERSION" ]]; then
+                  echo "❌ Error: Could not extract a valid version from $configfile"
+                  echo " File content:"
+                  cat "$configfile"
+                  exit 1
+              fi
+              echo " Extracted OLD_VERSION: '$OLD_VERSION'"
+              if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "❌ Error: Version format in $configfile is invalid: '$OLD_VERSION'"
+                  exit 1
+              fi
+              echo " Try receiving major minor patch number from '$OLD_VERSION'"
+              IFS='.' read -r major minor patch <<< "$OLD_VERSION"
+              if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
+                  echo "❌ Error: Failed to parse version components from '$OLD_VERSION'. Got: '$major' '$minor' '$patch'"
+                  exit 1
+              fi
+              echo " Got '$major' '$minor' '$patch', increasing patch number now."
+              if [[ -z "$patch" || ! "$patch" =~ ^[0-9]+$ ]]; then
+                  echo "❌ Error: Patch version is invalid: '$patch'"
+                  echo "🔄 Trying different versioning now."
+                  if [[ -z "$minor" || ! "$minor" =~ ^[0-9]+$ ]]; then
+                      echo "⚠️ Warning: Minor version is also invalid: '$minor'"
+                      exit 1
+                  else
+                      minor=$((minor + 1))
+                      patch=0
+                      echo "🔹 Incremented minor version: $major.$minor.$patch"
+                  fi
+              else
+                  patch=$((patch + 1))
+                  echo "🔹 Incremented patch version: $major.$minor.$patch"
+              fi
+              NEW_VERSION="$major.$minor.$patch"
+              echo " Updating $configfile from $OLD_VERSION to $NEW_VERSION"
+              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" "$configfile"
+              if [ $? -ne 0 ]; then
+                  echo "❌ Error: Failed to update version in $configfile"
+                  echo "OLD_VERSION: $OLD_VERSION"
+                  echo "NEW_VERSION: $NEW_VERSION"
+                  exit 1
+              fi
+              NEW_VERSION_CHECK=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              if [[ "$NEW_VERSION_CHECK" != "$NEW_VERSION" ]]; then
+                  echo "❌ Error: Version update failed in $configfile!"
+                  echo " File content after attempt:"
+                  cat "$configfile"
+                  exit 1
+              fi
+              echo "✅ Successfully updated $configfile to version $NEW_VERSION"
+          done
+          echo "🎉 Version increment process completed successfully!"
+      - name: "Update Changelog"
+        id: changelog
+        run: |
+          set -e
+          echo "🔄 Starting changelog version increment process..."
+          repo_url="https://api.github.com/repos/hassio-addons/addon-base"
+          response=$(curl -s "$repo_url/releases")
+          latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
+          files=$(find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
+          if [[ -z "$files" ]]; then
+              echo "❌ Error: No CHANGELOG.md files found!"
+              exit 1
+          fi
+          echo "✅ Latest version from repo: $latest_version"
+          echo "✅ Found files: $files"
+          while IFS= read -r file; do
+              echo "--------------------------------------------"
+              echo "📄 Processing: $file"
+              if [[ ! -f "$file" ]]; then
+                  echo "❌ Error: $file not found!"
+                  exit 1
+              fi
+              if [[ ! -w "$file" ]]; then
+                  echo "❌ Error: $file is not writable!"
+                  exit 1
+              fi
+              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
+              if [[ -z "$current_version" ]]; then
+                  echo "⚠️ Warning: No valid version found in $file"
+                  continue
+              fi
+              echo "🔹 Found current version: $current_version"
+              IFS='.' read -r major minor patch <<< "$current_version"
+              if [[ -z "$patch" || ! "$patch" =~ ^[0-9]+$ ]]; then
+                  echo "❌ Error: Patch version is invalid: '$patch'"
+                  exit 1
+              fi
+              patch=$((patch + 1))
+              new_version="$major.$minor.$patch"
+              echo "🔹 Incremented Patch version to: $new_version"
+              echo "Updating $file with new version $new_version and addon-base version $latest_version..."
+              sed -i "/# Changelog/a \\## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" "$file"
+              if grep -q "## $new_version" "$file"; then
+                  echo "✅ Successfully updated $file with version $new_version"
+              else
+                  echo "❌ Error: Failed to update $file!"
+                  exit 1
+              fi
+          done <<< "$files"
+          echo "🎉 Version increment process completed successfully!"
+      - name: Commit & Push
+        uses: actions-js/push@v1.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          force: true
+          message: "Increment addon version due to addon base update"
