@@ -1,8 +1,8 @@
-# Those are the addon path filters used in the workflows to determine which addon needs to be build.
 #
-apache2: apache2/**
-apache2-minimal: apache2-minimal/**
+# Those are the addon path filters used in the workflows to determine which addon needs to be build.
 apache2-minimal-mariadb: apache2-minimal-mariadb/**
+apache2-minimal: apache2-minimal/**
+apache2: apache2/**
 bash_script_executer: bash_script_executer/**
 bt-mqtt-gateway: bt-mqtt-gateway/**
 matterbridge: matterbridge/**
