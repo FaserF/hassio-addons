@@ -31,16 +31,8 @@ jobs:
       - name: Checkout repository contents
         uses: actions/checkout@v4 # Use the checkout action
       - name: Find files with CRLF endings
-        uses: erclu/check-crlf@v1.2.0 # Use the check-crlf action
+        uses: erclu/check-crlf@v1 # Use the check-crlf action
         id: check-crlf # Assign an id to this step
-        with:
-          # Specify the paths to check
-          path: |
-            ./*
-            !.git
-            !*.png
-            !*.jpg
-            !*.bin
       - name: Apply dos2unix to files with CRLF endings
         run: |
           # Loop through each file and apply dos2unix
