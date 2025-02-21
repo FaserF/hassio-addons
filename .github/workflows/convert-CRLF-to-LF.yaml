@@ -1,0 +1,30 @@
+name: Convert CRLF to LF
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  convert-crlf-to-lf:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: "true"
+          fetch-depth: 0
+
+    - name: Check for CRLF line endings and convert to LF
+      run: |
+        # Find all files with CRLF endings and convert to LF
+        find . -type f -exec dos2unix {} \;
+
+    - name: Commit & Push
+        uses: actions-js/push@v1.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          force: true
+          message: "Convert CRLF to LF line endings"
