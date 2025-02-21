@@ -124,7 +124,7 @@ jobs:
     strategy:
       matrix:
         addon: ${{ fromJSON(needs.check-addon-changes.outputs.changedAddons) }}
-        arch: ["aarch64", "amd64", "armv7"]
+        arch: ["aarch64", "amd64", "armv7", "armhf", "i386"]
 
     steps:
       - name: Check out repository
