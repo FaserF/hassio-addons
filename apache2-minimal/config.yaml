@@ -1,5 +1,5 @@
 name: Apache2 Minimal
-version: 2.12.0
+version: 2.12.1
 slug: apache2-minimal
 description: OpenSource Webserver without PHP and minimal extra modules
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
@@ -9,7 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-#image: ghcr.io/FaserF/apache2-minimal-{arch}
+image: ghcr.io/faserf/apache2-minimal-{arch}
 map:
   - ssl:rw
   - media:rw

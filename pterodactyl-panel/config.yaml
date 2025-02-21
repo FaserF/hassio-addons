@@ -1,12 +1,12 @@
 name: pterodactyl Panel Gameserver - BETA
-version: 0.7.0
+version: 0.7.1
 slug: pterodactyl_panel
 description: OpenSource Gameserver - Currently not completly working
 url: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
 arch:
   - aarch64
   - amd64
-#image: ghcr.io/FaserF/pterodactyl-panel-{arch}
+image: ghcr.io/faserf/pterodactyl-panel-{arch}
 services:
   - mysql:need
 #webui: "[PROTO:ssl]://[HOST]:[PORT:80]"

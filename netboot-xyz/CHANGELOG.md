@@ -1,4 +1,7 @@
 # Changelog
+## 1.8.1
+- enabled the usage of own GitHub images
+
 ## 1.8.0
 - Prepared using own GitHub image for backups & addon building
 -> This lowers the backup sizes for this addon
