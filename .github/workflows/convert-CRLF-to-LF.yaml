@@ -6,28 +6,42 @@ on:
       - master
 
 jobs:
-  convert-crlf-to-lf:
+  crlf-to-lf:
+    if: github.repository_owner == 'oeriksen'
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        lfs: "true"
-        fetch-depth: 0
+      - name: Checkout repository contents
+        uses: actions/checkout@v4
 
-    - name: Install dos2unix
-      run: sudo apt-get update && sudo apt-get install -y dos2unix
+      - name: Use action to check for CRLF endings
+        uses: erclu/check-crlf@v1
 
-    - name: Check for CRLF line endings and convert to LF
-      run: |
-        # Find all files with CRLF endings and convert to LF
-        find . -type f -exec dos2unix {} \;
+      - name: Commit if needed
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Github bot : CRLF corrected"
+          default_author: github_actions
 
-    - name: Commit & Push
-      uses: actions-js/push@v1.5
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: master
-        force: true
-        message: "Convert CRLF to LF line endings"
+  fix-crlf:
+    name: Fix CRLF Endings
+    if: github.repository_owner == 'oeriksen'
+    runs-on: ubuntu-latest # Use a Linux runner
+    steps:
+      - name: Checkout repository contents
+        uses: actions/checkout@v4 # Use the checkout action
+      - name: Find files with CRLF endings
+        uses: erclu/check-crlf@v1 # Use the check-crlf action
+        id: check-crlf # Assign an id to this step
+      - name: Apply dos2unix to files with CRLF endings
+        run: |
+          # Loop through each file and apply dos2unix
+          # shellcheck disable=SC2043
+          for f in ${{ steps.check-crlf.outputs.files }}; do
+            # Apply dos2unix and keep the original timestamp
+            dos2unix -k "$f"
+          done
+      - name: Commit if needed
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Github bot : CRLF corrected"
+          default_author: github_actions
