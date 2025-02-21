@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          lfs: "true"
-          fetch-depth: 0
+      uses: actions/checkout@v4
+      with:
+        lfs: "true"
+        fetch-depth: 0
 
     - name: Check for CRLF line endings and convert to LF
       run: |
@@ -22,9 +22,9 @@ jobs:
         find . -type f -exec dos2unix {} \;
 
     - name: Commit & Push
-        uses: actions-js/push@v1.5
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-          force: true
-          message: "Convert CRLF to LF line endings"
+      uses: actions-js/push@v1.5
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
+        force: true
+        message: "Convert CRLF to LF line endings"
