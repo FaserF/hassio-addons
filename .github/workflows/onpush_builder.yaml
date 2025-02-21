@@ -191,6 +191,7 @@ jobs:
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
+            --test
             --${{ matrix.arch }} \
             --target /data/${{ matrix.addon }} \
             --image "${{ steps.check.outputs.image }}" \
