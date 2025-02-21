@@ -9,7 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-image: ghcr.io/FaserF/switch_lan_play-{arch}:{version}
+image: ghcr.io/FaserF/switch_lan_play-{arch}
 init: false
 panel_icon: mdi:local-area-network
 host_network: true

@@ -9,7 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-image: ghcr.io/FaserF/bash_script_executer-{arch}:{version}
+image: ghcr.io/FaserF/bash_script_executer-{arch}
 map:
   - share:rw
 init: false
