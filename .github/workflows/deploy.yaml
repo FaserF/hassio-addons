@@ -22,6 +22,10 @@ jobs:
     steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
+      - name: Fetch latest changes
+        run: |
+          git config pull.rebase false
+          git pull origin master || true
       - name: Update path_filters
         run: |
           # Init
@@ -46,8 +50,6 @@ jobs:
 
           # Sort yaml
           sort -t= ".github/paths-filter.yml" -o ".github/paths-filter.yml"
-      - name: Fetch latest changes
-        run: git pull origin master
       - name: Commit if needed
         uses: EndBug/add-and-commit@v9
         with:
@@ -84,19 +86,16 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+      - name: Fetch latest changes
+        run: |
+          git config pull.rebase false
+          git pull origin master || true
       - name: Make scripts executable
         run: |
           echo "Starting"
-          git pull origin master
-          git config core.filemode true
-          # shellcheck disable=SC2086,SC2046
-          #git update-index --chmod=+x $(find "$path" -type f -iname "*.sh")
           chmod u+x $(find "$path" -type f -iname "*.sh") || true
-          #git commit -am "fixing the script permissions..."
         env:
           path: "./${{ matrix.addon }}"
-      - name: Fetch latest changes
-        run: git pull origin master
       - name: Commit if needed
         uses: EndBug/add-and-commit@v9
         with:
