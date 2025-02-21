@@ -8,11 +8,6 @@ env:
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["CI"]
-    branches: [master]
-    types:
-      - completed
   workflow_call:
   push:
     branches:
@@ -181,7 +176,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@v3.1.0
+        uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -190,7 +185,7 @@ jobs:
       - name: Build ${{ matrix.addon }} add-on
         id: builderstep
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2024.08.1
+        uses: home-assistant/builder@2024.08.2
         env:
           CAS_API_KEY: ${{ secrets.CAS_API_KEY }}
         with:
