@@ -1,5 +1,5 @@
 name: xqrepack
-version: 1.6.23
+version: 1.7.0
 slug: xqrepack
 description:
   These scripts allow you to modify the Xiaomi R3600 / RM1800 firmware
@@ -12,11 +12,8 @@ arch:
   - amd64
   - i386
 image: ghcr.io/FaserF/xqrepack-{arch}:{version}
-startup: application
-boot: auto
 map:
   - share:rw
-ingress: false
 init: false
 options:
   firmware_path: "/share/miwifi_firmware/"

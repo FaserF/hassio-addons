@@ -1,4 +1,8 @@
 # Changelog
+## 0.1.0
+- Use GitHub image for backups & addon building
+-> This lowers the backup sizes for this addon
+
 ## 0.0.32
 - Automatically updated addon-base to version v17.2.1
 
