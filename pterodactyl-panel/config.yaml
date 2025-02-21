@@ -6,7 +6,7 @@ url: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
 arch:
   - aarch64
   - amd64
-image: ghcr.io/FaserF/pterodactyl-panel-{arch}
+#image: ghcr.io/FaserF/pterodactyl-panel-{arch}
 services:
   - mysql:need
 #webui: "[PROTO:ssl]://[HOST]:[PORT:80]"

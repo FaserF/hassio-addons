@@ -1,9 +1,6 @@
 name: Convert CRLF to LF
 
 on:
-  push:
-    branches:
-      - master
   workflow_call:
   workflow_dispatch:
 

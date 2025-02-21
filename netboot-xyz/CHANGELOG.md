@@ -1,7 +1,8 @@
 # Changelog
 ## 1.8.0
-- Use GitHub image for backups & addon building
+- Prepared using own GitHub image for backups & addon building
 -> This lowers the backup sizes for this addon
+-> Not yet activated, only everything has been prepared
 
 ## 1.7.10
 - Automatically updated addon-base to version v17.2.1

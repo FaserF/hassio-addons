@@ -9,7 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-image: ghcr.io/FaserF/openssl-{arch}
+#image: ghcr.io/FaserF/openssl-{arch}
 map:
   - ssl:rw
 init: false
