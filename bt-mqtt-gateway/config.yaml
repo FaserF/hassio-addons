@@ -10,7 +10,6 @@ arch:
   - aarch64
   - amd64
   - i386
-image: ghcr.io/FaserF/bt-mqtt-gateway-{arch}
 startup: services
 services:
   - mqtt:want
