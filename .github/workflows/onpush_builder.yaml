@@ -4,7 +4,7 @@
 name: Builder
 
 env:
-  BUILD_ARGS: ""
+  BUILD_ARGS: "--test"
 
 on:
   workflow_dispatch:
@@ -191,7 +191,6 @@ jobs:
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
-            --test
             --${{ matrix.arch }} \
             --target /data/${{ matrix.addon }} \
             --image "${{ steps.check.outputs.image }}" \
