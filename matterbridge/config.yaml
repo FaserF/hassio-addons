@@ -8,11 +8,9 @@ arch:
   - armv7
   - aarch64
   - amd64
-startup: application
-boot: auto
+image: ghcr.io/FaserF/matterbridge-{arch}:{version}
 map:
   - share:rw
-ingress: false
 init: false
 panel_icon: mdi:bridge
 options:

@@ -9,9 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-startup: application
-boot: auto
-ingress: false
+image: ghcr.io/FaserF/tado_aa-{arch}:{version}
 init: false
 options:
   username:

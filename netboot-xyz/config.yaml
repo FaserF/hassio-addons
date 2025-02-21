@@ -8,8 +8,9 @@ arch:
   - armv7
   - aarch64
   - amd64
+image: ghcr.io/FaserF/netboot-xyz-{arch}:{version}
 host_network: true
-webui: http://[HOST]:[PORT:3000]
+#webui: http://[HOST]:[PORT:3000]
 ingress: true
 init: false
 full_access: true
@@ -17,8 +18,6 @@ privileged:
   - NET_ADMIN
 map:
   - media:rw
-startup: application
-boot: auto
 panel_icon: mdi:download-network
 options:
   path: "/media/netboot/image"

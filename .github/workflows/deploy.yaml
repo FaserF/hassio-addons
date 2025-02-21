@@ -3,9 +3,6 @@
 ---
 name: Builder
 
-env:
-  BUILD_ARGS: "--test"
-
 on:
   push:
     branches:
@@ -175,7 +172,6 @@ jobs:
 #        uses: ymwymw/check-mixed-line-endings@v2
 
       - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
         uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io

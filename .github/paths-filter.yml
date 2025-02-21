@@ -1,6 +1,5 @@
 #
 # Those are the addon path filters used in the workflows to determine which addon needs to be build.
-#wiki.js: wiki.js/**
 apache2-minimal-mariadb: apache2-minimal-mariadb/**
 apache2-minimal: apache2-minimal/**
 apache2: apache2/**
@@ -9,6 +8,10 @@ bt-mqtt-gateway: bt-mqtt-gateway/**
 matterbridge: matterbridge/**
 netboot-xyz: netboot-xyz/**
 openssl: openssl/**
+pterodactyl-panel: pterodactyl-panel/**
+pterodactyl-wings: pterodactyl-wings/**
 switch_lan_play: switch_lan_play/**
 switch_lan_play_server: switch_lan_play_server/**
 tado_aa: tado_aa/**
+tuya-convert: tuya-convert/**
+xqrepack: xqrepack/**

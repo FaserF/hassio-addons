@@ -9,11 +9,9 @@ arch:
   - aarch64
   - amd64
   - i386
-startup: application
-boot: auto
+image: ghcr.io/FaserF/switch_lan_play_server-{arch}:{version}
 panel_icon: mdi:local-area-network
 init: false
-options: {}
 schema:
   username: str?
   password: str?

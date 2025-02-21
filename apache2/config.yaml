@@ -9,9 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-image: ghcr.io/oeriksen/apache2-{arch}
-#startup: application
-# boot: auto
+image: ghcr.io/FaserF/apache2-{arch}:{version}
 # webui: http://[HOST]:[PORT:80]
 map:
   - ssl:rw
