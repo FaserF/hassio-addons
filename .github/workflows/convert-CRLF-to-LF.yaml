@@ -16,6 +16,9 @@ jobs:
         lfs: "true"
         fetch-depth: 0
 
+    - name: Install dos2unix
+      run: sudo apt-get update && sudo apt-get install -y dos2unix
+
     - name: Check for CRLF line endings and convert to LF
       run: |
         # Find all files with CRLF endings and convert to LF
