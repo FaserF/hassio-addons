@@ -7,13 +7,13 @@ env:
   BUILD_ARGS: "--test"
 
 on:
-  workflow_dispatch:
-  workflow_call:
   push:
     branches:
       - master
     paths:
       - "**/config.*"
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   correct_path_filters:
