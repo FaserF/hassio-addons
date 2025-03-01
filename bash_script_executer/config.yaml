@@ -1,5 +1,5 @@
 name: Bash Script Executer
-version: 1.7.1
+version: 1.7.2
 slug: bashscriptexecuter
 description: Execute your own bash scripts, inside this Homeassistant Addon
 url: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer

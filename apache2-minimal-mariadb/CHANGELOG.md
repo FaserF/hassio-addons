@@ -1,4 +1,7 @@
 # Changelog
+## 2.12.2
+- Automatically updated addon-base to version v17.2.1
+
 ## 2.12.1
 - enabled the usage of own GitHub images
 
