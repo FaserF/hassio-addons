@@ -114,3 +114,6 @@ jobs:
           branch: master
           force: true
           message: "Increment addon version due to netboot-xyz update"
+
+  build-image:
+    uses: ./.github/workflows/deploy.yaml
