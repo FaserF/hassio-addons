@@ -62,15 +62,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: [correct_path_filters]
     outputs:
-      changedAddons: ${{ steps.filter.outputs.changes }}
+      changedAddons: ${{ steps.get_addons.outputs.addons }}
     steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
+
       - name: 📂 Detect changed files
-        uses: dorny/paths-filter@v3
         id: filter
+        if: github.event_name != 'workflow_dispatch'
+        uses: dorny/paths-filter@v3
         with:
           filters: .github/paths-filter.yml
+
+      - name: 📝 Determine addons to process
+        id: get_addons
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            addons=$(find . -maxdepth 1 -type d -not -path '*/\.*' -exec basename {} \; | jq -R -s -c 'split("\n")[:-1]')
+          else
+            addons='${{ steps.filter.outputs.changes }}'
+          fi
+          echo "Detected addons: $addons"
+          echo "addons=$addons" >> "$GITHUB_OUTPUT"
 
   correct-CRLF:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
