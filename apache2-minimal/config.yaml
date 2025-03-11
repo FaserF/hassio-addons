@@ -1,7 +1,7 @@
 name: Apache2 Minimal
 version: 2.12.3
 slug: apache2-minimal
-description: Open-Source Webserver without PHP and minimal extra modules.
+description: Open-Source Webserver without PHP and minimal extra modules
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
 arch:
   - armhf
