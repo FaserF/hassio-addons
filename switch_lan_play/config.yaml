@@ -1,7 +1,7 @@
 name: Switch LAN Play Client
 version: 1.6.3
 slug: switch-lan-play
-description: Nintendo Switch Lan Play - Client
+description: Nintendo Switch Lan Play Connector - Client
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
 arch:
   - armhf

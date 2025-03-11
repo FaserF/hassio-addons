@@ -1,7 +1,7 @@
 name: pterodactyl Wings Gameserver
 version: 1.3.3
 slug: pterodactyl_wings
-description: Opensource Gameserver
+description: Open-Source Gameserver
 url: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings
 arch:
   - aarch64
