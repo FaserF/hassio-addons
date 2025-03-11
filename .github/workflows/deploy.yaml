@@ -207,7 +207,7 @@ jobs:
         with:
           user: FaserF
           type: container
-          keep: 1
+          keep: 0
           names: |
             apache2-amd64
             apache2-aarch64
