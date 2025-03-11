@@ -202,6 +202,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Delete old container packages
+        uses: smartsquaregmbh/delete-old-packages@v0.8.1
+        with:
+          user: FaserF
+          type: container
+          keep: 0
+          names: |
+            ${{ matrix.addon }}-${{ matrix.arch }}
+
       - name: Build ${{ matrix.addon }} add-on
         id: builderstep
         if: steps.check.outputs.build_arch == 'true'
