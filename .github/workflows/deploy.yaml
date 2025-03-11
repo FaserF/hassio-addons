@@ -202,6 +202,56 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Delete old packages
+        uses: smartsquaregmbh/delete-old-packages@v0.8.1
+        with:
+          type: docker
+          keep: 1
+          names: |
+            apache2-amd64
+            apache2-aarch64
+            openssl-amd64
+            netboot-xyz-amd64
+            null
+            matterbridge-amd64
+            pterodactyl-wings-amd64
+            apache2-minimal-armv7
+            pterodactyl-wings-aarch64
+            openssl-armv7
+            apache2-minimal-armhf
+            apache2-minimal-i386
+            bash_script_executer-armhf
+            bash_script_executer-armv7
+            bash_script_executer-i386
+            openssl-i386
+            apache2-minimal-mariadb-i386
+            apache2-minimal-mariadb-armhf
+            apache2-minimal-mariadb-amd64
+            apache2-minimal-mariadb-armv7
+            apache2-minimal-mariadb-aarch64
+            bash_script_executer-amd64
+            apache2-armhf
+            openssl-armhf
+            apache2-armv7
+            apache2-i386
+            switch_lan_play-amd64
+            netboot-xyz-aarch64
+            switch_lan_play-i386
+            matterbridge-armv7
+            matterbridge-armv7
+            switch_lan_play-armv7
+            matterbridge-aarch64
+            matterbridge-armhf
+            bash_script_executer-aarch64
+            switch_lan_play-armhf
+            tado_aa-amd64
+            tado_aa-i386
+            tado_aa-armv7
+            tado_aa-armhf
+            apache2-minimal-aarch64
+            openssl-aarch64
+            tado_aa-aarch64
+
       - name: Build ${{ matrix.addon }} add-on
         id: builderstep
         if: steps.check.outputs.build_arch == 'true'
