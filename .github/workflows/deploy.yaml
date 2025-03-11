@@ -202,10 +202,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete old packages
+      - name: Delete old container packages
         uses: smartsquaregmbh/delete-old-packages@v0.8.1
         with:
-          type: docker
+          user: FaserF
+          type: container
           keep: 1
           names: |
             apache2-amd64
