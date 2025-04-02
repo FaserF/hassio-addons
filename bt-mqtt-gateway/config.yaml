@@ -1,7 +1,7 @@
 name: bt-mqtt-gateway
 version: 1.6.3
 slug: bt-mqtt-gateway
-description: Bluetooth-MQTT Gateway Server
+description: Bluetooth MQTT Gateway Server
 url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
 host_network: true
 arch:

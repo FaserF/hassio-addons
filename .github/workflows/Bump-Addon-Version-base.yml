@@ -152,6 +152,3 @@ jobs:
           branch: master
           force: true
           message: "Increment addon version due to addon base update"
-
-  build-image:
-    uses: ./.github/workflows/deploy.yaml

@@ -1,0 +1,11 @@
+name: Build Image
+
+on:
+  workflow_run:
+    workflows: ["Commit & Push"]
+    types:
+      - completed
+
+jobs:
+  build-image:
+    uses: ./.github/workflows/deploy.yaml
