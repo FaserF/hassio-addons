@@ -6,7 +6,10 @@ FROM ${BUILD_FROM}
 RUN mkdir /run/apache2
 
 RUN apk --no-cache add apache2 php84-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl apache2-proxy
-RUN apk --no-cache add php84 php84-dev php84-fpm php84-mysqli php84-opcache php84-gd zlib php84-curl php84-phar php84-mbstring php84-zip php84-pdo php84-pdo_mysql php84-iconv php84-dom php84-session php84-intl php84-soap php84-fileinfo php84-xml php84-ctype php84-pecl-xdebug php84-pdo_sqlite php84-tokenizer php84-exif php84-xmlwriter php84-cgi php84-simplexml
+RUN apk --no-cache add php84 php84-dev php84-fpm php84-mysqli php84-opcache php84-gd zlib php84-curl php84-phar \
+php84-mbstring php84-zip php84-pdo php84-pdo_mysql php84-iconv php84-dom php84-session php84-intl php84-soap php84-fileinfo \
+php84-xml php84-ctype php84-pecl-xdebug php84-pdo_sqlite php84-tokenizer php84-exif php84-xmlwriter php84-cgi php84-simplexml \
+php84-sockets
 RUN apk --no-cache add \
     php84-simplexml \
     php84-gd \
