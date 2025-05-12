@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.15
+- Automatically updated addon-base to version 
+
 ## 2.0.14
 - Automatically updated addon-base to version v17.2.2
 
