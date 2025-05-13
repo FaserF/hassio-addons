@@ -1,6 +1,6 @@
 # Changelog
 ## 0.7.5
-- Automatically updated addon-base to version 
+- Automatically updated addon-base to version v17.2.5
 
 ## 0.7.4
 - Automatically updated addon-base to version v17.2.2

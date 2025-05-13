@@ -2,7 +2,7 @@ name: Build Image
 
 on:
   workflow_run:
-    workflows: ["Commit & Push"]
+    workflows: ["Automatically bump version on addon base updates and changelog"]
     types:
       - completed
 
