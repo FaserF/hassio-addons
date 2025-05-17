@@ -76,7 +76,7 @@ The hassio addon is brought to you by [FaserF].
 
 xqrepack is licensed under the 3-clause ("modified") BSD License.
 
-Copyright (C) 2020-2023 Darell Tan / FaserF for the HA Addon
+Copyright (C) 2020-2025 Darell Tan / FaserF for the HA Addon
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

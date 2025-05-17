@@ -1,118 +1,56 @@
-# Home Assistant Community Add-ons by FaserF
+# 🏠 Home Assistant Community Add-ons by FaserF
 
-## About
+## 📖 About
 
-In the Subfolders you can find all my custom addons for homeassistant os (former known as hassio).
+This repository contains custom add-ons for [Home Assistant OS](https://www.home-assistant.io/installation/), formerly known as Hass.io. Each subfolder includes a Docker-based add-on ready to install and use.
 
-## Installation
+---
 
-[![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
-Just click the link above or add my repo to the hassio addons repositorys: https://github.com/FaserF/hassio-addons
+## 🚀 Installation
 
-## Add-On List
+[![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-### Apache2
-Webserver Addon
-Comes in three variants:
-[Minimal (Useful for minimal websites with no PHP usage)] (https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)<br />
-[Minimal with MariaDB Access (Comes with MariaDB Client, PHP MariaDB and some important PHP modules)] (https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb)<br />
-[Normal (comes with the most used PHP Extensions, MariaDB)] (https://github.com/FaserF/hassio-addons/tree/master/apache2)<br />
-Support: Yes
+To install, click the badge above or manually add the repository URL in Home Assistant:
 
-### Bash Script Executer
-[This is a simple Docker Image to execute bash scripts within Homeassistant OS] (https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer)<br />
+```
+https://github.com/FaserF/hassio-addons
+```
 
-Support: Yes
+---
 
-### bt-mqtt-gateway
-[Bluetooth to MQTT Gateway] (https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway)<br />
+## 📦 Add-On List
 
-Support: No (Deprecated from the original developer)
+| Name                      | Description                                                                                           | Link                                                                                               | Support  |
+|---------------------------|-------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------|
+| **Apache2**               | Webserver add-on in 3 variants: minimal, MariaDB support, or full PHP stack                          | [🔗 Overview](https://github.com/FaserF/hassio-addons/tree/master/apache2)                         | ✅        |
+| **Bash Script Executer**  | Execute custom bash scripts inside Home Assistant OS                                                  | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer)               | ✅        |
+| **bt-mqtt-gateway**       | Bluetooth to MQTT Gateway                                                                             | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway)                    | ❌ (Deprecated) |
+| **Freenom DNS Updater**   | Updates Freenom DNS records from within Home Assistant                                                | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater)                | ✅        |
+| **HyperionNG**            | LED Control via GPIO (deprecated)                                                                     | [🔗 Use this instead](https://github.com/petersendev/hassio-addons/tree/master/hyperion)          | ❌ (Deprecated) |
+| **Matterbridge**          | Simple chat bridge                                                                                    | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/matterbridge)                       | ✅        |
+| **Netboot.xyz**           | PXE Booting Service                                                                                   | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz)                        | ✅        |
+| **OpenSSL**               | Self-signed certificate generation tool                                                               | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/openssl)                            | ✅        |
+| **Pterodactyl**           | Open-source GameServer stack (Panel + Wings)                                                          | [🔗 Panel](https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel), [🔗 Wings](https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings) | ✅ |
+| **Silverstrike**          | Personal finance manager (deprecated)                                                                 | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/silverstrike)                       | ❌        |
+| **Switch LAN Play (Client)** | Nintendo Switch LAN Play Client for modded devices                                               | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play)                    | ✅        |
+| **Switch LAN Play (Server)** | Nintendo Switch LAN Play Server                                                                   | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server)             | ✅        |
+| **Tado Auto Assist**      | Python script to auto-adjust heating based on Tado presence and window state                         | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/tado_aa)                            | ✅        |
+| **Tuya-Convert**          | Flash Tuya IoT devices with open firmware                                                             | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/tuya-convert)                       | ❌        |
+| **Wiki.js**               | Powerful open-source Wiki software                                                                    | [🔗 Use this fork](https://github.com/jdeath/homeassistant-addons/tree/main/wikijs)               | ❌        |
+| **xqrepack**              | Patch Xiaomi R3600 firmware for SSH/UART access                                                      | [🔗 Repo](https://github.com/FaserF/hassio-addons/tree/master/xqrepack)                           | ✅        |
 
-### Freenom DNS Updater
-[This is a simple Docker Image to update domain stuff in your freenom registrar] (https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater)<br />
+---
 
-Support: Yes
+## 🙋‍♂️ Support
 
-### hyperionng
-~~Hyperion Next Generation - control your LEDs via GPIO PINs: https://github.com/FaserF/hassio-addons/tree/master/hyperionng~~ <br />
-[DEPRECATED, please have a look at this] (https://github.com/petersendev/hassio-addons/tree/master/hyperion)<br />
+Got questions or issues? [Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues).
+Note: This software is only tested on `amd64` using a **Fujitsu Futro S740**.
 
-Support: No (Deprecated, as I am not using it anymore)
+---
 
-### Matterbridge
-[A simple chat bridge] (https://github.com/FaserF/hassio-addons/tree/master/matterbridge)<br />
+## 📄 License
 
-Support: Yes
-
-### Netbook.xyz
-[PXE Booting Service] (https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz)<br />
-
-Support: Yes
-
-### OpenSSL
-[Self signed certificates] (https://github.com/FaserF/hassio-addons/tree/master/openssl)<br />
-
-Support: Yes
-
-### pterodactyl
-Opensource GameServer.
-
-Panel: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
-
-Wings (Daemon): https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings
-
-Support: Yes
-
-### Silverstrike
-~~Personal finance management made easy: https://github.com/FaserF/hassio-addons/tree/master/silverstrike~~
-
-Support: No (Deprecated, as I am not using it anymore)
-
-### Switch-LAN-Play Client
-Nintendo Switch LAN Play Client - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
-
-Support: Yes
-
-### Switch-LAN-Play Server
-Nintendo Switch LAN Play Server - for hacked switches: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
-
-Support: Yes
-
-### Tado Auto Assist
-A python script that automatically adjusts the temperature in your home at leaving or arriving based on your settings from tado app and automatically switch off the heating (activating Open Window Mode) in the room where tado TRV detects an open window: https://github.com/FaserF/hassio-addons/tree/master/tado_aa
-
-Support: Yes
-
-### Tuya-Convert
-Free your cloud IOT Devices with Tuya-Convert: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
-
-Support: No
-
-### Wiki.JS
-The most powerful and extensible open source Wiki software: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
-
-Support: No, please use (https://github.com/jdeath/homeassistant-addons/tree/main/wikijs)[https://github.com/jdeath/homeassistant-addons/tree/main/wikijs] instead
-
-### xqrepack
-These scripts allow you to modify the Xiaomi R3600 firmware image to make sure SSH and UART access is always enabled.: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
-
-Support: Yes
-
-## Support
-
-Got questions?
-
-You can [open an issue here][issue] GitHub. <br />
-Please keep in mind, that this software is only tested on amd64 running on a Fujitsu Futro S740.
-
-## License
-
-MIT License
-
-Copyright (c) 2019-2024 FaserF
+This project is licensed under the MIT License (c) 2019–2025 FaserF.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -131,6 +69,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-[FaserF]: https://github.com/FaserF/
-[issue]: https://github.com/FaserF/hassio-addons/issues

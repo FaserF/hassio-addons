@@ -64,7 +64,7 @@ The hassio addon is brought to you by [FaserF].
 
 MIT License
 
-Copyright (c) 2023 FaserF & Requarks
+Copyright (c) 2025 FaserF & Requarks
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

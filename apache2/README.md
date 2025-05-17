@@ -1,81 +1,84 @@
-# Home Assistant Community Add-on: Apache2
+# Apache2 Webserver Add-on for Home Assistant OS
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
-Apache2 Webserver for Homeassistant OS
-
 ![Ingress Support](../_images/apache2/ingress.png)
 
-## About
+A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8 and MariaDB support.
 
-The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.<br />
-The Apache HTTP Server ("httpd") was launched in 1995 and it has been the most popular web server on the Internet since April 1996. It has celebrated its 25th birthday as a project in February 2020.<br />
-The Apache HTTP Server is a project of The Apache Software Foundation.
+This add-on allows you to serve static or dynamic websites, run PHP-based applications, or expose internal services via a web interface. Multiple versions are available to fit different needs and use cases.
 
+---
 
-## Different Versions
+## 📋 Table of Contents
 
-### Full Version
-The [full Apache2 Version](https://github.com/FaserF/hassio-addons/tree/master/apache2) with MariaDB and common used PHP 8 modules. <br />
-This docker image comes with: apache2 php84-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client ffmpeg<br />
-The following php84 extensions will be installed: php84 php84-dev php84-fpm php84-mysqli php84-opcache php84-gd zlib php84-curl php84-phar php84-mbstring php84-zip php84-pdo php84-pdo_mysql php84-iconv php84-dom php84-session php84-intl php84-soap php84-fileinfo php84-xml php84-ctype php84-pecl-xdebug php84-pdo_sqlite php84-tokenizer php84-exif php84-xmlwriter php84-cgi php84-simplexml php84-gd php84-json php84-imap php84-apcu php84-simplexml php84-sockets<br />
-Mosquitto & Mosquitto Dev<br />
-And it comes with php locales.
+- [About](#about)
+- [Versions](#versions)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Authentication](#authentication)
+- [Ingress](#ingress)
+- [MariaDB Usage](#mariadb-usage)
+- [Limitations](#limitations)
+- [Support](#support)
+- [License](#license)
 
-### Minimal Version
-The [Minimal Version](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) of the Apache2 Addon without MariaDB and with no PHP modules. <br />
-This docker image comes with: apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
+---
 
-### Minimal Version with MariaDB
-The [Minimal Version with MariaDB and some PHP modules](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) of the Apache2 Addon. <br />
-This docker image comes with: apache2 php84-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl mariadb-client<br />
-The following php84 extensions will be installed: php84 php84-mysqli php84-opcache php84-curl php84-mbstring php84-zip
+## 📖 About
 
-## Installation
+This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for Home Assistant OS. It supports:
 
-[![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+- Hosting static HTML/CSS/JS websites
+- Running PHP applications (e.g. dashboards, tools)
+- Optional MariaDB integration (e.g. for WordPress, phpMyAdmin)
 
-Put your website files to /share/htdocs<br />
-Example File where your index.html should be: /share/htdocs/index.html <br />
+The Apache HTTP Server is an open-source web server software maintained by the Apache Software Foundation.
 
-If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
+---
 
-## Configuration
+## 🧰 Versions
 
-**Note**: _Remember to restart the add-on when the configuration is changed._
+| Version | Features |
+|---------|----------|
+| [Full](https://github.com/FaserF/hassio-addons/tree/master/apache2) | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) | Apache2 only |
+| [Minimal + MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) | Apache2, MariaDB client, PHP with basic modules |
 
-Example add-on configuration:
+---
+
+## 🚀 Installation
+
+1. Add the repository to Home Assistant:
+   [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+
+2. Install the `Apache2` add-on via Supervisor.
+
+3. Place your website files in document_root (Default: `/share/htdocs`).
+   Example: `/share/htdocs/index.html`
+
+4. Start the add-on and access your site via Ingress or external port.
+
+---
+
+## ⚙️ Configuration
 
 ```yaml
-document_root: /media/apache2
-php_ini: /share/apache2/php.ini
-default_conf: /share/apache2/000-default.conf
-default_ssl_conf: get_file
-website_name: itdoesntmatter_as_ssl_is_set_to_false
-username: apache
-password: mySecretPassword
-ssl: false
-certfile: itdoesntmatter_as_ssl_is_set_to_false
-keyfile: itdoesntmatter_as_ssl_is_set_to_false
-```
-<br />
-Recommended Example add-on configuration:
-
-```yaml
-document_root: /share/htdocs
-php_ini: default
-default_conf: default
-default_ssl_conf: default
-website_name: mywebsite.ddns.net
-ssl: true
-certfile: fullchain.pem
-keyfile: privkey.pem
+document_root: /share/htdocs               # Required
+php_ini: default                           # "default", "get_file" or path
+default_conf: default                      # Apache default config
+default_ssl_conf: default                  # Apache SSL config
+website_name: mydomain.local               # Required if ssl is true
+username: apache                           # Optional, changes file ownership
+password: mySecretPassword                 # Optional, for internal file access
+ssl: true                                  # Enable HTTPS
+certfile: fullchain.pem                    # Required if ssl is true
+keyfile: privkey.pem                       # Required if ssl is true
+init_commands:                             # Optional startup commands
+  - apk add imagemagick
 ```
 
-**Note**: _This is just an example, don't copy and paste it! Create your own!_
+You can create your own configuration files and PHP.ini using `get_file` to pull them from `/share`.
 
 ### Option: `document_root`
 
@@ -87,9 +90,9 @@ Note: it has to be somewhere in the /share or /media folder! Other folders are n
 
 You can choose between the following options:
 
-default -> the default php84 php.ini file will be used
+default → Uses the built-in PHP 8.4 configuration file (recommended)
 
-get_file -> copies the default php84 php.ini file from the addon to /share/apache2addon_php.ini
+get_file → Copies the default PHP 8.4 `php.ini` to `/share/apache2addon_php.ini`
 
 path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
 
@@ -107,19 +110,19 @@ Please note, that I wont give any support if you are using custom apache2 config
 
 ### Option: `website_name`
 
-This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesnt matter.
+This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesn’t matter.
 
 ### Option: `username`
 
 This option is optional. This user is for accessing web files (NOT the website itself). It will change the owner of all web files from "root" to this new owner.
 
-This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#authentification-for-your-website)
+This is NOT used for Authentication for your website. If you want this have a look at [Authentication for your website](#Authentication-for-your-website)
 
 ### Option: `password`
 
-This option is optional. Some self hosted web sites require an authentification password to access files within the docker image. #50
+This option is optional. Some self hosted web sites require an Authentication password to access files within the docker image. #50
 
-This is NOT used for authentification for your website. If you want this have a look at [Authentification for your website](#authentification-for-your-website)
+This is NOT used for Authentication for your website. If you want this have a look at [Authentication for your website](#Authentication-for-your-website)
 
 ### Option: `ssl`
 
@@ -135,40 +138,93 @@ This option is optional. If you need some special packages or commands, you can 
 
 If you are encountering any issues, please remove this option before submitting a bug report!
 
-## Authentification for your website
-Use a .htaccess file in combination with a .htpasswd file for this: <https://www.htaccessredirect.net/>
+### Config example
 
-Example .htaccess file:
+Recommended Example add-on configuration:
+
+```yaml
+document_root: /share/htdocs
+php_ini: default
+default_conf: default
+default_ssl_conf: default
+website_name: mywebsite.com
+ssl: true
+certfile: fullchain.pem
+keyfile: privkey.pem
+```
+
+---
+
+## 🔐 Authentication
+
+The `username` and `password` fields are used to protect files in the `/share/apache` directory (e.g. configuration or logs). They are **not** used for the actual hosted web pages.
+
+To protect web content, use `.htaccess` and `.htpasswd` files.
+
+### Example: Create `.htpasswd`
 
 ```bash
+htpasswd -c /share/htdocs/.htpasswd myuser
+```
+
+Then reference it in your `.htaccess` file like this:
+
+```
 AuthType Basic
-AuthName "My Webserver Authentification"
-AuthUserFile /share/.htpasswd
+AuthName "Restricted Content"
+AuthUserFile /share/htdocs/.htpasswd
 Require valid-user
 ```
 
-## Ingress
+---
 
-This addon supports Homeassistant Ingress. Until now it seems only to work if you enable SSL!
-And also I am sorry, but I cant support all your websites. Basic HTML Websites will work great with ingress, the more advanced the page is, the harder it is to support ingress.
+## 🧩 Ingress
 
-## Support
+The add-on supports ingress (access via Home Assistant UI). However, note:
 
-Got questions or problems?
+- Basic HTML pages work perfectly.
+- Complex apps using full authentication, redirect chains, or WebSockets may not work well in ingress.
+- For best compatibility, access via local IP and exposed port is recommended.
 
-You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+---
 
-## Authors & contributors
+## 🐬 MariaDB Usage
 
-The original program is from the Apache Project. For more informatios please visit this page: <https://httpd.apache.org/>
-The hassio addon is brought to you by [FaserF].
+If you want to connect your PHP application (e.g. WordPress or phpMyAdmin) to the official MariaDB add-on:
 
-## License
+- Use `core-mariadb` as the host name.
+- Port: `3306`
+- Username/Password: Use Home Assistant MariaDB credentials
+- Database name: `homeassistant` (by default)
 
-MIT License
+Example config in PHP:
 
-Copyright (c) 2019-2023 FaserF & The Apache Project
+```php
+$mysqli = new mysqli("core-mariadb", "user", "pass", "homeassistant");
+```
+
+---
+
+## ⚠️ Limitations
+
+- ✅ Only tested on amd64 (other architectures may work, but are untested)
+- ⚠️ PHP support only in the **Full** version
+- 🔒 SSL requires valid certificates in `/ssl/`
+- 🌐 Not recommended to expose directly to the internet without additional hardening
+- 🧩 WordPress compatibility is limited — please consider [dedicated WordPress add-ons](https://github.com/FaserF/hassio-addons/pull/202)
+
+---
+
+## 🙋 Support
+
+Please open an issue on GitHub if you experience problems or have feature requests:
+👉 [GitHub Issues](https://github.com/FaserF/hassio-addons/issues)
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -188,11 +244,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2024.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
-[FaserF]: https://github.com/FaserF/
-[issue]: https://github.com/FaserF/hassio-addons/issues
