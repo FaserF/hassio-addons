@@ -1,5 +1,5 @@
 name: pterodactyl Panel Gameserver - BETA
-version: 0.7.5
+version: 0.7.6
 slug: pterodactyl_panel
 description: Open-Source Gameserver - Currently not fully working
 url: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel

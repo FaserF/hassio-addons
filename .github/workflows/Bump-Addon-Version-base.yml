@@ -7,7 +7,7 @@ permissions:
 on:
   push:
     branches:
-      - master
+      - dummy # Dummy to disable this workflow for now. Switch it to master when ready
 
 jobs:
   version:
