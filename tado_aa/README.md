@@ -2,61 +2,62 @@
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield]
 ![Project Maintenance][maintenance-shield]
 
-Tado Auto-Assist for Geofencing and Open Window Detection for Homeassistant OS
+Tado Auto-Assist for Geofencing and Open Window Detection for Home Assistant OS
 
 ## About
 
-A python script that automatically adjusts the temperature in your home at leaving or arriving based on your settings from tado app and automatically switch off the heating (activating Open Window Mode) in the room where tado TRV detects an open window.
+A Python script that automatically adjusts the temperature in your home based on your presence (arriving or leaving), using your settings from the Tado app. It also switches off the heating (activates Open Window Mode) in any room where a Tado TRV detects an open window.
 
 ## Installation
 
-[![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+[![FaserF Home Assistant Add-ons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+
+The installation of this add-on is straightforward and similar to installing any other custom Home Assistant add-on.
+Just click the link above or manually add this repository to your Home Assistant add-on repositories:
+<https://github.com/FaserF/hassio-addons>
 
 ## Configuration
-
-**Note**: _Remember to restart the add-on when the configuration is changed._
 
 Example add-on configuration:
 
 ```yaml
 username: my@email.com
 password: mySecretPassword
-minTemp: 5
-maxTemp: 25
+minTemp: 5       # Optional – Minimum temperature to set
+maxTemp: 25      # Optional – Maximum temperature to set
 ```
 
-**Note**: _This is just an example, don't copy and paste it! Create your own!_
+> **Note**: _This is just an example. Please use your own credentials and desired temperature settings._
 
 ### Option: `username`
 
-Defines your tado username (usually your email address).
+Defines your Tado username (usually your email address).
 
 ### Option: `password`
 
-Defines your tado password.
+Defines your Tado password.
 
 ### Option: `minTemp`
 
-Defines your minimal Temperature Tado should set. (Optional)
+Optional. Defines the minimum temperature that Tado should set when you're away.
 
 ### Option: `maxTemp`
 
-Defines your maximal Temperature Tado should set. (Optional)
+Optional. Defines the maximum temperature that Tado should set when you return home.
 
 ## Support
 
 Got questions or problems?
+You can [open an issue on GitHub][issue] if you encounter any problems or have suggestions.
 
-You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+⚠️ **Please note:** This add-on has only been tested on `armv7` (Raspberry Pi 4).
 
-## Authors & contributors
+## Credits
 
-The original program is from [adrianslabu]. For more informations, please visit this page: <https://github.com/adrianslabu/tado_aa>
-The hassio addon is brought to you by [FaserF].
+This add-on is based on the work of [adrianslabu], who created the original Python script:
+➡️ <https://github.com/adrianslabu/tado_aa>
+
+The Home Assistant add-on wrapper was created and is maintained by [FaserF].
 
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg

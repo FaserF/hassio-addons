@@ -1,4 +1,7 @@
 # Changelog
+## 1.6.7
+- Bump python-tado to v0.19.2
+
 ## 1.6.6
 - Fixed an error while updating / installing the latest version
     - This happened due to a faulty image building process
