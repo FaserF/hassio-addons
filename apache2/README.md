@@ -39,11 +39,11 @@ The Apache HTTP Server is an open-source web server software maintained by the A
 
 ## 🧰 Versions
 
-| Version | Features |
-|---------|----------|
-| [Full](https://github.com/FaserF/hassio-addons/tree/master/apache2) | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
-| [Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal) | Apache2 only |
-| [Minimal + MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) | Apache2, MariaDB client, PHP with basic modules |
+| Version                                                                                          | Features                                                                     |
+|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [Full](https://github.com/FaserF/hassio-addons/tree/master/apache2)                              | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)                   | Apache2 only                                                                 |
+| [Minimal + MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) | Apache2, MariaDB client, PHP with basic modules                              |
 
 ---
 
