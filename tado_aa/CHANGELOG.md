@@ -1,4 +1,7 @@
 # Changelog
+## 1.6.8
+- fix unable to exec bashio
+
 ## 1.6.7
 - Bump python-tado to v0.19.2
 
