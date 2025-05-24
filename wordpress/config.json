@@ -1,0 +1,23 @@
+{
+  "name": "Wordpress - WORK IN PROGRESS!",
+  "version": "0.0.1",
+  "slug": "wordpress",
+  "description": "OpenSource Website building tool",
+  "url": "https://github.com/FaserF/hassio-addons/tree/master/wordpress",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
+  "boot": "auto",
+  "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
+  "map": ["share:rw", "ssl"],
+  "ingress": true,
+  "init": false,
+  "panel_icon": "mdi:web-box",
+  "ports": {
+    "80/tcp": 80,
+    "443": 443
+  },
+  "ports_description": {
+    "80/tcp": "Web interface http",
+    "443/tcp": "SSL Web interface"
+  }
+}
