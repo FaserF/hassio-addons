@@ -1,4 +1,7 @@
 # Changelog
+## 1.8.7
+- Automatically updated netboot-xyz to version 0.7.6
+
 ## 1.8.6
 - Fixed an error while updating / installing the latest version
     - This happened due to a faulty image building process
