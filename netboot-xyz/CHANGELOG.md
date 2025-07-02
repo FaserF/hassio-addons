@@ -1,11 +1,14 @@
 # Changelog
+## 1.9.0
+- Automatically updated addon-base to version v18.0.1
+
 ## 1.8.7
 - Automatically updated netboot-xyz to version 0.7.6
 
 ## 1.8.6
 - Fixed an error while updating / installing the latest version
-    - This happened due to a faulty image building process
-    - Since this issue has been in the last few updates, I have stopped the automatic update and release workflow for now
+  - This happened due to a faulty image building process
+  - Since this issue has been in the last few updates, I have stopped the automatic update and release workflow for now
 
 ## 1.8.5
 - Automatically updated addon-base to version v17.2.5
