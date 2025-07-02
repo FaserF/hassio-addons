@@ -1,4 +1,7 @@
 # Changelog
+## 1.9.0
+- Automatically updated addon-base to version v18.0.1
+
 ## 1.8.7
 - Automatically updated netboot-xyz to version 0.7.6
 

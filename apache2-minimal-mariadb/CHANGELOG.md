@@ -1,4 +1,7 @@
 # Changelog
+## 2.14.0
+- Automatically updated addon-base to version v18.0.1
+
 ## 2.13.2
 - Fixed an error while updating / installing V2.13.X
   - This happened due to a faulty image building process

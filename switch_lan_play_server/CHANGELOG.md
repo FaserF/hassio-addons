@@ -1,4 +1,7 @@
 # Changelog
+## 1.7.0
+- Automatically updated addon-base to version v18.0.1
+
 ## 1.6.6
 - Fixed an error while updating / installing the latest version
   - This happened due to a faulty image building process
