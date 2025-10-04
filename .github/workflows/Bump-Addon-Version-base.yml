@@ -153,7 +153,7 @@ jobs:
           force: true
           message: "Increment addon version due to addon base update"
       - name: Trigger Builder workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           workflow: builder.yml
