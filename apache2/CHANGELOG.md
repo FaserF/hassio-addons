@@ -1,4 +1,7 @@
 # Changelog
+## 2.14.1
+- Automatically updated addon-base to version v18.2.0
+
 ## 2.14.0
 - Automatically updated addon-base to version v18.0.1
 
@@ -282,3 +285,4 @@ this "normal" version with common used PHP Modules
 
 ## 1.0.0
 - Initial release
+
