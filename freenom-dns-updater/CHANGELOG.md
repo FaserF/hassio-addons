@@ -1,7 +1,4 @@
 # Changelog
-## 1.6.10
-- Automatically updated addon-base to version v18.2.0
-
 ## 1.6.9
 - Automatically updated addon-base to version v17.2.5
 
@@ -122,4 +119,5 @@
 
 ## 1.0.0
 - Initial release
+
 
