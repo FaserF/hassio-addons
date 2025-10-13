@@ -6,7 +6,7 @@ on:
 
 jobs:
   crlf-to-lf:
-    runs-on: ubuntu-latest
+    runs-on: debian-latest
     steps:
       - name: Checkout repository contents
         uses: actions/checkout@v5
@@ -22,7 +22,7 @@ jobs:
 
   fix-crlf:
     name: Fix CRLF Endings
-    runs-on: ubuntu-latest # Use a Linux runner
+    runs-on: debian-latest # Use a Linux runner
     steps:
       - name: Checkout repository contents
         uses: actions/checkout@v5 # Use the checkout action
