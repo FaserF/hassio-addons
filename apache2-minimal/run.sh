@@ -41,6 +41,8 @@ if [ -d $DocumentRoot ]; then
 		find $webrootdocker -type f -exec chown $username:www-data -R {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
+		find $webrootdocker -type d -exec chown www-data:www-data -R {} \;
+		find $webrootdocker -type f -exec chown www-data:www-data -R {} \;
 	fi
 fi
 

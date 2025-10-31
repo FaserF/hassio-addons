@@ -155,7 +155,7 @@ foreach ($buildFile in $buildFiles) {
 
                     if ($changelogContent -match $headerRegex) {
                         # Replace the header with the header, a blank line, and the new entry, preserving the rest of the file
-                        $updatedChangelogContent = $changelogContent -replace $headerRegex, ("`$1`r`n$newChangelogEntry`r`n")
+                        $updatedChangelogContent = $changelogContent -replace $headerRegex, ("`$1$newChangelogEntry`r`n`r`n")
                     }
                     else {
                         # If no header, create a new file content
