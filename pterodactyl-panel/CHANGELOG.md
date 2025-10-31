@@ -1,7 +1,4 @@
 # Changelog
-## 0.8.1
-- Automatically updated addon-base to version v18.2.1
-
 ## 0.8.0
 - Automatically updated addon-base to version v18.0.1
 
@@ -108,6 +105,7 @@
 
 ## 0.1.0
 - Beta Testing Release
+
 
 
 
