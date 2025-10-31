@@ -31,19 +31,20 @@ jobs:
           # Init
           echo "Starting"
 
-          # Go through all folders, add to filters if not existing
-          for f in $( find -- * -maxdepth 0 -type d | sort -r ); do
+          # KORREKTUR: 'find'-Befehl robuster gemacht, um Syntaxfehler zu vermeiden.
+          # Findet nur Verzeichnisse auf der ersten Ebene.
+          for f in $(find . -maxdepth 1 -mindepth 1 -type d | sed 's|^\./||' | sort -r); do
             if [ -f "$f"/config.json ]; then
 
               # Add to file
-              if ! grep "$f:" ".github/paths-filter.yml"; then
+              if ! grep -q "^$f:" ".github/paths-filter.yml"; then
                 echo "$f: $f/config.*" >> ".github/paths-filter.yml"
               fi
 
               # Identify addons with true images
-              if [ "$(jq '.image' "$f"/config.json")" != null ]; then
-                sed -i "/$f/ s/ # Image : yes//g" ".github/paths-filter.yml"
-                sed -i "/$f/ s/$/ # Image : yes/" ".github/paths-filter.yml"
+              if [ "$(jq '.image' "$f"/config.json)" != null ]; then
+                sed -i "/^$f:/ s/ # Image : yes//g" ".github/paths-filter.yml"
+                sed -i "/^$f:/ s/$/ # Image : yes/" ".github/paths-filter.yml"
               fi
             fi
           done
@@ -168,6 +169,47 @@ jobs:
         with:
           scandir: "./${{ matrix.addon }}"
 
+  lint-json:
+    name: JSON Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run JQ
+        run: |
+          shopt -s globstar
+          cat **/*.json | jq '.'
+  lint-markdown:
+    name: MarkdownLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run mdl
+        uses: actionshub/markdownlint@v3.1.4
+
+  lint-yamllint:
+    name: YAMLLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run YAMLLint
+        uses: frenck/action-yamllint@v1.5
+
+  lint-prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run Prettier
+        uses: creyD/prettier_action@v4.6
+        with:
+          prettier_options: --write **/*.{json,js,md,yaml}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
     needs:
@@ -177,6 +219,10 @@ jobs:
       - lint_config
       - lint-hadolint
       - lint-shellcheck
+      - lint-json
+      - lint-markdown
+      - lint-yamllint
+      - lint-prettier
     runs-on: ubuntu-latest
     environment: CR_PAT
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on

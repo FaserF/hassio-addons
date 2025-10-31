@@ -12,5 +12,3 @@ jobs:
   build-image:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/deploy.yaml
-    with:
-      pass: true
