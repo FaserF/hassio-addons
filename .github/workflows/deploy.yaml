@@ -216,13 +216,6 @@ jobs:
       - check-addon-changes
       - make-executable
       - correct-CRLF
-      - lint_config
-      - lint-hadolint
-      - lint-shellcheck
-      - lint-json
-      - lint-markdown
-      - lint-yamllint
-      - lint-prettier
     runs-on: ubuntu-latest
     environment: CR_PAT
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
