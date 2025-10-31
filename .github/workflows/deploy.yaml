@@ -41,7 +41,7 @@ jobs:
               fi
 
               # Identify addons with true images
-              if [ "$(jq '.image' "$f/config.json")" != null ]; then
+              if [ "$(jq '.image' "$f"/config.json")" != null ]; then
                 sed -i "/$f/ s/ # Image : yes//g" ".github/paths-filter.yml"
                 sed -i "/$f/ s/$/ # Image : yes/" ".github/paths-filter.yml"
               fi
@@ -56,7 +56,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
           force: true
-          message: "Make scripts executable"
+          message: "Make scripts executable [skip ci]"
 
   check-addon-changes:
     runs-on: ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
           force: true
-          message: "Make scripts executable"
+          message: "Make scripts executable [skip ci]"
 
   lint_config:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
@@ -134,9 +134,49 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
 
+  lint-hadolint:
+    name: Hadolint
+    needs: check-addon-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.check-addon-changes.outputs.changedAddons) }}
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run Hadolint
+        uses: brpaz/hadolint-action@v1.5.0
+        with:
+          dockerfile: "./${{ matrix.addon }}/Dockerfile"
+
+  lint-shellcheck:
+    name: Shellcheck
+    needs: check-addon-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.check-addon-changes.outputs.changedAddons) }}
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+      - name: 🚀 Run Shellcheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        env:
+          SHELLCHECK_OPTS: -s bash
+        with:
+          scandir: "./${{ matrix.addon }}"
+
   build:
     if: ${{ needs.check-addon-changes.outputs.changedAddons != '[]' }}
-    needs: [check-addon-changes, make-executable, correct-CRLF]
+    needs:
+      - check-addon-changes
+      - make-executable
+      - correct-CRLF
+      - lint_config
+      - lint-hadolint
+      - lint-shellcheck
     runs-on: ubuntu-latest
     environment: CR_PAT
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on

@@ -1,11 +1,16 @@
-name: Build Image
+name: Build Image on Autoupdate
 
 on:
   workflow_run:
-    workflows: ["Automatically bump version on addon base updates and changelog"]
+    workflows:
+      - "Automatically bump version on addon base updates and changelog"
+      - "Automatically bump version on netbootxyz updates and changelog"
     types:
       - completed
 
 jobs:
   build-image:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/deploy.yaml
+    with:
+      pass: true

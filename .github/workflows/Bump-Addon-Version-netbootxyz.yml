@@ -7,11 +7,12 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'netboot-xyz/Dockerfile'
 
 jobs:
   version:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, 'Update dependency netbootxyz/webapp') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -89,10 +90,14 @@ jobs:
 
           while IFS= read -r file; do
               echo "Processing: $file"
-              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
+              current_version=$(grep -oP "^## \K\d+\.\d+\d+" "$file" | sort -rV | head -n1)
               if [[ -z "$current_version" ]]; then
                   echo "⚠️ No valid version found in $file"
-                  continue
+                  current_version=$(grep -oP "^## \K\d+\.\d+\.\d" "$file" | sort -rV | head -n1) # Fallback für x.y.z
+                   if [[ -z "$current_version" ]]; then
+                      echo "⚠️ No valid version found in $file after fallback"
+                      continue
+                   fi
               fi
               echo "Found current version: $current_version"
               IFS='.' read -r major minor patch <<< "$current_version"
@@ -113,7 +118,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
           force: true
-          message: "Increment addon version due to netboot-xyz update"
-
-  build-image:
-    uses: ./.github/workflows/deploy.yaml
+          message: "Increment addon version due to netboot-xyz update [skip ci]"
