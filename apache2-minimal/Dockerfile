@@ -15,5 +15,4 @@ RUN echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 COPY run.sh /
 COPY index.html /
 RUN chmod a+x /run.sh
-RUN chmod a+x /index.html
 CMD [ "/run.sh" ]

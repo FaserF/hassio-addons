@@ -6,7 +6,7 @@ FROM ${BUILD_FROM}
 RUN mkdir /run/apache2
 
 RUN apk --no-cache add apache2 php84-apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-RUN apk --no-cache add php84 php84-mysqli php84-opcache php84-curl php84-mbstring php82-zip
+RUN apk --no-cache add php84 php84-mysqli php84-opcache php84-curl php84-mbstring php84-zip
 RUN apk --no-cache add mariadb-client
 
 #Configure Logging
@@ -17,5 +17,4 @@ RUN echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 COPY run.sh /
 COPY index.html /
 RUN chmod a+x /run.sh
-RUN chmod a+x /index.html
 CMD [ "/run.sh" ]

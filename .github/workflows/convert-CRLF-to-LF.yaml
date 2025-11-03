@@ -6,7 +6,7 @@ on:
 
 jobs:
   crlf-to-lf:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository contents
         uses: actions/checkout@v5
@@ -22,13 +22,13 @@ jobs:
 
   fix-crlf:
     name: Fix CRLF Endings
-    runs-on: debian-latest # Use a Linux runner
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository contents
-        uses: actions/checkout@v5 # Use the checkout action
+        uses: actions/checkout@v5
       - name: Find files with CRLF endings
-        uses: erclu/check-crlf@v1 # Use the check-crlf action
-        id: check-crlf # Assign an id to this step
+        uses: erclu/check-crlf@v1
+        id: check-crlf
       - name: Apply dos2unix to files with CRLF endings
         run: |
           # Loop through each file and apply dos2unix
