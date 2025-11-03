@@ -1,7 +1,4 @@
 # Changelog
-## 2.14.2
-- Automatically updated addon-base to version v18.2.1
-
 ## 2.14.1
 - Automatically updated addon-base to version v18.2.1
 - Improved webdir permissions
@@ -175,3 +172,4 @@
 
 ## 2.0.0
 - Initial release of the minimal Version
+

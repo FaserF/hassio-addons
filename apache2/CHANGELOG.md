@@ -1,7 +1,4 @@
 # Changelog
-## 2.14.2
-- Automatically updated addon-base to version v18.2.1
-
 ## 2.14.1
 - Automatically updated addon-base to version v18.2.1
 - Improved webdir permissions
@@ -289,3 +286,4 @@ this "normal" version with common used PHP Modules
 
 ## 1.0.0
 - Initial release
+
