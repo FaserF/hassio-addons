@@ -1,4 +1,7 @@
 # Changelog
+## 2.1.2
+- Automatically updated addon-base to version v18.2.1
+
 ## 2.1.1
 - Automatically updated addon-base to version v18.2.1
 
