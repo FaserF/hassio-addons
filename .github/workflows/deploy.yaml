@@ -3,8 +3,8 @@
 ---
 name: Builder
 
-env:
-  BUILD_ARGS: "--test"
+#env:
+#  BUILD_ARGS: "--test"
 
 on:
   push:
