@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   correct_path_filters:
@@ -214,6 +213,8 @@ jobs:
   lint-prettier:
     name: Prettier
     runs-on: ubuntu-latest
+    permissions:
+      workflows: write
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v5
