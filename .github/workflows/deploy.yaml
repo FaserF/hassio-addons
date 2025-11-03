@@ -15,6 +15,10 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  workflows: write
+
 jobs:
   correct_path_filters:
     if: github.repository_owner == 'FaserF'
@@ -31,8 +35,6 @@ jobs:
           # Init
           echo "Starting"
 
-          # KORREKTUR: 'find'-Befehl robuster gemacht, um Syntaxfehler zu vermeiden.
-          # Findet nur Verzeichnisse auf der ersten Ebene.
           for f in $(find . -maxdepth 1 -mindepth 1 -type d | sed 's|^\./||' | sort -r); do
             if [ -f "$f"/config.json ]; then
 
@@ -79,7 +81,19 @@ jobs:
         id: get_addons
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            addons=$(find . -maxdepth 1 -type d -not -path '*/\.*' -exec basename {} \; | jq -R -s -c 'split("\n")[:-1]')
+            addons_list=()
+            for dir in $(find . -maxdepth 1 -mindepth 1 -type d -not -path './.*' -not -path './_images'); do
+              config_file="$dir/config.yaml"
+              # Check if config.yaml exists and is readable
+              if [[ -f "$config_file" && -r "$config_file" ]]; then
+                # Check if the file contains the specific image line (allowing for space)
+                if grep -q -E "^image:[[:space:]]+ghcr\.io/faserf" "$config_file"; then
+                  # Add the basename of the directory to the list
+                  addons_list+=("$(basename "$dir")")
+                fi
+              fi
+            done
+            addons=$(printf "%s\n" "${addons_list[@]}" | jq -R -s -c 'split("\n")[:-1]')
           else
             addons='${{ steps.filter.outputs.changes }}'
           fi

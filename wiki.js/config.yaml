@@ -8,9 +8,6 @@ arch:
   - amd64
 services:
   - mysql:need
-startup: application
-boot: auto
-webui: "[PROTO:ssl]://[HOST]:[PORT:3000]"
 map:
   - ssl
 ingress: true
