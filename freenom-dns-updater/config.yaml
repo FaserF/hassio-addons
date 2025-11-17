@@ -1,5 +1,5 @@
 name: Freenom-dns-updater
-version: 1.6.11
+version: 1.6.12
 slug: freenom-dns-updater
 description:
   Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
