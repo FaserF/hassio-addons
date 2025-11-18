@@ -1,4 +1,7 @@
 # Changelog
+## 1.5.1
+- Automatically updated addon-base to version v19.0.0
+
 ## 1.5.0
 - Automatically updated addon-base to version v19.0.0
 - Drop support for armhf, armv7, and i386 systems
