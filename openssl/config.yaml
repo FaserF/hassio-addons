@@ -1,14 +1,11 @@
 name: OpenSSL
-version: 1.7.4
+version: 1.8.0
 slug: openssl
 description: Generate self-signed certificates
 url: https://github.com/FaserF/hassio-addons/tree/master/openssl
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
 image: ghcr.io/faserf/openssl-{arch}
 map:
   - ssl:rw

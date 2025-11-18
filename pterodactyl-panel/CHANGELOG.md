@@ -1,12 +1,10 @@
 # Changelog
-## 0.8.4
+## 0.9.0
 - Automatically updated addon-base to version v19.0.0
-
-## 0.8.3
-- Automatically updated addon-base to version v19.0.0
+- Drop support for armhf, armv7, and i386 systems
 
 ## 0.8.2
-- Automatically updated addon-base to version v19.0.0
+- Test
 
 ## 0.8.1
 - Automatically updated addon-base to version v18.2.1
@@ -117,19 +115,3 @@
 
 ## 0.1.0
 - Beta Testing Release
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

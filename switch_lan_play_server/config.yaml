@@ -1,5 +1,5 @@
 name: Switch LAN Play Server
-version: 1.7.4
+version: 1.8.0
 slug: switch-lan-play-server
 description: Nintendo Switch Lan Play -Server
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
@@ -7,7 +7,6 @@ arch:
   - armhf
   - armv7
   - amd64
-  - i386
 #image: ghcr.io/faserf/switch_lan_play_server-{arch}
 panel_icon: mdi:local-area-network
 init: false

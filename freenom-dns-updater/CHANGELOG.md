@@ -1,12 +1,10 @@
 # Changelog
-## 1.6.13
+## 1.7.0
 - Automatically updated addon-base to version v19.0.0
-
-## 1.6.12
-- Automatically updated addon-base to version v19.0.0
+- Drop support for armhf, armv7, and i386 systems
 
 ## 1.6.11
-- Automatically updated addon-base to version v19.0.0
+- Test
 
 ## 1.6.10
 - Automatically updated addon-base to version v18.2.1
@@ -131,19 +129,3 @@
 
 ## 1.0.0
 - Initial release
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
