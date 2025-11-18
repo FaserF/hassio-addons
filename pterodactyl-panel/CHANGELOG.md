@@ -1,4 +1,7 @@
 # Changelog
+## 0.8.4
+- Automatically updated addon-base to version v19.0.0
+
 ## 0.8.3
 - Automatically updated addon-base to version v19.0.0
 
