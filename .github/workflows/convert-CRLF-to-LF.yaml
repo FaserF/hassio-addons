@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository contents
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use action to check for CRLF endings
         uses: erclu/check-crlf@master
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository contents
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Find files with CRLF endings
         uses: erclu/check-crlf@master
         id: check-crlf
