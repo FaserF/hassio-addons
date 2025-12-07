@@ -72,6 +72,24 @@ nginx -g "daemon off;" &
 NGINX_PID=$!
 
 # Trap signals to stop processes correctly
-trap "kill $BACKEND_PID; kill $NGINX_PID; su postgres -c 'pg_ctl stop -D $DATA_DIR'; exit" SIGTERM SIGHUP
+cleanup() {
+    bashio::log.info "Shutting down services..."
+    
+    # Stop Nginx gracefully
+    kill -TERM $NGINX_PID 2>/dev/null
+    wait $NGINX_PID 2>/dev/null
+    
+    # Stop Backend gracefully
+    kill -TERM $BACKEND_PID 2>/dev/null
+    wait $BACKEND_PID 2>/dev/null
+    
+    # Stop PostgreSQL gracefully (smart mode)
+    su postgres -c "pg_ctl stop -D $DATA_DIR -m smart" || true
+    
+    bashio::log.info "All services stopped"
+    exit 0
+}
+
+trap cleanup SIGTERM SIGHUP
 
 wait $NGINX_PID
