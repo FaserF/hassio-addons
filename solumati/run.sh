@@ -6,7 +6,13 @@ IMAGES_DIR="/data/images"
 DB_USER="solumati"
 DB_NAME="solumatidb"
 # Read secret from config options
+# Read secret from config options
 DB_PASS=$(bashio::config 'secret_key')
+
+if [ -z "$DB_PASS" ]; then
+    bashio::log.error "secret_key is not configured. Please set it in the add-on configuration."
+    exit 1
+fi
 
 bashio::log.info "Starting Solumati Add-on initialization..."
 
