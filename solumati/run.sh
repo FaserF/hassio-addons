@@ -27,7 +27,10 @@ chown -R postgres:postgres "$DATA_DIR"
 
 # Start Postgres in background
 bashio::log.info "Starting PostgreSQL service..."
-su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"
+if ! su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"; then
+    bashio::log.error "Failed to start PostgreSQL service"
+    exit 1
+fi
 
 # Wait for DB to be ready
 bashio::log.info "Waiting for database to be ready..."
