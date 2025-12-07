@@ -18,21 +18,6 @@ if [ ! -d "$DATA_DIR" ]; then
 
     # Initialize DB
     su postgres -c "initdb -D $DATA_DIR"
-
-    # Start Postgres temporarily to set up user/db
-    bashio::log.info "Starting PostgreSQL temporarily for setup..."
-    su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"
-
-    # Wait for start
-    sleep 5
-
-    bashio::log.info "Creating database user and schema..."
-    su postgres -c "createuser -s $DB_USER" || true
-    su postgres -c "createdb -O $DB_USER $DB_NAME" || true
-    su postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\""
-
-    bashio::log.info "Stopping temporary PostgreSQL..."
-    su postgres -c "pg_ctl stop -D $DATA_DIR"
 fi
 
 # Ensure Postgres directories permissions are correct (in case of restore/restart)
@@ -50,11 +35,21 @@ until su postgres -c "pg_isready"; do
   sleep 1
 done
 
+# --- IDEMPOTENT DB CONFIGURATION ---
+# Run this every time to ensure user exists even if first setup crashed
+bashio::log.info "Ensuring database user and schema exist..."
+su postgres -c "createuser -s $DB_USER" || true
+su postgres -c "createdb -O $DB_USER $DB_NAME" || true
+su postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\""
+
 # --- PERSISTENCE SETUP ---
 # Handle uploaded images persistence
 if [ ! -d "$IMAGES_DIR" ]; then
     mkdir -p "$IMAGES_DIR"
 fi
+
+mkdir -p /app/backend/static
+
 # Remove the container's static/images dir and symlink to persistent storage
 rm -rf /app/backend/static/images
 ln -s "$IMAGES_DIR" /app/backend/static/images
