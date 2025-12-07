@@ -1,33 +1,82 @@
 #!/usr/bin/with-contenv bashio
 
-# Retrieve config options using bashio
-export DATABASE_URL=$(bashio::config 'database_url')
-export SECRET_KEY=$(bashio::config 'secret_key')
-LOG_LEVEL=$(bashio::config 'log_level')
+# --- CONFIGURATION ---
+DATA_DIR="/data/postgresql"
+IMAGES_DIR="/data/images"
+DB_USER="solumati"
+DB_NAME="solumatidb"
+# Read secret from config options
+DB_PASS=$(bashio::config 'secret_key')
 
-# Configure logging level and Test Mode
-if [ "$LOG_LEVEL" == "debug" ]; then
-    export TEST_MODE="true"
-    bashio::log.info "Debug mode enabled. Test data will be generated."
-else
-    export TEST_MODE="false"
+bashio::log.info "Starting Solumati Add-on initialization..."
+
+# --- POSTGRESQL SETUP ---
+if [ ! -d "$DATA_DIR" ]; then
+    bashio::log.info "Initializing PostgreSQL data directory in $DATA_DIR..."
+    mkdir -p "$DATA_DIR"
+    chown postgres:postgres "$DATA_DIR"
+
+    # Initialize DB
+    su postgres -c "initdb -D $DATA_DIR"
+
+    # Start Postgres temporarily to set up user/db
+    bashio::log.info "Starting PostgreSQL temporarily for setup..."
+    su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"
+
+    # Wait for start
+    sleep 5
+
+    bashio::log.info "Creating database user and schema..."
+    su postgres -c "createuser -s $DB_USER" || true
+    su postgres -c "createdb -O $DB_USER $DB_NAME" || true
+    su postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\""
+
+    bashio::log.info "Stopping temporary PostgreSQL..."
+    su postgres -c "pg_ctl stop -D $DATA_DIR"
 fi
 
-# Ensure the static directory exists for image uploads
-if [ ! -d "/app/static/images" ]; then
-    bashio::log.info "Creating static images directory..."
-    mkdir -p /app/static/images
+# Ensure Postgres directories permissions are correct (in case of restore/restart)
+mkdir -p /run/postgresql
+chown -R postgres:postgres /run/postgresql
+chown -R postgres:postgres "$DATA_DIR"
+
+# Start Postgres in background
+bashio::log.info "Starting PostgreSQL service..."
+su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"
+
+# Wait for DB to be ready
+bashio::log.info "Waiting for database to be ready..."
+until su postgres -c "pg_isready"; do
+  sleep 1
+done
+
+# --- PERSISTENCE SETUP ---
+# Handle uploaded images persistence
+if [ ! -d "$IMAGES_DIR" ]; then
+    mkdir -p "$IMAGES_DIR"
 fi
+# Remove the container's static/images dir and symlink to persistent storage
+rm -rf /app/backend/static/images
+ln -s "$IMAGES_DIR" /app/backend/static/images
 
-bashio::log.info "Starting Nginx..."
-# Start Nginx in background
-nginx
+# --- BACKEND START ---
+export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
+export APP_BASE_URL="http://homeassistant.local:8099" # Default fallback
+export TEST_MODE="false"
 
-bashio::log.info "Starting Solumati Backend..."
-# Switch to app directory
-cd /app
+bashio::log.info "Starting Backend (Uvicorn)..."
+cd /app/backend
+# Start Uvicorn in background
+uvicorn main:app --host 127.0.0.1 --port 7777 &
+BACKEND_PID=$!
 
-# Start Uvicorn
-# IMPORTANT: We bind to 0.0.0.0 so that port 7777 is accessible from the outside.
-# Nginx accesses it internally via localhost:7777 (this works because 0.0.0.0 covers all interfaces).
-exec uvicorn main:app --host 0.0.0.0 --port 7777
+# --- NGINX START ---
+bashio::log.info "Starting Nginx (Frontend)..."
+mkdir -p /run/nginx
+nginx -g "daemon off;" &
+NGINX_PID=$!
+
+# Trap signals to stop processes correctly
+trap "kill $BACKEND_PID; kill $NGINX_PID; su postgres -c 'pg_ctl stop -D $DATA_DIR'; exit" SIGTERM SIGHUP
+
+wait $NGINX_PID
