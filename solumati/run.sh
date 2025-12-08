@@ -49,7 +49,7 @@ done
 bashio::log.info "Ensuring database user and schema exist..."
 su postgres -c "createuser -s $DB_USER" || true
 su postgres -c "createdb -O $DB_USER $DB_NAME" || true
-su postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\""
+echo "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';" | su postgres -c "psql"
 
 # --- PERSISTENCE SETUP ---
 # Handle uploaded images persistence
@@ -66,7 +66,11 @@ ln -s "$IMAGES_DIR" /app/backend/static/images
 # --- BACKEND START ---
 export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
 export APP_BASE_URL="http://homeassistant.local:8099" # Default fallback
-export TEST_MODE="false"
+if bashio::config.has_value 'test_mode'; then
+    export TEST_MODE=$(bashio::config 'test_mode')
+else
+    export TEST_MODE="false"
+fi
 
 bashio::log.info "Starting Backend (Uvicorn)..."
 cd /app/backend
@@ -83,18 +87,18 @@ NGINX_PID=$!
 # Trap signals to stop processes correctly
 cleanup() {
     bashio::log.info "Shutting down services..."
-    
+
     # Stop Nginx gracefully
     kill -TERM $NGINX_PID 2>/dev/null
     wait $NGINX_PID 2>/dev/null
-    
+
     # Stop Backend gracefully
     kill -TERM $BACKEND_PID 2>/dev/null
     wait $BACKEND_PID 2>/dev/null
-    
+
     # Stop PostgreSQL gracefully (smart mode)
     su postgres -c "pg_ctl stop -D $DATA_DIR -m smart" || true
-    
+
     bashio::log.info "All services stopped"
     exit 0
 }

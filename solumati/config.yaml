@@ -1,5 +1,5 @@
 name: "Solumati"
-version: "1.0.0"
+version: "1.0.1"
 slug: "solumati"
 description: "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches."
 url: "https://github.com/FaserF/hassio-addons/tree/master/solumati"
@@ -17,7 +17,9 @@ ports_description:
   80/tcp: "Web Interface Port"
 options:
   log_level: info
+  test_mode: false
   secret_key: "ChangeMeInProduction!"
 schema:
-  log_level: list(trace,debug,info,notice,warning,error,fatal)?
-  secret_key: str
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  test_mode: bool
+  secret_key: password
