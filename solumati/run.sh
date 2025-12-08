@@ -5,14 +5,8 @@ DATA_DIR="/data/postgresql"
 IMAGES_DIR="/data/images"
 DB_USER="solumati"
 DB_NAME="solumatidb"
-# Read secret from config options
-# Read secret from config options
-DB_PASS=$(bashio::config 'secret_key')
-
-if [ -z "$DB_PASS" ]; then
-    bashio::log.error "secret_key is not configured. Please set it in the add-on configuration."
-    exit 1
-fi
+# Generate random password for database
+DB_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32 ; echo '')
 
 bashio::log.info "Starting Solumati Add-on initialization..."
 
@@ -66,8 +60,8 @@ ln -s "$IMAGES_DIR" /app/backend/static/images
 # --- BACKEND START ---
 export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
 export APP_BASE_URL="http://homeassistant.local:8099" # Default fallback
-if bashio::config.has_value 'test_mode'; then
-    export TEST_MODE=$(bashio::config 'test_mode')
+if bashio::config.true 'test_mode'; then
+    export TEST_MODE="true"
 else
     export TEST_MODE="false"
 fi

@@ -27,6 +27,9 @@ RUN \
 WORKDIR /tmp
 RUN git clone https://github.com/FaserF/Solumati.git src
 
+# Fix syntax error in upstream Questionnaire.jsx (duplicate return statement)
+RUN sed -i '81d' src/frontend/src/components/Questionnaire.jsx
+
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
