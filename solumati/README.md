@@ -11,20 +11,20 @@ Solumati is a revolutionary dating platform designed to bring meaning back to ma
 
 ## Features
 
--   **Self-Hosted**: Your data stays on your server.
--   **Integrated Database**: Comes with a pre-configured PostgreSQL database.
--   **Auto-configuration**: Zero-config setup for the database connection.
--   **Test Mode**: Optional mode for testing matching algorithms and features.
--   **Secure**:
-    -   Admin password is automatically generated on first startup.
-    -   Database password is internally managed and randomized.
-    -   Process-level security fixes (hidden credentials).
+- **Self-Hosted**: Your data stays on your server.
+- **Integrated Database**: Comes with a pre-configured PostgreSQL database.
+- **Auto-configuration**: Zero-config setup for the database connection.
+- **Test Mode**: Optional mode for testing matching algorithms and features.
+- **Secure**:
+  - Admin password is automatically generated on first startup.
+  - Database password is internally managed and randomized.
+  - Process-level security fixes (hidden credentials).
 
 ## Installation
 
-1.  Add this repository to your Home Assistant Add-on Store.
-2.  Install the **Solumati** add-on.
-3.  Start the add-on.
+1. Add this repository to your Home Assistant Add-on Store.
+2. Install the **Solumati** add-on.
+3. Start the add-on.
 
 ## Configuration
 
@@ -32,10 +32,10 @@ Solumati is a revolutionary dating platform designed to bring meaning back to ma
 
 ### Options
 
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `test_mode` | boolean | `false` | Enable test mode for the application. Useful for development or debugging. |
-| `log_level` | string | `info` | Controls the verbosity of the logs (trace, debug, info, warning, error, fatal). |
+| Option      | Type    | Default | Description                                                                     |
+|:------------|:--------|:--------|:--------------------------------------------------------------------------------|
+| `test_mode` | boolean | `false` | Enable test mode for the application. Useful for development or debugging.      |
+| `log_level` | string  | `info`  | Controls the verbosity of the logs (trace, debug, info, warning, error, fatal). |
 
 ## Usage
 
@@ -43,10 +43,10 @@ Solumati is a revolutionary dating platform designed to bring meaning back to ma
 
 When you start the Solumati add-on for the first time (or if the database is reset), the application will generate a secure **Admin Password**.
 
-1.  Start the add-on.
-2.  Check the **Log** tab of the add-on.
-3.  Look for a message indicating the generated Admin credentials (e.g., "Admin user created with password: ...").
-4.  Copy this password immediately and store it securely.
+1. Start the add-on.
+2. Check the **Log** tab of the add-on.
+3. Look for a message indicating the generated Admin credentials (e.g., "Admin user created with password: ...").
+4. Copy this password immediately and store it securely.
 
 ### Accessing the Interface
 
