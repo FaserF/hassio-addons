@@ -18,14 +18,19 @@ RUN \
     gcc \
     musl-dev \
     libffi-dev \
-    git \
+
+    curl \
     python3 \
     py3-pip
 
 # --- SOURCE CODE FETCH STAGE ---
-# Clone the repository dynamically
+# Download the specific release tarball
+ARG SOLUMATI_VERSION="v2025.12.2.0"
 WORKDIR /tmp
-RUN git clone https://github.com/FaserF/Solumati.git src
+RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
+    tar -xzf solumati.tar.gz && \
+    mv Solumati-* src && \
+    rm solumati.tar.gz
 
 # Fix syntax error in upstream Questionnaire.jsx (duplicate return statement)
 RUN sed -i '81d' src/frontend/src/components/Questionnaire.jsx

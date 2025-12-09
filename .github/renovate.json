@@ -39,6 +39,14 @@
       ],
       "datasourceTemplate": "alpine",
       "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
+    },
+    {
+      "fileMatch": ["/Dockerfile$"],
+      "matchStrings": [
+        "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/Solumati"
     }
   ],
   "packageRules": [
@@ -93,6 +101,12 @@
       "groupName": "PHP Packages",
       "matchDatasources": ["alpine"],
       "matchPackagePatterns": ["php\\d+"],
+      "automerge": true
+    },
+    {
+      "groupName": "Solumati",
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["FaserF/Solumati"],
       "automerge": true
     }
   ]

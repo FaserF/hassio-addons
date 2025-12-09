@@ -1,0 +1,122 @@
+name: Automatically bump version and build Solumati
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'solumati/Dockerfile'
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      addon: "solumati"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Retrieve version & increment
+        id: version
+        run: |
+          set -e
+          configfile="solumati/config.yaml"
+          OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+' "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
+
+          # Increment patch version (assumes X.Y.Z.P or X.Y.Z format, Solumati uses 2025.12.2.0)
+          # We will split by '.'
+          IFS='.' read -r major minor patch build <<< "$OLD_VERSION"
+          if [[ -z "$build" ]]; then
+             # If formatted as X.Y.Z, treat Z as patch
+             ((patch++))
+             NEW_VERSION="$major.$minor.$patch"
+          else
+             # If formatted as X.Y.Z.B, increment B
+             ((build++))
+             NEW_VERSION="$major.$minor.$patch.$build"
+          fi
+
+          echo "Updating $configfile from $OLD_VERSION to $NEW_VERSION"
+          sed -i "s/^version: \"\?$OLD_VERSION\"\?/version: \"$NEW_VERSION\"/" "$configfile"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update Changelog
+        run: |
+          repo_url="https://api.github.com/repos/FaserF/Solumati"
+          response=$(curl -s "$repo_url/releases/latest")
+          latest_tag=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | head -1)
+
+          changelog="solumati/CHANGELOG.md"
+          new_ver="${{ steps.version.outputs.new_version }}"
+
+          if [ -f "$changelog" ]; then
+             sed -i "/# Changelog/a \\## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" "$changelog"
+          fi
+
+      - name: Upload Config Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: addon-config
+          path: solumati/
+
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ["aarch64", "amd64"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download Config Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: addon-config
+          path: solumati/
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push
+        uses: home-assistant/builder@2025.11.0
+        with:
+          args: |
+            --${{ matrix.arch }} \
+            --target solumati \
+            --image "solumati-{arch}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon
+
+  commit:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: master
+
+      - name: Download Config Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: addon-config
+          path: solumati/
+
+      - name: Commit & Push
+        uses: actions-js/push@v1.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          message: "Bump Solumati version to ${{ needs.version.outputs.new_version }} [skip ci]"
