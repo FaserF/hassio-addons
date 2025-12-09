@@ -10,6 +10,7 @@ on:
       - master
     paths:
       - 'solumati/Dockerfile'
+  workflow_dispatch:
 
 jobs:
   version:

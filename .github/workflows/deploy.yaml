@@ -36,15 +36,28 @@ jobs:
           echo "Starting"
 
           for f in $(find . -maxdepth 1 -mindepth 1 -type d | sed 's|^\./||' | sort -r); do
-            if [ -f "$f"/config.json ]; then
+            if [ -f "$f"/config.json ] || [ -f "$f"/config.yaml ]; then
+              if [ -f "$f"/config.json ]; then
+                ADDON_CONFIG="$f/config.json"
+              else
+                ADDON_CONFIG="$f/config.yaml"
+              fi
 
               # Add to file
               if ! grep -q "^$f:" ".github/paths-filter.yml"; then
-                echo "$f: $f/config.*" >> ".github/paths-filter.yml"
+                echo "$f: $f/**" >> ".github/paths-filter.yml"
               fi
 
               # Identify addons with true images
-              if [ "$(jq '.image' "$f"/config.json)" != null ]; then
+              # JSON via jq, YAML via grep
+              HAS_IMAGE=false
+              if [[ "$ADDON_CONFIG" == *".json" ]]; then
+                 if [ "$(jq '.image' "$ADDON_CONFIG")" != null ]; then HAS_IMAGE=true; fi
+              else
+                 if grep -q "^image:" "$ADDON_CONFIG"; then HAS_IMAGE=true; fi
+              fi
+
+              if [ "$HAS_IMAGE" = true ]; then
                 sed -i "/^$f:/ s/ # Image : yes//g" ".github/paths-filter.yml"
                 sed -i "/^$f:/ s/$/ # Image : yes/" ".github/paths-filter.yml"
               fi
