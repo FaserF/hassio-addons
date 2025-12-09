@@ -6,18 +6,21 @@ IMAGES_DIR="/data/images"
 DB_USER="solumati"
 DB_NAME="solumatidb"
 # Generate random password for database
-DB_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32 ; echo '')
+DB_PASS=$(
+	tr -dc A-Za-z0-9 </dev/urandom | head -c 32
+	echo ''
+)
 
 bashio::log.info "Starting Solumati Add-on initialization..."
 
 # --- POSTGRESQL SETUP ---
 if [ ! -d "$DATA_DIR" ]; then
-    bashio::log.info "Initializing PostgreSQL data directory in $DATA_DIR..."
-    mkdir -p "$DATA_DIR"
-    chown postgres:postgres "$DATA_DIR"
+	bashio::log.info "Initializing PostgreSQL data directory in $DATA_DIR..."
+	mkdir -p "$DATA_DIR"
+	chown postgres:postgres "$DATA_DIR"
 
-    # Initialize DB
-    su postgres -c "initdb -D $DATA_DIR"
+	# Initialize DB
+	su postgres -c "initdb -D $DATA_DIR"
 fi
 
 # Ensure Postgres directories permissions are correct (in case of restore/restart)
@@ -28,14 +31,14 @@ chown -R postgres:postgres "$DATA_DIR"
 # Start Postgres in background
 bashio::log.info "Starting PostgreSQL service..."
 if ! su postgres -c "pg_ctl start -D $DATA_DIR -l /var/lib/postgresql/log.log"; then
-    bashio::log.error "Failed to start PostgreSQL service"
-    exit 1
+	bashio::log.error "Failed to start PostgreSQL service"
+	exit 1
 fi
 
 # Wait for DB to be ready
 bashio::log.info "Waiting for database to be ready..."
 until su postgres -c "pg_isready"; do
-  sleep 1
+	sleep 1
 done
 
 # --- IDEMPOTENT DB CONFIGURATION ---
@@ -48,7 +51,7 @@ echo "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';" | su postgres -c "psql"
 # --- PERSISTENCE SETUP ---
 # Handle uploaded images persistence
 if [ ! -d "$IMAGES_DIR" ]; then
-    mkdir -p "$IMAGES_DIR"
+	mkdir -p "$IMAGES_DIR"
 fi
 
 mkdir -p /app/backend/static
@@ -61,9 +64,9 @@ ln -s "$IMAGES_DIR" /app/backend/static/images
 export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
 export APP_BASE_URL="http://homeassistant.local:8099" # Default fallback
 if bashio::config.true 'test_mode'; then
-    export TEST_MODE="true"
+	export TEST_MODE="true"
 else
-    export TEST_MODE="false"
+	export TEST_MODE="false"
 fi
 
 bashio::log.info "Starting Backend (Uvicorn)..."
@@ -80,21 +83,21 @@ NGINX_PID=$!
 
 # Trap signals to stop processes correctly
 cleanup() {
-    bashio::log.info "Shutting down services..."
+	bashio::log.info "Shutting down services..."
 
-    # Stop Nginx gracefully
-    kill -TERM $NGINX_PID 2>/dev/null
-    wait $NGINX_PID 2>/dev/null
+	# Stop Nginx gracefully
+	kill -TERM $NGINX_PID 2>/dev/null
+	wait $NGINX_PID 2>/dev/null
 
-    # Stop Backend gracefully
-    kill -TERM $BACKEND_PID 2>/dev/null
-    wait $BACKEND_PID 2>/dev/null
+	# Stop Backend gracefully
+	kill -TERM $BACKEND_PID 2>/dev/null
+	wait $BACKEND_PID 2>/dev/null
 
-    # Stop PostgreSQL gracefully (smart mode)
-    su postgres -c "pg_ctl stop -D $DATA_DIR -m smart" || true
+	# Stop PostgreSQL gracefully (smart mode)
+	su postgres -c "pg_ctl stop -D $DATA_DIR -m smart" || true
 
-    bashio::log.info "All services stopped"
-    exit 0
+	bashio::log.info "All services stopped"
+	exit 0
 }
 
 trap cleanup SIGTERM SIGHUP
