@@ -1,5 +1,6 @@
+---
 name: Add comment on new github issues
-on:
+"on":
   issues:
     types:
       - labeled

@@ -6,23 +6,27 @@ Bash Script Executer for Homeassistant OS
 
 ## About
 
-This is a simple Docker Image to execute personal scripts. The reason I am needing this, is that the HA OS has limited features installed (for example no curl, sed etc) and this Addon fixes that issue.<br />
-You can run up to three different scripts with this addon.<br />
+This is a simple Docker Image to execute personal scripts. The reason I am needing this, is that the HA OS has limited features installed (for example no curl, sed etc) and this Addon fixes that issue.
+
+You can run up to three different scripts with this addon.
+
 This docker image comes with: busybox-extras curl grep coreutils sed xmlstarlet
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
-Put your scripts somewhere in the /share/ folder. Other folders are not visible to this addon.<br />
+Put your scripts somewhere in the /share/ folder. Other folders are not visible to this addon.
+
 Example File where your script could be: /share/scripts/script.sh
 
 ## Configuration
 
-**I am recommending to disable "Start on boot" and the Watchdog option from HA for this addon!**<br />
+**I am recommending to disable "Start on boot" and the Watchdog option from HA for this addon!**
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
@@ -64,7 +68,7 @@ This option is needed. Change it depending where your script is or change it to 
 ## Cron Support - running scripts by time
 
 I havent implemented Cron in this addon, as you can run your scripts periodically by an Homeassistant automation.
-Example Automation: <br />
+Example Automation:
 
 ```yaml
   - alias: "Run Bash Script with Addon Bash Script Executer"

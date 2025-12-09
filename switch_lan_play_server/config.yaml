@@ -1,3 +1,4 @@
+---
 name: Switch LAN Play Server
 version: 1.8.1
 slug: switch-lan-play-server
@@ -7,7 +8,7 @@ arch:
   - armhf
   - armv7
   - amd64
-#image: ghcr.io/faserf/switch_lan_play_server-{arch}
+# image: ghcr.io/faserf/switch_lan_play_server-{arch}
 panel_icon: mdi:local-area-network
 init: false
 schema:

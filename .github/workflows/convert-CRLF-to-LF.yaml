@@ -1,6 +1,7 @@
+---
 name: Convert CRLF to LF
 
-on:
+"on":
   workflow_call:
   workflow_dispatch:
 

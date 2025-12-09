@@ -3,7 +3,7 @@ name: Automatically bump version on netbootxyz updates and changelog
 permissions:
   contents: write
 
-on:
+"on":
   push:
     branches:
       - master
@@ -104,7 +104,7 @@ jobs:
               ((patch++))
               new_version="$major.$minor.$patch"
 
-              if ! sed -i "/# Changelog/a \\## $new_version\\n- Automatically updated netboot-xyz to version $latest_version\\n" "$file"; then
+              if ! sed -i "/# Changelog/a \\\\n## $new_version\\n- Automatically updated netboot-xyz to version $latest_version\\n" "$file"; then
                   echo "❌ Error while writing changelog entry to $file"
                   exit 1
               fi

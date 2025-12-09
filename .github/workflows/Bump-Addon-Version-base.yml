@@ -4,7 +4,7 @@ name: Automatically bump version on addon base updates and changelog
 permissions:
   contents: write
 
-on:
+"on":
   push:
     branches:
       - master
@@ -138,7 +138,7 @@ jobs:
               new_version="$major.$minor.$patch"
               echo "🔹 Incremented Patch version to: $new_version"
               echo "Updating $file with new version $new_version and addon-base version $latest_version..."
-              sed -i "/# Changelog/a \\## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" "$file"
+              sed -i "/# Changelog/a \\\\n## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" "$file"
               if grep -q "## $new_version" "$file"; then
                   echo "✅ Successfully updated $file with version $new_version"
               else

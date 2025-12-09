@@ -52,12 +52,12 @@ The Apache HTTP Server is an open-source web server software maintained by the A
 1. Add the repository to Home Assistant:
    [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-2. Install the `Apache2` add-on via Supervisor.
+1. Install the `Apache2` add-on via Supervisor.
 
-3. Place your website files in document_root (Default: `/share/htdocs`).
+1. Place your website files in document_root (Default: `/share/htdocs`).
    Example: `/share/htdocs/index.html`
 
-4. Start the add-on and access your site via Ingress or external port.
+1. Start the add-on and access your site via Ingress or external port.
 
 ---
 

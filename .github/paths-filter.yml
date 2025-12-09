@@ -1,5 +1,7 @@
+---
 #
-# Those are the addon path filters used in the workflows to determine which addon needs to be build.
+# Those are the addon path filters used in the workflows to determine which
+# addon needs to be build.
 apache2-minimal-mariadb: apache2-minimal-mariadb/**
 apache2-minimal: apache2-minimal/** # Image : yes
 apache2: apache2/** # Image : yes

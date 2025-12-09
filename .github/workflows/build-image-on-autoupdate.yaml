@@ -1,6 +1,7 @@
+---
 name: Build Image on Autoupdate
 
-on:
+"on":
   workflow_run:
     workflows:
       - "Automatically bump version on addon base updates and changelog"

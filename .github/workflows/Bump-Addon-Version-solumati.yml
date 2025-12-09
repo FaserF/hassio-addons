@@ -4,7 +4,7 @@ permissions:
   contents: write
   packages: write
 
-on:
+"on":
   push:
     branches:
       - master
@@ -58,7 +58,7 @@ jobs:
           new_ver="${{ steps.version.outputs.new_version }}"
 
           if [ -f "$changelog" ]; then
-             sed -i "/# Changelog/a \\## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" "$changelog"
+             sed -i "/# Changelog/a \\\\n## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" "$changelog"
           fi
 
       - name: Upload Config Artifact

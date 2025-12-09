@@ -1,3 +1,4 @@
+---
 name: pterodactyl Panel Gameserver - BETA
 version: 0.9.1
 slug: pterodactyl_panel
@@ -9,7 +10,7 @@ arch:
 image: ghcr.io/faserf/pterodactyl-panel-{arch}
 services:
   - mysql:need
-#webui: "[PROTO:ssl]://[HOST]:[PORT:80]"
+# webui: "[PROTO:ssl]://[HOST]:[PORT:80]"
 map:
   - share:rw
   - ssl

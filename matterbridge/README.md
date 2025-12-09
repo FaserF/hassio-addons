@@ -6,19 +6,20 @@ Matterbridge for Homeassistant OS
 
 ## About
 
-A simple chat bridge<br />
-Letting people be where they want to be.<br />
-Bridges between a growing number of protocols.<br />
+A simple chat bridge
+Letting people be where they want to be.
+Bridges between a growing number of protocols.
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
-Put your website files to /share/htdocs<br />
-Example File where your index.html should be: /share/htdocs/index.html <br />
+Put your website files to /share/htdocs
+Example File where your index.html should be: /share/htdocs/index.html
 
 If you want to integrate your website with a mariadb database. Please ensure that the MariaDB Addon is installed!
 
@@ -49,7 +50,8 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from the 42wim. For more informatios please visit this page: <https://github.com/42wim/matterbridge><br />
+The original program is from the 42wim. For more informatios please visit this page: <https://github.com/42wim/matterbridge>
+
 The hassio addon is brought to you by [FaserF].
 
 ## License

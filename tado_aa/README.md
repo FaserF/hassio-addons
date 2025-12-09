@@ -13,6 +13,7 @@ A Python script that automatically adjusts the temperature in your home based on
 [![FaserF Home Assistant Add-ons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 The installation of this add-on is straightforward and similar to installing any other custom Home Assistant add-on.
+
 Just click the link above or manually add this repository to your Home Assistant add-on repositories:
 <https://github.com/FaserF/hassio-addons>
 

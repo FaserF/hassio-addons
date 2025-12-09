@@ -3,10 +3,10 @@
 ---
 name: Builder
 
-#env:
+# env:
 #  BUILD_ARGS: "--test"
 
-on:
+"on":
   push:
     branches:
       - master

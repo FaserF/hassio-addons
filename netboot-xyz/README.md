@@ -13,8 +13,9 @@ You can remote attach the ISO to servers, set it up as a rescue option in Grub, 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 ## Configuration
@@ -28,7 +29,6 @@ path: /media/netboot/image
 path_config: /media/netboot/config
 dhcp_range: 192.168.178.200
 ```
-<br />
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
@@ -53,43 +53,43 @@ This option is needed. Change it depending to your network. Try using a higher I
 This addon supports Homeassistant Ingress. But it seems to be buggy.
 
 ## Post-Installation
-Before booting for the first time, I recommend having a look at the netboot config.<br />
-Go to <http://YOUR-HOMEASSISTANT-IP:3000> -> Menus -> boot.cfg<br />
+Before booting for the first time, I recommend having a look at the netboot config.
+Go to <http://YOUR-HOMEASSISTANT-IP:3000> -> Menus -> boot.cfg
 
 ### Windows
-1. Change the following line depending to your WinPE location: <br />
-   set win_base_url <http://YOUR-SERVER-IP:PortForTheNGINXserver/WinPE> <br />
+1. Change the following line depending to your WinPE location:
+   set win_base_url <http://YOUR-SERVER-IP:PortForTheNGINXserver/WinPE>
 
-   example if you are hosting your extracted files directly on the netboot.xyz server and your IP address is 192.168.178.2: <br />
-   set win_base_url <http://192.168.178.2:85/WinPE> <br />
+   example if you are hosting your extracted files directly on the netboot.xyz server and your IP address is 192.168.178.2:
+   set win_base_url <http://192.168.178.2:85/WinPE>
 
-2. Copy the windows PE files to your $path folder -> WinPE -> x64<br />
-   Example: /media/netboot/image/WinPE/x64<br />
+2. Copy the windows PE files to your $path folder -> WinPE -> x64
+   Example: /media/netboot/image/WinPE/x64
 
-3. Extract the windows ISO and Copy the files anywhere to your $path folder, for example:<br />
-   /media/netboot/image/windows<br />
+3. Extract the windows ISO and Copy the files anywhere to your $path folder, for example:
+   /media/netboot/image/windows
 
-4. Install the Samba Share Homeassistant Addon & Start it<br />
-   Needed for providing the win10 ISO to the winPE<br />
+4. Install the Samba Share Homeassistant Addon & Start it
+   Needed for providing the win10 ISO to the winPE
 
-5. Enter the following line after booting the WinPE<br />
-net use Z: \ \YOUR-SERVER-IP\$path /user:YOUR-SERVER-IP\mySambaUser myPassword<br />
-net use Z: \ \192.168.178.2\media\netboot\image\windows /user:192.168.178.2\mySambaUser myPassword<br />
-Z:\setup.exe <br />
+5. Enter the following line after booting the WinPE
+net use Z: \ \YOUR-SERVER-IP\$path /user:YOUR-SERVER-IP\mySambaUser myPassword
+net use Z: \ \192.168.178.2\media\netboot\image\windows /user:192.168.178.2\mySambaUser myPassword
+Z:\setup.exe
 
-More informations: <br />
+More informations:
 <https://netboot.xyz/faq/windows/>
 
 ### Automate this Windows Installation Process
 
-Modify your WinPE:<br />
-1. Create a Main.cmd file at your WinPE location in a new folder "Scripts" <br />
-   f.e. /media/netboot/image/WinPE/x64/Scripts/Start.cmd<br />
-   Then add the two lines from above into that script<br />
+Modify your WinPE:
+1. Create a Main.cmd file at your WinPE location in a new folder "Scripts"
+   f.e. /media/netboot/image/WinPE/x64/Scripts/Start.cmd
+   Then add the two lines from above into that script
    Then modify the wpeinit to use that script.
-2. Create an autounattend.xml file. You can find some examples from me here: <https://github.com/FaserF/WindowsPostInstaller/tree/master/autounattend><br />
+2. Create an autounattend.xml file. You can find some examples from me here: <https://github.com/FaserF/WindowsPostInstaller/tree/master/autounattend>
 
-Have a look at <https://github.com/netbootxyz/netboot.xyz/discussions/757><br />
+Have a look at <https://github.com/netbootxyz/netboot.xyz/discussions/757>
 
 ## Support
 
@@ -99,8 +99,8 @@ You can [open an issue here][issue] GitHub.
 Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ### Known issues
-1. Directly after the PXE boot the boot will run into multiple timeouts if you wont configure PXE DHCP options in your router's settings<br />
-2. Changes to boot.cfg seem to be ignored by netboot.xyz . It will always use the default config. <https://github.com/netbootxyz/netboot.xyz/discussions/861> <br />
+1. Directly after the PXE boot the boot will run into multiple timeouts if you wont configure PXE DHCP options in your router's settings
+2. Changes to boot.cfg seem to be ignored by netboot.xyz . It will always use the default config. <https://github.com/netbootxyz/netboot.xyz/discussions/861>
 
 ## Authors & contributors
 

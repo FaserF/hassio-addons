@@ -11,14 +11,14 @@ pterodactyl Panel Gameserver for Homeassistant OS
 **WARNING: Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.**
 **For me I am unable to login until now. Seems to have something to do with redis, but I dont get what exactly.**
 
-Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.<br />
+Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.
 Stop settling for less. Make game servers a first class citizen on your platform.
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-<br />
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.<br />
+
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 ## Configuration
@@ -37,7 +37,7 @@ ssl: false
 certfile: itdoesntmatter_as_ssl_is_set_to_false
 keyfile: itdoesntmatter_as_ssl_is_set_to_false
 ```
-<br />
+
 Recommended Example add-on configuration:
 
 ```yaml

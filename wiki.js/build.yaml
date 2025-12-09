@@ -1,2 +1,3 @@
+---
 build_from:
   amd64: "ghcr.io/hassio-addons/base:19.0.0"

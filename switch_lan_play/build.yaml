@@ -1,3 +1,4 @@
+---
 build_from:
   armhf: "ghcr.io/hassio-addons/base:18.2.1"
   armv7: "ghcr.io/hassio-addons/base:18.2.1"

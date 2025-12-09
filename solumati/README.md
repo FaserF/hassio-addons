@@ -7,7 +7,9 @@ The Anti-Swipe Revolution - A self-hosted dating platform focused on meaningful 
 
 ## About
 
-Solumati is a revolutionary dating platform designed to bring meaning back to matchmaking. By hosting this add-on, you run your own instance of the Solumati platform directly on your Home Assistant server.
+Solumati is a revolutionary dating platform designed to bring meaning back to matchmaking.
+By hosting this add-on, you run your own instance of the Solumati platform directly on
+your Home Assistant server.
 
 ## Features
 
@@ -23,12 +25,13 @@ Solumati is a revolutionary dating platform designed to bring meaning back to ma
 ## Installation
 
 1. Add this repository to your Home Assistant Add-on Store.
-2. Install the **Solumati** add-on.
-3. Start the add-on.
+1. Install the **Solumati** add-on.
+1. Start the add-on.
 
 ## Configuration
 
-**Note**: The database password is managed internally and does not need to be configured. Applications secrets are handled automatically.
+**Note**: The database password is managed internally and does not need to be configured.
+Applications secrets are handled automatically.
 
 ### Options
 
@@ -41,12 +44,13 @@ Solumati is a revolutionary dating platform designed to bring meaning back to ma
 
 ### First Start & Admin Password
 
-When you start the Solumati add-on for the first time (or if the database is reset), the application will generate a secure **Admin Password**.
+When you start the Solumati add-on for the first time (or if the database is reset),
+the application will generate a secure **Admin Password**.
 
 1. Start the add-on.
-2. Check the **Log** tab of the add-on.
-3. Look for a message indicating the generated Admin credentials (e.g., "Admin user created with password: ...").
-4. Copy this password immediately and store it securely.
+1. Check the **Log** tab of the add-on.
+1. Look for a message indicating the generated Admin credentials (e.g., "Admin user created with password: ...").
+1. Copy this password immediately and store it securely.
 
 ### Accessing the Interface
 
@@ -61,7 +65,6 @@ You can [open an issue here](https://github.com/FaserF/hassio-addons/issues).
 
 The original Solumati program is created by **FaserF**.
 Add-on maintained by [FaserF].
-
 ## License
 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
