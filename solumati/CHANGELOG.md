@@ -1,8 +1,7 @@
 # Changelog
 
-## 1.3.9
-- Automatically updated Solumati to version 
-
+## 1.3.10
+- updated Solumati to v2025.12.1-b9
 
 ## 1.3.8
 - updated Solumati to v2025.12.1-b8
