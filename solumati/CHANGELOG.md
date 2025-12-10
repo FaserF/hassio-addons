@@ -1,9 +1,12 @@
 # Changelog
 
+## 1.3.2
+
+- updated Solumati to v2025.12.1-b5
+
 ## 1.3.1
 
-- New features
-- Bug fixes
+- updated Solumati to v2025.12.1-b4
 
 ## 1.2.0
 
