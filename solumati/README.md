@@ -36,7 +36,7 @@ Applications secrets are handled automatically.
 ### Options
 
 | Option      | Type    | Default | Description                                                                     |
-| :---------- | :------ | :------ | :------------------------------------------------------------------------------ |
+|:------------|:--------|:--------|:--------------------------------------------------------------------------------|
 | `test_mode` | boolean | `false` | Enable test mode for the application. Useful for development or debugging.      |
 | `log_level` | string  | `info`  | Controls the verbosity of the logs (trace, debug, info, warning, error, fatal). |
 
