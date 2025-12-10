@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+- Automatically updated Solumati to version 
+
+
 ## 1.3.2
 
 - updated Solumati to v2025.12.1-b5
