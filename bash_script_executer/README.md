@@ -1,4 +1,5 @@
 # Home Assistant Community Add-on: Bash Script Executer
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
@@ -71,17 +72,17 @@ I havent implemented Cron in this addon, as you can run your scripts periodicall
 Example Automation:
 
 ```yaml
-  - alias: "Run Bash Script with Addon Bash Script Executer"
-    trigger:
-      - platform: time
-        at: '00:02:00'
-      - platform: time_pattern
-        minutes: '/90'
-        seconds: 0
-    action:
-      - service: hassio.addon_start
-        data:
-          addon: 605cee21_bashscriptexecuter
+- alias: "Run Bash Script with Addon Bash Script Executer"
+  trigger:
+    - platform: time
+      at: "00:02:00"
+    - platform: time_pattern
+      minutes: "/90"
+      seconds: 0
+  action:
+    - service: hassio.addon_start
+      data:
+        addon: 605cee21_bashscriptexecuter
 ```
 
 ## Support

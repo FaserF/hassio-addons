@@ -1,4 +1,5 @@
 # Home Assistant Community Add-on: Netboot.xyz
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
@@ -53,10 +54,12 @@ This option is needed. Change it depending to your network. Try using a higher I
 This addon supports Homeassistant Ingress. But it seems to be buggy.
 
 ## Post-Installation
+
 Before booting for the first time, I recommend having a look at the netboot config.
 Go to <http://YOUR-HOMEASSISTANT-IP:3000> -> Menus -> boot.cfg
 
 ### Windows
+
 1. Change the following line depending to your WinPE location:
    set win_base_url <http://YOUR-SERVER-IP:PortForTheNGINXserver/WinPE>
 
@@ -73,9 +76,9 @@ Go to <http://YOUR-HOMEASSISTANT-IP:3000> -> Menus -> boot.cfg
    Needed for providing the win10 ISO to the winPE
 
 5. Enter the following line after booting the WinPE
-net use Z: \ \YOUR-SERVER-IP\$path /user:YOUR-SERVER-IP\mySambaUser myPassword
-net use Z: \ \192.168.178.2\media\netboot\image\windows /user:192.168.178.2\mySambaUser myPassword
-Z:\setup.exe
+   net use Z: \ \YOUR-SERVER-IP\$path /user:YOUR-SERVER-IP\mySambaUser myPassword
+   net use Z: \ \192.168.178.2\media\netboot\image\windows /user:192.168.178.2\mySambaUser myPassword
+   Z:\setup.exe
 
 More informations:
 <https://netboot.xyz/faq/windows/>
@@ -83,6 +86,7 @@ More informations:
 ### Automate this Windows Installation Process
 
 Modify your WinPE:
+
 1. Create a Main.cmd file at your WinPE location in a new folder "Scripts"
    f.e. /media/netboot/image/WinPE/x64/Scripts/Start.cmd
    Then add the two lines from above into that script
@@ -99,6 +103,7 @@ You can [open an issue here][issue] GitHub.
 Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
 
 ### Known issues
+
 1. Directly after the PXE boot the boot will run into multiple timeouts if you wont configure PXE DHCP options in your router's settings
 2. Changes to boot.cfg seem to be ignored by netboot.xyz . It will always use the default config. <https://github.com/netbootxyz/netboot.xyz/discussions/861>
 

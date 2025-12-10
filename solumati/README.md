@@ -36,7 +36,7 @@ Applications secrets are handled automatically.
 ### Options
 
 | Option      | Type    | Default | Description                                                                     |
-|:------------|:--------|:--------|:--------------------------------------------------------------------------------|
+| :---------- | :------ | :------ | :------------------------------------------------------------------------------ |
 | `test_mode` | boolean | `false` | Enable test mode for the application. Useful for development or debugging.      |
 | `log_level` | string  | `info`  | Controls the verbosity of the logs (trace, debug, info, warning, error, fatal). |
 
@@ -65,6 +65,7 @@ You can [open an issue here](https://github.com/FaserF/hassio-addons/issues).
 
 The original Solumati program is created by **FaserF**.
 Add-on maintained by [FaserF].
+
 ## License
 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)

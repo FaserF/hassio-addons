@@ -1,4 +1,5 @@
 # Apache2 Webserver Add-on for Home Assistant OS
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
@@ -40,7 +41,7 @@ The Apache HTTP Server is an open-source web server software maintained by the A
 ## 🧰 Versions
 
 | Version                                                                                          | Features                                                                     |
-|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | [Full](https://github.com/FaserF/hassio-addons/tree/master/apache2)                              | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
 | [Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)                   | Apache2 only                                                                 |
 | [Minimal + MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) | Apache2, MariaDB client, PHP with basic modules                              |
@@ -64,17 +65,17 @@ The Apache HTTP Server is an open-source web server software maintained by the A
 ## ⚙️ Configuration
 
 ```yaml
-document_root: /share/htdocs               # Required
-php_ini: default                           # "default", "get_file" or path
-default_conf: default                      # Apache default config
-default_ssl_conf: default                  # Apache SSL config
-website_name: mydomain.local               # Required if ssl is true
-username: apache                           # Optional, changes file ownership
-password: mySecretPassword                 # Optional, for internal file access
-ssl: true                                  # Enable HTTPS
-certfile: fullchain.pem                    # Required if ssl is true
-keyfile: privkey.pem                       # Required if ssl is true
-init_commands:                             # Optional startup commands
+document_root: /share/htdocs # Required
+php_ini: default # "default", "get_file" or path
+default_conf: default # Apache default config
+default_ssl_conf: default # Apache SSL config
+website_name: mydomain.local # Required if ssl is true
+username: apache # Optional, changes file ownership
+password: mySecretPassword # Optional, for internal file access
+ssl: true # Enable HTTPS
+certfile: fullchain.pem # Required if ssl is true
+keyfile: privkey.pem # Required if ssl is true
+init_commands: # Optional startup commands
   - apk add imagemagick
 ```
 

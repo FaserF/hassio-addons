@@ -57,8 +57,8 @@
 ## 2.12.0
 
 - Prepared using own GitHub image for backups & addon building
--> This lowers the backup sizes for this addon
--> Not yet activated, only everything has been prepared
+  -> This lowers the backup sizes for this addon
+  -> Not yet activated, only everything has been prepared
 
 ## 2.11.1
 
@@ -309,9 +309,9 @@
 
 - add php7-xml support
 - this addon is now available in three variants:
-Minimal
-Minimal with MariaDB
-this "normal" version with common used PHP Modules
+  Minimal
+  Minimal with MariaDB
+  this "normal" version with common used PHP Modules
 
 ## 1.7.2
 

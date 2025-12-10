@@ -1,4 +1,5 @@
 # Home Assistant Community Add-on: pterodactyl Panel
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 ![Project Maintenance][maintenance-shield]
 

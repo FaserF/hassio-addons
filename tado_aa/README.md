@@ -1,4 +1,5 @@
 # Home Assistant Community Add-on: Tado Auto-Assist for Geofencing and Open Window Detection
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield]
 ![Project Maintenance][maintenance-shield]
 
@@ -24,8 +25,8 @@ Example add-on configuration:
 ```yaml
 username: my@email.com
 password: mySecretPassword
-minTemp: 5       # Optional – Minimum temperature to set
-maxTemp: 25      # Optional – Maximum temperature to set
+minTemp: 5 # Optional – Minimum temperature to set
+maxTemp: 25 # Optional – Maximum temperature to set
 ```
 
 > **Note**: _This is just an example. Please use your own credentials and desired temperature settings._

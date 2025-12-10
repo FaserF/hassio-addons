@@ -51,8 +51,8 @@
 ## 2.12.0
 
 - Prepared using own GitHub image for backups & addon building
--> This lowers the backup sizes for this addon
--> Not yet activated, only everything has been prepared
+  -> This lowers the backup sizes for this addon
+  -> Not yet activated, only everything has been prepared
 
 ## 2.11.1
 

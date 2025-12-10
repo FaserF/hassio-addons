@@ -50,7 +50,7 @@
 ## 1.7.0
 
 - Use GitHub image for backups & addon building
--> This lowers the backup sizes for this addon
+  -> This lowers the backup sizes for this addon
 
 ## 1.6.23
 

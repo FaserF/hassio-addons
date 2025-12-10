@@ -1,4 +1,5 @@
 # Home Assistant Community Add-on: Nintendo Switch LAN-Play Server
+
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
@@ -46,6 +47,7 @@ This option is optional. If you wont set up a password, no authentification will
 **Note**: If you leave this empty there will be issues.
 
 ## Homeassistant Sensor
+
 To get a HA Sensor with the current count of people online and a attribute of the server version on your server, add the following in your configuration.yaml
 
 ```yaml
