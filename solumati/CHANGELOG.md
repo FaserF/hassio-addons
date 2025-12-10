@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- New features
+- Bug fixes
+
 ## 1.2.0
 
 - New features
