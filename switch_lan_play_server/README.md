@@ -86,7 +86,7 @@ Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from spacemeowx2. For more informatios please visit this
+The original program is from spacemeowx2. For more information please visit this
 github: <https://github.com/spacemeowx2/switch-lan-play>
 The hassio addon is brought to you by [FaserF].
 
