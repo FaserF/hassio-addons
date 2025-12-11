@@ -92,7 +92,7 @@ Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from @geekman. For more informations please visit this
+The original program is from @geekman. For more information please visit this
 page: <https://github.com/geekman/xqrepack>
 The hassio addon is brought to you by [FaserF].
 
