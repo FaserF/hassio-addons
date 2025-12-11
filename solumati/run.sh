@@ -5,13 +5,53 @@ DATA_DIR="/data/postgresql"
 IMAGES_DIR="/data/images"
 DB_USER="solumati"
 DB_NAME="solumatidb"
-# Generate random password for database
-DB_PASS=$(
-	tr -dc A-Za-z0-9 </dev/urandom | head -c 32
-	echo ''
-)
 
 bashio::log.info "Starting Solumati Add-on initialization..."
+
+# --- FACTORY RESET CHECK (DANGEROUS!) ---
+if bashio::config.true 'factory_reset'; then
+	bashio::log.warning "=================================================="
+	bashio::log.warning "   ⚠️  FACTORY RESET ENABLED  ⚠️"
+	bashio::log.warning "=================================================="
+	bashio::log.warning "ALL DATA WILL BE PERMANENTLY DELETED!"
+	bashio::log.warning "This includes:"
+	bashio::log.warning "  - All user accounts"
+	bashio::log.warning "  - All messages and conversations"
+	bashio::log.warning "  - All uploaded images"
+	bashio::log.warning "  - All settings and configurations"
+	bashio::log.warning "=================================================="
+
+	# Wait 5 seconds to give user time to cancel
+	bashio::log.warning "Starting reset in 5 seconds... (Stop add-on NOW to abort)"
+	sleep 5
+
+	bashio::log.info "Proceeding with factory reset..."
+
+	# Stop PostgreSQL if running
+	if [ -d "$DATA_DIR" ]; then
+		bashio::log.info "Stopping PostgreSQL..."
+		su postgres -c "pg_ctl stop -D $DATA_DIR -m immediate" 2>/dev/null || true
+	fi
+
+	# Delete all data
+	bashio::log.info "Deleting database..."
+	rm -rf "$DATA_DIR"
+
+	bashio::log.info "Deleting uploaded images..."
+	rm -rf "$IMAGES_DIR"
+
+	bashio::log.info "=================================================="
+	bashio::log.info "   ✅ FACTORY RESET COMPLETE"
+	bashio::log.info "=================================================="
+	bashio::log.info "All data has been deleted."
+	bashio::log.info "The add-on will now restart with a fresh database."
+	bashio::log.info ""
+	bashio::log.warning "IMPORTANT: Disable 'factory_reset' in the add-on settings!"
+	bashio::log.warning "Otherwise, the database will be wiped again on next restart."
+	bashio::log.info "=================================================="
+
+	# Continue with normal startup (fresh database will be created)
+fi
 
 # --- READ CONFIGURATION FROM HA UI ---
 bashio::log.info "Reading configuration from Home Assistant..."
@@ -54,27 +94,11 @@ else
 	fi
 fi
 
-# Project Name
-if bashio::config.has_value 'project_name' && [ -n "$(bashio::config 'project_name')" ]; then
-	export PROJECT_NAME=$(bashio::config 'project_name')
-	bashio::log.info "Project name set to: $PROJECT_NAME"
-fi
-
-# OAuth Client IDs (optional - can also be configured in Admin Panel)
-if bashio::config.has_value 'github_client_id' && [ -n "$(bashio::config 'github_client_id')" ]; then
-	export GITHUB_CLIENT_ID=$(bashio::config 'github_client_id')
-	bashio::log.info "GitHub OAuth configured"
-fi
-
-if bashio::config.has_value 'google_client_id' && [ -n "$(bashio::config 'google_client_id')" ]; then
-	export GOOGLE_CLIENT_ID=$(bashio::config 'google_client_id')
-	bashio::log.info "Google OAuth configured"
-fi
-
-if bashio::config.has_value 'microsoft_client_id' && [ -n "$(bashio::config 'microsoft_client_id')" ]; then
-	export MICROSOFT_CLIENT_ID=$(bashio::config 'microsoft_client_id')
-	bashio::log.info "Microsoft OAuth configured"
-fi
+# Generate random password for database
+DB_PASS=$(
+	tr -dc A-Za-z0-9 </dev/urandom | head -c 32
+	echo ''
+)
 
 # --- POSTGRESQL SETUP ---
 if [ ! -d "$DATA_DIR" ]; then

@@ -18,7 +18,7 @@ your Home Assistant server.
 - **Integrated Database**: Comes with a pre-configured PostgreSQL database
 - **Auto-configuration**: Zero-config setup for the database connection
 - **Test Mode**: Optional mode for testing with dummy user data
-- **OAuth Support**: Configure GitHub, Google, or Microsoft login
+- **OAuth/SMTP Support**: Configure via Admin Panel after first login
 - **Secure**:
   - Admin password is automatically generated on first startup
   - Database password is internally managed and randomized
@@ -38,17 +38,27 @@ All options are configured via the Home Assistant UI. The database is automatica
 
 ### Options
 
-| Option                | Type     | Default    | Description                                                                  |
-| :-------------------- | :------- | :--------- | :--------------------------------------------------------------------------- |
-| `log_level`           | select   | `info`     | Log verbosity: trace, debug, info, warning, error, fatal                     |
-| `test_mode`           | boolean  | `false`    | Enable test mode with dummy user data for testing                            |
-| `app_base_url`        | string   | (auto)     | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
-| `project_name`        | string   | `Solumati` | Custom name for your instance                                                |
-| `github_client_id`    | password | -          | GitHub OAuth Client ID (optional)                                            |
-| `google_client_id`    | password | -          | Google OAuth Client ID (optional)                                            |
-| `microsoft_client_id` | password | -          | Microsoft OAuth Client ID (optional)                                         |
+| Option | Type | Default | Description |
+|:-------|:-----|:--------|:------------|
+| `log_level` | select | `info` | Log verbosity: trace, debug, info, warning, error, fatal |
+| `test_mode` | boolean | `false` | Enable test mode with dummy user data for testing |
+| `app_base_url` | string | (auto) | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
 
-> **Note**: OAuth Client Secrets and SMTP settings are configured in the Admin Panel after first login.
+> **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
+
+### ⚠️ Factory Reset (Danger Zone)
+
+| Option | Type | Default | Description |
+|:-------|:-----|:--------|:------------|
+| `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
+
+> **CAUTION**: Enabling `factory_reset` will **permanently delete**:
+> - All user accounts and profiles
+> - All messages and conversations
+> - All uploaded images
+> - All settings and configurations
+>
+> This cannot be undone! After the reset, you must disable this option manually, otherwise your data will be wiped again on each restart.
 
 ## Usage
 
