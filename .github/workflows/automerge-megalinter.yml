@@ -12,7 +12,10 @@ jobs:
   auto-merge:
     name: MegalinterMerge
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'github-actions[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is Megalinter
+    # Detect that the PR author is Megalinter
+    if: >-
+      ${{ github.actor == 'github-actions[bot]' &&
+      github.event_name == 'pull_request'}}
     steps:
       - name: Enable auto-merge for Megalinter PRs
         run: gh pr merge --auto --merge "$PR_URL"

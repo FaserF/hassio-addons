@@ -9,24 +9,34 @@ pterodactyl Panel Gameserver for Homeassistant OS
 
 ## About
 
-**WARNING: Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.**
-**For me I am unable to login until now. Seems to have something to do with redis, but I dont get what exactly.**
+> [!WARNING]
+> Currently only limited working. Right now it can be considered beta and
+> unstable. Don't blame me if your gameservers would be lost etc.
+>
+> For me I am unable to login until now. Seems to have something to do with redis,
+> but I dont get what exactly.
 
-Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.
+Pterodactyl® is a free, open-source game server management panel built with PHP,
+React, and Go. Designed with security in mind, Pterodactyl runs all game servers
+in isolated Docker containers while exposing a beautiful and intuitive UI to end
+users.
 Stop settling for less. Make game servers a first class citizen on your platform.
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
+Just click the link above or add my repo to the hassio addons repositorys:
+<https://github.com/FaserF/hassio-addons>
 
 ## Configuration
 
 The MariaDB Integration is needed before installing this one!
 
-Afterwards create a new user in the MariaDB Addon called "pterodactyl" with full permissions on the database "panel"
+Afterwards create a new user in the MariaDB Addon called "pterodactyl" with
+full permissions on the database "panel"
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
@@ -58,19 +68,17 @@ This option is required. The password for the mariadb "pterodactyl" user.
 
 Enables/Disables SSL (HTTPS) on the web interface.
 
-If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
+If you need a self-signed certificate, take a look at my openssl addon:
+<https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
 ### Option: `reset_database`
 
-Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
+Enables it to reset the database files for pterodactyl. Please not this action
+can not be undone! Use it with care.
 
-### Option: `password`
 
-This option is required. Your MariaDB password for the pterodactyl user.
-
-**Note**: _The file MUST be stored somewhere within the `/share/` folder_
 
 ## Default Login Credentials
 
@@ -87,11 +95,13 @@ This addon will support Homeassistant Ingress. Until now it is work in progress!
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the pterodactyl Project. For more informatios please visit this page: <https://pterodactyl.io/>
+The original program is from the pterodactyl Project. For more informatios please
+visit this page: <https://pterodactyl.io/>
 The hassio addon is brought to you by [FaserF].
 
 ## License

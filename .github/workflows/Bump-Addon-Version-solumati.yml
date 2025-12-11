@@ -1,3 +1,4 @@
+---
 name: Automatically bump version and build Solumati
 
 permissions:
@@ -18,6 +19,7 @@ jobs:
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
       addon: "solumati"
+      bumped: ${{ steps.version.outputs.bumped }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -29,7 +31,16 @@ jobs:
         run: |
           set -e
           configfile="solumati/config.yaml"
-          OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+' "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
+
+          # Check if config.yaml was modified in the last commit
+          if git diff --name-only HEAD~1 HEAD | grep -q "^$configfile$"; then
+            echo "Skipping version bump because $configfile was already modified."
+            echo "bumped=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+' \
+            "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
 
           # Increment patch version (assumes X.Y.Z.P or X.Y.Z format, Solumati uses 2025.12.2.0)
           # We will split by '.'
@@ -45,10 +56,14 @@ jobs:
           fi
 
           echo "Updating $configfile from $OLD_VERSION to $NEW_VERSION"
-          sed -i "s/^version: \"\?$OLD_VERSION\"\?/version: \"$NEW_VERSION\"/" "$configfile"
+          sed -i \
+            "s/^version: \"\?$OLD_VERSION\"\?/version: \"$NEW_VERSION\"/" \
+            "$configfile"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "bumped=true" >> $GITHUB_OUTPUT
 
       - name: Update Changelog
+        if: steps.version.outputs.bumped == 'true'
         run: |
           repo_url="https://api.github.com/repos/FaserF/Solumati"
           response=$(curl -s "$repo_url/releases/latest")
@@ -58,7 +73,9 @@ jobs:
           new_ver="${{ steps.version.outputs.new_version }}"
 
           if [ -f "$changelog" ]; then
-             sed -i "/# Changelog/a \\\\n## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" "$changelog"
+             sed -i \
+                "/# Changelog/a \\\\n## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" \
+                "$changelog"
           fi
 
       - name: Upload Config Artifact
@@ -69,6 +86,7 @@ jobs:
 
   build:
     needs: version
+    if: needs.version.outputs.bumped == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -102,6 +120,7 @@ jobs:
 
   commit:
     needs: [version, build]
+    if: needs.version.outputs.bumped == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -120,4 +139,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
-          message: "Bump Solumati version to ${{ needs.version.outputs.new_version }} [skip ci]"
+          message: >-
+            Bump Solumati version to
+            ${{ needs.version.outputs.new_version }} [skip ci]

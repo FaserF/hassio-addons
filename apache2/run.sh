@@ -12,7 +12,7 @@ default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
-if [ $phpini = "get_file" ]; then
+if [ "$phpini" = "get_file" ]; then
 	cp $phppath /share/apache2addon_php.ini
 	echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
 	echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
@@ -29,7 +29,7 @@ fi
 
 rm -r $webrootdocker
 
-if [ ! -d $DocumentRoot ]; then
+if [ ! -d "$DocumentRoot" ]; then
 	echo "You haven't put your website to $DocumentRoot"
 	echo "A default website will now be used"
 	mkdir $webrootdocker
@@ -42,7 +42,7 @@ fi
 #Set rights to web folders and create user
 if [ -d $DocumentRoot ]; then
 	find $DocumentRoot -type d -exec chmod 771 {} \;
-	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! $username = "null" ] && [ ! $password = "null" ]; then
+	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
 		adduser -S $username -G www-data
 		echo "$username:$password" | chpasswd $username
 		find $webrootdocker -type d -exec chown $username:www-data -R {} \;
@@ -54,8 +54,8 @@ if [ -d $DocumentRoot ]; then
 	fi
 fi
 
-if [ $phpini != "default" ]; then
-	if [ -f $phpini ]; then
+if [ "$phpini" != "default" ]; then
+	if [ -f "$phpini" ]; then
 		echo "Your custom php.ini at $phpini will be used."
 		rm $phppath
 		cp $phpini $phppath
@@ -64,7 +64,7 @@ if [ $phpini != "default" ]; then
 	fi
 fi
 
-if [ $ssl = "true" ] && [ $default_conf = "default" ]; then
+if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 	echo "You have activated SSL. SSL Settings will be applied"
 	if [ ! -f /ssl/$certfile ]; then
 		echo "Cannot find certificate file $certfile"

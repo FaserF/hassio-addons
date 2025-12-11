@@ -1,95 +1,95 @@
 # Home Assistant Add-on: Solumati
 
-The Anti-Swipe Revolution - A self-hosted dating platform focused on meaningful matches.
+<!-- markdownlint-disable MD033 -->
+<div align="center">
+  <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="300">
+  <br>
+  <strong>The Anti-Swipe Revolution</strong>
+</div>
+<!-- markdownlint-enable MD033 -->
+<br>
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
 ![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)
+![Version](https://img.shields.io/badge/version-v2025.12.2--b4-blue.svg)
 
-## About
+## 📖 About
 
-Solumati is a revolutionary dating platform designed to bring meaning back to matchmaking.
-By hosting this add-on, you run your own instance of the Solumati platform directly on
-your Home Assistant server.
+**Solumati** is a self-hosted dating platform designed to bring meaning back to
+matchmaking. By hosting this add-on, you run your own private instance of the
+Solumati platform directly on your Home Assistant server, ensuring complete data
+privacy and control.
 
-## Features
+## ✨ Features
 
-- **Home Assistant Ingress**: Secure access through the HA sidebar (no port forwarding needed)
-- **Self-Hosted**: Your data stays on your server
-- **Integrated Database**: Comes with a pre-configured PostgreSQL database
-- **Auto-configuration**: Zero-config setup for the database connection
-- **Test Mode**: Optional mode for testing with dummy user data
-- **OAuth/SMTP Support**: Configure via Admin Panel after first login
-- **Secure**:
-  - Admin password is automatically generated on first startup
-  - Database password is internally managed and randomized
-  - Ingress provides secure authenticated access
+* **🔒 Secure & Private**: Your data stays on your server.
+* **🏠 Home Assistant Ingress**: Seamless integration via the HA sidebar with
+  no port forwarding required.
+* **🔌 Auto-Configuration**: Zero-config setup; the database connection is
+  managed automatically.
+* **🧪 Test Mode**: Includes a built-in mode to generate dummy users for safe
+  testing.
+* **📧 OAuth & SMTP**: Full support for external authentication and email
+  notifications (configured via the Admin Panel).
 
-## Installation
+## 🚀 Installation
 
-1. Add this repository to your Home Assistant Add-on Store.
-2. Install the **Solumati** add-on.
-3. Configure the options (see below).
-4. Start the add-on.
-5. Click "OPEN WEB UI" or access via the sidebar.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Solumati** add-on.
+1. Review the **Configuration** options below.
+1. Start the add-on.
+1. Click **"OPEN WEB UI"** to launch the interface.
 
-## Configuration
+## ⚙️ Configuration
 
-All options are configured via the Home Assistant UI. The database is automatically managed.
+Basic options are configured directly in Home Assistant. Advanced application
+settings (OAuth, SMTP) are managed within the Solumati Admin Panel.
 
-### Options
-
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
-|:-------|:-----|:--------|:------------|
-| `log_level` | select | `info` | Log verbosity: trace, debug, info, warning, error, fatal |
-| `test_mode` | boolean | `false` | Enable test mode with dummy user data for testing |
-| `app_base_url` | string | (auto) | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
-| `marketing_page_enabled` | boolean | `false` | Enable the marketing page |
+|:---|:---|:---|:---|
+| `log_level` | `string` | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`). |
+| `test_mode` | `boolean` | `false` | Enable to generate dummy data for testing purposes. |
+| `app_base_url` | `string` | *(auto)* | Public URL for links/emails. Auto-detected from Ingress if left empty. |
+| `marketing_page_enabled` | `boolean` | `false` | Enables the public-facing marketing landing page. |
+<!-- markdownlint-enable MD013 -->
 
-> **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
+> [!NOTE]
+> **Admin Password**: On the very first startup, check the **Log** tab for the
+> generated Admin password. Save this immediately!
 
-### ⚠️ Factory Reset (Danger Zone)
+### ⚠️ Factory Reset
 
+> [!CAUTION]
+> **DANGER ZONE**: Enabling `factory_reset` will **PERMANENTLY DELETE** all
+> data, including users, messages, and images.
+
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
-|:-------|:-----|:--------|:------------|
-| `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
+|:---|:---|:---|:---|
+| `factory_reset` | `boolean` | `false` | Set to `true` and restart to wipe the database. **Disable immediately after use.** |
+<!-- markdownlint-enable MD013 -->
 
-> **CAUTION**: Enabling `factory_reset` will **permanently delete**:
-> - All user accounts and profiles
-> - All messages and conversations
-> - All uploaded images
-> - All settings and configurations
->
-> This cannot be undone! After the reset, you must disable this option manually, otherwise your data will be wiped again on each restart.
+## 📚 Usage
 
-## Usage
+### First Login
 
-### First Start & Admin Password
+1. Start the add-on and watch the logs.
+1. Copy the generated **Admin Password**.
+1. Open the Web UI and log in.
 
-When you start the add-on for the first time:
+### Access
 
-1. Start the add-on
-2. Check the **Log** tab
-3. Look for: `Admin user created with password: ...`
-4. Copy this password immediately and store it securely!
+* **Ingress**: Click **Solumati** in the Home Assistant sidebar.
+* **Direct**: Access via `http://homeassistant.local:8099` (if configured).
 
-### Accessing the Interface
+## 🆘 Support
 
-- **Recommended**: Click the Solumati icon in the Home Assistant sidebar (Ingress)
-- **Alternative**: Click "OPEN WEB UI" or access `http://homeassistant.local:8099`
+Encountered an issue? We're here to help.
+[Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues) to
+get support.
 
-### Test Mode
+## 👨‍💻 Authors & License
 
-Enable `test_mode` to generate dummy users for testing the matching algorithm.
-Disable it in production to prevent fake profiles.
-
-## Support
-
-Got questions? [Open an issue here](https://github.com/FaserF/hassio-addons/issues).
-
-## Authors & Contributors
-
-The [original Solumati software](https://github.com/FaserF/Solumati) is created by **FaserF**.
-
-## License
-
-GNU AFFERO GENERAL PUBLIC LICENSE (AGPL)
+The original **Solumati** software is created by **FaserF**.
+Licensed under the **GNU Affero General Public License (AGPL)**.

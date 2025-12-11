@@ -1,24 +1,35 @@
 # Home Assistant Community Add-on: Bluetooth-MQTT-Gateway
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
-# Project has been deprecated by the original creator, therefore this Addon wont recieve new features
+> [!WARNING]
+> Project has been deprecated by the original creator, therefore this Addon
+> wont recieve new features
 
-Please have a look [here](https://github.com/zewelor/bt-mqtt-gateway), it is recommended to use Bluetooth Proxy.
+Please have a look [here](https://github.com/zewelor/bt-mqtt-gateway), it is
+recommended to use Bluetooth Proxy.
 
 Bluetooth-MQTT-Gateway for Homeassistant OS
 
 ## About
 
-A simple Python script which provides a Bluetooth to MQTT gateway, easily extensible via custom workers.
-See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information (supported devices, features and much more).
+A simple Python script which provides a Bluetooth to MQTT gateway, easily
+extensible via custom workers.
+See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information
+(supported devices, features and much more).
 
-This can be used, to improve the realiability of bluetooth thermostats. See <https://github.com/home-assistant/core/issues/28601> for more informations.
+This can be used, to improve the realiability of bluetooth thermostats. See
+<https://github.com/home-assistant/core/issues/28601> for more informations.
 
 ## Installation
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 Just add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
 Put your config file to /share/bt-mqtt-gateway.yaml
@@ -40,7 +51,8 @@ debug: true
 
 ### Option: `config_path`
 
-This option is needed. Change it depending where your config file is on your homeassistant installation.
+This option is needed. Change it depending where your config file is on your
+homeassistant installation.
 
 ### Option: `debug`
 
@@ -52,11 +64,13 @@ Setting this option to "true" will start the addon in debugging mode. Default: f
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from @zewelor. For more informatios please visit this page: <https://github.com/zewelor/bt-mqtt-gateway>
+The original program is from @zewelor. For more informatios please visit this
+page: <https://github.com/zewelor/bt-mqtt-gateway>
 The hassio addon is brought to you by [FaserF].
 
 ## License

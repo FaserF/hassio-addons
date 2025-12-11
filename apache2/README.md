@@ -1,13 +1,20 @@
 # Apache2 Webserver Add-on for Home Assistant OS
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
 ![Ingress Support](../_images/apache2/ingress.png)
 
-A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8 and MariaDB support.
+A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8
+and MariaDB support.
 
-This add-on allows you to serve static or dynamic websites, run PHP-based applications, or expose internal services via a web interface. Multiple versions are available to fit different needs and use cases.
+This add-on allows you to serve static or dynamic websites, run PHP-based
+applications, or expose internal services via a web interface. Multiple
+versions are available to fit different needs and use cases.
 
 ---
 
@@ -28,23 +35,31 @@ This add-on allows you to serve static or dynamic websites, run PHP-based applic
 
 ## 📖 About
 
-This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for Home Assistant OS. It supports:
+This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for
+Home Assistant OS. It supports:
 
 - Hosting static HTML/CSS/JS websites
 - Running PHP applications (e.g. dashboards, tools)
 - Optional MariaDB integration (e.g. for WordPress, phpMyAdmin)
 
-The Apache HTTP Server is an open-source web server software maintained by the Apache Software Foundation.
+The Apache HTTP Server is an open-source web server software maintained by the
+Apache Software Foundation.
 
 ---
 
 ## 🧰 Versions
 
-| Version                                                                                          | Features                                                                     |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| [Full](https://github.com/FaserF/hassio-addons/tree/master/apache2)                              | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
-| [Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)                   | Apache2 only                                                                 |
-| [Minimal + MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb) | Apache2, MariaDB client, PHP with basic modules                              |
+<!-- markdownlint-disable MD013 -->
+| Version | Features |
+| :--- | :--- |
+| [Full][full_url] | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Minimal][minimal_url] | Apache2 only |
+| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules |
+<!-- markdownlint-enable MD013 -->
+
+[full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2
+[minimal_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
+[minimal_mariadb_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
 
 ---
 
@@ -79,13 +94,16 @@ init_commands: # Optional startup commands
   - apk add imagemagick
 ```
 
-You can create your own configuration files and PHP.ini using `get_file` to pull them from `/share`.
+You can create your own configuration files and PHP.ini using `get_file` to pull
+them from `/share`.
 
 ### Option: `document_root`
 
-This option is needed. Change it depending where your root webfolder is on your homeassistant installation.
+This option is needed. Change it depending where your root webfolder is on your
+homeassistant installation.
 
-Note: it has to be somewhere in the /share or /media folder! Other folders are not visible to this addon.
+Note: it has to be somewhere in the /share or /media folder! Other folders are
+not visible to this addon.
 
 ### Option: `php_ini`
 
@@ -95,7 +113,8 @@ default → Uses the built-in PHP 8.4 configuration file (recommended)
 
 get_file → Copies the default PHP 8.4 `php.ini` to `/share/apache2addon_php.ini`
 
-path/to/your/new/php.ini -> Please change the location depending where your custom php.ini file is, f.e.: /share/apache2/php.ini
+path/to/your/new/php.ini -> Please change the location depending where your
+custom php.ini file is, f.e.: /share/apache2/php.ini
 
 ### Option: `default_conf` & `default_ssl_conf`
 
@@ -103,41 +122,56 @@ You can choose between the following options:
 
 default -> the default apache2 addon file will be used
 
-get_config -> Get a copy of the default apache2 addon config file to your /share folder.
+get_config -> Get a copy of the default apache2 addon config file to your /share
+folder.
 
-path/to/your/new/apache2.conf -> Please change the location depending where your custom 000-default.conf / 000-default-le-ssl.conf file is, f.e.: /share/apache2/000-default.conf <br />
-More Information: <https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts><br /> <br />
-Please note, that I wont give any support if you are using custom apache2 config files and are receiving any apache2 errors!
+path/to/your/new/apache2.conf -> Please change the location depending where
+your custom 000-default.conf / 000-default-le-ssl.conf file is,
+f.e.: /share/apache2/000-default.conf
+
+More Information: <https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts>
+
+Please note, that I wont give any support if you are using custom apache2
+config files and are receiving any apache2 errors!
 
 ### Option: `website_name`
 
-This option is needed, if you enable ssl to true. If you are not using SSL put anything in here, as it doesn’t matter.
+This option is needed, if you enable ssl to true. If you are not using SSL put
+anything in here, as it doesn’t matter.
 
 ### Option: `username`
 
-This option is optional. This user is for accessing web files (NOT the website itself). It will change the owner of all web files from "root" to this new owner.
+This option is optional. This user is for accessing web files (NOT the website
+itself). It will change the owner of all web files from "root" to this new
+owner.
 
-This is NOT used for Authentication for your website. If you want this have a look at [Authentication for your website](#Authentication-for-your-website)
+This is NOT used for Authentication for your website. If you want this have a
+look at [Authentication for your website](#Authentication-for-your-website)
 
 ### Option: `password`
 
-This option is optional. Some self hosted web sites require an Authentication password to access files within the docker image. #50
+This option is optional. Some self hosted web sites require an Authentication
+password to access files within the docker image. #50
 
-This is NOT used for Authentication for your website. If you want this have a look at [Authentication for your website](#Authentication-for-your-website)
+This is NOT used for Authentication for your website. If you want this have a
+look at [Authentication for your website](#Authentication-for-your-website)
 
 ### Option: `ssl`
 
 Enables/Disables SSL (HTTPS) on the web interface.
 
-If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
+If you need a self-signed certificate, have a look at my openssl addon:
+<https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
 ### Option: `init_commands`
 
-This option is optional. If you need some special packages or commands, you can use this option to install/use them. #124
+This option is optional. If you need some special packages or commands, you can
+use this option to install/use them. #124
 
-If you are encountering any issues, please remove this option before submitting a bug report!
+If you are encountering any issues, please remove this option before submitting
+a bug report!
 
 ### Config example
 
@@ -158,7 +192,9 @@ keyfile: privkey.pem
 
 ## 🔐 Authentication
 
-The `username` and `password` fields are used to protect files in the `/share/apache` directory (e.g. configuration or logs). They are **not** used for the actual hosted web pages.
+The `username` and `password` fields are used to protect files in the
+`/share/apache` directory (e.g. configuration or logs). They are **not** used
+for the actual hosted web pages.
 
 To protect web content, use `.htaccess` and `.htpasswd` files.
 
@@ -184,14 +220,16 @@ Require valid-user
 The add-on supports ingress (access via Home Assistant UI). However, note:
 
 - Basic HTML pages work perfectly.
-- Complex apps using full authentication, redirect chains, or WebSockets may not work well in ingress.
+- Complex apps using full authentication, redirect chains, or WebSockets may
+  not work well in ingress.
 - For best compatibility, access via local IP and exposed port is recommended.
 
 ---
 
 ## 🐬 MariaDB Usage
 
-If you want to connect your PHP application (e.g. WordPress or phpMyAdmin) to the official MariaDB add-on:
+If you want to connect your PHP application (e.g. WordPress or phpMyAdmin) to
+the official MariaDB add-on:
 
 - Use `core-mariadb` as the host name.
 - Port: `3306`

@@ -1,13 +1,19 @@
 # Home Assistant Community Add-on: Bash Script Executer
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
 Bash Script Executer for Homeassistant OS
 
 ## About
 
-This is a simple Docker Image to execute personal scripts. The reason I am needing this, is that the HA OS has limited features installed (for example no curl, sed etc) and this Addon fixes that issue.
+This is a simple Docker Image to execute personal scripts. The reason I am
+needing this, is that the HA OS has limited features installed (for example
+no curl, sed etc) and this Addon fixes that issue.
 
 You can run up to three different scripts with this addon.
 
@@ -17,17 +23,20 @@ This docker image comes with: busybox-extras curl grep coreutils sed xmlstarlet
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
-Put your scripts somewhere in the /share/ folder. Other folders are not visible to this addon.
+Put your scripts somewhere in the /share/ folder. Other folders are not visible
+to this addon.
 
 Example File where your script could be: /share/scripts/script.sh
 
 ## Configuration
 
-**I am recommending to disable "Start on boot" and the Watchdog option from HA for this addon!**
+**I am recommending to disable "Start on boot" and the Watchdog option from
+HA for this addon!**
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
@@ -52,23 +61,28 @@ script3_argument3:
 
 ### Option: `script_path`
 
-This option is needed. Change it depending where your script is or change it to "false" to leave it empty.
+This option is needed. Change it depending where your script is or change it to
+"false" to leave it empty.
 
 ### Option: `scriptX_argumentX`
 
-This option is optional. You can submit up to three arguments to your script with this option.
+This option is optional. You can submit up to three arguments to your script
+with this option.
 
 ### Option: `script_path2`
 
-This option is needed. Change it depending where your script is or change it to "false" to leave it empty.
+This option is needed. Change it depending where your script is or change it to
+"false" to leave it empty.
 
 ### Option: `script_path3`
 
-This option is needed. Change it depending where your script is or change it to "false" to leave it empty.
+This option is needed. Change it depending where your script is or change it to
+"false" to leave it empty.
 
 ## Cron Support - running scripts by time
 
-I havent implemented Cron in this addon, as you can run your scripts periodically by an Homeassistant automation.
+I havent implemented Cron in this addon, as you can run your scripts
+periodically by an Homeassistant automation.
 Example Automation:
 
 ```yaml
@@ -90,7 +104,8 @@ Example Automation:
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4. And that I have made this addon for my personal scripts.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4. And that I have made this addon for my personal scripts.
 
 ## Authors & contributors
 

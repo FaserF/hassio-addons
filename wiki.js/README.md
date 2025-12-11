@@ -1,6 +1,9 @@
 # Home Assistant Community Add-on: Wiki.js
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
 ![Project Maintenance][maintenance-shield]
 
 Wiki.js for Homeassistant OS
@@ -14,9 +17,11 @@ Make documentation a joy to write using Wiki.js's beautiful and intuitive interf
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+Just click the link above or add my repo to the hassio addons repositorys:
+<https://github.com/FaserF/hassio-addons>
 
 Please ensure that the MariaDB Addon is installed!
 
@@ -36,7 +41,8 @@ keyfile: privkey.pem
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
+Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it,
+`false` otherwise.
 
 If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
@@ -44,7 +50,8 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 
 ### Option: `reset_database`
 
-Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
+Enables it to reset the database files for pterodactyl. Please not this action
+can not be undone! Use it with care.
 
 ## Ingress
 
@@ -55,11 +62,13 @@ This addon currently does not fully support ingress! Hopefully that will come so
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the Requarks Team [NGPixel][NGPixel]. For more informations, please visit this page: <https://github.com/Requarks/wiki>
+The original program is from the Requarks Team [NGPixel][NGPixel]. For more
+informations, please visit this page: <https://github.com/Requarks/wiki>
 The hassio addon is brought to you by [FaserF].
 
 ## License
