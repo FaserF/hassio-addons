@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD033 -->
 # Home Assistant Add-on: Tuya-Convert
 
 <div align="center">
@@ -16,48 +17,55 @@
 ## ⚠️ Important Note
 
 > [!WARNING]
-> **Deprecated / Experimental**: This add-on is experimental. Tuya has patched newer firmwares to prevent this OTA hack. Use at your own risk!
-> Please prefer using the standalone installation of `tuya-convert` on a Raspberry Pi or Linux laptop for better success rates.
+> **Deprecated / Experimental**: This add-on is experimental. Tuya has patched
+> newer firmwares to prevent this OTA hack. Use at your own risk!
+> Please prefer using the standalone installation of `tuya-convert` on a
+> Raspberry Pi or Linux laptop for better success rates.
 
 ## 📖 About
 
-**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs, switches, bulbs) from the cloud by flashing them with custom firmware like **Tasmota** or **ESPHome**—without soldering! This add-on brings the famous Tuya-Convert tool directly to your Home Assistant OS environment.
+**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs,
+switches, bulbs) from the cloud by flashing them with custom firmware like
+**Tasmota** or **ESPHome**—without soldering! This add-on brings the famous
+Tuya-Convert tool directly to your Home Assistant OS environment.
 
 ## ✨ Features
 
-*   **🔓 Cloud Free**: Flash custom firmware and take local control.
-*   **🛠️ Tasmota & ESPurna**: Supports major custom firmwares out of the box.
-*   **🏠 Home Assistant**: Integrated into your HA supervisor.
+* **🔓 Cloud Free**: Flash custom firmware and take local control.
+* **🛠️ Tasmota & ESPurna**: Supports major custom firmwares out of the box.
+* **🏠 Home Assistant**: Integrated into your HA supervisor.
 
 ## 🚀 Installation
 
-1.  Add this repository to your **Home Assistant Add-on Store**.
-2.  Install the **Tuya-Convert** add-on.
-3.  Configure the `firmware` option.
-4.  Start the add-on.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Tuya-Convert** add-on.
+1. Configure the `firmware` option.
+1. Start the add-on.
 
 ## ⚙️ Configuration
 
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
-| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. |
-| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
-| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. |
+| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. | <!-- markdownlint-disable-line MD013 -->
+| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). | <!-- markdownlint-disable-line MD013 -->
+| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. | <!-- markdownlint-disable-line MD013 -->
 
 > [!NOTE]
 > Make sure the `backup_path` is accessible (e.g., in `/share` or `/media`).
 
 ## 📚 Usage
 
-1.  **Start the Add-on**: It will start the AP and listening process.
-2.  **Connect Device**: Put your Tuya device into pairing mode (fast blinking).
-3.  **Connect Phone**: Connect your smartphone to the `vtrust-flash` Wi-Fi access point created by the add-on.
-4.  **Watch Logs**: Follow the add-on logs to see the flashing progress.
+1. **Start the Add-on**: It will start the AP and listening process.
+1. **Connect Device**: Put your Tuya device into pairing mode (fast blinking).
+1. **Connect Phone**: Connect your smartphone to the `vtrust-flash` Wi-Fi
+   access point created by the add-on.
+1. **Watch Logs**: Follow the add-on logs to see the flashing progress.
 
 ## 🆘 Support
 
 Encountered an issue? We're here to help.
-[Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues) to get support.
+[Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues) to
+get support.
 
 ## 👨‍💻 Authors & License
 

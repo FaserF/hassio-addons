@@ -41,7 +41,8 @@ keyfile: privkey.pem
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it, `false` otherwise.
+Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it,
+`false` otherwise.
 
 If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
@@ -49,7 +50,8 @@ If you need a self-signed certificate, have a look at my openssl addon: <https:/
 
 ### Option: `reset_database`
 
-Enables it to reset the database files for pterodactyl. Please not this action can not be undone! Use it with care.
+Enables it to reset the database files for pterodactyl. Please not this action
+can not be undone! Use it with care.
 
 ## Ingress
 
@@ -60,11 +62,13 @@ This addon currently does not fully support ingress! Hopefully that will come so
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the Requarks Team [NGPixel][NGPixel]. For more informations, please visit this page: <https://github.com/Requarks/wiki>
+The original program is from the Requarks Team [NGPixel][NGPixel]. For more
+informations, please visit this page: <https://github.com/Requarks/wiki>
 The hassio addon is brought to you by [FaserF].
 
 ## License

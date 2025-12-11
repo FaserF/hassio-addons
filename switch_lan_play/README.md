@@ -25,7 +25,8 @@ This docker image will self-compile the latest lan-play software and run it
 based on your architecture. More information can be found here:
 <https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view>
 
-The first installation can take up to 10 minutes because of this! Depending on your hardware.
+The first installation can take up to 10 minutes because of this! Depending on
+your hardware.
 
 ## Installation
 
@@ -51,7 +52,8 @@ server: switch.lan-play.com:11452
 
 ### Option: `server`
 
-This option is mandatory. Please write here your server you want to connect to with the port added.
+This option is mandatory. Please write here your server you want to connect to
+with the port added.
 
 **Note**: If you leave this empty there will be issues.
 
@@ -60,7 +62,8 @@ This option is mandatory. Please write here your server you want to connect to w
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 

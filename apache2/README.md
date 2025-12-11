@@ -9,7 +9,8 @@
 
 ![Ingress Support](../_images/apache2/ingress.png)
 
-A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8 and MariaDB support.
+A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8
+and MariaDB support.
 
 This add-on allows you to serve static or dynamic websites, run PHP-based
 applications, or expose internal services via a web interface. Multiple
@@ -50,9 +51,9 @@ Apache Software Foundation.
 
 | Version | Features |
 | :--- | :--- |
-| [Full][full_url] | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Full][full_url] | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto | <!-- markdownlint-disable-line MD013 -->
 | [Minimal][minimal_url] | Apache2 only |
-| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules |
+| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules | <!-- markdownlint-disable-line MD013 -->
 
 [full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2
 [minimal_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
@@ -91,7 +92,8 @@ init_commands: # Optional startup commands
   - apk add imagemagick
 ```
 
-You can create your own configuration files and PHP.ini using `get_file` to pull them from `/share`.
+You can create your own configuration files and PHP.ini using `get_file` to pull
+them from `/share`.
 
 ### Option: `document_root`
 

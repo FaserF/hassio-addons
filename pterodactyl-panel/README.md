@@ -78,11 +78,7 @@ If you need a self-signed certificate, have a look at my openssl addon:
 Enables it to reset the database files for pterodactyl. Please not this action
 can not be undone! Use it with care.
 
-### Option: `password`
 
-This option is required. Your MariaDB password for the pterodactyl user.
-
-**Note**: _The file MUST be stored somewhere within the `/share/` folder_
 
 ## Default Login Credentials
 
@@ -99,11 +95,13 @@ This addon will support Homeassistant Ingress. Until now it is work in progress!
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the pterodactyl Project. For more informatios please visit this page: <https://pterodactyl.io/>
+The original program is from the pterodactyl Project. For more informatios please
+visit this page: <https://pterodactyl.io/>
 The hassio addon is brought to you by [FaserF].
 
 ## License

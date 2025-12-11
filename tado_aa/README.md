@@ -1,4 +1,4 @@
-# Home Assistant Community Add-on: Tado Auto-Assist for Geofencing and Open Window Detection
+# Home Assistant Community Add-on: Tado Auto-Assist for Geofencing and Open Window Detection <!-- markdownlint-disable-line MD013 -->
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
@@ -19,9 +19,11 @@ Tado TRV detects an open window.
 
 [![FaserF Home Assistant Add-ons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is straightforward and similar to installing any other custom Home Assistant add-on.
+The installation of this add-on is straightforward and similar to installing any
+other custom Home Assistant add-on.
 
-Just click the link above or manually add this repository to your Home Assistant add-on repositories:
+Just click the link above or manually add this repository to your Home Assistant
+add-on repositories:
 <https://github.com/FaserF/hassio-addons>
 
 ## Configuration
@@ -35,7 +37,8 @@ minTemp: 5 # Optional – Minimum temperature to set
 maxTemp: 25 # Optional – Maximum temperature to set
 ```
 
-> **Note**: _This is just an example. Please use your own credentials and desired temperature settings._
+> **Note**: _This is just an example. Please use your own credentials and desired
+> temperature settings._
 
 ### Option: `username`
 
@@ -62,7 +65,8 @@ You can [open an issue on GitHub][issue] if you encounter any problems or have s
 
 ## Credits
 
-This add-on is based on the work of [adrianslabu], who created the original Python script:
+This add-on is based on the work of [adrianslabu], who created the original
+Python script:
 ➡️ <https://github.com/adrianslabu/tado_aa>
 
 The Home Assistant add-on wrapper was created and is maintained by [FaserF].

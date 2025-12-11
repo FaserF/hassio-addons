@@ -42,20 +42,24 @@ update_time_in_seconds: 86400
 
 ### Option: `config_file`
 
-This option is needed. Change it depending where your config file is on your homeassistant installation.
+This option is needed. Change it depending where your config file is on your
+homeassistant installation.
 
-**Note**: _it has to be somewhere in the `/share/` folder! Other folders are not visible to this addon._
+**Note**: _it has to be somewhere in the `/share/` folder! Other folders are not
+visible to this addon._
 
 ### Option: `update_time_in_seconds`
 
-Type in the time that updates should be done (renewing the domain, renewing IP address and so on) in seconds.
+Type in the time that updates should be done (renewing the domain, renewing IP
+address and so on) in seconds.
 
 ## Support
 
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 

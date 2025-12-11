@@ -11,14 +11,17 @@
 > Project has been deprecated by the original creator, therefore this Addon
 > wont recieve new features
 
-Please have a look [here](https://github.com/zewelor/bt-mqtt-gateway), it is recommended to use Bluetooth Proxy.
+Please have a look [here](https://github.com/zewelor/bt-mqtt-gateway), it is
+recommended to use Bluetooth Proxy.
 
 Bluetooth-MQTT-Gateway for Homeassistant OS
 
 ## About
 
-A simple Python script which provides a Bluetooth to MQTT gateway, easily extensible via custom workers.
-See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information (supported devices, features and much more).
+A simple Python script which provides a Bluetooth to MQTT gateway, easily
+extensible via custom workers.
+See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more information
+(supported devices, features and much more).
 
 This can be used, to improve the realiability of bluetooth thermostats. See
 <https://github.com/home-assistant/core/issues/28601> for more informations.
@@ -48,7 +51,8 @@ debug: true
 
 ### Option: `config_path`
 
-This option is needed. Change it depending where your config file is on your homeassistant installation.
+This option is needed. Change it depending where your config file is on your
+homeassistant installation.
 
 ### Option: `debug`
 
@@ -60,7 +64,8 @@ Setting this option to "true" will start the addon in debugging mode. Default: f
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 

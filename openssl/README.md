@@ -71,7 +71,8 @@ Please keep in mind, that this software is only tested on armv7 running on a Tin
 
 ## Authors & contributors
 
-The original program is from the OpenSSL Project. For more informatios please visit this page: <https://www.openssl.org/>
+The original program is from the OpenSSL Project. For more informatios please
+visit this page: <https://www.openssl.org/>
 The hassio addon is brought to you by [FaserF].
 
 ## License

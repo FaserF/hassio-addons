@@ -25,9 +25,9 @@
 ## 2.13.2
 
 - Fixed an error while updating / installing V2.13.X
-  - This happened due to a faulty image building process
-  - Since this issue has been in the last few updates, I have stopped the
-    automatic update and release workflow for now
+    - This happened due to a faulty image building process
+    - Since this issue has been in the last few updates, I have stopped the
+      automatic update and release workflow for now
 
 ## 2.13.1
 
@@ -313,9 +313,9 @@
 
 - add php7-xml support
 - this addon is now available in three variants:
-  - Minimal
-  - Minimal with MariaDB
-  - this "normal" version with common used PHP Modules
+    - Minimal
+    - Minimal with MariaDB
+    - this "normal" version with common used PHP Modules
 
 ## 1.7.2
 

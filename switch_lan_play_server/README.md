@@ -29,7 +29,8 @@ The first start can take up to 10 minutes because of this! Depending on your har
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
@@ -48,11 +49,13 @@ password: mysecretpw
 
 ### Option: `username`
 
-This option is optional. If you wont set up a username, no authentification will be used to connect to your server.
+This option is optional. If you wont set up a username, no authentification will
+be used to connect to your server.
 
 ### Option: `password`
 
-This option is optional. If you wont set up a password, no authentification will be used to connect to your server.
+This option is optional. If you wont set up a password, no authentification will
+be used to connect to your server.
 
 **Note**: If you leave this empty there will be issues.
 
@@ -78,7 +81,8 @@ sensor:
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 

@@ -53,11 +53,13 @@ here: <https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sampl
 Got questions or problems?
 
 You can [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the 42wim. For more informatios please visit this page: <https://github.com/42wim/matterbridge>
+The original program is from the 42wim. For more informatios please visit this
+page: <https://github.com/42wim/matterbridge>
 
 The hassio addon is brought to you by [FaserF].
 
