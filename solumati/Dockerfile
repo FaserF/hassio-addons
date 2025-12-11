@@ -8,6 +8,7 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Install System Requirements
+# hadolint ignore=DL3018
 RUN \
     apk add --no-cache \
     nodejs \
@@ -36,29 +37,26 @@ RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VER
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
 RUN cp /tmp/src/frontend/package.json . && \
-    cp /tmp/src/frontend/package-lock.json* . || true
-
-RUN npm install
-
-# Copy source code from cloned directory
-RUN cp -r /tmp/src/frontend/. .
-
-RUN sed -i 's|http://localhost:7777|/api|g' src/config.js
-
-RUN npm run build
+    (cp /tmp/src/frontend/package-lock.json* . || true) && \
+    npm install && \
+    cp -r /tmp/src/frontend/. . && \
+    sed -i 's|http://localhost:7777|/api|g' src/config.js && \
+    npm run build
 
 # --- BACKEND SETUP ---
 WORKDIR /app/backend
 # Copy backend requirements from cloned source
-RUN cp /tmp/src/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy backend requirements from cloned source
+RUN cp /tmp/src/backend/requirements.txt . && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code from cloned source
 RUN cp -r /tmp/src/backend/. .
 
 # Move built frontend to a location Nginx can serve
-RUN mkdir -p /app/frontend
-RUN cp -r /tmp/frontend_build/dist/* /app/frontend/
+# Move built frontend to a location Nginx can serve
+RUN mkdir -p /app/frontend && \
+    cp -r /tmp/frontend_build/dist/* /app/frontend/
 
 # Setup Nginx
 COPY nginx.conf /etc/nginx/http.d/default.conf

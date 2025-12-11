@@ -90,12 +90,14 @@ fi
 
 # App Base URL (for emails, links, etc.)
 if bashio::config.has_value 'app_base_url' && [ -n "$(bashio::config 'app_base_url')" ]; then
-	export APP_BASE_URL=$(bashio::config 'app_base_url')
+	APP_BASE_URL=$(bashio::config 'app_base_url')
+	export APP_BASE_URL
 	bashio::log.info "App base URL set to: $APP_BASE_URL"
 else
 	# Try to auto-detect from Ingress
 	if bashio::var.has_value "$(bashio::addon.ingress_url)"; then
-		export APP_BASE_URL="$(bashio::addon.ingress_url)"
+		APP_BASE_URL="$(bashio::addon.ingress_url)"
+		export APP_BASE_URL
 		bashio::log.info "App base URL auto-detected from Ingress: $APP_BASE_URL"
 	else
 		export APP_BASE_URL="http://homeassistant.local:8099"
@@ -161,7 +163,7 @@ export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
 
 bashio::log.info "Starting Backend (Uvicorn)..."
 bashio::log.info "Environment: TEST_MODE=$TEST_MODE, LOG_LEVEL=${LOG_LEVEL:-INFO}"
-cd /app/backend
+cd /app/backend || exit 1
 # Start Uvicorn in background
 uvicorn app.main:app --host 127.0.0.1 --port 7777 &
 BACKEND_PID=$!
