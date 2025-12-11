@@ -79,6 +79,15 @@ else
 	export TEST_MODE="false"
 fi
 
+# Marketing Page
+if bashio::config.true 'marketing_page_enabled'; then
+	export ENABLE_MARKETING_PAGE="true"
+	bashio::log.info "Marketing Page: ENABLED"
+else
+	export ENABLE_MARKETING_PAGE="false"
+	bashio::log.info "Marketing Page: DISABLED"
+fi
+
 # App Base URL (for emails, links, etc.)
 if bashio::config.has_value 'app_base_url' && [ -n "$(bashio::config 'app_base_url')" ]; then
 	export APP_BASE_URL=$(bashio::config 'app_base_url')
@@ -154,7 +163,7 @@ bashio::log.info "Starting Backend (Uvicorn)..."
 bashio::log.info "Environment: TEST_MODE=$TEST_MODE, LOG_LEVEL=${LOG_LEVEL:-INFO}"
 cd /app/backend
 # Start Uvicorn in background
-uvicorn main:app --host 127.0.0.1 --port 7777 &
+uvicorn app.main:app --host 127.0.0.1 --port 7777 &
 BACKEND_PID=$!
 
 # --- NGINX START ---

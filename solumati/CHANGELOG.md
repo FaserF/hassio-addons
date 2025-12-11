@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.4.2
-- Automatically updated Solumati to version 
-
+## 1.4.3
+- Updated Solumati to v2025.12.2-b4
+- **NEW**: Enable Marketing Page Option
 
 ## 1.4.1
 - **NEW**: Factory Reset option (⚠️ Danger Zone)

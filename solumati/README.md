@@ -43,6 +43,7 @@ All options are configured via the Home Assistant UI. The database is automatica
 | `log_level` | select | `info` | Log verbosity: trace, debug, info, warning, error, fatal |
 | `test_mode` | boolean | `false` | Enable test mode with dummy user data for testing |
 | `app_base_url` | string | (auto) | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
+| `marketing_page_enabled` | boolean | `false` | Enable the marketing page |
 
 > **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
 
