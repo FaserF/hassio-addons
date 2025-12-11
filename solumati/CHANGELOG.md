@@ -1,7 +1,7 @@
 # Changelog
 
 ## 1.4.5
-- Automatically updated Solumati to version 
+- Automatically updated Solumati to version
 
 
 ## 1.4.4
