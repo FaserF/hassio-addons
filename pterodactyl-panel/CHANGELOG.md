@@ -24,7 +24,7 @@
 ## 0.7.6
 
 - Fixed an error while updating / installing the latest version
-    - This happened due to a faulty image building process
+      - This happened due to a faulty image building process
     - Since this issue has been in the last few updates, I have stopped the
       automatic update and release workflow for now
 
