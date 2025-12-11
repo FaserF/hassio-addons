@@ -1,6 +1,6 @@
 ---
 name: "Solumati"
-version: "1.3.13"
+version: "1.4.0"
 slug: "solumati"
 description: "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches."
 url: "https://github.com/FaserF/hassio-addons/tree/master/solumati"
@@ -10,16 +10,30 @@ arch:
   - amd64
 image: ghcr.io/faserf/solumati-{arch}
 init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:heart-multiple
+panel_title: Solumati
 map:
   - config:rw
   - share:rw
 ports:
   80/tcp: 8099
 ports_description:
-  80/tcp: "Web Interface Port"
+  80/tcp: "Web Interface Port (use Ingress for secure access)"
 options:
   log_level: info
   test_mode: false
+  app_base_url: ""
+  project_name: "Solumati"
+  github_client_id: ""
+  google_client_id: ""
+  microsoft_client_id: ""
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   test_mode: bool
+  app_base_url: str?
+  project_name: str?
+  github_client_id: password?
+  google_client_id: password?
+  microsoft_client_id: password?
