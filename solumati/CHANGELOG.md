@@ -1,6 +1,9 @@
 # Changelog
 
 ## 1.4.3
+- Updated Solumati to v2025.12.2-b5
+
+## 1.4.3
 - Updated Solumati to v2025.12.2-b4
 - **NEW**: Enable Marketing Page Option
 
