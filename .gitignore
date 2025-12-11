@@ -1,3 +1,4 @@
 # Ignore folders.
 megalinter-reports/
 github_conf/
+all_build_yamls.txt

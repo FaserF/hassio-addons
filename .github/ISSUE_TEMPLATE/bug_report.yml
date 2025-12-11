@@ -11,7 +11,8 @@ body:
       value: |
         This issue form is for reporting bugs only!
 
-        If you have a feature or enhancement request, please use the feature request template!
+        If you have a feature or enhancement request, please use the feature
+        request template!
   - type: textarea
     validations:
       required: true
@@ -34,9 +35,10 @@ body:
       label: What version of Home Assistant Core has the issue?
       placeholder: core-
       description: >
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+        Can be found in:
+        [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/) # yamllint disable-line rule:line-length
   - type: input
     id: version_integration
     validations:
@@ -52,9 +54,10 @@ body:
     attributes:
       label: What type of installation are you running?
       description: >
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+        Can be found in:
+        [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/) # yamllint disable-line rule:line-length
       options:
         - Home Assistant OS
         - Home Assistant Container
@@ -94,7 +97,8 @@ body:
       label: Log information
       render: txt
       description: >-
-        Please go to the addon within your Homeassistant Instance -> Log and copy the output here
+        Please go to the addon within your Homeassistant Instance -> Log and
+        copy the output here
   - type: textarea
     attributes:
       label: Additional information

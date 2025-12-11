@@ -14,7 +14,8 @@ permissions:
 jobs:
   version:
     runs-on: ubuntu-latest
-    # if: ${{ contains(github.event.head_commit.message, 'Update ghcr.io/hassio-addons/base-python') }}
+    # if: ${{ contains(github.event.head_commit.message,
+    # 'Update ghcr.io/hassio-addons/base-python') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -35,34 +36,48 @@ jobs:
           for configfile in $configFiles; do
               echo "--------------------------------------------"
               echo "Processing: $configfile"
+              # Normalize path (remove leading ./)
+              clean_configfile="${configfile#./}"
+              if git diff --name-only HEAD~1 HEAD | grep -qF "$clean_configfile"; then
+                  echo "Skipping version bump because $clean_configfile was already modified."
+                  continue
+              fi
               if [ ! -f "$configfile" ]; then
                   echo "❌ Error: $configfile not found!"
                   exit 1
               fi
               if [ ! -r "$configfile" ]; then
-                  echo "❌ Error: $configfile is not readable! Trying to fix permissions..."
-                  chmod +r "$configfile" || { echo "❌ Failed to fix permissions!"; exit 1; }
+                  echo "❌ Error: $configfile is not readable! \
+                    Trying to fix permissions..."
+                  chmod +r "$configfile" || {
+                    echo "❌ Failed to fix permissions!"; exit 1; }
               fi
               sed -i 's/\r$//' "$configfile"  # Remove Windows line breaks (CRLF -> LF)
-              OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              OLD_VERSION=$(grep -E \
+                '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' \
+                "$configfile" | head -1 | awk '{print $2}')
               if [[ -z "$OLD_VERSION" ]]; then
-                  echo "❌ Error: Could not extract a valid version from $configfile"
+                  echo "❌ Error: Could not extract a valid version from \
+                    $configfile"
                   echo " File content:"
                   cat "$configfile"
                   exit 1
               fi
               echo " Extracted OLD_VERSION: '$OLD_VERSION'"
               if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                  echo "❌ Error: Version format in $configfile is invalid: '$OLD_VERSION'"
+                  echo "❌ Error: Version format in $configfile is invalid: \
+                    '$OLD_VERSION'"
                   exit 1
               fi
               echo " Try receiving major minor patch number from '$OLD_VERSION'"
               IFS='.' read -r major minor patch <<< "$OLD_VERSION"
               if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
-                  echo "❌ Error: Failed to parse version components from '$OLD_VERSION'. Got: '$major' '$minor' '$patch'"
+                  echo "❌ Error: Failed to parse version components from \
+                    '$OLD_VERSION'. Got: '$major' '$minor' '$patch'"
                   exit 1
               fi
-              echo " Got '$major' '$minor' '$patch', increasing patch number now."
+              echo " Got '$major' '$minor' '$patch', increasing patch number \
+                now."
               if [[ -z "$patch" || ! "$patch" =~ ^[0-9]+$ ]]; then
                   echo "❌ Error: Patch version is invalid: '$patch'"
                   echo "🔄 Trying different versioning now."
@@ -80,14 +95,17 @@ jobs:
               fi
               NEW_VERSION="$major.$minor.$patch"
               echo " Updating $configfile from $OLD_VERSION to $NEW_VERSION"
-              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" "$configfile"
+              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" \
+                "$configfile"
               if [ $? -ne 0 ]; then
                   echo "❌ Error: Failed to update version in $configfile"
                   echo "OLD_VERSION: $OLD_VERSION"
                   echo "NEW_VERSION: $NEW_VERSION"
                   exit 1
               fi
-              NEW_VERSION_CHECK=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              NEW_VERSION_CHECK=$(grep -E \
+                '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' \
+                "$configfile" | head -1 | awk '{print $2}')
               if [[ "$NEW_VERSION_CHECK" != "$NEW_VERSION" ]]; then
                   echo "❌ Error: Version update failed in $configfile!"
                   echo " File content after attempt:"
@@ -104,7 +122,8 @@ jobs:
           echo "🔄 Starting changelog version increment process..."
           repo_url="https://api.github.com/repos/hassio-addons/addon-base"
           response=$(curl -s "$repo_url/releases")
-          latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
+          latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' \
+            | sed -n '1p')
           files=$(find . -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
           if [[ -z "$files" ]]; then
               echo "❌ Error: No CHANGELOG.md files found!"
@@ -115,6 +134,12 @@ jobs:
           while IFS= read -r file; do
               echo "--------------------------------------------"
               echo "📄 Processing: $file"
+              # Normalize path (remove leading ./)
+              clean_file="${file#./}"
+              if git diff --name-only HEAD~1 HEAD | grep -qF "$clean_file"; then
+                  echo "Skipping changelog update because $clean_file was already modified."
+                  continue
+              fi
               if [[ ! -f "$file" ]]; then
                   echo "❌ Error: $file not found!"
                   exit 1
@@ -123,7 +148,8 @@ jobs:
                   echo "❌ Error: $file is not writable!"
                   exit 1
               fi
-              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | sort -rV | head -n1)
+              current_version=$(grep -oP "^## \K\d+\.\d+\.\d+" "$file" | \
+                sort -rV | head -n1)
               if [[ -z "$current_version" ]]; then
                   echo "⚠️ Warning: No valid version found in $file"
                   continue
@@ -137,8 +163,11 @@ jobs:
               patch=$((patch + 1))
               new_version="$major.$minor.$patch"
               echo "🔹 Incremented Patch version to: $new_version"
-              echo "Updating $file with new version $new_version and addon-base version $latest_version..."
-              sed -i "/# Changelog/a \\\\n## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" "$file"
+              echo "Updating $file with new version $new_version and \
+                addon-base version $latest_version..."
+              sed -i \
+                "/# Changelog/a \\\\n## $new_version\\n- Automatically updated addon-base to version $latest_version\\n" \
+                "$file"
               if grep -q "## $new_version" "$file"; then
                   echo "✅ Successfully updated $file with version $new_version"
               else

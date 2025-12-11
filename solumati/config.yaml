@@ -27,7 +27,7 @@ options:
   log_level: info
   test_mode: false
   app_base_url: ""
-  app_base_url: ""
+
   factory_reset: false
   marketing_page_enabled: false
 

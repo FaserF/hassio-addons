@@ -29,7 +29,8 @@ body:
     attributes:
       label: For which Add-On
       description: >
-        The name of the Addon you are wishing a new feature. For example: Apache2
+        The name of the Addon you are wishing a new feature.
+        For example: Apache2
       options:
         - Apache2
         - Apache2-Minimal-MariaDB
@@ -58,7 +59,8 @@ body:
       label: Is your feature request related to a problem?
       render: txt
       description: >-
-        A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+        A clear and concise description of what the problem is.
+        Ex. I'm always frustrated when [...]
   - type: textarea
     attributes:
       label: Additional information

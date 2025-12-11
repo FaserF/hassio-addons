@@ -1,6 +1,9 @@
 # Home Assistant Community Add-on: Wiki.js
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
 ![Project Maintenance][maintenance-shield]
 
 Wiki.js for Homeassistant OS
@@ -14,9 +17,11 @@ Make documentation a joy to write using Wiki.js's beautiful and intuitive interf
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+Just click the link above or add my repo to the hassio addons repositorys:
+<https://github.com/FaserF/hassio-addons>
 
 Please ensure that the MariaDB Addon is installed!
 

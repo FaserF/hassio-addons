@@ -26,7 +26,8 @@
 
 - Fixed an error while updating / installing V2.13.X
   - This happened due to a faulty image building process
-  - Since this issue has been in the last few updates, I have stopped the automatic update and release workflow for now
+  - Since this issue has been in the last few updates, I have stopped the
+    automatic update and release workflow for now
 
 ## 2.13.1
 
@@ -194,7 +195,8 @@
 
 ## 2.4.6
 
-- fixed an error where config parameters could not be read and lead to an error after starting the addon
+- fixed an error where config parameters could not be read and lead to an error
+  after starting the addon
 
 ## 2.4.5
 
@@ -213,7 +215,8 @@
 
 - fix update error
 - bump PHP to PHP8.1
-- drop support for Mosquito-PHP (not supported by the original dev anymore and incompatible with PHP8.1)
+- drop support for Mosquito-PHP (not supported by the original dev anymore and
+  incompatible with PHP8.1)
 
 ## 2.3.0
 

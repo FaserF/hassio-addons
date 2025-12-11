@@ -1,13 +1,18 @@
 # Home Assistant Community Add-on: Freenom-DNS-Updater
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
 Freenom DNS Updater for Homeassistant OS
 
 ## About
 
-Freenom is a (free) Registrar provider. This is a docker image based on @maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
+Freenom is a (free) Registrar provider. This is a docker image based on
+@maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
 
 The full feature list can be found there.
 
@@ -15,7 +20,8 @@ The full feature list can be found there.
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
@@ -53,7 +59,8 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from the maxisoft. For more informatios please visit this page: <https://github.com/maxisoft/Freenom-dns-updater>
+The original program is from the maxisoft. For more informatios please visit
+this page: <https://github.com/maxisoft/Freenom-dns-updater>
 The hassio addon is brought to you by [FaserF].
 
 ## License
