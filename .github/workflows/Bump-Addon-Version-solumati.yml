@@ -81,7 +81,7 @@ jobs:
           fi
 
       - name: Upload Config Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: addon-config
           path: solumati/
