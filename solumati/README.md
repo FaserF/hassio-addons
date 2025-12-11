@@ -38,15 +38,15 @@ All options are configured via the Home Assistant UI. The database is automatica
 
 ### Options
 
-| Option | Type | Default | Description |
-|:-------|:-----|:--------|:------------|
-| `log_level` | select | `info` | Log verbosity: trace, debug, info, warning, error, fatal |
-| `test_mode` | boolean | `false` | Enable test mode with dummy user data for testing |
-| `app_base_url` | string | (auto) | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
-| `project_name` | string | `Solumati` | Custom name for your instance |
-| `github_client_id` | password | - | GitHub OAuth Client ID (optional) |
-| `google_client_id` | password | - | Google OAuth Client ID (optional) |
-| `microsoft_client_id` | password | - | Microsoft OAuth Client ID (optional) |
+| Option                | Type     | Default    | Description                                                                  |
+| :-------------------- | :------- | :--------- | :--------------------------------------------------------------------------- |
+| `log_level`           | select   | `info`     | Log verbosity: trace, debug, info, warning, error, fatal                     |
+| `test_mode`           | boolean  | `false`    | Enable test mode with dummy user data for testing                            |
+| `app_base_url`        | string   | (auto)     | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
+| `project_name`        | string   | `Solumati` | Custom name for your instance                                                |
+| `github_client_id`    | password | -          | GitHub OAuth Client ID (optional)                                            |
+| `google_client_id`    | password | -          | Google OAuth Client ID (optional)                                            |
+| `microsoft_client_id` | password | -          | Microsoft OAuth Client ID (optional)                                         |
 
 > **Note**: OAuth Client Secrets and SMTP settings are configured in the Admin Panel after first login.
 

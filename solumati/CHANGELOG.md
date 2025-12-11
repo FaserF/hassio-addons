@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.4.0
+
 - **NEW**: Home Assistant Ingress support (secure sidebar access)
 - **NEW**: Configurable options in HA UI:
   - `app_base_url` - Auto-detected from Ingress or manually set
@@ -13,21 +14,27 @@
 - update Solumati to v2025.12.2-b2
 
 ## 1.3.14
+
 - updated Solumati to v2025.12.1-b11
 
 ## 1.3.12
+
 - updated Solumati to v2025.12.1-b10
 
 ## 1.3.10
+
 - updated Solumati to v2025.12.1-b9
 
 ## 1.3.8
+
 - updated Solumati to v2025.12.1-b8
 
 ## 1.3.6
+
 - updated Solumati to v2025.12.1-b7
 
 ## 1.3.4
+
 - updated Solumati to v2025.12.1-b6
 
 ## 1.3.2
