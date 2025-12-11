@@ -105,6 +105,88 @@ else
 	fi
 fi
 
+# --- DEV MODE: USE MAIN BRANCH ---
+if bashio::config.true 'dev_use_main_branch'; then
+	bashio::log.warning "=================================================="
+	bashio::log.warning "   ⚠️  DEVELOPER MODE ENABLED  ⚠️"
+	bashio::log.warning "=================================================="
+	bashio::log.warning "Using latest code from 'main' branch."
+	bashio::log.warning "Downloading and rebuilding... This will take time!"
+	bashio::log.warning "Please wait..."
+
+	# Download main branch
+	cd /tmp || exit 1
+	if curl -L "https://github.com/FaserF/Solumati/archive/refs/heads/main.tar.gz" -o main.tar.gz; then
+		bashio::log.info "Download successful. Extracting..."
+		rm -rf /tmp/solumati-main
+		mkdir -p /tmp/solumati-main
+		tar -xzf main.tar.gz -C /tmp/solumati-main --strip-components=1
+
+		# Update Backend
+		bashio::log.info "Updating Backend code..."
+		if [ -d "/tmp/solumati-main/backend" ]; then
+			cp -r /tmp/solumati-main/backend/* /app/backend/
+
+			# Install potentially new python requirements
+			if [ -f "/app/backend/requirements.txt" ]; then
+				bashio::log.info "Installing Python dependencies..."
+				pip install --no-cache-dir -r /app/backend/requirements.txt
+			fi
+		else
+			bashio::log.error "Backend directory not found in main branch!"
+		fi
+
+		# Rebuild Frontend
+		bashio::log.info "Rebuilding Frontend (this may take several minutes)..."
+		if [ -d "/tmp/solumati-main/frontend" ]; then
+			# Create temp build dir
+			rm -rf /tmp/frontend_build
+			mkdir -p /tmp/frontend_build
+			cp -r /tmp/solumati-main/frontend/* /tmp/frontend_build/
+
+			cd /tmp/frontend_build || exit 1
+
+			# IMPORTANT: Apply config.js fix found in Dockerfile
+			if [ -f "src/config.js" ]; then
+				sed -i 's|http://localhost:7777|/api|g' src/config.js
+			fi
+
+			bashio::log.info "Running 'npm install'..."
+			if npm install; then
+				bashio::log.info "Running 'npm run build'..."
+				if npm run build; then
+					bashio::log.info "Frontend build successful. Updating files..."
+					# Remove old frontend files (preserve dir)
+					rm -rf /app/frontend/*
+					if [ -d "dist" ]; then
+						cp -r dist/* /app/frontend/
+					else
+						bashio::log.error "'dist' directory not found after build!"
+					fi
+				else
+					bashio::log.error "Frontend build failed! Keeping old frontend."
+				fi
+			else
+				bashio::log.error "npm install failed! Keeping old frontend."
+			fi
+		else
+			bashio::log.error "Frontend directory not found in main branch!"
+		fi
+
+		# Cleanup
+		rm -rf /tmp/main.tar.gz /tmp/solumati-main /tmp/frontend_build
+		cd / || exit 1
+
+		bashio::log.info "=================================================="
+		bashio::log.info "   ✅ DEV MODE UPDATE COMPLETE"
+		bashio::log.info "=================================================="
+	else
+		bashio::log.error "Failed to download main branch from GitHub!"
+	fi
+else
+	bashio::log.info "Production Mode: Using packaged version."
+fi
+
 # Generate random password for database
 DB_PASS=$(
 	tr -dc A-Za-z0-9 </dev/urandom | head -c 32

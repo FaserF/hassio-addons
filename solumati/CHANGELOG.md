@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+- Updated Solumati to v2025.12.2-b6
+- new dev option to use main branch
+
 ## 1.4.4
 
 - Updated Solumati to v2025.12.2-b5

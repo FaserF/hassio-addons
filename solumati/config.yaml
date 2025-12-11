@@ -1,6 +1,6 @@
 ---
 name: "Solumati"
-version: "1.4.7"
+version: "1.5.0"
 slug: "solumati"
 description: "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches."
 url: "https://github.com/FaserF/hassio-addons/tree/master/solumati"
@@ -25,9 +25,11 @@ options:
   app_base_url: ""
   factory_reset: false
   marketing_page_enabled: false
+  dev_use_main_branch: false
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   test_mode: bool
   app_base_url: str?
   factory_reset: bool?
   marketing_page_enabled: bool?
+  dev_use_main_branch: bool?
