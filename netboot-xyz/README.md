@@ -1,11 +1,12 @@
-<!-- markdownlint-disable MD033 -->
 # Home Assistant Add-on: Netboot.xyz
 
+<!-- markdownlint-disable MD033 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/netboot-xyz/icon.png" alt="Netboot.xyz Logo" width="100">
   <br>
   <strong>Your favorite operating systems in one place.</strong>
 </div>
+<!-- markdownlint-enable MD033 -->
 <br>
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
@@ -43,11 +44,13 @@ perfect for homelabs and network management.
 
 ## ⚙️ Configuration
 
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
-| `path` | `string` | `/media/netboot/image` | Directory to store local assets/images. | <!-- markdownlint-disable-line MD013 -->
-| `path_config` | `string` | `/media/netboot/config` | Directory for persistent configuration. | <!-- markdownlint-disable-line MD013 -->
-| `dhcp_range` | `string` | `192.168.178.200` | Simple DHCP range/IP if internal DHCP is used (advanced). | <!-- markdownlint-disable-line MD013 -->
+| `path` | `string` | `/media/netboot/image` | Directory to store local assets/images. |
+| `path_config` | `string` | `/media/netboot/config` | Directory for persistent configuration. |
+| `dhcp_range` | `string` | `192.168.178.200` | Simple DHCP range/IP if internal DHCP is used (advanced). |
+<!-- markdownlint-enable MD013 -->
 
 ### 📁 Storage
 

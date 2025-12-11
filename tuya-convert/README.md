@@ -1,11 +1,12 @@
-<!-- markdownlint-disable MD033 -->
 # Home Assistant Add-on: Tuya-Convert
 
+<!-- markdownlint-disable MD033 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/ct-Open-Source/tuya-convert/master/docs/logo.png" alt="Tuya Convert Logo" width="100">
   <br>
   <strong>Flash Tuya devices over the air!</strong>
 </div>
+<!-- markdownlint-enable MD033 -->
 <br>
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
@@ -44,11 +45,13 @@ Tuya-Convert tool directly to your Home Assistant OS environment.
 
 ## ⚙️ Configuration
 
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
-| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. | <!-- markdownlint-disable-line MD013 -->
-| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). | <!-- markdownlint-disable-line MD013 -->
-| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. | <!-- markdownlint-disable-line MD013 -->
+| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. |
+| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
+| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. |
+<!-- markdownlint-enable MD013 -->
 
 > [!NOTE]
 > Make sure the `backup_path` is accessible (e.g., in `/share` or `/media`).

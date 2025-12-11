@@ -58,7 +58,6 @@
 
 - Automatically updated addon-base to version v17.2.1
 
-
 ## 1.5.22
 
 - automatically update addon-base to version v17.0.1
@@ -180,7 +179,7 @@
 
 - bump hassio-addon-base to V10.2.0
 
-## 1.1.1
+## 1.1.0-rev1
 
 - bump hassio-addon-base to V10.1.0
 

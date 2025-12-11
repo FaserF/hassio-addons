@@ -1,11 +1,12 @@
-<!-- markdownlint-disable MD033 -->
 # Home Assistant Add-on: Solumati
 
+<!-- markdownlint-disable MD033 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="300">
   <br>
   <strong>The Anti-Swipe Revolution</strong>
 </div>
+<!-- markdownlint-enable MD033 -->
 <br>
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
@@ -44,12 +45,14 @@ privacy and control.
 Basic options are configured directly in Home Assistant. Advanced application
 settings (OAuth, SMTP) are managed within the Solumati Admin Panel.
 
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
-| `log_level` | `string` | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`). | <!-- markdownlint-disable-line MD013 -->
-| `test_mode` | `boolean` | `false` | Enable to generate dummy data for testing purposes. | <!-- markdownlint-disable-line MD013 -->
-| `app_base_url` | `string` | *(auto)* | Public URL for links/emails. Auto-detected from Ingress if left empty. | <!-- markdownlint-disable-line MD013 -->
-| `marketing_page_enabled` | `boolean` | `false` | Enables the public-facing marketing landing page. | <!-- markdownlint-disable-line MD013 -->
+| `log_level` | `string` | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`). |
+| `test_mode` | `boolean` | `false` | Enable to generate dummy data for testing purposes. |
+| `app_base_url` | `string` | *(auto)* | Public URL for links/emails. Auto-detected from Ingress if left empty. |
+| `marketing_page_enabled` | `boolean` | `false` | Enables the public-facing marketing landing page. |
+<!-- markdownlint-enable MD013 -->
 
 > [!NOTE]
 > **Admin Password**: On the very first startup, check the **Log** tab for the
@@ -61,9 +64,11 @@ settings (OAuth, SMTP) are managed within the Solumati Admin Panel.
 > **DANGER ZONE**: Enabling `factory_reset` will **PERMANENTLY DELETE** all
 > data, including users, messages, and images.
 
+<!-- markdownlint-disable MD013 -->
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
-| `factory_reset` | `boolean` | `false` | Set to `true` and restart to wipe the database. **Disable immediately after use.** | <!-- markdownlint-disable-line MD013 -->
+| `factory_reset` | `boolean` | `false` | Set to `true` and restart to wipe the database. **Disable immediately after use.** |
+<!-- markdownlint-enable MD013 -->
 
 ## 📚 Usage
 
