@@ -82,7 +82,7 @@ Please keep in mind, that this software is only tested on armv7 running on a Ras
 
 ## Authors & contributors
 
-The original program is from spacemeowx2. For more informatios please visit this
+The original program is from spacemeowx2. For more information please visit this
 github: <https://github.com/spacemeowx2/switch-lan-play>
 The hassio addon is brought to you by [FaserF].
 
