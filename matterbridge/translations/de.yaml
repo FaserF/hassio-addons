@@ -1,0 +1,7 @@
+configuration:
+  config_path:
+    name: "Konfigurationspfad"
+    description: "Pfad zur Konfigurationsdatei."
+  log_level:
+    name: "Log-Level"
+    description: "Protokollierungsstufe (standardmäßig 'info')."

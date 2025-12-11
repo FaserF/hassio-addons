@@ -1,0 +1,4 @@
+configuration:
+  server:
+    name: "Server-Adresse"
+    description: "Adresse des Lan-Play-Servers (z.B. switch.lan-play.com:11451)."
