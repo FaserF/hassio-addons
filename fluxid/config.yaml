@@ -1,0 +1,33 @@
+name: "FluxID"
+version: "0.1.0"
+slug: "fluxid"
+description: "FluxID - Identity Management System"
+url: "https://github.com/FaserF/FluxID"
+arch:
+  - aarch64
+  - amd64
+image: ghcr.io/faserf/fluxid-{arch}
+init: false
+ingress: true
+panel_icon: mdi:account-key
+panel_title: FluxID
+map:
+  - homeassistant_config:rw
+  - share:rw
+ports:
+  80/tcp: 8098
+ports_description:
+  80/tcp: "Web Interface Port (use Ingress for secure access)"
+options:
+  log_level: info
+  github_url: "https://github.com/FaserF/FluxID.git"
+  github_token: ""
+  github_branch: "main"
+  env_vars: []
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  github_url: str
+  github_token: str
+  github_branch: str
+  env_vars:
+    - str

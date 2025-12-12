@@ -1,0 +1,19 @@
+configuration:
+  github_url:
+    name: GitHub Repository URL
+    description: URL des FluxID-Repositorys zum Klonen.
+  github_token:
+    name: GitHub Token
+    description: Personal Access Token (PAT) zum Klonen des privaten Repositorys.
+  github_branch:
+    name: Branch
+    description: Der zu verwendende Git-Branch (z. B. main).
+  log_level:
+    name: Log Level
+    description: Ausführlichkeit der Protokollierung.
+  env_vars:
+    name: Umgebungsvariablen
+    description: Liste benutzerdefinierter Umgebungsvariablen (Format KEY=VALUE).
+ports:
+  80/tcp:
+    name: Web Interface
