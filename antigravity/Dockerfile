@@ -56,13 +56,12 @@ RUN \
     \
     && curl https://bootstrap.pypa.io/get-pip.py | python3 \
     \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://antigravity.google/apt/doc/apt-key.gpg | gpg --dearmor -o /etc/apt/keyrings/antigravity.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/antigravity.gpg] https://antigravity.google/apt stable main" | tee /etc/apt/sources.list.d/antigravity.list \
-    && apt-get update \
-    && apt-get install -y antigravity \
+    && CODE_SERVER_ARCH=$([ "${BUILD_ARCH}" = "amd64" ] && echo "amd64" || echo "arm64") \
+    && curl -fsSL "https://github.com/coder/code-server/releases/download/${CODE_SERVER_VERSION}/code-server_${CODE_SERVER_VERSION#v}_${CODE_SERVER_ARCH}.deb" -o /tmp/code-server.deb \
+    && dpkg -i /tmp/code-server.deb \
+    && rm -f /tmp/code-server.deb \
     \
-    && mkdir -p /root/.antigravity/extensions \
+    && mkdir -p /root/.local/share/code-server/extensions \
     && uuid=$(uuidgen) \
     && while read -r ext; do \
         extention="${ext%%#*}" \
@@ -70,20 +69,20 @@ RUN \
         slug="${extention#*.}"; \
         version="${ext##*#}"; \
         \
-        echo "Installing antigravity extension: ${slug} by ${vendor} @ ${version} "; \
+        echo "Installing code-server extension: ${slug} by ${vendor} @ ${version} "; \
         \
         echo "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/${vendor}/vsextensions/${slug}/${version}/vspackage"; \
         curl -JL --retry 5 -o "/tmp/${extention}-${version}.vsix" \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36" \
             -H "x-market-user-id: ${uuid}" \
             "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/${vendor}/vsextensions/${slug}/${version}/vspackage"; \
-        mkdir -p "/usr/local/lib/code-server/lib/vscode/extensions/${extention}-${version}"; \
+        mkdir -p "/root/.local/share/code-server/extensions/${extention}-${version}"; \
         bsdtar --strip-components=1 -xf "/tmp/${extention}-${version}.vsix" \
-                    -C "/usr/local/lib/code-server/lib/vscode/extensions/${extention}-${version}" extension; \
+                    -C "/root/.local/share/code-server/extensions/${extention}-${version}" extension; \
         [ $? -ne 0 ] && exit 1; \
         sleep 1; \
     done < /root/antigravity.extensions \
-    && ls -la /usr/local/lib/code-server/lib/vscode/extensions/ \
+    && ls -la /root/.local/share/code-server/extensions/ \
     \
     && curl -L -s -o /usr/bin/ha \
         "https://github.com/home-assistant/cli/releases/download/${HA_CLI_VERSION}/ha_${BUILD_ARCH}" \

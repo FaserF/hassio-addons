@@ -1,6 +1,6 @@
 ---
 name: Antigravity
-version: dev
+version: 0.1.0
 slug: antigravity
 description: Google Antigravity Editor based on Visual Studio Code.
 url: https://github.com/hassio-addons/addon-antigravity
