@@ -1,0 +1,16 @@
+configuration:
+  upstream_dns:
+    name: Upstream DNS
+    description: "The IP address or hostname of the upstream DNS server (e.g., your AdGuard Home IP)."
+  certfile:
+    name: Certificate File
+    description: "The filename of your fullchain certificate in /ssl/."
+  keyfile:
+    name: Private Key File
+    description: "The filename of your private key in /ssl/."
+  cloudflare_tunnel_token:
+    name: Cloudflare Tunnel Token
+    description: "Optional: Token to start a Cloudflare Tunnel for this service."
+  log_level:
+    name: Log Level
+    description: "Verbosity of the logs."

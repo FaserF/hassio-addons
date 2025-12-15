@@ -1,0 +1,120 @@
+name: PR Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*
+
+      - name: Determine labels based on changed files
+        id: labels
+        run: |
+          labels=""
+
+          # Get list of all addon directories
+          addons=$(find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name "_images" | sed 's|^\./||' | sort)
+
+          # Check which addons were modified
+          changed_addons=""
+          for addon in $addons; do
+            if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "^${addon}/"; then
+              changed_addons="${changed_addons}addon:${addon},"
+              labels="${labels}addon:${addon},"
+            fi
+          done
+
+          # Check for repository-level changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "^(repository\.json|README\.MD)"; then
+            labels="${labels}repository,"
+          fi
+
+          # Check for CI/CD changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "(\.github/workflows/|\.github/)"; then
+            labels="${labels}ci/cd,"
+          fi
+
+          # Check for documentation changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "(README\.md|CHANGELOG\.md|\.github/CONTRIBUTING\.md)"; then
+            labels="${labels}documentation,"
+          fi
+
+          # Check for translation changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "translations/"; then
+            labels="${labels}translations,"
+          fi
+
+          # Check for build configuration changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "(build\.yaml|Dockerfile|config\.yaml)"; then
+            labels="${labels}build-config,"
+          fi
+
+          # Check for icon/image changes
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "(icon\.png|_images/)"; then
+            labels="${labels}assets,"
+          fi
+
+          # Remove trailing comma
+          labels=$(echo "$labels" | sed 's/,$//')
+
+          echo "labels=$labels" >> $GITHUB_OUTPUT
+          echo "changed_addons=$changed_addons" >> $GITHUB_OUTPUT
+          echo "Detected labels: $labels"
+          if [ -n "$changed_addons" ]; then
+            echo "Changed addons: $changed_addons"
+          fi
+
+      - name: Add labels to PR
+        if: steps.labels.outputs.labels != ''
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const labels = '${{ steps.labels.outputs.labels }}'.split(',').filter(l => l.trim() !== '');
+
+            if (labels.length > 0) {
+              console.log(`Adding labels: ${labels.join(', ')}`);
+
+              // Get existing labels
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+              });
+
+              const existingLabels = pr.labels.map(l => l.name);
+              const labelsToAdd = labels.filter(l => !existingLabels.includes(l));
+
+              if (labelsToAdd.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: labelsToAdd,
+                });
+                console.log(`✅ Added labels: ${labelsToAdd.join(', ')}`);
+              } else {
+                console.log('ℹ️  All labels already exist on PR');
+              }
+            } else {
+              console.log('ℹ️  No labels to add');
+            }
+
+
+

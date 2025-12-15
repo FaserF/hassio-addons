@@ -26,7 +26,7 @@ RUN \
 
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
-ARG SOLUMATI_VERSION="v2025.12.2-b6"
+ARG SOLUMATI_VERSION="vv2025.12.3b0"
 WORKDIR /tmp
 RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
     tar -xzf solumati.tar.gz && \
