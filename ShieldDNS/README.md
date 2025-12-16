@@ -1,4 +1,4 @@
-# ShieldDNS
+# ![ShieldDNS Logo](logo.png) ShieldDNS
 
 ShieldDNS allows you to securely accept DNS-over-TLS (DoT) connections from your mobile devices and forward them to your local AdGuard Home or other DNS servers. This secures your DNS queries even when you are on your local network (if your device enforces Private DNS) or if you expose this port securely.
 
