@@ -7,7 +7,14 @@ COPY --from=coredns/coredns:latest /coredns /usr/bin/coredns
 COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # Install dependencies (if any extra needed beyond base)
-RUN apk add --no-cache bind-tools openssl
+RUN apk add --no-cache bind-tools openssl nginx
+
+# Create web root and required directories
+RUN mkdir -p /var/www/html /run/nginx
+
+# Copy Web Assets
+COPY www/index.html /var/www/html/index.html
+COPY www/logo.png /var/www/html/logo.png
 
 # Copy Addon run script to S6 services location
 COPY run.sh /etc/services.d/shielddns/run

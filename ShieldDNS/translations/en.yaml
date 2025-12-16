@@ -11,6 +11,9 @@ configuration:
   cloudflare_tunnel_token:
     name: Cloudflare Tunnel Token
     description: "Optional: Your Cloudflare Tunnel token if you want to expose this service directly."
+  enable_info_page:
+    name: Enable Info Page
+    description: "Show a secure 'ShieldDNS Endpoint' landing page on the HTTPS port (instead of 404/Error) when accessed via browser."
   log_level:
     name: Log Level
     description: "Control the verbosity of logs."
