@@ -16,9 +16,9 @@ RUN mkdir -p /var/www/html /run/nginx
 COPY www/index.html /var/www/html/index.html
 COPY www/logo.png /var/www/html/logo.png
 
-# Copy Addon run script to S6 services location
-COPY run.sh /etc/services.d/shielddns/run
-RUN chmod +x /etc/services.d/shielddns/run
+# Copy Addon run script
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
 
-# S6-Overlay is the entrypoint in the base image, so we don't set ENTRYPOINT/CMD here.
-# /init will start S6, which will start /etc/services.d/shielddns/run
+# Start the addon
+CMD [ "/run.sh" ]

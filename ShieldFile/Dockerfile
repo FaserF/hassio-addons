@@ -14,5 +14,9 @@ RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh |
 # Create directories
 RUN mkdir -p /data/database
 
-COPY run.sh /etc/services.d/shieldfile/run
-RUN chmod +x /etc/services.d/shieldfile/run
+# Copy Addon run script
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
+
+# Start the addon
+CMD [ "/run.sh" ]

@@ -1,5 +1,4 @@
-#!/bin/bash
-source /usr/lib/bashio/bashio.sh
+#!/usr/bin/with-contenv bashio
 
 # Define local paths
 COREFILE_PATH="/etc/Corefile"

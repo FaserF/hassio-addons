@@ -1,3 +1,7 @@
+## 1.3.3
+
+- **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6 services.d) to resolve s6 loop error.
+
 ## 1.3.1
 
 - **Refinement**: Made `dot_port` and `doh_port` optional. You can now run DoT-only or DoH-only.
