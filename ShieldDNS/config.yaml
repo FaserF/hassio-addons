@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "1.1.0"
+version: "1.2.0"
 slug: "shielddns"
 description: "High-performance DoT proxy for AdGuard Home"
 url: "https://github.com/fabia/Project"
@@ -11,6 +11,7 @@ arch:
   - armv7
   - i386
 boot: auto
+host_network: true
 map:
   - config:rw
   - ssl:rw
@@ -20,15 +21,23 @@ options:
   keyfile: "privkey.pem"
   cloudflare_tunnel_token: ""
   log_level: "info"
+  dot_port: 853
+  doh_port: 3443
+  doh_alt_port_1: 784
+  doh_alt_port_2: 2443
 schema:
   upstream_dns: str
   certfile: str
   keyfile: str
   cloudflare_tunnel_token: str?
   log_level: list(debug|info|error|warning)
-ports:
-  853/tcp: 853
-  443/tcp: 3443
-  784/tcp: 784
-  2443/tcp: 2443
+  dot_port: port
+  doh_port: port
+  doh_alt_port_1: port
+  doh_alt_port_2: port
+# ports:
+#   853/tcp: 853
+#   443/tcp: 3443
+#   784/tcp: 784
+#   2443/tcp: 2443
 # image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build

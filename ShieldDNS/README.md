@@ -39,6 +39,23 @@ Set the verbosity of logs.
 - `info`: Standard logging (includes DNS queries).
 - `debug`: Verbose logging (useful for troubleshooting).
 
+### Option: `dot_port` (Optional)
+Port to listen for DNS-over-TLS. Default: `853`.
+
+### Option: `doh_port` (Optional)
+Port to listen for DNS-over-HTTPS. Default: `3443`.
+*Note: Default is 3443 to avoid conflict with Home Assistant UI on 443.*
+
+### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
+Additional ports for DoH/HTTPS (e.g. for Cloudflare Tunnel compatibility). Defaults: `784`, `2443`.
+
+## Networking
+This Addon runs in **Host Network** mode to preserve the "Source IP" of DNS queries.
+This means:
+1.  **Source IPs**: AdGuard Home will see the real IP of the client (e.g. your phone).
+2.  **Ports**: The ports configured above are opened directly on your Host device.
+3.  **Conflicts**: Ensure these ports are not used by other services (like AdGuard Home encryption or Nginx Proxy Manager).
+
 ## Integrations
 
 ### Cloudflare Tunnel (Official Addon) support
@@ -48,18 +65,18 @@ You can use the official **Cloudflare Tunnel** Home Assistant Addon (or cloudfla
 **Setup:**
 
 1. In Cloudflare Dashboard, create a Public Hostname (e.g., `dns.example.com`).
-2. Point the Service to `HTTPS://<YOUR_HA_IP>:443`.
-3. Under **TLS Verify**, disable verification (No TLS Verify) or provide the CA if using self-signed certs.
-4. Now `https://dns.example.com/dns-query` will serve DNS-over-HTTPS!
+2. Point the Service to `HTTPS://localhost:3443` (or whatever `doh_port` you configured).
+3. Under **TLS Verify**, disable verification (No TLS Verify) or provide the CA.
 
 ### AdGuard Home Integration
 
 To usage this Addon as a secure frontend for **AdGuard Home**:
 
 1. Install AdGuard Home Addon in Home Assistant.
-2. Note the IP address of your Home Assistant (e.g., `192.168.1.50`).
+2. Note the IP address/Host of your Home Assistant.
 3. In ShieldDNS configuration, set `upstream_dns` to this IP.
 4. ShieldDNS will now accept encrypted requests and forward them locally to AdGuard Home.
+<<<<<<< Updated upstream
 5. **Port Conflicts**: AdGuard Home might try to bind port `443` (Web UI HTTPS) and `853` (DoT encryption).
    - If you want ShieldDNS to handle encryption, **disable encryption in AdGuard Home**.
    - If you need AdGuard Home Web UI on 443, change ShieldDNS `443` port mapping in the "Network" tab of the Addon to something else (e.g. `8443`).
@@ -72,6 +89,16 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 | 443  | DoH      | Standard DNS-over-HTTPS    |
 | 784  | DoH      | Cloudflare Alternate HTTPS |
 | 2443 | DoH      | Cloudflare Alternate HTTPS |
+=======
+5. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share ports with AdGuard Home if both try to bind the same port on all interfaces.
+    - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration or disable encryption in AdGuard.
+
+## Supported Protocols
+| Parameter | Protocol | Default |
+|-----------|----------|---------|
+| `dot_port`| DoT      | 853     |
+| `doh_port`| DoH      | 3443    |
+>>>>>>> Stashed changes
 
 ## Usage
 
