@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "1.3.3"
+version: "1.3.4"
 slug: "shielddns"
 description: "High-performance DoT proxy for AdGuard Home"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
@@ -22,12 +22,9 @@ options:
   cloudflare_tunnel_token: ""
   enable_info_page: false
   log_level: "info"
-  dot_port: 853
   doh_port: 3443
   fallback_dns: false
   fallback_dns_server: "1.1.1.1"
-  # doh_alt_port_1: 784
-  # doh_alt_port_2: 2443
 schema:
   upstream_dns: str
   certfile: str
@@ -37,6 +34,8 @@ schema:
   log_level: list(debug|info|error|warning)
   dot_port: port?
   doh_port: port?
+  fallback_dns: bool?
+  fallback_dns_server: str?
   doh_alt_port_1: port?
   doh_alt_port_2: port?
 # ports:

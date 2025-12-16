@@ -23,6 +23,12 @@ configuration:
   doh_port:
     name: DoH Port
     description: "Port für DNS-over-HTTPS (Standard: 3443)."
+  fallback_dns:
+    name: Fallback DNS aktivieren
+    description: "Aktiviere einen Fallback DNS Server, falls der Upstream nicht erreichbar ist."
+  fallback_dns_server:
+    name: Fallback DNS Server
+    description: "Die IP-Adresse des Fallback DNS Servers (z.B. 1.1.1.1)."
   doh_alt_port_1:
     name: Alt DoH Port 1
     description: "Optional: Zusätzlicher Port für DoH (z.B. 784)."
