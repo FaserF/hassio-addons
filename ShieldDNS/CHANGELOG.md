@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.2.0
+
 - **Host Network Mode**: Enabled `host_network: true` to preserve Source IP addresses in AdGuard Home logs.
 - **Configurable Ports**: Ports for DoT and DoH are now fully configurable options in the addon configuration tab (defaults: DoT=853, DoH=3443).
 - **Update**: Improved default settings to avoid conflicts with Home Assistant or AdGuard Home.
