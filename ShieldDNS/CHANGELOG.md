@@ -1,4 +1,4 @@
-## 1.3.3 & 1.3.4
+## 1.3.3 & 1.3.4 & 1.3.5
 
 - **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6 services.d) to resolve s6 loop error.
 
