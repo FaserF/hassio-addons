@@ -1,26 +1,23 @@
-# Changelog
+## 1.3.1
+
+- **Refinement**: Made `dot_port` and `doh_port` optional. You can now run DoT-only or DoH-only.
+- **Fix**: Startup script now verifies at least one port is active.
+- **New**: Added functional Status Indicator to the Info Page (checks /dns-query).
+- **Fix**: Fixed S6 startup error by restoring correct shebang.
+
+## 1.3.0
+
+- **Feature**: Optional "Single Port" Info Page (Serve Web + DoH on same port).
+- **Config**: Added `enable_info_page` option.
 
 ## 1.2.0
 
-- **Host Network Mode**: Enabled `host_network: true` to preserve Source IP addresses.
-- **Configurable Ports**: All ports (`dot_port`, `doh_port`, etc.) are now configurable options.
-- **Refined Defaults**:
-  - DoT Port default changed to `8853` to avoid AdGuard Home conflict (Port 853).
-  - Alt DoH Ports (784, 2443) are now **disabled by default** (Optional).
-- **Translations**: Added English and German configuration descriptions.
+- **Feature**: Host Network Mode (`host_network: true`) for Source IP visibility.
+- **Refinement**: Made alternative DoH ports optional (removed from default config).
+- **Change**: Changed default DoT port to `8853` to avoid AdGuard Home conflict.
 
 ## 1.1.0
 
-- **DoH Support** added on ports 443 (default mapped to 3443), 784, and 2443
-- **Official Cloudflare Tunnel Addon** support added (via documentation)
-- **New Logo** added to add-on icon and documentation
-- **Configuration**: `cloudflare_tunnel_token` is now optional
-- **Configuration**: Default HTTPS port mapping changed to `3443` to avoid conflicts
-- **Docs**: Improved documentation on AdGuard Home compatibility and Client Setup
-
-## 1.0.0
-
-- Initial Release
-- Support for DNS-over-TLS (DoT)
-- Support for Cloudflare Tunnel
-- Support for AdGuard Home Integration
+- **Feature**: Added DoH (DNS-over-HTTPS) support.
+- **New**: Added ShieldDNS Logo.
+- **Docs**: Cloudflare Tunnel integration guide.
