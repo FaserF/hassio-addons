@@ -1,16 +1,28 @@
 configuration:
   upstream_dns:
-    name: Upstream DNS
-    description: "The IP address or hostname of the upstream DNS server (e.g., your AdGuard Home IP)."
+    name: Upstream DNS Server
+    description: "The IP address of your upstream DNS server (e.g., AdGuard Home or 1.1.1.1)."
   certfile:
     name: Certificate File
-    description: "The filename of your fullchain certificate in /ssl/."
+    description: "Your SSL certificate file name in /ssl/."
   keyfile:
     name: Private Key File
-    description: "The filename of your private key in /ssl/."
+    description: "Your SSL private key file name in /ssl/."
   cloudflare_tunnel_token:
     name: Cloudflare Tunnel Token
-    description: "Optional: Token to start a Cloudflare Tunnel for this service."
+    description: "Optional: Your Cloudflare Tunnel token if you want to expose this service directly."
   log_level:
     name: Log Level
-    description: "Verbosity of the logs."
+    description: "Control the verbosity of logs."
+  dot_port:
+    name: DoT Port
+    description: "Port to listen on for DNS-over-TLS (Default: 8853)."
+  doh_port:
+    name: DoH Port
+    description: "Port to listen on for DNS-over-HTTPS (Default: 3443)."
+  doh_alt_port_1:
+    name: Alt DoH Port 1
+    description: "Optional: Additional port for DoH (e.g., 784)."
+  doh_alt_port_2:
+    name: Alt DoH Port 2
+    description: "Optional: Additional port for DoH (e.g., 2443)."

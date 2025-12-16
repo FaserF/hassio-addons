@@ -89,11 +89,36 @@ tls://.:${DOT_PORT} {
     $(echo -e ${DNS_LOG_CONFIG})
 }
 
-https://.:${DOH_PORT} https://.:${DOH_ALT1} https://.:${DOH_ALT2} {
+https://.:${DOH_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${UPSTREAM_DNS}
     $(echo -e ${DNS_LOG_CONFIG})
 }
+
+EOF
+
+# Append Alt Ports if they are set
+if bashio::config.has_value 'doh_alt_port_1'; then
+    bashio::log.info "  Exposing Alt DoH Port 1: ${DOH_ALT1}"
+    cat <<EOF >> ${COREFILE_PATH}
+https://.:${DOH_ALT1} {
+    tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
+    forward . ${UPSTREAM_DNS}
+    $(echo -e ${DNS_LOG_CONFIG})
+}
+EOF
+fi
+
+if bashio::config.has_value 'doh_alt_port_2'; then
+    bashio::log.info "  Exposing Alt DoH Port 2: ${DOH_ALT2}"
+    cat <<EOF >> ${COREFILE_PATH}
+https://.:${DOH_ALT2} {
+    tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
+    forward . ${UPSTREAM_DNS}
+    $(echo -e ${DNS_LOG_CONFIG})
+}
+EOF
+fi
 EOF
 
 # Start CoreDNS (Foreground - keeps service alive)

@@ -21,10 +21,10 @@ options:
   keyfile: "privkey.pem"
   cloudflare_tunnel_token: ""
   log_level: "info"
-  dot_port: 853
+  dot_port: 8853
   doh_port: 3443
-  doh_alt_port_1: 784
-  doh_alt_port_2: 2443
+  # doh_alt_port_1: 784
+  # doh_alt_port_2: 2443
 schema:
   upstream_dns: str
   certfile: str
@@ -33,8 +33,8 @@ schema:
   log_level: list(debug|info|error|warning)
   dot_port: port
   doh_port: port
-  doh_alt_port_1: port
-  doh_alt_port_2: port
+  doh_alt_port_1: port?
+  doh_alt_port_2: port?
 # ports:
 #   853/tcp: 853
 #   443/tcp: 3443
