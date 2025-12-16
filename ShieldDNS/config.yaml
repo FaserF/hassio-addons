@@ -23,7 +23,7 @@ options:
   enable_info_page: false
   log_level: "info"
   dot_port: 853
-  doh_port: 443
+  doh_port: 3443
   fallback_dns: false
   fallback_dns_server: "1.1.1.1"
   # doh_alt_port_1: 784
