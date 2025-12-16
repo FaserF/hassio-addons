@@ -18,6 +18,11 @@ ShieldFile is designed specifically for **Home Assistant** and **Security**:
 2.  **🏠 HA Integration**: It pre-mounts your critical Home Assistant folders (`/config`, `/media`, `/share`, `/backup`) so you can manage them instantly.
 3.  **🛡️ Identity**: It fits perfectly into the "Shield" ecosystem (like ShieldDNS), providing a consistent, branded experience for your private cloud.
 
+## 🤝 Compatibility
+ShieldFile works perfectly alongside other official and community add-ons:
+- **Advanced SSH & Web Terminal**: You can use the terminal to manage files via command line while using ShieldFile for a visual interface. Both access the same `/share`, `/config`, etc. directories.
+- **FTP**: You can use an FTP client to transfer bulk files and use ShieldFile to manage them from a browser.
+
 ## Features
 - **HTTPS**: Secure file transfer via browser.
 - **Configurable**: Choose which directory to serve.

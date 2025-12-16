@@ -43,6 +43,48 @@ else
     bashio::log.info "  Self-signed certificate generated."
 fi
 
+# Fallback DNS Configuration
+FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')
+FALLBACK_DNS_SERVER=$(bashio::config 'fallback_dns_server')
+
+# Default if not set (though schema should handle defaults)
+if ! bashio::config.has_value 'fallback_dns'; then FALLBACK_DNS_ENABLED="false"; fi
+if ! bashio::config.has_value 'fallback_dns_server'; then FALLBACK_DNS_SERVER="1.1.1.1"; fi
+
+
+# Check Reachability and Fallback Logic
+ACTIVE_DNS_SERVER="${UPSTREAM_DNS}"
+DNS_MODE="Main"
+
+if [ "${FALLBACK_DNS_ENABLED}" = "true" ]; then
+    bashio::log.info "🔍 Checking availability of Upstream DNS: ${UPSTREAM_DNS}"
+
+    # Using ping.
+    # Addon environment usually has ping/nc. We'll use ping with timeout.
+    if ping -c 1 -W 2 "${UPSTREAM_DNS}" &> /dev/null; then
+         bashio::log.info "✅ Upstream DNS (${UPSTREAM_DNS}) is reachable."
+    else
+         bashio::log.warning "⚠️  Upstream DNS (${UPSTREAM_DNS}) is NOT reachable!"
+         bashio::log.warning "🔄 Switching to Fallback DNS: ${FALLBACK_DNS_SERVER}"
+         ACTIVE_DNS_SERVER="${FALLBACK_DNS_SERVER}"
+         DNS_MODE="Fallback"
+    fi
+else
+    bashio::log.info "ℹ️  Fallback DNS is disabled. Using configured Upstream: ${UPSTREAM_DNS}"
+fi
+
+# Write Status for Info Page
+# The addon info page is served by Nginx if enabled.
+mkdir -p /var/www/html
+cat <<EOF > /var/www/html/status.json
+{
+  "status": "online",
+  "mode": "${DNS_MODE}",
+  "upstream": "${ACTIVE_DNS_SERVER}",
+  "checked_at": "$(date)"
+}
+EOF
+
 # Determine CoreDNS Log Config
 DNS_LOG_CONFIG="errors"
 if [[ "${LOG_LEVEL}" == "info" ]] || [[ "${LOG_LEVEL}" == "debug" ]]; then
@@ -172,7 +214,7 @@ if [ -n "${DOT_PORT}" ]; then
     cat <<EOF >> ${COREFILE_PATH}
 tls://.:${DOT_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${UPSTREAM_DNS}
+    forward . ${ACTIVE_DNS_SERVER}
     $(echo -e ${DNS_LOG_CONFIG})
 }
 EOF
@@ -188,7 +230,7 @@ if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
          cat <<EOF >> ${COREFILE_PATH}
 https://.:${ACTUAL_COREDNS_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${UPSTREAM_DNS}
+    forward . ${ACTIVE_DNS_SERVER}
     $(echo -e ${DNS_LOG_CONFIG})
 }
 EOF
@@ -202,7 +244,7 @@ if bashio::config.has_value 'doh_alt_port_1'; then
     cat <<EOF >> ${COREFILE_PATH}
 https://.:${DOH_ALT1} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${UPSTREAM_DNS}
+    forward . ${ACTIVE_DNS_SERVER}
     $(echo -e ${DNS_LOG_CONFIG})
 }
 EOF
@@ -213,7 +255,7 @@ if bashio::config.has_value 'doh_alt_port_2'; then
     cat <<EOF >> ${COREFILE_PATH}
 https://.:${DOH_ALT2} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${UPSTREAM_DNS}
+    forward . ${ACTIVE_DNS_SERVER}
     $(echo -e ${DNS_LOG_CONFIG})
 }
 EOF
