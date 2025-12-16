@@ -40,13 +40,16 @@ Set the verbosity of logs.
 - `debug`: Verbose logging (useful for troubleshooting).
 
 ### Option: `dot_port` (Optional)
+
 Port to listen for DNS-over-TLS. Default: `8853`.
 
 ### Option: `doh_port` (Optional)
+
 Port to listen for DNS-over-HTTPS. Default: `3443`.
 _Note: Default is 3443 to avoid conflict with Home Assistant UI on 443._
 
 ### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
+
 Optional additional ports for DoH/HTTPS (e.g. 784, 2443). Disabled by default.
 
 ## Networking
@@ -79,13 +82,14 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 3. In ShieldDNS configuration, set `upstream_dns` to this IP.
 4. ShieldDNS will now accept encrypted requests and forward them locally to AdGuard Home.
 5. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share ports with AdGuard Home if both try to bind the same port on all interfaces.
-    - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration (`dot_port`, `doh_port`) or disable encryption in AdGuard.
+   - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration (`dot_port`, `doh_port`) or disable encryption in AdGuard.
 
 ## Supported Protocols
-| Parameter | Protocol | Default |
-|-----------|----------|---------|
-| `dot_port`| DoT      | 8853    |
-| `doh_port`| DoH      | 3443    |
+
+| Parameter  | Protocol | Default |
+| ---------- | -------- | ------- |
+| `dot_port` | DoT      | 8853    |
+| `doh_port` | DoH      | 3443    |
 
 ## Usage
 
@@ -100,15 +104,19 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 Since you are exposing a DNS server to the public (via Tunnel or Port Forwarding), you should secure it to prevent abuse (DNS Amplification, Scanning, DDoS).
 
 ### 1. Cloudflare Tunnel (Highly Recommended)
+
 Using Cloudflare Tunnel hides your Origin IP and allows you to use **Cloudflare Zero Trust** features.
+
 - **WAF / Custom Rules**:
-    - **Block Countries**: Block all countries except your own.
-    - **Block Bots**: Enable "Bot Fight Mode" or block known bot User-Agents.
+  - **Block Countries**: Block all countries except your own.
+  - **Block Bots**: Enable "Bot Fight Mode" or block known bot User-Agents.
 - **Rate Limiting**: Set a Rate Limiting rule for your hostname (e.g. max 50 requests / 10 seconds per IP) to prevent flooding.
 - **Zero Trust Authentication**: If feasible, put the DNS endpoint behind Cloudflare Access (Note: This breaks standard DoH clients unless they support authentication headers).
 
 ### 2. General Firewalls
+
 If running without Cloudflare (Direct Exposure):
+
 - **Whitelist IPs**: Only allow your own mobile IP ranges or specific networks if possible.
 - **Fail2Ban**: Monitor logs and ban abusive IPs (requires mounting logs to host).
 - **Limit Rates**: Use `iptables` or UFW to limit connection rates on port 853/443.
