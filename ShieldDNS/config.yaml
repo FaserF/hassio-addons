@@ -28,4 +28,7 @@ schema:
   log_level: list(debug|info|error|warning)
 ports:
   853/tcp: 853
+  443/tcp: 443
+  784/tcp: 784
+  2443/tcp: 2443
 # image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build

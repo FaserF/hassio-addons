@@ -65,10 +65,25 @@ else
 fi
 
 # Generate Corefile
-# Fix: Correct tls syntax `tls://.:853` and `tls cert key`
 bashio::log.info "📝 Generating Corefile..."
+
+# Define server blocks
+# We want to listen on all exposed ports for both DoT and DoH ideally,
+# but CoreDNS separates them by protocol.
+# Standard: 853=DoT, 443=DoH. 784/2443 are often used for DoQ or alternative HTTPS.
+# For simplicity and flexibility, we will enable BOTH DoT and DoH on ALL configured ports
+# or we can split them.
+# However, usually 853 is strictly DoT. 443 is strictly DoH.
+# Let's bind specific protocols to their standard ports.
+
 cat <<EOF > ${COREFILE_PATH}
 tls://.:853 {
+    tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
+    forward . ${UPSTREAM_DNS}
+    $(echo -e ${DNS_LOG_CONFIG})
+}
+
+https://.:443 https://.:784 https://.:2443 {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${UPSTREAM_DNS}
     $(echo -e ${DNS_LOG_CONFIG})
