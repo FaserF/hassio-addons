@@ -16,9 +16,9 @@ RUN mkdir -p /var/www/html /run/nginx
 COPY www/index.html /var/www/html/index.html
 COPY www/logo.png /var/www/html/logo.png
 
-# Copy Addon run script
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
-
-# Start the addon
-CMD [ "/run.sh" ]
+# Copy Addon run script to S6 services directory
+# We move this to services.d to allow S6 to supervise it properly
+# preventing the "s6-overlay-suexec: fatal: can only run as pid 1" error
+RUN mkdir -p /etc/services.d/shielddns
+COPY run.sh /etc/services.d/shielddns/run
+RUN chmod +x /etc/services.d/shielddns/run

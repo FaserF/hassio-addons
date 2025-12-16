@@ -14,13 +14,6 @@ PORT=$(bashio::config 'port')
 BASE_DIR=$(bashio::config 'base_directory')
 LOG_LEVEL=$(bashio::config 'log_level')
 
-# Users List
-# We need to parse the list of users and creating them.
-# Filebrowser stores users in DB. We should sync them on startup?
-# Simple approach: Create the first user in list as admin if DB is new.
-# Or iterate.
-# For V1: Just ensure DB exists and set admin.
-
 # Certificates
 FULL_CERT_PATH="${CERT_DIR}/${CERT_FILE}"
 FULL_KEY_PATH="${CERT_DIR}/${KEY_FILE}"
@@ -44,21 +37,12 @@ if [ ! -f "$DB_PATH" ]; then
 
     # Set Branding
     filebrowser config set --branding.name "ShieldFile" --branding.disableExternal --database "$DB_PATH"
-
-    # Set Port/Cert in DB? Or just pass via CLI?
-    # CLI is easier for runtime config changes (like Cert path or Port)
-    # But Filebrowser prefers config file or DB for some things.
-    # We will use CLI flags for listener settings to override DB.
 else
     bashio::log.info "📁 Database found."
 fi
 
 # Add/Update Users
-# Iterate over users list options
-# Note: This might reset passwords on every restart if we are not careful.
-# But "Config as Code" implies the Config is the source of truth.
-# We will iterate and `users add` or `users update`.
-bashio::log.info "👤 syncing users..."
+bashio::log.info "👤 Syncing users..."
 
 for user in $(bashio::config 'users|keys'); do
     USERNAME=$(bashio::config "users[${user}].username")
@@ -72,7 +56,6 @@ for user in $(bashio::config 'users|keys'); do
         bashio::log.info "  Updated user: $USERNAME"
     fi
 done
-
 
 # Start
 bashio::log.info "🚀 ShieldFile listening on port ${PORT} (Root: ${BASE_DIR})"
