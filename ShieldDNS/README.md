@@ -40,13 +40,16 @@ Set the verbosity of logs.
 - `debug`: Verbose logging (useful for troubleshooting).
 
 ### Option: `dot_port` (Optional)
+
 Port to listen for DNS-over-TLS. Default: `8853`.
 
 ### Option: `doh_port` (Optional)
+
 Port to listen for DNS-over-HTTPS. Default: `3443`.
 _Note: Default is 3443 to avoid conflict with Home Assistant UI on 443._
 
 ### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
+
 Optional additional ports for DoH/HTTPS (e.g. 784, 2443). Disabled by default.
 
 ## Networking
@@ -79,13 +82,14 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 3. In ShieldDNS configuration, set `upstream_dns` to this IP.
 4. ShieldDNS will now accept encrypted requests and forward them locally to AdGuard Home.
 5. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share ports with AdGuard Home if both try to bind the same port on all interfaces.
-    - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration (`dot_port`, `doh_port`) or disable encryption in AdGuard.
+   - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration (`dot_port`, `doh_port`) or disable encryption in AdGuard.
 
 ## Supported Protocols
-| Parameter | Protocol | Default |
-|-----------|----------|---------|
-| `dot_port`| DoT      | 8853    |
-| `doh_port`| DoH      | 3443    |
+
+| Parameter  | Protocol | Default |
+| ---------- | -------- | ------- |
+| `dot_port` | DoT      | 8853    |
+| `doh_port` | DoH      | 3443    |
 
 ## Usage
 
