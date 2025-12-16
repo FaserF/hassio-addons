@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/usr/bin/with-contenv bashio
 
 # Define local paths
 COREFILE_PATH="/etc/Corefile"
@@ -159,20 +159,40 @@ fi
 # Generate Corefile
 bashio::log.info "📝 Generating Corefile..."
 
-cat <<EOF > ${COREFILE_PATH}
+# Validation: At least one port must be active
+if [ -z "${DOT_PORT}" ] && [ -z "${DOH_PORT}" ]; then
+    bashio::log.fatal "❌ CRITICAL: Neither DOT_PORT nor DOH_PORT is set! ShieldDNS must listen on at least one port."
+    exit 1
+fi
+
+# DoT Block
+if [ -n "${DOT_PORT}" ]; then
+    bashio::log.info "  Exposing DoT on Port: ${DOT_PORT}"
+    cat <<EOF >> ${COREFILE_PATH}
 tls://.:${DOT_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${UPSTREAM_DNS}
     $(echo -e ${DNS_LOG_CONFIG})
 }
+EOF
+fi
 
+# DoH Block (or internal proxy target)
+if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
+    # Note: ACTUAL_COREDNS_PORT is either DOH_PORT or INTERNAL_DOH_PORT
+    # We only write this if DOH_PORT was originally set (logic handled above in INFO_PAGE block)
+    # Re-checking DOH_PORT emptiness just to be sure we don't bind empty port
+    if [ -n "${DOH_PORT}" ]; then
+         bashio::log.info "  Exposing DoH CoreDNS on Port: ${ACTUAL_COREDNS_PORT}"
+         cat <<EOF >> ${COREFILE_PATH}
 https://.:${ACTUAL_COREDNS_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${UPSTREAM_DNS}
     $(echo -e ${DNS_LOG_CONFIG})
 }
-
 EOF
+    fi
+fi
 
 # Append Alt Ports if they are set (Always direct to CoreDNS for now, unless we want Nginx on those too?
 # For simplicity, Alt ports remain pure CoreDNS for now as user only mentioned main DOH)
