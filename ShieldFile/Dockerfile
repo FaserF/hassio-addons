@@ -13,15 +13,8 @@ RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh |
 # Create database directory
 RUN mkdir -p /data/database
 
-# Copy Addon run script
-COPY run.sh /run.sh
+# Copy rootfs
+COPY rootfs /
 
-# Fix permissions and line endings (CRLF -> LF)
-RUN dos2unix /run.sh && chmod +x /run.sh
-
-# Start the addon
-# We explicitly inherit the S6 entrypoint from the base image
-ENTRYPOINT [ "/init" ]
-
-# The CMD is passed to the entrypoint
-CMD [ "/run.sh" ]
+# Set execute permissions
+RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run

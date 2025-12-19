@@ -1,0 +1,11 @@
+#!/usr/bin/with-contenv bashio
+
+TUNNEL_TOKEN=$(bashio::config 'cloudflare_tunnel_token')
+LOG_LEVEL=$(bashio::config 'log_level')
+
+TUNNEL_LOG="info"
+if [[ "${LOG_LEVEL}" == "debug" ]]; then TUNNEL_LOG="debug"; fi
+if [[ "${LOG_LEVEL}" == "error" ]]; then TUNNEL_LOG="error"; fi
+
+bashio::log.info "Starting Cloudflare Tunnel..."
+exec cloudflared tunnel run --token "${TUNNEL_TOKEN}" --loglevel "${TUNNEL_LOG}"

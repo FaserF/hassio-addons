@@ -1,0 +1,29 @@
+#!/usr/bin/with-contenv bashio
+
+# Define paths
+DB_PATH="/data/database.db"
+CERT_DIR="/ssl"
+
+# Read Config (Runtime args)
+CERT_FILE=$(bashio::config 'certfile')
+KEY_FILE=$(bashio::config 'keyfile')
+PORT=$(bashio::config 'port')
+BASE_DIR=$(bashio::config 'base_directory')
+LOG_LEVEL=$(bashio::config 'log_level')
+
+FULL_CERT_PATH="${CERT_DIR}/${CERT_FILE}"
+FULL_KEY_PATH="${CERT_DIR}/${KEY_FILE}"
+
+bashio::log.info "ShieldFile listening on port ${PORT} (Root: ${BASE_DIR})"
+
+# Construct Args
+ARGS=""
+ARGS="$ARGS --port $PORT"
+ARGS="$ARGS --root $BASE_DIR"
+ARGS="$ARGS --database $DB_PATH"
+ARGS="$ARGS --cert $FULL_CERT_PATH"
+ARGS="$ARGS --key $FULL_KEY_PATH"
+ARGS="$ARGS --address 0.0.0.0" # Listen on all interfaces (Host Network)
+
+# Run
+exec filebrowser $ARGS

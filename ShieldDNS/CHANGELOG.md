@@ -1,3 +1,14 @@
+## 1.4.1
+
+- **Fix**: Resolved `s6-overlay-suexec: fatal: can only run as pid 1` error by adding `init: false` to config.yaml.
+- **Fix**: Converted all shell scripts to Unix (LF) line endings to fix bashio shebang errors.
+
+## 1.4.0
+
+- **Refactor**: Complete migration to S6 Overlay structure (cont-init.d & services.d).
+- **Improvement**: Better process supervision for CoreDNS, Nginx, and Cloudflared.
+- **Cleanup**: Removed legacy `run.sh` monolithic script.
+
 ## 1.3.3 & 1.3.4 & 1.3.5
 
 - **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6 services.d) to resolve s6 loop error.

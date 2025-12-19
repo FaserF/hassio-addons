@@ -1,0 +1,10 @@
+# Force LF line endings for shell scripts (critical for s6-overlay)
+*.sh text eol=lf
+**/run text eol=lf
+**/finish text eol=lf
+**/down text eol=lf
+
+# Keep YAML and Markdown with auto line endings
+*.yaml text
+*.yml text
+*.md text

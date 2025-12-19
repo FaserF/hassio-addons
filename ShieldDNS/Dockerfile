@@ -9,16 +9,8 @@ COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/bin/cl
 # Install dependencies (if any extra needed beyond base)
 RUN apk add --no-cache bind-tools openssl nginx
 
-# Create web root and required directories
-RUN mkdir -p /var/www/html /run/nginx
+# Copy rootfs
+COPY rootfs /
 
-# Copy Web Assets
-COPY www/index.html /var/www/html/index.html
-COPY www/logo.png /var/www/html/logo.png
-
-# Copy Addon run script to S6 services directory
-# We move this to services.d to allow S6 to supervise it properly
-# preventing the "s6-overlay-suexec: fatal: can only run as pid 1" error
-RUN mkdir -p /etc/services.d/shielddns
-COPY run.sh /etc/services.d/shielddns/run
-RUN chmod +x /etc/services.d/shielddns/run
+# Set execute permissions (just in case)
+RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run

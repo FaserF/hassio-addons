@@ -5,14 +5,9 @@ CONFIG_PATH="/data/filebrowser.json"
 DB_PATH="/data/database.db"
 CERT_DIR="/ssl"
 
-bashio::log.info "🛡️ Starting ShieldFile Addon..."
-
-# Read Config
+# Read Config (Minimal needed for setup)
 CERT_FILE=$(bashio::config 'certfile')
 KEY_FILE=$(bashio::config 'keyfile')
-PORT=$(bashio::config 'port')
-BASE_DIR=$(bashio::config 'base_directory')
-LOG_LEVEL=$(bashio::config 'log_level')
 
 # Certificates
 FULL_CERT_PATH="${CERT_DIR}/${CERT_FILE}"
@@ -32,17 +27,17 @@ fi
 
 # Initialize DB if missing
 if [ ! -f "$DB_PATH" ]; then
-    bashio::log.info "📁 Initializing Database at ${DB_PATH}..."
+    bashio::log.info "Initializing Database at ${DB_PATH}..."
     filebrowser config init --database "$DB_PATH"
 
     # Set Branding
     filebrowser config set --branding.name "ShieldFile" --branding.disableExternal --database "$DB_PATH"
 else
-    bashio::log.info "📁 Database found."
+    bashio::log.info "Database found."
 fi
 
 # Add/Update Users
-bashio::log.info "👤 Syncing users..."
+bashio::log.info "Syncing users..."
 
 for user in $(bashio::config 'users|keys'); do
     USERNAME=$(bashio::config "users[${user}].username")
@@ -56,18 +51,3 @@ for user in $(bashio::config 'users|keys'); do
         bashio::log.info "  Updated user: $USERNAME"
     fi
 done
-
-# Start
-bashio::log.info "🚀 ShieldFile listening on port ${PORT} (Root: ${BASE_DIR})"
-
-# Construct Args
-ARGS=""
-ARGS="$ARGS --port $PORT"
-ARGS="$ARGS --root $BASE_DIR"
-ARGS="$ARGS --database $DB_PATH"
-ARGS="$ARGS --cert $FULL_CERT_PATH"
-ARGS="$ARGS --key $FULL_KEY_PATH"
-ARGS="$ARGS --address 0.0.0.0" # Listen on all interfaces (Host Network)
-
-# Run
-exec filebrowser $ARGS

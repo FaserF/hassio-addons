@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bashio
+
+bashio::log.info "Port configured. Starting CoreDNS..."
+exec /usr/bin/coredns -conf /etc/Corefile
