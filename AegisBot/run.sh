@@ -154,7 +154,7 @@ download_file() {
     # 1. Try Public Access (No Token)
     bashio::log.debug "Trying public access..."
     # -f fails silently on server errors (404/403)
-    if curl -L -f -H "Accept: application/vnd.github.v3+json" "$url" -o "$output"; then
+    if curl -L -f -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
         bashio::log.info "✅ Public download successful."
         return 0
     fi
@@ -166,13 +166,28 @@ download_file() {
         local auth_header=$(get_auth_header "$token")
         bashio::log.info "Token found. Retrying with authentication..."
 
-        if curl -L -f -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output"; then
+        # Try API endpoint first
+        if curl -L -f -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
             bashio::log.info "✅ Authenticated download successful."
             return 0
-        else
-            bashio::log.error "❌ Download failed even with token."
-            return 1
         fi
+
+        # Try alternative: Direct GitHub archive URL (works better for some private repos)
+        # Convert API URL to direct archive URL
+        # From: https://api.github.com/repos/OWNER/REPO/tarball/REF
+        # To:   https://github.com/OWNER/REPO/archive/REF.tar.gz
+        local direct_url=$(echo "$url" | sed 's|api.github.com/repos/|github.com/|' | sed 's|/tarball/|/archive/|')
+        direct_url="${direct_url}.tar.gz"
+        bashio::log.info "Trying direct archive URL: $direct_url"
+
+        if curl -L -f -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null; then
+            bashio::log.info "✅ Direct archive download successful."
+            return 0
+        fi
+
+        bashio::log.error "❌ Download failed even with token."
+        bashio::log.error "Please ensure your token has 'repo' scope for private repositories."
+        return 1
     else
         bashio::log.error "❌ Public access failed and no 'github_token' is configured."
         bashio::log.error "If this is a private repository, please add a token in the configuration."
@@ -504,11 +519,10 @@ fi
 
 # --- CREATE .ENV FILE FOR BACKEND ---
 bashio::log.info "Creating .env file for backend..."
+cat > /app/backend/.env <<EOF
 SECRET_KEY=${SECRET_KEY}
 DATABASE_URL=${DATABASE_URL}
 DEBUG=${DEBUG}
-GITHUB_TOKEN=${GITHUB_TOKEN:-}
-GITHUB_REPO=${GITHUB_REPO}
 EOF
 
 # --- BACKEND START ---
