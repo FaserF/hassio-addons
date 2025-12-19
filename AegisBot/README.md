@@ -27,14 +27,14 @@ See the [Documentation](DOCS.md) for detailed installation instructions.
 
 ## Configuration
 
-| Option | Required | Description |
-|--------|----------|-------------|
-| `telegram_bot_token` | ✅ | Bot API Token from @BotFather |
-| `telegram_bot_username` | ✅ | Bot username (without @) |
-| `github_token` | ❌* | Required for private repo access |
-| `version` | ❌ | Version to install (default: latest) |
+| Option                  | Required | Description                          |
+| ----------------------- | -------- | ------------------------------------ |
+| `telegram_bot_token`    | ✅       | Bot API Token from @BotFather        |
+| `telegram_bot_username` | ✅       | Bot username (without @)             |
+| `github_token`          | ❌\*     | Required for private repo access     |
+| `version`               | ❌       | Version to install (default: latest) |
 
-*Required if repository is private
+\*Required if repository is private
 
 ## Support
 

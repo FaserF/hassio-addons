@@ -19,23 +19,27 @@ AegisBot is a comprehensive Telegram moderation bot that combines advanced antis
 ### Telegram Setup (Required)
 
 **telegram_bot_token**: Telegram Bot API Token (required)
+
 - Create a bot via [@BotFather](https://t.me/BotFather)
 - Use `/newbot` and follow the prompts
 - Copy the API token
 
 **telegram_bot_username**: Telegram Bot Username (required)
+
 - The username you set for your bot (without `@`)
 - Configure domain via `/setdomain` in @BotFather for login widget
 
 ### GitHub Access
 
 **github_token**: GitHub Personal Access Token (required for private repos)
+
 - The AegisBot repository is currently **private**
 - Supports both **Classic** (`ghp_`) and **Fine-grained** (`github_pat_`) tokens
 
 #### How to Create a GitHub Token:
 
 ##### Fine-grained Token (Recommended)
+
 1. Visit: [https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
 2. Configure:
    - **Token name**: `aegisbot-homeassistant-addon`
@@ -44,31 +48,37 @@ AegisBot is a comprehensive Telegram moderation bot that combines advanced antis
 3. Copy the token (starts with `github_pat_`)
 
 ##### Classic Token
+
 1. Visit: [https://github.com/settings/tokens](https://github.com/settings/tokens)
 2. Generate new token (classic)
 3. Select scope: `repo` (Full control of private repositories)
 4. Copy the token (starts with `ghp_`)
 
 **github_repo**: GitHub Repository (default: `FaserF/AegisBot`)
+
 - Repository to download from (format: `owner/repo`)
 
 ### Version Control
 
 **version**: Version to install
+
 - Use `latest` to automatically install the newest release
 - Specify a version tag like `v1.0.0` for a specific version
 
 **developer_mode**: Development mode (default: `false`)
+
 - Downloads the latest code from main branch on every restart
 - ⚠️ **Only for development**: May include unstable features!
 
 ### Database Configuration
 
 **database.type**: Database backend (default: `sqlite`)
+
 - `sqlite`: Simple embedded database (recommended for most users)
 - `postgresql`: External PostgreSQL server (for advanced setups)
 
 When using PostgreSQL, configure:
+
 - **postgresql_host**: Database server hostname
 - **postgresql_port**: Database server port (default: 5432)
 - **postgresql_user**: Database username
@@ -82,17 +92,20 @@ When using PostgreSQL, configure:
 **debug**: Debug mode (default: `false`)
 
 **secret_key**: Encryption key (optional)
+
 - Leave empty to auto-generate
 
 ### GitHub OAuth (Optional)
 
 For dashboard authentication via GitHub:
+
 - **github_client_id**: OAuth App Client ID
 - **github_client_secret**: OAuth App Client Secret
 
 ### Advanced Options
 
 **reset_database**: Reset all data (default: `false`)
+
 - ⚠️ **DANGER**: This will DELETE ALL DATA!
 - Action cannot be undone
 
@@ -131,6 +144,7 @@ debug: true
 ## Support
 
 For issues and feature requests:
+
 - [GitHub Issues](https://github.com/FaserF/AegisBot/issues)
 - [Home Assistant Community Forum](https://community.home-assistant.io/)
 
