@@ -112,33 +112,8 @@ else
     export DEBUG="false"
 fi
 
-# Telegram Configuration
-if bashio::config.has_value 'telegram_bot_token' && [ -n "$(bashio::config 'telegram_bot_token')" ]; then
-    export TELEGRAM_BOT_TOKEN=$(bashio::config 'telegram_bot_token')
-    bashio::log.info "Telegram Bot Token: configured"
-else
-    bashio::log.error "Telegram Bot Token is REQUIRED!"
-    bashio::log.error "Please configure 'telegram_bot_token' in the add-on settings."
-    exit 1
-fi
-
-if bashio::config.has_value 'telegram_bot_username' && [ -n "$(bashio::config 'telegram_bot_username')" ]; then
-    export TELEGRAM_BOT_USERNAME=$(bashio::config 'telegram_bot_username')
-    bashio::log.info "Telegram Bot Username: $TELEGRAM_BOT_USERNAME"
-else
-    bashio::log.error "Telegram Bot Username is REQUIRED!"
-    bashio::log.error "Please configure 'telegram_bot_username' in the add-on settings."
-    exit 1
-fi
-
-# GitHub OAuth (Optional)
-if bashio::config.has_value 'github_client_id' && [ -n "$(bashio::config 'github_client_id')" ]; then
-    export GITHUB_CLIENT_ID=$(bashio::config 'github_client_id')
-    export GITHUB_CLIENT_SECRET=$(bashio::config 'github_client_secret')
-    bashio::log.info "GitHub OAuth: configured"
-else
-    bashio::log.info "GitHub OAuth: not configured (optional)"
-fi
+# GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
+bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
 # GitHub Repo Configuration
 if bashio::config.has_value 'github_repo' && [ -n "$(bashio::config 'github_repo')" ]; then
@@ -529,14 +504,9 @@ fi
 
 # --- CREATE .ENV FILE FOR BACKEND ---
 bashio::log.info "Creating .env file for backend..."
-cat > /app/backend/.env <<EOF
 SECRET_KEY=${SECRET_KEY}
 DATABASE_URL=${DATABASE_URL}
 DEBUG=${DEBUG}
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
-GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
-GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
 GITHUB_TOKEN=${GITHUB_TOKEN:-}
 GITHUB_REPO=${GITHUB_REPO}
 EOF
