@@ -164,13 +164,17 @@ download_file() {
 
     if [ -n "$token" ]; then
         local auth_header=$(get_auth_header "$token")
-        bashio::log.info "Token found. Retrying with authentication..."
+        bashio::log.info "Token found (length: ${#token}). Retrying with authentication..."
+        bashio::log.debug "Auth header format: ${auth_header:0:20}..."
 
-        # Try API endpoint first
-        if curl -L -f -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
+        # Try API endpoint first - show more error info
+        local http_code
+        http_code=$(curl -L -w "%{http_code}" -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
+        if [ "$http_code" = "200" ]; then
             bashio::log.info "✅ Authenticated download successful."
             return 0
         fi
+        bashio::log.warning "API download returned HTTP $http_code"
 
         # Try alternative: Direct GitHub archive URL (works better for some private repos)
         # Convert API URL to direct archive URL
@@ -180,10 +184,12 @@ download_file() {
         direct_url="${direct_url}.tar.gz"
         bashio::log.info "Trying direct archive URL: $direct_url"
 
-        if curl -L -f -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null; then
+        http_code=$(curl -L -w "%{http_code}" -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null)
+        if [ "$http_code" = "200" ]; then
             bashio::log.info "✅ Direct archive download successful."
             return 0
         fi
+        bashio::log.warning "Direct download returned HTTP $http_code"
 
         bashio::log.error "❌ Download failed even with token."
         bashio::log.error "Please ensure your token has 'repo' scope for private repositories."
