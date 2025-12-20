@@ -1,6 +1,6 @@
 ---
 name: AegisBot
-version: "0.1.3"
+version: "0.1.4"
 slug: aegisbot
 description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
 url: https://github.com/FaserF/AegisBot
@@ -34,6 +34,8 @@ options:
   secret_key: ""
   project_name: "AegisBot"
   debug: false
+  demo_mode: false
+  demo_mode_type: ephemeral
 schema:
   version: str
   github_token: password?
@@ -51,3 +53,5 @@ schema:
   secret_key: password?
   project_name: str?
   debug: bool?
+  demo_mode: bool
+  demo_mode_type: list(ephemeral|persistent)?

@@ -76,6 +76,14 @@ configuration:
     name: Debug Mode
     description: Enable debug mode for detailed error messages (not recommended for production).
 
+  demo_mode:
+    name: Demo Mode
+    description: Enable the showcase mode with simulated data.
+
+  demo_mode_type:
+    name: Demo Mode Type
+    description: Choose between 'ephemeral' (UI-only) or 'persistent' (DB stress test) simulation.
+
   telegram_bot_token:
     name: Telegram Bot Token
     description: >-

@@ -112,6 +112,22 @@ else
     export DEBUG="false"
 fi
 
+# Demo Mode
+if bashio::config.true 'demo_mode'; then
+    export DEMO_MODE="True"
+    bashio::log.info "Demo mode: ENABLED"
+else
+    export DEMO_MODE="False"
+fi
+
+# Demo Mode Type
+if bashio::config.has_value 'demo_mode_type'; then
+    export DEMO_MODE_TYPE=$(bashio::config 'demo_mode_type')
+    bashio::log.info "Demo mode type: $DEMO_MODE_TYPE"
+else
+    export DEMO_MODE_TYPE="ephemeral"
+fi
+
 # GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
 bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
@@ -529,6 +545,8 @@ cat > /app/backend/.env <<EOF
 SECRET_KEY=${SECRET_KEY}
 DATABASE_URL=${DATABASE_URL}
 DEBUG=${DEBUG}
+DEMO_MODE=${DEMO_MODE}
+DEMO_MODE_TYPE=${DEMO_MODE_TYPE}
 EOF
 
 # --- BACKEND START ---

@@ -76,6 +76,14 @@ configuration:
     name: Debug-Modus
     description: Aktiviert den Debug-Modus für detaillierte Fehlermeldungen (nicht für Produktion empfohlen).
 
+  demo_mode:
+    name: Demo-Modus
+    description: Aktiviert den Präsentationsmodus mit simulierten Daten.
+
+  demo_mode_type:
+    name: Demo-Modus-Typ
+    description: Wählen Sie zwischen 'ephemeral' (nur UI) oder 'persistent' (Datenbank-Simulationsmodus).
+
   telegram_bot_token:
     name: Telegram Bot Token
     description: >-
