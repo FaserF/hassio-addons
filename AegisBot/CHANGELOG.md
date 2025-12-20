@@ -7,7 +7,6 @@
 - Added `demo_mode` and `demo_mode_type` configuration options
 - Improved environment variable passing for demo state
 
-
 ## [0.1.1]
 
 - Small fixes preventing addon start
