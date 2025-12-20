@@ -100,6 +100,8 @@ RUN \
             mkdir -p /app/frontend && \
             cd frontend && \
             npm install && \
+            sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
+            sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts && \
             npm run build && \
             cp -r dist/* /app/frontend/ && \
             \
