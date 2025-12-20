@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.3
+
+- Improved Ingress support with relative paths and dynamic port handling
+
+
 ## 1.5.2
 
 - Automatically updated Solumati to version vv2025.12.3b0
