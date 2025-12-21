@@ -111,14 +111,51 @@ fi
 # Read port configuration
 DOT_PORT=$(bashio::config 'dot_port')
 DOH_PORT=$(bashio::config 'doh_port')
-DOH_ALT1=$(bashio::config 'doh_alt_port_1')
-DOH_ALT2=$(bashio::config 'doh_alt_port_2')
 
 bashio::log.info "Configuration:"
 bashio::log.info "  Upstream: ${UPSTREAM_DNS}"
 bashio::log.info "  Cert:     ${FULL_CERT_PATH}"
 bashio::log.info "  Level:    ${LOG_LEVEL}"
-bashio::log.info "  Ports:    DoT:${DOT_PORT}, DoH:${DOH_PORT}, Alt:${DOH_ALT1}/${DOH_ALT2}"
+bashio::log.info "  Ports:    DoT:${DOT_PORT}, DoH:${DOH_PORT}"
+
+# ------------------------------------------------------------------------------
+# Pre-flight Check: Port Availability
+# ------------------------------------------------------------------------------
+check_port() {
+    local PORT=$1
+    local NAME=$2
+    if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
+        if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then
+            bashio::log.fatal "❌ Port $PORT ($NAME) is ALREADY IN USE!"
+
+            # Try to identify the process using netstat
+            # In Host Network mode, we can see listening ports and sometimes PIDs/names
+            local PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$PORT " | head -n 1)
+
+            if [ -n "$PROC_INFO" ]; then
+                bashio::log.fatal "   Conflict details: $PROC_INFO"
+            else
+                bashio::log.fatal "   Could not identify the specific process (insufficient permissions?), but the port is definitely taken."
+            fi
+
+            bashio::log.fatal "   This is likely caused by another Addon (e.g. AdGuard Home) listening on this port."
+            bashio::log.fatal "   Please change the configuration to use a different port (e.g. 8853 instead of 853) or disable the conflicting service."
+            # Sleep to prevent rapid restart throttling by Supervisor
+            sleep 30
+            exit 1
+        fi
+    fi
+}
+
+bashio::log.info "🔍 Checking port availability..."
+check_port "${DOT_PORT}" "DoT"
+check_port "${DOH_PORT}" "DoH"
+if [ "${ENABLE_INFO_PAGE}" != "true" ]; then
+    # If Info Page is enabled, Nginx binds DOH_PORT, so we already checked it.
+    # If NOT enabled, CoreDNS binds it.
+    :
+fi
+bashio::log.info "✅ All ports available."
 
 # ... (cert logic) ...
 
@@ -241,29 +278,7 @@ EOF
     fi
 fi
 
-# Append Alt Ports if they are set (Always direct to CoreDNS for now, unless we want Nginx on those too?
-# For simplicity, Alt ports remain pure CoreDNS for now as user only mentioned main DOH)
-if bashio::config.has_value 'doh_alt_port_1'; then
-    bashio::log.info "  Exposing Alt DoH Port 1: ${DOH_ALT1}"
-    cat <<EOF >> ${COREFILE_PATH}
-https://.:${DOH_ALT1} {
-    tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
-}
-EOF
-fi
 
-if bashio::config.has_value 'doh_alt_port_2'; then
-    bashio::log.info "  Exposing Alt DoH Port 2: ${DOH_ALT2}"
-    cat <<EOF >> ${COREFILE_PATH}
-https://.:${DOH_ALT2} {
-    tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
-    forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
-}
-EOF
-fi
 
 # Start CoreDNS (Foreground or Wait)
 if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then

@@ -39,10 +39,13 @@ Set the verbosity of logs.
 - `info`: Standard logging (includes DNS queries).
 - `debug`: Verbose logging (useful for troubleshooting).
 
-### Option: `dot_port` (Required for Android Private DNS)
+### Option: `dot_port` (Required for Android Native Private DNS)
 
-Port to listen for DNS-over-TLS. Default: `853`.
-_Important_: Standard Cloudflare Tunnels do not forward this port.
+Port to listen for DNS-over-TLS. Default: `8853`.
+*   **Why 8853?**: To avoid crashing if AdGuard Home is already using port 853.
+*   **How to use with Android**: Android *requires* Port 853.
+    *   **Router Config**: Create a Port Forwarding rule: **WAN Port 853** -> **LAN Port 8853** (IP of Home Assistant).
+    *   This way, the outside world sees 853 (Standard), but your Host uses 8853 (No conflict).
 
 ### Option: `doh_port` (Required for Cloudflare Tunnel)
 
@@ -52,6 +55,12 @@ _Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel s
 ### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
 
 Optional additional ports for DoH/HTTPS (e.g. 784, 2443). Disabled by default.
+
+### Option: `enable_info_page` (Optional)
+
+Enables a lightweight "Status Page" on the DoH port (at the root URL `/`).
+- **true**: Visiting `https://dns.example.com` in a browser will show a status page ("ShieldDNS is Online").
+- **false** (default): Visiting the root URL usually returns a 404 or empty response, improving stealth.
 
 ## 📱 Android & Cloudflare Tunnel: READ THIS
 
@@ -68,10 +77,18 @@ If you use Cloudflare Tunnel:
 2.  You **MUST** use an App like **[Intra](https://play.google.com/store/apps/details?id=app.intra)**.
     - In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
 
-If you WANT to use Native "Private DNS":
+If you WANT to use Native "Private DNS" (DoT):
+1.  **Requirement**: You need a second DNS record (e.g. `dot.example.com`).
+2.  **DNS Config**: This record must be **DNS Only** (Grey Cloud) and point to your home IP.
+3.  **Router Config**: Port Forward **WAN 853** -> **LAN 8853** (HA IP).
+4.  **Android Config**: Enter `dot.example.com` in settings.
 
-1.  You must use **Port Forwarding** on your router (NAT Port 853 -> Home Assistant IP).
-2.  Your DNS Record must be "Grey Cloud" (No Proxy) in Cloudflare.
+**Summary**:
+| Client | Hostname | Ingress | Protocol |
+| :--- | :--- | :--- | :--- |
+| **Android (App)** | `doh.example.com` | Tunnel | DoH (HTTPS) |
+| **Android (Native)**| `dot.example.com` | Port Fwd | DoT (TCP/853)|
+| **iOS / Browser** | `doh.example.com` | Tunnel | DoH (HTTPS) |
 
 ## Networking
 

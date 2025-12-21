@@ -7,7 +7,8 @@ COPY --from=coredns/coredns:latest /coredns /usr/bin/coredns
 COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # Install dependencies (if any extra needed beyond base)
-RUN apk add --no-cache bind-tools openssl nginx
+# We add netcat-openbsd for port checking (nc) and net-tools for netstat
+RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools
 
 # Create web root and required directories
 RUN mkdir -p /var/www/html /run/nginx
