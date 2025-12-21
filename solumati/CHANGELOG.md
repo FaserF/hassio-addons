@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.4
+
+- Switched to local build (removed pre-built image dependency)
+
 ## 1.5.3
 
 - Improved Ingress support with relative paths and dynamic port handling
