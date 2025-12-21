@@ -1,4 +1,5 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bash
+source /usr/lib/bashio/bashio.sh
 
 # Define local paths
 COREFILE_PATH="/etc/Corefile"
@@ -153,7 +154,8 @@ if [ "${ENABLE_INFO_PAGE}" = "true" ]; then
     # Nginx Config: Terminates TLS, Serves HTML, Proxies DNS
     cat <<EOF > /etc/nginx/http.d/default.conf
 server {
-    listen ${DOH_PORT} ssl http2;
+    listen ${DOH_PORT} ssl;
+    http2 on;
     server_name _;
     root /var/www/html;
     index index.html;
@@ -201,6 +203,9 @@ fi
 # Generate Corefile
 bashio::log.info "📝 Generating Corefile..."
 
+# Ensure fresh Corefile
+echo "" > ${COREFILE_PATH}
+
 # Validation: At least one port must be active
 if [ -z "${DOT_PORT}" ] && [ -z "${DOH_PORT}" ]; then
     bashio::log.fatal "❌ CRITICAL: Neither DOT_PORT nor DOH_PORT is set! ShieldDNS must listen on at least one port."
@@ -208,7 +213,7 @@ if [ -z "${DOT_PORT}" ] && [ -z "${DOH_PORT}" ]; then
 fi
 
 # DoT Block
-if [ -n "${DOT_PORT}" ]; then
+if [ -n "${DOT_PORT}" ] && [ "${DOT_PORT}" != "null" ]; then
     bashio::log.info "  Exposing DoT on Port: ${DOT_PORT}"
     cat <<EOF >> ${COREFILE_PATH}
 tls://.:${DOT_PORT} {
@@ -261,12 +266,12 @@ EOF
 fi
 
 # Start CoreDNS (Foreground or Wait)
-if [ -n "$TUNNEL_PID" ] || [ -n "$NGINX_PID" ]; then
+if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
     /usr/bin/coredns -conf ${COREFILE_PATH} &
     DNS_PID=$!
 
     # Wait for ANY
-    PIDS="$DNS_PID $TUNNEL_PID $NGINX_PID"
+    PIDS="$DNS_PID ${TUNNEL_PID:-} ${NGINX_PID:-}"
     # Clean PIDS list (remove empty)
     PIDS=$(echo $PIDS | xargs)
 

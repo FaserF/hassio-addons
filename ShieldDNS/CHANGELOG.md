@@ -1,3 +1,25 @@
+## 1.3.12
+
+- Fixed CoreDNS startup crash by explicitly clearing `Corefile` before generation (preventing duplicate config entries).
+
+## 1.3.11
+
+- Fixed CoreDNS crash caused by "null" string in port configuration.
+- Updated Nginx SSL config to remove deprecated `http2` directive.
+
+## 1.3.10
+
+- Re-release to ensure all previous fixes (unbound variables, shebangs) are propagated.
+
+## 1.3.9
+
+- Reverted shebang to `with-contenv` to restore Supervisor API access (fixing "Forbidden" error).
+
+## 1.3.8
+
+- Fixed "unbound variable" crash when optional features are disabled.
+- Removed `with-contenv` from shebang to prevent S6 context conflicts.
+
 ## 1.3.7
 
 - Fixed startup error "unable to exec bashio" by correcting shebang to `with-contenv`

@@ -1,11 +1,21 @@
-#!/usr/bin/with-contenv bashio
+#!/bin/bash
+source /usr/lib/bashio/bashio.sh
+
+# Manually load S6 environment to ensure Bashio has access to SUPERVISOR_TOKEN
+# This avoids using `with-contenv` which causes PID 1 errors in this context
+if [ -d /var/run/s6/container_environment ]; then
+    for var in /var/run/s6/container_environment/*; do
+        [ -e "$var" ] || continue
+        declare -x "$(basename "$var")=$(cat "$var")"
+    done
+fi
 
 # Define paths
 CONFIG_PATH="/data/filebrowser.json"
 DB_PATH="/data/database.db"
 CERT_DIR="/ssl"
 
-bashio::log.info "🛡️ Starting ShieldFile Addon..."
+bashio::log.info "🛡️ Starting ShieldFile Addon v1.0.8 (Debug: No-Contenv Mode)..."
 
 # Read Config
 CERT_FILE=$(bashio::config 'certfile')

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.5
+
+- Fixed build error by targeting correct `vite.config.js` filename.
+
 ## 1.5.4
 
 - Switched to local build (removed pre-built image dependency)

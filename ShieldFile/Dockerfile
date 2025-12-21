@@ -14,8 +14,9 @@ RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh |
 RUN mkdir -p /data/database
 
 # Copy Addon run script to S6 services directory
-RUN mkdir -p /etc/services.d/shieldfile
-COPY run.sh /etc/services.d/shieldfile/run
+# Copy Run Script
+COPY run.sh /run.sh
+RUN dos2unix /run.sh && chmod a+x /run.sh
 
-# Fix permissions and line endings (CRLF -> LF)
-RUN dos2unix /etc/services.d/shieldfile/run && chmod +x /etc/services.d/shieldfile/run
+CMD [ "/run.sh" ]
+ENTRYPOINT []
