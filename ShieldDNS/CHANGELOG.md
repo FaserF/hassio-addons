@@ -1,3 +1,7 @@
+## 1.3.13
+
+- Fixed Nginx exiting immediately (daemon mode) by forcing `daemon off;`, resolving the restart loop.
+
 ## 1.3.12
 
 - Fixed CoreDNS startup crash by explicitly clearing `Corefile` before generation (preventing duplicate config entries).

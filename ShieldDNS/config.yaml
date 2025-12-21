@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "1.3.12"
+version: "1.3.13"
 slug: "shielddns"
 description: "High-performance DoT proxy for AdGuard Home"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
@@ -23,6 +23,9 @@ options:
   cloudflare_tunnel_token: ""
   enable_info_page: false
   log_level: "info"
+  # DoT Port (Required for Android "Private DNS" Native Setting)
+  # NOTE: Cloudflare Tunnels generally do NOT proxy this port. You must use Port Forwarding.
+  dot_port: 853
   doh_port: 3443
   fallback_dns: false
   fallback_dns_server: "1.1.1.1"
@@ -39,9 +42,9 @@ schema:
   fallback_dns_server: str?
   doh_alt_port_1: port?
   doh_alt_port_2: port?
-# ports:
-#   853/tcp: 853
-#   443/tcp: 3443
-#   784/tcp: 784
-#   2443/tcp: 2443
+ports:
+  853/tcp: 853
+  443/tcp: 3443
+  # 784/tcp: 784 # Optional for Tunnel
+  # 2443/tcp: 2443 # Optional Alt
 # image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build

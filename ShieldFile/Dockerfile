@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:14.1.0
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:alpine
 FROM ${BUILD_FROM}
 
 # Install necessary tools
@@ -18,5 +18,4 @@ RUN mkdir -p /data/database
 COPY run.sh /run.sh
 RUN dos2unix /run.sh && chmod a+x /run.sh
 
-CMD [ "/run.sh" ]
-ENTRYPOINT []
+ENTRYPOINT [ "/run.sh" ]

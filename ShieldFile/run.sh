@@ -62,7 +62,7 @@ for user in $(bashio::config 'users|keys'); do
     if filebrowser users add "$USERNAME" "$PASSWORD" --perm.admin --database "$DB_PATH" 2>/dev/null; then
         bashio::log.info "  Created user: $USERNAME"
     else
-        filebrowser users update "$USERNAME" "$PASSWORD" --perm.admin --database "$DB_PATH"
+        filebrowser users update "$USERNAME" --password "$PASSWORD" --perm.admin --database "$DB_PATH"
         bashio::log.info "  Updated user: $USERNAME"
     fi
 done

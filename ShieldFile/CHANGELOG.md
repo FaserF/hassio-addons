@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.13
+
+- Fixed `filebrowser users update` syntax error ("accepts 1 arg, received 2").
+- Now correctly uses `--password` flag for updates.
+
+## 1.0.12
+
+- Changed Dockerfile `ENTRYPOINT` to `["/run.sh"]` to completely override S6 initialization.
+
+## 1.0.11
+
+- Switched Base Image to standard `ghcr.io/home-assistant/amd64-base:alpine` to resolve S6 overlay conflicts.
+- This aligns the execution environment with other working addons (like Solumati).
+
 ## 1.0.10
 
 - Added `ENTRYPOINT []` to Dockerfile to guarantee S6 overlay is disabled.

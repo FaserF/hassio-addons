@@ -192,7 +192,7 @@ server {
 EOF
 
     # Start Nginx in background
-    nginx &
+    nginx -g 'daemon off;' &
     NGINX_PID=$!
     bashio::log.info "   Nginx started with PID ${NGINX_PID} (Listening on ${DOH_PORT})"
 else
