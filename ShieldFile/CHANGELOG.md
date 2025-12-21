@@ -1,3 +1,9 @@
+# Changelog
+
+## 1.0.4
+
+- Refactored startup to use S6 legacy services (services.d) properly, fixing PID 1 error.
+
 ## 1.0.3
 
 - Fixed s6-overlay-suexec "can only run as pid 1" error by adding `init: false`

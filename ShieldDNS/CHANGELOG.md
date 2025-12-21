@@ -1,3 +1,7 @@
+## 1.3.7
+
+- Fixed startup error "unable to exec bashio" by correcting shebang to `with-contenv`
+
 ## 1.3.6
 
 - Fixed s6-overlay-suexec "can only run as pid 1" error by adding `init: false`

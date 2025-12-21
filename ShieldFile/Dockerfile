@@ -13,15 +13,9 @@ RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh |
 # Create database directory
 RUN mkdir -p /data/database
 
-# Copy Addon run script
-COPY run.sh /run.sh
+# Copy Addon run script to S6 services directory
+RUN mkdir -p /etc/services.d/shieldfile
+COPY run.sh /etc/services.d/shieldfile/run
 
 # Fix permissions and line endings (CRLF -> LF)
-RUN dos2unix /run.sh && chmod +x /run.sh
-
-# Start the addon
-# We explicitly inherit the S6 entrypoint from the base image
-ENTRYPOINT [ "/init" ]
-
-# The CMD is passed to the entrypoint
-CMD [ "/run.sh" ]
+RUN dos2unix /etc/services.d/shieldfile/run && chmod +x /etc/services.d/shieldfile/run
