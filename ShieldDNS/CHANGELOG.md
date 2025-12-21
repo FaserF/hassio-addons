@@ -1,3 +1,7 @@
+## 1.3.6
+
+- Fixed s6-overlay-suexec "can only run as pid 1" error by adding `init: false`
+
 ## 1.3.3 & 1.3.4 & 1.3.5
 
 - **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6 services.d) to resolve s6 loop error.

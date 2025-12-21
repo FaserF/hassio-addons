@@ -1,5 +1,5 @@
 name: "ShieldFile"
-version: "1.0.2"
+version: "1.0.3"
 slug: "shieldfile"
 description: "Secure, Web-based File Manager (SFTP over HTTPS)"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
@@ -11,6 +11,7 @@ arch:
   - armv7
   - i386
 boot: auto
+init: false
 host_network: true
 map:
   - config:rw
