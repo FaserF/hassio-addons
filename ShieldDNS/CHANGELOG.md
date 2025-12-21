@@ -1,3 +1,10 @@
+## 1.3.14
+
+- **Fix**: Resolved "unbound variable" startup crash by correcting variable initialization order in `run.sh`.
+- **Change**: Changed default `dot_port` to `8853` to prevent boot loops if AdGuard Home (port 853) is active.
+- **Improvement**: Added robust pre-flight port checks using `netstat`. Conflicts now pause startup and show the conflicting process name instead of crashing.
+- **Cleanup**: Removed unused "Alternative DoH Ports" (784, 2443) to simplify configuration.
+
 ## 1.3.13
 
 - Fixed Nginx exiting immediately (daemon mode) by forcing `daemon off;`, resolving the restart loop.

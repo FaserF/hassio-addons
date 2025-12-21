@@ -13,6 +13,10 @@ CERT_FILE=$(bashio::config 'certfile')
 KEY_FILE=$(bashio::config 'keyfile')
 TUNNEL_TOKEN=$(bashio::config 'cloudflare_tunnel_token')
 LOG_LEVEL=$(bashio::config 'log_level')
+ENABLE_INFO_PAGE=$(bashio::config 'enable_info_page')
+
+# Default for Info Page
+if ! bashio::config.has_value 'enable_info_page'; then ENABLE_INFO_PAGE="false"; fi
 
 # Retrieve Certs
 # Bashio handles /ssl mount automatically
@@ -164,8 +168,7 @@ bashio::log.info "✅ All ports available."
 # ------------------------------------------------------------------------------
 # Web Server & Single Port Logic (v1.3.0)
 # ------------------------------------------------------------------------------
-ENABLE_INFO_PAGE=$(bashio::config 'enable_info_page')
-if ! bashio::config.has_value 'enable_info_page'; then ENABLE_INFO_PAGE="false"; fi
+# ENABLE_INFO_PAGE already defined at top
 
 # Define internal port for CoreDNS if Nginx is fronting it
 INTERNAL_DOH_PORT="5553"
