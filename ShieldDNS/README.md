@@ -42,12 +42,12 @@ Set the verbosity of logs.
 ### Option: `dot_port` (Required for Android Private DNS)
 
 Port to listen for DNS-over-TLS. Default: `853`.
-*Important*: Standard Cloudflare Tunnels do not forward this port.
+_Important_: Standard Cloudflare Tunnels do not forward this port.
 
 ### Option: `doh_port` (Required for Cloudflare Tunnel)
 
 Port to listen for DNS-over-HTTPS. Default: `3443`.
-*Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel should point here.*
+_Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel should point here._
 
 ### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
 
@@ -56,17 +56,20 @@ Optional additional ports for DoH/HTTPS (e.g. 784, 2443). Disabled by default.
 ## 📱 Android & Cloudflare Tunnel: READ THIS
 
 There is a common misunderstanding about Android "Private DNS".
-*   **Android Private DNS** = **DoT** (Port 853).
-*   **Cloudflare Tunnel** = **DoH** (Port 443/HTTPS).
+
+- **Android Private DNS** = **DoT** (Port 853).
+- **Cloudflare Tunnel** = **DoH** (Port 443/HTTPS).
 
 **They are NOT compatible natively.**
 
 If you use Cloudflare Tunnel:
+
 1.  You **cannot** use the "Private DNS" setting in Android Settings. It will stay "Connecting..." or "Cannot access".
 2.  You **MUST** use an App like **[Intra](https://play.google.com/store/apps/details?id=app.intra)**.
-    *   In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
+    - In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
 
 If you WANT to use Native "Private DNS":
+
 1.  You must use **Port Forwarding** on your router (NAT Port 853 -> Home Assistant IP).
 2.  Your DNS Record must be "Grey Cloud" (No Proxy) in Cloudflare.
 
@@ -114,8 +117,8 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 1. Configure the options above.
 2. Start the Addon.
 3. On your Android device:
-    - **Method A (App - Recommended)**: Install **Intra**, set URL to `https://<your-domain>/dns-query`.
-    - **Method B (Native - Port Fwd only)**: Go to **Settings > Private DNS** and enter `<your-domain>`.
+   - **Method A (App - Recommended)**: Install **Intra**, set URL to `https://<your-domain>/dns-query`.
+   - **Method B (Native - Port Fwd only)**: Go to **Settings > Private DNS** and enter `<your-domain>`.
 4. Save. Your device will now send encrypted DNS queries!
 
 ## 🛡️ Security Best Practices
