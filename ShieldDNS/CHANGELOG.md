@@ -1,3 +1,7 @@
+## 1.3.15
+
+- **Improvement**: Implemented intentional "Smart Fallback" for DoT Port. Default is now `853` (Standard), but if blocked (e.g. by AdGuard), it automatically switches to `8853`. This fixes CI/CD tests while maintaining ease of use.
+
 ## 1.3.14
 
 - **Fix**: Resolved "unbound variable" startup crash by correcting variable initialization order in `run.sh`.

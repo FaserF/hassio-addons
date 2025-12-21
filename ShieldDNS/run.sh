@@ -120,46 +120,57 @@ bashio::log.info "Configuration:"
 bashio::log.info "  Upstream: ${UPSTREAM_DNS}"
 bashio::log.info "  Cert:     ${FULL_CERT_PATH}"
 bashio::log.info "  Level:    ${LOG_LEVEL}"
-bashio::log.info "  Ports:    DoT:${DOT_PORT}, DoH:${DOH_PORT}"
+bashio::log.info "  Ports (Initial): DoT:${DOT_PORT}, DoH:${DOH_PORT}"
 
 # ------------------------------------------------------------------------------
 # Pre-flight Check: Port Availability
 # ------------------------------------------------------------------------------
-check_port() {
+# ------------------------------------------------------------------------------
+# Pre-flight Check: Port Availability & Smart Fallback
+# ------------------------------------------------------------------------------
+is_port_busy() {
     local PORT=$1
-    local NAME=$2
     if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
         if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then
-            bashio::log.fatal "❌ Port $PORT ($NAME) is ALREADY IN USE!"
-
-            # Try to identify the process using netstat
-            # In Host Network mode, we can see listening ports and sometimes PIDs/names
-            local PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$PORT " | head -n 1)
-
-            if [ -n "$PROC_INFO" ]; then
-                bashio::log.fatal "   Conflict details: $PROC_INFO"
-            else
-                bashio::log.fatal "   Could not identify the specific process (insufficient permissions?), but the port is definitely taken."
-            fi
-
-            bashio::log.fatal "   This is likely caused by another Addon (e.g. AdGuard Home) listening on this port."
-            bashio::log.fatal "   Please change the configuration to use a different port (e.g. 8853 instead of 853) or disable the conflicting service."
-            # Sleep to prevent rapid restart throttling by Supervisor
-            sleep 30
-            exit 1
+            return 0 # Busy
         fi
     fi
+    return 1 # Free
 }
 
 bashio::log.info "🔍 Checking port availability..."
-check_port "${DOT_PORT}" "DoT"
-check_port "${DOH_PORT}" "DoH"
-if [ "${ENABLE_INFO_PAGE}" != "true" ]; then
-    # If Info Page is enabled, Nginx binds DOH_PORT, so we already checked it.
-    # If NOT enabled, CoreDNS binds it.
-    :
+
+# Auto-Fallback for DoT Port (853 -> 8853)
+if is_port_busy "${DOT_PORT}"; then
+    if [ "${DOT_PORT}" == "853" ]; then
+        bashio::log.warning "⚠️  Port 853 is BUSY (likely AdGuard Home)."
+        bashio::log.warning "🔄 Switching DoT to Fallback Port: 8853"
+        DOT_PORT="8853"
+
+        # Check fallback port
+        if is_port_busy "${DOT_PORT}"; then
+             bashio::log.fatal "❌ Fallback Port 8853 is ALSO busy! Cannot start DoT."
+             exit 1
+        fi
+    else
+        bashio::log.fatal "❌ Port ${DOT_PORT} is ALREADY IN USE!"
+        # Try to identify process
+        local PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
+        if [ -n "$PROC_INFO" ]; then bashio::log.fatal "   Conflict: $PROC_INFO"; fi
+        sleep 30
+        exit 1
+    fi
 fi
-bashio::log.info "✅ All ports available."
+
+if is_port_busy "${DOH_PORT}"; then
+    if [ "${ENABLE_INFO_PAGE}" != "true" ]; then
+         bashio::log.fatal "❌ DoH Port ${DOH_PORT} is ALREADY IN USE!"
+         sleep 30
+         exit 1
+    fi
+fi
+
+bashio::log.info "✅ Ports confirmed: DoT:${DOT_PORT}, DoH:${DOH_PORT}"
 
 # ... (cert logic) ...
 
