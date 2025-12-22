@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.9
+- Automatically updated Solumati to version v2025.12.3b1
+
+
 ## 1.5.8
 
 - Improved build script robustness: now checks for `vite.config.ts` or `vite.config.js` automatically.
