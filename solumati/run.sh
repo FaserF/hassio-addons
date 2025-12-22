@@ -148,8 +148,13 @@ if bashio::config.true 'dev_use_main_branch'; then
 
 			# IMPORTANT: Apply config.js fix found in Dockerfile
 			if [ -f "src/config.js" ]; then
-				sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
+				if [ -f "vite.config.ts" ]; then
+					sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
+				else
+					sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.js
+				fi
 				sed -i "s|export const API_URL = .*|export const API_URL = './api';|g" src/config.js
+				sed -i "s|const API_URL = .*|const API_URL = './api';|g" src/config.js
 			fi
 
 			bashio::log.info "Running 'npm install'..."
