@@ -116,11 +116,47 @@ if bashio::config.true 'dev_use_main_branch'; then
 
 	# Download main branch
 	cd /tmp || exit 1
-	if curl -L "https://github.com/FaserF/Solumati/archive/refs/heads/main.tar.gz" -o main.tar.gz; then
+
+	download_branch() {
+		local BRANCH=$1
+		local URL="https://github.com/FaserF/Solumati/archive/refs/heads/$BRANCH.tar.gz"
+		local HEADER_ARGS=""
+
+		# Check for GitHub Token
+		if bashio::config.has_value 'github_token' && [ -n "$(bashio::config 'github_token')" ]; then
+			bashio::log.info "Using GitHub Token for authentication..."
+			HEADER_ARGS="-H \"Authorization: token $(bashio::config 'github_token')\""
+		fi
+
+		bashio::log.info "Attempting to download branch: $BRANCH"
+
+		# Use eval to properly handle quoted arguments in HEADER_ARGS
+		# -f: Fail silently (no output at all) on server errors
+		# -L: Follow redirects
+		# -s: Silent mode
+		# -S: Show error message if it fails
+		if eval curl -fL -s -S $HEADER_ARGS "$URL" -o main.tar.gz; then
+			return 0
+		else
+			return 1
+		fi
+	}
+
+	if download_branch "main" || download_branch "master"; then
 		bashio::log.info "Download successful. Extracting..."
 		rm -rf /tmp/solumati-main
 		mkdir -p /tmp/solumati-main
-		tar -xzf main.tar.gz -C /tmp/solumati-main --strip-components=1
+
+		if tar -xzf main.tar.gz -C /tmp/solumati-main --strip-components=1; then
+			bashio::log.info "Extraction successful."
+		else
+			bashio::log.error "Extraction failed! The downloaded file might be invalid."
+			bashio::log.error "File size: $(du -h main.tar.gz | cut -f1)"
+			bashio::log.error "First 100 bytes of content:"
+			head -c 100 main.tar.gz
+			rm main.tar.gz
+			exit 1
+		fi
 
 		# Update Backend
 		bashio::log.info "Updating Backend code..."
@@ -133,7 +169,7 @@ if bashio::config.true 'dev_use_main_branch'; then
 				pip install --no-cache-dir -r /app/backend/requirements.txt
 			fi
 		else
-			bashio::log.error "Backend directory not found in main branch!"
+			bashio::log.error "Backend directory not found in downloaded archive!"
 		fi
 
 		# Rebuild Frontend
@@ -176,7 +212,7 @@ if bashio::config.true 'dev_use_main_branch'; then
 				bashio::log.error "npm install failed! Keeping old frontend."
 			fi
 		else
-			bashio::log.error "Frontend directory not found in main branch!"
+			bashio::log.error "Frontend directory not found in downloaded archive!"
 		fi
 
 		# Cleanup
@@ -187,7 +223,8 @@ if bashio::config.true 'dev_use_main_branch'; then
 		bashio::log.info "   ✅ DEV MODE UPDATE COMPLETE"
 		bashio::log.info "=================================================="
 	else
-		bashio::log.error "Failed to download main branch from GitHub!"
+		bashio::log.error "Failed to download main/master branch from GitHub!"
+		bashio::log.error "If this is a private repository, please configure 'github_token' in the add-on options."
 	fi
 else
 	bashio::log.info "Production Mode: Using packaged version."
