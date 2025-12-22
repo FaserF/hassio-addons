@@ -40,8 +40,8 @@ RUN cp /tmp/src/frontend/package.json . && \
     (cp /tmp/src/frontend/package-lock.json* . || true) && \
     npm install && \
     cp -r /tmp/src/frontend/. . && \
-    sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.js && \
-    sed -i "s|const API_URL = '.*'|const API_URL = './api'|g" src/config.js && \
+    sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
+    sed -i "s|export const API_URL = .*|export const API_URL = './api';|g" src/config.js && \
     npm run build
 
 # --- BACKEND SETUP ---

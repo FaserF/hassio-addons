@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.7
+
+- Fixed connection refused error by correcting build script to target `vite.config.ts`.
+- Fixed API URL replacement in frontend config.
+
 ## 1.5.6
 
 - Automatically updated Solumati to version v2025.12.3b1
