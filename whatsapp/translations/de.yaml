@@ -1,0 +1,7 @@
+configuration:
+  log_level:
+    name: Log-Level
+    description: Steuert die Ausführlichkeit der Protokolle.
+network:
+  8000/tcp:
+    description: Interner API-Port, zu dem sich die Integration verbindet.
