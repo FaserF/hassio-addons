@@ -43,7 +43,7 @@ jobs:
   # --------------------------------------------------------------------------------
   verify:
     name: ✅ Verify ${{ github.event.inputs.addon || 'Automated' }}
-    needs: [schedule-edge] # Optional dependency to ensure order if needed, but they are disjoint
+    needs: [] # Independent verification
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -109,27 +109,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🏗️ Build & Push Add-on
-        if: github.event_name == 'workflow_dispatch'
-        uses: home-assistant/builder@2025.11.0
-        with:
-          args: |
-            --aarch64 \
-            --amd64 \
-            --target /data/${{ github.event.inputs.addon }} \
-            --image "${{ steps.info.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon \
-            --no-cache
-
-      # Future: Changelog updates, tagging, etc.
-      # For now, base build handles tagging via version in config.yaml?
-      # Actually, typically we bump config.yaml version first.
-      # This orchestrator implies we should execute a bump first if it's not done.
-      # For Phase 1, we assume the builder handles image pushing based on current config version
-      # OR the user handles the version bump.
-      # The Requirement "Input: version_increment" suggests WE should bump it.
-
       - name: ⬆️ Bump Version & Changelog
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -143,3 +122,23 @@ jobs:
         with:
           commit_message: "chore: release ${{ github.event.inputs.addon }} version bump [skip ci]"
           file_pattern: "${{ github.event.inputs.addon }}/*"
+
+      - name: 🏗️ Build & Push Add-on
+        if: github.event_name == 'workflow_dispatch'
+        uses: home-assistant/builder@2025.11.0
+        with:
+          args: |
+            --aarch64 \
+            --amd64 \
+            --target /data/${{ github.event.inputs.addon }} \
+            --image "${{ steps.info.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon \
+            --no-cache
+
+      - name: ⬆️ Bump Version & Changelog
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

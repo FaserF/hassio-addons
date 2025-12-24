@@ -45,6 +45,9 @@ jobs:
           retain_days: 30
           keep_minimum_runs: 5
 
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
         env:

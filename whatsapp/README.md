@@ -31,7 +31,7 @@ notifications directly from your smart home.
 
 ### ✨ Key Features
 
-- **🚀 Ultra Fast**: Built on Node.js 24 and the lightweight Baileys library
+- **🚀 Ultra Fast**: Built on Node.js 22 and the lightweight Baileys library
   (no heavy Chrome/Puppeteer required!).
 - **🔒 Secure & Private**: Runs locally on your device. No cloud bridge, no
   external API costs.

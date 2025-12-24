@@ -1,0 +1,89 @@
+name: Orchestrator Governance
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Weekly: Mondays at 00:00
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # LABELER: Auto-label Issues & PRs
+  # --------------------------------------------------------------------------------
+  labeler:
+    name: 🏷️ Auto Labeler
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏷️ Label PRs (File-based)
+        if: github.event_name == 'pull_request'
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+
+      - name: 🏷️ Label Issues (Form-based)
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.issue.body;
+            if (!body) return;
+            const regex = /### .*(Add-On|Addon).*\n\n([^\n]+)/i;
+            const match = body.match(regex);
+            if (match && match[2] && match[2] !== 'Other' && match[2] !== '_No response_') {
+               const start = match[2].trim();
+               // Sanitize: ensure it matches an addon folder? For now just use as-is but prefixed
+               // or map specific names if needed.
+               const label = `addon/${start.toLowerCase().replace(/ /g, '-')}`;
+               // Note: User wanted "addon/name" format.
+               try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    labels: [label]
+                  });
+               } catch (e) {
+                  console.log(`Failed to add label ${label}: ${e.message}`);
+               }
+            }
+
+  # --------------------------------------------------------------------------------
+  # STALE: Manage inactive items
+  # --------------------------------------------------------------------------------
+  stale:
+    name: 🧹 Stale Check
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 60
+          days-before-close: 7
+          stale-issue-message: 'This issue is stale because it has been open 60 days with no activity.'
+          stale-pr-message: 'This PR is stale because it has been open 60 days with no activity.'
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+
+  # --------------------------------------------------------------------------------
+  # LOCK: Lock old threads
+  # --------------------------------------------------------------------------------
+  lock:
+    name: 🔒 Lock Threads
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/lock-threads@v5
+        with:
+          github-token: ${{ github.token }}
+          issue-inactive-days: '60'
+          pr-inactive-days: '60'
