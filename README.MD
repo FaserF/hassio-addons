@@ -6,10 +6,6 @@ maintained by FaserF.
 > [!NOTE]
 > These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
 
-## Add-ons I support but don't actively use
-
--
-
 
 ## Installation 🚀
 

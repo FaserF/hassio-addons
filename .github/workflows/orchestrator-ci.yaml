@@ -16,8 +16,56 @@ jobs:
   # --------------------------------------------------------------------------------
   # FILTER: Detect which add-ons have changed
   # --------------------------------------------------------------------------------
+  generate-config:
+    name: 🧩 Generate Config
+    runs-on: ubuntu-latest
+    outputs:
+      filters: ${{ steps.generator.outputs.filters }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Generate Dynamic Filters
+        id: generator
+        run: |
+          import os
+          import json
+
+          filters = {}
+          # Scan for config.yaml to identify add-ons
+          for root, dirs, files in os.walk("."):
+              if "config.yaml" in files:
+                  # It is an add-on
+                  addon_name = os.path.relpath(root, ".").strip("./")
+                  if addon_name.startswith("."): continue # Skip hidden
+                  filters[addon_name] = [f"{addon_name}/**"]
+
+          # Convert to YAML string for dorny/paths-filter
+          yaml_lines = []
+          for key, values in filters.items():
+              yaml_lines.append(f"{key}:")
+              for v in values:
+                  yaml_lines.append(f"  - '{v}'")
+
+          yaml_content = "\\n".join(yaml_lines)
+
+          # Set output
+          # We need to handle multiline strings for GITHUB_OUTPUT
+          import uuid
+          delimiter = uuid.uuid4()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"filters<<{delimiter}\\n")
+              f.write(yaml_content)
+              f.write(f"\\n{delimiter}\\n")
+
+        shell: python
+
+  # --------------------------------------------------------------------------------
+  # FILTER: Detect which add-ons have changed
+  # --------------------------------------------------------------------------------
   filter:
     name: 🔍 Detect Changes
+    needs: generate-config
     runs-on: ubuntu-latest
     outputs:
       addons: ${{ steps.filter.outputs.changes }}
@@ -31,11 +79,7 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          # We use a dynamic filter configuration where each folder in root is a potential add-on
-          # For Phase 1, we assume standard folder structure or use the existing `paths-filter.yml` approach.
-          # To be smarter, we rely on the existing `.github/paths-filter.yml` if it exists, or we can inline a generator.
-          # For now, let's use the explicit file which seems to be the project standard.
-          filters: .github/paths-filter.yml
+          filters: ${{ needs.generate-config.outputs.filters }}
 
   # --------------------------------------------------------------------------------
   # LINT: Static Analysis (Fail Fast)
@@ -47,7 +91,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write
     strategy:
       fail-fast: false
       matrix:

@@ -10,4 +10,44 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/labeler@v5
+      - name: 🏷️ Dynamic Labeler
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get list of changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const labelsToAdd = new Set();
+
+            // Iterate changed files
+            for (const file of files) {
+              const parts = file.filename.split('/');
+              if (parts.length > 1) {
+                const rootDir = parts[0];
+
+                // Skip hidden folders or scripts (optional, adjust as needed)
+                if (rootDir.startsWith('.') || rootDir === '.scripts') continue;
+
+                // Check if it looks like an addon (has config.yaml)
+                // Optimization: Memoize this check if needed, but for small PRs it's fine.
+                // We use git tree API or just assume folder structure convention.
+                // For robustness, let's treat any top-level folder that isn't hidden as a potential addon.
+                // Or better: try to match against known addons dynamically.
+
+                // Let's assume any top-level folder *except* specific system ones is an addon if it contains files.
+                labelsToAdd.add(`addon/${rootDir}`);
+              }
+            }
+
+            if (labelsToAdd.size > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: Array.from(labelsToAdd)
+              });
+            }

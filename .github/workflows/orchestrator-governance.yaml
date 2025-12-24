@@ -40,19 +40,38 @@ jobs:
             const match = body.match(regex);
             if (match && match[2] && match[2] !== 'Other' && match[2] !== '_No response_') {
                const start = match[2].trim();
-               // Sanitize: ensure it matches an addon folder? For now just use as-is but prefixed
-               // or map specific names if needed.
-               const label = `addon/${start.toLowerCase().replace(/ /g, '-')}`;
-               // Note: User wanted "addon/name" format.
+               const addonName = start.toLowerCase().replace(/ /g, '-');
+               const label = `addon/${addonName}`;
+
+               // Dynamic Validation: Check if folder exists
                try {
-                  await github.rest.issues.addLabels({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    labels: [label]
-                  });
+                  // We need to list files to check existence since we don't have the repo checked out in this step context usually?
+                  // Actually, github-script runs on ubuntu-latest. If we haven't checked out code, we can't check fs.
+                  // But this job runs `runs-on: ubuntu-latest` and DOES NOT have a checkout step in the snippet I saw!
+                  // Uses `actions/github-script`. We can use the API to check content.
+
+                  try {
+                    await github.rest.repos.getContent({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      path: `${addonName}/config.yaml`
+                    });
+                    // If no error, file exists. Proceed.
+                    await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: [label]
+                    });
+                  } catch (err) {
+                     if (err.status === 404) {
+                        console.log(`Addon directory ${addonName} not found or no config.yaml. Skipping label.`);
+                     } else {
+                        throw err;
+                     }
+                  }
                } catch (e) {
-                  console.log(`Failed to add label ${label}: ${e.message}`);
+                  console.log(`Failed to process label ${label}: ${e.message}`);
                }
             }
 

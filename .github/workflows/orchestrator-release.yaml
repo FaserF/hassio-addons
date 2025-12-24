@@ -112,7 +112,7 @@ jobs:
       - name: ⬆️ Bump Version & Changelog
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version || github.event.client_payload.version }}" --message "Manual Release via Orchestrator"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -139,6 +139,6 @@ jobs:
       - name: ⬆️ Bump Version & Changelog
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version || github.event.client_payload.version }}" --message "Manual Release via Orchestrator"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
