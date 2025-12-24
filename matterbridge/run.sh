@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 config_path=$(bashio::config 'config_path')
 log_level=$(bashio::config 'log_level')
 

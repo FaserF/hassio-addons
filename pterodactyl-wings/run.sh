@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 config_file=$(bashio::config 'config_file')
 #Create Shortcut to config file
 echo "Using config file from ${config_file}..."

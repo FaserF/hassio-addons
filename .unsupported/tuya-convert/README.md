@@ -1,15 +1,16 @@
 # Home Assistant Add-on: Tuya-Convert
+
 > [!CAUTION]
 > **UNSUPPORTED ADD-ON**
 >
 > This add-on is currently **UNSUPPORTED**.
 > It is no longer actively developed or maintained.
+>
 > - No new features wil be added.
 > - Bugs will likely not be fixed.
 > - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
 >
 > **USE AT YOUR OWN RISK.**
-
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">

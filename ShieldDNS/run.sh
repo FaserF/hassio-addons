@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 source /usr/lib/bashio/bashio.sh
 
 # Define local paths
@@ -155,7 +156,6 @@ if is_port_busy "${DOT_PORT}"; then
 	else
 		bashio::log.fatal "❌ Port ${DOT_PORT} is ALREADY IN USE!"
 		# Try to identify process
-		local PROC_INFO
 		PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
 		if [ -n "$PROC_INFO" ]; then bashio::log.fatal "   Conflict: $PROC_INFO"; fi
 		sleep 30
@@ -270,7 +270,7 @@ if [ -n "${DOT_PORT}" ] && [ "${DOT_PORT}" != "null" ]; then
 tls://.:${DOT_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
+    $(echo -e "${DNS_LOG_CONFIG}")
 }
 EOF
 fi
@@ -286,7 +286,7 @@ if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
 https://.:${ACTUAL_COREDNS_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
+    $(echo -e "${DNS_LOG_CONFIG}")
 }
 EOF
 	fi
@@ -302,10 +302,10 @@ if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
 	# Clean PIDS list (remove empty)
 	PIDS=$(echo "$PIDS" | xargs)
 
-	wait -n $PIDS
+	wait -n "$PIDS"
 
 	bashio::log.error "❌ One of the processes exited. Shutting down..."
-	kill $PIDS 2>/dev/null
+	kill "$PIDS" 2>/dev/null
 	exit 1
 else
 	bashio::log.info "🚀 Starting CoreDNS..."

@@ -42,6 +42,9 @@ maintained by FaserF.
 | **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     |
 
 <!-- markdownlint-enable MD060 -->
+> **Legend:**
+> - ✅ = Stable
+> - ⚠️ = Beta (functional but still in development)
 
 > [!NOTE]
 > **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
@@ -63,17 +66,16 @@ Because these add-ons are located in a hidden `.unsupported` directory, they **w
 
 To install them, you must do so manually as a **Local Add-on**:
 
-1.  Access your Home Assistant host via SSH or Samba.
-2.  Navigate to the `/addons` directory (create it if it doesn't exist, usually separate from `/config`).
-3.  Create a folder, e.g., `/addons/local`.
-4.  Copy the entire add-on folder (e.g. `bt-mqtt-gateway`) from `.unsupported/` in this repository to `/addons/local/bt-mqtt-gateway`.
-5.  In Home Assistant, go to **Settings > Add-ons > Add-on Store**.
-6.  Click the **three dots** (top right) -> **Check for updates**.
-7.  The add-on should appear in the "Local Add-ons" section.
+1. Access your Home Assistant host via SSH or Samba.
+2. Navigate to the `/addons` directory (create it if it doesn't exist, usually separate from `/config`).
+3. Create a folder, e.g., `/addons/local`.
+4. Copy the entire add-on folder (e.g. `bt-mqtt-gateway`) from `.unsupported/` in this repository to `/addons/local/bt-mqtt-gateway`.
+5. In Home Assistant, go to **Settings > Add-ons > Add-on Store**.
+6. Click the **three dots** (top right) -> **Check for updates**.
+7. The add-on should appear in the "Local Add-ons" section.
 
 > [!WARNING]
 > These add-ons are **NOT MAINTAINED**. Use them strictly at your own risk. Automatic base image updates still happen through Workflows.
-
 
 Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
 Tested on **amd64** architecture.

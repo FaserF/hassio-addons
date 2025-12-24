@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 nginx_uid=abc
 declare nginx_port
 nginx_port=$(bashio::addon.port 85)

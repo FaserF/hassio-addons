@@ -1,13 +1,13 @@
 arch:
-- aarch64
-- amd64
+  - aarch64
+  - amd64
 boot: auto
 description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
   a domain's dns record, auto renew domains and more. (Unsupported)
 ingress: false
 init: false
 map:
-- share:rw
+  - share:rw
 name: Freenom-dns-updater
 options:
   config_file: null

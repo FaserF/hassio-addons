@@ -31,8 +31,10 @@ Desktop.ini
 # Logs
 *.log
 compliance.log
-output.txt
+*output.txt
+markdown_report.txt
+shellcheck_*.txt
 
 # Local Artifacts
-markdown_report.txt
 *.bak
+*.exe

@@ -40,6 +40,9 @@ jobs:
       - name: ⚠️ Update Unsupported Status
         run: python3 .scripts/update_unsupported_status.py
 
+      - name: 🏷️ Update README Beta Status
+        run: python3 .scripts/update_readme_status.py
+
       - name: 🏁 Renormalize Line Endings
         run: git add --renormalize .
 

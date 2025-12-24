@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 firmware_path=$(bashio::config 'firmware_path')
 firmware_name=$(bashio::config 'firmware_name')
 firmware_name_new=r3600-raw-img.bin
@@ -9,8 +10,8 @@ if [ ! -f "$firmware_path$firmware_name" ]; then
 	exit
 fi
 
-if [[ "$firmware_name" == *"rm1800"* ]] || [ "$firmware_name" = *"ax1800"* ]; then
-	firmware_name_new_rm1800=rm1800-raw-img.bin
+if [[ "$firmware_name" == *"rm1800"* ]] || [[ "$firmware_name" == *"ax1800"* ]]; then
+	firmware_name_new_rm1800="rm1800-raw-img.bin"
 	rm1800=true
 	echo "Detected rm1800 firmware name. Will append --data to ubinze.sh script"
 else
@@ -18,7 +19,7 @@ else
 	echo "If you tried to use it with a rm1800 image, do NOT flash the image and restart the addon with the firmware_name rm1800 inside."
 fi
 
-cd /xqrepack
+cd /xqrepack || exit
 
 echo "Extracting Firmware Image $firmware_path$firmware_name"
 ubireader_extract_images -w "$firmware_path$firmware_name"

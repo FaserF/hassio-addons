@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 config_path=$(bashio::config 'config_path')
 DEBUG=$(bashio::config 'debug')
 
@@ -10,7 +11,7 @@ fi
 
 source ./venv/bin/activate
 
-cd /application
+cd /application || exit
 echo "Found config file at $config_path . Copying it now."
 cp "$config_path" config.yaml
 

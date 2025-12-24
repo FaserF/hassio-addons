@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 
 ssl=$(bashio::config 'ssl')
 SSL_CERT=/ssl/$(bashio::config 'certfile')
@@ -116,8 +117,8 @@ echo "[start] Starting Pterodactyl Panel"
 
 chown -R nginx:nginx /var/www/*
 echo " " >/var/log/nginx/pterodactyl.app-error.log
-echo " " >/var/www/html/storage/logs/laravel-$(date +%F).log
+echo " " >/var/www/html/storage/logs/laravel-"$(date +%F)".log
 
 php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
 tail -f /var/log/nginx/pterodactyl.app-error.log &
-tail -f /var/www/html/storage/logs/laravel-$(date +%F).log
+tail -f /var/www/html/storage/logs/laravel-"$(date +%F)".log

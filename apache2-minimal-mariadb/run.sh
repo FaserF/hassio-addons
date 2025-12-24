@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
@@ -12,6 +13,20 @@ default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
+if bashio::config.has_value 'init_commands'; then
+	echo "Detected custom init commands. Running them now."
+	while read -r cmd; do
+		eval "${cmd}" ||
+			bashio::exit.nok "Failed executing init command: ${cmd}"
+	done <<<"$(bashio::config 'init_commands')"
+fi
+
+rm -r "$webrootdocker"
+
+if [ ! -d "$DocumentRoot" ]; then
+	echo "You haven't put your website to $DocumentRoot"
+	echo "Creating the folder for you."
+	mkdir -p "$DocumentRoot"
 	rm -r "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
@@ -21,7 +36,7 @@ fi
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
-	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
+	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		adduser -S "$username" -G www-data
 		echo "$username:$password" | chpasswd "$username"
 		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
