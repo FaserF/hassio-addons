@@ -26,6 +26,7 @@ This repository contains a collection of custom **Home Assistant Add-ons** maint
 | **[Switch LAN Play](switch_lan_play)** | Nintendo Switch LAN Play Client | ✅ |
 | **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
 | **[xqrepack](xqrepack)** | Xiaomi R3600 firmware patcher | ✅ |
+| **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Playwright) | ✅ |
 
 > [!NOTE]
 > **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.

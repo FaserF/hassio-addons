@@ -1,30 +1,21 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:16.3.3
 FROM $BUILD_FROM
 
-# Install requirements for add-on
+# Install Node.js
 RUN \
-  apt-get update \
-  && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-venv \
-    git \
-  && rm -rf /var/lib/apt/lists/*
-
-# Install Playwright and its dependencies
-# We install globally or in a venv. For HA Addon, global is often simpler or managed via S6.
-# Using --with-deps to install browser binaries and OS dependencies
-RUN pip3 install playwright==1.49.0
-RUN playwright install --with-deps chromium
+  apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    nodejs \
+    npm \
+    git
 
 WORKDIR /app
 
+# Copy rootfs
+COPY rootfs /
+
 # Copy data for add-on
 COPY app /app
-COPY run.sh /
 
-RUN pip3 install -r requirements.txt
-
-RUN chmod a+x /run.sh
-
-CMD [ "/run.sh" ]
+# Install dependencies
+RUN cd /app && npm install
