@@ -90,17 +90,144 @@ fi
 
 # App Base URL (for emails, links, etc.)
 if bashio::config.has_value 'app_base_url' && [ -n "$(bashio::config 'app_base_url')" ]; then
-	export APP_BASE_URL=$(bashio::config 'app_base_url')
+	APP_BASE_URL=$(bashio::config 'app_base_url')
+	export APP_BASE_URL
 	bashio::log.info "App base URL set to: $APP_BASE_URL"
 else
 	# Try to auto-detect from Ingress
 	if bashio::var.has_value "$(bashio::addon.ingress_url)"; then
-		export APP_BASE_URL="$(bashio::addon.ingress_url)"
+		APP_BASE_URL="$(bashio::addon.ingress_url)"
+		export APP_BASE_URL
 		bashio::log.info "App base URL auto-detected from Ingress: $APP_BASE_URL"
 	else
 		export APP_BASE_URL="http://homeassistant.local:8099"
 		bashio::log.info "App base URL set to default: $APP_BASE_URL"
 	fi
+fi
+
+# --- DEV MODE: USE MAIN BRANCH ---
+if bashio::config.true 'dev_use_main_branch'; then
+	bashio::log.warning "=================================================="
+	bashio::log.warning "   ⚠️  DEVELOPER MODE ENABLED  ⚠️"
+	bashio::log.warning "=================================================="
+	bashio::log.warning "Using latest code from 'main' branch."
+	bashio::log.warning "Downloading and rebuilding... This will take time!"
+	bashio::log.warning "Please wait..."
+
+	# Download main branch
+	cd /tmp || exit 1
+
+	download_branch() {
+		local BRANCH=$1
+		local URL="https://github.com/FaserF/Solumati/archive/refs/heads/$BRANCH.tar.gz"
+		local HEADER_ARGS=""
+
+		# Check for GitHub Token
+		if bashio::config.has_value 'github_token' && [ -n "$(bashio::config 'github_token')" ]; then
+			bashio::log.info "Using GitHub Token for authentication..."
+			HEADER_ARGS="-H \"Authorization: token $(bashio::config 'github_token')\""
+		fi
+
+		bashio::log.info "Attempting to download branch: $BRANCH"
+
+		# Use eval to properly handle quoted arguments in HEADER_ARGS
+		# -f: Fail silently (no output at all) on server errors
+		# -L: Follow redirects
+		# -s: Silent mode
+		# -S: Show error message if it fails
+		if eval curl -fL -s -S $HEADER_ARGS "$URL" -o main.tar.gz; then
+			return 0
+		else
+			return 1
+		fi
+	}
+
+	if download_branch "main" || download_branch "master"; then
+		bashio::log.info "Download successful. Extracting..."
+		rm -rf /tmp/solumati-main
+		mkdir -p /tmp/solumati-main
+
+		if tar -xzf main.tar.gz -C /tmp/solumati-main --strip-components=1; then
+			bashio::log.info "Extraction successful."
+		else
+			bashio::log.error "Extraction failed! The downloaded file might be invalid."
+			bashio::log.error "File size: $(du -h main.tar.gz | cut -f1)"
+			bashio::log.error "First 100 bytes of content:"
+			head -c 100 main.tar.gz
+			rm main.tar.gz
+			exit 1
+		fi
+
+		# Update Backend
+		bashio::log.info "Updating Backend code..."
+		if [ -d "/tmp/solumati-main/backend" ]; then
+			cp -r /tmp/solumati-main/backend/* /app/backend/
+
+			# Install potentially new python requirements
+			if [ -f "/app/backend/requirements.txt" ]; then
+				bashio::log.info "Installing Python dependencies..."
+				pip install --no-cache-dir -r /app/backend/requirements.txt
+			fi
+		else
+			bashio::log.error "Backend directory not found in downloaded archive!"
+		fi
+
+		# Rebuild Frontend
+		bashio::log.info "Rebuilding Frontend (this may take several minutes)..."
+		if [ -d "/tmp/solumati-main/frontend" ]; then
+			# Create temp build dir
+			rm -rf /tmp/frontend_build
+			mkdir -p /tmp/frontend_build
+			cp -r /tmp/solumati-main/frontend/* /tmp/frontend_build/
+
+			cd /tmp/frontend_build || exit 1
+
+			# IMPORTANT: Apply config.js fix found in Dockerfile
+			if [ -f "src/config.js" ]; then
+				if [ -f "vite.config.ts" ]; then
+					sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
+				else
+					sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.js
+				fi
+				sed -i "s|export const API_URL = .*|export const API_URL = './api';|g" src/config.js
+				sed -i "s|const API_URL = .*|const API_URL = './api';|g" src/config.js
+			fi
+
+			bashio::log.info "Running 'npm install'..."
+			if npm install; then
+				bashio::log.info "Running 'npm run build'..."
+				if npm run build; then
+					bashio::log.info "Frontend build successful. Updating files..."
+					# Remove old frontend files (preserve dir)
+					rm -rf /app/frontend/*
+					if [ -d "dist" ]; then
+						cp -r dist/* /app/frontend/
+					else
+						bashio::log.error "'dist' directory not found after build!"
+					fi
+				else
+					bashio::log.error "Frontend build failed! Keeping old frontend."
+				fi
+			else
+				bashio::log.error "npm install failed! Keeping old frontend."
+			fi
+		else
+			bashio::log.error "Frontend directory not found in downloaded archive!"
+		fi
+
+		# Cleanup
+		rm -rf /tmp/main.tar.gz /tmp/solumati-main /tmp/frontend_build
+		cd / || exit 1
+
+		bashio::log.info "=================================================="
+		bashio::log.info "   ✅ DEV MODE UPDATE COMPLETE"
+		bashio::log.info "=================================================="
+	else
+		bashio::log.error "Failed to download main/master branch from GitHub!"
+		bashio::log.error "If this is a private repository, please configure 'github_token' in the add-on options."
+	fi
+else
+	bashio::log.info "Production Mode: Using packaged version."
 fi
 
 # Generate random password for database
@@ -161,7 +288,7 @@ export DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
 
 bashio::log.info "Starting Backend (Uvicorn)..."
 bashio::log.info "Environment: TEST_MODE=$TEST_MODE, LOG_LEVEL=${LOG_LEVEL:-INFO}"
-cd /app/backend
+cd /app/backend || exit 1
 # Start Uvicorn in background
 uvicorn app.main:app --host 127.0.0.1 --port 7777 &
 BACKEND_PID=$!

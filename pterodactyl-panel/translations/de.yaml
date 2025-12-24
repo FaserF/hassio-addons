@@ -1,0 +1,16 @@
+configuration:
+  password:
+    name: "Datenbank-Passwort"
+    description: "Passwort für die Datenbank."
+  ssl:
+    name: "SSL aktivieren"
+    description: "Aktiviert SSL."
+  certfile:
+    name: "Zertifikatsdatei"
+    description: "Pfad zur SSL-Zertifikatsdatei."
+  keyfile:
+    name: "Schlüsseldatei"
+    description: "Pfad zur privaten Schlüsseldatei."
+  reset_database:
+    name: "Datenbank zurücksetzen"
+    description: "Setzt die Datenbank beim Start zurück. VORSICHT!"

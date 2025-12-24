@@ -1,0 +1,16 @@
+configuration:
+  ssl:
+    name: "SSL aktivieren"
+    description: "Aktiviert SSL."
+  certfile:
+    name: "Zertifikatsdatei"
+    description: "Pfad zur SSL-Zertifikatsdatei."
+  keyfile:
+    name: "Schlüsseldatei"
+    description: "Pfad zur privaten Schlüsseldatei."
+  log_level:
+    name: "Log-Level"
+    description: "Protokollierungsstufe."
+  reset_database:
+    name: "Datenbank zurücksetzen"
+    description: "Setzt die Datenbank zurück. VORSICHT!"

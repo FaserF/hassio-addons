@@ -1,10 +1,53 @@
 # Changelog
 
-## 1.4.3
+## 1.5.9
+
+- Automatically updated Solumati to version v2025.12.3b1
+
+## 1.5.8
+
+- Improved build script robustness: now checks for `vite.config.ts` or `vite.config.js` automatically.
+- Enhanced API URL replacement to handle different syntax variations.
+
+## 1.5.7
+
+- Fixed connection refused error by correcting build script to target `vite.config.ts`.
+- Fixed API URL replacement in frontend config.
+
+## 1.5.6
+
+- Automatically updated Solumati to version v2025.12.3b1
+
+## 1.5.5
+
+- Fixed build error by targeting correct `vite.config.js` filename.
+
+## 1.5.4
+
+- Switched to local build (removed pre-built image dependency)
+
+## 1.5.3
+
+- Improved Ingress support with relative paths and dynamic port handling
+
+## 1.5.2
+
+- Automatically updated Solumati to version vv2025.12.3b0
+
+## 1.5.1
+
+- Updated Solumati to vv2025.12.3b0
+
+## 1.5.0
+
+- Updated Solumati to v2025.12.2-b6
+- new dev option to use main branch
+
+## 1.4.4
 
 - Updated Solumati to v2025.12.2-b5
 
-## 1.4.2
+## 1.4.3
 
 - Updated Solumati to v2025.12.2-b4
 - **NEW**: Enable Marketing Page Option

@@ -1,0 +1,46 @@
+name: Issue Auto Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Label based on Template
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.issue.body;
+            if (!body) return;
+
+            // Regex to find the Addon field from the Issue Forms
+            // It usually appears as "### Add-On causing the issue" or "### For which Add-On" followed by the selection
+            const regex = /### .*(Add-On|Addon).*\n\n([^\n]+)/i;
+            const match = body.match(regex);
+
+            if (match && match[2] && match[2] !== 'Other' && match[2] !== '_No response_') {
+               const addon = match[2].trim();
+               const label = `addon:${addon}`;
+
+               console.log(`Detected Addon: ${addon}. Applying label: ${label}`);
+
+               // Check if label exists on repo, if not just try to add it (GitHub creates it if it doesn't exist? No, it errors usually if strictly configured, but 'issues.addLabels' might create it if permissions allow, or we just fail gracefully).
+               // For safety, we use try-catch
+               try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    labels: [label]
+                  });
+               } catch (error) {
+                  console.log(`Failed to add label ${label}: ${error.message}`);
+               }
+            } else {
+               console.log("No specific addon detected in issue body.");
+            }

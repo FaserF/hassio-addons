@@ -1,0 +1,57 @@
+---
+name: AegisBot
+version: "0.1.4"
+slug: aegisbot
+description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+url: https://github.com/FaserF/AegisBot
+arch:
+  - aarch64
+  - amd64
+  - armv7
+startup: application
+boot: auto
+init: false
+ingress: true
+ingress_port: 8099
+ingress_stream: true
+panel_icon: mdi:robot
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: Web Interface (HTTP)
+map:
+  - type: share
+    read_only: false
+options:
+  version: "latest"
+  github_token: ""
+  github_repo: "FaserF/AegisBot"
+  developer_mode: false
+  reset_database: false
+  log_level: info
+  database:
+    type: sqlite
+  secret_key: ""
+  project_name: "AegisBot"
+  debug: false
+  demo_mode: false
+  demo_mode_type: ephemeral
+schema:
+  version: str
+  github_token: password?
+  github_repo: str?
+  developer_mode: bool
+  reset_database: bool
+  log_level: list(trace|debug|info|warning|error|fatal)?
+  database:
+    type: list(sqlite|postgresql)
+    postgresql_host: str?
+    postgresql_port: port?
+    postgresql_user: str?
+    postgresql_password: password?
+    postgresql_database: str?
+  secret_key: password?
+  project_name: str?
+  debug: bool?
+  demo_mode: bool
+  demo_mode_type: list(ephemeral|persistent)?

@@ -1,0 +1,52 @@
+name: "ShieldDNS"
+version: "1.3.15"
+slug: "shielddns"
+description: "High-performance DoT proxy for AdGuard Home"
+url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
+startup: services
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+boot: auto
+init: false
+host_network: true
+map:
+  - config:rw
+  - ssl:rw
+options:
+  upstream_dns: "192.168.1.2"
+  certfile: "fullchain.pem"
+  keyfile: "privkey.pem"
+  cloudflare_tunnel_token: ""
+  enable_info_page: false
+  log_level: "info"
+  # DoT Port (Required for Android "Private DNS" Native Setting)
+  # SAFE DEFAULT: 8853 (To avoid conflict with AdGuard Home on 853)
+  # SETUP: Map WAN Port 853 -> LAN Port 8853 in your Router for Android to work.
+  dot_port: 8853
+  doh_port: 3443
+  fallback_dns: false
+  fallback_dns_server: "1.1.1.1"
+schema:
+  upstream_dns: str
+  certfile: str
+  keyfile: str
+  cloudflare_tunnel_token: str?
+  enable_info_page: bool?
+  log_level: list(debug|info|error|warning)
+  dot_port: port?
+  doh_port: port?
+  fallback_dns: bool?
+  fallback_dns_server: str?
+  doh_alt_port_1: port?
+  doh_alt_port_2: port?
+# ports:
+#   # With host_network: true, we do not map ports via Docker.
+#   # The addon binds directly to the ports defined in 'options'.
+#   # Removing this section avoids the "Network" configuration tab in HA, which is misleading here.
+#   # 853/tcp: 853
+#   # 443/tcp: 3443
+# image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build

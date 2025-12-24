@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:recommended"],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
   "labels": [
@@ -10,12 +8,10 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
-  "regexManagers": [
+  "customManagers": [
     {
-      "fileMatch": [
-        "/Dockerfile$",
-        "/build.yaml$"
-      ],
+      "customType": "regex",
+      "managerFilePatterns": ["//Dockerfile$/", "//build.yaml$/"],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -24,9 +20,8 @@
       "datasourceTemplate": "docker"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "customType": "regex",
+      "managerFilePatterns": ["//Dockerfile$/"],
       "matchStrings": [
         "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -34,9 +29,8 @@
       "depNameTemplate": "42wim/matterbridge"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "customType": "regex",
+      "managerFilePatterns": ["//Dockerfile$/"],
       "matchStrings": [
         "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -44,9 +38,8 @@
       "depNameTemplate": "netbootxyz/webapp"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "customType": "regex",
+      "managerFilePatterns": ["//Dockerfile$/"],
       "matchStrings": [
         "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
         "php(?<currentValue>\\d+)"
@@ -55,9 +48,8 @@
       "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
     },
     {
-      "fileMatch": [
-        "/Dockerfile$"
-      ],
+      "customType": "regex",
+      "managerFilePatterns": ["//Dockerfile$/"],
       "matchStrings": [
         "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -143,13 +135,9 @@
     },
     {
       "groupName": "PHP Packages",
-      "matchDatasources": [
-        "alpine"
-      ],
-      "matchPackagePatterns": [
-        "php\\d+"
-      ],
-      "automerge": true
+      "matchDatasources": ["alpine"],
+      "automerge": true,
+      "matchPackageNames": ["/php\\d+/"]
     },
     {
       "groupName": "Solumati",

@@ -32,22 +32,26 @@ body:
         The name of the Addon you are wishing a new feature.
         For example: Apache2
       options:
-        - Apache2
-        - Apache2-Minimal-MariaDB
-        - Apache2-Minimal
-        - Assistant Relay
-        - Bash_Script_Executer
-        - BT-MQTT-Gateway
-        - Freenom-DNS-Updater
-        - Matterbridge
-        - Netboot-XYZ
-        - OpenSSL
+        - AegisBot
+        - ShieldDNS
+        - ShieldFile
+        - apache2
+        - apache2-minimal
+        - apache2-minimal-mariadb
+        - bash_script_executer
+        - bt-mqtt-gateway
+        - freenom-dns-updater
+        - matterbridge
+        - netboot-xyz
+        - openssl
         - pterodactyl-panel
         - pterodactyl-wings
-        - Switch_LAN_Play
-        - Switch_LAN_Play_Server
-        - Tuya-Convert
-        - Wiki.JS
+        - solumati
+        - switch_lan_play
+        - switch_lan_play_server
+        - tado_aa
+        - tuya-convert
+        - wiki.js
         - xqrepack
         - Other
   - type: markdown

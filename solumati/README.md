@@ -42,17 +42,33 @@ privacy and control.
 
 ## ⚙️ Configuration
 
-Basic options are configured directly in Home Assistant. Advanced application
-settings (OAuth, SMTP) are managed within the Solumati Admin Panel.
+All options are configured via the Home Assistant UI. The database is automatically managed.
 
-<!-- markdownlint-disable MD013 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
-| `log_level` | `string` | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`). |
-| `test_mode` | `boolean` | `false` | Enable to generate dummy data for testing purposes. |
-| `app_base_url` | `string` | *(auto)* | Public URL for links/emails. Auto-detected from Ingress if left empty. |
-| `marketing_page_enabled` | `boolean` | `false` | Enables the public-facing marketing landing page. |
-<!-- markdownlint-enable MD013 -->
+### Options
+
+| Option                   | Type    | Default | Description                                                                  |
+| :----------------------- | :------ | :------ | :--------------------------------------------------------------------------- |
+| `log_level`              | select  | `info`  | Log verbosity: trace, debug, info, warning, error, fatal                     |
+| `test_mode`              | boolean | `false` | Enable test mode with dummy user data for testing                            |
+| `app_base_url`           | string  | (auto)  | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
+| `marketing_page_enabled` | boolean | `false` | Enable the marketing page                                                    |
+
+> **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
+
+### ⚠️ Factory Reset (Danger Zone)
+
+| Option          | Type    | Default | Description                                                 |
+| :-------------- | :------ | :------ | :---------------------------------------------------------- |
+| `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
+
+> **CAUTION**: Enabling `factory_reset` will **permanently delete**:
+>
+> - All user accounts and profiles
+> - All messages and conversations
+> - All uploaded images
+> - All settings and configurations
+>
+> This cannot be undone! After the reset, you must disable this option manually, otherwise your data will be wiped again on each restart.
 
 > [!NOTE]
 > **Admin Password**: On the very first startup, check the **Log** tab for the

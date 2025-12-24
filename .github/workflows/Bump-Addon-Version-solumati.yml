@@ -42,15 +42,12 @@ jobs:
           OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+' \
             "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
 
-          # Increment patch version (assumes X.Y.Z.P or X.Y.Z format, Solumati uses 2025.12.2.0)
-          # We will split by '.'
+          # Increment patch version
           IFS='.' read -r major minor patch build <<< "$OLD_VERSION"
           if [[ -z "$build" ]]; then
-             # If formatted as X.Y.Z, treat Z as patch
              ((patch++))
              NEW_VERSION="$major.$minor.$patch"
           else
-             # If formatted as X.Y.Z.B, increment B
              ((build++))
              NEW_VERSION="$major.$minor.$patch.$build"
           fi
@@ -66,20 +63,39 @@ jobs:
         if: steps.version.outputs.bumped == 'true'
         run: |
           repo_url="https://api.github.com/repos/FaserF/Solumati"
-          response=$(curl -s "$repo_url/releases/latest")
-          latest_tag=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | head -1)
+          # IMPORTANT: Use 'releases' instead of 'releases/latest' to include pre-releases!
+          response=$(curl -s "$repo_url/releases?per_page=1")
+          # Use jq for safer parsing
+          latest_tag=$(echo "$response" | jq -r '.[0].tag_name')
 
+          if [ -z "$latest_tag" ] || [ "$latest_tag" == "null" ]; then
+            echo "Error: Could not retrieve tag from GitHub."
+            exit 1
+          fi
+
+          echo "Latest tag found: $latest_tag"
+
+          # 1. Changelog Update
           changelog="solumati/CHANGELOG.md"
           new_ver="${{ steps.version.outputs.new_version }}"
 
           if [ -f "$changelog" ]; then
-             sed -i \
-                "/# Changelog/a \\\\n## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" \
-                "$changelog"
+              sed -i "/# Changelog/a \\\\n## $new_ver\\n- Automatically updated Solumati to version $latest_tag\\n" "$changelog"
+          fi
+
+          # 2. Dockerfile Update
+          dockerfile="solumati/Dockerfile"
+          if [ -f "$dockerfile" ]; then
+              echo "Updating Dockerfile to version $latest_tag..."
+              # Replaces ARG SOLUMATI_VERSION="old" with ARG SOLUMATI_VERSION="new"
+              sed -i "s/ARG SOLUMATI_VERSION=\".*\"/ARG SOLUMATI_VERSION=\"$latest_tag\"/" "$dockerfile"
+          else
+              echo "Error: Dockerfile not found!"
+              exit 1
           fi
 
       - name: Upload Config Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: addon-config
           path: solumati/
@@ -96,7 +112,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download Config Artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: addon-config
           path: solumati/
@@ -129,7 +145,7 @@ jobs:
           ref: master
 
       - name: Download Config Artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: addon-config
           path: solumati/

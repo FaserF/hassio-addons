@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bashio
+
+bashio::log.info "Starting WhatsApp Addon (Baileys)..."
+
+cd /app
+exec npm start
