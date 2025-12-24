@@ -33,9 +33,6 @@ RUN \
         aarch64) \
             NODE_URL="https://unofficial-builds.nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-linux-arm64-musl.tar.xz" \
             ;; \
-        armv7l|armv6l) \
-            NODE_URL="https://unofficial-builds.nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-linux-armv7l.tar.xz" \
-            ;; \
         *) \
             echo "Unsupported architecture: $ARCH" && exit 1 \
             ;; \

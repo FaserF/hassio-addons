@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -41,6 +42,22 @@ jobs:
 
       - name: 🏷️ Update README Beta Status
         run: python3 .scripts/update_readme_status.py
+
+      - name: 🛡️ Enforce 64-bit Architectures
+        id: enforce_arch
+        run: python3 .scripts/enforce_architectures.py
+
+      - name: 💬 Comment on PR (32-bit Removal)
+        if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Notice:** 32-bit architectures (armhf, armv7, i386) have been automatically removed from this PR. These architectures are no longer supported by Home Assistant or this repository.'
+            })
 
       - name: 🏁 Renormalize Line Endings
         run: git add --renormalize .
