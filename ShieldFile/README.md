@@ -69,8 +69,7 @@ ShieldFile works perfectly alongside other official and community add-ons:
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on
-page.
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
 ### Options
 
@@ -81,8 +80,8 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-  - password: changeme
-    username: admin
+- password: changeme
+  username: admin
 ```
 
 ---

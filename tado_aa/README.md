@@ -36,8 +36,7 @@ add-on repositories:
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on
-page.
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
 ### Options
 

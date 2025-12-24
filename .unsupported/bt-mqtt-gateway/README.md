@@ -1,23 +1,19 @@
-# Home Assistant Community Add-on: Bluetooth-MQTT-Gateway
+# bt-mqtt-gateway
 
-> [!CAUTION]
-> **UNSUPPORTED ADD-ON**
->
-> This add-on is currently **UNSUPPORTED**.
-> It is no longer actively developed or maintained.
->
-> - No new features will be added.
-> - Bugs will likely not be fixed.
-> - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
->
-> **USE AT YOUR OWN RISK.**
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_bt-mqtt-gateway)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Bluetooth MQTT Gateway Server (Unsupported)
+
+---
+
+## 📖 About
 
 ![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
-![Supports armhf Architecture][armhf-shield]
-![Supports armv7 Architecture][armv7-shield]
-![Supports i386 Architecture][i386-shield]
-![Project Maintenance][maintenance-shield]
 
 > [!WARNING]
 > Project has been deprecated by the original creator, therefore this Addon
@@ -28,7 +24,6 @@ it is recommended to use Bluetooth Proxy.
 
 Bluetooth-MQTT-Gateway for Homeassistant OS
 
-## About
 
 A simple Python script which provides a Bluetooth to MQTT gateway, easily
 extensible via custom workers.
@@ -47,73 +42,22 @@ Just add my repo to the hassio addons repositorys: <https://github.com/FaserF/ha
 Put your config file to /share/bt-mqtt-gateway.yaml
 Please make sure that a MQTT Addon is being installed already.
 
-## Configuration
+---
 
-**Note**: _Remember to restart the add-on when the configuration is changed._
-Until now these config options do NOTHING! they are not implemented yet, but planned!!!
+## ⚙️ Configuration
 
-Example add-on configuration:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 ```yaml
 config_path: /share/bt-mqtt-gateway.yaml
-debug: true
+debug: false
 ```
 
-**Note**: _This is just an example, don't copy and paste it! Create your own!_
+---
 
-### Option: `config_path`
+## 👨‍💻 Credits & License
 
-This option is needed. Change it depending where your config file is on your
-homeassistant installation.
-
-### Option: `debug`
-
-Setting this option to "true" will start the addon in debugging mode. Default: false
--> To enable debugging mode, please create an empty file at /share/bt-mqtt-gateway-debug.txt
-
-## Support
-
-Got questions?
-
-You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a
-Raspberry Pi 4.
-
-## Authors & contributors
-
-The original program is from @zewelor. For more information please visit this
-page: <https://github.com/zewelor/bt-mqtt-gateway>
-The hassio addon is brought to you by [FaserF].
-
-## License
-
-MIT License
-
-Copyright (c) 2022 FaserF & zewelor
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[FaserF]: https://github.com/FaserF/
-[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
-[issue]: https://github.com/FaserF/hassio-addons/issues
-[maintenance-shield]: https://img.shields.io/maintenance/no/2024.svg
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
