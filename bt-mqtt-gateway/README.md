@@ -23,8 +23,8 @@ extensible via custom workers.
 See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more
 information (supported devices, features and much more).
 
-This can be used, to improve the realiability of bluetooth thermostats. See
-<https://github.com/home-assistant/core/issues/28601> for more informations.
+This can be used, to improve the reliability of bluetooth thermostats. See
+<https://github.com/home-assistant/core/issues/28601> for more information.
 
 ## Installation
 
@@ -69,7 +69,7 @@ Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from @zewelor. For more informatios please visit this
+The original program is from @zewelor. For more information please visit this
 page: <https://github.com/zewelor/bt-mqtt-gateway>
 The hassio addon is brought to you by [FaserF].
 

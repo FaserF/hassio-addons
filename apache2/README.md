@@ -9,8 +9,8 @@
 
 ![Ingress Support](../_images/apache2/ingress.png)
 
-A lightweight Apache2 webserver add-on for Home Assistant OS, with optional PHP 8
-and MariaDB support.
+A lightweight Apache2 web server add-on for Home Assistant OS, with optional
+PHP 8 and MariaDB support.
 
 This add-on allows you to serve static or dynamic websites, run PHP-based
 applications, or expose internal services via a web interface. Multiple
@@ -103,7 +103,7 @@ This option is needed. Change it depending where your root webfolder is on your
 homeassistant installation.
 
 Note: it has to be somewhere in the /share or /media folder! Other folders are
-not visible to this addon.
+not visible to this add-on.
 
 ### Option: `php_ini`
 
@@ -114,7 +114,7 @@ default → Uses the built-in PHP 8.4 configuration file (recommended)
 get_file → Copies the default PHP 8.4 `php.ini` to `/share/apache2addon_php.ini`
 
 path/to/your/new/php.ini -> Please change the location depending where your
-custom php.ini file is, f.e.: /share/apache2/php.ini
+custom php.ini file is, e.g.: /share/apache2/php.ini
 
 ### Option: `default_conf` & `default_ssl_conf`
 
@@ -127,11 +127,11 @@ folder.
 
 path/to/your/new/apache2.conf -> Please change the location depending where
 your custom 000-default.conf / 000-default-le-ssl.conf file is,
-f.e.: /share/apache2/000-default.conf
+e.g.: /share/apache2/000-default.conf
 
 More Information: <https://cwiki.apache.org/confluence/display/HTTPD/ExampleVhosts>
 
-Please note, that I wont give any support if you are using custom apache2
+Please note, that I won't give any support if you are using custom apache2
 config files and are receiving any apache2 errors!
 
 ### Option: `website_name`
@@ -145,22 +145,22 @@ This option is optional. This user is for accessing web files (NOT the website
 itself). It will change the owner of all web files from "root" to this new
 owner.
 
-This is NOT used for Authentication for your website. If you want this have a
-look at [Authentication for your website](#Authentication-for-your-website)
+This is NOT used for Authentication for your website. If you want this take a
+look at [Authentication for your website](#-authentication)
 
 ### Option: `password`
 
-This option is optional. Some self hosted web sites require an Authentication
+This option is optional. Some self-hosted websites require an Authentication
 password to access files within the docker image. #50
 
-This is NOT used for Authentication for your website. If you want this have a
-look at [Authentication for your website](#Authentication-for-your-website)
+This is NOT used for Authentication for your website. If you want this take a
+look at [Authentication for your website](#-authentication)
 
 ### Option: `ssl`
 
 Enables/Disables SSL (HTTPS) on the web interface.
 
-If you need a self-signed certificate, have a look at my openssl addon:
+If you need a self-signed certificate, take a look at my openssl addon:
 <https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_

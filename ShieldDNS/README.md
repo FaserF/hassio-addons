@@ -1,12 +1,12 @@
-<!-- markdownlint-disable-line MD033 -->
-<img src="logo.png" align="right" width="128" height="128">
+<!-- markdownlint-disable MD033 MD041 MD013 -->
+<img src="logo.png" align="right" width="128" height="128" alt="ShieldDNS Logo">
+<!-- markdownlint-enable MD033 MD041 -->
 
 # ShieldDNS
 
-ShieldDNS allows you to securely accept DNS-over-TLS (DoT) connections from your
-mobile devices and forward them to your local AdGuard Home or other DNS servers.
-This secures your DNS queries even when you are on your local network (if your
-device enforces Private DNS) or if you expose this port securely.
+mobile devices and forward them to your local AdGuard Home or other DNS
+servers. This secures your DNS queries even when you are on your local network
+(if your device enforces Private DNS) or if you expose this port securely.
 
 ## Configuration
 
@@ -52,8 +52,8 @@ Port to listen for DNS-over-TLS. Default: `8853`.
 
 - **Why 8853?**: To avoid crashing if AdGuard Home is already using port 853.
 - **How to use with Android**: Android _requires_ Port 853.
-  - **Router Config**: Create a Port Forwarding rule: **WAN Port 853** -> **LAN Port
-    8853** (IP of Home Assistant).
+  - **Router Config**: Create a Port Forwarding rule: **WAN Port 853** ->
+    **LAN Port 8853** (IP of Home Assistant).
   - This way, the outside world sees 853 (Standard), but your Host uses 8853
     (No conflict).
 
@@ -99,11 +99,13 @@ If you WANT to use Native "Private DNS" (DoT):
 1. **Android Config**: Enter `dot.example.com` in settings.
 
 **Summary**:
+<!-- markdownlint-disable MD060 MD058 -->
 | Client | Hostname | Ingress | Protocol |
 | :--- | :--- | :--- | :--- |
 | **Android (App)** | `doh.example.com` | Tunnel | DoH (HTTPS) |
 | **Android (Native)**| `dot.example.com` | Port Fwd | DoT (TCP/853)|
 | **iOS / Browser** | `doh.example.com` | Tunnel | DoH (HTTPS) |
+<!-- markdownlint-enable MD060 MD058 -->
 
 ## Networking
 
@@ -131,7 +133,7 @@ docker container) to expose this addon to the internet without opening ports.
 
 ### AdGuard Home Integration
 
-To usage this Addon as a secure frontend for **AdGuard Home**:
+To use this Addon as a secure frontend for **AdGuard Home**:
 
 1. Install AdGuard Home Addon in Home Assistant.
 1. Note the IP address/Host of your Home Assistant.
@@ -163,7 +165,9 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 
 ## 🛡️ Security Best Practices
 
-Since you are exposing a DNS server to the public (via Tunnel or Port Forwarding), you should secure it to prevent abuse (DNS Amplification, Scanning, DDoS).
+Since you are exposing a DNS server to the public (via Tunnel or Port
+Forwarding), you should secure it to prevent abuse (DNS Amplification,
+Scanning, DDoS).
 
 ### 1. Cloudflare Tunnel (Highly Recommended)
 
@@ -174,9 +178,9 @@ Using Cloudflare Tunnel hides your Origin IP and allows you to use **Cloudflare 
   - **Block Bots**: Enable "Bot Fight Mode" or block known bot User-Agents.
 - **Rate Limiting**: Set a Rate Limiting rule for your hostname (e.g. max 50
   requests / 10 seconds per IP) to prevent flooding.
-- **Zero Trust Authentication**: If feasible, put the DNS endpoint behind Cloudflare
-  Access (Note: This breaks standard DoH clients unless they support authentication
-  headers).
+- **Zero Trust Authentication**: If feasible, put the DNS endpoint behind
+  Cloudflare Access (Note: This breaks standard DoH clients unless they
+  support authentication headers).
 
 ### 2. General Firewalls
 

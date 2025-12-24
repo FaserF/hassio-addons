@@ -1,13 +1,15 @@
 # Home Assistant Community Add-ons 🏠
 
-This repository contains a collection of custom **Home Assistant Add-ons** maintained by FaserF.
+This repository contains a collection of custom **Home Assistant Add-ons**
+maintained by FaserF.
 
 ## Installation 🚀
 
-1.  Click the button below to add this repository to your Home Assistant.
-    [![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+1. Click the button below to to add this repository to your Home Assistant.
+   [![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-2.  Or manually add this URL:
+2. Or manually add this URL:
+
     ```text
     https://github.com/FaserF/hassio-addons
     ```
@@ -27,11 +29,12 @@ This repository contains a collection of custom **Home Assistant Add-ons** maint
 | **[Switch LAN Play](switch_lan_play)** | Nintendo Switch LAN Play Client | ✅ |
 | **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
 | **[xqrepack](xqrepack)** | Xiaomi R3600 firmware patcher | ✅ |
-| **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Playwright) | ✅ |
+| **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Baileys) | ✅ |
 <!-- markdownlint-enable MD060 -->
 
 > [!NOTE]
-> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
+> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`,
+> `Tuya-Convert`, `Wiki.js`.
 
 ## Support 🙋‍♂️
 

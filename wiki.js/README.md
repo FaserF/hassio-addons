@@ -69,7 +69,7 @@ Raspberry Pi 4.
 ## Authors & contributors
 
 The original program is from the Requarks Team [NGPixel][NGPixel]. For more
-informations, please visit this page: <https://github.com/Requarks/wiki>
+information, please visit this page: <https://github.com/Requarks/wiki>
 The hassio addon is brought to you by [FaserF].
 
 ## License

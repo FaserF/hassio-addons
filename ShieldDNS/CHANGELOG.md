@@ -1,9 +1,11 @@
 # Changelog
+
 ## 1.3.15
 
-- **Improvement**: Implemented intentional "Smart Fallback" for DoT Port. Default is
-  now `853` (Standard), but if blocked (e.g. by AdGuard), it automatically switches
-  to `8853`. This fixes CI/CD tests while maintaining ease of use.
+- **Improvement**: Implemented intentional "Smart Fallback" for DoT Port.
+  Default is now `853` (Standard), but if blocked (e.g. by AdGuard), it
+  automatically switches to `8853`. This fixes CI/CD tests while maintaining
+  ease of use.
 
 ## 1.3.14
 
@@ -11,8 +13,9 @@
   initialization order in `run.sh`.
 - **Change**: Changed default `dot_port` to `8853` to prevent boot loops if AdGuard
   Home (port 853) is active.
-- **Improvement**: Added robust pre-flight port checks using `netstat`. Conflicts now
-  pause startup and show the conflicting process name instead of crashing.
+- **Improvement**: Added robust pre-flight port checks using `netstat`.
+  Conflicts now pause startup and show the conflicting process name instead of
+  crashing.
 - **Cleanup**: Removed unused "Alternative DoH Ports" (784, 2443) to simplify
   configuration.
 

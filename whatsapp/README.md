@@ -9,7 +9,10 @@
 
 ## 📖 About
 
-This Addon acts as a bridge between Home Assistant and the WhatsApp Web protocol. It runs a high-performance Node.js application that simulates a real WhatsApp client (like a browser), allowing you to send messages, images, and notifications directly from your smart home.
+This addon acts as a bridge between Home Assistant and the WhatsApp Web
+protocol. It runs a high-performance Node.js application that simulates a real
+WhatsApp client (like a browser), allowing you to send messages, images, and
+notifications directly from your smart home.
 
 ### ✨ Key Features
 
@@ -34,9 +37,11 @@ This Addon acts as a bridge between Home Assistant and the WhatsApp Web protocol
 
 ## ⚙️ Configuration
 
-The addon is designed to work out-of-the-box with **zero configuration** for most users.
+The addon is designed to work out-of-the-box with **zero configuration** for
+most users.
 
 ### Default Ports
+
 | Service | Port | Description |
 | :--- | :--- | :--- |
 | **API** | `8066` | Internal API for the integration |
@@ -49,9 +54,9 @@ log_level: info # Options: trace, debug, info, warning, error, fatal
 
 ## 🔒 Security & Dashboard (Ingress) 🛡️
 
-This Addon is secured with a **Token** and accessible via Home Assistant **Ingress**.
+This addon is secured with a **Token** and accessible via Home Assistant **Ingress**.
 
-1. Click **"Open Web UI"** on the Addon page.
+1. Click **"Open Web UI"** on the addon page.
 1. The Dashboard shows:
    - **Status**: Connected 🟢 / Disconnected 🔴
    - **QR Code**: For linking your device.
@@ -62,7 +67,7 @@ This Addon is secured with a **Token** and accessible via Home Assistant **Ingre
 
 ## 🔗 Integration Setup
 
-Once this Addon is running:
+Once this addon is running:
 
 1. Go to **Settings** > **Devices & Services**.
 1. Add Integration > Search for **WhatsApp**.
@@ -86,17 +91,18 @@ If you need to switch phones or fix a broken session:
 1. Click **Configure**.
 1. Check **"Reset Session (Logout)"**.
 1. Submit.
-   - *This clears the session in the Addon and allows you to re-scan.*
+   - *This clears the session in the addon and allows you to re-scan.*
 
 ### 🛑 "Connection Failure"
 
-- Ensure the Addon is running.
+- Ensure the addon is running.
 - Check if the **API Token** matches.
-- Check the Addon Logs for errors.
+- Check the addon logs for errors.
 
 ---
 
 ## 👨‍💻 Technical Details
+
 - **Base Image**: `ghcr.io/hassio-addons/base` (Alpine)
 - **Runtime**: Node.js 24 (Alpine Edge)
 - **Library**: @whiskeysockets/baileys (ESM)

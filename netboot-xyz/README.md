@@ -44,13 +44,13 @@ perfect for homelabs and network management.
 
 ## ⚙️ Configuration
 
-<!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD013 MD060 -->
 | Option | Type | Default | Description |
 |:---|:---|:---|:---|
 | `path` | `string` | `/media/netboot/image` | Directory to store local assets/images. |
 | `path_config` | `string` | `/media/netboot/config` | Directory for persistent configuration. |
 | `dhcp_range` | `string` | `192.168.178.200` | Simple DHCP range/IP if internal DHCP is used (advanced). |
-<!-- markdownlint-enable MD013 -->
+<!-- markdownlint-enable MD013 MD060 -->
 
 ### 📁 Storage
 

@@ -20,7 +20,7 @@ Pterodactyl® is a free, open-source game server management panel built with PHP
 React, and Go. Designed with security in mind, Pterodactyl runs all game servers
 in isolated Docker containers while exposing a beautiful and intuitive UI to end
 users.
-Stop settling for less. Make game servers a first class citizen on your platform.
+Stop settling for less. Make game servers a first-class citizen on your platform.
 
 ## Installation
 
@@ -35,7 +35,7 @@ Just click the link above or add my repo to the hassio addons repositorys:
 
 The MariaDB Integration is needed before installing this one!
 
-Afterwards create a new user in the MariaDB Addon called "pterodactyl" with
+Afterward create a new user in the MariaDB Addon called "pterodactyl" with
 full permissions on the database "panel"
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
@@ -98,7 +98,7 @@ Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the pterodactyl Project. For more informatios please
+The original program is from the pterodactyl Project. For more information please
 visit this page: <https://pterodactyl.io/>
 The hassio addon is brought to you by [FaserF].
 

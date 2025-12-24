@@ -1,4 +1,4 @@
-# Home Assistant Add-on: Solumati
+# Home Assistant Add-on: Solumati <!-- markdownlint-disable MD013 -->
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
@@ -42,7 +42,8 @@ privacy and control.
 
 ## ⚙️ Configuration
 
-All options are configured via the Home Assistant UI. The database is automatically managed.
+All options are configured via the Home Assistant UI. The database is
+automatically managed.
 
 ### Options
 
@@ -55,15 +56,19 @@ All options are configured via the Home Assistant UI. The database is automatica
 | `marketing_page_enabled` | boolean | `false` | Enable the marketing page                                                    |
 <!-- markdownlint-enable MD013 -->
 
-> **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
+> **Note**: OAuth providers and SMTP settings are configured in the
+> **Admin Panel** after first login, not here.
 
 ### ⚠️ Factory Reset (Danger Zone)
 
-| Option          | Type    | Default | Description                                                 |
-| :-------------- | :------ | :------ | :---------------------------------------------------------- |
-| `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
+<!-- markdownlint-disable MD013 MD060 -->
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `factory_reset` | `boolean` | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart. **Disable immediately after use.** |
+<!-- markdownlint-enable MD013 MD060 -->
 
-> **CAUTION**: Enabling `factory_reset` will **permanently delete**:
+> [!CAUTION]
+> Enabling `factory_reset` will **permanently delete**:
 >
 > * All user accounts and profiles
 > * All messages and conversations
@@ -72,22 +77,6 @@ All options are configured via the Home Assistant UI. The database is automatica
 >
 > This cannot be undone! After the reset, you must disable this option manually,
 > otherwise your data will be wiped again on each restart.
-<!-- -->
-> [!NOTE]
-> **Admin Password**: On the very first startup, check the **Log** tab for the
-> generated Admin password. Save this immediately!
-
-### ⚠️ Factory Reset
-
-> [!CAUTION]
-> **DANGER ZONE**: Enabling `factory_reset` will **PERMANENTLY DELETE** all
-> data, including users, messages, and images.
-
-<!-- markdownlint-disable MD013 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
-| `factory_reset` | `boolean` | `false` | Set to `true` and restart to wipe the database. **Disable immediately after use.** |
-<!-- markdownlint-enable MD013 -->
 
 ## 📚 Usage
 

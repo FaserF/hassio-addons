@@ -71,7 +71,7 @@ firmware_name: miwifi_rm1800_firmware_df7e3_1.0.385.bin
 This option is needed. Change it depending where your firmware files folder is.
 
 Note: it has to be somewhere in the /share folder! Other folders are not
-visible to this addon.
+visible to this add-on.
 
 ### Option: `firmware_name`
 
@@ -79,7 +79,7 @@ This option is needed. Change it depending what your firmware file is called.
 
 NOTE: Please keep the name rm1800 inside the firmware file, if you are using a
 image for the AX1800. This is needed, as the modifying process for AX1800 is
-different than for the AX3600!
+different from for the AX3600!
 
 ## Support
 

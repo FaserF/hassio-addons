@@ -20,9 +20,9 @@ the container to let Supervisor restart it.
 
 ### Session Lost
 
-If you lose your session, you may need to re-scan the QR code. You can trigger a new
-scan by reinstalling the integration or (in future versions) calling a "Logout"
-service.
+If you lose your session, you may need to re-scan the QR code. You can trigger
+a new scan by reinstalling the integration or (in future versions) calling a
+"Logout" service.
 
 ## Persistence
 

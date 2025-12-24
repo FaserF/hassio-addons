@@ -46,7 +46,7 @@ This option is needed. Change it depending where your config file is on your
 homeassistant installation.
 
 **Note**: _it has to be somewhere in the `/share/` folder! Other folders are
-not visible to this addon._
+not visible to this add-on._
 
 ### Option: `update_time_in_seconds`
 
@@ -63,7 +63,7 @@ Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from the maxisoft. For more informatios please visit
+The original program is from the maxisoft. For more information please visit
 this page: <https://github.com/maxisoft/Freenom-dns-updater>
 The hassio addon is brought to you by [FaserF].
 

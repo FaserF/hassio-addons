@@ -2,7 +2,7 @@
 
 ![Logo](logo.png)
 
-### Secure, Web-based File Manager (SFTP over HTTPS)
+## Secure, Web-based File Manager (SFTP over HTTPS)
 
 Main Project: [ShieldFile](https://github.com/FaserF/ShieldFile)
 
@@ -13,7 +13,9 @@ Home Assistant host (e.g. `/share`, `/media`, `/config`).
 > ShieldFile wraps the amazing Filebrowser project in a "Secure-by-Default"
 > container optimized for Home Assistant.
 
-## ❓ Why "ShieldFile" instead of plain Filebrowser <!-- markdownlint-disable-line MD026 -->
+<!-- markdownlint-disable MD013 MD026 -->
+## ❓ Why "ShieldFile" instead of plain Filebrowser
+<!-- markdownlint-enable MD013 MD026 -->
 
 ShieldFile is designed specifically for **Home Assistant** and **Security**:
 
@@ -41,7 +43,7 @@ ShieldFile works perfectly alongside other official and community add-ons:
 - **Configurable**: Choose which directory to serve.
 - **Multi-User**: Define primary users in `config.yaml`, manage robust permissions
   in the UI.
-- **Host Network**: High performance direct binding.
+- **Host Network**: High-performance direct binding.
 
 ## Installation
 
