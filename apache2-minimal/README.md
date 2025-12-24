@@ -20,7 +20,9 @@ Have a look at the README for Apache2 full Addon for more informations.
 
 ## ⚙️ Configuration
 
-Add the following to your `config.yaml` or configure via the UI:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 ```yaml
 certfile: fullchain.pem

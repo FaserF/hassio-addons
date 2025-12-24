@@ -25,7 +25,9 @@ servers. This secures your DNS queries even when you are on your local network
 
 ## ⚙️ Configuration
 
-Add the following to your `config.yaml` or configure via the UI:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 ```yaml
 certfile: fullchain.pem

@@ -20,6 +20,10 @@ jobs:
         run: |
            python3 .scripts/sync_templates.py
 
+      - name: 📄 Standardize READMEs & Configs (Auto-Fix)
+        run: |
+           python3 .scripts/standardize_readmes.py
+
       - name: 📖 Badge & Style Audit (Auto-Fix)
         run: |
            python3 .scripts/check_docs.py --fix

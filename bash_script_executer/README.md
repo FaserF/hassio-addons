@@ -41,7 +41,9 @@ Example File where your script could be: /share/scripts/script.sh
 
 ## ⚙️ Configuration
 
-Add the following to your `config.yaml` or configure via the UI:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 ```yaml
 script_path: /share/scripts/mycoolscript.sh

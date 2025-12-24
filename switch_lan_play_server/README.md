@@ -42,7 +42,9 @@ Just click the link above or add my repo to the hassio addons repositorys: <http
 
 ## ⚙️ Configuration
 
-Add the following to your `config.yaml` or configure via the UI:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 
 

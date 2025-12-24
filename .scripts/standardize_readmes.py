@@ -3,19 +3,13 @@ import os
 import re
 import yaml
 import json
+import argparse
+import shutil
 
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_HASH = "c1e285b7"  # Hash for FaserF/hassio-addons
 MAINTAINER = "FaserF"
-
-ADDONS = [
-    "AegisBot", "ShieldDNS", "ShieldFile", "apache2", "apache2-minimal",
-    "apache2-minimal-mariadb", "bash_script_executer", "homeassistant-test-instance",
-    "matterbridge", "netboot-xyz", "openssl", "pterodactyl-panel",
-    "pterodactyl-wings", "solumati", "switch_lan_play",
-    "switch_lan_play_server", "tado_aa", "whatsapp", "wiki.js"
-]
 
 def load_addon_config(addon_path):
     """Load config.yaml or config.json."""
@@ -147,38 +141,62 @@ def maximize_config_example(config, config_type):
         # Simple YAML dump for options
         return f"```yaml\n{yaml.dump(options, default_flow_style=False)}```"
 
-def process_addon(addon):
-    print(f"Processing {addon}...")
-    addon_path = os.path.join(os.getcwd(), addon)
+def find_addons(base_path):
+    """Recursively find add-ons (directories with config.yaml/json)."""
+    addons = []
+
+    # Root level check
+    for item in os.listdir(base_path):
+        item_path = os.path.join(base_path, item)
+        if os.path.isdir(item_path) and not item.startswith("."):
+            if os.path.exists(os.path.join(item_path, "config.yaml")) or \
+               os.path.exists(os.path.join(item_path, "config.json")):
+                addons.append(item_path)
+
+    # Unsupported folder check
+    unsupported_path = os.path.join(base_path, "unsupported")
+    if os.path.exists(unsupported_path):
+        for item in os.listdir(unsupported_path):
+            item_path = os.path.join(unsupported_path, item)
+            if os.path.isdir(item_path):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or \
+                   os.path.exists(os.path.join(item_path, "config.json")):
+                    addons.append(item_path)
+
+    # Also check if cwd is an addon
+    if os.path.exists(os.path.join(base_path, "config.yaml")) or \
+       os.path.exists(os.path.join(base_path, "config.json")):
+         # Usually scripts run from root, but just in case
+         pass
+
+    return addons
+
+def process_addon(addon_path):
+    print(f"Processing {addon_path}...")
     readme_path = os.path.join(addon_path, "README.md")
 
     if not os.path.exists(readme_path):
-        print(f"Skipping {addon}: No README.")
+        print(f"Skipping {addon_path}: No README.")
         return
 
-    # 0. Backup if not exists
-    if not os.path.exists(readme_path + ".bak"):
-        try:
-            shutil.copy(readme_path, readme_path + ".bak")
-        except:
-             pass
+    # 0. Backup (Optional, maybe skip if repeatedly running)
 
     # 1. Read Content
     with open(readme_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     # 2. Extract description (simple heuristic or use clean_existing_content)
-    # Ideally we keep the 'description' from config.yaml as the quote
     config, config_type = load_addon_config(addon_path)
     if not config:
-        print(f"Warning: No config for {addon}")
+        print(f"Warning: No config for {addon_path}")
         return
 
-    name = config.get("name", addon)
+    addon_dirname = os.path.basename(addon_path)
+    name = config.get("name", addon_dirname)
     description = config.get("description", "Home Assistant Add-on")
-    slug = f"{REPO_HASH}_{addon}" # e.g. c1e285b7_whatsapp
+    slug = f"{REPO_HASH}_{addon_dirname}" # e.g. c1e285b7_whatsapp
 
-    # 3. Clean Content (The bulk of the text)
+    # 3. Clean Content
     body_content = clean_existing_content(content)
 
     # 4. Construct New README
@@ -197,7 +215,8 @@ def process_addon(addon):
 
     # Configuration
     new_content += "## ⚙️ Configuration\n\n"
-    new_content += "Add the following to your `config.yaml` or configure via the UI:\n\n"
+    new_content += "Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.\n\n"
+    new_content += "### Options\n\n"
     new_content += maximize_config_example(config, config_type) + "\n\n"
     new_content += "---\n\n"
 
@@ -210,16 +229,24 @@ def process_addon(addon):
     with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
-    print(f"✅ {addon} Standardized.")
+    print(f"✅ {addon_dirname} Standardized.")
 
 if __name__ == "__main__":
-    import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--addon", help="Run for specific addon")
+    parser.add_argument("--addon", help="Run for specific addon directory")
     args = parser.parse_args()
 
+    base_path = os.getcwd()
+
     if args.addon:
-        process_addon(args.addon)
+        # Handle specific path
+        path = os.path.abspath(args.addon)
+        if os.path.exists(path):
+            process_addon(path)
+        else:
+            print(f"Addon path not found: {path}")
     else:
-        for addon in ADDONS:
+        found_addons = find_addons(base_path)
+        print(f"Found {len(found_addons)} add-ons.")
+        for addon in found_addons:
             process_addon(addon)

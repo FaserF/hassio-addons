@@ -67,7 +67,9 @@ ShieldFile works perfectly alongside other official and community add-ons:
 
 ## ⚙️ Configuration
 
-Add the following to your `config.yaml` or configure via the UI:
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
 
 ```yaml
 base_directory: /share
