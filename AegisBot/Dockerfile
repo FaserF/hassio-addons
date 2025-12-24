@@ -64,6 +64,7 @@ RUN \
 ARG AEGISBOT_VERSION="latest"
 
 WORKDIR /tmp/build
+# hadolint ignore=DL3003,DL3018
 RUN \
     echo "Attempting to fetch AegisBot version: ${AEGISBOT_VERSION}" && \
     # 1. Resolve Version URL

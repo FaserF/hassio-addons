@@ -4,10 +4,13 @@ FROM ${BUILD_FROM}
 # Install necessary tools
 # 'curl' and 'bash' for installing filebrowser
 # 'dos2unix' to fix potential Windows line ending issues in scripts
+# 'dos2unix' to fix potential Windows line ending issues in scripts
+# hadolint ignore=DL3018
 RUN apk add --no-cache curl bash dos2unix
 
 # Setup Filebrowser
 # We grab the binary from the official install script
+# hadolint ignore=DL4006
 RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
 
 # Create database directory

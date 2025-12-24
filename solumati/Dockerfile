@@ -28,6 +28,7 @@ RUN \
 # Download the specific release tarball
 ARG SOLUMATI_VERSION="v2025.12.4b0"
 WORKDIR /tmp
+# hadolint ignore=DL4006
 RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
     tar -xzf solumati.tar.gz && \
     mv Solumati-* src && \

@@ -5,6 +5,7 @@ FROM ${BUILD_FROM}
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
 
+# hadolint ignore=DL3018
 RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
 
 # Copy data for add-on

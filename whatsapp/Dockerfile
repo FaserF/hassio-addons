@@ -5,6 +5,7 @@ FROM $BUILD_FROM
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # 1. Install Node.js & Git (Using standard repos for stability)
+# hadolint ignore=DL3018
 RUN \
     apk add --no-cache \
         nodejs \

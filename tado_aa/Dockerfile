@@ -6,7 +6,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
-# hadolint ignore=DL3003
+# hadolint ignore=DL3003,DL3018
 RUN apk add --no-cache wget unzip sed py3-pip
 
 # Prepare venv

@@ -15,8 +15,8 @@ RUN apk -U --no-cache add \
     build-base
 
 #Install SLP Client
-RUN git clone https://github.com/spacemeowx2/switch-lan-play.git \
-    && cd switch-lan-play \
+WORKDIR /switch-lan-play
+RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && mkdir build \
     && cd build \
     && cmake .. \

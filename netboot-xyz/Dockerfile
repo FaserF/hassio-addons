@@ -6,6 +6,7 @@ ARG NETBOOTXYZ_VERSION="0.7.6"
 
 RUN \
   echo "**** install runtime packages ****" && \
+  # hadolint ignore=DL3018
   apk add --no-cache \
     dnsmasq \
     nginx \

@@ -2,8 +2,11 @@ ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
+# hadolint ignore=DL3018,DL3059
 RUN apk --update add redis curl gettext mariadb-client nginx php82 php82-bcmath php82-common php82-dom php82-fileinfo
+# hadolint ignore=DL3018,DL3059
 RUN apk --update add php82-fpm php82-gd php82-pecl-memcached php82-mbstring php82-openssl php82-pdo php82-phar php82-json
+# hadolint ignore=DL3018,DL3059
 RUN apk --update add php82-sodium php82-pdo_mysql php82-session php82-simplexml php82-tokenizer php82-ctype php82-zlib php82-zip php82-xmlwriter tini
 RUN mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/
 RUN ln -s /usr/bin/php82 /usr/bin/php
@@ -17,6 +20,7 @@ RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release
 RUN rm -rf .git
 RUN chmod -R 755 storage/* bootstrap/cache
 RUN find storage -type d > .storage.tmpl
+# hadolint ignore=DL4006
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN cp .env.example .env
 RUN composer install --ansi --no-dev --optimize-autoloader

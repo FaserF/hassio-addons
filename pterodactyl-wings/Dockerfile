@@ -3,6 +3,7 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 RUN \
+# hadolint ignore=DL3018
 apk add --no-cache ca-certificates curl tini tzdata; \
 mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl
 

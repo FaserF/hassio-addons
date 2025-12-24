@@ -4,6 +4,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
+# hadolint ignore=DL3018
 RUN apk add --no-cache wget tar mariadb-client
 
 ENV NODE_VERSION 22.9.0
@@ -11,6 +12,7 @@ ENV NODE_VERSION 22.9.0
 # Separate steps for better debugging
 RUN addgroup -g 1000 node && \
     adduser -u 1000 -G node -s /bin/sh -D node && \
+    # hadolint ignore=DL3018
     apk add --no-cache libstdc++ && \
     apk add --no-cache --virtual .build-deps curl
 
@@ -74,6 +76,7 @@ RUN rm -f "node-v$NODE_VERSION-linux-$ARCH-musl.tar.xz" && \
 ENV YARN_VERSION 1.22.22
 
 # Separate steps for better debugging
+# hadolint ignore=DL3018
 RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar
 
 RUN export GNUPGHOME="$(mktemp -d)" && \
