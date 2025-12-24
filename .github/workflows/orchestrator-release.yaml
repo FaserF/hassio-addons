@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🚀 Run Trigger Script
         run: python3 .scripts/trigger_edge_updates.py
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # If manual dispatch, verify the specific add-on
       - name: 🕵️ Add-on Linter (Manual)
@@ -91,7 +91,7 @@ jobs:
       packages: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
