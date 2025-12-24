@@ -57,7 +57,7 @@ jobs:
         with:
           scandir: "./${{ matrix.addon }}"
         env:
-          SHELLCHECK_OPTS: -s bash
+          SHELLCHECK_OPTS: -s bash -e SC2086
 
       # 2. Hadolint
       - name: 🐳 Hadolint

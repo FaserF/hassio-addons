@@ -13,7 +13,7 @@ webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
 if [ "$phpini" = "get_file" ]; then
-	cp $phppath /share/apache2addon_php.ini
+	cp "$phppath" /share/apache2addon_php.ini
 	echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
 	echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
 	exit 1
@@ -27,26 +27,26 @@ if bashio::config.has_value 'init_commands'; then
 	done <<<"$(bashio::config 'init_commands')"
 fi
 
-rm -r $webrootdocker
+rm -r "$webrootdocker"
 
 if [ ! -d "$DocumentRoot" ]; then
 	echo "You haven't put your website to $DocumentRoot"
 	echo "A default website will now be used"
-	mkdir $webrootdocker
-	cp /index.html $webrootdocker
+	mkdir "$webrootdocker"
+	cp /index.html "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
 	ln -s $DocumentRoot /var/www/localhost/htdocs
 fi
 
 #Set rights to web folders and create user
-if [ -d $DocumentRoot ]; then
-	find $DocumentRoot -type d -exec chmod 771 {} \;
+if [ -d "$DocumentRoot" ]; then
+	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
-		adduser -S $username -G www-data
+		adduser -S "$username" -G www-data
 		echo "$username:$password" | chpasswd $username
-		find $webrootdocker -type d -exec chown $username:www-data -R {} \;
-		find $webrootdocker -type f -exec chown $username:www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
+		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
 		find $webrootdocker -type d -exec chown www-data:www-data -R {} \;
@@ -57,8 +57,8 @@ fi
 if [ "$phpini" != "default" ]; then
 	if [ -f "$phpini" ]; then
 		echo "Your custom php.ini at $phpini will be used."
-		rm $phppath
-		cp $phpini $phppath
+		rm "$phppath"
+		cp "$phpini" "$phppath"
 	else
 		echo "You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead."
 	fi

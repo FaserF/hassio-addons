@@ -20,10 +20,14 @@ jobs:
           ref: ${{ github.head_ref }}
 
       # 1. Shell Scripts (Format)
-      - name: 🐚 Run shfmt
-        uses: mvdan/github-action-shfmt@v3
+      # 1. Shell Scripts (Format)
+      - name: 🐚 Setup shfmt
+        uses: mfinelli/setup-shfmt@v3
         with:
-          args: -w -s -i 2
+          shfmt-version: '3.7.0'
+
+      - name: 🐚 Run shfmt
+        run: shfmt -l -w .
 
       # 2. Python (Format & Sort Imports)
       # We format the internal scripts and any add-on python files

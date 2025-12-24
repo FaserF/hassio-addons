@@ -58,7 +58,8 @@ bashio::log.info "Target Version: $VERSION"
 
 # Log Level
 if bashio::config.has_value 'log_level'; then
-    LOG_LEVEL=$(bashio::config 'log_level' | tr '[:lower:]' '[:upper:]')
+    LOG_LEVEL=$(bashio::config 'log_level')
+    LOG_LEVEL=$(echo "$LOG_LEVEL" | tr '[:lower:]' '[:upper:]')
     case "$LOG_LEVEL" in
         TRACE|DEBUG) LOG_LEVEL="DEBUG" ;;
         NOTICE|INFO) LOG_LEVEL="INFO" ;;
@@ -89,7 +90,8 @@ fi
 
 # Secret Key
 if bashio::config.has_value 'secret_key' && [ -n "$(bashio::config 'secret_key')" ]; then
-    export SECRET_KEY=$(bashio::config 'secret_key')
+    SECRET_KEY=$(bashio::config 'secret_key')
+    export SECRET_KEY
     bashio::log.info "Using configured secret key"
 else
     # Generate or load secret key
@@ -97,12 +99,14 @@ else
         bashio::log.info "Generating secret key..."
         python3 -c 'import secrets; print(secrets.token_urlsafe(32))' > "$DATA_DIR/.secret_key"
     fi
-    export SECRET_KEY=$(cat "$DATA_DIR/.secret_key")
+    SECRET_KEY=$(cat "$DATA_DIR/.secret_key")
+    export SECRET_KEY
     bashio::log.info "Using auto-generated secret key"
 fi
 
 # Project Name
-export PROJECT_NAME=$(bashio::config 'project_name')
+PROJECT_NAME=$(bashio::config 'project_name')
+export PROJECT_NAME
 
 # Debug Mode
 if bashio::config.true 'debug'; then
@@ -122,7 +126,8 @@ fi
 
 # Demo Mode Type
 if bashio::config.has_value 'demo_mode_type'; then
-    export DEMO_MODE_TYPE=$(bashio::config 'demo_mode_type')
+    DEMO_MODE_TYPE=$(bashio::config 'demo_mode_type')
+    export DEMO_MODE_TYPE
     bashio::log.info "Demo mode type: $DEMO_MODE_TYPE"
 else
     export DEMO_MODE_TYPE="ephemeral"
@@ -133,7 +138,8 @@ bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
 # GitHub Repo Configuration
 if bashio::config.has_value 'github_repo' && [ -n "$(bashio::config 'github_repo')" ]; then
-    export GITHUB_REPO=$(bashio::config 'github_repo')
+    GITHUB_REPO=$(bashio::config 'github_repo')
+    export GITHUB_REPO
     bashio::log.info "GitHub Repo set to: $GITHUB_REPO"
 else
     export GITHUB_REPO="FaserF/AegisBot"
@@ -179,7 +185,8 @@ download_file() {
     bashio::log.info "Public access failed. Checking for token..."
 
     if [ -n "$token" ]; then
-        local auth_header=$(get_auth_header "$token")
+        local auth_header
+        auth_header=$(get_auth_header "$token")
         bashio::log.info "Token found (length: ${#token}). Retrying with authentication..."
         bashio::log.debug "Auth header format: ${auth_header:0:20}..."
 
@@ -240,8 +247,9 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 
     # Get GitHub Repo from config or use default
     GITHUB_REPO_CONFIG="${GITHUB_REPO:-FaserF/AegisBot}"
-    REPO_OWNER=$(echo "$GITHUB_REPO_CONFIG" | cut -d'/' -f1)
-    REPO_NAME=$(echo "$GITHUB_REPO_CONFIG" | cut -d'/' -f2)
+    GITHUB_REPO_CONFIG="${GITHUB_REPO:-FaserF/AegisBot}"
+    # REPO_OWNER=$(echo "$GITHUB_REPO_CONFIG" | cut -d'/' -f1)
+    # REPO_NAME=$(echo "$GITHUB_REPO_CONFIG" | cut -d'/' -f2)
 
     if [ "$DOWNLOAD_VERSION" == "latest" ]; then
         bashio::log.info "Fetching latest release information for $GITHUB_REPO_CONFIG..."
@@ -567,7 +575,7 @@ cd /app/backend || exit 1
 export PYTHONPATH=/app/backend
 
 # Start Uvicorn in background
-uvicorn app.main:app --host 127.0.0.1 --port 8001 --log-level "$(echo $LOG_LEVEL | tr '[:upper:]' '[:lower:]')" &
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
 
 # --- NGINX START ---

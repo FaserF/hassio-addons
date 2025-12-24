@@ -2,7 +2,9 @@ import os
 import yaml
 import re
 
-README_PATH = "README.md"
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+README_PATH = os.path.join(ROOT_DIR, "README.md")
 
 def get_config_info(addon_path):
     config_path = os.path.join(addon_path, "config.yaml")
