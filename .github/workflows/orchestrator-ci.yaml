@@ -30,32 +30,30 @@ jobs:
         run: |
           import os
           import json
+          import uuid
 
           filters = {}
           # Scan for config.yaml to identify add-ons
           for root, dirs, files in os.walk("."):
               if "config.yaml" in files:
-                  # It is an add-on
-                  addon_name = os.path.relpath(root, ".").strip("./")
-                  if addon_name.startswith("."): continue # Skip hidden
+                  addon_name = os.path.relpath(root, ".")
+                  if addon_name == ".": continue
+
+                  # Standardize path separators
+                  addon_name = addon_name.replace(os.path.sep, "/")
+
+                  if addon_name.startswith(".") or ("/" in addon_name and addon_name.split("/")[0].startswith(".")):
+                      continue
+
                   filters[addon_name] = [f"{addon_name}/**"]
 
-          # Convert to YAML string for dorny/paths-filter
-          yaml_lines = []
-          for key, values in filters.items():
-              yaml_lines.append(f"{key}:")
-              for v in values:
-                  yaml_lines.append(f"  - '{v}'")
+          # Dump as JSON (valid YAML)
+          json_content = json.dumps(filters)
 
-          yaml_content = "\\n".join(yaml_lines)
-
-          # Set output
-          # We need to handle multiline strings for GITHUB_OUTPUT
-          import uuid
           delimiter = uuid.uuid4()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"filters<<{delimiter}\n")
-              f.write(yaml_content)
+              f.write(json_content)
               f.write(f"\n{delimiter}\n")
 
         shell: python
