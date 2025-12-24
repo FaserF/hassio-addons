@@ -26,7 +26,8 @@
 
 - Fixed an error while updating / installing V2.13.X
   - This happened due to a faulty image building process
-  - Since this issue has been in the last few updates, I have stopped the automatic update and release workflow for now
+  - Since this issue has been in the last few updates, I have stopped the
+    automatic update and release workflow for now
 
 ## 2.13.1
 
@@ -84,7 +85,8 @@
 
 ## 2.10.0
 
-- add multiple PHP extensions: php83-simplexml php83-gd php83-json php83-imap php83-apcu
+- add multiple PHP extensions: php83-simplexml php83-gd php83-json
+  php83-imap php83-apcu
 
 ## 2.9.7
 
@@ -226,7 +228,8 @@
 
 ## 2.4.6
 
-- fixed an error where config parameters could not be read and lead to an error after starting the addon
+- fixed an error where config parameters could not be read and lead to an error
+  after starting the addon
 - fixed an error with php opcache
 
 ## 2.4.5
@@ -286,7 +289,8 @@
 ## 2.1.0
 
 - bump hassio-addon-base to V10.0.0
-- fixed an issue in the php7-locales which resulted in an issue while installing the addon
+- fixed an issue in the php7-locales which resulted in an issue while
+  installing the addon
 
 ## 2.0.4
 
@@ -309,9 +313,9 @@
 
 - add php7-xml support
 - this addon is now available in three variants:
-  Minimal
-  Minimal with MariaDB
-  this "normal" version with common used PHP Modules
+    - Minimal
+    - Minimal with MariaDB
+    - this "normal" version with common used PHP Modules
 
 ## 1.7.2
 

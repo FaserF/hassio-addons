@@ -1,3 +1,4 @@
+---
 name: Automatically bump version on netbootxyz updates and changelog
 
 permissions:
@@ -26,7 +27,16 @@ jobs:
           set -e
           echo "Starting version increment process..."
 
-          configFiles=$(find netboot-xyz -name 'config.yaml' -print0 | xargs -r0 echo)
+          # Check if config.yaml was modified
+          if git diff --name-only HEAD~1 HEAD | grep -q "netboot-xyz/config.yaml"; then
+             echo "Skipping version bump because netboot-xyz/config.yaml was already modified."
+             echo "bumped=false" >> $GITHUB_OUTPUT
+             exit 0
+          fi
+          echo "bumped=true" >> $GITHUB_OUTPUT
+
+          configFiles=$(find netboot-xyz -name 'config.yaml' -print0 | \
+            xargs -r0 echo)
           if [[ -z "$configFiles" ]]; then
               echo "❌ Error: No config.yaml files found!"
               exit 1
@@ -41,11 +51,15 @@ jobs:
                   exit 1
               fi
               if [ ! -r "$configfile" ]; then
-                  echo "❌ Error: $configfile is not readable! Trying to fix permissions..."
-                  chmod +r "$configfile" || { echo "❌ Failed to fix permissions!"; exit 1; }
+                  echo "❌ Error: $configfile is not readable! \
+                    Trying to fix permissions..."
+                  chmod +r "$configfile" || { \
+                    echo "❌ Failed to fix permissions!"; exit 1; }
               fi
 
-              OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}')
+              OLD_VERSION=$(grep -E \
+                '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' \
+                "$configfile" | head -1 | awk '{print $2}')
               if [[ -z "$OLD_VERSION" ]]; then
                   echo "❌ Error: Could not extract a valid version from $configfile"
                   cat "$configfile"
@@ -61,8 +75,10 @@ jobs:
 
               ((patch++))
               NEW_VERSION="$major.$minor.$patch"
-              echo "Updating $configfile from version $OLD_VERSION to $NEW_VERSION"
-              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" "$configfile" || {
+              echo "Updating $configfile from version $OLD_VERSION to \
+                $NEW_VERSION"
+              sed -i "s/^version: $OLD_VERSION/version: $NEW_VERSION/" \
+                "$configfile" || {
                   echo "❌ Error: Failed to update version in $configfile"
                   exit 1
               }
@@ -72,16 +88,19 @@ jobs:
 
       - name: "Update Changelog"
         id: changelog
+        if: steps.version.outputs.bumped == 'true'
         run: |
           set -e
           echo "🔄 Starting changelog version increment process..."
 
           repo_url="https://api.github.com/repos/netbootxyz/webapp"
           response=$(curl -s "$repo_url/releases")
-          latest_version=$(echo "$response" | grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
+          latest_version=$(echo "$response" | \
+            grep -oP '"tag_name": "\K[^"]+' | sed -n '1p')
           echo "✅ Latest version from repo: $latest_version"
 
-          files=$(find netboot-xyz -name "CHANGELOG.md" -exec grep -l "# Changelog" {} \;)
+          files=$(find netboot-xyz -name "CHANGELOG.md" \
+            -exec grep -l "# Changelog" {} \;)
           if [[ -z "$files" ]]; then
               echo "❌ Error: No CHANGELOG.md files found!"
               exit 1
@@ -90,10 +109,12 @@ jobs:
 
           while IFS= read -r file; do
               echo "Processing: $file"
-              current_version=$(grep -oP "^## \K\d+\.\d+\d+" "$file" | sort -rV | head -n1)
+              current_version=$(grep -oP "^## \K\d+\.\d+\d+" "$file" | \
+                sort -rV | head -n1)
               if [[ -z "$current_version" ]]; then
                   echo "⚠️ No valid version found in $file"
-                  current_version=$(grep -oP "^## \K\d+\.\d+\.\d" "$file" | sort -rV | head -n1) # Fallback für x.y.z
+                  current_version=$(grep -oP "^## \K\d+\.\d+\.\d" \
+                    "$file" | sort -rV | head -n1) # Fallback für x.y.z
                    if [[ -z "$current_version" ]]; then
                       echo "⚠️ No valid version found in $file after fallback"
                       continue
@@ -104,7 +125,9 @@ jobs:
               ((patch++))
               new_version="$major.$minor.$patch"
 
-              if ! sed -i "/# Changelog/a \\\\n## $new_version\\n- Automatically updated netboot-xyz to version $latest_version\\n" "$file"; then
+              if ! sed -i \
+                "/# Changelog/a \\\\n## $new_version\\n- Automatically updated netboot-xyz to version $latest_version\\n" \
+                "$file"; then
                   echo "❌ Error while writing changelog entry to $file"
                   exit 1
               fi
@@ -113,6 +136,7 @@ jobs:
           echo "🎉 Changelog update process completed successfully!"
 
       - name: Commit & Push
+        if: steps.version.outputs.bumped == 'true'
         uses: actions-js/push@v1.5
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

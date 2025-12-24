@@ -148,7 +148,8 @@
 
 ## 0.0.4
 
-- rewritten the dockerfile and installation to match it to the official dockerfile from tuya-convert:development
+- rewritten the dockerfile and installation to match it to the official
+  dockerfile from tuya-convert:development
 
 ## 0.0.3
 

@@ -84,7 +84,8 @@
 
 ## 1.4.4
 
-- This addon is obsolete and wont be supported anymore! Please use bluetooth-proxy instead!
+- This addon is obsolete and wont be supported anymore! Please use
+  bluetooth-proxy instead!
 
 ## 1.4.3
 
@@ -161,24 +162,29 @@
 ## 1.1.0
 
 - Fixed an issue where the config file wont be detected correctly
-- Rebase the dockerfile on hassio addon base to be independent from the original Dockerfile
+- Rebase the dockerfile on hassio addon base to be independent from the
+  original Dockerfile
 - Update base image which comes with the latest python and pip
 
 ## 1.0.4
 
-- Let this addon access host_dbus (hopefully this fixes the bluetooth connection issue)
+- Let this addon access host_dbus (hopefully this fixes the bluetooth
+  connection issue)
 
 ## 1.0.3
 
-- Let this addon run at the host network (hopefully this fixes the bluetooth connection issue)
+- Let this addon run at the host network (hopefully this fixes the
+  bluetooth connection issue)
 
 ## 1.0.2
 
-- Allow the use of the debugging mode (create a empty text file at /share/bt-mqtt-gateway-debug.txt to enable debugging mode)
+- Allow the use of the debugging mode (create a empty text file at
+  /share/bt-mqtt-gateway-debug.txt to enable debugging mode)
 
 ## 1.0.1
 
-- Allow Hardware access (fixes the issue that the addon cant connect via bluetooth to devices)
+- Allow Hardware access (fixes the issue that the addon cant connect via
+  bluetooth to devices)
 
 ## 1.0.0
 

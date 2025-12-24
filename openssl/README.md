@@ -1,23 +1,38 @@
 # Home Assistant Community Add-on: OpenSSL
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
 OpenSSL - Self signed certificates for Homeassistant OS
 
 ## About
 
-OpenSSL is a software library for applications that secure communications over computer networks against eavesdropping or need to identify the party at the other end. It is widely used by Internet servers, including the majority of HTTPS websites.
+OpenSSL is a software library for applications that secure communications over
+computer networks against eavesdropping or need to identify the party at the
+other end. It is widely used by Internet servers, including the majority of
+HTTPS websites.
 
-OpenSSL contains an open-source implementation of the SSL and TLS protocols. The core library, written in the C programming language, implements basic cryptographic functions and provides various utility functions. Wrappers allowing the use of the OpenSSL library in a variety of computer languages are available.
+OpenSSL contains an open-source implementation of the SSL and TLS protocols.
+The core library, written in the C programming language, implements basic
+cryptographic functions and provides various utility functions. Wrappers
+allowing the use of the OpenSSL library in a variety of computer languages are
+available.
 
-The OpenSSL Software Foundation (OSF) represents the OpenSSL project in most legal capacities including contributor license agreements, managing donations, and so on. OpenSSL Software Services (OSS) also represents the OpenSSL project, for Support Contracts.
+The OpenSSL Software Foundation (OSF) represents the OpenSSL project in most
+legal capacities including contributor license agreements, managing donations,
+and so on. OpenSSL Software Services (OSS) also represents the OpenSSL project,
+for Support Contracts.
 
 ## Installation
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
@@ -26,8 +41,10 @@ After starting the addon, a self signed certificate will be created and placed t
 /ssl/cert_openssl.pem
 
 These can then be used by other addons, for example my apache2 webserver addon.
-If the certificates are about to expire, just restart the addone once and new certificates will be created.
-WARNING: After restarting the addon, old certificates named as above will be deleted and overwritten!
+If the certificates are about to expire, just restart the addone once and new
+certificates will be created.
+WARNING: After restarting the addon, old certificates named as above will be
+deleted and overwritten!
 
 ## Configuration
 
@@ -54,7 +71,8 @@ Please keep in mind, that this software is only tested on armv7 running on a Tin
 
 ## Authors & contributors
 
-The original program is from the OpenSSL Project. For more informatios please visit this page: <https://www.openssl.org/>
+The original program is from the OpenSSL Project. For more informatios please
+visit this page: <https://www.openssl.org/>
 The hassio addon is brought to you by [FaserF].
 
 ## License

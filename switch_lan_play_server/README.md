@@ -1,17 +1,27 @@
 # Home Assistant Community Add-on: Nintendo Switch LAN-Play Server
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+![Supports armhf Architecture][armhf-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports i386 Architecture][i386-shield]
 ![Project Maintenance][maintenance-shield]
 
 Nintendo Switch LAN-Play Server for Homeassistant OS
 
 ## About
 
-To play with your CFW Nintendo Switch online, you can use this addon + a public or private Server. This addon can be used, to stop running the lan play client on a Desktop PC/Laptop.
+To play with your CFW Nintendo Switch online, you can use this addon + a public
+or private Server. This addon can be used, to stop running the lan play client
+on a Desktop PC/Laptop.
 
-This is just the Server Software and NOT the Client Sotware. To use a lan-play client with Homeassistant OS, please have a look at my other addon: <https://github.com/FaserF/hassio-addons/switch_lan_play>
+This is just the Server Software and NOT the Client Sotware. To use a lan-play
+client with Homeassistant OS, please have a look at my other addon:
+<https://github.com/FaserF/hassio-addons/switch_lan_play>
 
-This docker image will self-compile the latest lan-play software and run it based on your architecture. More information can be found here: <https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view>
+This docker image will self-compile the latest lan-play software and run it
+based on your architecture. More information can be found here:
+<https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view>
 
 The first start can take up to 10 minutes because of this! Depending on your hardware.
 
@@ -19,7 +29,8 @@ The first start can take up to 10 minutes because of this! Depending on your har
 
 [![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-The installation of this add-on is pretty straightforward and not different in comparison to installing any other custom Home Assistant add-on.
+The installation of this add-on is pretty straightforward and not different in
+comparison to installing any other custom Home Assistant add-on.
 
 Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
 
@@ -38,17 +49,20 @@ password: mysecretpw
 
 ### Option: `username`
 
-This option is optional. If you wont set up a username, no authentification will be used to connect to your server.
+This option is optional. If you wont set up a username, no authentification will
+be used to connect to your server.
 
 ### Option: `password`
 
-This option is optional. If you wont set up a password, no authentification will be used to connect to your server.
+This option is optional. If you wont set up a password, no authentification will
+be used to connect to your server.
 
 **Note**: If you leave this empty there will be issues.
 
 ## Homeassistant Sensor
 
-To get a HA Sensor with the current count of people online and a attribute of the server version on your server, add the following in your configuration.yaml
+To get a HA Sensor with the current count of people online and a attribute of
+the server version on your server, add the following in your configuration.yaml
 
 ```yaml
 sensor:
@@ -67,11 +81,13 @@ sensor:
 Got questions?
 
 You could [open an issue here][issue] GitHub.
-Please keep in mind, that this software is only tested on armv7 running on a Raspberry Pi 4.
+Please keep in mind, that this software is only tested on armv7 running on a
+Raspberry Pi 4.
 
 ## Authors & contributors
 
-The original program is from spacemeowx2. For more informatios please visit this github: <https://github.com/spacemeowx2/switch-lan-play>
+The original program is from spacemeowx2. For more information please visit this
+github: <https://github.com/spacemeowx2/switch-lan-play>
 The hassio addon is brought to you by [FaserF].
 
 ## License
