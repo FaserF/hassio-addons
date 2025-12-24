@@ -82,7 +82,7 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/lock-threads@v5
+      - uses: dessant/lock-threads@v6
         with:
           github-token: ${{ github.token }}
           issue-inactive-days: '60'
