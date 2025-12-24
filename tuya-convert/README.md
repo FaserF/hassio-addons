@@ -46,11 +46,11 @@ Tuya-Convert tool directly to your Home Assistant OS environment.
 ## ⚙️ Configuration
 
 <!-- markdownlint-disable MD013 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
-| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. |
-| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
-| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. |
+| Option        | Type      | Default               | Description                                       |
+|:--------------|:----------|:----------------------|:--------------------------------------------------|
+| `backup_path` | `string`  | `/share/tuya-convert` | Location to save original firmware backups.       |
+| `firmware`    | `string`  | `tasmota.bin`         | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
+| `accept_eula` | `boolean` | `false`               | Must be set to `true` to accept the agreement.    |
 <!-- markdownlint-enable MD013 -->
 
 > [!NOTE]

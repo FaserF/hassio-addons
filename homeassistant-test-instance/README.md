@@ -4,9 +4,9 @@ A standalone Home Assistant Core instance for testing purposes running as an add
 
 ## Installation
 
-1.  Install the add-on.
-2.  Start the add-on.
-3.  Access the new instance at `http://homeassistant.local:8124`.
+1. Install the add-on.
+2. Start the add-on.
+3. Access the new instance at `http://homeassistant.local:8124`.
 
 ## Configuration
 

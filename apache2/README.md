@@ -50,11 +50,11 @@ Apache Software Foundation.
 ## 🧰 Versions
 
 <!-- markdownlint-disable MD013 -->
-| Version | Features |
-| :--- | :--- |
-| [Full][full_url] | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
-| [Minimal][minimal_url] | Apache2 only |
-| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules |
+| Version                                  | Features                                                                     |
+|:-----------------------------------------|:-----------------------------------------------------------------------------|
+| [Full][full_url]                         | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Minimal][minimal_url]                   | Apache2 only                                                                 |
+| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules                              |
 <!-- markdownlint-enable MD013 -->
 
 [full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2

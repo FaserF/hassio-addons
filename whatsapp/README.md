@@ -37,8 +37,9 @@ This Addon acts as a bridge between Home Assistant and the WhatsApp Web protocol
 The addon is designed to work out-of-the-box with **zero configuration** for most users.
 
 ### Default Ports
-| Service | Port | Description |
-| :--- | :--- | :--- |
+
+| Service | Port   | Description                      |
+|:--------|:-------|:---------------------------------|
 | **API** | `8066` | Internal API for the integration |
 
 ### `config.yaml` Options

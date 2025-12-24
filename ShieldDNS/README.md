@@ -99,11 +99,12 @@ If you WANT to use Native "Private DNS" (DoT):
 1. **Android Config**: Enter `dot.example.com` in settings.
 
 **Summary**:
-| Client | Hostname | Ingress | Protocol |
-| :--- | :--- | :--- | :--- |
-| **Android (App)** | `doh.example.com` | Tunnel | DoH (HTTPS) |
-| **Android (Native)**| `dot.example.com` | Port Fwd | DoT (TCP/853)|
-| **iOS / Browser** | `doh.example.com` | Tunnel | DoH (HTTPS) |
+
+| Client               | Hostname          | Ingress  | Protocol      |
+|:---------------------|:------------------|:---------|:--------------|
+| **Android (App)**    | `doh.example.com` | Tunnel   | DoH (HTTPS)   |
+| **Android (Native)** | `dot.example.com` | Port Fwd | DoT (TCP/853) |
+| **iOS / Browser**    | `doh.example.com` | Tunnel   | DoH (HTTPS)   |
 
 ## Networking
 
@@ -146,7 +147,7 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 ## Supported Protocols
 
 | Parameter  | Protocol | Default |
-| ---------- | -------- | ------- |
+|------------|----------|---------|
 | `dot_port` | DoT      | 853     |
 | `doh_port` | DoH      | 3443    |
 

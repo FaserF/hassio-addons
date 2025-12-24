@@ -48,7 +48,7 @@ All options are configured via the Home Assistant UI. The database is automatica
 
 <!-- markdownlint-disable MD013 -->
 | Option                   | Type    | Default | Description                                                                  |
-| :----------------------- | :------ | :------ | :--------------------------------------------------------------------------- |
+|:-------------------------|:--------|:--------|:-----------------------------------------------------------------------------|
 | `log_level`              | select  | `info`  | Log verbosity: trace, debug, info, warning, error, fatal                     |
 | `test_mode`              | boolean | `false` | Enable test mode with dummy user data for testing                            |
 | `app_base_url`           | string  | (auto)  | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
@@ -60,7 +60,7 @@ All options are configured via the Home Assistant UI. The database is automatica
 ### ⚠️ Factory Reset (Danger Zone)
 
 | Option          | Type    | Default | Description                                                 |
-| :-------------- | :------ | :------ | :---------------------------------------------------------- |
+|:----------------|:--------|:--------|:------------------------------------------------------------|
 | `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
 
 > **CAUTION**: Enabling `factory_reset` will **permanently delete**:
@@ -84,8 +84,8 @@ All options are configured via the Home Assistant UI. The database is automatica
 > data, including users, messages, and images.
 
 <!-- markdownlint-disable MD013 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
+| Option          | Type      | Default | Description                                                                        |
+|:----------------|:----------|:--------|:-----------------------------------------------------------------------------------|
 | `factory_reset` | `boolean` | `false` | Set to `true` and restart to wipe the database. **Disable immediately after use.** |
 <!-- markdownlint-enable MD013 -->
 

@@ -3,10 +3,7 @@
   "extends": ["config:recommended"],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "no-stale"
-  ],
+  "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "customManagers": [
     {
@@ -59,78 +56,50 @@
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/base"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/base"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on Debian base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/debian-base"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on python base image",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "ghcr.io/hassio-addons/base-python"
-      ],
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/hassio-addons/base-python"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Matterbridge",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "42wim/matterbridge"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["42wim/matterbridge"],
       "automerge": true
     },
     {
       "groupName": "Netbootxyz",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "netbootxyz/webapp"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["netbootxyz/webapp"],
       "automerge": true
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
-      "addLabels": [
-        "python"
-      ],
+      "matchManagers": ["pip_requirements"],
+      "addLabels": ["python"],
       "rangeStrategy": "pin"
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
+      "matchManagers": ["pip_requirements"],
       "automerge": true
     },
     {
@@ -141,12 +110,8 @@
     },
     {
       "groupName": "Solumati",
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchDepNames": [
-        "FaserF/Solumati"
-      ],
+      "matchDatasources": ["github-releases"],
+      "matchDepNames": ["FaserF/Solumati"],
       "automerge": true,
       "ignoreUnstable": false
     }
