@@ -10,7 +10,7 @@ if [ ! -f "$config_file" ]; then
 	exit 1
 fi
 
-source ./venv/bin/activate
+# fdu requires no activation as it is installed globally
 
 fdu update "$config_file"
 

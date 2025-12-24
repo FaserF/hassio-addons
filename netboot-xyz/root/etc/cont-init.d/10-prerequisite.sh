@@ -21,7 +21,7 @@ adduser "$nginx_uid" nginx
 echo "Generating nginx config..."
 if bashio::var.has_value "${nginx_port}"; then
 	echo "server {" >/defaults/default
-	echo "	listen $nginx_port;" >>/defaults/default
+	echo "	listen "$nginx_port";" >>/defaults/default
 	echo "	location / {" >>/defaults/default
 	echo "		root /assets;" >>/defaults/default
 	echo "		autoindex on;" >>/defaults/default
@@ -57,11 +57,13 @@ if [ ! -d "$path" ]; then
 	echo "Looks like the path $path did not exist! We will create it. Copy your installations ISOs etc there."
 	mkdir -p "$path"
 fi
+rm -f /assets
 ln -s "$path" /assets
 if [ ! -d "$path_config" ]; then
 	echo "Looks like the path $path_config did not exist! We will still start the addon with default options!"
 	mkdir -p "$path_config"
 fi
+rm -f /config
 ln -s "$path_config" /config
 
 if [ ! -d /config/menus ]; then

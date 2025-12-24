@@ -97,11 +97,16 @@ def get_addon_status(addon_path, is_unsupported=False):
 
 def update_readme():
     """Update README.md with correct status indicators."""
-    readme_path = "README.MD"
+    # Try both case variants for cross-platform compatibility
+    readme_path = None
+    for candidate in ["README.md", "README.MD"]:
+        if os.path.exists(candidate):
+            readme_path = candidate
+            break
 
     # Check if README exists
-    if not os.path.exists(readme_path):
-        print(f"⚠️ README not found at {readme_path}")
+    if readme_path is None:
+        print("⚠️ README not found (tried README.md and README.MD)")
         return
 
     # Get all addon statuses

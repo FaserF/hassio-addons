@@ -31,7 +31,6 @@ body:
       description: >
         The name of the Addon you are wishing a new feature.
         For example: Apache2
-      default: 3
       options:
         - AegisBot
         - ShieldDNS

@@ -52,7 +52,7 @@ fi
 if [ ! -f /share/pterodactyl/.env ]; then
 	echo "No old config file found, starting first setup of pterodactyl"
 	echo "[setup] Generating Application Key..."
-	php81 artisan key:generate --no-interaction --force
+	php84 artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
 	hostname="hostname"
 	echo "REDIS_HOST=$hostname" >.env
@@ -66,17 +66,17 @@ fi
 echo ""
 echo "[setup] Clearing cache/views..."
 
-php81 artisan view:clear
-php81 artisan config:clear
+php84 artisan view:clear
+php84 artisan config:clear
 
 echo ""
 echo "[setup] Setup database credentials..."
 echo "MariaDB informations: ${host} ${port}"
-php81 artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}"
+php84 artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}"
 
 if [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."
-	php81 artisan migrate --seed --no-interaction --force
+	php84 artisan migrate --seed --no-interaction --force
 fi
 
 if [ ! -f /share/pterodactyl/nginx_default.conf ]; then
@@ -94,11 +94,11 @@ else
 	cp /share/pterodactyl/nginx_default.conf /etc/nginx/conf.d/default.conf
 fi
 
-#php81 artisan p:environment:mail list
+#php84 artisan p:environment:mail list
 
 if [ "$setup_user" = "true" ]; then
 	echo "[setup] Creating default user..."
-	php81 artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
+	php84 artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
 
 	echo "For the first login use admin@example.com / admin as user and your database password to sign in."
 	echo "Please ensure to change these credentials as soon as possible."
@@ -107,7 +107,7 @@ fi
 # ...
 
 echo "[start] Starting nginx and php"
-/usr/sbin/php-fpm81 --nodaemonize -c /etc/php81 &
+/usr/sbin/php-fpm81 --nodaemonize -c /etc/php84 &
 php_service_pid=$!
 /usr/sbin/nginx -g "daemon off;" &
 nginx_service_pid=$!
@@ -120,6 +120,6 @@ chown -R nginx:nginx /var/www/*
 echo " " >/var/log/nginx/pterodactyl.app-error.log
 echo " " >/var/www/html/storage/logs/laravel-"$(date +%F)".log
 
-php81 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
+php84 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
 tail -f /var/log/nginx/pterodactyl.app-error.log &
 tail -f /var/www/html/storage/logs/laravel-"$(date +%F)".log

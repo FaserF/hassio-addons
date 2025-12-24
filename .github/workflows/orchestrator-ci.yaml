@@ -57,7 +57,7 @@ jobs:
           # Dump as JSON (valid YAML)
           json_content = json.dumps(filters)
 
-          delimiter = uuid.uuid4()
+          delimiter = str(uuid.uuid4())
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"filters<<{delimiter}\n")
               f.write(json_content)

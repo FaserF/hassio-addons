@@ -1,6 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Setup Environment
 ENV LANG=C.UTF-8
@@ -19,8 +20,6 @@ RUN \
     musl-dev \
     libffi-dev \
     curl \
-    python3 \
-    py3-pip \
     postgresql-client \
     xz && \
     # Install Node.js 22.12.0 (LTS) to meet package requirements (>=20.19.0 || >=22.12.0 || >=24.0.0)
@@ -57,7 +56,6 @@ RUN \
     node --version && \
     npm --version
 
-# --- SOURCE CODE FETCH STAGE (OPTIMISTIC) ---
 # Try to download and build during Docker build if repo is public.
 # If this fails (e.g. private repo), we continue and let run.sh handle it.
 
@@ -147,4 +145,4 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/AegisBot"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/AegisBot"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/AegisBot/blob/master/AegisBot/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

@@ -1,14 +1,22 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": ["dependencies", "no-stale"],
+  "labels": [
+    "dependencies",
+    "no-stale"
+  ],
   "commitMessagePrefix": "⬆️",
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/", "//build.yaml$/"],
+      "fileMatch": [
+        "(^|/)Dockerfile$",
+        "(^|/)build.yaml$"
+      ],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -18,96 +26,158 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG NODE_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+",
+        "ENV NODE_VERSION v?(?<currentValue>.+?)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "nodejs/node"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ENV YARN_VERSION (?<currentValue>.+?)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "yarnpkg/yarn"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "42wim/matterbridge"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "netbootxyz/webapp"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": [
-        "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
-        "php(?<currentValue>\\d+)"
+      "fileMatch": [
+        "(^|/)Dockerfile$"
       ],
-      "datasourceTemplate": "alpine",
-      "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
+      "matchStrings": [
+        "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/Solumati"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "FaserF/Solumati"
+      "depNameTemplate": "Requarks/wiki"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/AegisBot"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "(?<depName>php)(?<currentValue>\\d+)(?:-[a-z0-9-]+)*"
+      ],
+      "datasourceTemplate": "alpine",
+      "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
     }
   ],
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "automerge": true,
       "ignoreTests": true
     },
     {
-      "groupName": "Add-on base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/base"],
+      "groupName": "Add-on base images",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base",
+        "ghcr.io/hassio-addons/debian-base",
+        "ghcr.io/hassio-addons/base-python"
+      ],
       "automerge": true,
       "ignoreTests": true
     },
     {
-      "groupName": "Add-on Debian base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"],
-      "automerge": true,
-      "ignoreTests": true
-    },
-    {
-      "groupName": "Add-on python base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/base-python"],
-      "automerge": true,
-      "ignoreTests": true
-    },
-    {
-      "groupName": "Matterbridge",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["42wim/matterbridge"],
+      "groupName": "Development Tools",
+      "matchDepNames": [
+        "nodejs/node",
+        "yarnpkg/yarn"
+      ],
       "automerge": true
     },
     {
-      "groupName": "Netbootxyz",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["netbootxyz/webapp"],
+      "groupName": "Add-on Softwares",
+      "matchDepNames": [
+        "42wim/matterbridge",
+        "netbootxyz/webapp",
+        "Requarks/wiki",
+        "FaserF/AegisBot",
+        "FaserF/Solumati"
+      ],
       "automerge": true
     },
     {
-      "matchManagers": ["pip_requirements"],
-      "addLabels": ["python"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "addLabels": [
+        "python"
+      ],
       "rangeStrategy": "pin"
     },
     {
-      "matchManagers": ["pip_requirements"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
       "automerge": true
     },
     {
       "groupName": "PHP Packages",
-      "matchDatasources": ["alpine"],
-      "automerge": true,
-      "matchPackageNames": ["/php\\d+/"]
-    },
-    {
-      "groupName": "Solumati",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["FaserF/Solumati"],
-      "automerge": true,
-      "ignoreUnstable": false
+      "matchDatasources": [
+        "alpine"
+      ],
+      "matchPackageNames": [
+        "/php\\d+/"
+      ],
+      "automerge": true
     }
   ]
 }

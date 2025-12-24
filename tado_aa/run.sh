@@ -7,10 +7,10 @@ minTemp=$(bashio::config 'minTemp')
 maxTemp=$(bashio::config 'maxTemp')
 log_level=$(bashio::config 'log_level')
 
-sed -i "s/your_tado_username/${username}/" /tado_aa.py
-sed -i "s|your_tado_password|${password}|" /tado_aa.py
-sed -i "s/5/${minTemp}/" /tado_aa.py
-sed -i "s/25/${maxTemp}/" /tado_aa.py
+export TADO_USERNAME="${username}"
+export TADO_PASSWORD="${password}"
+export TADO_MIN_TEMP="${minTemp}"
+export TADO_MAX_TEMP="${maxTemp}"
 
 source ./venv/bin/activate
 

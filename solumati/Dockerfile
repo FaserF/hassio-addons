@@ -1,6 +1,9 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
+
+ARG BUILD_DATE
 
 # Setup Environment
 ENV LANG C.UTF-8
@@ -20,15 +23,12 @@ RUN \
     musl-dev \
     libffi-dev \
 
-    curl \
-    python3 \
-    py3-pip
+    curl
 
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
 ARG SOLUMATI_VERSION="v2025.12.4b0"
 WORKDIR /tmp
-# hadolint ignore=DL4006
 RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
     tar -xzf solumati.tar.gz && \
     mv Solumati-* src && \
@@ -37,6 +37,7 @@ RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VER
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
+ARG BUILD_DATE
 RUN cp /tmp/src/frontend/package.json . && \
     (cp /tmp/src/frontend/package-lock.json* . || true) && \
     npm install && \
@@ -58,9 +59,9 @@ RUN cp /tmp/src/backend/requirements.txt . && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code from cloned source
+ARG BUILD_DATE
 RUN cp -r /tmp/src/backend/. .
 
-# Move built frontend to a location Nginx can serve
 # Move built frontend to a location Nginx can serve
 RUN mkdir -p /app/frontend && \
     cp -r /tmp/frontend_build/dist/* /app/frontend/
@@ -72,6 +73,10 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
+# Healthcheck
+HEALTHCHECK \
+    CMD curl --fail http://127.0.0.1:80/ || exit 1
+
 CMD [ "/run.sh" ]
 
 # Labels
@@ -80,7 +85,7 @@ LABEL org.opencontainers.image.description="The Anti-Swipe Revolution - Self-hos
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/solumati"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/solumati"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/Solumati"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/Solumati"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/solumati/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

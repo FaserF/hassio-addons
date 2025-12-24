@@ -2,6 +2,7 @@ ARG BUILD_FROM
 ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
@@ -29,3 +30,7 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/apache2-minimal/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

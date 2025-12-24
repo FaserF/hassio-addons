@@ -32,7 +32,7 @@ def generate_labels(addon_path):
         "org.opencontainers.image.url": f'"{url}"',
         "org.opencontainers.image.source": f'"{url}"',
         "org.opencontainers.image.documentation": f'"{url}/blob/master/{os.path.basename(addon_path)}/README.md"',
-        "org.opencontainers.image.created": f'"{datetime.date.today()}"',
+        "org.opencontainers.image.created": '"${BUILD_DATE}"',
     }
 
     with open(dockerfile_path, "r", encoding="utf-8") as f:

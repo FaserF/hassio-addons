@@ -1,6 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 ARG NETBOOTXYZ_VERSION="0.7.6"
 
@@ -33,6 +34,7 @@ COPY root/ /
 EXPOSE 3000
 
 # Ensure all run files from the services are executable
+ARG BUILD_DATE
 RUN chmod a+x /etc/services.d/*/run
 
 # Configure DNSMASQ
@@ -47,4 +49,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/netboot-xyz/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

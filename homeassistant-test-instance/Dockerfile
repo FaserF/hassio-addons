@@ -1,6 +1,10 @@
 ARG HA_VERSION=stable
-ARG BUILD_DATE
 FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
+ARG BUILD_DATE
+
+# Re-declare ARG after FROM to make it available in this build stage
+ARG BUILD_DATE
+ARG BUILD_DATE
 
 # Persist data in the add-on data directory
 CMD [ "hass", "-c", "/data" ]
@@ -15,3 +19,7 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/homeassistant-test-instance"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/homeassistant-test-instance/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

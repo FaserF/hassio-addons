@@ -70,7 +70,6 @@ body:
       label: Add-On causing the issue
       description: >
         The name of the Addon. For example: Apache2
-      default: 3
       options:
         - AegisBot
         - ShieldDNS

@@ -1,6 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
 RUN mkdir /run/apache2
@@ -52,8 +53,9 @@ RUN apk --no-cache add \
     ffmpeg
 
 #musl-locales/php-locales
-# hadolint ignore=DL3003,DL3018
+# hadolint ignore=DL3018
 RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl
+# hadolint ignore=DL3003,DL3047
 RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
@@ -66,6 +68,7 @@ RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-loca
 #    && pecl install ssh2-1.3.1
 #RUN docker-php-ext-enable ssh2
 #From here beginning most likely needed
+ARG BUILD_DATE
 #RUN apk --no-cache add libssh2-dev
 #RUN wget -O ssh2.tgz https://pecl.php.net/get/ssh2-1.3.1.tgz \
 #    && mkdir ssh2 && tar vxzf ssh2.tgz -C ssh2 --strip-components 1 \
@@ -93,4 +96,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/apache2"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/apache2/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

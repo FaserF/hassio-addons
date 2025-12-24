@@ -18,7 +18,7 @@ def check_addon(addon_path):
         errors.append("Dockerfile missing")
         return False, errors, warnings
 
-    with open(dockerfile_path, "r") as f:
+    with open(dockerfile_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Check 1: S6 Overlay

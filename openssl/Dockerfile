@@ -1,6 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # hadolint ignore=DL3018
 RUN apk --no-cache add openssl
@@ -19,4 +20,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/openssl"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/openssl"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/openssl/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

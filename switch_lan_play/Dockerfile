@@ -1,6 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Install requirements for add-on
 # hadolint ignore=DL3018
@@ -43,3 +44,7 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/switch_lan_play/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

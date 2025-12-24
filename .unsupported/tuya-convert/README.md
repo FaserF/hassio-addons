@@ -9,6 +9,10 @@
 
 > Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (Unsupported)
 
+> [!WARNING]
+> **UNSUPPORTED**: This add-on is no longer maintained by FaserF.
+> It can be used as a Local Add-on, but it is provided "as is" without support.
+
 ---
 
 > [!CAUTION]

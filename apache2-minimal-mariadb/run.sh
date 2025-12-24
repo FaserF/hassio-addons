@@ -22,7 +22,7 @@ if bashio::config.has_value 'init_commands'; then
 	done <<<"$(bashio::config 'init_commands')"
 fi
 
-rm -r "$webrootdocker"
+rm -rf "$webrootdocker"
 
 if [ ! -d "$DocumentRoot" ]; then
 	echo "You haven't put your website to $DocumentRoot"

@@ -1,10 +1,12 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ARG BUILD_DATE
 
 # hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache \
-    wget python3 python3-dev py3-pip lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
+    wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
     pip install python-lzo ubi_reader && \
     mkdir /xqrepack && \
     wget -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
@@ -25,4 +27,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/xqrepack"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/xqrepack"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/.unsupported/xqrepack/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

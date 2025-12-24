@@ -1,5 +1,6 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:alpine
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Install necessary tools
 # 'curl' and 'bash' for installing filebrowser
@@ -20,7 +21,11 @@ RUN mkdir -p /data/database
 COPY run.sh /run.sh
 RUN dos2unix /run.sh && chmod a+x /run.sh
 
-ENTRYPOINT [ "/run.sh" ]
+# Healthcheck
+HEALTHCHECK \
+    CMD curl --fail http://127.0.0.1:80/ || exit 1
+
+CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"
@@ -31,4 +36,4 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/ShieldFile/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

@@ -1,6 +1,6 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
-ARG BUILD_DATE
 FROM $BUILD_FROM
+ARG BUILD_DATE
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -17,9 +17,11 @@ RUN \
 WORKDIR /opt/whatsapp
 
 # 3. Copy EVERYTHING from the context
+ARG BUILD_DATE
 COPY . .
 
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
+# hadolint ignore=DL3018
 RUN \
     apk add --no-cache dos2unix && \
     if [ -d "rootfs" ]; then \
@@ -69,3 +71,7 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+
+
+

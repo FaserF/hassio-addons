@@ -1,6 +1,8 @@
 ARG BUILD_FROM
 ARG BUILD_DATE
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -8,9 +10,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 RUN apk add --no-cache wget tar mariadb-client
 
-ENV NODE_VERSION 22.9.0
+ARG NODE_VERSION="22.12.0"
 
 # Separate steps for better debugging
+# hadolint ignore=DL3018
 RUN addgroup -g 1000 node && \
     adduser -u 1000 -G node -s /bin/sh -D node && \
     # hadolint ignore=DL3018
@@ -18,6 +21,7 @@ RUN addgroup -g 1000 node && \
     apk add --no-cache --virtual .build-deps curl
 
 # Architecture detection and checksum verification
+# hadolint ignore=DL3003,DL3018,SC2046,SC2043
 RUN ARCH= && alpineArch="$(apk --print-arch)" && \
     case "${alpineArch##*-}" in \
         x86_64) \
@@ -35,7 +39,7 @@ RUN ARCH= && alpineArch="$(apk --print-arch)" && \
         ln -s /usr/local/bin/node /usr/local/bin/nodejs; \
     else \
         echo "Building from source"; \
-        apk add --no-cache --virtual .build-deps-full binutils-gold g++ gcc gnupg libgcc linux-headers make python3; \
+apk add --no-cache --virtual .build-deps-full binutils-gold g++ gcc gnupg libgcc linux-headers make python3; \
         export GNUPGHOME="$(mktemp -d)"; \
         for key in \
             4ED778F539E3634C779C87C6D7062848A1AB005C \
@@ -74,12 +78,13 @@ RUN rm -f "node-v$NODE_VERSION-linux-$ARCH-musl.tar.xz" && \
     node --version && \
     npm --version
 
-ENV YARN_VERSION 1.22.22
+ARG YARN_VERSION="1.22.22"
 
 # Separate steps for better debugging
 # hadolint ignore=DL3018
 RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar
 
+# hadolint ignore=SC2046,SC2043
 RUN export GNUPGHOME="$(mktemp -d)" && \
     for key in \
         6A010C5166006599AA17F08146C2130DFD2497F5; \
@@ -102,6 +107,7 @@ RUN export GNUPGHOME="$(mktemp -d)" && \
 
 WORKDIR /wiki
 ARG WIKIJS_VERSION="v2.5.303"
+# hadolint ignore=DL3047,DL4001
 RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wiki-js.tar.gz && \
     tar xzf wiki-js.tar.gz -C /wiki && \
     rm wiki-js.tar.gz && \
@@ -109,6 +115,10 @@ RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wi
 
 COPY run.sh /
 RUN chmod a+x /run.sh
+# Healthcheck
+HEALTHCHECK \
+    CMD curl --fail http://127.0.0.1:3000/ || exit 1
+
 CMD [ "/run.sh" ]
 
 # Labels
