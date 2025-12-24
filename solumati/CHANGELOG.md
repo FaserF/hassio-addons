@@ -6,7 +6,8 @@
 
 ## 1.5.8
 
-- Improved build script robustness: now checks for `vite.config.ts` or `vite.config.js` automatically.
+- Improved build script robustness: now checks for `vite.config.ts` or
+  `vite.config.js` automatically.
 - Enhanced API URL replacement to handle different syntax variations.
 
 ## 1.5.7
@@ -58,7 +59,8 @@
       - Completely wipes all data (database, images, settings)
       - 5-second delay before reset to allow cancellation
       - Must be manually disabled after reset
-- **REMOVED**: OAuth/project_name options (these are configured in Admin Panel, not env vars)
+- **REMOVED**: OAuth/project_name options (these are configured in Admin Panel,
+  not env vars)
 - Updated documentation with factory reset warnings
 - Updated Solumati to v2025.12.2-b3
 

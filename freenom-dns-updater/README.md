@@ -45,8 +45,8 @@ update_time_in_seconds: 86400
 This option is needed. Change it depending where your config file is on your
 homeassistant installation.
 
-**Note**: _it has to be somewhere in the `/share/` folder! Other folders are not
-visible to this addon._
+**Note**: _it has to be somewhere in the `/share/` folder! Other folders are
+not visible to this addon._
 
 ### Option: `update_time_in_seconds`
 

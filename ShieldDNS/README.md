@@ -1,16 +1,22 @@
+<!-- markdownlint-disable-line MD033 -->
 <img src="logo.png" align="right" width="128" height="128">
 
 # ShieldDNS
 
-ShieldDNS allows you to securely accept DNS-over-TLS (DoT) connections from your mobile devices and forward them to your local AdGuard Home or other DNS servers. This secures your DNS queries even when you are on your local network (if your device enforces Private DNS) or if you expose this port securely.
+ShieldDNS allows you to securely accept DNS-over-TLS (DoT) connections from your
+mobile devices and forward them to your local AdGuard Home or other DNS servers.
+This secures your DNS queries even when you are on your local network (if your
+device enforces Private DNS) or if you expose this port securely.
 
 ## Configuration
 
-**Note**: You must have valid SSL certificates for the domain you are using. If you use the standard HA SSL setup, your certs are likely in `/ssl/`.
+**Note**: You must have valid SSL certificates for the domain you are using. If you
+use the standard HA SSL setup, your certs are likely in `/ssl/`.
 
 ### Option: `upstream_dns` (Required)
 
-The IP address of your upstream DNS server. This is usually your AdGuard Home IP, or `1.1.1.1` if you just want a DoT gateway to the internet.
+The IP address of your upstream DNS server. This is usually your AdGuard Home IP,
+or `1.1.1.1` if you just want a DoT gateway to the internet.
 
 ### Option: `certfile` (Required)
 
@@ -24,12 +30,13 @@ Example: `privkey.pem`
 
 ### Option: `cloudflare_tunnel_token` (Optional)
 
-If you want to expose your DNS server via Cloudflare Tunnel (no port forwarding required), provide your Tunnel Token here.
+If you want to expose your DNS server via Cloudflare Tunnel
+(no port forwarding required), provide your Tunnel Token here.
 
 1. Create a tunnel in Cloudflare Zero Trust Dashboard.
-2. Select "Docker" as the environment.
-3. Copy the token (the long string after `--token` in the installation command).
-4. Paste it here.
+1. Select "Docker" as the environment.
+1. Copy the token (the long string after `--token` in the installation command).
+1. Paste it here.
 
 ### Option: `log_level` (Optional)
 
@@ -45,13 +52,16 @@ Port to listen for DNS-over-TLS. Default: `8853`.
 
 - **Why 8853?**: To avoid crashing if AdGuard Home is already using port 853.
 - **How to use with Android**: Android _requires_ Port 853.
-  - **Router Config**: Create a Port Forwarding rule: **WAN Port 853** -> **LAN Port 8853** (IP of Home Assistant).
-  - This way, the outside world sees 853 (Standard), but your Host uses 8853 (No conflict).
+  - **Router Config**: Create a Port Forwarding rule: **WAN Port 853** -> **LAN Port
+    8853** (IP of Home Assistant).
+  - This way, the outside world sees 853 (Standard), but your Host uses 8853
+    (No conflict).
 
 ### Option: `doh_port` (Required for Cloudflare Tunnel)
 
 Port to listen for DNS-over-HTTPS. Default: `3443`.
-_Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel should point here._
+_Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel
+should point here._
 
 ### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
 
@@ -75,16 +85,18 @@ There is a common misunderstanding about Android "Private DNS".
 
 If you use Cloudflare Tunnel:
 
-1.  You **cannot** use the "Private DNS" setting in Android Settings. It will stay "Connecting..." or "Cannot access".
-2.  You **MUST** use an App like **[Intra](https://play.google.com/store/apps/details?id=app.intra)**.
-    - In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
+1. You **cannot** use the "Private DNS" setting in Android Settings. It will stay
+   "Connecting..." or "Cannot access".
+1. You **MUST** use an App like **[Intra](https://play.google.com/store/apps/details?id=app.intra)**.
+   - In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
 
 If you WANT to use Native "Private DNS" (DoT):
 
-1.  **Requirement**: You need a second DNS record (e.g. `dot.example.com`).
-2.  **DNS Config**: This record must be **DNS Only** (Grey Cloud) and point to your home IP.
-3.  **Router Config**: Port Forward **WAN 853** -> **LAN 8853** (HA IP).
-4.  **Android Config**: Enter `dot.example.com` in settings.
+1. **Requirement**: You need a second DNS record (e.g. `dot.example.com`).
+1. **DNS Config**: This record must be **DNS Only** (Grey Cloud) and point to your
+   home IP.
+1. **Router Config**: Port Forward **WAN 853** -> **LAN 8853** (HA IP).
+1. **Android Config**: Enter `dot.example.com` in settings.
 
 **Summary**:
 | Client | Hostname | Ingress | Protocol |
@@ -98,32 +110,38 @@ If you WANT to use Native "Private DNS" (DoT):
 This Addon runs in **Host Network** mode to preserve the "Source IP" of DNS queries.
 This means:
 
-1.  **Source IPs**: AdGuard Home will see the real IP of the client (e.g. your phone).
-2.  **Ports**: The ports configured above are opened directly on your Host device.
-3.  **Conflicts**: Ensure these ports are not used by other services (like AdGuard Home encryption or Nginx Proxy Manager).
+1. **Source IPs**: AdGuard Home will see the real IP of the client (e.g. your phone).
+1. **Ports**: The ports configured above are opened directly on your Host device.
+1. **Conflicts**: Ensure these ports are not used by other services (like AdGuard
+   Home encryption or Nginx Proxy Manager).
 
 ## Integrations
 
 ### Cloudflare Tunnel (Official Addon) support
 
-You can use the official **Cloudflare Tunnel** Home Assistant Addon (or cloudflared docker container) to expose this addon to the internet without opening ports.
+You can use the official **Cloudflare Tunnel** Home Assistant Addon (or cloudflared
+docker container) to expose this addon to the internet without opening ports.
 
 **Setup:**
 
 1. In Cloudflare Dashboard, create a Public Hostname (e.g., `dns.example.com`).
-2. Point the Service to `HTTPS://localhost:3443` (or whatever `doh_port` you configured).
-3. Under **TLS Verify**, disable verification (No TLS Verify) or provide the CA.
+1. Point the Service to `HTTPS://localhost:3443` (or whatever `doh_port` you
+   configured).
+1. Under **TLS Verify**, disable verification (No TLS Verify) or provide the CA.
 
 ### AdGuard Home Integration
 
 To usage this Addon as a secure frontend for **AdGuard Home**:
 
 1. Install AdGuard Home Addon in Home Assistant.
-2. Note the IP address/Host of your Home Assistant.
-3. In ShieldDNS configuration, set `upstream_dns` to this IP.
-4. ShieldDNS will now accept encrypted requests and forward them locally to AdGuard Home.
-5. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share ports with AdGuard Home if both try to bind the same port on all interfaces.
-   - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration (`dot_port`, `doh_port`) or disable encryption in AdGuard.
+1. Note the IP address/Host of your Home Assistant.
+1. In ShieldDNS configuration, set `upstream_dns` to this IP.
+1. ShieldDNS will now accept encrypted requests and forward them locally to
+   AdGuard Home.
+1. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share
+   ports with AdGuard Home if both try to bind the same port on all interfaces.
+   - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration
+     (`dot_port`, `doh_port`) or disable encryption in AdGuard.
 
 ## Supported Protocols
 
@@ -135,11 +153,13 @@ To usage this Addon as a secure frontend for **AdGuard Home**:
 ## Usage
 
 1. Configure the options above.
-2. Start the Addon.
-3. On your Android device:
-   - **Method A (App - Recommended)**: Install **Intra**, set URL to `https://<your-domain>/dns-query`.
-   - **Method B (Native - Port Fwd only)**: Go to **Settings > Private DNS** and enter `<your-domain>`.
-4. Save. Your device will now send encrypted DNS queries!
+1. Start the Addon.
+1. On your Android device:
+   - **Method A (App - Recommended)**: Install **Intra**, set URL to
+     `https://<your-domain>/dns-query`.
+   - **Method B (Native - Port Fwd only)**: Go to **Settings > Private DNS** and
+     enter `<your-domain>`.
+1. Save. Your device will now send encrypted DNS queries!
 
 ## 🛡️ Security Best Practices
 
@@ -152,8 +172,11 @@ Using Cloudflare Tunnel hides your Origin IP and allows you to use **Cloudflare 
 - **WAF / Custom Rules**:
   - **Block Countries**: Block all countries except your own.
   - **Block Bots**: Enable "Bot Fight Mode" or block known bot User-Agents.
-- **Rate Limiting**: Set a Rate Limiting rule for your hostname (e.g. max 50 requests / 10 seconds per IP) to prevent flooding.
-- **Zero Trust Authentication**: If feasible, put the DNS endpoint behind Cloudflare Access (Note: This breaks standard DoH clients unless they support authentication headers).
+- **Rate Limiting**: Set a Rate Limiting rule for your hostname (e.g. max 50
+  requests / 10 seconds per IP) to prevent flooding.
+- **Zero Trust Authentication**: If feasible, put the DNS endpoint behind Cloudflare
+  Access (Note: This breaks standard DoH clients unless they support authentication
+  headers).
 
 ### 2. General Firewalls
 

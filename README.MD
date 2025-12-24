@@ -8,12 +8,13 @@ This repository contains a collection of custom **Home Assistant Add-ons** maint
     [![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 2.  Or manually add this URL:
-    ```
+    ```text
     https://github.com/FaserF/hassio-addons
     ```
 
 ## Add-ons List 📦
 
+<!-- markdownlint-disable MD060 -->
 | Name | Description | Status |
 | :--- | :--- | :--- |
 | **[Apache2](apache2)** | Webserver (Minimal / MariaDB / PHP) | ✅ |
@@ -27,6 +28,7 @@ This repository contains a collection of custom **Home Assistant Add-ons** maint
 | **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
 | **[xqrepack](xqrepack)** | Xiaomi R3600 firmware patcher | ✅ |
 | **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Playwright) | ✅ |
+<!-- markdownlint-enable MD060 -->
 
 > [!NOTE]
 > **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.

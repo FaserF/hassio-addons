@@ -20,16 +20,16 @@ versions are available to fit different needs and use cases.
 
 ## 📋 Table of Contents
 
-- [About](#about)
-- [Versions](#versions)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Authentication](#authentication)
-- [Ingress](#ingress)
-- [MariaDB Usage](#mariadb-usage)
-- [Limitations](#limitations)
-- [Support](#support)
-- [License](#license)
+- [About](#-about)
+- [Versions](#-versions)
+- [Installation](#-installation)
+- [Configuration](#️-configuration)
+- [Authentication](#-authentication)
+- [Ingress](#-ingress)
+- [MariaDB Usage](#-mariadb-usage)
+- [Limitations](#️-limitations)
+- [Support](#-support)
+- [License](#-license)
 
 ---
 
@@ -206,7 +206,7 @@ htpasswd -c /share/htdocs/.htpasswd myuser
 
 Then reference it in your `.htaccess` file like this:
 
-```
+```text
 AuthType Basic
 AuthName "Restricted Content"
 AuthUserFile /share/htdocs/.htpasswd

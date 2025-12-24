@@ -1,13 +1,13 @@
 # Home Assistant Add-on: Netboot.xyz
 
-<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/netboot-xyz/icon.png" alt="Netboot.xyz Logo" width="100">
   <br>
   <strong>Your favorite operating systems in one place.</strong>
+  <br>
 </div>
-<!-- markdownlint-enable MD033 -->
-<br>
+<!-- markdownlint-enable MD033 MD013 -->
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
 ![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)

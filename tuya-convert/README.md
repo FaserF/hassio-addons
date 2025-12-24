@@ -1,13 +1,13 @@
 # Home Assistant Add-on: Tuya-Convert
 
-<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/ct-Open-Source/tuya-convert/master/docs/logo.png" alt="Tuya Convert Logo" width="100">
   <br>
   <strong>Flash Tuya devices over the air!</strong>
+  <br>
 </div>
-<!-- markdownlint-enable MD033 -->
-<br>
+<!-- markdownlint-enable MD033 MD013 -->
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
 ![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)

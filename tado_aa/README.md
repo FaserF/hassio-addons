@@ -1,4 +1,6 @@
-# Home Assistant Community Add-on: Tado Auto-Assist for Geofencing and Open Window Detection <!-- markdownlint-disable-line MD013 -->
+<!-- markdownlint-disable MD013 -->
+# Home Assistant Community Add-on: Tado Auto-Assist for Geofencing and Open Window Detection
+<!-- markdownlint-enable MD013 -->
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]

@@ -78,8 +78,6 @@ If you need a self-signed certificate, take a look at my openssl addon:
 Enables it to reset the database files for pterodactyl. Please not this action
 can not be undone! Use it with care.
 
-
-
 ## Default Login Credentials
 
 E-Mail: <admin@example.com>

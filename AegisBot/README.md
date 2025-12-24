@@ -20,10 +20,10 @@ See the [Documentation](DOCS.md) for detailed installation instructions.
 ## Quick Start
 
 1. Add this repository to Home Assistant
-2. Install the AegisBot add-on
-3. Configure your Telegram Bot Token
-4. Start the add-on
-5. Access via Ingress
+1. Install the AegisBot add-on
+1. Configure your Telegram Bot Token
+1. Start the add-on
+1. Access via Ingress
 
 ## Configuration
 

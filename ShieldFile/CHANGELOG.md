@@ -11,7 +11,8 @@
 
 ## 1.0.11
 
-- Switched Base Image to standard `ghcr.io/home-assistant/amd64-base:alpine` to resolve S6 overlay conflicts.
+- Switched Base Image to standard `ghcr.io/home-assistant/amd64-base:alpine` to
+  resolve S6 overlay conflicts.
 - This aligns the execution environment with other working addons (like Solumati).
 
 ## 1.0.10
@@ -20,7 +21,8 @@
 
 ## 1.0.9
 
-- Refactored startup to use direct `CMD` execution instead of S6 services to definitively resolve PID 1 errors.
+- Refactored startup to use direct `CMD` execution instead of S6 services to
+  definitively resolve PID 1 errors.
 - **Note**: This requires a manual `git push` to take effect.
 
 ## 1.0.8
@@ -33,15 +35,18 @@
 
 ## 1.0.6
 
-- Implemented manual environment loading to fix PID 1 error while maintaining Supervisor API access.
+- Implemented manual environment loading to fix PID 1 error while maintaining
+  Supervisor API access.
 
 ## 1.0.5
 
-- Removed `with-contenv` from shebang to permanently resolve the "s6-overlay-suexec: fatal: can only run as pid 1" error.
+- Removed `with-contenv` from shebang to permanently resolve the
+  "s6-overlay-suexec: fatal: can only run as pid 1" error.
 
 ## 1.0.4
 
-- Refactored startup to use S6 legacy services (services.d) properly, fixing PID 1 error.
+- Refactored startup to use S6 legacy services (services.d) properly,
+  fixing PID 1 error.
 
 ## 1.0.3
 
@@ -49,7 +54,8 @@
 
 ## 1.0.1 & 1.0.2
 
-- **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6 services.d) to resolve s6 loop error.
+- **Fix**: Critical startup fix. Refactored Container structure (CMD vs S6
+  services.d) to resolve s6 loop error.
 
 ## 1.0.0
 

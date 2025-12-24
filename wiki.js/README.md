@@ -41,17 +41,18 @@ keyfile: privkey.pem
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable it,
-`false` otherwise.
+Enables/Disables SSL (HTTPS) on the web interface. Set it `true` to enable
+it, `false` otherwise.
 
-If you need a self-signed certificate, have a look at my openssl addon: <https://github.com/FaserF/hassio-addons/tree/master/openssl>
+If you need a self-signed certificate, have a look at my openssl addon:
+<https://github.com/FaserF/hassio-addons/tree/master/openssl>
 
 **Note**: _The files MUST be stored in `/ssl/`, which is the default_
 
 ### Option: `reset_database`
 
-Enables it to reset the database files for pterodactyl. Please not this action
-can not be undone! Use it with care.
+Enables it to reset the database files for pterodactyl. Please not this
+action can not be undone! Use it with care.
 
 ## Ingress
 

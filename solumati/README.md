@@ -1,13 +1,13 @@
 # Home Assistant Add-on: Solumati
 
-<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
   <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="300">
   <br>
   <strong>The Anti-Swipe Revolution</strong>
+  <br>
 </div>
-<!-- markdownlint-enable MD033 -->
-<br>
+<!-- markdownlint-enable MD033 MD013 -->
 
 ![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
 ![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)
@@ -46,12 +46,14 @@ All options are configured via the Home Assistant UI. The database is automatica
 
 ### Options
 
+<!-- markdownlint-disable MD013 -->
 | Option                   | Type    | Default | Description                                                                  |
 | :----------------------- | :------ | :------ | :--------------------------------------------------------------------------- |
 | `log_level`              | select  | `info`  | Log verbosity: trace, debug, info, warning, error, fatal                     |
 | `test_mode`              | boolean | `false` | Enable test mode with dummy user data for testing                            |
 | `app_base_url`           | string  | (auto)  | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
 | `marketing_page_enabled` | boolean | `false` | Enable the marketing page                                                    |
+<!-- markdownlint-enable MD013 -->
 
 > **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
 
@@ -63,13 +65,14 @@ All options are configured via the Home Assistant UI. The database is automatica
 
 > **CAUTION**: Enabling `factory_reset` will **permanently delete**:
 >
-> - All user accounts and profiles
-> - All messages and conversations
-> - All uploaded images
-> - All settings and configurations
+> * All user accounts and profiles
+> * All messages and conversations
+> * All uploaded images
+> * All settings and configurations
 >
-> This cannot be undone! After the reset, you must disable this option manually, otherwise your data will be wiped again on each restart.
-
+> This cannot be undone! After the reset, you must disable this option manually,
+> otherwise your data will be wiped again on each restart.
+<!-- -->
 > [!NOTE]
 > **Admin Password**: On the very first startup, check the **Log** tab for the
 > generated Admin password. Save this immediately!
