@@ -21,7 +21,7 @@ To play with your CFW Nintendo Switch online, you can use this addon + a public
 or private Server. This addon can be used, to stop running the lan play client
 on a Desktop PC/Laptop.
 
-This is just the Client Software and NOT the Server Sotware. To use a lan-play
+This is just the Client Software and NOT the Server Software. To use a lan-play
 server with Homeassistant OS, please have a look at my other addon:
 <https://github.com/FaserF/hassio-addons/switch_lan_play_server>
 

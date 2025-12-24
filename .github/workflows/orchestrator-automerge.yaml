@@ -11,10 +11,13 @@ jobs:
   enable-auto-merge:
     name: 🤖 Enable Auto-Merge
     runs-on: ubuntu-latest
-    if: |
-      github.actor == 'dependabot[bot]' ||
-      github.actor == 'renovate[bot]' ||
-      github.actor == 'FaserF'
+    if: >-
+      github.event.pull_request.head.repo.fork == false &&
+      (
+        github.event.pull_request.user.login == 'dependabot[bot]' ||
+        github.event.pull_request.user.login == 'renovate[bot]' ||
+        github.event.pull_request.user.login == 'FaserF'
+      )
     permissions:
       contents: write
       pull-requests: write
