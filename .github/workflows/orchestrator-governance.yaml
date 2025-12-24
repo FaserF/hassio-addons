@@ -5,8 +5,6 @@ on:
     - cron: '0 0 * * 1' # Weekly: Mondays at 00:00
   issues:
     types: [opened, edited]
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -22,13 +20,6 @@ jobs:
     name: 🏷️ Auto Labeler
     runs-on: ubuntu-latest
     steps:
-      - name: 🏷️ Label PRs (File-based)
-        if: github.event_name == 'pull_request'
-        uses: actions/labeler@v5
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          sync-labels: true
-
       - name: 🏷️ Label Issues (Form-based)
         if: github.event_name == 'issues'
         uses: actions/github-script@v8

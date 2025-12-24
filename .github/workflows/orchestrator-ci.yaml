@@ -54,9 +54,9 @@ jobs:
           import uuid
           delimiter = uuid.uuid4()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"filters<<{delimiter}\\n")
+              f.write(f"filters<<{delimiter}\n")
               f.write(yaml_content)
-              f.write(f"\\n{delimiter}\\n")
+              f.write(f"\n{delimiter}\n")
 
         shell: python
 
