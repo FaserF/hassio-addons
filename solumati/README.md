@@ -1,96 +1,73 @@
-# Home Assistant Add-on: Solumati
+# Solumati
 
-The Anti-Swipe Revolution - A self-hosted dating platform focused on meaningful matches.
+![Logo](logo.png)
 
-![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
-![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_solumati)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-## About
+> The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
 
-Solumati is a revolutionary dating platform designed to bring meaning back to matchmaking.
-By hosting this add-on, you run your own instance of the Solumati platform directly on
-your Home Assistant server.
+---
 
-## Features
+## 📖 About
 
-- **Home Assistant Ingress**: Secure access through the HA sidebar (no port forwarding needed)
-- **Self-Hosted**: Your data stays on your server
-- **Integrated Database**: Comes with a pre-configured PostgreSQL database
-- **Auto-configuration**: Zero-config setup for the database connection
-- **Test Mode**: Optional mode for testing with dummy user data
-- **OAuth/SMTP Support**: Configure via Admin Panel after first login
-- **Secure**:
-  - Admin password is automatically generated on first startup
-  - Database password is internally managed and randomized
-  - Ingress provides secure authenticated access
+<!-- markdownlint-disable MD033 MD013 -->
+<div align="center">
+  <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="300">
+  <br>
+  <strong>The Anti-Swipe Revolution</strong>
+  <br>
+</div>
+<!-- markdownlint-enable MD033 MD013 -->
 
-## Installation
+**Solumati** is a self-hosted dating platform designed to bring meaning back to
+matchmaking. By hosting this add-on, you run your own private instance of the
+Solumati platform directly on your Home Assistant server, ensuring complete data
+privacy and control.
 
-1. Add this repository to your Home Assistant Add-on Store.
-2. Install the **Solumati** add-on.
-3. Configure the options (see below).
-4. Start the add-on.
-5. Click "OPEN WEB UI" or access via the sidebar.
+## ✨ Features
 
-## Configuration
+- **🔒 Secure & Private**: Your data stays on your server.
+- **🏠 Home Assistant Ingress**: Seamless integration via the HA sidebar with
+  no port forwarding required.
+- **🔌 Auto-Configuration**: Zero-config setup; the database connection is
+  managed automatically.
+- **🧪 Test Mode**: Includes a built-in mode to generate dummy users for safe
+  testing.
+- **📧 OAuth & SMTP**: Full support for external authentication and email
+  notifications (configured via the Admin Panel).
 
-All options are configured via the Home Assistant UI. The database is automatically managed.
+## 🚀 Installation
+
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Solumati** add-on.
+1. Review the **Configuration** options below.
+1. Start the add-on.
+1. Click **"OPEN WEB UI"** to launch the interface.
+
+---
+
+## ⚙️ Configuration
+
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
 ### Options
 
-| Option                   | Type    | Default | Description                                                                  |
-| :----------------------- | :------ | :------ | :--------------------------------------------------------------------------- |
-| `log_level`              | select  | `info`  | Log verbosity: trace, debug, info, warning, error, fatal                     |
-| `test_mode`              | boolean | `false` | Enable test mode with dummy user data for testing                            |
-| `app_base_url`           | string  | (auto)  | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
-| `marketing_page_enabled` | boolean | `false` | Enable the marketing page                                                    |
+```yaml
+app_base_url: ''
+dev_use_main_branch: false
+factory_reset: false
+github_token: ''
+log_level: info
+marketing_page_enabled: false
+test_mode: false
+```
 
-> **Note**: OAuth providers and SMTP settings are configured in the **Admin Panel** after first login, not here.
+---
 
-### ⚠️ Factory Reset (Danger Zone)
+## 👨‍💻 Credits & License
 
-| Option          | Type    | Default | Description                                                 |
-| :-------------- | :------ | :------ | :---------------------------------------------------------- |
-| `factory_reset` | boolean | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart |
-
-> **CAUTION**: Enabling `factory_reset` will **permanently delete**:
->
-> - All user accounts and profiles
-> - All messages and conversations
-> - All uploaded images
-> - All settings and configurations
->
-> This cannot be undone! After the reset, you must disable this option manually, otherwise your data will be wiped again on each restart.
-
-## Usage
-
-### First Start & Admin Password
-
-When you start the add-on for the first time:
-
-1. Start the add-on
-2. Check the **Log** tab
-3. Look for: `Admin user created with password: ...`
-4. Copy this password immediately and store it securely!
-
-### Accessing the Interface
-
-- **Recommended**: Click the Solumati icon in the Home Assistant sidebar (Ingress)
-- **Alternative**: Click "OPEN WEB UI" or access `http://homeassistant.local:8099`
-
-### Test Mode
-
-Enable `test_mode` to generate dummy users for testing the matching algorithm.
-Disable it in production to prevent fake profiles.
-
-## Support
-
-Got questions? [Open an issue here](https://github.com/FaserF/hassio-addons/issues).
-
-## Authors & Contributors
-
-The [original Solumati software](https://github.com/FaserF/Solumati) is created by **FaserF**.
-
-## License
-
-GNU AFFERO GENERAL PUBLIC LICENSE (AGPL)
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

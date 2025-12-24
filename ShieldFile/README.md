@@ -1,87 +1,92 @@
-# ShieldFile Addon 🛡️📂
+# ShieldFile
 
 ![Logo](logo.png)
 
-**Secure, Web-based File Manager (SFTP over HTTPS)**
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_ShieldFile)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Secure, Web-based File Manager (SFTP over HTTPS)
+
+---
+
+## 📖 About
+
+## Secure, Web-based File Manager (SFTP over HTTPS)
 
 Main Project: [ShieldFile](https://github.com/FaserF/ShieldFile)
 
-ShieldFile provides a modern, fast, and secure way to manage files on your Home Assistant host (e.g. `/share`, `/media`, `/config`).
+ShieldFile provides a modern, fast, and secure way to manage files on your
+Home Assistant host (e.g. `/share`, `/media`, `/config`).
 
 > **Powered by [Filebrowser](https://filebrowser.org/)** ❤️
-> ShieldFile wraps the amazing Filebrowser project in a "Secure-by-Default" container optimized for Home Assistant.
+> ShieldFile wraps the amazing Filebrowser project in a "Secure-by-Default"
+> container optimized for Home Assistant.
 
-## ❓ Why "ShieldFile" instead of plain Filebrowser?
+<!-- markdownlint-disable MD013 MD026 -->
+
+## ❓ Why "ShieldFile" instead of plain Filebrowser
+
+<!-- markdownlint-enable MD013 MD026 -->
 
 ShieldFile is designed specifically for **Home Assistant** and **Security**:
 
-1.  **🔐 Secure Defaults**: ShieldFile enforces HTTPS. It automatically generates self-signed certificates if you don't have your own, ensuring your file transfers are never cleartext.
-2.  **🏠 HA Integration**: It pre-mounts your critical Home Assistant folders (`/config`, `/media`, `/share`, `/backup`) so you can manage them instantly.
-3.  **🛡️ Identity**: It fits perfectly into the "Shield" ecosystem (like ShieldDNS), providing a consistent, branded experience for your private cloud.
+1. **🔐 Secure Defaults**: ShieldFile enforces HTTPS. It automatically generates
+   self-signed certificates if you don't have your own, ensuring your file
+   transfers are never cleartext.
+1. **🏠 HA Integration**: It pre-mounts your critical Home Assistant folders
+   (`/config`, `/media`, `/share`, `/backup`) so you can manage them instantly.
+1. **🛡️ Identity**: It fits perfectly into the "Shield" ecosystem (like
+   ShieldDNS), providing a consistent, branded experience for your private cloud.
 
 ## 🤝 Compatibility
 
 ShieldFile works perfectly alongside other official and community add-ons:
 
-- **Advanced SSH & Web Terminal**: You can use the terminal to manage files via command line while using ShieldFile for a visual interface. Both access the same `/share`, `/config`, etc. directories.
-- **FTP**: You can use an FTP client to transfer bulk files and use ShieldFile to manage them from a browser.
+- **Advanced SSH & Web Terminal**: You can use the terminal to manage files via
+  command line while using ShieldFile for a visual interface. Both access the same
+  `/share`, `/config`, etc. directories.
+- **FTP**: You can use an FTP client to transfer bulk files and use ShieldFile to
+  manage them from a browser.
 
 ## Features
 
 - **HTTPS**: Secure file transfer via browser.
 - **Configurable**: Choose which directory to serve.
-- **Multi-User**: Define primary users in `config.yaml`, manage robust permissions in the UI.
-- **Host Network**: High performance direct binding.
+- **Multi-User**: Define primary users in `config.yaml`, manage robust permissions
+  in the UI.
+- **Host Network**: High-performance direct binding.
 
 ## Installation
 
 1. Install this repository in the Add-on Store.
-2. Install **ShieldFile**.
-3. Configure the options.
-4. Start!
+1. Install **ShieldFile**.
+1. Configure the options.
+1. Start!
 
-## Configuration
+---
 
-### Option: `base_directory`
+## ⚙️ Configuration
 
-The absolute path to serve.
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-- `/share`: Shared folder.
-- `/media`: Media folder.
-- `/config`: Config folder (Be careful!).
+### Options
 
-### Option: `users`
+```yaml
+base_directory: /share
+certfile: fullchain.pem
+keyfile: privkey.pem
+log_level: info
+port: 8443
+users:
+  - password: changeme
+    username: admin
+```
 
-List of users. Password must be strong.
-_Note: ShieldFile uses an internal database. The config option initializes users, but you can also manage them inside the Web UI (Settings > Users)._
+---
 
-### Option: `certfile` / `keyfile`
+## 👨‍💻 Credits & License
 
-Your SSL certificates. If missing, a self-signed one is generated.
-
-### Networking
-
-Runs on **Host Network**. Default port `8443`.
-ensure firewall allows this port.
-
-## 🛡️ Security & Login
-
-### How is it secured?
-
-ShieldFile uses **Database Authentication**.
-
-1.  When you open the site, you will see a **Login Screen**.
-2.  Log in with the user defined in your configuration (Default: `admin`).
-3.  The connection is encrypted via **HTTPS** (TLS).
-
-### Public Access
-
-If you publish this to the internet (e.g. via Cloudflare Tunnel):
-
-1.  **Strong Password**: Ensure your `admin` user has a very strong password.
-2.  **2FA (Recommended)**: Use Cloudflare Access (Zero Trust) to add a 2FA layer _before_ the Login Screen.
-3.  **Fail2Ban**: Monitor logs for failed login attempts.
-
-## Credits
-
-This project wouldn't exist without [Filebrowser](https://github.com/filebrowser/filebrowser). Huge thanks to the developers for their incredible work on the backend!
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

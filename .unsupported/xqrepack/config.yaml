@@ -1,0 +1,19 @@
+---
+name: xqrepack
+version: 1.8.1
+slug: xqrepack
+description: These scripts allow you to modify the different Xiaomi router firmware
+  images to make sure SSH and UART access is always enabled.
+url: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
+arch:
+  - aarch64
+  - amd64
+map:
+  - share:rw
+init: false
+options:
+  firmware_path: "/share/miwifi_firmware/"
+  firmware_name: miwifi_r3600_firmware.bin
+schema:
+  firmware_path: str
+  firmware_name: str

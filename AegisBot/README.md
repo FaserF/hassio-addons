@@ -1,4 +1,25 @@
-# AegisBot Home Assistant Add-on
+# AegisBot
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_AegisBot)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 ![AegisBot Logo](icon.png)
 
@@ -20,23 +41,38 @@ See the [Documentation](DOCS.md) for detailed installation instructions.
 ## Quick Start
 
 1. Add this repository to Home Assistant
-2. Install the AegisBot add-on
-3. Configure your Telegram Bot Token
-4. Start the add-on
-5. Access via Ingress
+1. Install the AegisBot add-on
+1. Configure your Telegram Bot Token
+1. Start the add-on
+1. Access via Ingress
 
-## Configuration
+---
 
-| Option                  | Required | Description                          |
-| ----------------------- | -------- | ------------------------------------ |
-| `telegram_bot_token`    | ✅       | Bot API Token from @BotFather        |
-| `telegram_bot_username` | ✅       | Bot username (without @)             |
-| `github_token`          | ❌\*     | Required for private repo access     |
-| `version`               | ❌       | Version to install (default: latest) |
+## ⚙️ Configuration
 
-\*Required if repository is private
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-## Support
+### Options
 
-- [GitHub Issues](https://github.com/FaserF/AegisBot/issues)
-- [Documentation](DOCS.md)
+```yaml
+database:
+  type: sqlite
+debug: false
+demo_mode: false
+demo_mode_type: ephemeral
+developer_mode: false
+github_repo: FaserF/AegisBot
+github_token: ''
+log_level: info
+project_name: AegisBot
+reset_database: false
+secret_key: ''
+version: latest
+```
+
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

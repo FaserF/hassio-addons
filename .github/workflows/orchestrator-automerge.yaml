@@ -1,0 +1,30 @@
+name: Orchestrator Auto-Merge
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  enable-auto-merge:
+    name: 🤖 Enable Auto-Merge
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'renovate[bot]' ||
+      github.actor == 'FaserF'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 🤖 Enable Native Auto-Merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          # Enable strict auto-merge.
+          # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
+          # The PR will only merge once ALL required status checks (CI) have passed.
+          gh pr merge --auto --squash "$PR_URL"

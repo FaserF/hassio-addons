@@ -1,0 +1,90 @@
+name: Orchestrator New Add-on Intake
+
+on:
+  pull_request:
+    paths:
+      - "**/config.yaml"
+      - "**/config.json"
+  push:
+    branches:
+      - master
+    paths:
+      - "**/config.yaml"
+      - "**/config.json"
+
+jobs:
+  intake:
+    name: 🆕 New Add-on Intake
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Detect New Add-ons
+        id: new-addons
+        run: |
+          # Use python script
+          OUTPUT=$(python3 .scripts/intake.py)
+          echo "$OUTPUT"
+          # Check if new add-ons found (string representation of list in last line)
+          if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
+              echo "found=true" >> $GITHUB_OUTPUT
+              # Extract list logic simplified: just pass to next steps implicitly via re-running or file?
+              # For now, let's rely on detection script being idempotent.
+          else
+              echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: ✅ Compliance Check & Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        id: compliance
+        run: |
+          # Run compliance on ALL dirs? Or just new ones.
+          # check_compliance.py takes args. We need to pass the new ones.
+          # To implement this cleanly, intake.py should output a clean list or we parse it.
+          # Simplified: We check all add-ons changed in PR?
+          # Or just use the script to print valid output.
+          python3 .scripts/check_compliance.py $(python3 .scripts/intake.py | grep "Detected" | awk '{print $4}') > compliance.log 2>&1 || true
+
+          CONTENT=$(cat compliance.log)
+          echo "CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          if grep -q "❌" compliance.log; then
+             echo "status=failure" >> $GITHUB_OUTPUT
+          else
+             echo "status=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 💬 Post Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = process.env.CONTENT;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 🛡️ Add-on Compliance Check\n\n${output}`
+            })
+
+      - name: 🛑 Fail if Non-Compliant
+        if: steps.compliance.outputs.status == 'failure'
+        run: exit 1
+
+      - name: 📝 Auto-Remediate (Add to README & Templates)
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          python3 .scripts/intake.py --fix
+          python3 .scripts/sync_templates.py
+
+      - name: 💾 Commit Changes
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: register new add-on [skip ci]"

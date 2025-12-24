@@ -1,18 +1,22 @@
 # Home Assistant Add-on: AegisBot
 
-Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features for Home Assistant.
+Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+for Home Assistant.
 
 ## About
 
-AegisBot is a comprehensive Telegram moderation bot that combines advanced antispam, security scanning, and an AI-driven FAQ system based on group context. This add-on packages the entire application (frontend dashboard and backend) into a single, easy-to-install Home Assistant add-on.
+AegisBot is a comprehensive Telegram moderation bot that combines advanced antispam,
+security scanning, and an AI-driven FAQ system based on group context. This add-on
+packages the entire application (frontend dashboard and backend) into a single,
+easy-to-install Home Assistant add-on.
 
 ## Installation
 
 1. Add this repository to your Home Assistant add-on store
-2. Install the "AegisBot" add-on
-3. Configure the add-on (see configuration section below)
-4. Start the add-on
-5. Access AegisBot through the Home Assistant interface using Ingress
+1. Install the "AegisBot" add-on
+1. Configure the add-on (see configuration section below)
+1. Start the add-on
+1. Access AegisBot through the Home Assistant interface using Ingress
 
 ## Configuration
 
@@ -36,23 +40,23 @@ AegisBot is a comprehensive Telegram moderation bot that combines advanced antis
 - The AegisBot repository is currently **private**
 - Supports both **Classic** (`ghp_`) and **Fine-grained** (`github_pat_`) tokens
 
-#### How to Create a GitHub Token:
+#### How to Create a GitHub Token
 
 ##### Fine-grained Token (Recommended)
 
 1. Visit: [https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. Configure:
+1. Configure:
    - **Token name**: `aegisbot-homeassistant-addon`
    - **Repository access**: Select "Only select repositories" → `FaserF/AegisBot`
    - **Permissions**: "Contents" → "Read-only"
-3. Copy the token (starts with `github_pat_`)
+1. Copy the token (starts with `github_pat_`)
 
 ##### Classic Token
 
 1. Visit: [https://github.com/settings/tokens](https://github.com/settings/tokens)
-2. Generate new token (classic)
-3. Select scope: `repo` (Full control of private repositories)
-4. Copy the token (starts with `ghp_`)
+1. Generate new token (classic)
+1. Select scope: `repo` (Full control of private repositories)
+1. Copy the token (starts with `ghp_`)
 
 **github_repo**: GitHub Repository (default: `FaserF/AegisBot`)
 
@@ -116,25 +120,25 @@ For dashboard authentication via GitHub:
 ### Basic Setup
 
 ```yaml
-version: "latest"
-github_token: "ghp_your_github_token_here"
-telegram_bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-telegram_bot_username: "YourBotName"
+version: 'latest'
+github_token: 'ghp_your_github_token_here'
+telegram_bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+telegram_bot_username: 'YourBotName'
 log_level: info
 database:
   type: sqlite
-project_name: "AegisBot"
+project_name: 'AegisBot'
 debug: false
 ```
 
 ### Developer Mode
 
 ```yaml
-version: "latest"
-github_token: "ghp_your_github_token_here"
+version: 'latest'
+github_token: 'ghp_your_github_token_here'
 developer_mode: true
-telegram_bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-telegram_bot_username: "YourBotName"
+telegram_bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+telegram_bot_username: 'YourBotName'
 log_level: debug
 database:
   type: sqlite
