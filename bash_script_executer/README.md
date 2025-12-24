@@ -45,8 +45,8 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 script_path: /share/scripts/mycoolscript.sh
-script_path2: "false"
-script_path3: "false"
+script_path2: 'false'
+script_path3: 'false'
 ```
 
 ---

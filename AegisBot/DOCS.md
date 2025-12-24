@@ -120,25 +120,25 @@ For dashboard authentication via GitHub:
 ### Basic Setup
 
 ```yaml
-version: "latest"
-github_token: "ghp_your_github_token_here"
-telegram_bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-telegram_bot_username: "YourBotName"
+version: 'latest'
+github_token: 'ghp_your_github_token_here'
+telegram_bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+telegram_bot_username: 'YourBotName'
 log_level: info
 database:
   type: sqlite
-project_name: "AegisBot"
+project_name: 'AegisBot'
 debug: false
 ```
 
 ### Developer Mode
 
 ```yaml
-version: "latest"
-github_token: "ghp_your_github_token_here"
+version: 'latest'
+github_token: 'ghp_your_github_token_here'
 developer_mode: true
-telegram_bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-telegram_bot_username: "YourBotName"
+telegram_bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+telegram_bot_username: 'YourBotName'
 log_level: debug
 database:
   type: sqlite

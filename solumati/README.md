@@ -56,10 +56,10 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
-app_base_url: ""
+app_base_url: ''
 dev_use_main_branch: false
 factory_reset: false
-github_token: ""
+github_token: ''
 log_level: info
 marketing_page_enabled: false
 test_mode: false

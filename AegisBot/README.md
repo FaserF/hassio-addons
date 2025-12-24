@@ -11,6 +11,14 @@
 
 ---
 
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
 ## 📖 About
 
 ![AegisBot Logo](icon.png)
@@ -54,11 +62,11 @@ demo_mode: false
 demo_mode_type: ephemeral
 developer_mode: false
 github_repo: FaserF/AegisBot
-github_token: ""
+github_token: ''
 log_level: info
 project_name: AegisBot
 reset_database: false
-secret_key: ""
+secret_key: ''
 version: latest
 ```
 

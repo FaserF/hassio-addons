@@ -19,18 +19,14 @@
     {
       "customType": "regex",
       "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": [
-        "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
-      ],
+      "matchStrings": ["ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "42wim/matterbridge"
     },
     {
       "customType": "regex",
       "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": [
-        "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
-      ],
+      "matchStrings": ["ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "netbootxyz/webapp"
     },
@@ -47,9 +43,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": [
-        "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
-      ],
+      "matchStrings": ["ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/Solumati"
     }

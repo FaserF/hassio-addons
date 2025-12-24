@@ -1,26 +1,26 @@
-import express from "express";
+import express from 'express';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
 import {
   makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-} from "@whiskeysockets/baileys";
-import pino from "pino";
-import QRCode from "qrcode";
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
+} from '@whiskeysockets/baileys';
+import pino from 'pino';
+import QRCode from 'qrcode';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 
 const app = express();
 app.use(express.json());
 
 const PORT = 8066;
 // Adapt path for local Windows testing vs Docker
-const IS_WIN = process.platform === "win32";
-const DATA_DIR = IS_WIN ? path.resolve("data") : "/data";
-const AUTH_DIR = path.join(DATA_DIR, "auth_info_baileys");
-const TOKEN_FILE = path.join(DATA_DIR, "api_token.txt");
+const IS_WIN = process.platform === 'win32';
+const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
+const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
+const TOKEN_FILE = path.join(DATA_DIR, 'api_token.txt');
 
 // Ensure data root exists
 if (IS_WIN && !fs.existsSync(DATA_DIR)) {
@@ -28,19 +28,19 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
 }
 
 // --- Authorization Logic ---
-let API_TOKEN = "";
+let API_TOKEN = '';
 
 if (fs.existsSync(TOKEN_FILE)) {
-  API_TOKEN = fs.readFileSync(TOKEN_FILE, "utf8").trim();
+  API_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
 } else {
-  API_TOKEN = crypto.randomBytes(32).toString("hex");
+  API_TOKEN = crypto.randomBytes(32).toString('hex');
   fs.writeFileSync(TOKEN_FILE, API_TOKEN);
 }
 
-console.log("---------------------------------------------------");
-console.log("🔒 Secure API Token generated/loaded:");
+console.log('---------------------------------------------------');
+console.log('🔒 Secure API Token generated/loaded:');
 console.log(API_TOKEN);
-console.log("---------------------------------------------------");
+console.log('---------------------------------------------------');
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -48,20 +48,15 @@ if (!fs.existsSync(AUTH_DIR)) {
 }
 
 // --- Version Check ---
-let BAILEYS_VERSION = "Unknown";
+let BAILEYS_VERSION = 'Unknown';
 try {
-  const pkgPath = path.resolve(
-    "node_modules",
-    "@whiskeysockets",
-    "baileys",
-    "package.json",
-  );
+  const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
   if (fs.existsSync(pkgPath)) {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     BAILEYS_VERSION = pkg.version;
   }
 } catch (e) {
-  console.warn("Could not read Baileys version:", e);
+  console.warn('Could not read Baileys version:', e);
 }
 
 let sock;
@@ -72,24 +67,22 @@ let isConnected = false;
 // Advertise service for Home Assistant Discovery
 try {
   // Use dynamic import to avoid crashes if dependency is missing during dev/build
-  const { Bonjour } = await import("bonjour-service");
+  const { Bonjour } = await import('bonjour-service');
   const instance = new Bonjour();
   instance.publish({
-    name: "WhatsApp Addon",
-    type: "ha-whatsapp",
-    protocol: "tcp",
+    name: 'WhatsApp Addon',
+    type: 'ha-whatsapp',
+    protocol: 'tcp',
     port: PORT,
   });
-  console.log(
-    `📢 Publishing mDNS service: _ha-whatsapp._tcp.local on port ${PORT}`,
-  );
+  console.log(`📢 Publishing mDNS service: _ha-whatsapp._tcp.local on port ${PORT}`);
 } catch (e) {
-  console.warn("mDNS advertisement failed:", e);
+  console.warn('mDNS advertisement failed:', e);
 }
 
 // --- Status & Logs ---
 let connectionLogs = [];
-function addLog(msg, type = "info") {
+function addLog(msg, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   connectionLogs.unshift({ timestamp, msg, type });
   if (connectionLogs.length > 50) connectionLogs.pop();
@@ -97,83 +90,75 @@ function addLog(msg, type = "info") {
 
 // --- Middleware ---
 const authMiddleware = (req, res, next) => {
-  const providedToken = req.header("X-Auth-Token");
+  const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
-    addLog(`Unauthorized API access attempt from ${req.ip}`, "error");
-    console.warn(
-      `[AUTH] Unauthorized access attempt from ${req.ip} to ${req.path}`,
-    );
-    return res
-      .status(401)
-      .json({
-        error: "Unauthorized",
-        detail: "Invalid or missing X-Auth-Token",
-      });
+    addLog(`Unauthorized API access attempt from ${req.ip}`, 'error');
+    console.warn(`[AUTH] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+    return res.status(401).json({
+      error: 'Unauthorized',
+      detail: 'Invalid or missing X-Auth-Token',
+    });
   }
   next();
 };
 
 // Protect API routes exclusively
-app.use("/session", authMiddleware);
-app.use("/qr", authMiddleware);
-app.use("/status", authMiddleware);
-app.use("/send_message", authMiddleware);
-app.use("/logs", authMiddleware); // New Endpoint
+app.use('/session', authMiddleware);
+app.use('/qr', authMiddleware);
+app.use('/status', authMiddleware);
+app.use('/send_message', authMiddleware);
+app.use('/logs', authMiddleware); // New Endpoint
 
 async function connectToWhatsApp() {
-  addLog("Starting request for new session...", "info");
+  addLog('Starting request for new session...', 'info');
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
 
   sock = makeWASocket({
     auth: state,
-    logger: pino({ level: "info" }),
-    browser: Browsers.macOS("Chrome"),
+    logger: pino({ level: 'info' }),
+    browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
   });
 
-  sock.ev.on("creds.update", saveCreds);
+  sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on("connection.update", async (update) => {
+  sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      console.log("QR Code received");
-      addLog("QR Code generated. Waiting for scan...", "success");
+      console.log('QR Code received');
+      addLog('QR Code generated. Waiting for scan...', 'success');
       currentQR = await QRCode.toDataURL(qr);
     }
 
-    if (connection === "close") {
+    if (connection === 'close') {
       const shouldReconnect =
         lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      const reason = lastDisconnect.error
-        ? lastDisconnect.error.toString()
-        : "Unknown";
-      addLog(`Connection closed: ${reason}`, "warning");
+      const reason = lastDisconnect.error ? lastDisconnect.error.toString() : 'Unknown';
+      addLog(`Connection closed: ${reason}`, 'warning');
 
       console.log(
-        "Connection closed due to ",
+        'Connection closed due to ',
         lastDisconnect.error,
-        ", reconnecting ",
-        shouldReconnect,
+        ', reconnecting ',
+        shouldReconnect
       );
       isConnected = false;
 
       if (shouldReconnect) {
-        addLog("Reconnecting...", "info");
+        addLog('Reconnecting...', 'info');
         setTimeout(connectToWhatsApp, 1000);
       } else {
-        addLog("Session logged out. Clean up metadata required.", "error");
-        console.log(
-          "Logged out. Please delete /data/auth_info_baileys to re-pair.",
-        );
+        addLog('Session logged out. Clean up metadata required.', 'error');
+        console.log('Logged out. Please delete /data/auth_info_baileys to re-pair.');
       }
-    } else if (connection === "open") {
-      console.log("Opened connection");
-      addLog("WhatsApp Connection Established! 🟢", "success");
+    } else if (connection === 'open') {
+      console.log('Opened connection');
+      addLog('WhatsApp Connection Established! 🟢', 'success');
       isConnected = true;
       currentQR = null;
-    } else if (connection === "connecting") {
-      addLog("Connecting to WhatsApp...", "info");
+    } else if (connection === 'connecting') {
+      addLog('Connecting to WhatsApp...', 'info');
     }
   });
 }
@@ -181,26 +166,26 @@ async function connectToWhatsApp() {
 // --- API Endpoints ---
 
 // POST /session/start
-app.post("/session/start", (req, res) => {
-  addLog("Received Session Start request from Integration", "info");
+app.post('/session/start', (req, res) => {
+  addLog('Received Session Start request from Integration', 'info');
   if (isConnected) {
-    return res.json({ status: "connected", message: "Already connected" });
+    return res.json({ status: 'connected', message: 'Already connected' });
   }
   if (sock && !sock.ws.isClosed) {
     return res.json({
-      status: "scanning",
-      message: "Session negotiation in progress",
+      status: 'scanning',
+      message: 'Session negotiation in progress',
     });
   }
 
   connectToWhatsApp();
-  res.json({ status: "starting", message: "Session init started" });
+  res.json({ status: 'starting', message: 'Session init started' });
 });
 
 // DELETE /session
-app.delete("/session", async (req, res) => {
-  addLog("Received Logout/Reset request", "warning");
-  console.log("Received DELETE /session request (Logout)");
+app.delete('/session', async (req, res) => {
+  addLog('Received Logout/Reset request', 'warning');
+  console.log('Received DELETE /session request (Logout)');
   try {
     if (sock) {
       await sock.logout();
@@ -215,78 +200,72 @@ app.delete("/session", async (req, res) => {
 
     isConnected = false;
     currentQR = null;
-    addLog("Session data cleared. Ready for new pair.", "success");
-    res.json({ status: "success", message: "Session deleted and logged out" });
+    addLog('Session data cleared. Ready for new pair.', 'success');
+    res.json({ status: 'success', message: 'Session deleted and logged out' });
   } catch (e) {
-    addLog(`Logout failed: ${e.toString()}`, "error");
-    console.error("Error during session delete:", e);
+    addLog(`Logout failed: ${e.toString()}`, 'error');
+    console.error('Error during session delete:', e);
     res.status(500).json({ error: e.toString() });
   }
 });
 
 // GET /qr
-app.get("/qr", (req, res) => {
+app.get('/qr', (req, res) => {
   if (isConnected) {
-    return res.json({ status: "connected", qr: null });
+    return res.json({ status: 'connected', qr: null });
   }
   if (currentQR) {
-    return res.json({ status: "scanning", qr: currentQR });
+    return res.json({ status: 'scanning', qr: currentQR });
   }
   // Change to 200 with status 'waiting' to prevent Frontend error handling issues
-  return res.json({ status: "waiting", detail: "QR generation in progress" });
+  return res.json({ status: 'waiting', detail: 'QR generation in progress' });
 });
 
 // GET /status
-app.get("/status", (req, res) => {
+app.get('/status', (req, res) => {
   res.json({ connected: isConnected, version: BAILEYS_VERSION });
 });
 
 // GET /logs
-app.get("/logs", (req, res) => {
+app.get('/logs', (req, res) => {
   res.json(connectionLogs);
 });
 
 // POST /send_message
-app.post("/send_message", async (req, res) => {
+app.post('/send_message', async (req, res) => {
   const { number, message } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: "Not connected" });
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
-    const jid = number.includes("@s.whatsapp.net")
-      ? number
-      : `${number}@s.whatsapp.net`;
+    const jid = number.includes('@s.whatsapp.net') ? number : `${number}@s.whatsapp.net`;
     await sock.sendMessage(jid, { text: message });
-    res.json({ status: "sent" });
+    res.json({ status: 'sent' });
   } catch (e) {
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // --- Dashboard (Server-Side Rendered) ---
-app.get("*", (req, res) => {
+app.get('*', (req, res) => {
   if (
-    req.path.startsWith("/api") ||
-    req.path === "/qr" ||
-    req.path === "/status" ||
-    req.path === "/session/start" ||
-    req.path === "/send_message" ||
-    req.path === "/session" ||
-    req.path === "/logs"
+    req.path.startsWith('/api') ||
+    req.path === '/qr' ||
+    req.path === '/status' ||
+    req.path === '/session/start' ||
+    req.path === '/send_message' ||
+    req.path === '/session' ||
+    req.path === '/logs'
   ) {
-    return res.status(404).send("Not Found");
+    return res.status(404).send('Not Found');
   }
 
   // Determine current state
-  const statusClass = isConnected
-    ? "connected"
-    : currentQR
-      ? "waiting"
-      : "disconnected";
+  const statusClass = isConnected ? 'connected' : currentQR ? 'waiting' : 'disconnected';
   const statusText = isConnected
-    ? "Connected 🟢"
+    ? 'Connected 🟢'
     : currentQR
-      ? "Scan QR Code 📱"
-      : "Disconnected 🔴";
+      ? 'Scan QR Code 📱'
+      : 'Disconnected 🔴';
   const showQR = !isConnected && currentQR;
   const showQRPlaceholder = !isConnected && !currentQR;
 
@@ -296,9 +275,9 @@ app.get("*", (req, res) => {
       .slice(0, 10)
       .map(
         (l) =>
-          `<div class="log-entry"><span class="log-time">${l.timestamp}</span><span class="log-type-${l.type}">${l.msg}</span></div>`,
+          `<div class="log-entry"><span class="log-time">${l.timestamp}</span><span class="log-type-${l.type}">${l.msg}</span></div>`
       )
-      .join("") || '<div class="log-entry">No logs yet</div>';
+      .join('') || '<div class="log-entry">No logs yet</div>';
 
   res.send(`
     <!DOCTYPE html>
@@ -345,7 +324,7 @@ app.get("*", (req, res) => {
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ""
+                : ''
             }
 
             ${
@@ -358,7 +337,7 @@ app.get("*", (req, res) => {
                 </div>
             </div>
             `
-                : ""
+                : ''
             }
 
             <div class="logs-container">

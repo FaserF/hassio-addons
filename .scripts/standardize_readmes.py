@@ -1,15 +1,23 @@
-import argparse
-import json
 import os
 import re
-import shutil
-
 import yaml
+import json
+import argparse
+import shutil
 
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_HASH = "c1e285b7"  # Hash for FaserF/hassio-addons
 MAINTAINER = "FaserF"
+
+
+BETA_NOTICE = """
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+"""
 
 
 def load_addon_config(addon_path):
@@ -24,6 +32,27 @@ def load_addon_config(addon_path):
         with open(config_json, "r", encoding="utf-8") as f:
             return json.load(f), "json"
     return None, None
+
+
+def is_beta(version_str):
+    """Check if version is < 1.0.0. Returns True if Beta."""
+    if not version_str:
+        return True  # Default to beta if no version
+
+    # Simple semantic split
+    try:
+        ver = str(version_str).lower()
+        # constant "dev" or "edge" -> Beta
+        if "dev" in ver or "edge" in ver or "beta" in ver or "rc" in ver:
+            return True
+
+        parts = ver.split(".")
+        major = int(parts[0])
+        if major < 1:
+            return True
+        return False
+    except:
+        return True
 
 
 def generate_badges(addon_slug, addon_name):
@@ -68,6 +97,13 @@ def clean_existing_content(content):
 
             # Detect Quotes/Description (Common at top)
             if sline.startswith(">"):
+                continue
+
+            # Detect Beta Warning (Avoid duplicates)
+            if (
+                "Experimental / Beta Status" in sline
+                or "primarily developed for personal use" in sline
+            ):
                 continue
 
             # Detect HR
@@ -187,7 +223,6 @@ def find_addons(base_path):
     if os.path.exists(os.path.join(base_path, "config.yaml")) or os.path.exists(
         os.path.join(base_path, "config.json")
     ):
-        # Usually scripts run from root, but just in case
         pass
 
     return addons
@@ -200,8 +235,6 @@ def process_addon(addon_path):
     if not os.path.exists(readme_path):
         print(f"Skipping {addon_path}: No README.")
         return
-
-    # 0. Backup (Optional, maybe skip if repeatedly running)
 
     # 1. Read Content
     with open(readme_path, "r", encoding="utf-8") as f:
@@ -216,6 +249,7 @@ def process_addon(addon_path):
     addon_dirname = os.path.basename(addon_path)
     name = config.get("name", addon_dirname)
     description = config.get("description", "Home Assistant Add-on")
+    version = config.get("version", "0.0.0")
     slug = f"{REPO_HASH}_{addon_dirname}"  # e.g. c1e285b7_whatsapp
 
     # 3. Clean Content
@@ -229,6 +263,11 @@ def process_addon(addon_path):
     new_content += generate_badges(slug, name) + "\n\n"
     new_content += f"> {description}\n\n"
     new_content += "---\n\n"
+
+    # Beta Warning
+    if is_beta(version):
+        new_content += BETA_NOTICE.strip() + "\n\n"
+        new_content += "---\n\n"
 
     # About
     new_content += "## 📖 About\n\n"
@@ -251,7 +290,7 @@ def process_addon(addon_path):
     with open(readme_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
-    print(f"✅ {addon_dirname} Standardized.")
+    print(f"✅ {addon_dirname} Standardized (Beta={is_beta(version)}).")
 
 
 if __name__ == "__main__":

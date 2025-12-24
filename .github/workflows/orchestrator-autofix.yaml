@@ -48,8 +48,9 @@ jobs:
         with:
           prettier_options: --write "**/*.{json,js,md,yaml}"
 
-      # 4. Markdown specific fixes (lists, headers) usually handled by Prettier
-      # If needed, markdownlint-cli2 --fix can be added here.
+      # 4. Standardize (READMEs, Beta Labels, Configs)
+      - name: 📄 Standardize READMEs
+        run: python3 .scripts/standardize_readmes.py
 
       # Commit back
       - name: 💾 Commit Changes
