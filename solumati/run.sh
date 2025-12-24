@@ -61,11 +61,11 @@ if bashio::config.has_value 'log_level'; then
 	LOG_LEVEL=$(bashio::config 'log_level' | tr '[:lower:]' '[:upper:]')
 	# Map HA log levels to Python log levels
 	case "$LOG_LEVEL" in
-		TRACE|DEBUG) LOG_LEVEL="DEBUG" ;;
-		NOTICE|INFO) LOG_LEVEL="INFO" ;;
-		WARNING) LOG_LEVEL="WARNING" ;;
-		ERROR|FATAL) LOG_LEVEL="ERROR" ;;
-		*) LOG_LEVEL="INFO" ;;
+	TRACE | DEBUG) LOG_LEVEL="DEBUG" ;;
+	NOTICE | INFO) LOG_LEVEL="INFO" ;;
+	WARNING) LOG_LEVEL="WARNING" ;;
+	ERROR | FATAL) LOG_LEVEL="ERROR" ;;
+	*) LOG_LEVEL="INFO" ;;
 	esac
 	export LOG_LEVEL
 	bashio::log.info "Log level set to: $LOG_LEVEL"

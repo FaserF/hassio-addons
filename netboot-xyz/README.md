@@ -22,8 +22,6 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-
-
 **Netboot.xyz** allows you to PXE boot into a wide variety of Operating System
 installers and utilities from a lightweight, easy-to-use menu. This add-on lets
 you host your own Netboot.xyz instance directly from your Home Assistant server,
@@ -31,13 +29,13 @@ perfect for homelabs and network management.
 
 ## ✨ Features
 
-* **🌐 Network Booting**: Boot various OS installers and tools over the
+- **🌐 Network Booting**: Boot various OS installers and tools over the
   network.
-* **🐧 Wide OS Support**: Includes major Linux distributions, utilities, and
+- **🐧 Wide OS Support**: Includes major Linux distributions, utilities, and
   more.
-* **🎛️ Web Interface**: Easy management via a web-based configuration UI.
-* **🛠️ Customizable**: Add your own custom assets and configurations.
-* **🏠 Home Assistant Ingress**: Secure, integrated access via the sidebar.
+- **🎛️ Web Interface**: Easy management via a web-based configuration UI.
+- **🛠️ Customizable**: Add your own custom assets and configurations.
+- **🏠 Home Assistant Ingress**: Secure, integrated access via the sidebar.
 
 ## 🚀 Installation
 

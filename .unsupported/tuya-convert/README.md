@@ -32,9 +32,9 @@ Tuya-Convert tool directly to your Home Assistant OS environment.
 
 ## ✨ Features
 
-* **🔓 Cloud Free**: Flash custom firmware and take local control.
-* **🛠️ Tasmota & ESPurna**: Supports major custom firmwares out of the box.
-* **🏠 Home Assistant**: Integrated into your HA supervisor.
+- **🔓 Cloud Free**: Flash custom firmware and take local control.
+- **🛠️ Tasmota & ESPurna**: Supports major custom firmwares out of the box.
+- **🏠 Home Assistant**: Integrated into your HA supervisor.
 
 ## 🚀 Installation
 
@@ -46,11 +46,13 @@ Tuya-Convert tool directly to your Home Assistant OS environment.
 ## ⚙️ Configuration
 
 <!-- markdownlint-disable MD013 MD060 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
-| `backup_path` | `string` | `/share/tuya-convert` | Location to save original firmware backups. |
-| `firmware` | `string` | `tasmota.bin` | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
-| `accept_eula` | `boolean` | `false` | Must be set to `true` to accept the agreement. |
+
+| Option        | Type      | Default               | Description                                       |
+| :------------ | :-------- | :-------------------- | :------------------------------------------------ |
+| `backup_path` | `string`  | `/share/tuya-convert` | Location to save original firmware backups.       |
+| `firmware`    | `string`  | `tasmota.bin`         | Firmware to flash (`tasmota.bin`, `espurna.bin`). |
+| `accept_eula` | `boolean` | `false`               | Must be set to `true` to accept the agreement.    |
+
 <!-- markdownlint-enable MD013 MD060 -->
 
 > [!NOTE]

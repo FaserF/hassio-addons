@@ -15,7 +15,6 @@
 
 OpenSSL - Self signed certificates for Homeassistant OS
 
-
 OpenSSL is a software library for applications that secure communications over
 computer networks against eavesdropping or need to identify the party at the
 other end. It is widely used by Internet servers, including the majority of
@@ -33,7 +32,6 @@ and so on. OpenSSL Software Services (OSS) also represents the OpenSSL project,
 for Support Contracts.
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

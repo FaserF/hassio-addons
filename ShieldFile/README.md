@@ -25,7 +25,9 @@ Home Assistant host (e.g. `/share`, `/media`, `/config`).
 > container optimized for Home Assistant.
 
 <!-- markdownlint-disable MD013 MD026 -->
+
 ## ❓ Why "ShieldFile" instead of plain Filebrowser
+
 <!-- markdownlint-enable MD013 MD026 -->
 
 ShieldFile is designed specifically for **Home Assistant** and **Security**:
@@ -78,8 +80,8 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-- password: changeme
-  username: admin
+  - password: changeme
+    username: admin
 ```
 
 ---

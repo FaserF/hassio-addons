@@ -15,13 +15,11 @@
 
 Matterbridge for Homeassistant OS
 
-
 A simple chat bridge
 Letting people be where they want to be.
 Bridges between a growing number of protocols.
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

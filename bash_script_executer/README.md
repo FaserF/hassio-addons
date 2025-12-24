@@ -15,7 +15,6 @@
 
 Bash Script Executer for Homeassistant OS
 
-
 This is a simple Docker Image to execute personal scripts. The reason I am
 needing this, is that the HA OS has limited features installed (for example
 no curl, sed etc) and this Addon fixes that issue.
@@ -25,7 +24,6 @@ You can run up to three different scripts with this addon.
 This docker image comes with: busybox-extras curl grep coreutils sed xmlstarlet
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.
@@ -47,8 +45,8 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 script_path: /share/scripts/mycoolscript.sh
-script_path2: 'false'
-script_path3: 'false'
+script_path2: "false"
+script_path3: "false"
 ```
 
 ---

@@ -16,7 +16,6 @@
 <!-- markdownlint-disable MD033 MD041 MD013 -->
 <!-- markdownlint-enable MD033 MD041 -->
 
-
 mobile devices and forward them to your local AdGuard Home or other DNS
 servers. This secures your DNS queries even when you are on your local network
 (if your device enforces Private DNS) or if you expose this port securely.
@@ -31,7 +30,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 certfile: fullchain.pem
-cloudflare_tunnel_token: ''
+cloudflare_tunnel_token: ""
 doh_port: 3443
 dot_port: 8853
 enable_info_page: false

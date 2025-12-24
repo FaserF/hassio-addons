@@ -1,8 +1,8 @@
+import argparse
 import os
 import shutil
-import argparse
-import sys
 import subprocess
+import sys
 
 # Re-use prune logic by importing or calling?
 # Prune script is standalone. We can call it via subprocess or import main if refactored.
@@ -11,6 +11,7 @@ import subprocess
 ROOT_DIR = "."
 UNSUPPORTED_DIR = "unsupported"
 README_PATH = "README.md"
+
 
 def update_readme_link(addon, to_unsupported):
     if not os.path.exists(README_PATH):
@@ -37,6 +38,7 @@ def update_readme_link(addon, to_unsupported):
         f.write(content)
     print("✅ README links updated.")
 
+
 def prune_images(addon):
     print(f"🗑️ Pruning Docker images for {addon} (Keeping 1)...")
     # We call the prune_registry.py script but we need to modify it or pass args.
@@ -53,7 +55,11 @@ def prune_images(addon):
         return
 
     import requests
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"}
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
 
     # We need to handle package name variations (addon-slug, slug, etc).
     # We'll guess `addon` and `addon-{addon}`.
@@ -62,11 +68,11 @@ def prune_images(addon):
     for pkg in packages_to_check:
         # Get versions
         url = f"https://api.github.com/orgs/{owner}/packages/container/{pkg}/versions"
-         # Fallback to user
+        # Fallback to user
         res = requests.get(url, headers=headers)
         if res.status_code == 404:
-             url = f"https://api.github.com/users/{owner}/packages/container/{pkg}/versions"
-             res = requests.get(url, headers=headers)
+            url = f"https://api.github.com/users/{owner}/packages/container/{pkg}/versions"
+            res = requests.get(url, headers=headers)
 
         if res.status_code != 200:
             continue
@@ -76,7 +82,7 @@ def prune_images(addon):
             continue
 
         # Sort by updated_at desc
-        versions.sort(key=lambda x: x['updated_at'], reverse=True)
+        versions.sort(key=lambda x: x["updated_at"], reverse=True)
 
         # Keep 1 (latest usually)
         # Logic: If unsupported, maybe user wants to keep NO images?
@@ -85,16 +91,17 @@ def prune_images(addon):
         to_delete = versions[1:]
 
         for v in to_delete:
-            vid = v['id']
+            vid = v["id"]
             print(f"   - Deleting version {vid} of {pkg}")
             # Delete
-            del_url = f"{url}/{vid}" # this url base is .../versions, so + /id works? No, url var was set to base.
+            del_url = f"{url}/{vid}"  # this url base is .../versions, so + /id works? No, url var was set to base.
             # actually we constructed url above.
             # verify url construction
             requests.delete(f"{url}/{vid}", headers=headers)
 
+
 def toggle_support(addon, action):
-    target_state_unsupported = (action == "unsupported")
+    target_state_unsupported = action == "unsupported"
 
     if target_state_unsupported:
         src = os.path.join(ROOT_DIR, addon)
@@ -120,12 +127,12 @@ def toggle_support(addon, action):
         src = os.path.join(UNSUPPORTED_DIR, addon)
         dst = os.path.join(ROOT_DIR, addon)
         if not os.path.exists(src):
-             if os.path.exists(dst):
-                 print(f"ℹ️ {addon} is already supported (in root).")
-                 return
-             else:
-                 print(f"❌ Add-on {addon} not found in {UNSUPPORTED_DIR}.")
-                 return
+            if os.path.exists(dst):
+                print(f"ℹ️ {addon} is already supported (in root).")
+                return
+            else:
+                print(f"❌ Add-on {addon} not found in {UNSUPPORTED_DIR}.")
+                return
 
         print(f"🚚 Moving {addon} to root (Resurrecting)...")
         shutil.move(src, dst)
@@ -133,10 +140,13 @@ def toggle_support(addon, action):
         update_readme_link(addon, to_unsupported=False)
         # No prune needed when supporting.
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("addon", help="Add-on slug")
-    parser.add_argument("action", choices=["supported", "unsupported"], help="Target state")
+    parser.add_argument(
+        "action", choices=["supported", "unsupported"], help="Target state"
+    )
     args = parser.parse_args()
 
     toggle_support(args.addon, args.action)

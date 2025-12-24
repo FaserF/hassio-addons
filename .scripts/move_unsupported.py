@@ -1,6 +1,6 @@
+import json
 import os
 import shutil
-import json
 
 # Configuration
 UNSUPPORTED_ADDONS = [
@@ -11,7 +11,7 @@ UNSUPPORTED_ADDONS = [
     "tuya-convert",
     "wiki.js",
     "Wiki.js",
-    "freenom-dns-updater"  # Adding based on user context or typical patterns, but will stick strictly to README list if possible.
+    "freenom-dns-updater",  # Adding based on user context or typical patterns, but will stick strictly to README list if possible.
     # From README: `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
 ]
 # Normalize list
@@ -19,6 +19,7 @@ UNSUPPORTED_ADDONS = [x.lower() for x in UNSUPPORTED_ADDONS]
 
 ROOT_DIR = "."
 TARGET_DIR = "unsupported"
+
 
 def main():
     if not os.path.exists(TARGET_DIR):
@@ -32,7 +33,12 @@ def main():
         item_path = os.path.join(ROOT_DIR, item)
 
         # Skip if not a directory or is hidden or is the target dir
-        if not os.path.isdir(item_path) or item.startswith('.') or item == TARGET_DIR or item == "scripts":
+        if (
+            not os.path.isdir(item_path)
+            or item.startswith(".")
+            or item == TARGET_DIR
+            or item == "scripts"
+        ):
             continue
 
         # Check if item is in unsupported list
@@ -71,6 +77,7 @@ def main():
             print("⚠️ README.md not found, skipping link updates.")
 
     print(f"✅ Process complete. Moved {moved_count} add-ons.")
+
 
 if __name__ == "__main__":
     main()

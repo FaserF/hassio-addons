@@ -54,11 +54,11 @@ demo_mode: false
 demo_mode_type: ephemeral
 developer_mode: false
 github_repo: FaserF/AegisBot
-github_token: ''
+github_token: ""
 log_level: info
 project_name: AegisBot
 reset_database: false
-secret_key: ''
+secret_key: ""
 version: latest
 ```
 

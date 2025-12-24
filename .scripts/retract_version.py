@@ -1,11 +1,13 @@
 import os
 import sys
+
 import requests
 
 # Usage: python retract_version.py <package_name> <version>
 # Env: GITHUB_TOKEN (requires delete:packages)
 
 GITHUB_API = "https://api.github.com"
+
 
 def retract_version(package_name, version, token, owner):
     # ghcr.io/<owner>/<package_name>
@@ -18,7 +20,7 @@ def retract_version(package_name, version, token, owner):
 
     headers = {
         "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     # Check if User or Org
@@ -31,8 +33,10 @@ def retract_version(package_name, version, token, owner):
     try:
         resp = requests.get(base_url, headers=headers)
         if resp.status_code == 404:
-             # Try Org
-            base_url = f"{GITHUB_API}/orgs/{owner}/packages/container/{package_name}/versions"
+            # Try Org
+            base_url = (
+                f"{GITHUB_API}/orgs/{owner}/packages/container/{package_name}/versions"
+            )
             resp = requests.get(base_url, headers=headers)
 
         if resp.status_code != 200:
@@ -69,6 +73,7 @@ def retract_version(package_name, version, token, owner):
         print(f"❌ Error: {e}")
         sys.exit(1)
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python retract_version.py <addon_slug> <version>")
@@ -90,7 +95,13 @@ if __name__ == "__main__":
     # BUT sometimes architecture is appended? e.g. `addon-slug-amd64`.
     # To Retract safely, we might need to delete for ALL architectures.
 
-    manifests = [f"{addon}-amd64", f"{addon}-aarch64", f"{addon}-armv7", f"{addon}-armhf", f"{addon}-i386"]
+    manifests = [
+        f"{addon}-amd64",
+        f"{addon}-aarch64",
+        f"{addon}-armv7",
+        f"{addon}-armhf",
+        f"{addon}-i386",
+    ]
     # We try the slug itself first (multi-arch manifest) and then arch-specifics?
     # Or just the specific images.
 

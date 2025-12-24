@@ -4,6 +4,7 @@ import re
 import sys
 from datetime import datetime
 
+
 def bump_version(addon_path, increment, changelog_message=None):
     config_path = os.path.join(addon_path, "config.yaml")
     # Support json if needed, but checking for yaml first
@@ -31,16 +32,16 @@ def bump_version(addon_path, increment, changelog_message=None):
     current_version = match.group(2)
     print(f"🔹 Current version: {current_version}")
 
-    major, minor, patch = map(int, current_version.split('.'))
+    major, minor, patch = map(int, current_version.split("."))
 
-    if increment == 'major':
+    if increment == "major":
         major += 1
         minor = 0
         patch = 0
-    elif increment == 'minor':
+    elif increment == "minor":
         minor += 1
         patch = 0
-    elif increment == 'patch':
+    elif increment == "patch":
         patch += 1
     else:
         print(f"❌ Error: Unknown increment type {increment}")
@@ -50,7 +51,9 @@ def bump_version(addon_path, increment, changelog_message=None):
     print(f"🔹 New version: {new_version}")
 
     # Replace version in content
-    new_content = content.replace(match.group(0), f'{match.group(1)}{new_version}{match.group(3)}')
+    new_content = content.replace(
+        match.group(0), f"{match.group(1)}{new_version}{match.group(3)}"
+    )
 
     with open(config_path, "w") as f:
         f.write(new_content)
@@ -75,7 +78,9 @@ def bump_version(addon_path, increment, changelog_message=None):
 
         # Simple insertion after "# Changelog" if present, else prepend
         if "# Changelog" in changelog:
-            changelog = changelog.replace("# Changelog\n", f"# Changelog\n\n{new_entry}", 1)
+            changelog = changelog.replace(
+                "# Changelog\n", f"# Changelog\n\n{new_entry}", 1
+            )
         else:
             changelog = f"# Changelog\n\n{new_entry}{changelog}"
 
@@ -84,14 +89,19 @@ def bump_version(addon_path, increment, changelog_message=None):
     else:
         print("⚠️ CHANGELOG.md not found, creating one.")
         with open(changelog_path, "w") as f:
-            f.write(f"# Changelog\n\n## {new_version}\n- {changelog_message or 'Initial release'}\n")
+            f.write(
+                f"# Changelog\n\n## {new_version}\n- {changelog_message or 'Initial release'}\n"
+            )
 
     print(f"✅ Bumped {addon_path} to {new_version}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Bump add-on version")
     parser.add_argument("addon", help="Path to add-on directory")
-    parser.add_argument("increment", choices=['major', 'minor', 'patch'], help="Version increment type")
+    parser.add_argument(
+        "increment", choices=["major", "minor", "patch"], help="Version increment type"
+    )
     parser.add_argument("--message", help="Changelog message", default=None)
 
     args = parser.parse_args()

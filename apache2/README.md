@@ -22,7 +22,6 @@ This add-on allows you to serve static or dynamic websites, run PHP-based
 applications, or expose internal services via a web interface. Multiple
 versions are available to fit different needs and use cases.
 
-
 ## 📋 Table of Contents
 
 - [About](#-about)
@@ -36,8 +35,6 @@ versions are available to fit different needs and use cases.
 - [Support](#-support)
 - [License](#-license)
 
-
-
 This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for
 Home Assistant OS. It supports:
 
@@ -48,21 +45,21 @@ Home Assistant OS. It supports:
 The Apache HTTP Server is an open-source web server software maintained by the
 Apache Software Foundation.
 
-
 ## 🧰 Versions
 
 <!-- markdownlint-disable MD013 -->
-| Version | Features |
-| :--- | :--- |
-| [Full][full_url] | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
-| [Minimal][minimal_url] | Apache2 only |
-| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules |
+
+| Version                                  | Features                                                                     |
+| :--------------------------------------- | :--------------------------------------------------------------------------- |
+| [Full][full_url]                         | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
+| [Minimal][minimal_url]                   | Apache2 only                                                                 |
+| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules                              |
+
 <!-- markdownlint-enable MD013 -->
 
 [full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2
 [minimal_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
 [minimal_mariadb_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
-
 
 ## 🚀 Installation
 

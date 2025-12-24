@@ -16,8 +16,6 @@
 > **A lightweight, robust backend for the WhatsApp Integration in Home Assistant.**
 > Powered by [Baileys](https://github.com/WhiskeySockets/Baileys) and Node.js. 🚀
 
-
-
 This addon acts as a bridge between Home Assistant and the WhatsApp Web
 protocol. It runs a high-performance Node.js application that simulates a real
 WhatsApp client (like a browser), allowing you to send messages, images, and
@@ -31,7 +29,6 @@ notifications directly from your smart home.
   external API costs.
 - **💾 Persistent Session**: Stays logged in even after restarts.
 - **🐳 Docker Optimized**: Platinum Quality image (S6 Overlay, Alpine Base).
-
 
 ## 🛠️ Installation
 

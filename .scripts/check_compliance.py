@@ -1,15 +1,16 @@
 import os
 import sys
 
+
 def check_addon(addon_path):
     dockerfile_path = os.path.join(addon_path, "Dockerfile")
-    config_path = os.path.join(addon_path, "config.yaml") # or json
+    config_path = os.path.join(addon_path, "config.yaml")  # or json
 
     if not os.path.exists(dockerfile_path):
         print(f"❌ {addon_path}: Dockerfile missing")
         return False
 
-    with open(dockerfile_path, 'r') as f:
+    with open(dockerfile_path, "r") as f:
         content = f.read()
 
     errors = []
@@ -24,8 +25,10 @@ def check_addon(addon_path):
         errors.append("Missing HEALTHCHECK instruction")
 
     # Check 3: OCI Labels
-    if "org.opencontainers.image.title" not in content or \
-       "org.opencontainers.image.description" not in content:
+    if (
+        "org.opencontainers.image.title" not in content
+        or "org.opencontainers.image.description" not in content
+    ):
         errors.append("Missing OCI Labels (org.opencontainers.image...)")
 
     if errors:
@@ -36,6 +39,7 @@ def check_addon(addon_path):
 
     print(f"✅ {addon_path} passed compliance checks.")
     return True
+
 
 def main():
     if len(sys.argv) < 2:
@@ -49,6 +53,7 @@ def main():
 
     if failed:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

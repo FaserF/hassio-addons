@@ -17,7 +17,6 @@ Nintendo Switch LAN-Play Client for Homeassistant OS
 
 ![The Lan-Play Home Home Assistant Add-on](../_images/switch_lan_play/screenshot.png)
 
-
 To play with your CFW Nintendo Switch online, you can use this addon + a public
 or private Server. This addon can be used, to stop running the lan play client
 on a Desktop PC/Laptop.
@@ -34,7 +33,6 @@ The first installation can take up to 10 minutes because of this! Depending on
 your hardware.
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

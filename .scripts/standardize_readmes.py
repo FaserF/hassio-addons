@@ -1,15 +1,16 @@
-
+import argparse
+import json
 import os
 import re
-import yaml
-import json
-import argparse
 import shutil
+
+import yaml
 
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_HASH = "c1e285b7"  # Hash for FaserF/hassio-addons
 MAINTAINER = "FaserF"
+
 
 def load_addon_config(addon_path):
     """Load config.yaml or config.json."""
@@ -17,12 +18,13 @@ def load_addon_config(addon_path):
     config_json = os.path.join(addon_path, "config.json")
 
     if os.path.exists(config_yaml):
-        with open(config_yaml, 'r', encoding='utf-8') as f:
+        with open(config_yaml, "r", encoding="utf-8") as f:
             return yaml.safe_load(f), "yaml"
     elif os.path.exists(config_json):
-        with open(config_json, 'r', encoding='utf-8') as f:
+        with open(config_json, "r", encoding="utf-8") as f:
             return json.load(f), "json"
     return None, None
+
 
 def generate_badges(addon_slug, addon_name):
     """Generate standard badges."""
@@ -30,6 +32,7 @@ def generate_badges(addon_slug, addon_name):
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 [![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)]({REPO_URL}/releases)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-{MAINTAINER}-blue?style=flat-square)"""
+
 
 def clean_existing_content(content):
     """Clean existing content by stripping headers, badges, and stopping at Configuration."""
@@ -42,10 +45,17 @@ def clean_existing_content(content):
 
         # --- TOP LEVEL SKIPPING (Header info) ---
         if skip_mode:
-            if not sline: continue
+            if not sline:
+                continue
 
             # Detect Badges
-            if "]" in sline and ("badge" in sline or "shields.io" in sline or "my.home-assistant.io" in sline or "github.com" in sline or "ko-fi" in sline):
+            if "]" in sline and (
+                "badge" in sline
+                or "shields.io" in sline
+                or "my.home-assistant.io" in sline
+                or "github.com" in sline
+                or "ko-fi" in sline
+            ):
                 continue
 
             # Detect Title
@@ -88,7 +98,11 @@ def clean_existing_content(content):
                 continue
 
             # Filter Badges/Logos inside content body
-            if "]" in sline and ("badge" in sline or "shields.io" in sline or "my.home-assistant.io" in sline):
+            if "]" in sline and (
+                "badge" in sline
+                or "shields.io" in sline
+                or "my.home-assistant.io" in sline
+            ):
                 continue
             if "![Logo]" in sline or "logo.png" in sline:
                 continue
@@ -103,7 +117,9 @@ def clean_existing_content(content):
 
             # Filter Configuration Header -> STOP PROCESSING
             # We regenerate this section fully
-            if sline.startswith("## Configuration") or sline.startswith("## ⚙️ Configuration"):
+            if sline.startswith("## Configuration") or sline.startswith(
+                "## ⚙️ Configuration"
+            ):
                 break
 
             # Filter HRs in content to avoid stacking separators
@@ -115,7 +131,7 @@ def clean_existing_content(content):
                 continue
 
             # Filter legacy markdown reference badges (e.g. ![...][...-shield])
-            if re.search(r'!\[.*\]\[.*-shield\]', sline, re.IGNORECASE):
+            if re.search(r"!\[.*\]\[.*-shield\]", sline, re.IGNORECASE):
                 continue
 
             cleaned_lines.append(line)
@@ -127,6 +143,7 @@ def clean_existing_content(content):
         cleaned_lines.pop()
 
     return "\n".join(cleaned_lines)
+
 
 def maximize_config_example(config, config_type):
     """Generate a clean configuration example."""
@@ -141,6 +158,7 @@ def maximize_config_example(config, config_type):
         # Simple YAML dump for options
         return f"```yaml\n{yaml.dump(options, default_flow_style=False)}```"
 
+
 def find_addons(base_path):
     """Recursively find add-ons (directories with config.yaml/json)."""
     addons = []
@@ -149,8 +167,9 @@ def find_addons(base_path):
     for item in os.listdir(base_path):
         item_path = os.path.join(base_path, item)
         if os.path.isdir(item_path) and not item.startswith("."):
-            if os.path.exists(os.path.join(item_path, "config.yaml")) or \
-               os.path.exists(os.path.join(item_path, "config.json")):
+            if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                os.path.join(item_path, "config.json")
+            ):
                 addons.append(item_path)
 
     # Unsupported folder check
@@ -159,17 +178,20 @@ def find_addons(base_path):
         for item in os.listdir(unsupported_path):
             item_path = os.path.join(unsupported_path, item)
             if os.path.isdir(item_path):
-                if os.path.exists(os.path.join(item_path, "config.yaml")) or \
-                   os.path.exists(os.path.join(item_path, "config.json")):
+                if os.path.exists(
+                    os.path.join(item_path, "config.yaml")
+                ) or os.path.exists(os.path.join(item_path, "config.json")):
                     addons.append(item_path)
 
     # Also check if cwd is an addon
-    if os.path.exists(os.path.join(base_path, "config.yaml")) or \
-       os.path.exists(os.path.join(base_path, "config.json")):
-         # Usually scripts run from root, but just in case
-         pass
+    if os.path.exists(os.path.join(base_path, "config.yaml")) or os.path.exists(
+        os.path.join(base_path, "config.json")
+    ):
+        # Usually scripts run from root, but just in case
+        pass
 
     return addons
+
 
 def process_addon(addon_path):
     print(f"Processing {addon_path}...")
@@ -182,7 +204,7 @@ def process_addon(addon_path):
     # 0. Backup (Optional, maybe skip if repeatedly running)
 
     # 1. Read Content
-    with open(readme_path, 'r', encoding='utf-8') as f:
+    with open(readme_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # 2. Extract description (simple heuristic or use clean_existing_content)
@@ -194,7 +216,7 @@ def process_addon(addon_path):
     addon_dirname = os.path.basename(addon_path)
     name = config.get("name", addon_dirname)
     description = config.get("description", "Home Assistant Add-on")
-    slug = f"{REPO_HASH}_{addon_dirname}" # e.g. c1e285b7_whatsapp
+    slug = f"{REPO_HASH}_{addon_dirname}"  # e.g. c1e285b7_whatsapp
 
     # 3. Clean Content
     body_content = clean_existing_content(content)
@@ -226,10 +248,11 @@ def process_addon(addon_path):
     new_content += f"Maintained by **{MAINTAINER}**.\n"
 
     # 5. Write
-    with open(readme_path, 'w', encoding='utf-8') as f:
+    with open(readme_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
     print(f"✅ {addon_dirname} Standardized.")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

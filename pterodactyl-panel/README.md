@@ -17,7 +17,6 @@ pterodactyl Panel Gameserver for Homeassistant OS
 
 ![Ingress Support](../_images/pterodactyl/ingress.png)
 
-
 > [!WARNING]
 > Currently only limited working. Right now it can be considered beta and
 > unstable. Don't blame me if your gameservers would be lost etc.
@@ -32,7 +31,6 @@ users.
 Stop settling for less. Make game servers a first-class citizen on your platform.
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

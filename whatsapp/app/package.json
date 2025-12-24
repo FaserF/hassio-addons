@@ -1,17 +1,17 @@
 {
-    "name": "hassio-addon-whatsapp",
-    "version": "0.2.1",
-    "description": "WhatsApp Addon using Baileys",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {
-        "start": "node index.js"
-    },
-    "dependencies": {
-        "@whiskeysockets/baileys": "7.0.0-rc.9",
-        "bonjour-service": "^1.3.0",
-        "express": "^4.18.2",
-        "pino": "^8.16.2",
-        "qrcode": "^1.5.3"
-    }
+  "name": "hassio-addon-whatsapp",
+  "version": "0.2.1",
+  "description": "WhatsApp Addon using Baileys",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc.9",
+    "bonjour-service": "^1.3.0",
+    "express": "^4.18.2",
+    "pino": "^8.16.2",
+    "qrcode": "^1.5.3"
+  }
 }

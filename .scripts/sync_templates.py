@@ -1,14 +1,21 @@
 import os
+
 import yaml
 
 TEMPLATE_PATH = ".github/ISSUE_TEMPLATE/bug_report.yml"
 
+
 def get_addons():
     addons = []
     for item in os.listdir("."):
-        if os.path.isdir(item) and not item.startswith(".") and os.path.exists(os.path.join(item, "config.yaml")):
+        if (
+            os.path.isdir(item)
+            and not item.startswith(".")
+            and os.path.exists(os.path.join(item, "config.yaml"))
+        ):
             addons.append(item)
     return sorted(addons)
+
 
 def sync_template():
     if not os.path.exists(TEMPLATE_PATH):
@@ -25,15 +32,15 @@ def sync_template():
 
     found = False
     new_options = get_addons()
-    new_options.insert(0, "Other") # Ensure 'Other' is there
+    new_options.insert(0, "Other")  # Ensure 'Other' is there
 
-    if 'body' in data:
-        for input_field in data['body']:
-            if input_field.get('type') == 'dropdown':
-                label = input_field.get('attributes', {}).get('label', '').lower()
-                if 'add-on' in label or 'addon' in label:
+    if "body" in data:
+        for input_field in data["body"]:
+            if input_field.get("type") == "dropdown":
+                label = input_field.get("attributes", {}).get("label", "").lower()
+                if "add-on" in label or "addon" in label:
                     print(f"Found input: {label}")
-                    input_field['attributes']['options'] = new_options
+                    input_field["attributes"]["options"] = new_options
                     found = True
                     break
 
@@ -45,6 +52,7 @@ def sync_template():
             yaml.dump(data, f, sort_keys=False, default_flow_style=False)
     else:
         print("⚠️ Could not find Add-on dropdown in template.")
+
 
 if __name__ == "__main__":
     sync_template()

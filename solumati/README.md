@@ -22,8 +22,6 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-
-
 **Solumati** is a self-hosted dating platform designed to bring meaning back to
 matchmaking. By hosting this add-on, you run your own private instance of the
 Solumati platform directly on your Home Assistant server, ensuring complete data
@@ -31,14 +29,14 @@ privacy and control.
 
 ## ✨ Features
 
-* **🔒 Secure & Private**: Your data stays on your server.
-* **🏠 Home Assistant Ingress**: Seamless integration via the HA sidebar with
+- **🔒 Secure & Private**: Your data stays on your server.
+- **🏠 Home Assistant Ingress**: Seamless integration via the HA sidebar with
   no port forwarding required.
-* **🔌 Auto-Configuration**: Zero-config setup; the database connection is
+- **🔌 Auto-Configuration**: Zero-config setup; the database connection is
   managed automatically.
-* **🧪 Test Mode**: Includes a built-in mode to generate dummy users for safe
+- **🧪 Test Mode**: Includes a built-in mode to generate dummy users for safe
   testing.
-* **📧 OAuth & SMTP**: Full support for external authentication and email
+- **📧 OAuth & SMTP**: Full support for external authentication and email
   notifications (configured via the Admin Panel).
 
 ## 🚀 Installation
@@ -58,10 +56,10 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
-app_base_url: ''
+app_base_url: ""
 dev_use_main_branch: false
 factory_reset: false
-github_token: ''
+github_token: ""
 log_level: info
 marketing_page_enabled: false
 test_mode: false
