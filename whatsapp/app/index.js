@@ -64,8 +64,13 @@ try {
     // Use dynamic import to avoid crashes if dependency is missing during dev/build
     const { Bonjour } = await import('bonjour-service');
     const instance = new Bonjour();
-    instance.publish({ name: 'WhatsApp Addon', type: 'ha-whatsapp', port: PORT });
-    console.log('📢 Publishing mDNS service: _ha-whatsapp._tcp');
+    instance.publish({
+        name: 'WhatsApp Addon',
+        type: 'ha-whatsapp',
+        protocol: 'tcp',
+        port: PORT
+    });
+    console.log(`📢 Publishing mDNS service: _ha-whatsapp._tcp.local on port ${PORT}`);
 } catch (e) {
     console.warn('mDNS advertisement failed:', e);
 }
