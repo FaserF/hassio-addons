@@ -91,16 +91,16 @@ jobs:
       packages: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
       - name: ℹ️ Get Add-on Info
         id: info
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ github.event.inputs.addon }}"
+          path: "./${{ github.event.inputs.addon || github.event.client_payload.addon }}"
 
       - name: 🐋 Login to GitHub Container Registry
         uses: docker/login-action@v3.6.0
@@ -110,35 +110,35 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⬆️ Bump Version & Changelog
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Version Bump
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: release ${{ github.event.inputs.addon }} version bump [skip ci]"
           file_pattern: "${{ github.event.inputs.addon }}/*"
 
       - name: 🏗️ Build & Push Add-on
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
             --aarch64 \
             --amd64 \
-            --target /data/${{ github.event.inputs.addon }} \
+            --target /data/${{ github.event.inputs.addon || github.event.client_payload.addon }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
             --no-cache
 
       - name: ⬆️ Bump Version & Changelog
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

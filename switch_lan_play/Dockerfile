@@ -3,14 +3,16 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 # Install requirements for add-on
-RUN apk -U --no-cache add libpcap-dev
-RUN apk -U --no-cache add libuv-dev
-RUN apk -U --no-cache add git
-RUN apk -U --no-cache add g++
-RUN apk -U --no-cache add cmake
-RUN apk -U --no-cache add nano
-RUN apk -U --no-cache add screen
-RUN apk -U --no-cache add build-base
+# hadolint ignore=DL3018
+RUN apk -U --no-cache add \
+    libpcap-dev \
+    libuv-dev \
+    git \
+    g++ \
+    cmake \
+    nano \
+    screen \
+    build-base
 
 #Install SLP Client
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git \

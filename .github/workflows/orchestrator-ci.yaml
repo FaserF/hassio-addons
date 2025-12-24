@@ -23,7 +23,9 @@ jobs:
       addons: ${{ steps.filter.outputs.changes }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 📂 Run Paths Filter
         id: filter
@@ -43,13 +45,16 @@ jobs:
     needs: filter
     if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      workflows: write
     strategy:
       fail-fast: false
       matrix:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
@@ -119,7 +124,7 @@ jobs:
         arch: ["aarch64", "amd64"]
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: ℹ️ Get Add-on Info
         id: info

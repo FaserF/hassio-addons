@@ -3,6 +3,14 @@
 This repository contains a collection of custom **Home Assistant Add-ons**
 maintained by FaserF.
 
+> [!NOTE]
+> These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
+
+## Add-ons I support but don't actively use
+
+-
+
+
 ## Installation 🚀
 
 1. Click the button below to to add this repository to your Home Assistant.
@@ -19,14 +27,20 @@ maintained by FaserF.
 <!-- markdownlint-disable MD060 -->
 | Name | Description | Status |
 | :--- | :--- | :--- |
+| **[AegisBot](AegisBot)** | Discord Bot for Aegis | ✅ |
 | **[Apache2](apache2)** | Webserver (Minimal / MariaDB / PHP) | ✅ |
+| **[Apache2 Minimal](apache2-minimal)** | Webserver (Minimal / PHP) | ✅ |
+| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)** | Webserver (Minimal / MariaDB / PHP) | ✅ |
 | **[Bash Script Executer](bash_script_executer)** | Execute bash scripts in HA OS | ✅ |
-
+| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing | ✅ |
 | **[Matterbridge](matterbridge)** | Simple chat bridge | ✅ |
 | **[Netboot.xyz](netboot-xyz)** | PXE Booting Service | ✅ |
 | **[OpenSSL](openssl)** | Self-signed certificate generator | ✅ |
 | **[Pterodactyl](pterodactyl-panel)** | GameServer Stack (Panel & Wings) | ✅ |
+| **[ShieldDNS](ShieldDNS)** | DNS-over-HTTPS Server | ✅ |
+| **[ShieldFile](ShieldFile)** | Secure File Sharing | ✅ |
 | **[Switch LAN Play](switch_lan_play)** | Nintendo Switch LAN Play Client | ✅ |
+| **[Switch LAN Play Server](switch_lan_play_server)** | Nintendo Switch LAN Play Server | ✅ |
 | **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
 | **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Baileys) | ✅ |
 | **[Wiki.js](wiki.js)** | Wiki.js | ✅ |

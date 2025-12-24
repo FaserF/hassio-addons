@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -141,6 +141,13 @@ jobs:
         with:
           commit_message: "Bumps Home Assistant Test Instance to ${{ steps.update.outputs.version }}"
           file_pattern: homeassistant-test-instance/*
+
+      - name: 📨 Trigger Release Build
+        if: steps.update.outputs.updated == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: dependency-update
+          client-payload: '{"addon": "homeassistant-test-instance", "version": "patch"}'
 
   # --------------------------------------------------------------------------------
   # BASE IMAGE UPDATES (Generic)
