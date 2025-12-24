@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091
 # shellcheck shell=bash
 config_file=$(bashio::config 'config_file')
 update_time_in_seconds=$(bashio::config 'update_time_in_seconds')

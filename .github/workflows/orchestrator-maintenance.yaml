@@ -46,7 +46,7 @@ jobs:
           keep_minimum_runs: 5
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: 🚫 Retract Logic
         run: |
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: 🏃 Run Move Script
         run: |

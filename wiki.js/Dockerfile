@@ -1,4 +1,5 @@
 ARG BUILD_FROM
+ARG BUILD_DATE
 FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -118,5 +119,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/wiki.js"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/wiki.js"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/wiki.js/blob/master/wiki.js/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/wiki.js/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

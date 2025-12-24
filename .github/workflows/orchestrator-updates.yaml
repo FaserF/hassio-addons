@@ -163,23 +163,10 @@ jobs:
           fetch-depth: 0
 
       - name: "Retrieve version & increment it"
-        # Using the script logic we've seen, but let's encourage using a standardized script if possible.
-        # For now, converting the shell logic from Bump-Addon-Version-base.yml to Python or keeping shell.
-        # Keeping shell for fidelity to original logic, but simplified.
         run: |
-          # ... (Logic from Bump-Addon-Version-base.yml) ...
-          # For brevity in this artifact, I will call the existing Python script if available or implement concise logic.
-          # Since we don't have a specific python script for *this* mass update, I will reuse the shell logic
-          # but ensure it's robust.
-          # Actually, to be safe and clean, I will suggest we use the existing shell logic pattern but inside this job.
-          # See Bump-Addon-Version-base.yml for logic.
           echo "Running Base Image Update Logic..."
-          # (We can copy the hefty shell script here or put it in .scripts/update_base.sh to call it)
 
       - name: Call Update Script
-        # To avoid massive in-line YAML, I'll assume we move the logic to a script.
-        # But wait, I must implement it NOW.
-        # I will Create .scripts/update_base_images.sh first.
         run: bash .scripts/update_base_images.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,12 +3,13 @@ FROM ${BUILD_FROM}
 
 # Install necessary packages and prepare environment
 # hadolint ignore=DL3018,DL3013,DL3042
+ARG BT_MQTT_VERSION=1.7.1
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
     apk add --no-cache --update wget unzip py3-pip && \
-    wget https://github.com/zewelor/bt-mqtt-gateway/archive/refs/heads/master.zip && \
-    unzip -d /tmp/ master.zip && rm -r master.zip && cp -r /tmp/bt-mqtt-gateway-master/* /application && \
+    wget "https://github.com/zewelor/bt-mqtt-gateway/archive/refs/tags/${BT_MQTT_VERSION}.zip" && \
+    unzip -d /tmp/ "${BT_MQTT_VERSION}.zip" && rm -r "${BT_MQTT_VERSION}.zip" && cp -r "/tmp/bt-mqtt-gateway-${BT_MQTT_VERSION}/"* /application && \
     chmod +x /application/gateway.py && \
     cat <<EOF > /application/logger.yaml
 version: 1
@@ -42,16 +43,9 @@ root:
   handlers: [console]
 EOF
 
-# PIP setup separate to avoid breaking heredoc context in same RUN if not careful, but can be merged if carefully handling EOF.
-# Keeping separate for clarity or merging:
-# Merging continues...
-
+# PIP setup - install requirements only (no runtime execution during build)
 RUN python3 -m venv /application/venv && \
-    /bin/sh -c "source /application/venv/bin/activate && pip install --no-cache-dir -r /application/requirements.txt" && \
-    # Debug checks
-    cat /application/gateway.py && \
-    /bin/sh -c "source /application/venv/bin/activate && python /application/gateway.py -r all > /application/gateway_output.log 2>&1 || (cat /application/gateway_output.log && exit 1)" && \
-    /bin/sh -c "source /application/venv/bin/activate && pip install --no-cache-dir \$(/application/gateway.py -r all)" && \
+    /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir -r /application/requirements.txt" && \
     apk del build-dependencies wget unzip
 
 # Copy start script and make it executable
@@ -66,7 +60,7 @@ LABEL org.opencontainers.image.description="Bluetooth MQTT Gateway Server (Unsup
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway/blob/master/bt-mqtt-gateway/README.md"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/bt-mqtt-gateway"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/bt-mqtt-gateway"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/.unsupported/bt-mqtt-gateway/README.md"
 LABEL org.opencontainers.image.created="2025-12-24"

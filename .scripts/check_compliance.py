@@ -77,11 +77,11 @@ def check_addon(addon_path):
     if errors or warnings:
         print(f"🔍 Compliance Report for {addon_path}:")
         if errors:
-            print(f"  ❌ Errors:")
+            print("  ❌ Errors:")
             for err in errors:
                 print(f"     - {err}")
         if warnings:
-            print(f"  ⚠️ Warnings:")
+            print("  ⚠️ Warnings:")
             for warn in warnings:
                 print(f"     - {warn}")
         print("--------------------------------------------------")
@@ -113,7 +113,7 @@ def main():
              # Not an addon directory
              continue
 
-        passed, errors, warnings = check_addon(addon)
+        passed, _errors, _warnings = check_addon(addon)
         if not passed:
             failed = True
 

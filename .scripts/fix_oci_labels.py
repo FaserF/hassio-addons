@@ -20,7 +20,7 @@ def generate_labels(addon_path):
     name = config.get("name", "Home Assistant Add-on")
     description = config.get("description", "Home Assistant Add-on")
     url = config.get("url", "https://github.com/FaserF/hassio-addons")
-    version = config.get("version", "dev") # Version might be dynamic, but labels usually static metadata
+    # Note: version could be dynamic but labels are usually static metadata
 
     # Standard OCI Labels
     labels = {
@@ -39,7 +39,7 @@ def generate_labels(addon_path):
         content = f.read()
 
     new_content = content
-    labels_added = False
+
 
     # Basic check if labels dictate adding
     # We construct the LABEL block

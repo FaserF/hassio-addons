@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034,SC2129,SC2016
 set -e
 
 echo "Starting version increment process..."

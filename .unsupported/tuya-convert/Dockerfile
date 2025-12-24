@@ -2,9 +2,11 @@ ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
+ARG BUILD_DATE
 # hadolint ignore=DL3018,DL3013,DL3042
+# Pin sslpsk to specific commit for reproducible builds
 RUN apk add --no-cache bash git iw dnsmasq hostapd screen curl py3-pip py3-wheel python3-dev mosquito haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 && \
-    python3 -m pip install --upgrade paho-mqtt tornado git+https://github.com/drbild/sslpsk.git pycryptodomex && \
+    python3 -m pip install --upgrade paho-mqtt tornado git+https://github.com/drbild/sslpsk.git@e944d1cdd2e04c4bca4fd5f8b1022c92fd7db534 pycryptodomex && \
     git clone --depth 1 https://github.com/ct-Open-Source/tuya-convert /usr/local/tuya-convert && \
     sed -i 's|ls -m|ls|' /usr/local/tuya-convert/scripts/setup_checks.sh
 WORKDIR "/usr/local/tuya-convert"
@@ -22,5 +24,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/tuya-convert"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/tuya-convert"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/tuya-convert/blob/master/tuya-convert/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/tuya-convert/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

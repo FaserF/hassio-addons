@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 nginx_uid=abc
 declare nginx_port
@@ -12,8 +13,8 @@ path_config=$(bashio::config 'path_config')
 echo "Creating user $nginx_uid and setting permissions..."
 
 # Set the uid:gid to run as
-adduser --disabled-password --system --no-create-home $nginx_uid
-addgroup $nginx_uid
+adduser --disabled-password --system --no-create-home "$nginx_uid"
+addgroup "$nginx_uid"
 adduser "$nginx_uid" "$nginx_uid"
 adduser "$nginx_uid" nginx
 

@@ -6,7 +6,7 @@
 > This add-on is currently **UNSUPPORTED**.
 > It is no longer actively developed or maintained.
 >
-> - No new features wil be added.
+> - No new features will be added.
 > - Bugs will likely not be fixed.
 > - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
 >
@@ -21,7 +21,7 @@
 
 > [!WARNING]
 > Project has been deprecated by the original creator, therefore this Addon
-> wont recieve new features
+> won't receive new features
 
 Please have a look at the [official repository](https://github.com/zewelor/bt-mqtt-gateway),
 it is recommended to use Bluetooth Proxy.

@@ -1,4 +1,5 @@
 ARG BUILD_FROM
+ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -39,5 +40,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb/blob/master/apache2-minimal-mariadb/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/apache2-minimal-mariadb/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

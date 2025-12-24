@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
@@ -27,7 +28,6 @@ if [ ! -d "$DocumentRoot" ]; then
 	echo "You haven't put your website to $DocumentRoot"
 	echo "Creating the folder for you."
 	mkdir -p "$DocumentRoot"
-	rm -r "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
 	ln -s "$DocumentRoot" /var/www/localhost/htdocs
@@ -38,7 +38,7 @@ if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		adduser -S "$username" -G www-data
-		echo "$username:$password" | chpasswd "$username"
+		echo "$username:$password" | chpasswd
 		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
 		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
 	else
@@ -167,7 +167,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 fi
 
 echo "Here is your web file architecture."
-ls -l $webrootdocker
+ls -l "$webrootdocker"
 
 echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND

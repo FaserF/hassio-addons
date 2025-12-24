@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091
 # shellcheck shell=bash
 config_path=$(bashio::config 'config_path')
 DEBUG=$(bashio::config 'debug')

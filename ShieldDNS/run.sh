@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+# shellcheck disable=SC1091
 # shellcheck shell=bash
 source /usr/lib/bashio/bashio.sh
 
@@ -302,10 +303,12 @@ if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
 	# Clean PIDS list (remove empty)
 	PIDS=$(echo "$PIDS" | xargs)
 
-	wait -n "$PIDS"
+	# shellcheck disable=SC2086
+	wait -n $PIDS
 
 	bashio::log.error "❌ One of the processes exited. Shutting down..."
-	kill "$PIDS" 2>/dev/null
+	# shellcheck disable=SC2086
+	kill $PIDS 2>/dev/null
 	exit 1
 else
 	bashio::log.info "🚀 Starting CoreDNS..."

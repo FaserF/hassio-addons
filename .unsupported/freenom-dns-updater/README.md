@@ -6,7 +6,7 @@
 > This add-on is currently **UNSUPPORTED**.
 > It is no longer actively developed or maintained.
 >
-> - No new features wil be added.
+> - No new features will be added.
 > - Bugs will likely not be fixed.
 > - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
 >

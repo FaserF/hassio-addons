@@ -34,13 +34,8 @@ jobs:
                const addonName = start.toLowerCase().replace(/ /g, '-');
                const label = `addon/${addonName}`;
 
-               // Dynamic Validation: Check if folder exists
+               // Dynamic Validation: Check if folder exists via API
                try {
-                  // We need to list files to check existence since we don't have the repo checked out in this step context usually?
-                  // Actually, github-script runs on ubuntu-latest. If we haven't checked out code, we can't check fs.
-                  // But this job runs `runs-on: ubuntu-latest` and DOES NOT have a checkout step in the snippet I saw!
-                  // Uses `actions/github-script`. We can use the API to check content.
-
                   try {
                     await github.rest.repos.getContent({
                       owner: context.repo.owner,

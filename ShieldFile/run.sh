@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091,SC2034,SC2129,SC2016
 source /usr/lib/bashio/bashio.sh
 
 # Manually load S6 environment to ensure Bashio has access to SUPERVISOR_TOKEN

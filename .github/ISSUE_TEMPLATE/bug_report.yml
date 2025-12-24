@@ -70,6 +70,7 @@ body:
       label: Add-On causing the issue
       description: >
         The name of the Addon. For example: Apache2
+      default: 3
       options:
         - AegisBot
         - ShieldDNS
@@ -80,6 +81,7 @@ body:
         - bash_script_executer
         - bt-mqtt-gateway
         - freenom-dns-updater
+        - homeassistant-test-instance
         - matterbridge
         - netboot-xyz
         - openssl
@@ -90,6 +92,7 @@ body:
         - switch_lan_play_server
         - tado_aa
         - tuya-convert
+        - whatsapp
         - wiki.js
         - xqrepack
         - Other

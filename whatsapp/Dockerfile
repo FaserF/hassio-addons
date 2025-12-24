@@ -1,4 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_DATE
 FROM $BUILD_FROM
 
 # Set shell
@@ -64,7 +65,7 @@ LABEL org.opencontainers.image.description="Home Assistant WhatsApp Backend (Bai
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/ha-whatsapp"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/ha-whatsapp"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/ha-whatsapp/blob/master/whatsapp/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

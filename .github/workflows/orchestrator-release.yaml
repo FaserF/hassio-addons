@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: 🚀 Run Trigger Script
         run: python3 .scripts/trigger_edge_updates.py
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       # If manual dispatch, verify the specific add-on
       - name: 🕵️ Add-on Linter (Manual)
@@ -120,8 +120,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: release ${{ github.event.inputs.addon }} version bump [skip ci]"
-          file_pattern: "${{ github.event.inputs.addon }}/*"
+          commit_message: "chore: release ${{ github.event.inputs.addon || github.event.client_payload.addon }} version bump [skip ci]"
+          file_pattern: "${{ github.event.inputs.addon || github.event.client_payload.addon || '*' }}/*"
 
       - name: 🏗️ Build & Push Add-on
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'

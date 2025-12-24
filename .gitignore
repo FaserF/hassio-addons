@@ -35,6 +35,11 @@ compliance.log
 markdown_report.txt
 shellcheck_*.txt
 
+# Node.js
+node_modules/
+package-lock.json
+package.json
+
 # Local Artifacts
 *.bak
 *.exe

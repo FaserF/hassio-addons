@@ -1,4 +1,5 @@
 ARG BUILD_FROM
+ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -7,9 +8,12 @@ RUN \
 apk add --no-cache ca-certificates curl tini tzdata; \
 mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl
 
-#RUN curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_$([[ "$(uname -m)" == "x86_64" ]] && echo "amd64" || echo "arm64")" \
-RUN curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64" \
-&& chmod u+x /usr/local/bin/wings
+# Download wings binary with multi-arch support
+ARG TARGETARCH
+RUN ARCH="${TARGETARCH}"; \
+    if [ "$ARCH" = "arm64" ]; then ARCH="arm64"; else ARCH="amd64"; fi && \
+    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_${ARCH}" \
+    && chmod u+x /usr/local/bin/wings
 
 # Copy data for add-on
 COPY run.sh /
@@ -24,5 +28,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings/blob/master/pterodactyl-wings/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/pterodactyl-wings/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

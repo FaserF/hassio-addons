@@ -1,4 +1,5 @@
 ARG HA_VERSION=stable
+ARG BUILD_DATE
 FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
 
 # Persist data in the add-on data directory
@@ -10,7 +11,7 @@ LABEL org.opencontainers.image.description="A standalone Home Assistant Core ins
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/home-assistant/home-assistant"
-LABEL org.opencontainers.image.source="https://github.com/home-assistant/home-assistant"
-LABEL org.opencontainers.image.documentation="https://github.com/home-assistant/home-assistant/blob/master/homeassistant-test-instance/README.md"
-LABEL org.opencontainers.image.created="2025-12-24"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/homeassistant-test-instance"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/homeassistant-test-instance"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/homeassistant-test-instance/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -27,7 +26,7 @@ jobs:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
       - name: 🐍 Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -78,6 +77,9 @@ jobs:
       # 4. Standardize (READMEs, Beta Labels, Configs)
       - name: 📄 Standardize READMEs
         run: python3 .scripts/standardize_readmes.py
+
+      - name: 📊 Update README Status Table
+        run: python3 .scripts/update_readme_status.py
 
       # Commit back
       - name: 💾 Commit Changes

@@ -8,7 +8,7 @@ COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/bin/cl
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools
+RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix
 
 # Create web root and required directories
 RUN mkdir -p /var/www/html /run/nginx
@@ -30,5 +30,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS/blob/master/ShieldDNS/README.md"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/ShieldDNS/README.md"
 LABEL org.opencontainers.image.created="2025-12-24"

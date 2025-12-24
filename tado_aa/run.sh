@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091
 # shellcheck shell=bash
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
@@ -7,7 +8,7 @@ maxTemp=$(bashio::config 'maxTemp')
 log_level=$(bashio::config 'log_level')
 
 sed -i "s/your_tado_username/${username}/" /tado_aa.py
-sed -i "s/your_tado_password/${password}/" /tado_aa.py
+sed -i "s|your_tado_password|${password}|" /tado_aa.py
 sed -i "s/5/${minTemp}/" /tado_aa.py
 sed -i "s/25/${maxTemp}/" /tado_aa.py
 

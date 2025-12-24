@@ -8,7 +8,7 @@ maintained by FaserF.
 
 ## Installation 🚀
 
-1. Click the button below to to add this repository to your Home Assistant.
+1. Click the button below to add this repository to your Home Assistant.
    [![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 2. Or manually add this URL:
@@ -19,63 +19,63 @@ maintained by FaserF.
 
 ## Add-ons List 📦
 
+The table below shows **all add-ons** in this repository, including unsupported ones.
+
 <!-- markdownlint-disable MD060 -->
 
 | Name                                                            | Description                               | Status |
 | :-------------------------------------------------------------- | :---------------------------------------- | :----- |
 | **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     |
-| **[Apache2](apache2)**                                          | Webserver (Minimal / MariaDB / PHP)       | ✅     |
-| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal / PHP)                 | ✅     |
-| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver (Minimal / MariaDB / PHP)       | ✅     |
+| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     |
+| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     |
+| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     |
 | **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     |
-| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ✅     |
+| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     |
+| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     |
+| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     |
 | **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     |
-| **[Pterodactyl](pterodactyl-panel)**                            | GameServer Stack (Panel & Wings)          | ✅     |
+| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     |
+| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                   | ✅     |
 | **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server               | ✅     |
 | **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                       | ✅     |
+| **[Solumati](solumati)**                                        | Solar Panel Monitoring                    | ✅     |
 | **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client           | ✅     |
 | **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server           | ✅     |
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     |
-| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Baileys) | ✅     |
+| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     |
+| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     |
 | **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     |
+| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     |
 
 <!-- markdownlint-enable MD060 -->
+<!-- markdownlint-disable MD028 -->
+
 > **Legend:**
-> - ✅ = Stable
-> - ⚠️ = Beta (functional but still in development)
+>
+> - ✅ = Stable (version ≥ 1.0.0)
+> - ⚠️ = Beta (version < 1.0.0, functional but in development)
+> - ❌ = Unsupported (no longer maintained)
 
-> [!NOTE]
-> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
+<!-- markdownlint-enable MD028 -->
 
-## 🪦 Unsupported / Deprecated
+## 🪦 Unsupported Add-ons Info
 
-The following add-ons are no longer supported or maintained. They have been moved to the `unsupported/` directory.
+Add-ons marked with ❌ are located in the `.unsupported/` directory and **will not appear** in the Home Assistant Add-on Store.
 
-- **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**
-- **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**
-- **[HyperionNG](.unsupported/HyperionNG)**
-- **[Silverstrike](.unsupported/Silverstrike)**
-- **[Tuya Convert](.unsupported/tuya-convert)**
-- **[xqrepack](.unsupported/xqrepack)**
-
-### ⚠️ Installing Unsupported Add-ons
-
-Because these add-ons are located in a hidden `.unsupported` directory, they **will not appear** in the Home Assistant Add-on Store even if you add this repository.
-
-To install them, you must do so manually as a **Local Add-on**:
+To install them manually as a **Local Add-on**:
 
 1. Access your Home Assistant host via SSH or Samba.
-2. Navigate to the `/addons` directory (create it if it doesn't exist, usually separate from `/config`).
+2. Navigate to the `/addons` directory (create it if it doesn't exist).
 3. Create a folder, e.g., `/addons/local`.
-4. Copy the entire add-on folder (e.g. `bt-mqtt-gateway`) from `.unsupported/` in this repository to `/addons/local/bt-mqtt-gateway`.
+4. Copy the entire add-on folder from `.unsupported/` to `/addons/local/`.
 5. In Home Assistant, go to **Settings > Add-ons > Add-on Store**.
 6. Click the **three dots** (top right) -> **Check for updates**.
 7. The add-on should appear in the "Local Add-ons" section.
 
 > [!WARNING]
-> These add-ons are **NOT MAINTAINED**. Use them strictly at your own risk. Automatic base image updates still happen through Workflows.
+> Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
 
 Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
 Tested on **amd64** architecture.

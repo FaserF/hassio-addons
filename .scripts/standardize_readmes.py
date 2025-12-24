@@ -209,7 +209,7 @@ def find_addons(base_path):
                 addons.append(item_path)
 
     # Unsupported folder check
-    unsupported_path = os.path.join(base_path, "unsupported")
+    unsupported_path = os.path.join(base_path, ".unsupported")
     if os.path.exists(unsupported_path):
         for item in os.listdir(unsupported_path):
             item_path = os.path.join(unsupported_path, item)
