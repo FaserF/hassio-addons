@@ -1,36 +1,30 @@
 name: Orchestrator Auto-Merge
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - synchronize
       - reopened
-      - edited
-      - labeled
-      - ready_for_review
-  check_suite:
-    types:
-      - completed
-  status: {}
 
 jobs:
-  auto-merge:
+  enable-auto-merge:
+    name: 🤖 Enable Auto-Merge
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'check_suite' && github.event.check_suite.conclusion == 'success') ||
-      (github.event_name == 'status' && github.event.state == 'success') ||
-      (github.event_name == 'pull_request_target')
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'renovate[bot]' ||
+      github.actor == 'FaserF'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: 🤖 Auto-Merge Dependabot/Renovate/FaserF
-        uses: ahmadnassri/action-dependabot-auto-merge@v2.6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          command: 'squash'
-          target: 'minor' # Merge minor/patch updates automatically
-          # Additional check: only if author is trusted
-        if: |
-            github.actor == 'dependabot[bot]' ||
-            github.actor == 'renovate[bot]' ||
-            github.actor == 'github-actions[bot]' ||
-            github.actor == 'FaserF'
+      - name: 🤖 Enable Native Auto-Merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          # Enable strict auto-merge.
+          # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
+          # The PR will only merge once ALL required status checks (CI) have passed.
+          gh pr merge --auto --squash "$PR_URL"
