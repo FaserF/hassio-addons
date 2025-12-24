@@ -1,0 +1,55 @@
+name: Orchestrator Auto-Fix
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  auto-fix:
+    name: 🔧 Auto-Fix Everything
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      # 1. Shell Scripts (Format)
+      - name: 🐚 Run shfmt
+        uses: mvdan/github-action-shfmt@v3
+        with:
+          args: -w -s -i 2
+
+      # 2. Python (Format & Sort Imports)
+      # We format the internal scripts and any add-on python files
+      - name: 🐍 Run Black (Formatter)
+        uses: psf/black@stable
+        with:
+          options: "--verbose"
+          src: "."
+
+      - name: 🐍 Run Isort (Import Sorter)
+        uses: isort/isort-action@master
+        with:
+            configuration: "--profile black"
+
+      # 3. Prettier (JSON, YAML, MD)
+      - name: 💅 Run Prettier
+        uses: creyD/prettier_action@v4.6
+        with:
+          prettier_options: --write "**/*.{json,js,md,yaml}"
+
+      # 4. Markdown specific fixes (lists, headers) usually handled by Prettier
+      # If needed, markdownlint-cli2 --fix can be added here.
+
+      # Commit back
+      - name: 💾 Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix (shfmt, black, isort, prettier)"
+          branch: ${{ github.head_ref }}

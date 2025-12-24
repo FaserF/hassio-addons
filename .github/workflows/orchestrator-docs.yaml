@@ -1,0 +1,32 @@
+name: Orchestrator Docs & Standards
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Weekly check
+  workflow_dispatch:
+
+jobs:
+  doc-audit:
+    name: 📚 Documentation Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 📝 Update Templates
+        run: |
+           # Phase 6: Sync Issue/PR Templates
+           # (Simplified Placeholder)
+           echo "Syncing templates..."
+
+      - name: 📖 Badge & Style Audit
+        run: |
+           python3 .scripts/check_docs.py
+
+      - name: 💾 Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update documentation standards"

@@ -1,0 +1,151 @@
+name: Orchestrator CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # FILTER: Detect which add-ons have changed
+  # --------------------------------------------------------------------------------
+  filter:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 📂 Run Paths Filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          # We use a dynamic filter configuration where each folder in root is a potential add-on
+          # For Phase 1, we assume standard folder structure or use the existing `paths-filter.yml` approach.
+          # To be smarter, we rely on the existing `.github/paths-filter.yml` if it exists, or we can inline a generator.
+          # For now, let's use the explicit file which seems to be the project standard.
+          filters: .github/paths-filter.yml
+
+  # --------------------------------------------------------------------------------
+  # LINT: Static Analysis (Fail Fast)
+  # --------------------------------------------------------------------------------
+  lint:
+    name: 🧹 Lint & Validate
+    needs: filter
+    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      # 1. ShellCheck
+      - name: 🐚 ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: "./${{ matrix.addon }}"
+        env:
+          SHELLCHECK_OPTS: -s bash
+
+      # 2. Hadolint
+      - name: 🐳 Hadolint
+        uses: brpaz/hadolint-action@v1.5.0
+        with:
+          dockerfile: "./${{ matrix.addon }}/Dockerfile"
+
+      # 3. Common Linters (Markdown/YAML/JSON/Prettier)
+      # We run these once per add-on to ensure focus, or globally if preferred.
+      # Running per add-on allows cleaner failure reporting.
+      - name: 📝 MarkdownLint
+        uses: actionshub/markdownlint@v3.1.4
+        with:
+          globs: "${{ matrix.addon }}/*.md"
+
+      - name: 📄 YAMLLint
+        uses: frenck/action-yamllint@v1.5
+        with:
+          paths: "./${{ matrix.addon }}/*.yaml"
+
+      - name: 💅 Prettier
+        uses: creyD/prettier_action@v4.6
+        with:
+          prettier_options: --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}"
+
+      # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
+      - name: 🕵️ Add-on Linter
+        uses: frenck/action-addon-linter@v2
+        with:
+          path: "./${{ matrix.addon }}"
+
+      # 5. Platinum Compliance (S6, Healthcheck, OCI)
+      - name: 🏆 Platinum Compliance Check
+        run: python3 .scripts/check_compliance.py "./${{ matrix.addon }}"
+
+      # 6. Security Scan (Trivy)
+      # Scanning the directory for vulnerabilities (fs mode)
+      # Note: Scanning the built image is better, but this scans deps/conf before build.
+      - name: 🛡️ Trivy Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: "./${{ matrix.addon }}"
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+  # --------------------------------------------------------------------------------
+  # BUILD: Test Build (No Push)
+  # --------------------------------------------------------------------------------
+  build:
+    name: 🏗️ Test Build (${{ matrix.addon }} - ${{ matrix.arch }})
+    needs: [filter, lint]
+    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+        arch: ["aarch64", "amd64"]
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: ℹ️ Get Add-on Info
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🛑 Check Arch Support
+        id: check
+        run: |
+          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
+             echo "build_arch=true" >> $GITHUB_OUTPUT
+             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+           else
+             echo "Skipping ${{ matrix.arch }} for ${{ matrix.addon }}"
+             echo "build_arch=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🐳 Build Add-on (Test)
+        if: steps.check.outputs.build_arch == 'true'
+        uses: home-assistant/builder@2025.11.0
+        with:
+          args: |
+            --test \
+            --${{ matrix.arch }} \
+            --target /data/${{ matrix.addon }} \
+            --image "${{ steps.check.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon

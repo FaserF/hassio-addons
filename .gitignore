@@ -2,3 +2,4 @@
 megalinter-reports/
 github_conf/
 all_build_yamls.txt
+scripts/move_unsupported.py

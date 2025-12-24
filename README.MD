@@ -21,20 +21,30 @@ maintained by FaserF.
 | :--- | :--- | :--- |
 | **[Apache2](apache2)** | Webserver (Minimal / MariaDB / PHP) | ✅ |
 | **[Bash Script Executer](bash_script_executer)** | Execute bash scripts in HA OS | ✅ |
-| **[Freenom DNS Updater](freenom-dns-updater)** | Update Freenom DNS records | ✅ |
+
 | **[Matterbridge](matterbridge)** | Simple chat bridge | ✅ |
 | **[Netboot.xyz](netboot-xyz)** | PXE Booting Service | ✅ |
 | **[OpenSSL](openssl)** | Self-signed certificate generator | ✅ |
 | **[Pterodactyl](pterodactyl-panel)** | GameServer Stack (Panel & Wings) | ✅ |
 | **[Switch LAN Play](switch_lan_play)** | Nintendo Switch LAN Play Client | ✅ |
 | **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
-| **[xqrepack](xqrepack)** | Xiaomi R3600 firmware patcher | ✅ |
 | **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Baileys) | ✅ |
+| **[Wiki.js](wiki.js)** | Wiki.js | ✅ |
 <!-- markdownlint-enable MD060 -->
 
 > [!NOTE]
-> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`,
-> `Tuya-Convert`, `Wiki.js`.
+> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
+
+## 🪦 Unsupported / Deprecated
+
+The following add-ons are no longer supported or maintained. They have been moved to the `unsupported/` directory.
+
+- **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**
+- **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**
+- **[HyperionNG](.unsupported/HyperionNG)**
+- **[Silverstrike](.unsupported/Silverstrike)**
+- **[Tuya Convert](.unsupported/tuya-convert)**
+- **[xqrepack](.unsupported/xqrepack)**
 
 ## Support 🙋‍♂️
 
@@ -45,7 +55,7 @@ Tested on **amd64** architecture.
 
 ## 📄 License
 
-This project is licensed under the MIT License (c) 2019–2025 FaserF.
+This project is licensed under the MIT License (c) 2019–2026 FaserF.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
