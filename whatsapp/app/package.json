@@ -10,7 +10,7 @@
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc.9",
     "bonjour-service": "^1.3.0",
-    "express": "^4.18.2",
+    "express": "^5.0.0",
     "pino": "^8.16.2",
     "qrcode": "^1.5.3"
   }
