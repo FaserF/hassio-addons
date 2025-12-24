@@ -62,7 +62,7 @@ jobs:
 
       - name: 💬 Post Comment
         if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const output = process.env.CONTENT;
