@@ -23,7 +23,7 @@ jobs:
       addons: ${{ steps.filter.outputs.changes }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📂 Run Paths Filter
         id: filter
@@ -49,7 +49,7 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
@@ -119,7 +119,7 @@ jobs:
         arch: ["aarch64", "amd64"]
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ℹ️ Get Add-on Info
         id: info
