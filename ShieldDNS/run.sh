@@ -128,7 +128,8 @@ bashio::log.info "  Ports (Initial): DoT:${DOT_PORT}, DoH:${DOH_PORT}"
 # Pre-flight Check: Port Availability & Smart Fallback
 # ------------------------------------------------------------------------------
 is_port_busy() {
-	local PORT=$1
+	local PORT
+	PORT=$1
 	if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
 		if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then
 			return 0 # Busy
@@ -154,7 +155,8 @@ if is_port_busy "${DOT_PORT}"; then
 	else
 		bashio::log.fatal "❌ Port ${DOT_PORT} is ALREADY IN USE!"
 		# Try to identify process
-		local PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
+		local PROC_INFO
+		PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
 		if [ -n "$PROC_INFO" ]; then bashio::log.fatal "   Conflict: $PROC_INFO"; fi
 		sleep 30
 		exit 1
@@ -298,7 +300,7 @@ if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
 	# Wait for ANY
 	PIDS="$DNS_PID ${TUNNEL_PID:-} ${NGINX_PID:-}"
 	# Clean PIDS list (remove empty)
-	PIDS=$(echo $PIDS | xargs)
+	PIDS=$(echo "$PIDS" | xargs)
 
 	wait -n $PIDS
 

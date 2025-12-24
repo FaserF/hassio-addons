@@ -2,7 +2,7 @@
 config_path=$(bashio::config 'config_path')
 DEBUG=$(bashio::config 'debug')
 
-if ! [ -f $config_path ]; then
+if ! [ -f "$config_path" ]; then
 	echo "There is no $config_path file! Please have a look at the example config https://github.com/zewelor/bt-mqtt-gateway/blob/master/config.yaml.example ."
 	echo "Try restarting the addon once your config file has been fully configured an been put somewhere on the HA /share folder."
 	exit 1
@@ -12,7 +12,7 @@ source ./venv/bin/activate
 
 cd /application
 echo "Found config file at $config_path . Copying it now."
-cp $config_path config.yaml
+cp "$config_path" config.yaml
 
 echo "Huge thanks to @zewelor who is the creator of bt-mqtt-gateway - https://github.com/zewelor/bt-mqtt-gateway"
 echo "If there are any bugs occurring below this line, please report it to the bt-mqtt-gateway developer and not to @FaserF - thanks."

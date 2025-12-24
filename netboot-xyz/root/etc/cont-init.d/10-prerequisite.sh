@@ -13,8 +13,8 @@ echo "Creating user $nginx_uid and setting permissions..."
 # Set the uid:gid to run as
 adduser --disabled-password --system --no-create-home $nginx_uid
 addgroup $nginx_uid
-adduser $nginx_uid $nginx_uid
-adduser $nginx_uid nginx
+adduser "$nginx_uid" "$nginx_uid"
+adduser "$nginx_uid" nginx
 
 echo "Generating nginx config..."
 if bashio::var.has_value "${nginx_port}"; then
@@ -51,16 +51,16 @@ if [ -d /config ]; then
 	ls -l /config
 fi
 
-if [ ! -d $path ]; then
+if [ ! -d "$path" ]; then
 	echo "Looks like the path $path did not exist! We will create it. Copy your installations ISOs etc there."
-	mkdir -p $path
+	mkdir -p "$path"
 fi
-ln -s $path /assets
-if [ ! -d $path_config ]; then
+ln -s "$path" /assets
+if [ ! -d "$path_config" ]; then
 	echo "Looks like the path $path_config did not exist! We will still start the addon with default options!"
-	mkdir -p $path_config
+	mkdir -p "$path_config"
 fi
-ln -s $path_config /config
+ln -s "$path_config" /config
 
 if [ ! -d /config/menus ]; then
 	mkdir /config/menus

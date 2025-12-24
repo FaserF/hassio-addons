@@ -17,3 +17,14 @@ COPY run.sh /
 COPY index.html /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="Apache2 Minimal"
+LABEL org.opencontainers.image.description="Open Source Webserver without PHP and minimal extra modules."
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal/blob/master/apache2-minimal/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

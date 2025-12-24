@@ -27,3 +27,14 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 RUN chmod a+x /tado_aa.py
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="Tado Auto Assist"
+LABEL org.opencontainers.image.description="Tado Auto-Assist for Geofencing and open Window detection"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/tado_aa"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/tado_aa"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/tado_aa/blob/master/tado_aa/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

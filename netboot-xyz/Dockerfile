@@ -37,3 +37,14 @@ RUN chmod a+x /etc/services.d/*/run
 
 # Configure DNSMASQ
 RUN chmod a+x /etc/cont-init.d/*
+
+# Labels
+LABEL org.opencontainers.image.title="Netboot.xyz"
+LABEL org.opencontainers.image.description="PXE-Server to deploy a OS inside your local network"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz/blob/master/netboot-xyz/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

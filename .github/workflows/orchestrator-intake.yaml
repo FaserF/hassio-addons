@@ -2,6 +2,8 @@ name: Orchestrator New Add-on Intake
 
 on:
   pull_request:
+    branches:
+      - master
     paths:
       - "**/config.yaml"
       - "**/config.json"

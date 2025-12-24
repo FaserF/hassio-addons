@@ -2,22 +2,27 @@ ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-RUN \
-    apk add --no-cache \
-    wget python3 python3-dev py3-pip lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils
-
-#Install Pip Dependencies
-RUN pip install python-lzo
-RUN pip install ubi_reader
-
-RUN mkdir /xqrepack
-WORKDIR /xqrepack
-
-RUN wget -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh
-RUN wget -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
+# hadolint ignore=DL3018,DL3013,DL3042
+RUN apk add --no-cache \
+    wget python3 python3-dev py3-pip lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
+    pip install python-lzo ubi_reader && \
+    mkdir /xqrepack && \
+    wget -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
+    wget -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
 #RUN wget -O /xqrepack/xqflash https://raw.githubusercontent.com/geekman/xqrepack/master/xqflash
 
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="xqrepack"
+LABEL org.opencontainers.image.description="These scripts allow you to modify the different Xiaomi router firmware images to make sure SSH and UART access is always enabled. (Unsupported)"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/xqrepack"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/xqrepack"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/xqrepack/blob/master/xqrepack/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

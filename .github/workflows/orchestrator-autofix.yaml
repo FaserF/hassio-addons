@@ -1,23 +1,48 @@
 name: Orchestrator Auto-Fix
 
 on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
-permissions:
-  contents: write
-  workflows: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  auto-fix:
-    name: 🔧 Auto-Fix Everything
+  autofix:
+    name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      workflows: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
-      # 1. Shell Scripts (Format)
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Deps
+        run: pip install pyyaml
+
+      - name: 🏷️ Auto-Generate OCI Labels
+        run: python3 .scripts/fix_oci_labels.py
+
+      - name: ⚠️ Update Unsupported Status
+        run: python3 .scripts/update_unsupported_status.py
+
+      - name: 🏁 Renormalize Line Endings
+        run: git add --renormalize .
+
       # 1. Shell Scripts (Format)
       - name: 🐚 Setup shfmt
         uses: mfinelli/setup-shfmt@v3

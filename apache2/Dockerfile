@@ -83,3 +83,14 @@ COPY run.sh /
 COPY index.html /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="Apache2"
+LABEL org.opencontainers.image.description="Open Source Webserver with PHP and MariaDB."
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/apache2"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/apache2/blob/master/apache2/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

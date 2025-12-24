@@ -6,13 +6,10 @@ FROM ${BUILD_FROM}
 #RUN mkdir -p '/opt/freenom_dns_updater'
 #COPY . /opt/freenom_dns_updater/
 #WORKDIR /opt/freenom_dns_updater
-RUN apk add --no-cache zlib openssl-dev binutils py3-pip
-
-# Prepare venv
-RUN python3 -m venv venv
-
-# Install python-tado via pip
-RUN source ./venv/bin/activate && \
+# hadolint ignore=DL3018,DL3013,DL3042
+RUN apk add --no-cache zlib openssl-dev binutils py3-pip && \
+    python3 -m venv venv && \
+    source ./venv/bin/activate && \
     pip install freenom-dns-updater==1.2.9
 #RUN rm -rf /opt/freenom_dns_updater
 
@@ -22,3 +19,14 @@ RUN source ./venv/bin/activate && \
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="Freenom-dns-updater"
+LABEL org.opencontainers.image.description="Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, auto renew domains and more. (Unsupported)"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater/blob/master/freenom-dns-updater/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

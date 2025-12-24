@@ -3,16 +3,12 @@
 set -e
 
 echo "Starting version increment process..."
-configFiles=$(find . -name 'config.yaml' -print0 | xargs -r0 echo)
+echo "Finding and processing config.yaml files..."
+find . -name 'config.yaml' -print0 |
 
-if [[ -z "$configFiles" ]]; then
-    echo "Error: No config.yaml files found!"
-    exit 0
-fi
 
-echo "Found config files: $configFiles"
 
-for configfile in $configFiles; do
+while IFS= read -r -d '' configfile; do
     echo "--------------------------------------------"
     echo "Processing: $configfile"
     # Normalize path

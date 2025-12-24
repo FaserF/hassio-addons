@@ -44,3 +44,14 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 RUN chmod 775 /var/www/html/*
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver - BETA"
+LABEL org.opencontainers.image.description="Open-Source Gameserver - Currently not fully working"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel/blob/master/pterodactyl-panel/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

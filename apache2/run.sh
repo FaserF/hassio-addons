@@ -36,7 +36,7 @@ if [ ! -d "$DocumentRoot" ]; then
 	cp /index.html "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
-	ln -s $DocumentRoot /var/www/localhost/htdocs
+	ln -s "$DocumentRoot" /var/www/localhost/htdocs
 fi
 
 #Set rights to web folders and create user
@@ -44,13 +44,13 @@ if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ ! -z "$username" ] && [ ! -z "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
 		adduser -S "$username" -G www-data
-		echo "$username:$password" | chpasswd $username
+		echo "$username:$password" | chpasswd "$username"
 		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
 		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find $webrootdocker -type d -exec chown www-data:www-data -R {} \;
-		find $webrootdocker -type f -exec chown www-data:www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown www-data:www-data -R {} \;
+		find "$webrootdocker" -type f -exec chown www-data:www-data -R {} \;
 	fi
 fi
 
@@ -66,11 +66,11 @@ fi
 
 if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 	echo "You have activated SSL. SSL Settings will be applied"
-	if [ ! -f /ssl/$certfile ]; then
+	if [ ! -f "/ssl/$certfile" ]; then
 		echo "Cannot find certificate file $certfile"
 		exit 1
 	fi
-	if [ ! -f /ssl/$keyfile ]; then
+	if [ ! -f "/ssl/$keyfile" ]; then
 		echo "Cannot find certificate key file $keyfile"
 		exit 1
 	fi
@@ -132,14 +132,14 @@ if [ "$default_conf" = "get_config" ]; then
 fi
 
 if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
-	if [ -f $default_conf ]; then
+	if [ -f "$default_conf" ]; then
 		if [ ! -d /etc/apache2/sites-enabled ]; then
 			mkdir /etc/apache2/sites-enabled
 		fi
 		if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default.conf
 		fi
-		cp -rf $default_conf /etc/apache2/sites-enabled/000-default.conf
+		cp -rf "$default_conf" /etc/apache2/sites-enabled/000-default.conf
 		echo "Your custom apache config at $default_conf will be used."
 	else
 		echo "Cant find your custom 000-default.conf file $default_conf - be sure you have chosen the full path. Exiting now..."
@@ -157,14 +157,14 @@ if [ "$default_ssl_conf" = "get_config" ]; then
 fi
 
 if [ "$default_ssl_conf" != "default" ]; then
-	if [ -f $default_ssl_conf ]; then
+	if [ -f "$default_ssl_conf" ]; then
 		if [ ! -d /etc/apache2/sites-enabled ]; then
 			mkdir /etc/apache2/sites-enabled
 		fi
 		if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		fi
-		cp -rf $default_ssl_conf /etc/apache2/sites-enabled/000-default-le-ssl.conf
+		cp -rf "$default_ssl_conf" /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		echo "Your custom apache config at $default_ssl_conf will be used."
 	else
 		echo "Cant find your custom 000-default-le-ssl.conf file $default_ssl_conf - be sure you have chosen the full path. Exiting now..."
@@ -175,7 +175,7 @@ fi
 mkdir /usr/lib/php84/modules/opcache
 
 echo "Here is your web file architecture."
-ls -l $webrootdocker
+ls -l "$webrootdocker"
 
 echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND

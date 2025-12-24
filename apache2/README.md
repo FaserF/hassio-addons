@@ -28,12 +28,7 @@ versions are available to fit different needs and use cases.
 - [Versions](#-versions)
 - [Installation](#-installation)
 - [Configuration](#️-configuration)
-- [Authentication](#-authentication)
-- [Ingress](#-ingress)
-- [MariaDB Usage](#-mariadb-usage)
-- [Limitations](#️-limitations)
-- [Support](#-support)
-- [License](#-license)
+- [Credits & License](#-credits--license)
 
 This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for
 Home Assistant OS. It supports:
@@ -76,7 +71,8 @@ Apache Software Foundation.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on
+page.
 
 ### Options
 

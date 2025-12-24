@@ -57,3 +57,14 @@ LABEL \
     io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
     maintainer="FaserF"
+
+# Labels
+LABEL org.opencontainers.image.title="WhatsApp"
+LABEL org.opencontainers.image.description="Home Assistant WhatsApp Backend (Baileys/Node.js)"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/ha-whatsapp"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/ha-whatsapp"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/ha-whatsapp/blob/master/whatsapp/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

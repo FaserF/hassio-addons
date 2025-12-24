@@ -1,4 +1,15 @@
 # Home Assistant Community Add-on: Freenom-DNS-Updater
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is currently **UNSUPPORTED**.
+> It is no longer actively developed or maintained.
+> - No new features wil be added.
+> - Bugs will likely not be fixed.
+> - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
+>
+> **USE AT YOUR OWN RISK.**
+
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]

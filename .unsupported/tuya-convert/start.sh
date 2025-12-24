@@ -7,9 +7,9 @@ touch config.txt
 #echo WLAN=wlan0 >config.txt
 echo AP=vtrust-flash >>config.txt
 echo GATEWAY=10.42.42.1 >>config.txt
-echo LOCALBACKUPDIR=$backup_path >>config.txt
-echo selection=$selection >>config.txt
-echo backupfolder=$backup_path >>config.txt
+echo "LOCALBACKUPDIR=$backup_path" >>config.txt
+echo "selection=$selection" >>config.txt
+echo "backupfolder=$backup_path" >>config.txt
 
 if [ "$accept_eula" = "true" ]; then
 	echo "EULA was accepted - starting script"

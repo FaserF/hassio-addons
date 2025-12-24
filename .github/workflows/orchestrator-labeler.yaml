@@ -1,7 +1,9 @@
 name: Orchestrator Labeler
 
 on:
-  - pull_request_target
+  pull_request_target:
+    branches:
+      - master
 
 jobs:
   label:

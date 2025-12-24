@@ -109,3 +109,14 @@ RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wi
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="Wiki.JS"
+LABEL org.opencontainers.image.description="The most powerful and extensible open source Wiki software"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/wiki.js"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/wiki.js"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/wiki.js/blob/master/wiki.js/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

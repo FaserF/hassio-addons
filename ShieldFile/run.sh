@@ -71,13 +71,13 @@ done
 bashio::log.info "🚀 ShieldFile listening on port ${PORT} (Root: ${BASE_DIR})"
 
 # Construct Args
-ARGS=""
-ARGS="$ARGS --port $PORT"
-ARGS="$ARGS --root $BASE_DIR"
-ARGS="$ARGS --database $DB_PATH"
-ARGS="$ARGS --cert $FULL_CERT_PATH"
-ARGS="$ARGS --key $FULL_KEY_PATH"
-ARGS="$ARGS --address 0.0.0.0" # Listen on all interfaces (Host Network)
+ARGS=()
+ARGS+=( "--port" "$PORT" )
+ARGS+=( "--root" "$BASE_DIR" )
+ARGS+=( "--database" "$DB_PATH" )
+ARGS+=( "--cert" "$FULL_CERT_PATH" )
+ARGS+=( "--key" "$FULL_KEY_PATH" )
+ARGS+=( "--address" "0.0.0.0" ) # Listen on all interfaces (Host Network)
 
 # Run
-exec filebrowser $ARGS
+exec filebrowser "${ARGS[@]}"

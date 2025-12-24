@@ -21,3 +21,14 @@ COPY www/logo.png /var/www/html/logo.png
 RUN mkdir -p /etc/services.d/shielddns
 COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
+
+# Labels
+LABEL org.opencontainers.image.title="ShieldDNS"
+LABEL org.opencontainers.image.description="High-performance DoT proxy for AdGuard Home"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS/blob/master/ShieldDNS/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

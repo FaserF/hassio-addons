@@ -2,7 +2,7 @@ name: Orchestrator Governance
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # Weekly: Mondays at 00:00
+    - cron: "0 0 * * 1" # Weekly: Mondays at 00:00
   issues:
     types: [opened, edited]
   workflow_dispatch:
@@ -79,10 +79,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-stale: 60
           days-before-close: 7
-          stale-issue-message: 'This issue is stale because it has been open 60 days with no activity.'
-          stale-pr-message: 'This PR is stale because it has been open 60 days with no activity.'
-          stale-issue-label: 'stale'
-          stale-pr-label: 'stale'
+          stale-issue-message: "This issue is stale because it has been open 60 days with no activity."
+          stale-pr-message: "This PR is stale because it has been open 60 days with no activity."
+          stale-issue-label: "stale"
+          stale-pr-label: "stale"
 
   # --------------------------------------------------------------------------------
   # LOCK: Lock old threads
@@ -95,5 +95,5 @@ jobs:
       - uses: dessant/lock-threads@v5
         with:
           github-token: ${{ github.token }}
-          issue-inactive-days: '60'
-          pr-inactive-days: '60'
+          issue-inactive-days: "60"
+          pr-inactive-days: "60"

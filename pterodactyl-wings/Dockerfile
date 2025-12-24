@@ -15,3 +15,14 @@ RUN curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releas
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="pterodactyl Wings Gameserver"
+LABEL org.opencontainers.image.description="Open Source Gameserver"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings/blob/master/pterodactyl-wings/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"

@@ -40,10 +40,20 @@ jobs:
                   if addon_name == ".": continue
 
                   # Standardize path separators
+                  if addon_name == ".": continue
+
+                  # Standardize path separators
                   addon_name = addon_name.replace(os.path.sep, "/")
 
-                  if addon_name.startswith(".") or ("/" in addon_name and addon_name.split("/")[0].startswith(".")):
+                  # Skip hidden directories EXCEPT .unsupported
+                  # If the path starts with . and is NOT .unsupported, skip
+                  # If the path is inside a hidden dir (like .git/foo), skip
+                  parts = addon_name.split("/")
+                  if parts[0].startswith(".") and parts[0] != ".unsupported":
                       continue
+                  if len(parts) > 1 and any(p.startswith(".") and p != ".unsupported" for p in parts):
+                       # This handles .unsupported/addon (allowed) but skips .git/addon or addon/.hidden
+                       continue
 
                   filters[addon_name] = [f"{addon_name}/**"]
 
@@ -136,8 +146,54 @@ jobs:
           path: "./${{ matrix.addon }}"
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI)
+      # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
+      - name: 📦 Install Compliance Deps
+        run: pip install pyyaml
+
       - name: 🏆 Platinum Compliance Check
-        run: python3 .scripts/check_compliance.py "./${{ matrix.addon }}"
+        id: compliance
+        continue-on-error: true
+        run: |
+          set +e
+          python3 .scripts/check_compliance.py "./${{ matrix.addon }}" > compliance_report.txt 2>&1
+          exit_code=$?
+          set -e
+
+          cat compliance_report.txt
+
+          if [ $exit_code -ne 0 ]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 💬 Comment Compliance Report
+        if: github.event_name == 'pull_request' && (steps.compliance.outputs.status == 'failure' || contains(hashFiles('compliance_report.txt'), '⚠️'))
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const report = fs.readFileSync('compliance_report.txt', 'utf8');
+              // Only comment if there are actual items of interest (Errors or Warnings)
+              if (report.includes('❌') || report.includes('⚠️')) {
+                const addon = "${{ matrix.addon }}";
+                const body = `### 🛡️ Platinum Compliance Report for ${addon}\n\n\`\`\`\n${report}\n\`\`\`\n\n💎 **Platinum Standards:**\n- Translations (EN Required, DE Recommended)\n- Images (Icon & Logo)\n- Official Base Image\n- S6 Overlay & Healthchecks`;
+
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: body
+                });
+              }
+            } catch (error) {
+              console.log("Error posting comment: " + error);
+            }
+
+      - name: 🛑 Fail if Compliance Error
+        if: steps.compliance.outputs.status == 'failure'
+        run: exit 1
 
       # 6. Security Scan (Trivy)
       # Scanning the directory for vulnerabilities (fs mode)

@@ -137,3 +137,14 @@ HEALTHCHECK \
     CMD curl --fail http://127.0.0.1:8000/api/health || exit 1
 
 CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="AegisBot"
+LABEL org.opencontainers.image.description="Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/AegisBot"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/AegisBot"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/AegisBot/blob/master/AegisBot/README.md"
+LABEL org.opencontainers.image.created="2025-12-24"
