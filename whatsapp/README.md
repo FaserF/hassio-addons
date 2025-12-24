@@ -1,13 +1,22 @@
-# 📱 Home Assistant WhatsApp Addon
+# WhatsApp
 
-![WhatsApp Logo](logo.png)
+![Logo](logo.png)
 
-> **A lightweight, robust backend for the WhatsApp Integration in Home Assistant.**
-> Powered by [Baileys](https://github.com/WhiskeySockets/Baileys) and Node.js. 🚀
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Home Assistant WhatsApp Backend (Baileys/Node.js)
 
 ---
 
 ## 📖 About
+
+> **A lightweight, robust backend for the WhatsApp Integration in Home Assistant.**
+> Powered by [Baileys](https://github.com/WhiskeySockets/Baileys) and Node.js. 🚀
+
+
 
 This addon acts as a bridge between Home Assistant and the WhatsApp Web
 protocol. It runs a high-performance Node.js application that simulates a real
@@ -23,7 +32,6 @@ notifications directly from your smart home.
 - **💾 Persistent Session**: Stays logged in even after restarts.
 - **🐳 Docker Optimized**: Platinum Quality image (S6 Overlay, Alpine Base).
 
----
 
 ## 🛠️ Installation
 
@@ -37,77 +45,15 @@ notifications directly from your smart home.
 
 ## ⚙️ Configuration
 
-The addon is designed to work out-of-the-box with **zero configuration** for
-most users.
-
-### Default Ports
-
-| Service | Port | Description |
-| :--- | :--- | :--- |
-| **API** | `8066` | Internal API for the integration |
-
-### `config.yaml` Options
+Add the following to your `config.yaml` or configure via the UI:
 
 ```yaml
-log_level: info # Options: trace, debug, info, warning, error, fatal
+log_level: info
 ```
 
-## 🔒 Security & Dashboard (Ingress) 🛡️
-
-This addon is secured with a **Token** and accessible via Home Assistant **Ingress**.
-
-1. Click **"Open Web UI"** on the addon page.
-1. The Dashboard shows:
-   - **Status**: Connected 🟢 / Disconnected 🔴
-   - **QR Code**: For linking your device.
-   - **API Token**: Click "Show API Key" to reveal. 🔑
-1. You **need this Token** to set up the Integration.
-
 ---
 
-## 🔗 Integration Setup
+## 👨‍💻 Credits & License
 
-Once this addon is running:
-
-1. Go to **Settings** > **Devices & Services**.
-1. Add Integration > Search for **WhatsApp**.
-1. **Host**: The setup will **auto-detect** the correct address
-   (e.g. `http://7da084a7-whatsapp:8066`).
-1. **API Key**: Paste the Token from the Ingress Dashboard.
-1. **Scan QR**:
-   - Go back to the **Ingress Web UI**.
-   - Scan the QR Code with your phone (WhatsApp > Linked Devices).
-   - Wait for "Device Linked ✅".
-
----
-
-## ❓ Troubleshooting
-
-### 📱 Session Reset / Re-Pairing
-
-If you need to switch phones or fix a broken session:
-
-1. Go to the **WhatsApp Integration** in HA.
-1. Click **Configure**.
-1. Check **"Reset Session (Logout)"**.
-1. Submit.
-   - *This clears the session in the addon and allows you to re-scan.*
-
-### 🛑 "Connection Failure"
-
-- Ensure the addon is running.
-- Check if the **API Token** matches.
-- Check the addon logs for errors.
-
----
-
-## 👨‍💻 Technical Details
-
-- **Base Image**: `ghcr.io/hassio-addons/base` (Alpine)
-- **Runtime**: Node.js 24 (Alpine Edge)
-- **Library**: @whiskeysockets/baileys (ESM)
-- **Process Manager**: S6-RC
-
----
-
-**Enjoy your smart chat automation!** 💬🏠
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

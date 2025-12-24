@@ -23,10 +23,28 @@ on:
 
 jobs:
   # --------------------------------------------------------------------------------
+  # SCHEDULE: Monthly Edge Updates
+  # --------------------------------------------------------------------------------
+  schedule-edge:
+    name: 🗓️ Monthly Edge Trigger
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run Trigger Script
+        run: python3 .scripts/trigger_edge_updates.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+  # --------------------------------------------------------------------------------
   # VERIFY: Functional Check Before Release
   # --------------------------------------------------------------------------------
   verify:
     name: ✅ Verify ${{ github.event.inputs.addon || 'Automated' }}
+    needs: [schedule-edge] # Optional dependency to ensure order if needed, but they are disjoint
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
@@ -115,5 +133,13 @@ jobs:
       - name: ⬆️ Bump Version & Changelog
         if: github.event_name == 'workflow_dispatch'
         run: |
-           # TBD: Implementation of bump script in Phase 4
-           echo "Phase 4 will implement auto-bump logic."
+           python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Commit Version Bump
+        if: github.event_name == 'workflow_dispatch'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: release ${{ github.event.inputs.addon }} version bump [skip ci]"
+          file_pattern: "${{ github.event.inputs.addon }}/*"

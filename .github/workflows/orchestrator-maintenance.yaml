@@ -11,10 +11,18 @@ on:
             options:
             - cleanup
             - retract
+            - support-toggle
         addon:
-            description: 'Add-on Slug (for retract)'
+            description: 'Add-on Slug (for retract/support-toggle)'
             required: false
             type: string
+        state:
+            description: 'Target State (for support-toggle)'
+            required: false
+            type: choice
+            options:
+            - supported
+            - unsupported
         version:
             description: 'Version to Retract (for retract)'
             required: false
@@ -37,7 +45,11 @@ jobs:
             retain_days: 30
             keep_minimum_runs: 5
 
-      # Future: Prune Docker Registry script
+      - name: 🗑️ Prune Docker Registry
+        run: python3 .scripts/prune_registry.py
+        env:
+            GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
   # --------------------------------------------------------------------------------
   # RETRACT: Remove specific version
@@ -59,3 +71,49 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+
+  # --------------------------------------------------------------------------------
+  # UNSUPPORTED: Scan & Move
+  # --------------------------------------------------------------------------------
+  unsupported-check:
+    name: 🏚️ Check Unsupported
+    if: github.event.inputs.task == 'cleanup' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🏃 Run Move Script
+        run: |
+          python3 .scripts/move_unsupported.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: move unsupported add-ons [skip ci]"
+          file_pattern: "unsupported/* README.md"
+
+  # --------------------------------------------------------------------------------
+  # TOGGLE SUPPORT: Move, Prune, Update Docs
+  # --------------------------------------------------------------------------------
+  toggle-support:
+    name: 🔄 Toggle Support State
+    if: github.event.inputs.task == 'support-toggle'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🏃 Run Toggle Script
+        run: |
+           python3 .scripts/toggle_support.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.state }}"
+        env:
+            GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+
+      - name: 🚀 Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: mark ${{ github.event.inputs.addon }} as ${{ github.event.inputs.state }} [skip ci]"

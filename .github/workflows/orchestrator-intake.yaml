@@ -1,12 +1,16 @@
 name: Orchestrator New Add-on Intake
 
 on:
-  push:
+  pull_request:
     paths:
       - '**/config.yaml'
       - '**/config.json'
+  push:
     branches:
       - master
+    paths:
+      - '**/config.yaml'
+      - '**/config.json'
 
 jobs:
   intake:
@@ -22,43 +26,65 @@ jobs:
       - name: 🔍 Detect New Add-ons
         id: new-addons
         run: |
-           # Get changed directories that contain properties of an add-on
-           # We assume any folder with config.yaml is an add-on.
-           # This is a rigorous check.
-           git fetch origin master
-           CHANGED_DIRS=$(git diff --name-only origin/master...HEAD | grep 'config.yaml' | xargs -I {} dirname {} | sort | uniq)
-
-           ADDONS=""
-           for dir in $CHANGED_DIRS; do
-             # Check if it was already in README (simple grep)
-             if ! grep -q "\[$dir\]" README.md; then
-               ADDONS="$ADDONS $dir"
-             fi
-           done
-
-           if [[ -n "$ADDONS" ]]; then
-              echo "found=true" >> $GITHUB_OUTPUT
-              echo "list=$ADDONS" >> $GITHUB_OUTPUT
+           # Use python script
+           OUTPUT=$(python3 .scripts/intake.py)
+           echo "$OUTPUT"
+           # Check if new add-ons found (string representation of list in last line)
+           if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
+               echo "found=true" >> $GITHUB_OUTPUT
+               # Extract list logic simplified: just pass to next steps implicitly via re-running or file?
+               # For now, let's rely on detection script being idempotent.
            else
-              echo "found=false" >> $GITHUB_OUTPUT
+               echo "found=false" >> $GITHUB_OUTPUT
            fi
 
-      - name: ✅ Compliance Check
-        if: steps.new-addons.outputs.found == 'true'
+      - name: ✅ Compliance Check & Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        id: compliance
         run: |
-           # Use the compliance script created for CI
-           python3 .scripts/check_compliance.py ${{ steps.new-addons.outputs.list }}
-        # We need to ensure steps.new-addons.outputs.list is populated correctly first (pending proper implementation of that step too)
-        # For now, let's assume detection logic populates it or we loop.
-        # Actually, let's implement the Detection Logic properly too since we are here.
+           # Run compliance on ALL dirs? Or just new ones.
+           # check_compliance.py takes args. We need to pass the new ones.
+           # To implement this cleanly, intake.py should output a clean list or we parse it.
+           # Simplified: We check all add-ons changed in PR?
+           # Or just use the script to print valid output.
+           python3 .scripts/check_compliance.py $(python3 .scripts/intake.py | grep "Detected" | awk '{print $4}') > compliance.log 2>&1 || true
 
-      - name: 📝 Auto-Remediate (Add to README)
-        if: steps.new-addons.outputs.compliant == 'true'
+           CONTENT=$(cat compliance.log)
+           echo "CONTENT<<EOF" >> $GITHUB_ENV
+           echo "$CONTENT" >> $GITHUB_ENV
+           echo "EOF" >> $GITHUB_ENV
+
+           if grep -q "❌" compliance.log; then
+              echo "status=failure" >> $GITHUB_OUTPUT
+           else
+              echo "status=success" >> $GITHUB_OUTPUT
+           fi
+
+      - name: 💬 Post Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = process.env.CONTENT;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 🛡️ Add-on Compliance Check\n\n${output}`
+            })
+
+      - name: 🛑 Fail if Non-Compliant
+        if: steps.compliance.outputs.status == 'failure'
+        run: exit 1
+
+      - name: 📝 Auto-Remediate (Add to README & Templates)
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
-           # Modify README.md to append new add-on row
-           echo "Appending to README..."
+           python3 .scripts/intake.py --fix
+           python3 .scripts/sync_templates.py
 
       - name: 💾 Commit Changes
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: add new add-on to registry"
+          commit_message: "chore: register new add-on [skip ci]"

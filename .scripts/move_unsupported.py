@@ -50,6 +50,26 @@ def main():
                 except Exception as e:
                     print(f"❌ Failed to move {item}: {e}")
 
+    # Update README.md
+    if moved_count > 0:
+        print("📝 Updating README.md links...")
+        readme_path = os.path.join(ROOT_DIR, "README.md")
+        if os.path.exists(readme_path):
+            with open(readme_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            for addon in UNSUPPORTED_ADDONS:
+                # Naive replacement for [Name](addon) -> [Name](unsupported/addon)
+                # We cover standard cases: "(addon)" and "('./addon')"
+                # Note: This might need regex for robustness, but keeping simple for Phase 1.
+                content = content.replace(f"]({addon})", f"]({TARGET_DIR}/{addon})")
+                content = content.replace(f"](./{addon})", f"](./{TARGET_DIR}/{addon})")
+
+            with open(readme_path, "w", encoding="utf-8") as f:
+                f.write(content)
+        else:
+            print("⚠️ README.md not found, skipping link updates.")
+
     print(f"✅ Process complete. Moved {moved_count} add-ons.")
 
 if __name__ == "__main__":

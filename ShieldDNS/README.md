@@ -1,195 +1,48 @@
+# ShieldDNS
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_ShieldDNS)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> High-performance DoT proxy for AdGuard Home
+
+---
+
+## 📖 About
+
 <!-- markdownlint-disable MD033 MD041 MD013 -->
-<img src="logo.png" align="right" width="128" height="128" alt="ShieldDNS Logo">
 <!-- markdownlint-enable MD033 MD041 -->
 
-# ShieldDNS
 
 mobile devices and forward them to your local AdGuard Home or other DNS
 servers. This secures your DNS queries even when you are on your local network
 (if your device enforces Private DNS) or if you expose this port securely.
 
-## Configuration
+---
 
-**Note**: You must have valid SSL certificates for the domain you are using. If you
-use the standard HA SSL setup, your certs are likely in `/ssl/`.
+## ⚙️ Configuration
 
-### Option: `upstream_dns` (Required)
+Add the following to your `config.yaml` or configure via the UI:
 
-The IP address of your upstream DNS server. This is usually your AdGuard Home IP,
-or `1.1.1.1` if you just want a DoT gateway to the internet.
+```yaml
+certfile: fullchain.pem
+cloudflare_tunnel_token: ''
+doh_port: 3443
+dot_port: 8853
+enable_info_page: false
+fallback_dns: false
+fallback_dns_server: 1.1.1.1
+keyfile: privkey.pem
+log_level: info
+upstream_dns: 192.168.1.2
+```
 
-### Option: `certfile` (Required)
+---
 
-The name of your certificate file in the `/ssl/` directory.
-Example: `fullchain.pem`
+## 👨‍💻 Credits & License
 
-### Option: `keyfile` (Required)
-
-The name of your private key file in the `/ssl/` directory.
-Example: `privkey.pem`
-
-### Option: `cloudflare_tunnel_token` (Optional)
-
-If you want to expose your DNS server via Cloudflare Tunnel
-(no port forwarding required), provide your Tunnel Token here.
-
-1. Create a tunnel in Cloudflare Zero Trust Dashboard.
-1. Select "Docker" as the environment.
-1. Copy the token (the long string after `--token` in the installation command).
-1. Paste it here.
-
-### Option: `log_level` (Optional)
-
-Set the verbosity of logs.
-
-- `error`: Only show critical errors.
-- `info`: Standard logging (includes DNS queries).
-- `debug`: Verbose logging (useful for troubleshooting).
-
-### Option: `dot_port` (Required for Android Native Private DNS)
-
-Port to listen for DNS-over-TLS. Default: `8853`.
-
-- **Why 8853?**: To avoid crashing if AdGuard Home is already using port 853.
-- **How to use with Android**: Android _requires_ Port 853.
-  - **Router Config**: Create a Port Forwarding rule: **WAN Port 853** ->
-    **LAN Port 8853** (IP of Home Assistant).
-  - This way, the outside world sees 853 (Standard), but your Host uses 8853
-    (No conflict).
-
-### Option: `doh_port` (Required for Cloudflare Tunnel)
-
-Port to listen for DNS-over-HTTPS. Default: `3443`.
-_Note: Default is 3443 to avoid conflict with Home Assistant UI on 443. Tunnel
-should point here._
-
-### Option: `doh_alt_port_1` & `doh_alt_port_2` (Optional)
-
-Optional additional ports for DoH/HTTPS (e.g. 784, 2443). Disabled by default.
-
-### Option: `enable_info_page` (Optional)
-
-Enables a lightweight "Status Page" on the DoH port (at the root URL `/`).
-
-- **true**: Visiting `https://dns.example.com` in a browser will show a status page ("ShieldDNS is Online").
-- **false** (default): Visiting the root URL usually returns a 404 or empty response, improving stealth.
-
-## 📱 Android & Cloudflare Tunnel: READ THIS
-
-There is a common misunderstanding about Android "Private DNS".
-
-- **Android Private DNS** = **DoT** (Port 853).
-- **Cloudflare Tunnel** = **DoH** (Port 443/HTTPS).
-
-**They are NOT compatible natively.**
-
-If you use Cloudflare Tunnel:
-
-1. You **cannot** use the "Private DNS" setting in Android Settings. It will stay
-   "Connecting..." or "Cannot access".
-1. You **MUST** use an App like **[Intra](https://play.google.com/store/apps/details?id=app.intra)**.
-   - In Intra: Settings > DNS over HTTPS URL > `https://your-domain.com/dns-query`.
-
-If you WANT to use Native "Private DNS" (DoT):
-
-1. **Requirement**: You need a second DNS record (e.g. `dot.example.com`).
-1. **DNS Config**: This record must be **DNS Only** (Grey Cloud) and point to your
-   home IP.
-1. **Router Config**: Port Forward **WAN 853** -> **LAN 8853** (HA IP).
-1. **Android Config**: Enter `dot.example.com` in settings.
-
-**Summary**:
-<!-- markdownlint-disable MD060 MD058 -->
-| Client | Hostname | Ingress | Protocol |
-| :--- | :--- | :--- | :--- |
-| **Android (App)** | `doh.example.com` | Tunnel | DoH (HTTPS) |
-| **Android (Native)**| `dot.example.com` | Port Fwd | DoT (TCP/853)|
-| **iOS / Browser** | `doh.example.com` | Tunnel | DoH (HTTPS) |
-<!-- markdownlint-enable MD060 MD058 -->
-
-## Networking
-
-This Addon runs in **Host Network** mode to preserve the "Source IP" of DNS queries.
-This means:
-
-1. **Source IPs**: AdGuard Home will see the real IP of the client (e.g. your phone).
-1. **Ports**: The ports configured above are opened directly on your Host device.
-1. **Conflicts**: Ensure these ports are not used by other services (like AdGuard
-   Home encryption or Nginx Proxy Manager).
-
-## Integrations
-
-### Cloudflare Tunnel (Official Addon) support
-
-You can use the official **Cloudflare Tunnel** Home Assistant Addon (or cloudflared
-docker container) to expose this addon to the internet without opening ports.
-
-**Setup:**
-
-1. In Cloudflare Dashboard, create a Public Hostname (e.g., `dns.example.com`).
-1. Point the Service to `HTTPS://localhost:3443` (or whatever `doh_port` you
-   configured).
-1. Under **TLS Verify**, disable verification (No TLS Verify) or provide the CA.
-
-### AdGuard Home Integration
-
-To use this Addon as a secure frontend for **AdGuard Home**:
-
-1. Install AdGuard Home Addon in Home Assistant.
-1. Note the IP address/Host of your Home Assistant.
-1. In ShieldDNS configuration, set `upstream_dns` to this IP.
-1. ShieldDNS will now accept encrypted requests and forward them locally to
-   AdGuard Home.
-1. **Port Conflicts**: Since ShieldDNS runs on the Host Network, it cannot share
-   ports with AdGuard Home if both try to bind the same port on all interfaces.
-   - If AdGuard uses 443/853, change the ShieldDNS ports in the configuration
-     (`dot_port`, `doh_port`) or disable encryption in AdGuard.
-
-## Supported Protocols
-
-| Parameter  | Protocol | Default |
-| ---------- | -------- | ------- |
-| `dot_port` | DoT      | 853     |
-| `doh_port` | DoH      | 3443    |
-
-## Usage
-
-1. Configure the options above.
-1. Start the Addon.
-1. On your Android device:
-   - **Method A (App - Recommended)**: Install **Intra**, set URL to
-     `https://<your-domain>/dns-query`.
-   - **Method B (Native - Port Fwd only)**: Go to **Settings > Private DNS** and
-     enter `<your-domain>`.
-1. Save. Your device will now send encrypted DNS queries!
-
-## 🛡️ Security Best Practices
-
-Since you are exposing a DNS server to the public (via Tunnel or Port
-Forwarding), you should secure it to prevent abuse (DNS Amplification,
-Scanning, DDoS).
-
-### 1. Cloudflare Tunnel (Highly Recommended)
-
-Using Cloudflare Tunnel hides your Origin IP and allows you to use **Cloudflare Zero Trust** features.
-
-- **WAF / Custom Rules**:
-  - **Block Countries**: Block all countries except your own.
-  - **Block Bots**: Enable "Bot Fight Mode" or block known bot User-Agents.
-- **Rate Limiting**: Set a Rate Limiting rule for your hostname (e.g. max 50
-  requests / 10 seconds per IP) to prevent flooding.
-- **Zero Trust Authentication**: If feasible, put the DNS endpoint behind
-  Cloudflare Access (Note: This breaks standard DoH clients unless they
-  support authentication headers).
-
-### 2. General Firewalls
-
-If running without Cloudflare (Direct Exposure):
-
-- **Whitelist IPs**: Only allow your own mobile IP ranges or specific networks if possible.
-- **Fail2Ban**: Monitor logs and ban abusive IPs (requires mounting logs to host).
-- **Limit Rates**: Use `iptables` or UFW to limit connection rates on port 853/443.
-
-## Troubleshooting
-
-Check the Addon logs. If the certificate is invalid or the path is wrong, CoreDNS will fail to start.
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

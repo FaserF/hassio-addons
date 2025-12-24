@@ -18,13 +18,11 @@ jobs:
 
       - name: 📝 Update Templates
         run: |
-           # Phase 6: Sync Issue/PR Templates
-           # (Simplified Placeholder)
-           echo "Syncing templates..."
+           python3 .scripts/sync_templates.py
 
-      - name: 📖 Badge & Style Audit
+      - name: 📖 Badge & Style Audit (Auto-Fix)
         run: |
-           python3 .scripts/check_docs.py
+           python3 .scripts/check_docs.py --fix
 
       - name: 💾 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5

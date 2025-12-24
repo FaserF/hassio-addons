@@ -1,4 +1,17 @@
-# Home Assistant Add-on: Netboot.xyz
+# Netboot.xyz
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_netboot-xyz)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> PXE-Server to deploy a OS inside your local network
+
+---
+
+## 📖 About
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
@@ -9,13 +22,7 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
-![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)
-![Supports armhf Architecture](https://img.shields.io/badge/armhf-yes-green.svg)
-![Supports armv7 Architecture](https://img.shields.io/badge/armv7-yes-green.svg)
-![Supports i386 Architecture](https://img.shields.io/badge/i386-yes-green.svg)
 
-## 📖 About
 
 **Netboot.xyz** allows you to PXE boot into a wide variety of Operating System
 installers and utilities from a lightweight, easy-to-use menu. This add-on lets
@@ -42,48 +49,21 @@ perfect for homelabs and network management.
 1. **Important**: Configure your home router's DHCP server to point
    `next-server` to your Home Assistant IP and file to `netboot.xyz.kpxe`.
 
+---
+
 ## ⚙️ Configuration
 
-<!-- markdownlint-disable MD013 MD060 -->
-| Option | Type | Default | Description |
-|:---|:---|:---|:---|
-| `path` | `string` | `/media/netboot/image` | Directory to store local assets/images. |
-| `path_config` | `string` | `/media/netboot/config` | Directory for persistent configuration. |
-| `dhcp_range` | `string` | `192.168.178.200` | Simple DHCP range/IP if internal DHCP is used (advanced). |
-<!-- markdownlint-enable MD013 MD060 -->
+Add the following to your `config.yaml` or configure via the UI:
 
-### 📁 Storage
+```yaml
+dhcp_range: 192.168.178.200
+path: /media/netboot/image
+path_config: /media/netboot/config
+```
 
-The add-on requires access to your `media` folder to store images and configuration
-persistently. Ensure you have the **local support** enabled in your Home Assistant
-configuration or appropriate media folders available.
+---
 
-## 📚 Usage
+## 👨‍💻 Credits & License
 
-1. **Start the Add-on**: Verify it starts correctly in the logs.
-1. **Access Web UI**: Use the internal web interface to manage menus and
-   download assets.
-1. **Boot Client**: Connect a computer to your network and select "Network
-   Boot" (PXE) in its BIOS. It should load the Netboot.xyz menu from your Home
-   Assistant instance.
-
-### Windows Installation
-
-The add-on supports Windows PE booting.
-
-1. Configure `win_base_url` in your `boot.cfg` via the Web UI.
-1. Extract Windows ISO files to your configured `path`.
-1. See the [Netboot.xyz Windows FAQ](https://netboot.xyz/faq/windows/) for
-   detailed steps.
-
-## 🆘 Support
-
-Encountered an issue? We're here to help.
-[Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues) to
-get support.
-
-## 👨‍💻 Authors & License
-
+This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
-Based on the [Netboot.xyz project](https://netboot.xyz/).
-Licensed under the **MIT License**.

@@ -1,4 +1,17 @@
-# Home Assistant Add-on: Solumati <!-- markdownlint-disable MD013 -->
+# Solumati
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_solumati)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
+
+---
+
+## 📖 About
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
@@ -9,11 +22,7 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green.svg)
-![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green.svg)
-![Version](https://img.shields.io/badge/version-v2025.12.2--b4-blue.svg)
 
-## 📖 About
 
 **Solumati** is a self-hosted dating platform designed to bring meaning back to
 matchmaking. By hosting this add-on, you run your own private instance of the
@@ -40,64 +49,25 @@ privacy and control.
 1. Start the add-on.
 1. Click **"OPEN WEB UI"** to launch the interface.
 
+---
+
 ## ⚙️ Configuration
 
-All options are configured via the Home Assistant UI. The database is
-automatically managed.
+Add the following to your `config.yaml` or configure via the UI:
 
-### Options
+```yaml
+app_base_url: ''
+dev_use_main_branch: false
+factory_reset: false
+github_token: ''
+log_level: info
+marketing_page_enabled: false
+test_mode: false
+```
 
-<!-- markdownlint-disable MD013 -->
-| Option                   | Type    | Default | Description                                                                  |
-| :----------------------- | :------ | :------ | :--------------------------------------------------------------------------- |
-| `log_level`              | select  | `info`  | Log verbosity: trace, debug, info, warning, error, fatal                     |
-| `test_mode`              | boolean | `false` | Enable test mode with dummy user data for testing                            |
-| `app_base_url`           | string  | (auto)  | Base URL for the app (for emails/links). Auto-detected from Ingress if empty |
-| `marketing_page_enabled` | boolean | `false` | Enable the marketing page                                                    |
-<!-- markdownlint-enable MD013 -->
+---
 
-> **Note**: OAuth providers and SMTP settings are configured in the
-> **Admin Panel** after first login, not here.
+## 👨‍💻 Credits & License
 
-### ⚠️ Factory Reset (Danger Zone)
-
-<!-- markdownlint-disable MD013 MD060 -->
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `factory_reset` | `boolean` | `false` | **DANGEROUS!** Permanently deletes ALL data on next restart. **Disable immediately after use.** |
-<!-- markdownlint-enable MD013 MD060 -->
-
-> [!CAUTION]
-> Enabling `factory_reset` will **permanently delete**:
->
-> * All user accounts and profiles
-> * All messages and conversations
-> * All uploaded images
-> * All settings and configurations
->
-> This cannot be undone! After the reset, you must disable this option manually,
-> otherwise your data will be wiped again on each restart.
-
-## 📚 Usage
-
-### First Login
-
-1. Start the add-on and watch the logs.
-1. Copy the generated **Admin Password**.
-1. Open the Web UI and log in.
-
-### Access
-
-* **Ingress**: Click **Solumati** in the Home Assistant sidebar.
-* **Direct**: Access via `http://homeassistant.local:8099` (if configured).
-
-## 🆘 Support
-
-Encountered an issue? We're here to help.
-[Open an issue on GitHub](https://github.com/FaserF/hassio-addons/issues) to
-get support.
-
-## 👨‍💻 Authors & License
-
-The original **Solumati** software is created by **FaserF**.
-Licensed under the **GNU Affero General Public License (AGPL)**.
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

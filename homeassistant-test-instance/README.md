@@ -1,5 +1,18 @@
 # Home Assistant Test Instance
 
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_homeassistant-test-instance)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> A standalone Home Assistant Core instance for testing purposes.
+
+---
+
+## 📖 About
+
 A standalone Home Assistant Core instance for testing purposes running as an add-on.
 
 ## Installation
@@ -8,8 +21,19 @@ A standalone Home Assistant Core instance for testing purposes running as an add
 2. Start the add-on.
 3. Access the new instance at `http://homeassistant.local:8124`.
 
-## Configuration
+---
 
-Standard Home Assistant configuration is stored in the `/data` directory of the
-add-on container, which is persistent across restarts (unless the add-on is
-uninstalled).
+## ⚙️ Configuration
+
+Add the following to your `config.yaml` or configure via the UI:
+
+```yaml
+{}
+```
+
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

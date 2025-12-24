@@ -1,6 +1,17 @@
-# ShieldFile Addon 🛡️📂
+# ShieldFile
 
 ![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_ShieldFile)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Secure, Web-based File Manager (SFTP over HTTPS)
+
+---
+
+## 📖 About
 
 ## Secure, Web-based File Manager (SFTP over HTTPS)
 
@@ -52,51 +63,26 @@ ShieldFile works perfectly alongside other official and community add-ons:
 1. Configure the options.
 1. Start!
 
-## Configuration
+---
 
-### Option: `base_directory`
+## ⚙️ Configuration
 
-The absolute path to serve.
+Add the following to your `config.yaml` or configure via the UI:
 
-- `/share`: Shared folder.
-- `/media`: Media folder.
-- `/config`: Config folder (Be careful!).
+```yaml
+base_directory: /share
+certfile: fullchain.pem
+keyfile: privkey.pem
+log_level: info
+port: 8443
+users:
+- password: changeme
+  username: admin
+```
 
-### Option: `users`
+---
 
-List of users. Password must be strong.
-_Note: ShieldFile uses an internal database. The config option initializes users,
-but you can also manage them inside the Web UI (Settings > Users)._
+## 👨‍💻 Credits & License
 
-### Option: `certfile` / `keyfile`
-
-Your SSL certificates. If missing, a self-signed one is generated.
-
-### Networking
-
-Runs on **Host Network**. Default port `8443`.
-ensure firewall allows this port.
-
-## 🛡️ Security & Login
-
-### How is it secured <!-- markdownlint-disable-line MD026 -->
-
-ShieldFile uses **Database Authentication**.
-
-1. When you open the site, you will see a **Login Screen**.
-1. Log in with the user defined in your configuration (Default: `admin`).
-1. The connection is encrypted via **HTTPS** (TLS).
-
-### Public Access
-
-If you publish this to the internet (e.g. via Cloudflare Tunnel):
-
-1. **Strong Password**: Ensure your `admin` user has a very strong password.
-1. **2FA (Recommended)**: Use Cloudflare Access (Zero Trust) to add a 2FA layer
-   _before_ the Login Screen.
-1. **Fail2Ban**: Monitor logs for failed login attempts.
-
-## Credits
-
-This project wouldn't exist without [Filebrowser](https://github.com/filebrowser/filebrowser).
-Huge thanks to the developers for their incredible work on the backend!
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

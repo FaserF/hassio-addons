@@ -32,4 +32,5 @@ jobs:
         if: |
             github.actor == 'dependabot[bot]' ||
             github.actor == 'renovate[bot]' ||
+            github.actor == 'github-actions[bot]' ||
             github.actor == 'FaserF'
