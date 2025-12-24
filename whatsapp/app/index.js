@@ -299,8 +299,36 @@ app.get('*', (req, res) => {
 
             <div class="token-section">
                 <div class="token-label">🔑 API Token (for Integration)</div>
-                <div class="token-box">${API_TOKEN}</div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="apiTokenInput" value="${API_TOKEN}" readonly
+                        style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #d1d7db; font-family: monospace; background: #f0f2f5; color: #54656f;">
+                    <button onclick="copyToken()" style="padding: 0 20px; background: #00a884; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                        Copy
+                    </button>
+                </div>
+                <div id="copyFeedback" style="display: none; color: #00a884; font-size: 0.8rem; margin-top: 5px; text-align: right;">Copied!</div>
             </div>
+
+            <script>
+                function copyToken() {
+                    var copyText = document.getElementById("apiTokenInput");
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999); // For mobile devices
+                    navigator.clipboard.writeText(copyText.value).then(() => {
+                        showFeedback();
+                    }).catch(err => {
+                        // Fallback for non-secure contexts (http)
+                        document.execCommand("copy");
+                        showFeedback();
+                    });
+                }
+
+                function showFeedback() {
+                    const fb = document.getElementById("copyFeedback");
+                    fb.style.display = "block";
+                    setTimeout(() => { fb.style.display = "none"; }, 2000);
+                }
+            </script>
 
             <div class="footer">
                 Addon v0.2.0 • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
