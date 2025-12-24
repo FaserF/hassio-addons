@@ -2,7 +2,7 @@ name: Orchestrator Docs & Standards
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # Weekly check
+    - cron: "0 0 * * 1" # Weekly check
   workflow_dispatch:
 
 jobs:
@@ -18,15 +18,15 @@ jobs:
 
       - name: 📝 Update Templates
         run: |
-           python3 .scripts/sync_templates.py
+          python3 .scripts/sync_templates.py
 
       - name: 📄 Standardize READMEs & Configs (Auto-Fix)
         run: |
-           python3 .scripts/standardize_readmes.py
+          python3 .scripts/standardize_readmes.py
 
       - name: 📖 Badge & Style Audit (Auto-Fix)
         run: |
-           python3 .scripts/check_docs.py --fix
+          python3 .scripts/check_docs.py --fix
 
       - name: 💾 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5

@@ -3,32 +3,32 @@ name: Orchestrator Maintenance
 on:
   workflow_dispatch:
     inputs:
-        task:
-            description: 'Maintenance Task'
-            required: true
-            type: choice
-            default: 'cleanup'
-            options:
-            - cleanup
-            - retract
-            - support-toggle
-        addon:
-            description: 'Add-on Slug (for retract/support-toggle)'
-            required: false
-            type: string
-        state:
-            description: 'Target State (for support-toggle)'
-            required: false
-            type: choice
-            options:
-            - supported
-            - unsupported
-        version:
-            description: 'Version to Retract (for retract)'
-            required: false
-            type: string
+      task:
+        description: "Maintenance Task"
+        required: true
+        type: choice
+        default: "cleanup"
+        options:
+          - cleanup
+          - retract
+          - support-toggle
+      addon:
+        description: "Add-on Slug (for retract/support-toggle)"
+        required: false
+        type: string
+      state:
+        description: "Target State (for support-toggle)"
+        required: false
+        type: choice
+        options:
+          - supported
+          - unsupported
+      version:
+        description: "Version to Retract (for retract)"
+        required: false
+        type: string
   schedule:
-    - cron: '0 0 * * 0' # Weekly Cleanup
+    - cron: "0 0 * * 0" # Weekly Cleanup
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -42,14 +42,14 @@ jobs:
       - name: 🗑️ Delete Old Workflow Runs
         uses: actions/delete-workflow-runs@v2.0.4
         with:
-            retain_days: 30
-            keep_minimum_runs: 5
+          retain_days: 30
+          keep_minimum_runs: 5
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
         env:
-            GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
-            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
   # --------------------------------------------------------------------------------
   # RETRACT: Remove specific version
@@ -59,18 +59,18 @@ jobs:
     if: github.event.inputs.task == 'retract'
     runs-on: ubuntu-latest
     steps:
-        - name: ⤵️ Check out code
-          uses: actions/checkout@v4
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
 
-        - name: 🚫 Retract Logic
-          run: |
-            echo "Retracting ${{ github.event.inputs.addon }} version ${{ github.event.inputs.version }}"
-            # We assume python dependencies are installed or we use standard lib
-            pip install requests
-            python3 .scripts/retract_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}"
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+      - name: 🚫 Retract Logic
+        run: |
+          echo "Retracting ${{ github.event.inputs.addon }} version ${{ github.event.inputs.version }}"
+          # We assume python dependencies are installed or we use standard lib
+          pip install requests
+          python3 .scripts/retract_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
   # --------------------------------------------------------------------------------
   # UNSUPPORTED: Scan & Move
@@ -108,10 +108,10 @@ jobs:
 
       - name: 🏃 Run Toggle Script
         run: |
-           python3 .scripts/toggle_support.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.state }}"
+          python3 .scripts/toggle_support.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.state }}"
         env:
-            GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
-            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
       - name: 🚀 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5

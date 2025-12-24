@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - '**/Dockerfile'
-      - '**/build.yaml'
+      - "**/Dockerfile"
+      - "**/build.yaml"
 
 jobs:
   auto-bump:
@@ -42,15 +42,15 @@ jobs:
       - name: 📞 Trigger Release
         if: steps.bump.outputs.updated_addon != ''
         run: |
-           # There might be multiple addons outputted? The script currently writes one line per addon?
-           # Actually the script appends "updated_addon=..." which might result in multiple keys or multiline?
-           # GITHUB_OUTPUT handles multiline string but `updated_addon=a` `updated_addon=b` overwrites.
-           # I need to fix the script to output JSON or handle single trigger.
-           # For now, let's assume one change per commit usually, or iterate.
-           # Better: Trigger for the specific addon.
-           # Using gh workflow run
-           echo "Triggering release for ${{ steps.bump.outputs.updated_addon }}"
-           gh workflow run orchestrator-release.yaml -f addon=${{ steps.bump.outputs.updated_addon }} -f version=patch
-           # Version input is technically ignored if we already bumped it, but required by schema.
+          # There might be multiple addons outputted? The script currently writes one line per addon?
+          # Actually the script appends "updated_addon=..." which might result in multiple keys or multiline?
+          # GITHUB_OUTPUT handles multiline string but `updated_addon=a` `updated_addon=b` overwrites.
+          # I need to fix the script to output JSON or handle single trigger.
+          # For now, let's assume one change per commit usually, or iterate.
+          # Better: Trigger for the specific addon.
+          # Using gh workflow run
+          echo "Triggering release for ${{ steps.bump.outputs.updated_addon }}"
+          gh workflow run orchestrator-release.yaml -f addon=${{ steps.bump.outputs.updated_addon }} -f version=patch
+          # Version input is technically ignored if we already bumped it, but required by schema.
         env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}

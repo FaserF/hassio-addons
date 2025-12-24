@@ -99,10 +99,10 @@ jobs:
       - name: 🛡️ Trivy Security Scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
+          scan-type: "fs"
           scan-ref: "./${{ matrix.addon }}"
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
 
   # --------------------------------------------------------------------------------
   # BUILD: Test Build (No Push)

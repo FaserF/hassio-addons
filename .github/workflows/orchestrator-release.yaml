@@ -4,22 +4,22 @@ on:
   workflow_dispatch:
     inputs:
       addon:
-        description: 'Add-on slug (folder name)'
+        description: "Add-on slug (folder name)"
         required: true
         type: string
       version:
-        description: 'Version increment (major, minor, patch)'
+        description: "Version increment (major, minor, patch)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
-        - patch
-        - minor
-        - major
+          - patch
+          - minor
+          - major
   repository_dispatch:
     types: [dependency-update, base-image-update]
   schedule:
-    - cron: '0 5 1 * *' # Monthly Edge Updates
+    - cron: "0 5 1 * *" # Monthly Edge Updates
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -72,11 +72,11 @@ jobs:
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
-             --test \
-             --target /data/${{ github.event.inputs.addon }} \
-             --image "${{ steps.info.outputs.image }}" \
-             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-             --addon
+            --test \
+            --target /data/${{ github.event.inputs.addon }} \
+            --image "${{ steps.info.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon
 
   # --------------------------------------------------------------------------------
   # RELEASE: Build & Push
@@ -114,13 +114,13 @@ jobs:
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
-             --aarch64 \
-             --amd64 \
-             --target /data/${{ github.event.inputs.addon }} \
-             --image "${{ steps.info.outputs.image }}" \
-             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-             --addon \
-             --no-cache
+            --aarch64 \
+            --amd64 \
+            --target /data/${{ github.event.inputs.addon }} \
+            --image "${{ steps.info.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon \
+            --no-cache
 
       # Future: Changelog updates, tagging, etc.
       # For now, base build handles tagging via version in config.yaml?
@@ -133,9 +133,9 @@ jobs:
       - name: ⬆️ Bump Version & Changelog
         if: github.event_name == 'workflow_dispatch'
         run: |
-           python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
+          python3 .scripts/bump_version.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.version }}" --message "Manual Release via Orchestrator"
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Version Bump
         if: github.event_name == 'workflow_dispatch'

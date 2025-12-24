@@ -24,7 +24,7 @@ jobs:
       - name: 🐚 Setup shfmt
         uses: mfinelli/setup-shfmt@v3
         with:
-          shfmt-version: '3.7.0'
+          shfmt-version: "3.7.0"
 
       - name: 🐚 Run shfmt
         run: shfmt -l -w .
@@ -40,7 +40,7 @@ jobs:
       - name: 🐍 Run Isort (Import Sorter)
         uses: isort/isort-action@master
         with:
-            configuration: "--profile black"
+          configuration: "--profile black"
 
       # 3. Prettier (JSON, YAML, MD)
       - name: 💅 Run Prettier
