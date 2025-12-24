@@ -18,7 +18,7 @@ COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix
+RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl
 
 # Create web root and required directories
 RUN mkdir -p /var/www/html /run/nginx

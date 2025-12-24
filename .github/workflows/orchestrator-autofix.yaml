@@ -95,13 +95,19 @@ jobs:
       - name: 📄 Standardize READMEs
         run: python3 .scripts/standardize_readmes.py
 
-      - name: 📊 Update README Status Table
-        run: python3 .scripts/update_readme_status.py
+
+
+      # 5. Markdown Fixes (markdownlint)
+      - name: 📝 Fix Markdown
+        continue-on-error: true
+        run: |
+          npm install -g markdownlint-cli
+          markdownlint --fix "**/*.md" || true
 
       # Commit back
       - name: 💾 Commit Changes
         continue-on-error: true
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "style: auto-fix (shfmt, black, isort, prettier)"
-          branch: ${{ github.head_ref }}
+          commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
+          branch: ${{ github.head_ref || github.ref_name }}

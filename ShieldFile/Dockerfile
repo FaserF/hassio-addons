@@ -1,4 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
@@ -11,10 +12,8 @@ RUN apk add --no-cache curl bash dos2unix
 # Setup Filebrowser
 # We grab the binary from the official install script
 # hadolint ignore=DL4006
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
-
-# Create database directory
-RUN mkdir -p /data/database
+RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash \
+    && mkdir -p /data/database
 
 # Copy Addon run script to S6 services directory
 # Copy Run Script

@@ -78,8 +78,8 @@ ARG BUILD_DATE
 #    && cd ../ && rm -rf ssh2.tgz ssh2
 
 #Configure Logging
-RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf
-RUN echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
+RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+    && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
 COPY run.sh /
@@ -97,7 +97,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/apache2/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

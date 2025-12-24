@@ -35,10 +35,8 @@ EXPOSE 3000
 
 # Ensure all run files from the services are executable
 ARG BUILD_DATE
-RUN chmod a+x /etc/services.d/*/run
-
-# Configure DNSMASQ
-RUN chmod a+x /etc/cont-init.d/*
+RUN chmod a+x /etc/services.d/*/run \
+    && chmod a+x /etc/cont-init.d/*
 
 # Labels
 LABEL org.opencontainers.image.title="Netboot.xyz"
@@ -50,7 +48,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/netboot-xyz/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

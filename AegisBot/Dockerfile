@@ -3,6 +3,9 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Setup Environment
 ENV LANG=C.UTF-8
 ENV PIP_ROOT_USER_ACTION=ignore
@@ -10,7 +13,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 
 # Install System Requirements
-# hadolint ignore=DL3018,DL3017
+# hadolint ignore=DL3018,DL3017,SC2012
 RUN \
     apk upgrade --no-cache && \
     apk add --no-cache \

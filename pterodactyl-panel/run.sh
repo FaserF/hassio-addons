@@ -2,7 +2,6 @@
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 
-ssl=$(bashio::config 'ssl')
 SSL_CERT=/ssl/$(bashio::config 'certfile')
 SSL_CERT_KEY=/ssl/$(bashio::config 'keyfile')
 password_mariadb=$(bashio::config 'password')
@@ -107,7 +106,7 @@ fi
 # ...
 
 echo "[start] Starting nginx and php"
-/usr/sbin/php-fpm81 --nodaemonize -c /etc/php84 &
+/usr/sbin/php-fpm84 --nodaemonize -c /etc/php84 &
 php_service_pid=$!
 /usr/sbin/nginx -g "daemon off;" &
 nginx_service_pid=$!

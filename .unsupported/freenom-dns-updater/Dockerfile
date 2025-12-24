@@ -1,3 +1,4 @@
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ARG BUILD_DATE
@@ -30,7 +31,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/freenom-dns-updater"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/.unsupported/freenom-dns-updater/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

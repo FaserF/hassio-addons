@@ -8,13 +8,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 # hadolint ignore=DL3018
-RUN apk add --no-cache wget tar mariadb-client
-
-ARG NODE_VERSION="22.12.0"
-
-# Separate steps for better debugging
-# hadolint ignore=DL3018
-RUN addgroup -g 1000 node && \
+RUN apk add --no-cache wget tar mariadb-client && \
+    addgroup -g 1000 node && \
     adduser -u 1000 -G node -s /bin/sh -D node && \
     # hadolint ignore=DL3018
     apk add --no-cache libstdc++ && \
@@ -26,7 +21,7 @@ RUN ARCH= && alpineArch="$(apk --print-arch)" && \
     case "${alpineArch##*-}" in \
         x86_64) \
           ARCH='x64' \
-          CHECKSUM="6966b7e2e62a6c2f9d096697af980d02b83d92e23a68463f28f8fec9b408d093" \
+          CHECKSUM="43532120bad06cdea17c2ffba81ebfcff4611532a3569ef996faa39aadcbc759" \
           ;; \
         *) \
           echo "Unsupported architecture"; exit 1 ;; \
@@ -82,10 +77,9 @@ ARG YARN_VERSION="1.22.22"
 
 # Separate steps for better debugging
 # hadolint ignore=DL3018
-RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar
-
-# hadolint ignore=SC2046,SC2043
-RUN export GNUPGHOME="$(mktemp -d)" && \
+# hadolint ignore=DL3018
+RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar && \
+    export GNUPGHOME="$(mktemp -d)" && \
     for key in \
         6A010C5166006599AA17F08146C2130DFD2497F5; \
     do \

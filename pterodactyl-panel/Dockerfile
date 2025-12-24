@@ -33,30 +33,30 @@ RUN apk add --no-cache \
     php84-xmlwriter=8.4.1-r0 \
     tini=0.19.0-r3 \
     yarn=1.22.22-r1 \
-    git=2.47.1-r0
-RUN mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/
-RUN ln -s /usr/bin/php84 /usr/bin/php
+    git=2.47.1-r0 \
+    && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
+    && ln -s /usr/bin/php84 /usr/bin/php
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
 FROM base as build
 ARG BUILD_DATE
 WORKDIR /var/www/html
-RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4
-RUN rm -rf .git
-RUN chmod -R 755 storage/* bootstrap/cache
-RUN find storage -type d > .storage.tmpl
-# Safe Composer installation
-RUN curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php && \
-    php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
-    rm /tmp/composer-setup.php
-RUN cp .env.example .env
-RUN composer install --ansi --no-dev --optimize-autoloader
-RUN chown -R nginx:nginx *
-RUN yarn install --production
-RUN yarn add cross-env
-RUN yarn run build:production
-RUN rm -rf node_modules
+RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
+    && rm -rf .git \
+    && chmod -R 755 storage/* bootstrap/cache \
+    && find storage -type d > .storage.tmpl \
+    # Safe Composer installation \
+    && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm /tmp/composer-setup.php \
+    && cp .env.example .env \
+    && composer install --ansi --no-dev --optimize-autoloader \
+    && chown -R nginx:nginx . \
+    && yarn install --production \
+    && yarn add cross-env \
+    && yarn run build:production \
+    && rm -rf node_modules
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
@@ -70,8 +70,8 @@ COPY ./root/ /
 
 # Copy data for add-on
 COPY run.sh /
-RUN chmod a+x /run.sh
-RUN chmod 775 /var/www/html/*
+RUN chmod a+x /run.sh \
+    && chmod 775 /var/www/html/*
 CMD [ "/run.sh" ]
 
 # Labels
@@ -84,7 +84,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/pterodactyl-panel/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

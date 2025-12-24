@@ -4,13 +4,13 @@ FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ARG BUILD_DATE
 
-# hadolint ignore=DL3018,DL3013,DL3042
+# hadolint ignore=DL3018,DL3013,DL3042,DL3047
 RUN apk add --no-cache \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
     pip install python-lzo ubi_reader && \
     mkdir /xqrepack && \
-    wget -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
-    wget -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
+    wget -q -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
+    wget -q -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
 #RUN wget -O /xqrepack/xqflash https://raw.githubusercontent.com/geekman/xqrepack/master/xqflash
 
 # Copy data for add-on
@@ -28,7 +28,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/xqrepack"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/.unsupported/xqrepack/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

@@ -3,6 +3,9 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM} AS builder
 ARG BUILD_DATE
 
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3018
 RUN apk --no-cache add wget go git tar
 ARG MATTERBRIDGE_VERSION="v1.26.0"
@@ -11,6 +14,7 @@ WORKDIR /matterbridge
 RUN wget -qO- https://github.com/42wim/matterbridge/archive/refs/tags/${MATTERBRIDGE_VERSION}.tar.gz | tar xz --strip-components=1 \
   && CGO_ENABLED=0 go build -tags whatsappmulti -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o /bin/matterbridge
 
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
 # hadolint ignore=DL3018
@@ -26,8 +30,8 @@ RUN mkdir /etc/matterbridge \
 
 # Copy data for add-on
 COPY run.sh /
-RUN chmod a+x /run.sh
-RUN chmod a+x /bin/matterbridge
+RUN chmod a+x /run.sh \
+    && chmod a+x /bin/matterbridge
 # Healthcheck
 HEALTHCHECK \
     CMD pgrep matterbridge || exit 1

@@ -31,7 +31,7 @@ def generate_labels(addon_path):
         "org.opencontainers.image.licenses": '"MIT"',
         "org.opencontainers.image.url": f'"{url}"',
         "org.opencontainers.image.source": f'"{url}"',
-        "org.opencontainers.image.documentation": f'"{url}/blob/master/{os.path.basename(addon_path)}/README.md"',
+        "org.opencontainers.image.documentation": f'"{url}/blob/master/{os.path.relpath(addon_path, os.getcwd()).replace(os.sep, "/")}/README.md"',
         "org.opencontainers.image.created": '"${BUILD_DATE}"',
     }
 

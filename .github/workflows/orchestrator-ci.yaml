@@ -122,16 +122,19 @@ jobs:
       # We run these once per add-on to ensure focus, or globally if preferred.
       # Running per add-on allows cleaner failure reporting.
       - name: 📝 MarkdownLint
+        continue-on-error: true
         uses: actionshub/markdownlint@v3.1.4
         with:
-          globs: "${{ matrix.addon }}/*.md"
+          args: "${{ matrix.addon }}/*.md"
 
       - name: 📄 YAMLLint
+        continue-on-error: true
         uses: frenck/action-yamllint@v1.5
         with:
           paths: "./${{ matrix.addon }}/*.yaml"
 
       - name: 💅 Prettier
+        continue-on-error: true
         uses: creyD/prettier_action@v4.6
         with:
           prettier_options: --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}"

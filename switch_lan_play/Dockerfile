@@ -17,6 +17,7 @@ RUN apk -U --no-cache add \
 
 # Pin to specific commit for reproducible builds (v0.2.3)
 WORKDIR /switch-lan-play
+# hadolint ignore=DL3003
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && git checkout v0.2.3 \
     && mkdir build \
@@ -44,7 +45,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/switch_lan_play/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

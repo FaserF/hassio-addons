@@ -11,8 +11,8 @@ RUN mkdir /run/apache2
 RUN apk --no-cache add apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
 
 #Configure Logging
-RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf
-RUN echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
+RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+    && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
 COPY run.sh /
@@ -30,7 +30,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/apache2-minimal/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-
