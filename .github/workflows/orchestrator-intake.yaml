@@ -49,7 +49,7 @@ jobs:
           # To implement this cleanly, intake.py should output a clean list or we parse it.
           # Simplified: We check all add-ons changed in PR?
           # Or just use the script to print valid output.
-          python3 .scripts/check_compliance.py $(python3 .scripts/intake.py | grep "Detected" | awk '{print $4}') > compliance.log 2>&1 || true
+          python3 .scripts/check_compliance.py $(python3 .scripts/intake.py | grep "Detected" | awk '{print $5}') > compliance.log 2>&1 || true
 
           CONTENT=$(cat compliance.log)
           echo "CONTENT<<EOF" >> $GITHUB_ENV

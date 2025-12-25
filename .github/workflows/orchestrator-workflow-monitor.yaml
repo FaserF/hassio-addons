@@ -162,13 +162,13 @@ jobs:
 
               if (remaining <= 0) {
                 status = "exhausted";
-                message = `🛑 **KRITISCH**: Alle GitHub Actions Minuten erschöpft! (${used}/${quota} verwendet)`;
+                message = `🛑 **CRITICAL**: All GitHub Actions minutes exhausted! (${used}/${quota} used)`;
               } else if (remaining < 100) {
                 status = "critical";
-                message = `🛑 **KRITISCH**: Nur noch ${remaining} von ${quota} Minuten verfügbar (${percentage}%)!`;
+                message = `🛑 **CRITICAL**: Only ${remaining} of ${quota} minutes remaining (${percentage}%)!`;
               } else if (remaining < 500) {
                 status = "warning";
-                message = `⚠️ **WARNUNG**: Nur noch ${remaining} von ${quota} Minuten verfügbar (${percentage}%).`;
+                message = `⚠️ **WARNING**: Only ${remaining} of ${quota} minutes remaining (${percentage}%).`;
               }
 
               core.setOutput("status", status);
@@ -216,20 +216,20 @@ jobs:
             }
 
             let body = signature + "\n";
-            body += "## ⏱️ GitHub Actions Minuten Warnung\n\n";
+            body += "## ⏱️ GitHub Actions Minutes Warning\n\n";
             body += message + "\n\n";
 
             if (status === 'exhausted') {
               body += "> [!CAUTION]\n";
-              body += "> Weitere Workflow-Runs werden fehlschlagen bis die Minuten am Monatsanfang zurückgesetzt werden.\n";
-              body += "> Kontaktiere einen Administrator um das Limit zu erhöhen.\n";
+              body += "> Further workflow runs will fail until minutes reset next month.\n";
+              body += "> Contact an administrator to increase the limit.\n";
             } else if (status === 'critical') {
               body += "> [!WARNING]\n";
-              body += "> Bei fortgesetzter Nutzung werden die Minuten bald erschöpft sein.\n";
-              body += "> Erwäge, Workflows zu optimieren oder weniger häufig auszuführen.\n";
+              body += "> Minutes will be exhausted soon if usage continues.\n";
+              body += "> Consider optimizing workflows or running less frequently.\n";
             } else {
               body += "> [!IMPORTANT]\n";
-              body += "> Überwache die Nutzung, um Unterbrechungen zu vermeiden.\n";
+              body += "> Monitor usage to avoid interruptions.\n";
             }
 
             await github.rest.issues.createComment({
@@ -353,24 +353,24 @@ jobs:
             const signature = "<!-- workflow-infra-error -->";
             let body = signature + "\n";
             body += "## 🔧 Workflow Infrastructure Error\n\n";
-            body += "Ein Fehler ist in der Workflow-Infrastruktur aufgetreten (nicht in den Projekt-Tests).\n\n";
-            body += "| Job | Step | Fehlertyp | Fix |\n|---|---|---|---|\n";
+            body += "An error occurred in the workflow infrastructure (not in project tests).\n\n";
+            body += "| Job | Step | Error Type | Fix |\n|---|---|---|---|\n";
 
             for (const err of infraErrors) {
               body += `| ${err.job} | ${err.step} | ${err.type} | ${err.fix} |\n`;
             }
 
             body += "\n";
-            body += "<details>\n<summary>🤖 <strong>AI Summary (Diagnose)</strong></summary>\n\n";
+            body += "<details>\n<summary>🤖 <strong>AI Summary (Diagnosis)</strong></summary>\n\n";
             body += "> [!IMPORTANT]\n";
-            body += "> **Workflow-Infrastruktur-Fehler** sind nicht durch Codeänderungen verursacht.\n";
-            body += "> Sie erfordern typischerweise Maintainer-Eingriff.\n\n";
+            body += "> **Workflow Infrastructure Errors** are not caused by code changes.\n";
+            body += "> They typically require maintainer intervention.\n\n";
             body += "```text\n";
-            body += `Betroffener Workflow: ${workflowRun.name}\n`;
+            body += `Affected Workflow: ${workflowRun.name}\n`;
             body += `Run ID: ${workflowRun.id}\n`;
-            body += `Infrastruktur-Fehler: ${infraErrors.length}\n`;
+            body += `Infrastructure Errors: ${infraErrors.length}\n`;
             if (projectErrors.length > 0) {
-              body += `Projekt-Test-Fehler: ${projectErrors.length} (separat behandelt)\n`;
+              body += `Project Test Failures: ${projectErrors.length} (handled separately)\n`;
             }
             body += "```\n";
             body += "\n</details>\n\n";

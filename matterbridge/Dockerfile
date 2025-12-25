@@ -20,9 +20,6 @@ ARG BUILD_DATE
 # hadolint ignore=DL3018
 RUN apk --no-cache add ca-certificates mailcap
 
-# Re-declare ARG after FROM to make it available in this build stage
-ARG BUILD_DATE
-
 COPY --from=builder /bin/matterbridge /bin/matterbridge
 RUN mkdir /etc/matterbridge \
   && touch /etc/matterbridge/matterbridge.toml \
@@ -33,7 +30,7 @@ COPY run.sh /
 RUN chmod a+x /run.sh \
     && chmod a+x /bin/matterbridge
 # Healthcheck
-HEALTHCHECK \
+HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
     CMD pgrep matterbridge || exit 1
 
 CMD [ "/run.sh" ]

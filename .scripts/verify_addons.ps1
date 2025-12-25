@@ -132,7 +132,7 @@ if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
     }
 }
 
-# --- SCOPE DEFITION ---
+# --- SCOPE DEFINITION ---
 # Handle both single string and array input for -Addon parameter
 if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") {
     $addons = Get-ChildItem -Path . -Directory | Where-Object {
@@ -260,7 +260,7 @@ if ("all" -in $Tests -or "YamlLint" -in $Tests) {
 if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
     Write-Header "5. MarkdownLint"
     try {
-        $target = if ($Addon -eq "all") { "**/*.md" } else { "$($addons[0].FullName)\**\*.md" }
+        $target = if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") { "**/*.md" } else { "$($addons[0].FullName)\**\*.md" }
         npx markdownlint-cli $target --config .markdownlint.yaml --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
         if ($LASTEXITCODE -ne 0) { throw "Fail" }
         Add-Result "All" "MarkdownLint" "PASS" "OK"
@@ -274,7 +274,7 @@ if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
 if ("all" -in $Tests -or "Prettier" -in $Tests) {
     Write-Header "6. Prettier"
     try {
-        $ptarget = if ($Addon -eq "all") { "**/*.{json,js,md,yaml}" } else { "$($addons[0].FullName)\**\*.{json,js,md,yaml}" }
+        $ptarget = if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") { "**/*.{json,js,md,yaml}" } else { "$($addons[0].FullName)\**\*.{json,js,md,yaml}" }
         npx prettier --check $ptarget --ignore-path .prettierignore
         if ($LASTEXITCODE -ne 0) { throw "Fail" }
         Add-Result "All" "Prettier" "PASS" "OK"

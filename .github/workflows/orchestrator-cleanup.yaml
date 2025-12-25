@@ -13,7 +13,7 @@ jobs:
       actions: write
     steps:
       - name: 🧹 Cleanup PR Workflow Runs and Artifacts
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -55,7 +55,7 @@ jobs:
             // Sort by created_at descending (newest first)
             prRuns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            // Check if the last run was successful
+            // Check if the last run failed or was cancelled
             const lastRun = prRuns[0];
             const lastRunFailed = lastRun.conclusion === 'failure' || lastRun.conclusion === 'cancelled';
 

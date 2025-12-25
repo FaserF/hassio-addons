@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
-ARG BUILD_DATE
+
 
 # Install system requirements
 # IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
@@ -42,12 +42,12 @@ RUN apk add --no-cache \
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
 FROM base as build
-ARG BUILD_DATE
+
 WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
 # hadolint ignore=DL3018
-RUN apk add --no-cache yarn git
-RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
+RUN apk add --no-cache yarn git \
+    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \

@@ -104,7 +104,7 @@ jobs:
           src: "."
 
       - name: 🐍 Run Isort (Import Sorter)
-        uses: isort/isort-action@master
+        uses: isort/isort-action@v1.1.0
         with:
           configuration: "--profile black"
 
@@ -124,7 +124,7 @@ jobs:
         continue-on-error: true
         run: |
           npm install -g markdownlint-cli
-          markdownlint --fix "**/*.md" || true
+          markdownlint --fix "**/*.md"
 
       # Commit back
       - name: 💾 Commit Changes
