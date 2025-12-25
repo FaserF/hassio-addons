@@ -17,9 +17,7 @@
 > Project has been deprecated by the original creator, therefore this Addon
 > won't receive new features
 
-![Logo](logo.png)
 
-# Bluetooth to MQTT Gateway (UNSUPPORTED)
 
 > [!WARNING]
 > **This add-on is no longer supported.**

@@ -37,11 +37,11 @@ find . -name 'config.yaml' -print0 |
 			# ... Version Bump Logic (Major.Minor.Patch) ...
 			OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
 
-            # Validate Version Format
-            if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Error: Invalid or missing version in $configfile: '$OLD_VERSION'. Skipping."
-                continue
-            fi
+			# Validate Version Format
+			if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+				echo "Error: Invalid or missing version in $configfile: '$OLD_VERSION'. Skipping."
+				continue
+			fi
 
 			IFS='.' read -r major minor patch <<<"$OLD_VERSION"
 			patch=$((patch + 1))
