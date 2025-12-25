@@ -509,39 +509,37 @@ jobs:
             // AI Summary (as code block for easy copying)
             report += `<details>\n<summary>🤖 <strong>AI Summary (Diagnostic)</strong></summary>\n\n`;
 
+            // Pre-calculate the test command to include in both AI summary and separate section
+            let testsArg = "";
+            if (specificTests.size > 0) {
+                testsArg = ` -Tests "${Array.from(specificTests).join('","')}"`;
+            }
+
+            let testCommand = "";
+            if (affectedAddons.size > 0) {
+                // List all affected addons in one command
+                const addonsList = Array.from(affectedAddons).join('","');
+                testCommand = `.\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
+            } else {
+                testCommand = `.\\.scripts\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
+            }
+
             let aiText = "";
             if (affectedAddons.size > 0) {
                  aiText += `Affected Add-ons: ${Array.from(affectedAddons).join(', ')}\n`;
-                 aiText += `Failure Categories: ${Array.from(failureTypes).join(', ')}\n`;
-                 aiText += `Resolution: Run the local test command below to identify and fix specific errors.`;
+                 aiText += `Failure Categories: ${Array.from(failureTypes).join(', ')}\n\n`;
+                 aiText += `Local Test Command:\n${testCommand}`;
             } else {
                  aiText += `Global Workflow Failure: A critical error occurred outside specific add-on checks. Check the workflow logs.`;
             }
             report += `\`\`\`text\n${aiText}\n\`\`\`\n`;
             report += `\n</details>\n\n`;
 
-            // Local Test Command
+            // Local Test Command (expanded section)
             report += `<details open>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
             report += "Run this PowerShell command locally to reproduce and fix issues:\n\n";
             report += "```powershell\n";
-
-            // Construct the tests argument
-            let testsArg = "";
-            if (specificTests.size > 0) {
-                // If only one test, simple string. If multiple, comma separated list in quotes.
-                const testsList = Array.from(specificTests).join("', '");
-                 testsArg = ` -Tests '${testsList}'`; // Powershell array syntax somewhat, but simple strings work too if parsed right.
-                 // Actually powershell param [string[]] accepts comma separated: -Tests "ShellCheck","Hadolint"
-                 testsArg = ` -Tests "${Array.from(specificTests).join('","')}"`;
-            }
-
-            if (affectedAddons.size > 0) {
-                const target = Array.from(affectedAddons)[0]; // Pick first one as example
-                report += `.\\.scripts\\verify_addons.ps1 -Addon "${target}" -Fix${testsArg}\n`;
-                if (affectedAddons.size > 1) report += "# Repeat for other addons: " + Array.from(affectedAddons).slice(1).join(', ') + "\n";
-            } else {
-                report += `.\\.scripts\\verify_addons.ps1 -Addon all -Fix${testsArg}\n`;
-            }
+            report += testCommand + "\n";
             report += "```\n";
             report += "\n</details>";
 

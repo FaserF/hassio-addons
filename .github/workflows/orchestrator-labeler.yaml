@@ -163,7 +163,20 @@ jobs:
             });
 
             // Combine Preserved + New Managed
-            const finalLabels = [...preservedLabels, ...newManagedLabels];
+            let finalLabels = [...preservedLabels, ...newManagedLabels];
+
+            // FINAL SAFETY CHECK: Remove any addon/* labels that don't match known valid addons
+            const hardcodedBlocklist = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'node_modules'];
+            finalLabels = finalLabels.filter(label => {
+                if (label.startsWith('addon/')) {
+                    const addonName = label.replace('addon/', '');
+                    if (hardcodedBlocklist.includes(addonName.toLowerCase())) {
+                        console.log(`BLOCKED invalid label: ${label}`);
+                        return false;
+                    }
+                }
+                return true;
+            });
 
             console.log("Final Labels:", finalLabels);
 
