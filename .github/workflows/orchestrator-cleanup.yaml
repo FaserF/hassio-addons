@@ -1,0 +1,94 @@
+name: Cleanup PR Artifacts
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    # Only run when PR is merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: 🧹 Cleanup PR Workflow Runs and Artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha;
+
+            console.log(`Cleaning up artifacts for merged PR #${prNumber}`);
+
+            // Get all workflow runs for this PR's head branch/SHA
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event: 'pull_request',
+              per_page: 100,
+            });
+
+            // Filter runs related to this PR
+            const prRuns = runs.workflow_runs.filter(run =>
+              run.head_sha === headSha ||
+              run.pull_requests.some(pr => pr.number === prNumber)
+            );
+
+            console.log(`Found ${prRuns.length} workflow runs for PR #${prNumber}`);
+
+            if (prRuns.length === 0) {
+              console.log("No runs to clean up.");
+              return;
+            }
+
+            // Sort by created_at descending (newest first)
+            prRuns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            // Check if the last run was successful
+            const lastRun = prRuns[0];
+            const lastRunFailed = lastRun.conclusion === 'failure' || lastRun.conclusion === 'cancelled';
+
+            if (lastRunFailed) {
+              console.log(`Last run ${lastRun.id} failed/cancelled. Keeping it for debugging.`);
+              // Remove the last run from cleanup list
+              prRuns.shift();
+            }
+
+            // Delete old runs and their artifacts
+            for (const run of prRuns) {
+              console.log(`Deleting run ${run.id} (${run.name}) from ${run.created_at}`);
+
+              // Delete artifacts for this run
+              try {
+                const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                });
+
+                for (const artifact of artifacts.artifacts) {
+                  console.log(`  Deleting artifact: ${artifact.name}`);
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id,
+                  });
+                }
+              } catch (e) {
+                console.log(`  Could not delete artifacts: ${e.message}`);
+              }
+
+              // Delete the workflow run
+              try {
+                await github.rest.actions.deleteWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                });
+              } catch (e) {
+                console.log(`  Could not delete run: ${e.message}`);
+              }
+            }
+
+            console.log("Cleanup complete!");

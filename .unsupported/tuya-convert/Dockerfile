@@ -2,7 +2,7 @@ ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 # Create virtual environment and add to PATH
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 ENV VIRTUAL_ENV=/usr/local/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -19,6 +19,9 @@ WORKDIR "/usr/local/tuya-convert"
 COPY start.sh /
 RUN chmod a+x /start.sh
 CMD [ "/start.sh" ]
+
+# Health check - verify main process is running
+HEALTHCHECK CMD pgrep -f start.sh >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="tuya-convert BETA"

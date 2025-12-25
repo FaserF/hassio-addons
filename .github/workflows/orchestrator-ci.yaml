@@ -252,6 +252,8 @@ jobs:
             let totalIssues = 0;
             let missingHealthchecks = 0;
             let missingLogos = 0;
+            let addonsWithHealthcheckIssue = [];
+            let addonsWithLogoIssue = [];
 
             for (const dir of dirs) {
                 const reportPath = path.join('reports', dir, 'compliance_report.txt');
@@ -263,8 +265,14 @@ jobs:
                    // Remove the ADDON line from display content
                    const displayContent = content.replace(/^ADDON: .+\n/, '');
 
-                   if (content.includes("HEALTHCHECK")) missingHealthchecks++;
-                   if (content.includes("logo.png")) missingLogos++;
+                   if (content.includes("HEALTHCHECK")) {
+                       missingHealthchecks++;
+                       addonsWithHealthcheckIssue.push(addonName);
+                   }
+                   if (content.includes("logo.png")) {
+                       missingLogos++;
+                       addonsWithLogoIssue.push(addonName);
+                   }
                    totalIssues++;
 
                    summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
@@ -277,8 +285,20 @@ jobs:
             summary += `> [!TIP]\n> **Quick Fix Analysis**\n>\n`;
 
             let fixList = "";
-            if (missingHealthchecks > 0) fixList += `- broken Healthchecks: Add 'HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1' to Dockerfile.\n`;
-            if (missingLogos > 0) fixList += `- missing Logos: Add 'logo.png' (500x500px) to the add-on root.\n`;
+            if (missingHealthchecks > 0) {
+                fixList += `${missingHealthchecks}x Missing HEALTHCHECK:\n`;
+                for (const addon of addonsWithHealthcheckIssue) {
+                    fixList += `  → ${addon}/Dockerfile\n`;
+                }
+                fixList += `  Fix: Add 'HEALTHCHECK CMD curl --fail http://127.0.0.1:PORT || exit 1'\n\n`;
+            }
+            if (missingLogos > 0) {
+                fixList += `${missingLogos}x Missing logo.png:\n`;
+                for (const addon of addonsWithLogoIssue) {
+                    fixList += `  → ${addon}/logo.png\n`;
+                }
+                fixList += `  Fix: Add 500x500px logo.png to addon root\n`;
+            }
 
             summary += `\`\`\`text\nFound ${totalIssues} add-on${totalIssues > 1 ? 's' : ''} with issues.\n\n${fixList}\`\`\`\n`;
             summary += `\n</details>\n\n`;

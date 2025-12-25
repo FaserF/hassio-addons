@@ -1,9 +1,7 @@
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ARG BUILD_DATE
-
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for FDU
 #RUN mkdir -p '/opt/freenom_dns_updater'
@@ -20,6 +18,9 @@ RUN apk add --no-cache zlib openssl-dev binutils && \
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
+
+# Health check - verify main process is running
+HEALTHCHECK CMD pgrep -f run.sh >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="Freenom-dns-updater"
