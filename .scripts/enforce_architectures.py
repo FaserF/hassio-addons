@@ -91,15 +91,15 @@ def main():
                 modified_addons.add(addon_dir.name)
 
     if modified_addons:
-        with open(os.environ.get('GITHUB_OUTPUT', ''), 'a') as f:
-            f.write('modified=true\n')
+        with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
+            f.write("modified=true\n")
             f.write(f'addons={",".join(sorted(modified_addons))}\n')
         print("Modified 32-bit architectures in the following addons:")
         for addon in sorted(modified_addons):
             print(f"- {addon}")
     else:
-        with open(os.environ.get('GITHUB_OUTPUT', ''), 'a') as f:
-            f.write('modified=false\n')
+        with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
+            f.write("modified=false\n")
 
 
 if __name__ == "__main__":
