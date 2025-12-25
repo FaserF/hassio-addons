@@ -21,6 +21,7 @@ on:
   pull_request:
     branches:
       - master
+    paths:
       - ".github/workflows/**"
       - ".github/actionlint.yaml"
   # Allow manual trigger with optional quota override
@@ -92,13 +93,28 @@ jobs:
             body += "```\n";
             body += process.env.ACTIONLINT_OUTPUT || 'See workflow logs for details.';
             body += "\n```\n\n";
-            body += "<details>\n<summary>🤖 <strong>AI Summary (Fix Suggestions)</strong></summary>\n\n";
-            body += "> [!TIP]\n> **Common Fixes**\n>\n";
-            body += "> - **Syntax errors**: Check YAML indentation and quoting\n";
-            body += "> - **Unknown actions**: Verify action versions exist (e.g., `actions/checkout@v4`)\n";
-            body += "> - **Expression errors**: Check `${{ }}` syntax and available contexts\n";
-            body += "> - **Deprecated features**: Update to latest GitHub Actions syntax\n\n";
-            body += "</details>\n\n";
+            body += "<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n";
+            body += "> **Instructions for AI**: Fix all workflow lint errors below.\n\n";
+            body += "```yaml\n";
+            body += "# Workflow Lint Errors for AI Processing\n";
+            body += "error_source: actionlint\n";
+            body += "files_to_fix: .github/workflows/*.yaml\n\n";
+            body += "common_fixes:\n";
+            body += "  syntax_errors:\n";
+            body += "    - Check YAML indentation (2 spaces)\n";
+            body += "    - Ensure proper quoting of strings with special chars\n";
+            body += "  action_errors:\n";
+            body += "    - Verify action versions exist (e.g., actions/checkout@v4)\n";
+            body += "    - Update deprecated actions to latest versions\n";
+            body += "  expression_errors:\n";
+            body += "    - Check ${{ }} syntax and available contexts\n";
+            body += "    - Use toJSON() for complex objects\n";
+            body += "  shell_errors:\n";
+            body += "    - Set shell: bash explicitly for scripts\n";
+            body += "    - Use proper exit codes\n";
+            body += "\nvalidation_command: actionlint .github/workflows/\n";
+            body += "```\n";
+            body += "\n</details>\n\n";
             body += "📚 [actionlint documentation](https://github.com/rhysd/actionlint)\n";
 
             await github.rest.issues.createComment({
@@ -432,16 +448,27 @@ jobs:
             }
 
             body += "\n";
-            body += "<details>\n<summary>🤖 <strong>AI Summary (Diagnosis)</strong></summary>\n\n";
-            body += "> [!IMPORTANT]\n";
-            body += "> **Workflow Infrastructure Errors** are not caused by code changes.\n";
-            body += "> They typically require maintainer intervention.\n\n";
-            body += "```text\n";
-            body += `Affected Workflow: ${workflowRun.name}\n`;
-            body += `Run ID: ${workflowRun.id}\n`;
-            body += `Infrastructure Errors: ${infraErrors.length}\n`;
+            body += "<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n";
+            body += "> **Instructions for AI**: These are infrastructure errors, not code issues.\n\n";
+            body += "```yaml\n";
+            body += "# Workflow Infrastructure Errors for AI Processing\n";
+            body += `workflow_name: "${workflowRun.name}"\n`;
+            body += `run_id: ${workflowRun.id}\n`;
+            body += `run_url: "${workflowRun.html_url}"\n\n`;
+            body += "infrastructure_errors:\n";
+            for (const err of infraErrors) {
+              body += `  - job: "${err.job}"\n`;
+              body += `    step: "${err.step}"\n`;
+              body += `    error_type: "${err.type}"\n`;
+              body += `    fix: "${err.fix}"\n`;
+            }
+            body += "\nnot_auto_fixable:\n";
+            body += "  - Most infrastructure errors require maintainer intervention\n";
+            body += "  - Check if external services are available\n";
+            body += "  - Verify GitHub Actions quotas and permissions\n";
             if (projectErrors.length > 0) {
-              body += `Project Test Failures: ${projectErrors.length} (handled separately)\n`;
+              body += `\nproject_test_failures: ${projectErrors.length}\n`;
+              body += "note: Project test failures are handled by orchestrator-ci.yaml\n";
             }
             body += "```\n";
             body += "\n</details>\n\n";

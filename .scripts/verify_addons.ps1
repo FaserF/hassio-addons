@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs local CI/CD verification for Home Assistant Add-ons V2.1.
+    Runs local CI/CD verification for Home Assistant Add-ons V2.2.
 
 .DESCRIPTION
     Comprehensive verification suite:
@@ -15,6 +15,7 @@
     9. Trivy (Docker)
     10. Dynamic Version Check (Renovate-managed)
     11. Docker Test (Build/Run with Dynamic Base)
+    12. CodeRabbit-Style Deep Checks (Reproducibility, Healthchecks, etc.)
 
 .PARAMETER Addon
     Specific add-on to check. Defaults to "all".
@@ -576,6 +577,66 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 docker rm -f $mockName 2>$null | Out-Null
                 docker network rm $networkName 2>$null | Out-Null
                 Remove-Item $tempDir -Recurse -Force 2>$null
+            }
+        }
+    }
+}
+
+# --- 12. CODERABBIT-STYLE DEEP CHECKS ---
+if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
+    Write-Header "12. CodeRabbit-Style Deep Checks"
+    foreach ($a in $addons) {
+        $df = Join-Path $a.FullName "Dockerfile"
+        $buildFile = Join-Path $a.FullName "build.yaml"
+
+        if (Test-Path $df) {
+            $content = Get-Content $df -Raw
+
+            # Check 1: Unpinned Git Clone
+            if ($content -match 'git clone(?!.*--branch)(?!.*--single-branch).*https://') {
+                if ($content -notmatch 'git checkout [a-f0-9]{40}') {
+                    Add-Result $a.Name "CR-UnpinnedGit" "WARN" "Unpinned git clone detected. Pin to specific SHA/tag for reproducible builds."
+                }
+            }
+
+            # Check 2: Generic Healthcheck Patterns
+            if ($content -match 'HEALTHCHECK.*pgrep.*-f.*"\.\*"') {
+                Add-Result $a.Name "CR-GenericHealth" "WARN" "Generic HEALTHCHECK pattern (e.g., 'node.*server'). Use specific process name."
+            }
+
+            # Check 3: Manual Tarball without integrity
+            if ($content -match '(wget|curl).*\.(tar|tgz|tar\.gz)' -and $content -notmatch 'sha256|checksum|--checksum') {
+                Add-Result $a.Name "CR-TarballIntegrity" "WARN" "Manual tarball download without integrity check. Consider using official image or add checksum verification."
+            }
+
+            # Check 4: Duplicate ARG declarations
+            $argMatches = [regex]::Matches($content, '(?m)^ARG\s+([A-Z_]+)')
+            $argNames = $argMatches | ForEach-Object { $_.Groups[1].Value }
+            $duplicates = $argNames | Group-Object | Where-Object { $_.Count -gt 1 }
+            if ($duplicates) {
+                $dupList = ($duplicates | ForEach-Object { $_.Name }) -join ", "
+                Add-Result $a.Name "CR-DuplicateARG" "WARN" "Duplicate ARG declarations: $dupList"
+            }
+
+            # Check 5: Using :latest tag in FROM
+            if ($content -match 'FROM\s+\S+:latest') {
+                Add-Result $a.Name "CR-LatestTag" "WARN" "Using :latest tag in FROM. Pin to specific version for reproducible builds."
+            }
+        }
+
+        # Check 6: Moving tags in build.yaml
+        if (Test-Path $buildFile) {
+            $buildContent = Get-Content $buildFile -Raw
+
+            # Check for :beta, :latest, :dev, :edge tags
+            if ($buildContent -match ':\s*(beta|latest|dev|edge|nightly)\s*["\''$]?') {
+                $tag = $matches[1]
+                # Allow for homeassistant-test-instance (it's a test addon)
+                if ($a.Name -eq "homeassistant-test-instance") {
+                    Add-Result $a.Name "CR-MovingTag" "INFO" "Using :$tag tag (acceptable for test addon, but consider documenting)"
+                } else {
+                    Add-Result $a.Name "CR-MovingTag" "WARN" "Using :$tag tag in build.yaml. Pin to specific version for reproducible builds."
+                }
             }
         }
     }

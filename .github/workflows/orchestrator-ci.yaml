@@ -34,21 +34,12 @@ jobs:
             });
 
             const signature = "<!-- ci-start-comment -->";
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+            const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
 
-            // Minimize old start comments
-            for (const comment of previousComments) {
-                try {
-                    await github.graphql(`
-                        mutation($subjectId: ID!) {
-                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
-                                minimizedComment { isMinimized }
-                            }
-                        }
-                    `, { subjectId: comment.node_id });
-                } catch (error) {
-                    console.error(`Failed to minimize comment ${comment.id}:`, error);
-                }
+            // If the comment already exists, skip posting a new one
+            if (existingComment) {
+                console.log("CI start comment already exists, skipping...");
+                return;
             }
 
             let body = signature + "\n";
@@ -448,30 +439,53 @@ jobs:
                 }
             }
 
-            // AI Summary Simulation
-            summary += `<details>\n<summary>🤖 <strong>AI Summary (Effective Fix Strategy)</strong></summary>\n\n`;
-            summary += `> [!TIP]\n> **Quick Fix Analysis**\n>\n`;
+            // AI-optimized Platinum Compliance Summary
+            summary += `<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n`;
+            summary += `> **Instructions for AI**: Fix all Platinum compliance issues below.\n\n`;
 
-            let fixList = "";
+            summary += "```yaml\n";
+            summary += "# Platinum Compliance Issues for AI Processing\n";
+            summary += `total_addons_with_issues: ${totalIssues}\n\n`;
+
             if (missingHealthchecks > 0) {
-                fixList += `${missingHealthchecks}x Missing HEALTHCHECK:\n`;
+                summary += "healthcheck_issues:\n";
+                summary += "  count: " + missingHealthchecks + "\n";
+                summary += "  addons:\n";
                 for (const addon of addonsWithHealthcheckIssue) {
-                    fixList += `  → ${addon}/Dockerfile\n`;
+                    summary += `    - addon: "${addon}"\n`;
+                    summary += `      file: "${addon}/Dockerfile"\n`;
+                    summary += `      fix: "Add HEALTHCHECK instruction before CMD/ENTRYPOINT"\n`;
+                    summary += `      example: 'HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://127.0.0.1:PORT/health || exit 1'\n`;
                 }
-                fixList += `  Fix: Add 'HEALTHCHECK CMD curl --fail http://127.0.0.1:PORT || exit 1'\n\n`;
             }
+
             if (missingLogos > 0) {
-                fixList += `${missingLogos}x Missing logo.png:\n`;
+                summary += "\nlogo_issues:\n";
+                summary += "  count: " + missingLogos + "\n";
+                summary += "  addons:\n";
                 for (const addon of addonsWithLogoIssue) {
-                    fixList += `  → ${addon}/logo.png\n`;
+                    summary += `    - addon: "${addon}"\n`;
+                    summary += `      missing_file: "${addon}/logo.png"\n`;
+                    summary += `      requirements: "500x500px PNG with transparent background"\n`;
+                    summary += `      action: "Generate or provide logo.png image"\n`;
                 }
-                fixList += `  Fix: Add 500x500px logo.png to addon root\n`;
             }
 
-            summary += `\`\`\`text\nFound ${totalIssues} add-on${totalIssues > 1 ? 's' : ''} with issues.\n\n${fixList}\`\`\`\n`;
-            summary += `\n</details>\n\n`;
+            summary += "\n# Platinum Standards Checklist:\n";
+            summary += "required_files:\n";
+            summary += "  - logo.png (500x500px)\n";
+            summary += "  - icon.png (128x128px)\n";
+            summary += "  - translations/en.yaml\n";
+            summary += "  - DOCS.md or README.md\n";
+            summary += "dockerfile_requirements:\n";
+            summary += "  - HEALTHCHECK instruction\n";
+            summary += "  - OCI labels (org.opencontainers.image.*)\n";
+            summary += "  - S6 Overlay integration\n";
+            summary += "  - Official base image (ghcr.io/hassio-addons/base:19.0.0)\n";
+            summary += "```\n";
+            summary += "\n</details>\n\n";
 
-            summary += "\n💎 **Platinum Standards:**\n- Translations (EN/DE)\n- Images (Icon/Logo)\n- Official Base Image\n- S6 Overlay & Healthchecks";
+            summary += "💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
 
             if (hasContent) {
                 // Find existing comments by this bot with signature
@@ -534,17 +548,29 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
+            // Paginate to get ALL jobs (default limit is 30)
+            const allJobs = [];
+            let page = 1;
+            while (true) {
+              const { data } = await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                per_page: 100,
+                page: page,
+              });
+              allJobs.push(...data.jobs);
+              if (data.jobs.length < 100) break;
+              page++;
+            }
+
+            console.log(`Found ${allJobs.length} total jobs in workflow run`);
 
             // Get jobs that failed directly
-            const failedJobs = jobs.jobs.filter(j => j.conclusion === 'failure');
+            const failedJobs = allJobs.filter(j => j.conclusion === 'failure');
 
             // ALSO get jobs that succeeded but have failed steps (continue-on-error)
-            const jobsWithHiddenFailures = jobs.jobs.filter(j =>
+            const jobsWithHiddenFailures = allJobs.filter(j =>
                 j.conclusion === 'success' &&
                 j.steps &&
                 j.steps.some(s => s.conclusion === 'failure')
@@ -552,6 +578,7 @@ jobs:
 
             // Combine both for reporting
             const allProblematicJobs = [...failedJobs, ...jobsWithHiddenFailures];
+            console.log(`Found ${allProblematicJobs.length} problematic jobs`);
             if (allProblematicJobs.length === 0) return;
 
             // Filter out Compliance-only failures (handled by Platinum Report)
@@ -572,10 +599,10 @@ jobs:
 
             let report = "## ❌ General CI Failure Report\n\n";
             report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
-            report += "Some checks failed. Here is the diagnostic summary:\n\n";
+            report += `Found **${nonComplianceJobs.length}** failed jobs:\n\n`;
 
-            // Failed Jobs List (excluding Compliance)
-            report += "| Job | Step | Message |\n|---|---|---|\n";
+            // Failed Jobs List (excluding Compliance) - with clickable links
+            report += "| Job | Step | Link |\n|---|---|---|\n";
             let affectedAddons = new Set();
             let specificTests = new Set();
             let failureTypes = new Set();
@@ -587,7 +614,10 @@ jobs:
 
                 const failedStep = job.steps.find(s => s.conclusion === 'failure');
                 const stepName = failedStep ? failedStep.name : "Unknown Step";
-                report += `| ${job.name} | ${stepName} | See logs |\n`;
+
+                // Make job name clickable - link to job logs
+                const jobLink = `[${job.name}](${job.html_url})`;
+                report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
 
                 // Categorize Failure (excluding Compliance)
                 if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
@@ -608,10 +638,122 @@ jobs:
             }
             report += "\n";
 
-            // AI Summary (as code block for easy copying)
-            report += `<details>\n<summary>🤖 <strong>AI Summary (Diagnostic)</strong></summary>\n\n`;
+            // Build comprehensive AI-optimized summary
+            report += `<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n`;
+            report += `> **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n`;
 
-            // Pre-calculate the test command to include in both AI summary and separate section
+            // Group jobs by failure type for better AI processing
+            const lintFailures = [];
+            const buildFailures = [];
+            const securityFailures = [];
+            const otherFailures = [];
+
+            for (const job of nonComplianceJobs) {
+                const failedStep = job.steps.find(s => s.conclusion === 'failure');
+                const stepName = failedStep ? failedStep.name : "Unknown";
+                const addonMatch = job.name.match(/\((.*?)(?: -.*)?\)/);
+                const addon = addonMatch ? addonMatch[1] : "unknown";
+
+                const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+
+                if (stepName.includes("ShellCheck") || stepName.includes("Hadolint") ||
+                    stepName.includes("Lint") || stepName.includes("Prettier") ||
+                    stepName.includes("YAML") || stepName.includes("Markdown")) {
+                    lintFailures.push(entry);
+                } else if (stepName.includes("Build") || job.name.includes("Build")) {
+                    buildFailures.push(entry);
+                } else if (stepName.includes("Trivy") || stepName.includes("Security")) {
+                    securityFailures.push(entry);
+                } else {
+                    otherFailures.push(entry);
+                }
+            }
+
+            // AI-optimized structured output
+            report += "```yaml\n";
+            report += "# CI Failure Analysis for AI Processing\n";
+            report += `total_failures: ${nonComplianceJobs.length}\n`;
+            report += `workflow_run: ${context.runId}\n\n`;
+
+            if (lintFailures.length > 0) {
+                report += "lint_failures:\n";
+                report += "  # Fix with: .\\.scripts\\verify_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
+                for (const f of lintFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    files_to_check:\n`;
+                    if (f.stepName.includes("ShellCheck")) {
+                        report += `      - "${f.addon}/**/*.sh"\n`;
+                        report += `      - "${f.addon}/run.sh"\n`;
+                    }
+                    if (f.stepName.includes("Hadolint")) {
+                        report += `      - "${f.addon}/Dockerfile"\n`;
+                    }
+                    if (f.stepName.includes("Add-on Linter")) {
+                        report += `      - "${f.addon}/config.yaml"\n`;
+                        report += `      - "${f.addon}/build.yaml"\n`;
+                    }
+                }
+            }
+
+            if (buildFailures.length > 0) {
+                report += "\nbuild_failures:\n";
+                report += "  # Docker build errors - check Dockerfile syntax and base images\n";
+                report += "  # Common issues: ARG after FROM, missing packages, invalid base image\n";
+                for (const f of buildFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    files_to_fix:\n`;
+                    report += `      - "${f.addon}/Dockerfile"\n`;
+                    report += `      - "${f.addon}/build.yaml"  # Check build_from image\n`;
+                    report += `    common_fixes:\n`;
+                    report += `      - "Ensure ARG BUILD_FROM is first line after comments"\n`;
+                    report += `      - "Check base image exists: ghcr.io/hassio-addons/base:19.0.0"\n`;
+                    report += `      - "Verify all APK packages exist for Alpine 3.21"\n`;
+                }
+            }
+
+            if (securityFailures.length > 0) {
+                report += "\nsecurity_failures:\n";
+                report += "  # Trivy found vulnerabilities - may need package updates\n";
+                report += "  # NOTE: Some vulnerabilities require upstream fixes (not auto-fixable)\n";
+                for (const f of securityFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    action: "Review Trivy output and update vulnerable packages"\n`;
+                    report += `    manual_review_required: true\n`;
+                }
+            }
+
+            if (otherFailures.length > 0) {
+                report += "\nother_failures:\n";
+                report += "  # These require manual investigation\n";
+                for (const f of otherFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    manual_review_required: true\n`;
+                }
+            }
+
+            report += "\n# Quick fix commands:\n";
+            if (affectedAddons.size > 0) {
+                const addonsList = Array.from(affectedAddons).join('","');
+                report += `powershell: .\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `bash: ./.scripts/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+            }
+
+            report += "\n# Items NOT fixable by local script:\n";
+            report += "not_auto_fixable:\n";
+            if (buildFailures.length > 0) {
+                report += "  - Docker build errors (require manual Dockerfile fixes)\n";
+            }
+            if (securityFailures.length > 0) {
+                report += "  - Security vulnerabilities (require package updates or upstream fixes)\n";
+            }
+            report += "  - Missing logo.png/icon.png (need to generate or provide images)\n";
+            report += "  - Translation files (need manual creation in translations/en.yaml)\n";
+            report += "```\n";
+            report += "\n</details>\n\n";
+
+            // Pre-calculate the test command
             let testsArg = "";
             if (specificTests.size > 0) {
                 testsArg = ` -Tests "${Array.from(specificTests).join('","')}"`;
@@ -619,26 +761,14 @@ jobs:
 
             let testCommand = "";
             if (affectedAddons.size > 0) {
-                // List all affected addons in one command
                 const addonsList = Array.from(affectedAddons).join('","');
                 testCommand = `.\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
             } else {
                 testCommand = `.\\.scripts\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
             }
 
-            let aiText = "";
-            if (affectedAddons.size > 0) {
-                 aiText += `Affected Add-ons: ${Array.from(affectedAddons).join(', ')}\n`;
-                 aiText += `Failure Categories: ${Array.from(failureTypes).join(', ')}\n\n`;
-                 aiText += `Local Test Command:\n${testCommand}`;
-            } else {
-                 aiText += `Global Workflow Failure: A critical error occurred outside specific add-on checks. Check the workflow logs.`;
-            }
-            report += `\`\`\`text\n${aiText}\n\`\`\`\n`;
-            report += `\n</details>\n\n`;
-
             // Local Test Command (expanded section)
-            report += `<details open>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
+            report += `<details>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
             report += "Run this command locally to reproduce and fix issues:\n\n";
             report += "**PowerShell:**\n";
             report += "```powershell\n";
