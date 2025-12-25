@@ -108,3 +108,6 @@ jobs:
         with:
           commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
           branch: ${{ github.head_ref || github.ref_name }}
+          file_pattern: .
+          # Use PAT to trigger downstream workflows (CI)
+          github_token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
