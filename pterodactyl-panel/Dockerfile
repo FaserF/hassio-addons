@@ -7,6 +7,7 @@ ARG BUILD_DATE
 # Install system requirements
 # IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
 # renovate: ignore
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
     redis \
     curl \

@@ -327,15 +327,28 @@ jobs:
             const failedJobs = jobs.jobs.filter(j => j.conclusion === 'failure');
             if (failedJobs.length === 0) return;
 
+            // Filter out Compliance-only failures (handled by Platinum Report)
+            const nonComplianceJobs = failedJobs.filter(job => {
+                const failedStep = job.steps.find(s => s.conclusion === 'failure');
+                const stepName = failedStep ? failedStep.name : "";
+                return !stepName.includes("Compliance");
+            });
+
+            // If all failures are Compliance-related, skip this report (Platinum Report handles it)
+            if (nonComplianceJobs.length === 0) {
+                console.log("All failures are Compliance-related. Skipping General CI Report.");
+                return;
+            }
+
             let report = "## ❌ General CI Failure Report\n\nSome checks failed. Here is the diagnostic summary:\n\n";
 
-            // Failed Jobs List
+            // Failed Jobs List (excluding Compliance)
             report += "| Job | Step | Message |\n|---|---|---|\n";
             let affectedAddons = new Set();
             let specificTests = new Set();
             let failureTypes = new Set();
 
-            for (const job of failedJobs) {
+            for (const job of nonComplianceJobs) {
                 // Regex to capture "addon" from: "Job Name (addon)" or "Job Name (addon - arch)"
                 const match = job.name.match(/\((.*?)(?: -.*)?\)/);
                 if (match) affectedAddons.add(match[1]);
@@ -344,11 +357,12 @@ jobs:
                 const stepName = failedStep ? failedStep.name : "Unknown Step";
                 report += `| ${job.name} | ${stepName} | See logs |\n`;
 
-                // Categorize Failure
+                // Categorize Failure (excluding Compliance)
                 if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
                 if (stepName.includes("Build") || job.name.includes("Build")) failureTypes.add("Docker Build");
-                if (stepName.includes("Compliance")) failureTypes.add("Platinum Compliance");
                 if (stepName.includes("Trivy")) failureTypes.add("Security Scan");
+                if (stepName.includes("ShellCheck")) failureTypes.add("ShellCheck");
+                if (stepName.includes("Hadolint")) failureTypes.add("Hadolint");
 
                 // Map failed step/job to verification script test name
                 if (stepName.includes("ShellCheck")) specificTests.add("ShellCheck");
@@ -357,23 +371,23 @@ jobs:
                 else if (stepName.includes("YAMLLint")) specificTests.add("YamlLint");
                 else if (stepName.includes("Prettier")) specificTests.add("Prettier");
                 else if (stepName.includes("Add-on Linter")) specificTests.add("AddonLinter");
-                else if (stepName.includes("Compliance")) specificTests.add("Compliance");
                 else if (stepName.includes("Trivy")) specificTests.add("Trivy");
                 else if (job.name.includes("Build")) specificTests.add("DockerBuild");
             }
             report += "\n";
 
-            // AI Summary
+            // AI Summary (as code block for easy copying)
             report += `<details>\n<summary>🤖 <strong>AI Summary (Diagnostic)</strong></summary>\n\n`;
-            report += `> [!NOTE]\n> **Root Cause Analysis**\n>\n`;
 
+            let aiText = "";
             if (affectedAddons.size > 0) {
-                 report += `> **Affected Add-ons**: ${Array.from(affectedAddons).join(', ')}\n>\n`;
-                 report += `> **Failure Categories**: ${Array.from(failureTypes).join(', ')}\n>\n`;
-                 report += `> **Resolution**: Run the local test command below to identify and fix specific errors.\n`;
+                 aiText += `Affected Add-ons: ${Array.from(affectedAddons).join(', ')}\n`;
+                 aiText += `Failure Categories: ${Array.from(failureTypes).join(', ')}\n`;
+                 aiText += `Resolution: Run the local test command below to identify and fix specific errors.`;
             } else {
-                 report += `> **Global Workflow Failure**: A critical error occurred outside specific add-on checks. Check the workflow logs.\n`;
+                 aiText += `Global Workflow Failure: A critical error occurred outside specific add-on checks. Check the workflow logs.`;
             }
+            report += `\`\`\`text\n${aiText}\n\`\`\`\n`;
             report += `\n</details>\n\n`;
 
             // Local Test Command
