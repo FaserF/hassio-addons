@@ -6,6 +6,8 @@ FROM ${BUILD_FROM} as base
 # Install system requirements
 # IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
 # Added Alpine 3.19 repositories to maintain PHP 8.1 compatibility
+# NOTE: We mix Alpine 3.22 (base) and 3.19 (php81) repositories.
+# To prevent conflicts, we explicitly pin ALL package versions.
 RUN apk add --no-cache \
     --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main \
     --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/community \

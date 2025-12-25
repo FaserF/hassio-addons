@@ -10,8 +10,8 @@ arch:
 image: ghcr.io/faserf/tado_aa-{arch}
 init: false
 options:
-  username:
-  password:
+  username: ""
+  password: ""
   minTemp: 5
   maxTemp: 25
   log_level: info

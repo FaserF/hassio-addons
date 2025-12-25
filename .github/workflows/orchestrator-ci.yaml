@@ -312,6 +312,7 @@ jobs:
     needs: [filter, lint]
     # Skip build if only docs/workflows changed (no Dockerfile, config, scripts)
     if: |
+      always() &&
       needs.filter.outputs.addons != '[]' &&
       needs.filter.outputs.addons != '' &&
       needs.filter.outputs.needs_build == 'true'

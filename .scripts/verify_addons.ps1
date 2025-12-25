@@ -465,7 +465,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
             $buildArgs += $imgName
             $buildArgs += $a.FullName
 
-            $buildOutput = & docker $buildArgs 2>&1
+            $buildOutput = & docker @buildArgs 2>&1
             $buildSuccess = ($LASTEXITCODE -eq 0)
 
             if (-not $buildSuccess) {
@@ -499,7 +499,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 $runArgs += "-e", "BASHIO_SUPERVISOR_API=http://localhost"
                 $runArgs += $imgName
 
-                $runInfo = & docker $runArgs 2>&1
+                $runInfo = & docker @runArgs 2>&1
 
                 # Extended wait for healthcheck/startup
                 Write-Host "    > Waiting 20s for startup verification..." -ForegroundColor Gray
