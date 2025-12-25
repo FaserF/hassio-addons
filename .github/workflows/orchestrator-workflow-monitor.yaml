@@ -54,6 +54,8 @@ jobs:
       - name: 📝 Post Lint Report on Failure
         if: steps.actionlint.outputs.exit-code != '0'
         uses: actions/github-script@v7
+        env:
+          ACTIONLINT_OUTPUT: ${{ steps.actionlint.outputs.stdout }}
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -82,7 +84,7 @@ jobs:
             body += "## 🔧 Workflow Lint Errors\n\n";
             body += "The following issues were found in the workflow files:\n\n";
             body += "```\n";
-            body += `${{ steps.actionlint.outputs.stdout || 'See workflow logs for details.' }}`;
+            body += process.env.ACTIONLINT_OUTPUT || 'See workflow logs for details.';
             body += "\n```\n\n";
             body += "<details>\n<summary>🤖 <strong>AI Summary (Fix Suggestions)</strong></summary>\n\n";
             body += "> [!TIP]\n> **Common Fixes**\n>\n";

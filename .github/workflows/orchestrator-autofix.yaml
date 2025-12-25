@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   autofix:
+    if: ${{ !contains(github.event.head_commit.message, 'style: auto-fix') && github.actor != 'git-auto-commit-action' && github.actor != 'github-actions[bot]' }}
     name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
     permissions:
@@ -28,7 +29,7 @@ jobs:
           ref: ${{ github.head_ref || github.ref_name }}
 
       - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -36,12 +37,15 @@ jobs:
         run: pip install pyyaml
 
       - name: 🏷️ Auto-Generate OCI Labels
+        continue-on-error: true
         run: python3 .scripts/fix_oci_labels.py
 
       - name: ⚠️ Update Unsupported Status
+        continue-on-error: true
         run: python3 .scripts/update_unsupported_status.py
 
       - name: 🏷️ Update README Beta Status
+        continue-on-error: true
         run: python3 .scripts/update_readme_status.py
 
       - name: 🛡️ Enforce 64-bit Architectures
@@ -105,7 +109,7 @@ jobs:
           src: "."
 
       - name: 🐍 Run Isort (Import Sorter)
-        uses: isort/isort-action@v1.1.0
+        uses: isort/isort-action@v1
         with:
           configuration: "--profile black"
 

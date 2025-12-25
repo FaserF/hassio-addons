@@ -19,6 +19,10 @@
 .PARAMETER Addon
     Specific add-on to check. Defaults to "all".
 
+.PARAMETER Tests
+    List of tests to run (e.g., "all", "DockerBuild", "ShellCheck").
+    Defaults to "all".
+
 .PARAMETER IncludeUnsupported
     If switch is present, also checks add-ons in .unsupported folder when running "all".
 
@@ -118,6 +122,19 @@ function Get-BuildFrom {
     catch { return $null }
 }
 
+function Get-DefaultOptions {
+    param($Path)
+    # Extracts 'options' key from config.yaml as JSON
+    $script = "import sys, yaml, json; print(json.dumps(yaml.safe_load(open(sys.argv[1])).get('options', {})))"
+    try {
+        $pathArg = $Path.Replace('\','/')
+        $json = python -c $script $pathArg 2>&1
+        if ($LASTEXITCODE -eq 0) { return $json }
+        return "{}"
+    }
+    catch { return "{}" }
+}
+
 Set-Location $RepoRoot
 $GlobalFailed = $false
 
@@ -136,7 +153,7 @@ if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
 # Handle both single string and array input for -Addon parameter
 if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") {
     $addons = Get-ChildItem -Path . -Directory | Where-Object {
-        (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported")
+        (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported") -and ($_.Name -ne "homeassistant-test-instance")
     }
     if ($IncludeUnsupported) {
         $unsup = Get-ChildItem -Path .unsupported -Directory -ErrorAction SilentlyContinue
@@ -258,30 +275,45 @@ if ("all" -in $Tests -or "YamlLint" -in $Tests) {
 }
 
 # --- 5. MARKDOWNLINT ---
+# --- 5. MARKDOWNLINT ---
 if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
     Write-Header "5. MarkdownLint"
-    try {
-        $target = if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") { "**/*.md" } else { "$($addons[0].FullName)\**\*.md" }
-        npx markdownlint-cli $target --config .markdownlint.yaml --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
-        if ($LASTEXITCODE -ne 0) { throw "Fail" }
-        Add-Result "All" "MarkdownLint" "PASS" "OK"
-    }
-    catch {
-        Add-Result "All" "MarkdownLint" "FAIL" "Errors found (See log)"
+    foreach ($a in $addons) {
+        try {
+            $target = "**/*.md"
+            if ($Addon.Count -ne 1 -or $Addon[0] -ne "all") {
+               $target = "$($a.FullName)\**\*.md"
+            }
+            # Only run if files exist to avoid error
+            if (Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md") {
+                npx markdownlint-cli $target --config .markdownlint.yaml --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
+                if ($LASTEXITCODE -ne 0) { throw "Fail" }
+                Add-Result $a.Name "MarkdownLint" "PASS" "OK"
+            }
+        }
+        catch {
+            Add-Result $a.Name "MarkdownLint" "FAIL" "Errors found (See log)"
+        }
     }
 }
 
 # --- 6. PRETTIER ---
+# --- 6. PRETTIER ---
 if ("all" -in $Tests -or "Prettier" -in $Tests) {
     Write-Header "6. Prettier"
-    try {
-        $ptarget = if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") { "**/*.{json,js,md,yaml}" } else { "$($addons[0].FullName)\**\*.{json,js,md,yaml}" }
-        npx prettier --check $ptarget --ignore-path .prettierignore
-        if ($LASTEXITCODE -ne 0) { throw "Fail" }
-        Add-Result "All" "Prettier" "PASS" "OK"
-    }
-    catch {
-        Add-Result "All" "Prettier" "FAIL" "Formatting issues"
+    foreach ($a in $addons) {
+        try {
+            $ptarget = "**/*.{json,js,md,yaml}"
+            if ($Addon.Count -ne 1 -or $Addon[0] -ne "all") {
+                $ptarget = "$($a.FullName)\**\*.{json,js,md,yaml}"
+            }
+            npx prettier --check $ptarget --ignore-path .prettierignore
+            if ($LASTEXITCODE -ne 0) { throw "Fail" }
+            Add-Result $a.Name "Prettier" "PASS" "OK"
+        }
+        catch {
+             Add-Result $a.Name "Prettier" "FAIL" "Formatting issues"
+        }
     }
 }
 
@@ -407,7 +439,7 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
 
 # --- 11. DOCKER TEST (Dynamic Build) ---
 if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
-    if ($DockerAvailable -and -not $GlobalFailed) {
+    if ($DockerAvailable) {
         Write-Header "11. Docker Test (Dynamic Build)"
         foreach ($a in $addons) {
             $imgName = "local/test-$($a.Name.ToLower())"
@@ -441,18 +473,65 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
             }
             else {
                 Add-Result $a.Name "DockerBuild" "PASS" "OK"
-                # Run
+
+                # --- ENHANCED RUN TEST ---
                 $contName = "test-run-$($a.Name.ToLower())"
-                docker rm -f $contName 2>$null
-                $runInfo = docker run -d --name $contName $imgName 2>&1
-                Start-Sleep -Seconds 5
-                if ((docker inspect -f '{{.State.Running}}' $contName) -eq "true") {
-                    Add-Result $a.Name "DockerRun" "PASS" "Running"
+                docker rm -f $contName 2>$null | Out-Null
+
+                # prepare config
+                $tempDir = Join-Path $env:TEMP "ha-addon-test-$($a.Name)"
+                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+                New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+                $configFile = Join-Path $a.FullName "config.yaml"
+                if (Test-Path $configFile) {
+                    $jsonOpts = Get-DefaultOptions $configFile
+                    $jsonOpts | Out-File -FilePath (Join-Path $tempDir "options.json") -Encoding UTF8
+                } else {
+                    "{}" | Out-File -FilePath (Join-Path $tempDir "options.json") -Encoding UTF8
+                }
+
+                # Run with HA-like env
+                # We simulate a "data" mount and provide options.json
+                $runArgs = @("run", "-d", "--name", $contName)
+                $runArgs += "-v", "$tempDir`:/data"
+                $runArgs += "-e", "HASSIO_TOKEN=testing_token"
+                $runArgs += "-e", "BASHIO_SUPERVISOR_API=http://localhost"
+                $runArgs += $imgName
+
+                $runInfo = & docker $runArgs 2>&1
+
+                # Extended wait for healthcheck/startup
+                Write-Host "    > Waiting 20s for startup verification..." -ForegroundColor Gray
+                Start-Sleep -Seconds 20
+
+                $inspectJson = docker inspect $contName | ConvertFrom-Json
+                $isRunning = ($inspectJson.State.Running -eq $true)
+                $healthStatus = if ($inspectJson.State.Health) { $inspectJson.State.Health.Status } else { "none" }
+
+                # Check logs for fatal errors
+                $logs = docker logs $contName 2>&1
+                $logError = $false
+                if ($logs -match "panic:" -or $logs -match "s6-rc: fatal") {
+                    $logError = $true
+                }
+
+                if (-not $isRunning) {
+                     Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 10)"
+                }
+                elseif ($healthStatus -eq "unhealthy") {
+                     Add-Result $a.Name "DockerRun" "FAIL" "Container marked UNHEALTHY."
+                }
+                elseif ($logError) {
+                     Add-Result $a.Name "DockerRun" "FAIL" "Fatal error in logs detected."
                 }
                 else {
-                    Add-Result $a.Name "DockerRun" "FAIL" "Crashed"
+                     Add-Result $a.Name "DockerRun" "PASS" "Stable (Running, Health: $healthStatus)"
                 }
-                docker rm -f $contName 2>$null
+
+                # Cleanup
+                docker rm -f $contName 2>$null | Out-Null
+                Remove-Item $tempDir -Recurse -Force 2>$null
             }
         }
     }

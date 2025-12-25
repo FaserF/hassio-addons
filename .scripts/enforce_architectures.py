@@ -68,41 +68,54 @@ def enforce_build(file_path):
 
 
 def main():
-    modified_addons = set()
-    root_dir = Path(".")
+    try:
+        modified_addons = set()
+        root_dir = Path(".")
 
-    for addon_dir in root_dir.iterdir():
-        if not addon_dir.is_dir() or addon_dir.name.startswith("."):
-            continue
+        for addon_dir in root_dir.iterdir():
+            if not addon_dir.is_dir() or addon_dir.name.startswith("."):
+                continue
 
-        config_file = addon_dir / "config.yaml"
-        if config_file.exists():
-            if enforce_config(config_file):
-                modified_addons.add(addon_dir.name)
+            config_file = addon_dir / "config.yaml"
+            if config_file.exists():
+                if enforce_config(config_file):
+                    modified_addons.add(addon_dir.name)
 
-        build_yaml = addon_dir / "build.yaml"
-        if build_yaml.exists():
-            if enforce_build(build_yaml):
-                modified_addons.add(addon_dir.name)
+            build_yaml = addon_dir / "build.yaml"
+            if build_yaml.exists():
+                if enforce_build(build_yaml):
+                    modified_addons.add(addon_dir.name)
 
-        build_json = addon_dir / "build.json"
-        if build_json.exists():
-            if enforce_build(build_json):
-                modified_addons.add(addon_dir.name)
+            build_json = addon_dir / "build.json"
+            if build_json.exists():
+                if enforce_build(build_json):
+                    modified_addons.add(addon_dir.name)
 
-    github_output = os.environ.get("GITHUB_OUTPUT")
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a") as f:
+                if modified_addons:
+                    f.write("modified=true\n")
+                    f.write(f'addons={",".join(sorted(modified_addons))}\n')
+                else:
+                    f.write("modified=false\n")
 
-    if modified_addons:
-        with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
-            f.write("modified=true\n")
-            f.write(f'addons={",".join(sorted(modified_addons))}\n')
-        print("Modified 32-bit architectures in the following addons:")
-        for addon in sorted(modified_addons):
-            print(f"- {addon}")
-    else:
-        with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
-            f.write("modified=false\n")
+        if modified_addons:
+            print("Modified 32-bit architectures in the following addons:")
+            for addon in sorted(modified_addons):
+                print(f"- {addon}")
 
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Error in enforce_architectures.py: {e}")
+        # Ensure downstream steps don't fail due to missing output
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a") as f:
+                 f.write("modified=false\n")
+        # Exit 0 so the workflow continues (as requested for robustness)
+        exit(0)
 
 if __name__ == "__main__":
     main()

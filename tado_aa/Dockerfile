@@ -11,23 +11,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3003,DL3018
 RUN apk add --no-cache \
-    curl \
-    sed
+    curl
 
 # Download and patch tado_aa.py to use environment variables
 # Latest commit from adrianslabu/tado_aa (archived repo)
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # renovate: datasource=github-commits depName=adrianslabu/tado_aa
 ARG TADO_AA_SHA="d5bfc325462d6aa770707fb666882b1b4942bcc7"
-RUN curl -fsSL "https://raw.githubusercontent.com/adrianslabu/tado_aa/${TADO_AA_SHA}/tado_aa.py" -o /tado_aa.py && \
-    sed -i "s|TOKEN_FILE = \"refresh_token\"|TOKEN_FILE = \"/data/refresh_token\"|g" /tado_aa.py && \
-    sed -i "s|checkingInterval = 10.0|checkingInterval = float(os.getenv(\"TADO_CHECK_INTERVAL\", \"10.0\"))|g" /tado_aa.py && \
-    sed -i "s|errorRetryingInterval = 30.0|errorRetryingInterval = float(os.getenv(\"TADO_RETRY_INTERVAL\", \"30.0\"))|g" /tado_aa.py && \
-    sed -i "s|minTemp = 5|minTemp = int(os.getenv(\"TADO_MIN_TEMP\", \"5\"))|g" /tado_aa.py && \
-    sed -i "s|maxTemp = 25|maxTemp = int(os.getenv(\"TADO_MAX_TEMP\", \"25\"))|g" /tado_aa.py && \
-    sed -i "s|enableTempLimit = True|enableTempLimit = os.getenv(\"TADO_ENABLE_TEMP_LIMIT\", \"True\").lower() == \"true\"|g" /tado_aa.py && \
-    sed -i "s|saveLog = False|saveLog = os.getenv(\"TADO_SAVE_LOG\", \"False\").lower() == \"true\"|g" /tado_aa.py && \
-    sed -i "s|t = Tado(token_file_path=TOKEN_FILE)|username=os.getenv(\"TADO_USERNAME\"); password=os.getenv(\"TADO_PASSWORD\"); t=Tado(username, password, token_file_path=TOKEN_FILE) if (username and password) else Tado(token_file_path=TOKEN_FILE)|g" /tado_aa.py
+RUN curl -fsSL "https://raw.githubusercontent.com/adrianslabu/tado_aa/${TADO_AA_SHA}/tado_aa.py" -o /tado_aa.py
+
+# Patch the file
+COPY patch.py /patch.py
+RUN python3 /patch.py && rm /patch.py
 
 # Prepare venv
 RUN python3 -m venv venv
