@@ -103,5 +103,6 @@ def main():
         with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
             f.write("modified=false\n")
 
+
 if __name__ == "__main__":
     main()
