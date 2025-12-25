@@ -1,0 +1,394 @@
+name: Orchestrator Workflow Monitor
+
+on:
+  # Trigger when any workflow completes
+  workflow_run:
+    workflows:
+      - "*"
+    types:
+      - completed
+  # Trigger on PR changes to workflow files (for linting)
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+
+concurrency:
+  group: workflow-monitor-${{ github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # LINT: Validate Workflow Files with actionlint
+  # --------------------------------------------------------------------------------
+  lint-workflows:
+    name: 🔍 Lint Workflow Files
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🧹 Run actionlint
+        id: actionlint
+        uses: raven-actions/actionlint@v2
+        with:
+          matcher: true
+          fail-on-error: false
+
+      - name: 📝 Post Lint Report on Failure
+        if: steps.actionlint.outputs.exit-code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const signature = "<!-- workflow-lint-report -->";
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            // Minimize old lint reports
+            for (const comment of previousComments) {
+              try {
+                await github.graphql(`
+                  mutation($subjectId: ID!) {
+                    minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                      minimizedComment { isMinimized }
+                    }
+                  }
+                `, { subjectId: comment.node_id });
+              } catch (e) { console.log("Could not minimize:", e.message); }
+            }
+
+            let body = signature + "\n";
+            body += "## 🔧 Workflow Lint Errors\n\n";
+            body += "The following issues were found in the workflow files:\n\n";
+            body += "```\n";
+            body += `${{ steps.actionlint.outputs.stdout || 'See workflow logs for details.' }}`;
+            body += "\n```\n\n";
+            body += "<details>\n<summary>🤖 <strong>AI Summary (Fix Suggestions)</strong></summary>\n\n";
+            body += "> [!TIP]\n> **Common Fixes**\n>\n";
+            body += "> - **Syntax errors**: Check YAML indentation and quoting\n";
+            body += "> - **Unknown actions**: Verify action versions exist (e.g., `actions/checkout@v4`)\n";
+            body += "> - **Expression errors**: Check `${{ }}` syntax and available contexts\n";
+            body += "> - **Deprecated features**: Update to latest GitHub Actions syntax\n\n";
+            body += "</details>\n\n";
+            body += "📚 [actionlint documentation](https://github.com/rhysd/actionlint)\n";
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            // Add label
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            if (!currentLabels.some(l => l.name === 'workflow/lint-error')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['workflow/lint-error']
+              });
+            }
+
+      - name: ❌ Fail on Lint Errors
+        if: steps.actionlint.outputs.exit-code != '0'
+        run: exit 1
+
+  # --------------------------------------------------------------------------------
+  # CHECK: GitHub Actions Runner Minutes
+  # --------------------------------------------------------------------------------
+  check-runner-minutes:
+    name: ⏱️ Check Runner Minutes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 📊 Check GitHub Actions Billing
+        id: billing
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              // Try organization billing first
+              let response;
+              try {
+                response = await github.rest.billing.getGithubActionsBillingOrg({
+                  org: context.repo.owner
+                });
+              } catch (orgError) {
+                // Fall back to user billing
+                response = await github.rest.billing.getGithubActionsBillingUser({
+                  username: context.repo.owner
+                });
+              }
+
+              const used = response.data.total_minutes_used || 0;
+              const quota = response.data.included_minutes || 2000; // Default free tier
+              const remaining = quota - used;
+              const percentage = Math.round((remaining / quota) * 100);
+
+              console.log(`Minutes Used: ${used}/${quota}`);
+              console.log(`Remaining: ${remaining} (${percentage}%)`);
+
+              let status = "ok";
+              let message = "";
+
+              if (remaining <= 0) {
+                status = "exhausted";
+                message = `🛑 **KRITISCH**: Alle GitHub Actions Minuten erschöpft! (${used}/${quota} verwendet)`;
+              } else if (remaining < 100) {
+                status = "critical";
+                message = `🛑 **KRITISCH**: Nur noch ${remaining} von ${quota} Minuten verfügbar (${percentage}%)!`;
+              } else if (remaining < 500) {
+                status = "warning";
+                message = `⚠️ **WARNUNG**: Nur noch ${remaining} von ${quota} Minuten verfügbar (${percentage}%).`;
+              }
+
+              core.setOutput("status", status);
+              core.setOutput("message", message);
+              core.setOutput("remaining", remaining);
+              core.setOutput("quota", quota);
+              core.setOutput("used", used);
+
+            } catch (error) {
+              console.log("Could not fetch billing info:", error.message);
+              core.setOutput("status", "unknown");
+              core.setOutput("message", "");
+            }
+
+      - name: 📝 Post Minutes Warning
+        if: steps.billing.outputs.status == 'warning' || steps.billing.outputs.status == 'critical' || steps.billing.outputs.status == 'exhausted'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = `${{ steps.billing.outputs.message }}`;
+            const status = `${{ steps.billing.outputs.status }}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const signature = "<!-- runner-minutes-warning -->";
+            const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            if (!alreadyPosted) {
+              let body = signature + "\n";
+              body += "## ⏱️ GitHub Actions Minuten Warnung\n\n";
+              body += message + "\n\n";
+
+              if (status === 'exhausted') {
+                body += "> [!CAUTION]\n";
+                body += "> Weitere Workflow-Runs werden fehlschlagen bis die Minuten am Monatsanfang zurückgesetzt werden.\n";
+                body += "> Kontaktiere einen Administrator um das Limit zu erhöhen.\n";
+              } else if (status === 'critical') {
+                body += "> [!WARNING]\n";
+                body += "> Bei fortgesetzter Nutzung werden die Minuten bald erschöpft sein.\n";
+                body += "> Erwäge, Workflows zu optimieren oder weniger häufig auszuführen.\n";
+              } else {
+                body += "> [!IMPORTANT]\n";
+                body += "> Überwache die Nutzung, um Unterbrechungen zu vermeiden.\n";
+              }
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+
+              // Add label
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['infra/low-minutes']
+              });
+            }
+
+  # --------------------------------------------------------------------------------
+  # ANALYZE: Workflow Infrastructure Failures
+  # --------------------------------------------------------------------------------
+  analyze-workflow-failures:
+    name: 🔬 Analyze Workflow Failures
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.pull_requests[0]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: 📝 Analyze and Report Infrastructure Errors
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowRun = context.payload.workflow_run;
+            const prNumber = workflowRun.pull_requests[0]?.number;
+
+            if (!prNumber) {
+              console.log("No PR associated with this workflow run.");
+              return;
+            }
+
+            // Get jobs for the failed workflow run
+            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: workflowRun.id,
+            });
+
+            const failedJobs = jobs.jobs.filter(j => j.conclusion === 'failure');
+
+            // Infrastructure error patterns (not project test failures)
+            const infraPatterns = [
+              { pattern: /action.*not found/i, type: "Action Not Found", fix: "Update action to an existing version" },
+              { pattern: /version.*deprecated/i, type: "Deprecated Version", fix: "Update to a supported version" },
+              { pattern: /runner.*unavailable/i, type: "Runner Unavailable", fix: "Check runner labels and availability" },
+              { pattern: /timeout/i, type: "Timeout", fix: "Increase timeout or optimize the step" },
+              { pattern: /rate limit/i, type: "Rate Limit", fix: "Wait and retry, or reduce API calls" },
+              { pattern: /yaml.*error|syntax error/i, type: "YAML/Syntax Error", fix: "Run actionlint locally to fix syntax" },
+              { pattern: /permission denied/i, type: "Permission Error", fix: "Check workflow permissions" },
+              { pattern: /node.*version|unsupported.*node/i, type: "Node Version Issue", fix: "Update to Node.js 20" },
+              { pattern: /docker.*error|container.*error/i, type: "Docker Error", fix: "Check Dockerfile and build context" },
+              { pattern: /cancelled/i, type: "Workflow Cancelled", fix: "Investigate concurrent run conflicts" },
+            ];
+
+            // Analyze failures
+            let infraErrors = [];
+            let projectErrors = [];
+
+            for (const job of failedJobs) {
+              const failedStep = job.steps?.find(s => s.conclusion === 'failure');
+              const stepName = failedStep?.name || "Unknown";
+
+              // Check if this is an infrastructure error
+              let isInfraError = false;
+              let errorInfo = { job: job.name, step: stepName, type: "Unknown", fix: "Check logs" };
+
+              // Check step name for patterns
+              for (const { pattern, type, fix } of infraPatterns) {
+                if (pattern.test(stepName) || pattern.test(job.name)) {
+                  errorInfo.type = type;
+                  errorInfo.fix = fix;
+                  isInfraError = true;
+                  break;
+                }
+              }
+
+              // Known infrastructure steps
+              const infraSteps = [
+                'Check out code', 'Set up', 'Setup', 'Install', 'Cache',
+                'Download', 'Upload', 'Docker', 'Login', 'Checkout'
+              ];
+              if (infraSteps.some(s => stepName.includes(s))) {
+                isInfraError = true;
+                errorInfo.type = "Setup/Infrastructure";
+              }
+
+              // Known project test steps (exclude from infra report)
+              const testSteps = [
+                'ShellCheck', 'Hadolint', 'MarkdownLint', 'YAMLLint', 'Prettier',
+                'Add-on Linter', 'Compliance', 'Trivy', 'Build All', 'Test Build'
+              ];
+              if (testSteps.some(s => stepName.includes(s) || job.name.includes(s))) {
+                projectErrors.push(errorInfo);
+                continue; // Skip - this is a project test, not infra
+              }
+
+              if (isInfraError) {
+                infraErrors.push(errorInfo);
+              }
+            }
+
+            // Only report if there are infrastructure errors
+            if (infraErrors.length === 0) {
+              console.log("No infrastructure errors detected. Project test failures are handled by CI workflow.");
+              return;
+            }
+
+            // Create report
+            const signature = "<!-- workflow-infra-error -->";
+            let body = signature + "\n";
+            body += "## 🔧 Workflow Infrastructure Error\n\n";
+            body += "Ein Fehler ist in der Workflow-Infrastruktur aufgetreten (nicht in den Projekt-Tests).\n\n";
+            body += "| Job | Step | Fehlertyp | Fix |\n|---|---|---|---|\n";
+
+            for (const err of infraErrors) {
+              body += `| ${err.job} | ${err.step} | ${err.type} | ${err.fix} |\n`;
+            }
+
+            body += "\n";
+            body += "<details>\n<summary>🤖 <strong>AI Summary (Diagnose)</strong></summary>\n\n";
+            body += "> [!IMPORTANT]\n";
+            body += "> **Workflow-Infrastruktur-Fehler** sind nicht durch Codeänderungen verursacht.\n";
+            body += "> Sie erfordern typischerweise Maintainer-Eingriff.\n\n";
+            body += "```text\n";
+            body += `Betroffener Workflow: ${workflowRun.name}\n`;
+            body += `Run ID: ${workflowRun.id}\n`;
+            body += `Infrastruktur-Fehler: ${infraErrors.length}\n`;
+            if (projectErrors.length > 0) {
+              body += `Projekt-Test-Fehler: ${projectErrors.length} (separat behandelt)\n`;
+            }
+            body += "```\n";
+            body += "\n</details>\n\n";
+            body += `🔗 [Workflow Logs](${workflowRun.html_url})\n`;
+
+            // Check for existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const previousComments = comments.filter(c =>
+              c.user.type === 'Bot' && c.body.includes(signature)
+            );
+
+            // Minimize old reports
+            for (const comment of previousComments) {
+              try {
+                await github.graphql(`
+                  mutation($subjectId: ID!) {
+                    minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                      minimizedComment { isMinimized }
+                    }
+                  }
+                `, { subjectId: comment.node_id });
+              } catch (e) { console.log("Could not minimize:", e.message); }
+            }
+
+            // Post new report
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body
+            });
+
+            // Add label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['workflow/infra-error']
+            });

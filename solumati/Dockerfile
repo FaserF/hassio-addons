@@ -3,10 +3,8 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
-ARG BUILD_DATE
-
 # Setup Environment
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
@@ -22,8 +20,8 @@ RUN \
     gcc \
     musl-dev \
     libffi-dev \
-
     curl
+
 
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
@@ -37,7 +35,6 @@ RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VER
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
-ARG BUILD_DATE
 RUN cp /tmp/src/frontend/package.json . && \
     (cp /tmp/src/frontend/package-lock.json* . || true) && \
     npm install && \
@@ -54,12 +51,10 @@ RUN cp /tmp/src/frontend/package.json . && \
 # --- BACKEND SETUP ---
 WORKDIR /app/backend
 # Copy backend requirements from cloned source
-# Copy backend requirements from cloned source
 RUN cp /tmp/src/backend/requirements.txt . && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code from cloned source
-ARG BUILD_DATE
 RUN cp -r /tmp/src/backend/. .
 
 # Move built frontend to a location Nginx can serve

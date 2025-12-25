@@ -1,14 +1,15 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
-ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 ARG BUILD_DATE
 
 # Install system requirements
 # IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
-# renovate: ignore
+# Added Alpine 3.19 repositories to maintain PHP 8.1 compatibility
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/community \
     redis \
     curl \
     gettext \
@@ -80,7 +81,8 @@ CMD [ "/run.sh" ]
 
 
 # Health check
-HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+  CMD curl --fail http://127.0.0.1:80 || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver - BETA"

@@ -38,15 +38,17 @@ EXPOSE 3000
 RUN chmod a+x /etc/cont-init.d/*
 
 # Health check
-HEALTHCHECK CMD curl --fail http://127.0.0.1:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=30s \
+  CMD curl --fail http://127.0.0.1:3000 || exit 1
 
 # Labels
-LABEL org.opencontainers.image.title="Netboot.xyz"
-LABEL org.opencontainers.image.description="PXE-Server to deploy a OS inside your local network"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
-LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/netboot-xyz/README.md"
-LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL \
+  org.opencontainers.image.title="Netboot.xyz" \
+  org.opencontainers.image.description="PXE-Server to deploy a OS inside your local network" \
+  org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+  org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
+  org.opencontainers.image.licenses="MIT" \
+  org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz" \
+  org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz" \
+  org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/netboot-xyz/README.md" \
+  org.opencontainers.image.created="${BUILD_DATE}"

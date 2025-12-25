@@ -27,7 +27,7 @@
 #>
 
 param(
-    [string]$Addon = "all",
+    [string[]]$Addon = @("all"),
     [string[]]$Tests = "all",
     [switch]$IncludeUnsupported,
     [switch]$Fix
@@ -121,8 +121,20 @@ function Get-BuildFrom {
 Set-Location $RepoRoot
 $GlobalFailed = $false
 
+# --- CHECK DOCKER AVAILABILITY ---
+# Check Docker upfront if any Docker-related tests are selected
+$DockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild")
+$DockerAvailable = $false
+if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
+    $DockerAvailable = Check-Docker
+    if (-not $DockerAvailable) {
+        Write-Host "WARNING: Docker is not available. Docker-related tests will be skipped." -ForegroundColor Yellow
+    }
+}
+
 # --- SCOPE DEFITION ---
-if ($Addon -eq "all") {
+# Handle both single string and array input for -Addon parameter
+if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") {
     $addons = Get-ChildItem -Path . -Directory | Where-Object {
         (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported")
     }
@@ -132,15 +144,21 @@ if ($Addon -eq "all") {
     }
 }
 else {
-    # Check root
-    if (Test-Path $Addon) {
-        $addons = @(Get-Item $Addon)
+    $addons = @()
+    foreach ($addonName in $Addon) {
+        # Check root
+        if (Test-Path $addonName) {
+            $addons += Get-Item $addonName
+        }
+        elseif (Test-Path ".unsupported\$addonName") {
+            $addons += Get-Item ".unsupported\$addonName"
+        }
+        else {
+            Write-Host "WARNING: Add-on '$addonName' not found, skipping." -ForegroundColor Yellow
+        }
     }
-    elseif (Test-Path ".unsupported\$Addon") {
-        $addons = @(Get-Item ".unsupported\$Addon")
-    }
-    else {
-        Throw "Add-on '$Addon' not found."
+    if ($addons.Count -eq 0) {
+        Throw "No valid add-ons found from the provided list."
     }
 }
 
@@ -208,7 +226,6 @@ if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
 # --- 3. HADOLINT ---
 if ("all" -in $Tests -or "Hadolint" -in $Tests) {
     Write-Header "3. Hadolint"
-    $DockerAvailable = Check-Docker
     if ($DockerAvailable) {
         foreach ($a in $addons) {
             $df = Join-Path $a.FullName "Dockerfile"
@@ -393,11 +410,18 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
             $imgName = "local/test-$($a.Name.ToLower())"
             $date = Get-Date -Format "yyyy-MM-dd"
 
+            # Get the correct base image for this addon
+            $buildFile = Join-Path $a.FullName "build.yaml"
+            $addonBase = $null
+            if (Test-Path $buildFile) {
+                $addonBase = Get-BuildFrom $buildFile
+            }
+
             # Build
             $buildArgs = @("build", "--build-arg", "BUILD_DATE=$date")
-            if ($base) {
+            if ($addonBase) {
                  $buildArgs += "--build-arg"
-                 $buildArgs += "BUILD_FROM=$base"
+                 $buildArgs += "BUILD_FROM=$addonBase"
             } else {
                  $buildArgs += "--build-arg"
                  $buildArgs += "BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest"

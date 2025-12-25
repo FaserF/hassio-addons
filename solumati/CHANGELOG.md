@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.11
+
+- General addon improvements
+
 ## 1.5.9
 
 - Automatically updated Solumati to version v2025.12.3b1

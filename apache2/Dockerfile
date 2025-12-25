@@ -59,22 +59,7 @@ RUN mkdir /run/apache2 \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
     && cd .. && rm -r musl-locales-master
 
-# Install ssh2 extension
-#RUN apk --no-cache add libssh2-dev php84-pear zlib-dev build-base
-#RUN pecl channel-update pecl.php.net \
-#    && pecl install ssh2-1.3.1
-#RUN docker-php-ext-enable ssh2
-#From here beginning most likely needed
-
-#RUN apk --no-cache add libssh2-dev
-#RUN wget -O ssh2.tgz https://pecl.php.net/get/ssh2-1.3.1.tgz \
-#    && mkdir ssh2 && tar vxzf ssh2.tgz -C ssh2 --strip-components 1 \
-#    && cd ../ssh2 && phpize81 \
-#    && ./configure --with-ssh2 --with-php-config=/etc/php84/php.ini \
-#    && make && make install \
-#    && cd ../ && rm -rf ssh2.tgz ssh2
-
-#Configure Logging
+# Configure Logging
 RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 

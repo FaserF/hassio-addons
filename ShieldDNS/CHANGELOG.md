@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.16
+
+- General addon improvements
+
 ## 1.3.15
 
 - **Improvement**: Implemented intentional "Smart Fallback" for DoT Port.

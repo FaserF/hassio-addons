@@ -14,6 +14,50 @@ concurrency:
 
 jobs:
   # --------------------------------------------------------------------------------
+  # CI START: Post initial comment
+  # --------------------------------------------------------------------------------
+  ci_start:
+    name: 🚀 CI Start Notification
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 📝 Post CI Starting Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            // Check if we already posted a start comment for this run
+            const signature = "<!-- ci-start-comment -->";
+            const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            if (!alreadyPosted) {
+                let body = signature + "\n";
+                body += "## 🔄 CI Tests Running\n\n";
+                body += "Comprehensive CI tests are now running. This may take a few minutes.\n\n";
+                body += "A detailed feedback comment will be posted once all checks are complete.\n\n";
+                body += "---\n\n";
+                body += "**📋 Merge Policy:**\n";
+                body += "- PRs are typically only merged when **all CI tests pass**\n";
+                body += "- If tests fail, you will receive automated guidance on how to fix the issues\n";
+                body += "- PRs with failing tests may receive limited maintainer attention until resolved\n\n";
+                body += "_*Workflow configuration errors are handled by maintainers_";
+
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: body
+                });
+            }
+
+  # --------------------------------------------------------------------------------
   # FILTER: Detect which add-ons have changed
   # --------------------------------------------------------------------------------
   generate-config:
@@ -442,6 +486,28 @@ jobs:
                     issue_number: context.issue.number,
                     body: summary
                 });
+
+                // Add ci/platinum-issues label (if only platinum issues, not general failures)
+                const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                });
+
+                // Only add platinum-issues if ci/failed is not already set
+                const hasFailedLabel = currentLabels.some(l => l.name === 'ci/failed');
+                if (!hasFailedLabel) {
+                    const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+                    const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+                    filteredLabels.push('ci/platinum-issues');
+
+                    await github.rest.issues.setLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: filteredLabels
+                    });
+                }
             }
 
       - name: 📝 Post General CI Failure Report
@@ -537,9 +603,16 @@ jobs:
 
             // Local Test Command (expanded section)
             report += `<details open>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
-            report += "Run this PowerShell command locally to reproduce and fix issues:\n\n";
+            report += "Run this command locally to reproduce and fix issues:\n\n";
+            report += "**PowerShell:**\n";
             report += "```powershell\n";
             report += testCommand + "\n";
+            report += "```\n\n";
+
+            const bashCommand = testCommand.replace(/\\/g, '/').replace(/^\.\//, './');
+            report += "**Bash:**\n";
+            report += "```bash\n";
+            report += bashCommand + "\n";
             report += "```\n";
             report += "\n</details>";
 
@@ -549,6 +622,24 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
                 body: report
+            });
+
+            // Update CI status labels to ci/failed
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+            const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+            filteredLabels.push('ci/failed');
+
+            await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: filteredLabels
             });
 
   success_report:
@@ -667,4 +758,36 @@ jobs:
                     issue_number: context.issue.number,
                     body: body
                 });
+            }
+
+            // Update CI status labels
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+            const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+            filteredLabels.push('ci/passed');
+
+            await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: filteredLabels
+            });
+
+            // Minimize the CI start comment
+            const startComment = comments.find(c => c.user.type === 'Bot' && c.body.includes("<!-- ci-start-comment -->"));
+            if (startComment) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: RESOLVED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: startComment.node_id });
+                } catch (e) { console.log("Could not minimize start comment"); }
             }

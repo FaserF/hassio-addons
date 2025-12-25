@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
-ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
 # hadolint ignore=DL3018
