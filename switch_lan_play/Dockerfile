@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
@@ -39,7 +39,6 @@ HEALTHCHECK \
     CMD pgrep lan-play || exit 1
 
 # Labels
-ARG BUILD_DATE
 LABEL org.opencontainers.image.title="Switch LAN Play Client"
 LABEL org.opencontainers.image.description="Nintendo Switch Lan Play -Client"
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"

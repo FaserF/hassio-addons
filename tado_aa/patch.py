@@ -31,7 +31,7 @@ def replace_in_file(filepath, mapping):
                     f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', "
                     "replacing only first match"
                 )
-            # Replace only the first occurrence to avoid unintended changes
+            # Replace first occurrence only
             content = content.replace(original, replacement, 1)
             replaced.append(original)
 
@@ -57,7 +57,7 @@ mapping = {
     "enableTempLimit = True": 'enableTempLimit = os.getenv("TADO_ENABLE_TEMP_LIMIT", "True").lower() == "true"',
     "saveLog = False": 'saveLog = os.getenv("TADO_SAVE_LOG", "False").lower() == "true"',
     # Original line is at 8 spaces inside login() try block
-    # Replacement: define init_tado at same level, then call it
+    # Define init_tado at same level, then call it
     "        t = Tado(token_file_path=TOKEN_FILE)": (
         "        def init_tado():\\n"
         '            username = os.getenv("TADO_USERNAME")\\n'

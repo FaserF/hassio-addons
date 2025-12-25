@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE=""
@@ -15,9 +15,11 @@ RUN apk -U --no-cache add \
     screen \
     build-base
 
-#Install SLP
+# Install SLP
 WORKDIR /switch-lan-play
-RUN git clone https://github.com/spacemeowx2/switch-lan-play.git .
+ARG SWITCH_LAN_PLAY_VERSION="v0.2.3"
+# Pin to specific release for reproducible builds
+RUN git clone --branch "${SWITCH_LAN_PLAY_VERSION}" --single-branch --depth 1 https://github.com/spacemeowx2/switch-lan-play.git .
 
 WORKDIR /switch-lan-play/server
 RUN npm install \
@@ -28,7 +30,7 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 
 # Healthcheck - UDP checks are unreliable, use process check instead
-HEALTHCHECK CMD pgrep -f "node.*server" >/dev/null || exit 1
+HEALTHCHECK CMD pgrep -f "node.*switch-lan-play" >/dev/null || exit 1
 
 # Reset workdir so run.sh's relative path works
 WORKDIR /

@@ -12,6 +12,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   # --------------------------------------------------------------------------------
   # CI START: Post initial comment
@@ -64,7 +69,7 @@ jobs:
   # FILTER: Detect which add-ons have changed
   # --------------------------------------------------------------------------------
   generate-config:
-    name: 🧩 Generate Config
+    name: Generate Config
     runs-on: ubuntu-latest
     outputs:
       filters: ${{ steps.generator.outputs.filters }}
@@ -140,7 +145,7 @@ jobs:
         run: |
           # Get all changed files in this push/PR
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1)
+            CHANGED_FILES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1)
           else
             CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
           fi
@@ -178,8 +183,8 @@ jobs:
             fi
           done
 
-          echo "docs_only=$docs_only" >> $GITHUB_OUTPUT
-          echo "needs_build=$needs_build" >> $GITHUB_OUTPUT
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+          echo "needs_build=$needs_build" >> "$GITHUB_OUTPUT"
           echo "Results: docs_only=$docs_only, needs_build=$needs_build"
 
   # --------------------------------------------------------------------------------
@@ -204,7 +209,7 @@ jobs:
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@2.0.0
+        uses: ludeeus/action-shellcheck@151d369a474070db31737e54728f1e6720bf821e # v2.0.0
         with:
           scandir: "./${{ matrix.addon }}"
         env:
@@ -264,10 +269,10 @@ jobs:
           cat compliance_report.txt
           echo "::endgroup::"
 
-          if [ $exit_code -ne 0 ]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
+          if [ "$exit_code" -ne 0 ]; then
+            echo "status=failure" >> "$GITHUB_OUTPUT"
           else
-            echo "status=success" >> $GITHUB_OUTPUT
+            echo "status=success" >> "$GITHUB_OUTPUT"
           fi
 
       - name: 📤 Upload Compliance Report
@@ -350,20 +355,20 @@ jobs:
               continue
             fi
 
-            echo "🔨 Building for $arch..."
-            docker run --rm --privileged \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$(pwd)":/data \
-              -v /tmp/.buildx-cache:/cache \
-              ghcr.io/home-assistant/amd64-builder:2025.11.0 \
-              --test \
-              --$arch \
-              --target /data/${{ matrix.addon }} \
-              --image "$IMAGE" \
-              --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-              --addon \
-              --cache-from type=local,src=/cache \
-              --cache-to type=local,dest=/cache,mode=max || exit 1
+              echo "🔨 Building for $arch..."
+              docker run --rm --privileged \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                -v "$(pwd)":/data \
+                -v /tmp/.buildx-cache:/cache \
+                ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+                --test \
+                --"$arch" \
+                --target "/data/${{ matrix.addon }}" \
+                --image "$IMAGE" \
+                --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+                --addon \
+                --cache-from type=local,src=/cache \
+                --cache-to type=local,dest=/cache,mode=max || exit 1
           done
 
           echo "✅ All architectures built successfully"
@@ -440,7 +445,7 @@ jobs:
             }
 
             // AI-optimized Platinum Compliance Summary
-            summary += `<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n`;
+            summary += `<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
             summary += `> **Instructions for AI**: Fix all Platinum compliance issues below.\n\n`;
 
             summary += "```yaml\n";
@@ -639,7 +644,7 @@ jobs:
             report += "\n";
 
             // Build comprehensive AI-optimized summary
-            report += `<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n`;
+            report += `<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
             report += `> **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n`;
 
             // Group jobs by failure type for better AI processing

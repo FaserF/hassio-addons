@@ -141,7 +141,7 @@ $GlobalFailed = $false
 
 # --- CHECK DOCKER AVAILABILITY ---
 # Check Docker upfront if any Docker-related tests are selected
-$DockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild")
+$DockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "WorkflowChecks")
 $DockerAvailable = $false
 if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
     $DockerAvailable = Check-Docker
@@ -638,6 +638,62 @@ if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
                     Add-Result $a.Name "CR-MovingTag" "WARN" "Using :$tag tag in build.yaml. Pin to specific version for reproducible builds."
                 }
             }
+        }
+    }
+}
+
+# --- 13. WORKFLOW CHECKS (CodeRabbit Style) ---
+if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
+    Write-Header "13. Workflow Checks"
+    $workflowDir = Join-Path $RepoRoot ".github\workflows"
+    $workflows = Get-ChildItem -Path $workflowDir -Filter "*.yaml"
+
+    if ($DockerAvailable) {
+        # A. Actionlint (Syntax & Correctness)
+        Write-Host "Running Actionlint..." -ForegroundColor Gray
+        try {
+            # Use docker to run actionlint on the whole workflows dir
+            $out = docker run --rm -v "$($RepoRoot):/repo" -w /repo rhysd/actionlint:latest 2>&1
+            if ($LASTEXITCODE -ne 0) { Add-Result "Workflows" "Actionlint" "FAIL" $out }
+            else { Add-Result "Workflows" "Actionlint" "PASS" "OK" }
+        }
+        catch { Add-Result "Workflows" "Actionlint" "FAIL" "Exec Error" }
+
+        # B. Zizmor (Security)
+        Write-Host "Running Zizmor..." -ForegroundColor Gray
+        try {
+            $out = docker run --rm -v "$($RepoRoot):/repo" -w /repo ghcr.io/woodruffw/zizmor:latest . 2>&1
+            if ($LASTEXITCODE -ne 0) { Add-Result "Workflows" "Zizmor" "WARN" $out }
+            else { Add-Result "Workflows" "Zizmor" "PASS" "OK" }
+        }
+        catch { Add-Result "Workflows" "Zizmor" "FAIL" "Exec Error" }
+    }
+
+    # C. Custom AI-Style Checks (Regex based)
+    foreach ($wf in $workflows) {
+        $content = Get-Content $wf.FullName -Raw
+        $wfName = $wf.Name
+
+        # Check 1: SHA Pinning (Reproducibility)
+        # Warn if @vX is used instead of a 40-char SHA
+        if ($content -match 'uses:\s*[\w\-\./]+@(v\d+|master|main)') {
+             Add-Result $wfName "CR-SHA-Pinning" "WARN" "Uses moving tag (e.g. @v4). Pin to commit SHA for maximum security."
+        } else {
+             Add-Result $wfName "CR-SHA-Pinning" "PASS" "OK"
+        }
+
+        # Check 2: Permissions (Least Privilege)
+        if ($content -notmatch '(?m)^permissions:') {
+             Add-Result $wfName "CR-Permissions" "WARN" "Missing top-level 'permissions:' block. Define explicit permissions."
+        } else {
+             Add-Result $wfName "CR-Permissions" "PASS" "OK"
+        }
+
+        # Check 3: Trigger Optimization
+        if (($content -match 'on:\s*(push|pull_request)') -and ($content -notmatch 'paths:')) {
+             Add-Result $wfName "CR-TriggerOpt" "INFO" "Trigger lacks 'paths' filter. Workflow might run unnecessarily."
+        } else {
+             Add-Result $wfName "CR-TriggerOpt" "PASS" "OK"
         }
     }
 }

@@ -1,14 +1,22 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": ["dependencies", "no-stale"],
+  "labels": [
+    "dependencies",
+    "no-stale"
+  ],
   "commitMessagePrefix": "⬆️",
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$", "(^|/)build.yaml$"],
+      "fileMatch": [
+        "(^|/)Dockerfile$",
+        "(^|/)build.yaml$"
+      ],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -18,7 +26,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
       "matchStrings": [
         "ARG NODE_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+",
         "ENV NODE_VERSION v?(?<currentValue>.+?)\\s+"
@@ -28,63 +38,106 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ENV YARN_VERSION (?<currentValue>.+?)\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ENV YARN_VERSION (?<currentValue>.+?)\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "yarnpkg/yarn"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "42wim/matterbridge"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "netbootxyz/webapp"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/Solumati"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "Requarks/wiki"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/AegisBot"
     },
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)Dockerfile$"],
-      "matchStrings": ["(?<depName>php)(?<currentValue>\\d+)(?:-[a-z0-9-]+)*"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "(?<depName>php)(?<currentValue>\\d+)(?:-[a-z0-9-]+)*"
+      ],
       "datasourceTemplate": "alpine",
       "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "spacemeowx2/switch-lan-play"
     }
   ],
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on base images",
-      "matchDatasources": ["docker"],
+      "matchDatasources": [
+        "docker"
+      ],
       "matchDepNames": [
         "ghcr.io/hassio-addons/base",
         "ghcr.io/hassio-addons/debian-base",
@@ -95,7 +148,10 @@
     },
     {
       "groupName": "Development Tools",
-      "matchDepNames": ["nodejs/node", "yarnpkg/yarn"],
+      "matchDepNames": [
+        "nodejs/node",
+        "yarnpkg/yarn"
+      ],
       "automerge": true
     },
     {
@@ -105,23 +161,34 @@
         "netbootxyz/webapp",
         "Requarks/wiki",
         "FaserF/AegisBot",
-        "FaserF/Solumati"
+        "FaserF/Solumati",
+        "spacemeowx2/switch-lan-play"
       ],
       "automerge": true
     },
     {
-      "matchManagers": ["pip_requirements"],
-      "addLabels": ["python"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "addLabels": [
+        "python"
+      ],
       "rangeStrategy": "pin"
     },
     {
-      "matchManagers": ["pip_requirements"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
       "automerge": true
     },
     {
       "groupName": "PHP Packages",
-      "matchDatasources": ["alpine"],
-      "matchPackageNames": ["/php\\d+/"],
+      "matchDatasources": [
+        "alpine"
+      ],
+      "matchPackageNames": [
+        "/php\\d+/"
+      ],
       "automerge": true
     }
   ]

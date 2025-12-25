@@ -49,11 +49,11 @@ jobs:
       pull-requests: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: 🧹 Run actionlint
         id: actionlint
-        uses: raven-actions/actionlint@v2
+        uses: raven-actions/actionlint@83f12a2c1cae820cf80509a5b3a88682662241cf # v2.1.0
         with:
           matcher: true
           fail-on-error: false
@@ -93,7 +93,7 @@ jobs:
             body += "```\n";
             body += process.env.ACTIONLINT_OUTPUT || 'See workflow logs for details.';
             body += "\n```\n\n";
-            body += "<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n";
+            body += "<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n";
             body += "> **Instructions for AI**: Fix all workflow lint errors below.\n\n";
             body += "```yaml\n";
             body += "# Workflow Lint Errors for AI Processing\n";
@@ -448,7 +448,7 @@ jobs:
             }
 
             body += "\n";
-            body += "<details open>\n<summary>🤖 <strong>AI Fix Instructions (Antigravity IDE)</strong></summary>\n\n";
+            body += "<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n";
             body += "> **Instructions for AI**: These are infrastructure errors, not code issues.\n\n";
             body += "```yaml\n";
             body += "# Workflow Infrastructure Errors for AI Processing\n";

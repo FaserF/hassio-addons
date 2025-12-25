@@ -1,8 +1,12 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
-# hadolint ignore=DL3006
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG WIKIJS_VERSION="v2.5.303"
+
+# Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
+# renovate: datasource=docker depName=ghcr.io/requarks/wiki
+FROM ghcr.io/requarks/wiki:2@sha256:3d20706341a35b3f50d339d26e791b3e87d7cbc848bc002cf47a542ddf3dcd43 AS wiki_release
+
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Node.js and Yarn via APK
@@ -10,12 +14,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache nodejs npm yarn
 
 WORKDIR /wiki
-ARG WIKIJS_VERSION="v2.5.303"
-# hadolint ignore=DL3047,DL4001
-RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wiki-js.tar.gz && \
-    tar xzf wiki-js.tar.gz -C /wiki && \
-    rm wiki-js.tar.gz && \
-    rm /wiki/config.sample.yml
+COPY --from=wiki_release /wiki .
+RUN rm -f /wiki/config.sample.yml
 
 COPY run.sh /
 RUN chmod a+x /run.sh

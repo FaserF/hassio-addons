@@ -18,7 +18,6 @@ RUN \
 WORKDIR /opt/whatsapp
 
 # 3. Copy EVERYTHING from the context
-ARG BUILD_DATE
 COPY . .
 
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
@@ -46,7 +45,6 @@ RUN \
 
 # Build arguments
 ARG BUILD_ARCH
-ARG BUILD_DATE
 ARG BUILD_DESCRIPTION
 ARG BUILD_NAME
 ARG BUILD_REF

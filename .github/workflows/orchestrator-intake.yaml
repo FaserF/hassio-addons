@@ -14,6 +14,10 @@ on:
       - "**/config.yaml"
       - "**/config.json"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   intake:
     name: 🆕 New Add-on Intake
@@ -23,7 +27,7 @@ jobs:
       pull-requests: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: 🔍 Detect New Add-ons
         id: new-addons
@@ -33,11 +37,11 @@ jobs:
           echo "$OUTPUT"
           # Check if new add-ons found (string representation of list in last line)
           if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
-              echo "found=true" >> $GITHUB_OUTPUT
+              echo "found=true" >> "$GITHUB_OUTPUT"
               # Extract list logic simplified: just pass to next steps implicitly via re-running or file?
               # For now, let's rely on detection script being idempotent.
           else
-              echo "found=false" >> $GITHUB_OUTPUT
+              echo "found=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: ✅ Compliance Check & Comment
@@ -49,22 +53,22 @@ jobs:
           # To implement this cleanly, intake.py should output a clean list or we parse it.
           # Simplified: We check all add-ons changed in PR?
           # Or just use the script to print valid output.
-          python3 .scripts/check_compliance.py $(python3 .scripts/intake.py | grep "Detected" | awk '{print $5}') > compliance.log 2>&1 || true
+          python3 .scripts/check_compliance.py "$(python3 .scripts/intake.py | grep "Detected" | awk '{print $5}')" > compliance.log 2>&1 || true
 
           CONTENT=$(cat compliance.log)
-          echo "CONTENT<<EOF" >> $GITHUB_ENV
-          echo "$CONTENT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "CONTENT<<EOF" >> "$GITHUB_ENV"
+          echo "$CONTENT" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
           if grep -q "❌" compliance.log; then
-             echo "status=failure" >> $GITHUB_OUTPUT
+             echo "status=failure" >> "$GITHUB_OUTPUT"
           else
-             echo "status=success" >> $GITHUB_OUTPUT
+             echo "status=success" >> "$GITHUB_OUTPUT"
           fi
 
       - name: 💬 Post Comment
         if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const output = process.env.CONTENT;
@@ -111,6 +115,6 @@ jobs:
 
       - name: 💾 Commit Changes
         if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee723069e5d244c2ce9549a3 # v5.1.0
         with:
           commit_message: "chore: register new add-on [skip ci]"

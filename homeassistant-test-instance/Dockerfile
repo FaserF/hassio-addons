@@ -1,6 +1,5 @@
-ARG HA_VERSION=beta
-# ARG HA_VERSION=2025.12.4
-FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
+ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:beta
+FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
 # Persist data in the add-on data directory
