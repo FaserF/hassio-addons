@@ -4,38 +4,40 @@ ARG BUILD_DATE
 FROM ${BUILD_FROM} as base
 ARG BUILD_DATE
 
-# Install system requirements and PHP 8.4 (pinned for Alpine 3.21/Base 19.0.0)
+# Install system requirements
+# IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
+# renovate: ignore
 RUN apk add --no-cache \
-    redis=7.2.7-r0 \
-    curl=8.11.1-r0 \
-    gettext=0.22.5-r0 \
-    mariadb-client=11.4.4-r1 \
-    nginx=1.26.2-r4 \
-    php84=8.4.1-r0 \
-    php84-bcmath=8.4.1-r0 \
-    php84-common=8.4.1-r0 \
-    php84-dom=8.4.1-r0 \
-    php84-fileinfo=8.4.1-r0 \
-    php84-fpm=8.4.1-r0 \
-    php84-gd=8.4.1-r0 \
-    php84-pecl-memcached=3.2.0-r4 \
-    php84-mbstring=8.4.1-r0 \
-    php84-openssl=8.4.1-r0 \
-    php84-pdo=8.4.1-r0 \
-    php84-phar=8.4.1-r0 \
-    php84-sodium=8.4.1-r0 \
-    php84-pdo_mysql=8.4.1-r0 \
-    php84-session=8.4.1-r0 \
-    php84-simplexml=8.4.1-r0 \
-    php84-tokenizer=8.4.1-r0 \
-    php84-ctype=8.4.1-r0 \
-    php84-zip=8.4.1-r0 \
-    php84-xmlwriter=8.4.1-r0 \
-    tini=0.19.0-r3 \
-    yarn=1.22.22-r1 \
-    git=2.47.1-r0 \
+    redis \
+    curl \
+    gettext \
+    mariadb-client \
+    nginx \
+    php81 \
+    php81-bcmath \
+    php81-common \
+    php81-dom \
+    php81-fileinfo \
+    php81-fpm \
+    php81-gd \
+    php81-pecl-memcached \
+    php81-mbstring \
+    php81-openssl \
+    php81-pdo \
+    php81-phar \
+    php81-sodium \
+    php81-pdo_mysql \
+    php81-session \
+    php81-simplexml \
+    php81-tokenizer \
+    php81-ctype \
+    php81-zip \
+    php81-xmlwriter \
+    tini \
+    yarn \
+    git \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
-    && ln -s /usr/bin/php84 /usr/bin/php
+    && ln -s /usr/bin/php81 /usr/bin/php
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
@@ -71,7 +73,7 @@ COPY ./root/ /
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh \
-    && chmod 775 /var/www/html/*
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 CMD [ "/run.sh" ]
 
 

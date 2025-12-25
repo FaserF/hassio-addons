@@ -4,7 +4,6 @@ ARG BUILD_DATE
 FROM ${BUILD_FROM}
 
 # Create directory for apache2 to store PID file
-# Create directory for apache2 to store PID file
 # hadolint ignore=DL3018
 RUN mkdir /run/apache2 \
     && apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
@@ -12,8 +11,8 @@ RUN mkdir /run/apache2 \
 # Copy data for add-on
 COPY run.sh /
 
-# Health check
-HEALTHCHECK CMD kill -0 1 || exit 1
+# Health check - verify run.sh process is running
+HEALTHCHECK CMD pgrep -f run.sh >/dev/null || exit 1
 
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]

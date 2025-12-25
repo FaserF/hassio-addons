@@ -55,6 +55,7 @@ jobs:
 
             console.log(`Total changed files found: ${changedFiles.length}`);
             const changedAddons = new Set();
+            const labelsToAdd = new Set();
 
             // 3. Map Changes to Add-ons
             for (const file of changedFiles) {

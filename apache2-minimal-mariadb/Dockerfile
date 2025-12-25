@@ -1,8 +1,8 @@
 ARG BUILD_FROM
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for apache2 to store PID file
 # Create directory for apache2 to store PID file and install dependencies
@@ -10,6 +10,7 @@ ARG BUILD_DATE
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
     apache2 \
+    curl \
     php84-apache2 \
     libxml2-dev \
     apache2-utils \

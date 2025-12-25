@@ -34,8 +34,7 @@ COPY root/ /
 EXPOSE 3000
 
 # Ensure all run files from the services are executable
-ARG BUILD_DATE
-    && chmod a+x /etc/cont-init.d/*
+RUN chmod a+x /etc/cont-init.d/*
 
 # Health check
 HEALTHCHECK CMD curl --fail http://127.0.0.1:3000 || exit 1

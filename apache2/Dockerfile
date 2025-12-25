@@ -9,6 +9,7 @@ ARG BUILD_DATE
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
     apache2 \
+    curl \
     php84-apache2 \
     libxml2-dev \
     apache2-utils \

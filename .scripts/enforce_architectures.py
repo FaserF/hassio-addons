@@ -90,6 +90,8 @@ def main():
             if enforce_build(build_json):
                 modified_addons.add(addon_dir.name)
 
+    github_output = os.environ.get("GITHUB_OUTPUT")
+
     if modified_addons:
         with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
             f.write("modified=true\n")
@@ -100,7 +102,6 @@ def main():
     else:
         with open(os.environ.get("GITHUB_OUTPUT", ""), "a") as f:
             f.write("modified=false\n")
-
 
 if __name__ == "__main__":
     main()
