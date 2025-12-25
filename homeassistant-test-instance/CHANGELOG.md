@@ -1,8 +1,8 @@
 # Changelog
+
 ## 0.1.1
 
 - Update Home Assistant to version 2025.12.4
-
 
 ## 0.1.0
 

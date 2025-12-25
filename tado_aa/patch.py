@@ -97,7 +97,9 @@ if __name__ == "__main__":
     if failed:
         print(f"Failed patterns: {len(failed)}")
     if warnings:
-        print(f"Patterns with multiple occurrences (only first replaced): {len(warnings)}")
+        print(
+            f"Patterns with multiple occurrences (only first replaced): {len(warnings)}"
+        )
 
     # Cleanup backup on success
     os.remove(backup_path)
