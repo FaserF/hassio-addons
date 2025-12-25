@@ -44,8 +44,7 @@ ShieldFile is designed specifically for **Home Assistant** and **Security**:
 
 ShieldFile works perfectly alongside other official and community add-ons:
 
-- **Advanced SSH & Web Terminal**: You help many people to use this add-on from the main repository.
-  les via
+- **Advanced SSH & Web Terminal**: You can manage files via the
   command line while using ShieldFile for a visual interface. Both access the same
   `/share`, `/config`, etc. directories.
 - **FTP**: You can use an FTP client to transfer bulk files and use ShieldFile to

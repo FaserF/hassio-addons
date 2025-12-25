@@ -4,7 +4,6 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-# Create directory for apache2 to store PID file
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
 RUN mkdir /run/apache2 \
@@ -29,7 +28,8 @@ RUN mkdir /run/apache2 \
 # Copy data for add-on
 
 # Health check
-HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl --fail http://127.0.0.1:80 || exit 1
 
 COPY run.sh /
 COPY index.html /

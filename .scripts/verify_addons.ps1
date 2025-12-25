@@ -28,7 +28,7 @@
 
 param(
     [string[]]$Addon = @("all"),
-    [string[]]$Tests = "all",
+    [string[]]$Tests = @("all"),
     [switch]$IncludeUnsupported,
     [switch]$Fix
 )
@@ -208,6 +208,7 @@ if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
         foreach ($s in $sh) {
             if (-not (Test-Path $shellcheck)) {
                 Add-Result $a.Name "ShellCheck" "WARN" "Binary missing"
+                $failed = $true
                 break
             }
             try {
@@ -300,6 +301,7 @@ if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
                         Add-Result $a.Name "AddonLinter" "PASS" "OK"
                     }
                     elseif ($a.Name -eq "netboot-xyz" -and $res -match "full_access") {
+                        # netboot-xyz requires full access for network boot services
                         Add-Result $a.Name "AddonLinter" "WARN" "Allowed 'full_access' (User Required)"
                     }
                     else {
@@ -342,7 +344,8 @@ if ("all" -in $Tests -or "Trivy" -in $Tests) {
         }
         else {
             foreach ($a in $addons) {
-                $res = docker run --rm -v "trivy_cache:/root/.cache/trivy" -v "$($RepoRoot):/app" $trivy fs "/app/$($a.Name)" --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 2>&1
+                $relPath = $a.FullName.Substring("$RepoRoot".Length).TrimStart('\', '/').Replace('\', '/')
+                $res = docker run --rm -v "trivy_cache:/root/.cache/trivy" -v "$($RepoRoot):/app" $trivy fs "/app/$relPath" --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 2>&1
                 if ($LASTEXITCODE -ne 0) {
                     Add-Result $a.Name "Trivy" "WARN" "Vulnerabilities Found (See log)"
                 }
@@ -389,7 +392,7 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
         $df = Join-Path $a.FullName "Dockerfile"
         if (Test-Path $df) {
             $content = Get-Content $df -Raw
-            if ($content -match "ARG NODE_VERSION=.([\d\.]+)") {
+            if ($content -match 'ARG NODE_VERSION=["'']?([\d\.]+)["'']?') {
                 $ver = $matches[1]
                 if ($ver -ne $LatestNode) {
                     Add-Result $a.Name "Ver-Node" "WARN" "Uses Node $ver (Latest: $LatestNode)"

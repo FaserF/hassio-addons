@@ -9,7 +9,7 @@ ARG BUILD_DATE
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
-# hadolint ignore=DL3003
+# hadolint ignore=DL3003,DL3018
 RUN apk add --no-cache \
     curl \
     sed

@@ -10,7 +10,7 @@ FROM cloudflare/cloudflared:2025.11.1 AS cloudflared
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Setup CoreDNS and Cloudflared
 COPY --from=coredns /coredns /usr/bin/coredns
@@ -30,7 +30,7 @@ COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
 
 # Healthcheck
-HEALTHCHECK \
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl --fail http://127.0.0.1:80/ || exit 1
 
 # Labels

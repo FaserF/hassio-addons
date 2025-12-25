@@ -78,15 +78,19 @@ jobs:
                 });
 
                 for (const artifact of artifacts.artifacts) {
-                  console.log(`  Deleting artifact: ${artifact.name}`);
-                  await github.rest.actions.deleteArtifact({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    artifact_id: artifact.id,
-                  });
+                  try {
+                    console.log(`  Deleting artifact: ${artifact.name}`);
+                    await github.rest.actions.deleteArtifact({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      artifact_id: artifact.id,
+                    });
+                  } catch (e) {
+                    console.log(`  Failed to delete artifact ${artifact.name}: ${e.message}`);
+                  }
                 }
               } catch (e) {
-                console.log(`  Could not delete artifacts: ${e.message}`);
+                console.log(`  Could not list artifacts: ${e.message}`);
               }
 
               // Delete the workflow run

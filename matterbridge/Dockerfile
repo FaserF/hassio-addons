@@ -1,13 +1,13 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS builder
-ARG BUILD_DATE
+
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
-RUN apk --no-cache add wget go git tar
+RUN apk --no-cache add wget go tar
 ARG MATTERBRIDGE_VERSION="v1.26.0"
 
 WORKDIR /matterbridge
@@ -27,8 +27,7 @@ RUN mkdir /etc/matterbridge \
 
 # Copy data for add-on
 COPY run.sh /
-RUN chmod a+x /run.sh \
-    && chmod a+x /bin/matterbridge
+RUN chmod a+x /run.sh
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
     CMD pgrep matterbridge || exit 1

@@ -150,7 +150,7 @@ jobs:
               }
 
               const used = response.data.total_minutes_used || 0;
-              const quota = response.data.included_minutes || 2000; // Default free tier
+              const quota = response.data.included_minutes || 2000; // Default free tier (public/free plan)
               const remaining = quota - used;
               const percentage = Math.round((remaining / quota) * 100);
 
@@ -240,12 +240,20 @@ jobs:
             });
 
             // Add label
-            await github.rest.issues.addLabels({
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              labels: ['infra/low-minutes']
             });
+
+            if (!currentLabels.some(l => l.name === 'infra/low-minutes')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['infra/low-minutes']
+              });
+            }
 
   # --------------------------------------------------------------------------------
   # ANALYZE: Workflow Infrastructure Failures
@@ -421,9 +429,17 @@ jobs:
             });
 
             // Add label
-            await github.rest.issues.addLabels({
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              labels: ['workflow/infra-error']
             });
+
+            if (!currentLabels.some(l => l.name === 'workflow/infra-error')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['workflow/infra-error']
+              });
+            }
