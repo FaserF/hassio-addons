@@ -30,7 +30,7 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
-    CMD pgrep matterbridge || exit 1
+    CMD pgrep -x matterbridge || exit 1
 
 CMD [ "/run.sh" ]
 

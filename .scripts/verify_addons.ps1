@@ -130,7 +130,8 @@ function Get-DefaultOptions {
     try {
         $pathArg = $Path.Replace('\','/')
         $json = python -c $script $pathArg 2>&1
-        if ($LASTEXITCODE -eq 0) { return $json }
+        $res = $json | Out-String
+        if ($LASTEXITCODE -eq 0 -and $res -match '^\s*\{.*\}\s*$') { return $res.Trim() }
         return "{}"
     }
     catch { return "{}" }
@@ -506,11 +507,15 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 if (Test-Path $configFile) {
                     $jsonOpts = Get-DefaultOptions $configFile
                     # Inject default log_level if missing (required by bashio)
-                    $optObj = $jsonOpts | ConvertFrom-Json
-                    if (-not $optObj.log_level) {
-                        $optObj | Add-Member -NotePropertyName "log_level" -NotePropertyValue "info" -Force
+                    try {
+                        $optObj = $jsonOpts | ConvertFrom-Json -ErrorAction Stop
+                        if (-not $optObj.log_level) {
+                            $optObj | Add-Member -NotePropertyName "log_level" -NotePropertyValue "info" -Force
+                        }
+                        $optObj | ConvertTo-Json -Depth 10 | Out-File -FilePath $optionsPath -Encoding UTF8
+                    } catch {
+                        '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
                     }
-                    $optObj | ConvertTo-Json -Depth 10 | Out-File -FilePath $optionsPath -Encoding UTF8
                 } else {
                     '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
                 }
@@ -622,6 +627,61 @@ if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
             if ($content -match 'FROM\s+\S+:latest') {
                 Add-Result $a.Name "CR-LatestTag" "WARN" "Using :latest tag in FROM. Pin to specific version for reproducible builds."
             }
+
+            # Check 7: Unpinned package versions in apk add
+            if ($content -match 'apk add' -and $content -notmatch '(?m)apk add(.*\s+[\w\-._]+[=~][\d.]+)') {
+                 # Basic check: if it has apk add but no obvious version pin (= or ~)
+                 # We exclude --no-cache which might be present
+                 $cleanContent = $content -replace '--no-cache', ''
+                 if ($cleanContent -match 'apk add\s+((?![\w\-._]+[=~])[\w\-._]+\s*)+') {
+                     Add-Result $a.Name "CR-UnpinnedPackage" "WARN" "Unpinned package versions in 'apk add' detected. Pin versions for reproducibility."
+                 }
+            }
+
+            # Check 8: Missing HEALTHCHECK timing parameters
+            if ($content -match 'HEALTHCHECK' -and ($content -notmatch '--interval' -or $content -notmatch '--timeout')) {
+                Add-Result $a.Name "CR-HealthcheckTiming" "WARN" "HEALTHCHECK lacks explicit --interval or --timeout parameters."
+            }
+
+            # Check 9: Fragile healthcheck pattern (pgrep -f run.sh)
+            if ($content -match 'pgrep -f run\.sh') {
+                Add-Result $a.Name "CR-FragileHealth" "WARN" "Healthcheck uses 'pgrep -f run.sh' which is fragile. Consider a more specific binary or functional check."
+            }
+
+            # Check 10: Missing --no-cache-dir in pip install
+            if ($content -match 'pip install' -and $content -notmatch '--no-cache-dir') {
+                 Add-Result $a.Name "CR-PipNoCache" "WARN" "pip install lacks --no-cache-dir flag. This increases image size."
+            }
+
+            # Check 11: Empty or missing BUILD_DATE default
+            if ($content -match 'ARG BUILD_DATE' -and ($content -notmatch 'ARG BUILD_DATE=.' -or $content -match 'ARG BUILD_DATE=""')) {
+                 Add-Result $a.Name "CR-BuildDateDefault" "WARN" "ARG BUILD_DATE has empty or missing default. Use '1970-01-01T00:00:00Z' for local builds."
+            }
+
+            # Check 12: Non-standard Hadolint ignores
+            if ($content -match 'hadolint ignore=([\w,]+)') {
+                $ignores = $matches[1].Split(',')
+                foreach($ig in $ignores) {
+                    if ($ig -notin @("DL3018", "DL3013", "DL3008", "DL3003", "DL4006", "SC2086")) {
+                        # Add-Result $a.Name "CR-CustomHadolint" "INFO" "Custom Hadolint ignore: $ig"
+                    }
+                    if ($ig -eq "DL3047") {
+                         Add-Result $a.Name "CR-NonStandardHadolint" "WARN" "Non-standard Hadolint ignore DL3047 detected (might be a typo)."
+                    }
+                }
+            }
+
+            # Check 13: Python Base Image enforcement
+            if ($content -match 'pip install|python3?\s+.*\.py') {
+                 if ($content -notmatch 'CR-Skip-PythonBaseCheck' -and $content -notmatch 'FROM\s+ghcr\.io/hassio-addons/python-base') {
+                      Add-Result $a.Name "CR-PythonBase" "FAIL" "Addon uses Python but not the official python-base image. Use 'ghcr.io/hassio-addons/python-base' or add '# CR-Skip-PythonBaseCheck' to exclusion."
+                 }
+            }
+
+            # Check 14: Language Check (English only)
+            if ($content -match '[üäößÜÄÖ]' -or $content -match '\b(ist|und|das|mit|der|die|den|dem|ein|eine|eines|einer)\b') {
+                Add-Result $a.Name "CR-Language" "WARN" "Possible non-English content (German) detected in comments or logs. Keep everything in English."
+            }
         }
 
         # Check 6: Moving tags in build.yaml
@@ -669,6 +729,19 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         catch { Add-Result "Workflows" "Zizmor" "FAIL" "Exec Error" }
     }
 
+    $latestRunner = "24.04" # Default fallback
+    try {
+        $runnerInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/actions/runner-images/contents/images/ubuntu" -ErrorAction Stop
+        $versions = $runnerInfo.name | Where-Object { $_ -match 'Ubuntu(\d+)' } | ForEach-Object { $matches[1] }
+        if ($versions) {
+            $latestMajor = ($versions | Measure-Object -Maximum).Maximum
+            # Convert 2404 to 24.04
+            $latestRunner = "$($latestMajor.ToString().Substring(0,2)).$($latestMajor.ToString().Substring(2,2))"
+        }
+    } catch {
+        Write-Host "Warning: Could not fetch latest runner version from GitHub API. Using fallback $latestRunner" -ForegroundColor Yellow
+    }
+
     # C. Custom AI-Style Checks (Regex based)
     foreach ($wf in $workflows) {
         $content = Get-Content $wf.FullName -Raw
@@ -694,6 +767,16 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
              Add-Result $wfName "CR-TriggerOpt" "INFO" "Trigger lacks 'paths' filter. Workflow might run unnecessarily."
         } else {
              Add-Result $wfName "CR-TriggerOpt" "PASS" "OK"
+        }
+
+        # Check 4: GitHub Runner Version
+        if ($content -match 'runs-on:\s*ubuntu-(\d+\.\d+|latest)') {
+             $usedVersion = $matches[1]
+             if ($usedVersion -ne "latest" -and $usedVersion -lt $latestRunner) {
+                  Add-Result $wfName "CR-RunnerVersion" "WARN" "Uses older GitHub Runner ($usedVersion). The latest available version is $latestRunner. It is recommended to use the latest version or 'ubuntu-latest' for better performance and security."
+             } else {
+                  Add-Result $wfName "CR-RunnerVersion" "PASS" "OK"
+             }
         }
     }
 }

@@ -6,7 +6,12 @@ ARG BUILD_DATE
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
 RUN mkdir /run/apache2 \
-    && apk --no-cache add apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl \
+    && apk --no-cache add \
+        apache2~=2.4 \
+        libxml2-dev~=2.13 \
+        apache2-utils~=2.4 \
+        apache2-mod-wsgi~=4.9 \
+        apache2-ssl~=2.4 \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
@@ -15,7 +20,8 @@ COPY rootfs /
 COPY index.html /
 
 # Health check
-HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl --fail http://127.0.0.1:80 || exit 1
 
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]

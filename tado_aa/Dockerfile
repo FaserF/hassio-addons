@@ -3,7 +3,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-ARG BUILD_DATE
+ARG BUILD_DATE="unknown"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -36,18 +36,19 @@ COPY run.sh /
 RUN chmod a+x /run.sh \
     && chmod a+x /tado_aa.py
 # Healthcheck
-HEALTHCHECK \
+HEALTHCHECK --interval=30s --timeout=15s --start-period=15s --retries=3 \
     CMD pgrep -f "python3.*tado_aa.py" || exit 1
 
 CMD [ "/run.sh" ]
 
 # Labels
-LABEL org.opencontainers.image.title="Tado Auto Assist"
-LABEL org.opencontainers.image.description="Tado Auto-Assist for Geofencing and open Window detection"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
-LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/tado_aa"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/tado_aa"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/tado_aa/README.md"
-LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL \
+    org.opencontainers.image.title="Tado Auto Assist" \
+    org.opencontainers.image.description="Tado Auto-Assist for Geofencing and open Window detection" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
+    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/tado_aa" \
+    org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/tado_aa" \
+    org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/tado_aa/README.md" \
+    org.opencontainers.image.created="${BUILD_DATE}"

@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: 📝 Update Templates
         run: |
@@ -29,6 +29,6 @@ jobs:
           python3 .scripts/check_docs.py --fix
 
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
           commit_message: "docs: auto-update documentation standards"

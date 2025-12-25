@@ -209,7 +209,7 @@ jobs:
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@151d369a474070db31737e54728f1e6720bf821e # v2.0.0
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           scandir: "./${{ matrix.addon }}"
         env:
@@ -445,7 +445,7 @@ jobs:
             }
 
             // AI-optimized Platinum Compliance Summary
-            summary += `<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
+            summary += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
             summary += `> **Instructions for AI**: Fix all Platinum compliance issues below.\n\n`;
 
             summary += "```yaml\n";

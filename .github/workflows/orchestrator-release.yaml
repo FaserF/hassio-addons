@@ -53,7 +53,7 @@ jobs:
       # If manual dispatch, verify the specific add-on
       - name: 🕵️ Add-on Linter (Manual)
         if: github.event_name == 'workflow_dispatch'
-        uses: frenck/action-addon-linter@v2
+        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
         with:
           path: "./${{ github.event.inputs.addon }}"
 
@@ -118,7 +118,7 @@ jobs:
           path: "./${{ github.event.inputs.addon || github.event.client_payload.addon }}"
 
       - name: 🐋 Login to GitHub Container Registry
-        uses: docker/login-action@v3.6.0
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -133,7 +133,7 @@ jobs:
 
       - name: 🚀 Commit Version Bump
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
           commit_message: "chore: release ${{ github.event.inputs.addon || github.event.client_payload.addon }} version bump [skip ci]"
           file_pattern: "${{ github.event.inputs.addon || github.event.client_payload.addon }}/*"

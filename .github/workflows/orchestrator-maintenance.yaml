@@ -40,13 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🗑️ Delete Old Workflow Runs
-        uses: actions/delete-workflow-runs@v2.0.4
+        uses: actions/delete-workflow-runs@9835e4abbefe04992885a989df6e3f61ddd60117 # v2.0.4
         with:
           retain_days: 30
           keep_minimum_runs: 5
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: 🚫 Retract Logic
         run: |
@@ -117,6 +117,6 @@ jobs:
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
       - name: 🚀 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
           commit_message: "chore: mark ${{ github.event.inputs.addon }} as ${{ github.event.inputs.state }} [skip ci]"

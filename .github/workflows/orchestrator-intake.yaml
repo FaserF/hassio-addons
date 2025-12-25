@@ -48,12 +48,15 @@ jobs:
         if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
         id: compliance
         run: |
-          # Run compliance on ALL dirs? Or just new ones.
-          # check_compliance.py takes args. We need to pass the new ones.
-          # To implement this cleanly, intake.py should output a clean list or we parse it.
-          # Simplified: We check all add-ons changed in PR?
-          # Or just use the script to print valid output.
-          python3 .scripts/check_compliance.py "$(python3 .scripts/intake.py | grep "Detected" | awk '{print $5}')" > compliance.log 2>&1 || true
+          # Run compliance on detected new add-ons
+          NEW_ADDONS=$(python3 .scripts/intake.py --list)
+          if [ -n "$NEW_ADDONS" ]; then
+            # Iterate over new addons and run compliance
+            for addon in $NEW_ADDONS; do
+              echo "Checking $addon..."
+              python3 .scripts/check_compliance.py "$addon" >> compliance.log 2>&1 || true
+            done
+          fi
 
           CONTENT=$(cat compliance.log)
           echo "CONTENT<<EOF" >> "$GITHUB_ENV"
@@ -115,6 +118,6 @@ jobs:
 
       - name: 💾 Commit Changes
         if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
-        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee723069e5d244c2ce9549a3 # v5.1.0
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
           commit_message: "chore: register new add-on [skip ci]"

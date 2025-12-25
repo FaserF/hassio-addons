@@ -12,7 +12,8 @@ RUN mkdir /run/apache2 \
 COPY run.sh /
 
 # Health check - verify run.sh process is running
-HEALTHCHECK CMD pgrep -f run.sh >/dev/null || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD pgrep -x run.sh >/dev/null || exit 1
 
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]

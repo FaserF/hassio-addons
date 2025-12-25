@@ -2,9 +2,9 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ARG BUILD_DATE="1970-01-01T00:00:00Z"
+ARG BUILD_DATE="unknown"
 
-# hadolint ignore=DL3018,DL3013,DL3042,DL3047
+# hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
     pip install python-lzo ubi_reader && \
@@ -18,8 +18,9 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
-# Health check - verify main process is running
-HEALTHCHECK CMD pgrep -f run.sh >/dev/null || exit 1
+# Health check - verify run.sh is the main process
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD pgrep -x run.sh >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="xqrepack"

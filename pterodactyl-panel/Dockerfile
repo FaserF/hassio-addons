@@ -6,39 +6,37 @@ FROM ${BUILD_FROM} as base
 # Install system requirements
 # IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
 # Added Alpine 3.19 repositories to maintain PHP 8.1 compatibility
-# NOTE: We mix Alpine 3.22 (base) and 3.19 (php81) repositories.
-# To prevent conflicts, we explicitly pin ALL package versions.
+# NOTE: We mix Alpine 3.21 (base) and 3.19 (php81) repositories.
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
     --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main \
     --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/community \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.22/main \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.22/community \
-    redis=8.0.4-r0 \
-    curl=8.14.1-r2 \
-    gettext=0.24.1-r0 \
-    mariadb-client=11.4.8-r0 \
-    nginx=1.28.0-r3 \
-    php81=8.1.32-r0 \
-    php81-bcmath=8.1.32-r0 \
-    php81-common=8.1.32-r0 \
-    php81-dom=8.1.32-r0 \
-    php81-fileinfo=8.1.32-r0 \
-    php81-fpm=8.1.32-r0 \
-    php81-gd=8.1.32-r0 \
-    php81-pecl-memcached=3.2.0-r3 \
-    php81-mbstring=8.1.32-r0 \
-    php81-openssl=8.1.32-r0 \
-    php81-pdo=8.1.32-r0 \
-    php81-phar=8.1.32-r0 \
-    php81-sodium=8.1.32-r0 \
-    php81-pdo_mysql=8.1.32-r0 \
-    php81-session=8.1.32-r0 \
-    php81-simplexml=8.1.32-r0 \
-    php81-tokenizer=8.1.32-r0 \
-    php81-ctype=8.1.32-r0 \
-    php81-zip=8.1.32-r0 \
-    php81-xmlwriter=8.1.32-r0 \
-    tini=0.19.0-r3 \
+    redis \
+    curl \
+    gettext \
+    mariadb-client \
+    nginx \
+    php81 \
+    php81-bcmath \
+    php81-common \
+    php81-dom \
+    php81-fileinfo \
+    php81-fpm \
+    php81-gd \
+    php81-pecl-memcached \
+    php81-mbstring \
+    php81-openssl \
+    php81-pdo \
+    php81-phar \
+    php81-sodium \
+    php81-pdo_mysql \
+    php81-session \
+    php81-simplexml \
+    php81-tokenizer \
+    php81-ctype \
+    php81-zip \
+    php81-xmlwriter \
+    tini \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
     && ln -s /usr/bin/php81 /usr/bin/php
 

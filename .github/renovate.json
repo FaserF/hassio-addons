@@ -110,7 +110,7 @@
       "matchStrings": [
         "(?<depName>php)(?<currentValue>\\d+)(?:-[a-z0-9-]+)*"
       ],
-      "datasourceTemplate": "alpine",
+      "datasourceTemplate": "repology",
       "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
     },
     {
@@ -184,7 +184,7 @@
     {
       "groupName": "PHP Packages",
       "matchDatasources": [
-        "alpine"
+        "repology"
       ],
       "matchPackageNames": [
         "/php\\d+/"
