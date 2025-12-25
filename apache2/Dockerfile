@@ -70,7 +70,10 @@ HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
 
 COPY index.html /
 COPY run.sh /
-RUN chmod a+x /run.sh
+RUN chmod a+x /run.sh \
+    && apk add --no-cache dos2unix \
+    && dos2unix /run.sh
+
 CMD [ "/run.sh" ]
 
 # Labels

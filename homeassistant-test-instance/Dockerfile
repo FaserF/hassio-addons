@@ -1,4 +1,5 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2025.12.4
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 EXPOSE 8123

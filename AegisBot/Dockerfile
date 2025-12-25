@@ -24,7 +24,8 @@ RUN \
     libffi-dev \
     curl \
     postgresql-client \
-    xz && \
+    xz \
+    python3 && \
     # Install Node.js 22.12.0 (LTS) to meet package requirements (>=20.19.0 || >=22.12.0 || >=24.0.0)
     # Detect architecture and install appropriate Node.js binary
     ARCH=$(uname -m) && \

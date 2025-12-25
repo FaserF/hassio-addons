@@ -785,4 +785,10 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
 Write-Header "EXECUTION SUMMARY"
 $Results | Format-Table -AutoSize
 
+# Check if any FAIL or WARN results exist (depending on strictness)
+# For now, we only fail on 'FAIL' status
+if ($Results | Where-Object { $_.Status -eq 'FAIL' }) {
+    $GlobalFailed = $true
+}
+
 if ($GlobalFailed) { exit 1 } else { exit 0 }

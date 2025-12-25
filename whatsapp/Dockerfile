@@ -22,7 +22,6 @@ COPY . .
 
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
 # hadolint ignore=DL3018
-RUN \
     RUN \
     apk add --no-cache dos2unix~=7.5 && \
     if [ -d "rootfs" ]; then \

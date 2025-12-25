@@ -4,7 +4,7 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018
-RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
+RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash procps
 
 # Copy data for add-on
 COPY run.sh /

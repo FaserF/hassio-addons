@@ -6,7 +6,7 @@ ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache \
-    wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils && \
+    wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3-dev && \
     pip install python-lzo ubi_reader && \
     mkdir /xqrepack && \
     wget -q -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \

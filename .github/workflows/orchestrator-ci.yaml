@@ -644,7 +644,7 @@ jobs:
             report += "\n";
 
             // Build comprehensive AI-optimized summary
-            report += `<\u0064etails open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
+            report += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
             report += `> **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n`;
 
             // Group jobs by failure type for better AI processing

@@ -24,6 +24,7 @@ RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && make
 
 # Runtime stage
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 

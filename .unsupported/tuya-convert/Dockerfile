@@ -10,7 +10,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Pin sslpsk to specific commit for reproducible builds
 # hadolint ignore=DL3018,DL3013,DL3042
-RUN apk add --no-cache bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 && \
+RUN apk add --no-cache python3 bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 && \
     pip install --no-cache-dir --upgrade paho-mqtt==1.6.1 tornado==6.4.2 git+https://github.com/drbild/sslpsk.git@e944d1cdd2e04c4bca4fd5f8b1022c92fd7db534 pycryptodomex==3.20.0 && \
     git clone --depth 1 https://github.com/ct-Open-Source/tuya-convert /usr/local/tuya-convert && \
     sed -i 's|ls -m|ls|' /usr/local/tuya-convert/scripts/setup_checks.sh

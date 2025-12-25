@@ -46,9 +46,8 @@ FROM base as build
 
 WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
-RUN apk add --no-cache \
-    yarn=1.22.22-r1 \
-    git=2.49.1-r0 \
+    yarn \
+    git \
     && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \

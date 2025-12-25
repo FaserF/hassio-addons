@@ -14,6 +14,12 @@ default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
+echo "DEBUG: Starting run.sh"
+echo "DEBUG: ssl=$ssl"
+echo "DEBUG: certfile=$certfile"
+echo "DEBUG: Checking /ssl"
+ls -l /ssl || echo "DEBUG: /ssl not accessible"
+
 if [ "$phpini" = "get_file" ]; then
 	cp "$phppath" /share/apache2addon_php.ini
 	echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"

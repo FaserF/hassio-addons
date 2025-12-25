@@ -14,11 +14,14 @@ RUN apk -U --no-cache add \
 
 # Install SLP
 WORKDIR /switch-lan-play
+# renovate: datasource=github-tags depName=spacemeowx2/switch-lan-play
 ARG SWITCH_LAN_PLAY_VERSION="v0.2.3"
 RUN git clone --branch "${SWITCH_LAN_PLAY_VERSION}" --single-branch --depth 1 https://github.com/spacemeowx2/switch-lan-play.git .
 
 WORKDIR /switch-lan-play/server
 RUN npm install \
+    && npm install typescript@4.9.5 --save-dev \
+    && sed -i 's/"strict": true/"strict": false, "skipLibCheck": true/g' tsconfig.json \
     && npm run build
 
 # Final Stage

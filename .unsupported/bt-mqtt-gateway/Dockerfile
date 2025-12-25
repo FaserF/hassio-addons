@@ -10,7 +10,7 @@ ARG BT_MQTT_VERSION=827e251
 ARG BUILD_DATE
 # hadolint ignore=DL3018
 RUN mkdir /application && \
-    apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated && \
+    apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
     apk add --no-cache --update wget unzip && \
     wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \

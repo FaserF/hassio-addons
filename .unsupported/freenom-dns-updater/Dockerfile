@@ -10,7 +10,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 #COPY . /opt/freenom_dns_updater/
 #WORKDIR /opt/freenom_dns_updater
 # hadolint ignore=DL3018,DL3013,DL3042
-RUN apk add --no-cache zlib openssl-dev binutils && \
+RUN apk add --no-cache zlib openssl-dev binutils python3 py3-pip && \
     pip install --no-cache-dir freenom-dns-updater==1.2.9
 #RUN rm -rf /opt/freenom_dns_updater
 

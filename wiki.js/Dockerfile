@@ -3,6 +3,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # renovate: datasource=docker depName=ghcr.io/requarks/wiki
 FROM ghcr.io/requarks/wiki:2@sha256:3d20706341a35b3f50d339d26e791b3e87d7cbc848bc002cf47a542ddf3dcd43 AS wiki_release
 
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
@@ -15,7 +16,8 @@ COPY --from=wiki_release /wiki .
 RUN rm -f /wiki/config.sample.yml
 
 COPY run.sh /
-RUN chmod a+x /run.sh
+RUN chmod a+x /run.sh \
+    && dos2unix /run.sh
 # Healthcheck (use wget since it's available in base image)
 HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
     CMD wget --spider -q http://127.0.0.1:3000/ || exit 1

@@ -7,11 +7,11 @@ ARG BUILD_DATE
 # hadolint ignore=DL3018
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
-        apache2~=2.4 \
-        libxml2-dev~=2.13 \
-        apache2-utils~=2.4 \
-        apache2-mod-wsgi~=4.9 \
-        apache2-ssl~=2.4 \
+        apache2 \
+        libxml2-dev \
+        apache2-utils \
+        apache2-mod-wsgi \
+        apache2-ssl \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
