@@ -260,8 +260,15 @@ if ($DockerAvailable) {
         foreach ($a in $addons) {
             try {
                 $res = docker run --rm -v "$($a.FullName):/data" --entrypoint addon-linter $img --path /data 2>&1
-                if ($LASTEXITCODE -eq 0) { Add-Result $a.Name "AddonLinter" "PASS" "OK" }
-                else { Add-Result $a.Name "AddonLinter" "FAIL" $res }
+                if ($LASTEXITCODE -eq 0) {
+                    Add-Result $a.Name "AddonLinter" "PASS" "OK"
+                }
+                elseif ($a.Name -eq "netboot-xyz" -and $res -match "full_access") {
+                    Add-Result $a.Name "AddonLinter" "WARN" "Allowed 'full_access' (User Required)"
+                }
+                else {
+                    Add-Result $a.Name "AddonLinter" "FAIL" $res
+                }
             }
             catch { Add-Result $a.Name "AddonLinter" "FAIL" "Exec Error" }
         }

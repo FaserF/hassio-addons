@@ -3,7 +3,7 @@ arch:
   - amd64
 description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
   a domain's dns record, auto renew domains and more. (Unsupported)
-ingress: false
+
 init: false
 map:
   - share:rw

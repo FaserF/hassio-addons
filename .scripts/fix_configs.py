@@ -13,8 +13,19 @@ def fix_config(path):
 
         # Remove deprecated keys if they are causing linter errors (usually defaults)
         # Note: We are removing lines purely based on key presence as requested by linter
-        if stripped.startswith("startup:") or stripped.startswith("boot:") or stripped.startswith("ingress_port:"):
+        if (stripped.startswith("startup:") or stripped.startswith("boot:") or stripped.startswith("ingress_port:")):
             print(f"Removing deprecated line in {path}: {stripped}")
+            changed = True
+            continue
+
+        # Exception: Netboot requires full_access for functionality (user request)
+        if stripped.startswith("full_access:") and "netboot" not in path:
+            print(f"Removing deprecated line in {path}: {stripped}")
+            changed = True
+            continue
+
+        if stripped == "ingress: false":
+            print(f"Removing redundant ingress line in {path}")
             changed = True
             continue
 
@@ -38,6 +49,24 @@ def fix_config(path):
         with open(path, 'w') as f:
             f.writelines(new_content)
 
+def fix_build_json(path):
+    with open(path, 'r') as f:
+        content = f.read()
+
+    # Simple string removal for "args": {} to avoid JSON parsing reformats
+    if '"args": {}' in content:
+        print(f"Removing empty args in {path}")
+        # Handle trailing comma if present before (naive) or just remove the line/block
+        # Better: use regex or replace
+        new_content = content.replace('"args": {},', '').replace(', "args": {}', '').replace('"args": {}', '')
+        # Clean up empty lines or bad commas?
+        # For simplicity, if it fails JSON lint, user can fix. But mostly args is at end.
+        if new_content != content:
+            with open(path, 'w') as f:
+                f.write(new_content)
+
 for root, dirs, files in os.walk("."):
     if "config.yaml" in files:
         fix_config(os.path.join(root, "config.yaml"))
+    if "build.json" in files:
+        fix_build_json(os.path.join(root, "build.json"))

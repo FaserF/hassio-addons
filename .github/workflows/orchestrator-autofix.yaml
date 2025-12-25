@@ -87,9 +87,9 @@ jobs:
       # 3. Prettier (JSON, YAML, MD)
       - name: 💅 Run Prettier
         continue-on-error: true
-        uses: creyD/prettier_action@v4.6
-        with:
-          prettier_options: --write "**/*.{json,js,md,yaml}"
+        run: |
+          npm install -g prettier
+          prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
       # 4. Standardize (READMEs, Beta Labels, Configs)
       - name: 📄 Standardize READMEs

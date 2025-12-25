@@ -4,6 +4,7 @@ on:
   pull_request_target:
     branches:
       - master
+    types: [opened, synchronize, reopened]
 
 jobs:
   label:
@@ -12,11 +13,30 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
       - name: 🏷️ Dynamic Labeler
         uses: actions/github-script@v7
         with:
           script: |
-            // Get list of changed files
+            const fs = require('fs');
+            const path = require('path');
+
+            // 1. Identify Total Add-ons in Repo (Supported only? Or all?)
+            // "All Add-ons" usually implies the active, supported suite.
+            // We scan root folders for 'config.yaml'.
+            const rootEntries = fs.readdirSync('.', { withFileTypes: true });
+            const totalAddons = rootEntries.filter(dirent => {
+                if (!dirent.isDirectory()) return false;
+                if (dirent.name.startsWith('.')) return false; // Ignore .github, .scripts, .unsupported (unless user wants them)
+                // Check for config.yaml
+                return fs.existsSync(path.join(dirent.name, 'config.yaml'));
+            }).map(d => d.name);
+
+            console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
+
+            // 2. Identify Changed Files
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -24,27 +44,56 @@ jobs:
             });
 
             const labelsToAdd = new Set();
+            const changedAddons = new Set();
 
-            // Iterate changed files
+            // 3. Map Changes to Add-ons
             for (const file of files) {
               const parts = file.filename.split('/');
               if (parts.length > 1) {
                 const rootDir = parts[0];
 
-                // Skip hidden folders or scripts (optional, adjust as needed)
-                if (rootDir.startsWith('.') || rootDir === '.scripts') continue;
+                // Track Supported Addons
+                if (totalAddons.includes(rootDir)) {
+                    changedAddons.add(rootDir);
+                    labelsToAdd.add(`addon/${rootDir}`);
+                }
 
-                // Check if it looks like an addon (has config.yaml)
-                // Optimization: Memoize this check if needed, but for small PRs it's fine.
-                // We use git tree API or just assume folder structure convention.
-                // For robustness, let's treat any top-level folder that isn't hidden as a potential addon.
-                // Or better: try to match against known addons dynamically.
-
-                // Let's assume any top-level folder *except* specific system ones is an addon if it contains files.
-                labelsToAdd.add(`addon/${rootDir}`);
+                // Track Unsupported Addons (Label individually, don't count towards "All Supported")
+                if (rootDir === '.unsupported' && parts.length > 2) {
+                    const unsupAddon = parts[1];
+                     // Verify it's an addon? Assuming yes if in .unsupported structure
+                    labelsToAdd.add(`addon/${unsupAddon}`);
+                }
               }
             }
 
+            console.log(`Changed Supported Add-ons: ${changedAddons.size}`);
+
+            // 4. Determine Label Strategy
+            // Priority:
+            // 1. "All Add-ons" (If Changed == Total)
+            // 2. "Many Add-ons" (If Changed > 8)
+            // 3. Individual Labels (If Changed <= 8)
+
+            if (totalAddons.length > 0 && changedAddons.size === totalAddons.length) {
+                console.log("Triggering 'All Add-ons' Label");
+                // Clear specific supported addons, apply generic
+                for (const addon of changedAddons) {
+                    labelsToAdd.delete(`addon/${addon}`);
+                }
+                labelsToAdd.add("All Add-ons");
+            }
+            else if (changedAddons.size > 8) {
+                console.log(`Triggering 'Many Add-ons' Label (Changed: ${changedAddons.size})`);
+                // Clear specific supported addons, apply generic
+                for (const addon of changedAddons) {
+                    labelsToAdd.delete(`addon/${addon}`);
+                }
+                labelsToAdd.add("Many Add-ons");
+            }
+            // Else: Leave individual labels (<= 8)
+
+            // 5. Apply Labels
             if (labelsToAdd.size > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
