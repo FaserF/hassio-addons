@@ -258,7 +258,7 @@ $GlobalFailed = $false
 
 # --- CHECK DOCKER AVAILABILITY ---
 # Check Docker upfront if any Docker-related tests are selected
-$DockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "WorkflowChecks")
+$DockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "WorkflowChecks", "DockerRun")
 $DockerAvailable = $false
 if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
     $DockerAvailable = Check-Docker
@@ -660,12 +660,12 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
 }
 
 # --- 11. DOCKER TEST (Dynamic Build) ---
-if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
+if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
     if ($DockerAvailable) {
         Write-Header "11. Docker Test (Dynamic Build)"
         foreach ($a in $addons) {
             if (-not (Should-RunTest $a.Name "DockerBuild")) { continue }
-            $imgName = "local/test-$($a.Name.ToLower())"
+            $imgName = "test-$($a.Name.ToLower())"
             $date = Get-Date -Format "yyyy-MM-dd"
 
             # Get the correct base image for this addon
@@ -724,8 +724,9 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 docker network rm $networkName 2>&1 | Out-Null
                 docker network create $networkName 2>$null | Out-Null
 
-                # Prepare config
-                $tempDir = Join-Path $env:TEMP "ha-addon-test-$($a.Name)"
+                # Prepare config (Use local repo path to ensure Docker File Sharing works)
+                $tempDir = Join-Path $OutputDir "tmp_test_runs"
+                $tempDir = Join-Path $tempDir "ha-addon-test-$($a.Name)"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
                 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
@@ -791,12 +792,28 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                             Add-Result $a.Name "DockerRun" "INFO" "Skipped (Requires MySQL Service)"
                             continue
                         }
-                        $optObj | ConvertTo-Json -Depth 10 | Out-File -FilePath $optionsPath -Encoding UTF8
+
+                        if ($a.Name -eq "bash_script_executer") {
+                             $sp = $optObj.script_path
+                             if ($sp -and $sp -ne "false" -and $sp.StartsWith("/share/")) {
+                                  $rel = $sp.Substring(7)
+                                  $target = Join-Path $shareDir $rel
+                                  $parent = Split-Path $target
+                                  if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+                                  "echo 'Mock Script Executed'" | Set-Content -Path $target -Encoding UTF8
+                             }
+                        }
+
+
+                        $jsonOutput = $optObj | ConvertTo-Json -Depth 10
+                        $jsonOutput | Set-Content -Path $optionsPath -Encoding UTF8
+                        Write-Host "    > Generated options.json: $jsonOutput" -ForegroundColor DarkGray
                     } catch {
-                        '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
+                        Write-Warning "Failed to generate options.json, using fallback."
+                        '{"log_level":"info"}' | Set-Content -Path $optionsPath -Encoding UTF8
                     }
                 } else {
-                    '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
+                    '{"log_level":"info"}' | Set-Content -Path $optionsPath -Encoding UTF8
                 }
 
                 # --- VALIDATE MOCK SUPPORT ---
@@ -838,7 +855,11 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 $mockArgs += "-w", "/data"
                 $mockArgs += "python:3.11-alpine"
                 $mockArgs += "python", "/mock.py", "/data/options.json", "80", "0.0.0.0"
-                & docker @mockArgs 2>&1 | Out-Null
+                $mockOut = & docker @mockArgs 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                     Write-Host "    ! ERROR: Failed to start mock supervisor: $mockOut" -ForegroundColor Red
+                }
+
                 Start-Sleep -Seconds 3
 
                 # Run add-on with HA-like env on the same network
@@ -856,9 +877,12 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 $runArgs += "-e", "SUPERVISOR_TOKEN=mock_token"
                 $runArgs += "-e", "HASSIO_TOKEN=mock_token"
                 $runArgs += "-e", "SUPERVISOR_API=http://supervisor"
-                $runArgs += $imgName
+                $runArgs += "local/$imgName"
 
                 $runInfo = & docker @runArgs 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                     Write-Host "    ! ERROR: Failed to start addon container: $runInfo" -ForegroundColor Red
+                }
 
                 # Extended wait for healthcheck/startup
                 Write-Host "    > Waiting 20s for startup verification..." -ForegroundColor Gray
@@ -881,7 +905,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                          # If it's a resolution issue, it means the mock wasn't reachable or the container exited too early
                          Add-Result $a.Name "DockerRun" "INFO" "Skipped (Supervisor Connection Issues). Logs:`n$($logs | Select-Object -Last 10)"
                      } else {
-                         Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 15)"
+                         Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Docker output: $runInfo. Logs summary:`n$($logs | Select-Object -Last 15)"
                      }
                 }
                 elseif ($healthStatus -eq "unhealthy") {

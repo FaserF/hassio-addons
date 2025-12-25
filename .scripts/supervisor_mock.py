@@ -7,6 +7,9 @@ Provides minimal endpoints that bashio uses during add-on startup:
 - GET /core/info -> returns minimal core info
 - GET /addons/self/info -> returns minimal addon info
 - GET /supervisor/ping -> returns ok
+- GET /os/info -> returns minimal os info
+- GET /host/info -> returns minimal host info
+- GET /resolution/info -> returns minimal resolution info
 
 Usage:
   python supervisor_mock.py [options_json_path] [port] [bind_address]
@@ -18,21 +21,13 @@ Arguments:
 
 Environment Variables:
   MOCK_BIND_ADDRESS  Override bind address (default: 127.0.0.1)
-
-Examples:
-  # Local testing (safe default - localhost only)
-  python supervisor_mock.py /data/options.json 80
-
-  # Containerized/multi-host testing (bind to all interfaces)
-  python supervisor_mock.py /data/options.json 80 0.0.0.0
-  # or via environment:
-  MOCK_BIND_ADDRESS=0.0.0.0 python supervisor_mock.py /data/options.json 80
 """
 
 import ipaddress
 import json
 import os
 import sys
+import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import ClassVar
 
@@ -41,8 +36,11 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
     options_data: ClassVar[dict] = {}
 
     def log_message(self, format, *args):
-        # Suppress logging for cleaner output
-        pass
+        # Allow some logging to help debug
+        sys.stderr.write("%s - - [%s] %s\n" %
+                         (self.address_string(),
+                          self.log_date_time_string(),
+                          format % args))
 
     def _send_json(self, data, status=200):
         response = json.dumps({"data": data, "result": "ok"})
@@ -52,18 +50,21 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         self.wfile.write(response.encode())
 
     def do_GET(self):
-        if self.path == "/addons/self/options":
+        # Log request details for debugging
+        print(f"DEBUG: GET request to {self.path} from {self.client_address}", file=sys.stderr)
+
+        if self.path == "/addons/self/options" or re.match(r"^/addons/[^/]+/options$", self.path):
             self._send_json(self.options_data)
         elif self.path == "/core/info":
             self._send_json(
                 {
-                    "version": "2025.12.0",
+                    "version": "2025.12.3",
                     "arch": "amd64",
-                    "machine": "generic-x86-64",
+                    "machine": "qemux86-64",
                     "state": "running",
                 }
             )
-        elif self.path == "/addons/self/info":
+        elif self.path == "/addons/self/info" or re.match(r"^/addons/[^/]+/info$", self.path):
             self._send_json(
                 {
                     "name": "Test Add-on",
@@ -83,6 +84,42 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "channel": "stable",
                     "arch": "amd64",
                     "logging": "info",
+                    "supported": True,
+                    "healthy": True,
+                }
+            )
+        elif self.path == "/os/info":
+            self._send_json(
+                {
+                    "version": "16.3",
+                    "upgrade": "16.3",
+                    "board": "ova",
+                    "boot": "B",
+                    "update_available": False,
+                }
+            )
+        elif self.path == "/host/info":
+            self._send_json(
+                {
+                    "chassis": "vm",
+                    "operating_system": "Home Assistant OS 16.3 (mocked)",
+                    "kernel": "6.12.51-haos",
+                    "hostname": "homeassistant",
+                    "features": ["reboot", "shutdown", "services", "network", "hostname"],
+                    "disk_free": 1000,
+                    "disk_total": 2000,
+                    "disk_used": 1000,
+                    "deployment": "production",
+                }
+            )
+        elif self.path == "/resolution/info":
+            self._send_json(
+                {
+                    "unsupported": [],
+                    "unhealthy": [],
+                    "suggestions": [],
+                    "issues": [],
+                    "checks": [],
                 }
             )
         elif self.path == "/discovery":
@@ -90,12 +127,22 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/addons":
             self._send_json({"addons": []})
         elif self.path == "/info":
-            self._send_json({"supervisor": "2025.12.3", "homeassistant": "2025.12.0"})
+            self._send_json({"supervisor": "2025.12.3", "homeassistant": "2025.12.3", "hassos": "16.3"})
+        elif self.path == "/store":
+            self._send_json({"repositories": [], "addons": []})
+        elif self.path == "/dns/info":
+             self._send_json({"host": "172.30.32.3", "version": "2025.12.3", "servers": [], "locals": []})
+        elif self.path == "/audio/info":
+             self._send_json({"host": "172.30.32.1", "version": "2025.12.3", "input": "default", "output": "default"})
+        elif self.path == "/multicast/info":
+             self._send_json({"host": "172.30.32.1", "version": "2025.12.3"})
         else:
             # Return empty success for unknown endpoints
             self._send_json({})
 
     def do_POST(self):
+        # Log POST request details
+        print(f"DEBUG: POST request to {self.path} from {self.client_address}", file=sys.stderr)
         # Handle POST requests (some bashio calls use POST)
         self._send_json({})
 
@@ -115,7 +162,8 @@ def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     """Start the mock Supervisor API server."""
     # Load options with specific exception handling
     try:
-        with open(options_path, "r") as f:
+        # Use utf-8 so we don't crash on BOM if present, and to be robust
+        with open(options_path, "r", encoding="utf-8-sig") as f:
             SupervisorMockHandler.options_data = json.load(f)
         print(f"Loaded options from {options_path}")
     except FileNotFoundError:
@@ -127,7 +175,10 @@ def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     except json.JSONDecodeError as e:
         print(f"Warning: Invalid JSON in {options_path}: {e}")
         SupervisorMockHandler.options_data = {}
-    # Let other unexpected exceptions propagate
+    except Exception as e:
+        # Catch all so we don't crash loop
+        print(f"Warning: Failed to load options: {e}")
+        SupervisorMockHandler.options_data = {}
 
     # Validate bind address
     bind_address = validate_bind_address(bind_address)
@@ -135,7 +186,7 @@ def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     server = HTTPServer((bind_address, port), SupervisorMockHandler)
     print(f"Mock Supervisor API running on {bind_address}:{port}")
     print(
-        "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping"
+        "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping, /os/info, /host/info"
     )
     server.serve_forever()
 

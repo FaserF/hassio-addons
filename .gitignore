@@ -3,6 +3,7 @@ megalinter-reports/
 github_conf/
 all_build_yamls.txt
 tmp_tuya/
+/.scripts/tmp_test_runs
 
 # Python
 __pycache__/
