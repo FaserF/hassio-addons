@@ -505,15 +505,13 @@ jobs:
                 autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
             }
 
-            const body = `## ✅ Verification Successful
-
-Thank you for your contribution!
-
-- 🛡️ **Platinum Standards**: Compliant
-- 🟢 **CI Checks**: Passed
-- 🏗️ **Build**: Successful
-
-This PR meets high quality standards and is ready for review.${autoMergeNote}`;
+            let body = "## ✅ Verification Successful\n\n";
+            body += "Thank you for your contribution!\n\n";
+            body += "- 🛡️ **Platinum Standards**: Compliant\n";
+            body += "- 🟢 **CI Checks**: Passed\n";
+            body += "- 🏗️ **Build**: Successful\n\n";
+            body += "This PR meets high quality standards and is ready for review.";
+            body += autoMergeNote;
 
             // Check if we already posted a success comment to avoid spamming
             const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes("## ✅ Verification Successful"));
