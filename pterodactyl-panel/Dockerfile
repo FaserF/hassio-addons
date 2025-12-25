@@ -60,6 +60,7 @@ RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release
     && chown -R nginx:nginx . \
     && yarn install --production \
     && yarn add cross-env \
+    && export NODE_OPTIONS=--openssl-legacy-provider \
     && yarn run build:production \
     && rm -rf node_modules
 

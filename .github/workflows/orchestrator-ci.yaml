@@ -616,6 +616,31 @@ jobs:
             report += "```\n";
             report += "\n</details>";
 
+            const signature = "## ❌ General CI Failure Report";
+
+            // Find and minimize old failure reports
+            const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
             // Post General Report
             await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -667,10 +692,11 @@ jobs:
                issue_number: context.issue.number,
             });
 
-            // Signatures of comments to minimize (cleanup old failures)
+            // Signatures of comments to minimize (cleanup old failures and summaries)
             const signatures = [
                 "## 🛡️ Platinum Compliance Issues",
-                "## ❌ General CI Failure Report"
+                "## ❌ General CI Failure Report",
+                "## ✅ Verification Successful"
             ];
 
             const commentsToMinimize = comments.filter(c =>
