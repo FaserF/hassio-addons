@@ -5,10 +5,10 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
-RUN mkdir /run/apache2
-
+# Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
-RUN apk --no-cache add \
+RUN mkdir /run/apache2 \
+    && apk --no-cache add \
     apache2 \
     php84-apache2 \
     libxml2-dev \
@@ -21,10 +21,8 @@ RUN apk --no-cache add \
     php84-curl \
     php84-mbstring \
     php84-zip \
-    mariadb-client
-
-#Configure Logging
-RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+    mariadb-client \
+    && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on

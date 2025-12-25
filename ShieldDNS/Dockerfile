@@ -18,17 +18,14 @@ COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl
-
-# Create web root and required directories
-RUN mkdir -p /var/www/html /run/nginx
+RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl \
+    && mkdir -p /var/www/html /run/nginx /etc/services.d/shielddns
 
 # Copy Web Assets
 COPY www/index.html /var/www/html/index.html
 COPY www/logo.png /var/www/html/logo.png
 
 # Copy Addon run script to S6 services directory
-RUN mkdir -p /etc/services.d/shielddns
 COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
 

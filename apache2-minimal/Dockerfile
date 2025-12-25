@@ -5,13 +5,11 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
-RUN mkdir /run/apache2
-
+# Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
-RUN apk --no-cache add apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl
-
-#Configure Logging
-RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+RUN mkdir /run/apache2 \
+    && apk --no-cache add apache2 libxml2-dev apache2-utils apache2-mod-wsgi apache2-ssl \
+    && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on

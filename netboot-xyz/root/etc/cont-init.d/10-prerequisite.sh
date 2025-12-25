@@ -21,7 +21,7 @@ adduser "$nginx_uid" nginx
 echo "Generating nginx config..."
 if bashio::var.has_value "${nginx_port}"; then
 	echo "server {" >/defaults/default
-	echo "	listen "$nginx_port";" >>/defaults/default
+	echo "	listen ${nginx_port};" >>/defaults/default
 	echo "	location / {" >>/defaults/default
 	echo "		root /assets;" >>/defaults/default
 	echo "		autoindex on;" >>/defaults/default

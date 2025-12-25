@@ -20,10 +20,12 @@
   <strong>The Anti-Swipe Revolution</strong>
   <br>
 </div>
-<!-- markdownlint-enable MD033 MD013 -->
+<!-- markdownlint-enable MD033 -->
 
 **Solumati** is a self-hosted dating platform designed to bring meaning back to
-matchmaking. By hosting this add-on, you run your own private instance of the
+matchmaking.
+You help many people to use this add-on from the main repository.
+own private instance of the
 Solumati platform directly on your Home Assistant server, ensuring complete data
 privacy and control.
 

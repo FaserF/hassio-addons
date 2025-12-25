@@ -3,12 +3,12 @@ disable_existing_loggers: True
 
 formatters:
   default:
-    format: '%(asctime)s %(message)s'
-    datefmt: '%X'
+    format: "%(asctime)s %(message)s"
+    datefmt: "%X"
   minimal:
-    format: '%(message)s'
+    format: "%(message)s"
   debug:
-    format: '%(asctime)s %(levelname)s %(name)s %(filename)s:%(lineno)d:%(funcName)s - %(message)s'
+    format: "%(asctime)s %(levelname)s %(name)s %(filename)s:%(lineno)d:%(funcName)s - %(message)s"
 
 handlers:
   console:

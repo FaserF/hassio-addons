@@ -17,7 +17,6 @@
 
 xqrepack - Repack and rebuild MiWifi Images to gain SSH access and other stuff.
 
-
 These scripts allow you to modify the Xiaomi R3600 (AX3600) / rm1800 (AX1800)
 firmware image to make sure SSH and UART access is always enabled.
 
@@ -40,7 +39,6 @@ Please visit @geekman original repo of this program:
 <https://github.com/geekman/xqrepack>
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

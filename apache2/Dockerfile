@@ -4,10 +4,10 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE
 
 # Create directory for apache2 to store PID file
-RUN mkdir /run/apache2
-
-# hadolint ignore=DL3018
-RUN apk --no-cache add \
+# Create directory for apache2 to store PID file and install dependencies
+# hadolint ignore=DL3018,DL3003,DL3047
+RUN mkdir /run/apache2 \
+    && apk --no-cache add \
     apache2 \
     php84-apache2 \
     libxml2-dev \
@@ -50,13 +50,9 @@ RUN apk --no-cache add \
     mosquitto \
     mosquitto-dev \
     mariadb-client \
-    ffmpeg
-
-#musl-locales/php-locales
-# hadolint ignore=DL3018
-RUN apk add --no-cache cmake make musl-dev gcc gettext-dev libintl
-# hadolint ignore=DL3003,DL3047
-RUN wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
+    ffmpeg \
+    cmake make musl-dev gcc gettext-dev libintl \
+    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \

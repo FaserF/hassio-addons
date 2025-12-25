@@ -33,7 +33,6 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-
 ## ⚠️ Important Note
 
 > [!WARNING]
@@ -41,7 +40,6 @@
 > newer firmwares to prevent this OTA hack. Use at your own risk!
 > Please prefer using the standalone installation of `tuya-convert` on a
 > Raspberry Pi or Linux laptop for better success rates.
-
 
 **Tuya-Convert** allows you to free your Tuya-based smart devices (plugs,
 switches, bulbs) from the cloud by flashing them with custom firmware like

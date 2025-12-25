@@ -13,7 +13,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 
 # Install System Requirements
-# hadolint ignore=DL3018,DL3017,SC2012
+# hadolint ignore=DL3018,DL3017,SC2012,SC2086
 RUN \
     apk upgrade --no-cache && \
     apk add --no-cache \

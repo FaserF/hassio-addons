@@ -71,4 +71,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md"
+# Healthcheck
+HEALTHCHECK \
+    CMD curl --fail http://127.0.0.1:8066/ || exit 1
+
 LABEL org.opencontainers.image.created="${BUILD_DATE}"

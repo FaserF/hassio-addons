@@ -1,9 +1,10 @@
+import argparse
+import json
 import os
 import re
-import yaml
-import json
-import argparse
 import shutil
+
+import yaml
 
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"

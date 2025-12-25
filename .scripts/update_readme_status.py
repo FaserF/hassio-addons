@@ -22,10 +22,11 @@ try:
 except ImportError:
     print("⚠️ PyYAML not installed. Install with: pip install pyyaml")
     import sys
+
     sys.exit(1)
 
 # Directories to exclude from scanning
-EXCLUDED_DIRS = {'__pycache__', 'node_modules', '.git', '.github', '.scripts'}
+EXCLUDED_DIRS = {"__pycache__", "node_modules", ".git", ".github", ".scripts"}
 
 
 def is_prerelease_version(version_str):
@@ -39,12 +40,12 @@ def is_prerelease_version(version_str):
     version = str(version_str).lower().strip()
 
     # Check for pre-release identifiers
-    prerelease_pattern = r'(a\d*|alpha|b\d*|beta|rc\d*|dev|preview|snapshot)'
+    prerelease_pattern = r"(a\d*|alpha|b\d*|beta|rc\d*|dev|preview|snapshot)"
     if re.search(prerelease_pattern, version):
         return True
 
     # Try to parse semantic version and check if < 1.0.0
-    semver_match = re.match(r'^(\d+)\.(\d+)\.?(\d+)?', version)
+    semver_match = re.match(r"^(\d+)\.(\d+)\.?(\d+)?", version)
     if semver_match:
         major = int(semver_match.group(1))
         if major < 1:
@@ -91,7 +92,7 @@ def get_addon_status(addon_path, is_unsupported=False):
         "path": os.path.basename(addon_path),
         "version": version,
         "status": status,
-        "status_name": status_name
+        "status_name": status_name,
     }
 
 
@@ -142,7 +143,7 @@ def update_readme():
 
     # Find and update the table
     # Pattern matches lines like: | **[Name](path)** | Description | ✅ |
-    table_pattern = r'\| \*\*\[([^\]]+)\]\(([^)]+)\)\*\* \| ([^|]+) \| (✅|⚠️|❌) \|'
+    table_pattern = r"\| \*\*\[([^\]]+)\]\(([^)]+)\)\*\* \| ([^|]+) \| (✅|⚠️|❌) \|"
 
     matches_found = 0
     updates_made = 0
@@ -159,12 +160,14 @@ def update_readme():
         if path in addons:
             new_status = addons[path]["status"]
             if new_status != current_status:
-                print(f"📝 Updating {name}: {current_status} → {new_status} ({addons[path]['status_name']})")
+                print(
+                    f"📝 Updating {name}: {current_status} → {new_status} ({addons[path]['status_name']})"
+                )
                 updates_made += 1
         else:
             new_status = current_status
 
-        return f'| **[{name}]({path})** | {desc} | {new_status} |'
+        return f"| **[{name}]({path})** | {desc} | {new_status} |"
 
     new_content = re.sub(table_pattern, replace_status, content)
 

@@ -19,6 +19,5 @@ schema:
   backup_path: str
   firmware: str
 slug: tuya-convert
-startup: services
 url: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
 version: 0.1.8

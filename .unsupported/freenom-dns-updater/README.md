@@ -17,14 +17,12 @@
 
 Freenom DNS Updater for Homeassistant OS
 
-
 Freenom is a (free) Registrar provider. This is a docker image based on
 @maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
 
 The full feature list can be found there.
 
 ## Installation
-
 
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.

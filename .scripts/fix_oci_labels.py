@@ -1,7 +1,9 @@
+import datetime
 import os
 import sys
+
 import yaml
-import datetime
+
 
 def generate_labels(addon_path):
     config_path = os.path.join(addon_path, "config.yaml")
@@ -40,13 +42,12 @@ def generate_labels(addon_path):
 
     new_content = content
 
-
     # Basic check if labels dictate adding
     # We construct the LABEL block
     label_block = []
     for key, value in labels.items():
         if key not in content:
-            label_block.append(f'LABEL {key}={value}')
+            label_block.append(f"LABEL {key}={value}")
 
     if label_block:
         print(f"➕ Adding missing OCI labels to {addon_path}/Dockerfile")
@@ -70,6 +71,7 @@ def generate_labels(addon_path):
 
     return False
 
+
 def main():
     # Helper to find all add-ons
     # Root dirs + .unsupported dirs
@@ -85,7 +87,9 @@ def main():
     if os.path.exists(".unsupported"):
         for item in os.listdir(".unsupported"):
             path = os.path.join(".unsupported", item)
-            if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
+            if os.path.isdir(path) and os.path.exists(
+                os.path.join(path, "config.yaml")
+            ):
                 addons.append(path)
 
     changed = False
@@ -97,6 +101,7 @@ def main():
         print("✅ OCI Labels generated.")
     else:
         print("✨ No OCI Labels needed generation.")
+
 
 if __name__ == "__main__":
     main()

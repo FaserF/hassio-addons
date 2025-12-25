@@ -3,15 +3,13 @@ version: "1.0.13"
 slug: "shieldfile"
 description: "Secure, Web-based File Manager (SFTP over HTTPS)"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
-startup: services
 arch:
   - aarch64
   - amd64
-boot: auto
 init: false
 host_network: true
 map:
-  - config:rw
+  - homeassistant_config:rw
   - ssl:rw
   - share:rw
   - media:rw

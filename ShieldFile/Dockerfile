@@ -6,13 +6,11 @@ ARG BUILD_DATE
 # Install necessary tools
 # 'curl' and 'bash' for installing filebrowser
 # 'dos2unix' to fix potential Windows line ending issues in scripts
-# hadolint ignore=DL3018
-RUN apk add --no-cache curl bash dos2unix
-
 # Setup Filebrowser
 # We grab the binary from the official install script
-# hadolint ignore=DL4006
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash \
+# hadolint ignore=DL3018,DL4006
+RUN apk add --no-cache curl bash dos2unix \
+    && curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash \
     && mkdir -p /data/database
 
 # Copy Addon run script to S6 services directory

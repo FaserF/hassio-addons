@@ -34,6 +34,10 @@ RUN chmod a+x /run.sh
 
 CMD [ "/run.sh" ]
 
+# Healthcheck
+HEALTHCHECK \
+    CMD pgrep lan-play || exit 1
+
 # Labels
 ARG BUILD_DATE
 LABEL org.opencontainers.image.title="Switch LAN Play Client"

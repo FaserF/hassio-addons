@@ -3,14 +3,15 @@ FROM ${BUILD_FROM}
 
 
 # Install necessary packages and prepare environment
-# hadolint ignore=DL3018,DL3013,DL3042
+# hadolint ignore=DL3018,DL3013,DL3042,DL3006
 ARG BT_MQTT_VERSION=master
 ARG BUILD_DATE
+# hadolint ignore=DL3018
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
     apk add --no-cache --update wget unzip && \
-    wget "https://github.com/zewelor/bt-mqtt-gateway/archive/refs/heads/${BT_MQTT_VERSION}.zip" -O "${BT_MQTT_VERSION}.zip" && \
+    wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/refs/heads/${BT_MQTT_VERSION}.zip" -O "${BT_MQTT_VERSION}.zip" && \
     unzip -d /tmp/ "${BT_MQTT_VERSION}.zip" && rm -r "${BT_MQTT_VERSION}.zip" && cp -r "/tmp/bt-mqtt-gateway-${BT_MQTT_VERSION}/"* /application && \
     chmod +x /application/gateway.py
 

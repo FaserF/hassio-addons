@@ -24,7 +24,6 @@ it is recommended to use Bluetooth Proxy.
 
 Bluetooth-MQTT-Gateway for Homeassistant OS
 
-
 A simple Python script which provides a Bluetooth to MQTT gateway, easily
 extensible via custom workers.
 See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more

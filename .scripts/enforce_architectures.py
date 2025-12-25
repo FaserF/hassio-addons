@@ -1,9 +1,11 @@
-import os
-import yaml
 import json
+import os
 from pathlib import Path
 
+import yaml
+
 UNSUPPORTED_ARCHES = ["armhf", "armv7", "i386"]
+
 
 def enforce_config(file_path):
     with open(file_path, "r") as f:
@@ -24,6 +26,7 @@ def enforce_config(file_path):
             yaml.dump(content, f, sort_keys=False, default_flow_style=False)
         return True
     return False
+
 
 def enforce_build(file_path):
     if file_path.suffix == ".yaml":
@@ -63,6 +66,7 @@ def enforce_build(file_path):
         return True
     return False
 
+
 def main():
     modified_addons = set()
     root_dir = Path(".")
@@ -94,6 +98,7 @@ def main():
             print(f"- {addon}")
     else:
         print("::set-output name=modified::false")
+
 
 if __name__ == "__main__":
     main()

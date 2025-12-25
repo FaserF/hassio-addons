@@ -1,7 +1,6 @@
 arch:
   - aarch64
   - amd64
-boot: auto
 description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
   a domain's dns record, auto renew domains and more. (Unsupported)
 ingress: false
@@ -17,6 +16,5 @@ schema:
   config_file: str
   update_time_in_seconds: int
 slug: freenom-dns-updater
-startup: application
 url: https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater
 version: 1.7.1

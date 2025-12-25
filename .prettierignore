@@ -1,7 +1,9 @@
-
+.git
+.github
+.unsupported
+**/.unsupported/**
 node_modules
 dist
 build
-.git
 __pycache__
 *.pyc

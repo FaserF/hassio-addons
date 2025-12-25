@@ -6,6 +6,7 @@ ignore: |
   **/build/
   .*
   !.github/
+  node_modules/
 
 rules:
   line-length: disable

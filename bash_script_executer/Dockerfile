@@ -4,10 +4,10 @@ ARG BUILD_DATE
 FROM ${BUILD_FROM}
 
 # Create directory for apache2 to store PID file
-RUN mkdir /run/apache2
-
+# Create directory for apache2 to store PID file
 # hadolint ignore=DL3018
-RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
+RUN mkdir /run/apache2 \
+    && apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
 
 # Copy data for add-on
 COPY run.sh /
@@ -25,6 +25,3 @@ LABEL \
     org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer" \
     org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/bash_script_executer/README.md" \
     org.opencontainers.image.created="${BUILD_DATE}"
-
-
-

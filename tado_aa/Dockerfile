@@ -41,6 +41,10 @@ RUN source ./venv/bin/activate && \
 COPY run.sh /
 RUN chmod a+x /run.sh \
     && chmod a+x /tado_aa.py
+# Healthcheck
+HEALTHCHECK \
+    CMD pgrep -f "python3.*tado_aa.py" || exit 1
+
 CMD [ "/run.sh" ]
 
 # Labels

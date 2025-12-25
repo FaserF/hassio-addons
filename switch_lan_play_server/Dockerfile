@@ -18,14 +18,19 @@ RUN apk -U --no-cache add \
 
 #Install SLP
 WORKDIR /switch-lan-play
-RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
-    && cd server \
-    && npm install \
+RUN git clone https://github.com/spacemeowx2/switch-lan-play.git .
+
+WORKDIR /switch-lan-play/server
+RUN npm install \
     && npm run build
 
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
+
+# Healthcheck
+HEALTHCHECK \
+    CMD nc -z -u 127.0.0.1 11451 || exit 1
 
 CMD [ "/run.sh" ]
 

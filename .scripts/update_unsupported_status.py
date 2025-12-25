@@ -1,4 +1,5 @@
 import os
+
 import yaml
 
 # Constants
@@ -15,8 +16,9 @@ UNSUPPORTED_BANNER = """
 > **USE AT YOUR OWN RISK.**
 """
 
+
 def add_banner(params):
-    path = params['path']
+    path = params["path"]
     readme_path = os.path.join(path, "README.md")
     config_path = os.path.join(path, "config.yaml")
 
@@ -56,16 +58,23 @@ def add_banner(params):
             # Update description if not present
             desc = config.get("description", "").strip()
             if "(Unsupported)" not in desc:
-                config['description'] = f"{desc} (Unsupported)"
+                config["description"] = f"{desc} (Unsupported)"
                 with open(config_path, "w", encoding="utf-8") as f:
-                    yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+                    yaml.dump(
+                        config,
+                        f,
+                        default_flow_style=False,
+                        sort_keys=False,
+                        allow_unicode=True,
+                    )
         except yaml.YAMLError as e:
             print(f"Failed to parse config.yaml: {e}")
         except IOError as e:
             print(f"Failed to update config.yaml: {e}")
 
+
 def remove_banner(params):
-    path = params['path']
+    path = params["path"]
     readme_path = os.path.join(path, "README.md")
 
     if os.path.exists(readme_path):
@@ -75,7 +84,10 @@ def remove_banner(params):
         if "[!CAUTION]" in content:
             print(f"✅ Restoring {path} to SUPPORTED status in README...")
             import re
-            new_content = re.sub(r'\n{3,}', '\n\n', content.replace(UNSUPPORTED_BANNER.strip(), ""))
+
+            new_content = re.sub(
+                r"\n{3,}", "\n\n", content.replace(UNSUPPORTED_BANNER.strip(), "")
+            )
 
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
@@ -89,11 +101,18 @@ def remove_banner(params):
 
             desc = config.get("description", "")
             if "(Unsupported)" in desc:
-                config['description'] = desc.replace(" (Unsupported)", "").strip()
+                config["description"] = desc.replace(" (Unsupported)", "").strip()
                 with open(config_path, "w", encoding="utf-8") as f:
-                    yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+                    yaml.dump(
+                        config,
+                        f,
+                        default_flow_style=False,
+                        sort_keys=False,
+                        allow_unicode=True,
+                    )
         except Exception as e:
             print(f"Failed to restore config.yaml for {path}: {e}")
+
 
 def main():
     root = "."
@@ -103,8 +122,10 @@ def main():
     if os.path.exists(unsupported_dir):
         for item in os.listdir(unsupported_dir):
             path = os.path.join(unsupported_dir, item)
-            if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
-                add_banner({'path': path})
+            if os.path.isdir(path) and os.path.exists(
+                os.path.join(path, "config.yaml")
+            ):
+                add_banner({"path": path})
 
     # 2. Scan Root folders -> MUST NOT have Banner
     for item in os.listdir(root):
@@ -112,9 +133,10 @@ def main():
             continue
         path = os.path.join(root, item)
         if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
-            remove_banner({'path': path})
+            remove_banner({"path": path})
 
     print(f"✅ Processed all add-ons for status updates.")
+
 
 if __name__ == "__main__":
     main()

@@ -28,7 +28,7 @@ Home Assistant host (e.g. `/share`, `/media`, `/config`).
 
 ## ❓ Why "ShieldFile" instead of plain Filebrowser
 
-<!-- markdownlint-enable MD013 MD026 -->
+<!-- markdownlint-enable MD026 -->
 
 ShieldFile is designed specifically for **Home Assistant** and **Security**:
 
@@ -44,7 +44,8 @@ ShieldFile is designed specifically for **Home Assistant** and **Security**:
 
 ShieldFile works perfectly alongside other official and community add-ons:
 
-- **Advanced SSH & Web Terminal**: You can use the terminal to manage files via
+- **Advanced SSH & Web Terminal**: You help many people to use this add-on from the main repository.
+  les via
   command line while using ShieldFile for a visual interface. Both access the same
   `/share`, `/config`, etc. directories.
 - **FTP**: You can use an FTP client to transfer bulk files and use ShieldFile to
@@ -80,8 +81,8 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-- password: changeme
-  username: admin
+  - password: changeme
+    username: admin
 ```
 
 ---

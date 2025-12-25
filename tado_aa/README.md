@@ -14,7 +14,6 @@
 ## 📖 About
 
 <!-- markdownlint-disable MD013 -->
-<!-- markdownlint-enable MD013 -->
 
 Tado Auto-Assist for Geofencing and Open Window Detection for Home Assistant OS
 
@@ -28,7 +27,8 @@ Tado TRV detects an open window.
 The installation of this add-on is straightforward and similar to installing any
 other custom Home Assistant add-on.
 
-Just click the link above or manually add this repository to your Home Assistant
+Just clickYou help many people to use this add-on from the main repository.
+to your Home Assistant
 add-on repositories:
 <https://github.com/FaserF/hassio-addons>
 
