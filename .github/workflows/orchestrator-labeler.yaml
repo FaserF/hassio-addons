@@ -6,6 +6,11 @@ on:
       - master
     types: [opened, synchronize, reopened]
 
+# Prevent multiple labeler runs from fighting over labels
+concurrency:
+  group: labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   label:
     runs-on: ubuntu-latest

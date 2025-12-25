@@ -533,11 +533,22 @@ jobs:
               run_id: context.runId,
             });
 
+            // Get jobs that failed directly
             const failedJobs = jobs.jobs.filter(j => j.conclusion === 'failure');
-            if (failedJobs.length === 0) return;
+
+            // ALSO get jobs that succeeded but have failed steps (continue-on-error)
+            const jobsWithHiddenFailures = jobs.jobs.filter(j =>
+                j.conclusion === 'success' &&
+                j.steps &&
+                j.steps.some(s => s.conclusion === 'failure')
+            );
+
+            // Combine both for reporting
+            const allProblematicJobs = [...failedJobs, ...jobsWithHiddenFailures];
+            if (allProblematicJobs.length === 0) return;
 
             // Filter out Compliance-only failures (handled by Platinum Report)
-            const nonComplianceJobs = failedJobs.filter(job => {
+            const nonComplianceJobs = allProblematicJobs.filter(job => {
                 const failedStep = job.steps.find(s => s.conclusion === 'failure');
                 const stepName = failedStep ? failedStep.name : "";
                 return !stepName.includes("Compliance");
