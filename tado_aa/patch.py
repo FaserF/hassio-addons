@@ -58,15 +58,7 @@ mapping = {
     "saveLog = False": 'saveLog = os.getenv("TADO_SAVE_LOG", "False").lower() == "true"',
     # Original line is at 8 spaces inside login() try block
     # Define init_tado at same level, then call it
-    "        t = Tado(token_file_path=TOKEN_FILE)": (
-        "        def init_tado():\n"
-        '            username = os.getenv("TADO_USERNAME")\n'
-        '            password = os.getenv("TADO_PASSWORD")\n'
-        "            if username and password:\n"
-        "                return Tado(username, password, token_file_path=TOKEN_FILE)\n"
-        "            return Tado(token_file_path=TOKEN_FILE)\n"
-        "        t = init_tado()"
-    ),
+    "        t = Tado(token_file_path=TOKEN_FILE)": '        t = Tado(os.getenv("TADO_USERNAME"), os.getenv("TADO_PASSWORD"), token_file_path=TOKEN_FILE) if os.getenv("TADO_USERNAME") and os.getenv("TADO_PASSWORD") else Tado(token_file_path=TOKEN_FILE)',
 }
 
 if __name__ == "__main__":

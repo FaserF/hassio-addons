@@ -190,6 +190,8 @@ jobs:
                 issue_number: context.issue.number,
             });
 
+            console.log("Current Labels:", currentLabels.map(l => l.name));
+
             // Filter out existing "Managed" labels (stale ones)
             // Managed = starts with "addon/" OR "All Add-ons" OR "Many Add-ons" OR "version-bump"
             const preservedLabels = currentLabels.map(l => l.name).filter(name => {

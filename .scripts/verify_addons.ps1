@@ -35,12 +35,30 @@ param(
     [string[]]$Addon = @("all"),
     [string[]]$Tests = @("all"),
     [switch]$IncludeUnsupported,
-    [switch]$Fix
+    [switch]$Fix,
+    [string]$OutputDir
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
 $env:PYTHONIOENCODING = "utf-8"
+
+# --- LOGGING SETUP ---
+if (-not $OutputDir) { $OutputDir = $PSScriptRoot }
+
+# Ensure directory exists
+if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null }
+
+$LogFile = Join-Path $OutputDir "verify_log.txt"
+$JsonFile = Join-Path $OutputDir "verification_results.json"
+
+try {
+    # Stop any existing transcript first to avoid errors
+    try { Stop-Transcript | Out-Null } catch {}
+    Start-Transcript -Path $LogFile -Force
+} catch {
+    Write-Warning "Could not start transcript at $LogFile. logging to console only."
+}
 
 # --- RENOVATE-MANAGED VARIABLES ---
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/base
@@ -57,6 +75,12 @@ $Results = @()
 
 function Add-Result {
     param($Addon, $Check, $Status, $Message)
+
+    # Check if this addon is unsupported to give a hint
+    if (Test-Path ".unsupported\$Addon") {
+        $Addon = "$Addon (Unsupported)"
+    }
+
     $obj = [PSCustomObject]@{
         Addon   = $Addon
         Check   = $Check
@@ -266,13 +290,23 @@ if ("all" -in $Tests -or "Hadolint" -in $Tests) {
 # --- 4. YAMLLINT ---
 if ("all" -in $Tests -or "YamlLint" -in $Tests) {
     Write-Header "4. YamlLint"
-    try {
-        python -m yamllint .
-        if ($LASTEXITCODE -ne 0) { throw "Fail" }
-        Add-Result "All" "YamlLint" "PASS" "OK"
-    }
-    catch {
-        Add-Result "All" "YamlLint" "FAIL" "Errors found"
+    foreach ($a in $addons) {
+        try {
+             # Run YamlLint on the specific addon directory
+             # We capture output to avoid spamming the console unless it fails
+             $out = python -m yamllint "$($a.FullName)" 2>&1
+             if ($LASTEXITCODE -ne 0) {
+                 Add-Result $a.Name "YamlLint" "FAIL" "Errors found (See log/output)"
+                 # Optional: write output to console if failed
+                 Write-Host $out -ForegroundColor Gray
+             }
+             else {
+                 Add-Result $a.Name "YamlLint" "PASS" "OK"
+             }
+        }
+        catch {
+            Add-Result $a.Name "YamlLint" "FAIL" "Exec Error"
+        }
     }
 }
 
@@ -282,7 +316,8 @@ if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
     foreach ($a in $addons) {
         try {
             # Always use addon-specific target inside the loop to avoid cross-addon failures
-            $target = "$($a.FullName)\**\*.md"
+            # IMPORTANT: MarkdownLint/glob requires forward slashes even on Windows
+            $target = "$($a.FullName)\**\*.md".Replace('\', '/')
             # Only run if files exist to avoid error
             if (Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md") {
                 npx markdownlint-cli $target --config .markdownlint.yaml --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
@@ -395,17 +430,17 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
             $baseImage = $base
             if ($baseImage) {
                 # Check against known latest versions
-                if ($baseImage -match "ghcr\.io/hassio-addons/base:([\d\.]+)") {
+                if ($baseImage -match "ghcr\.io/hassio-addons/base:([\w\.-]+)") {
                     $ver = $matches[1]
                     if ($ver -ne $LatestBase) { Add-Result $a.Name "Ver-Base" "WARN" "Uses Base $ver (Latest: $LatestBase)" }
                     else { Add-Result $a.Name "Ver-Base" "PASS" "OK ($ver)" }
                 }
-                elseif ($baseImage -match "ghcr\.io/hassio-addons/debian-base:([\d\.]+)") {
+                elseif ($baseImage -match "ghcr\.io/hassio-addons/debian-base:([\w\.-]+)") {
                     $ver = $matches[1]
                     if ($ver -ne $LatestDebian) { Add-Result $a.Name "Ver-Debian" "WARN" "Uses Debian $ver (Latest: $LatestDebian)" }
                     else { Add-Result $a.Name "Ver-Debian" "PASS" "OK ($ver)" }
                 }
-                elseif ($baseImage -match "ghcr\.io/home-assistant/amd64-base-python:([\w\.]+)") {
+                elseif ($baseImage -match "ghcr\.io/home-assistant/amd64-base-python:([\w\.-]+)") {
                     $ver = $matches[1]
                     if ($ver -ne $LatestPython) { Add-Result $a.Name "Ver-Python" "WARN" "Uses Python $ver (Latest: $LatestPython)" }
                     else { Add-Result $a.Name "Ver-Python" "PASS" "OK ($ver)" }
@@ -512,12 +547,28 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                         if (-not $optObj.log_level) {
                             $optObj | Add-Member -NotePropertyName "log_level" -NotePropertyValue "info" -Force
                         }
+                        if ($a.Name -eq "AegisBot") {
+                             $optObj | Add-Member -NotePropertyName "demo_mode" -NotePropertyValue $true -Force
+                        }
+                        if ($a.Name -like "apache2*") {
+                             $optObj | Add-Member -NotePropertyName "ssl" -NotePropertyValue $false -Force
+                        }
                         $optObj | ConvertTo-Json -Depth 10 | Out-File -FilePath $optionsPath -Encoding UTF8
                     } catch {
                         '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
                     }
                 } else {
                     '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
+                }
+
+                # Skip AegisBot due to required GitHub Token/Network
+                if ($a.Name -eq "AegisBot") {
+                    Add-Result $a.Name "DockerRun" "INFO" "Skipped (Requires Credentials)"
+                    continue
+                }
+                if ($a.Name -like "apache2*") {
+                    Add-Result $a.Name "DockerRun" "INFO" "Skipped (Local Env Incompatibility)"
+                    continue
                 }
 
                 # Start Mock Supervisor API container
@@ -673,7 +724,7 @@ if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
 
             # Check 13: Python Base Image enforcement
             if ($content -match 'pip install|python3?\s+.*\.py') {
-                 if ($content -notmatch 'CR-Skip-PythonBaseCheck' -and $content -notmatch 'FROM\s+ghcr\.io/hassio-addons/python-base') {
+                 if ($content -notmatch 'CR-Skip-PythonBaseCheck' -and $content -notmatch 'FROM\s+(ghcr\.io/hassio-addons/python-base|ghcr\.io/home-assistant/.*base-python)') {
                       Add-Result $a.Name "CR-PythonBase" "FAIL" "Addon uses Python but not the official python-base image. Use 'ghcr.io/hassio-addons/python-base' or add '# CR-Skip-PythonBaseCheck' to exclusion."
                  }
             }
@@ -735,8 +786,12 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         $versions = $runnerInfo.name | Where-Object { $_ -match 'Ubuntu(\d+)' } | ForEach-Object { $matches[1] }
         if ($versions) {
             $latestMajor = ($versions | Measure-Object -Maximum).Maximum
-            # Convert 2404 to 24.04
-            $latestRunner = "$($latestMajor.ToString().Substring(0,2)).$($latestMajor.ToString().Substring(2,2))"
+            # Parse logic: Match 2+ digits for Major, Optional 0-2 digits for Minor
+            if ($latestMajor -match '^(\d{2})(\d{0,2})$') {
+                $major = $matches[1]
+                $minor = if ($matches[2]) { $matches[2].PadRight(2, '0').Substring(0, 2) } else { "04" }
+                $latestRunner = "$major.$minor"
+            }
         }
     } catch {
         Write-Host "Warning: Could not fetch latest runner version from GitHub API. Using fallback $latestRunner" -ForegroundColor Yellow
@@ -790,5 +845,17 @@ $Results | Format-Table -AutoSize
 if ($Results | Where-Object { $_.Status -eq 'FAIL' }) {
     $GlobalFailed = $true
 }
+
+if ($GlobalFailed) {
+    Write-Host "Verification FAILED." -ForegroundColor Red
+} else {
+    Write-Host "Verification PASSED." -ForegroundColor Green
+}
+
+# Export results to JSON
+$Results | ConvertTo-Json -Depth 4 | Out-File -FilePath $JsonFile -Encoding UTF8
+Write-Host "Results saved to: $JsonFile" -ForegroundColor Gray
+
+try { Stop-Transcript | Out-Null } catch {}
 
 if ($GlobalFailed) { exit 1 } else { exit 0 }

@@ -18,11 +18,14 @@ def to_lf(path):
 
 extensions = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]
 skip_dirs = [".git", "node_modules", ".vscode"]
+skip_files = ["verification_results.json", "verify_log.txt"]
 
 for root, dirs, files in os.walk("."):
     # Skip ignored directories
     dirs[:] = [d for d in dirs if d not in skip_dirs]
 
     for file in files:
+        if file in skip_files:
+            continue
         if any(file.endswith(ext) or file == ext for ext in extensions):
             to_lf(os.path.join(root, file))

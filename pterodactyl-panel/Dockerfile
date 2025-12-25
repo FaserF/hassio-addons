@@ -46,6 +46,8 @@ FROM base as build
 
 WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
     yarn \
     git \
     && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \

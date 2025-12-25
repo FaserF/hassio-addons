@@ -14,11 +14,6 @@ default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
-echo "DEBUG: Starting run.sh"
-echo "DEBUG: ssl=$ssl"
-echo "DEBUG: certfile=$certfile"
-echo "DEBUG: Checking /ssl"
-ls -l /ssl || echo "DEBUG: /ssl not accessible"
 
 if [ "$phpini" = "get_file" ]; then
 	cp "$phppath" /share/apache2addon_php.ini
@@ -53,12 +48,12 @@ if [ -d "$DocumentRoot" ]; then
 	if [ -n "$username" ] && [ -n "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
 		adduser -S "$username" -G www-data
 		echo "$username:$password" | chpasswd
-		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
+		find "$webrootdocker" -type f -exec chown "$username":www-data {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find "$webrootdocker" -type d -exec chown www-data:www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown www-data:www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown www-data:www-data {} \;
+		find "$webrootdocker" -type f -exec chown www-data:www-data {} \;
 	fi
 fi
 

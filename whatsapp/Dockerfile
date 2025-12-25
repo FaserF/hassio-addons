@@ -10,9 +10,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 RUN \
     apk add --no-cache \
-        nodejs~=20 \
-        npm~=10 \
-        git~=2.47
+        nodejs \
+        npm \
+        git
 
 # 2. Set workdir
 WORKDIR /opt/whatsapp

@@ -49,3 +49,4 @@ node_modules/
 *.bak
 *.exe
 check_addons.py
+.scripts/verification_results.json
