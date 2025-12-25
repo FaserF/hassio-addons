@@ -132,8 +132,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Version Bump
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        if: github.event_name == 'workflow_dispatch'
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: release ${{ github.event.inputs.addon || github.event.client_payload.addon }} version bump [skip ci]"
           file_pattern: "${{ github.event.inputs.addon || github.event.client_payload.addon }}/*"

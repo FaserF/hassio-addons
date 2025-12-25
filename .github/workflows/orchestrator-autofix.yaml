@@ -64,7 +64,7 @@ jobs:
 
       # 1. Shell Scripts (Format)
       - name: 🐚 Setup shfmt
-        uses: mfinelli/setup-shfmt@v3
+        uses: mfinelli/setup-shfmt@v4
         with:
           shfmt-version: "3.7.0"
 
@@ -104,8 +104,7 @@ jobs:
 
       # Commit back
       - name: 💾 Commit Changes
-        continue-on-error: true
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
           branch: ${{ github.head_ref || github.ref_name }}

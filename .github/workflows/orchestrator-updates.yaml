@@ -137,7 +137,7 @@ jobs:
 
       - name: Commit and Push
         if: steps.update.outputs.updated == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Bumps Home Assistant Test Instance to ${{ steps.update.outputs.version }}"
           file_pattern: homeassistant-test-instance/*

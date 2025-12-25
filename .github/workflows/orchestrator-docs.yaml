@@ -29,6 +29,6 @@ jobs:
           python3 .scripts/check_docs.py --fix
 
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-update documentation standards"
