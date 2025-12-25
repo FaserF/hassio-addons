@@ -98,10 +98,11 @@ def validate_bind_address(address: str) -> str:
     """Validate and return a bind address, defaulting to 127.0.0.1 if invalid."""
     try:
         ipaddress.ip_address(address)
-        return address
     except ValueError:
         print(f"Warning: Invalid bind address '{address}', using 127.0.0.1")
         return "127.0.0.1"
+    else:
+        return address
 
 
 def run_server(options_path="options.json", port=80, bind_address="127.0.0.1"):
@@ -135,7 +136,20 @@ def run_server(options_path="options.json", port=80, bind_address="127.0.0.1"):
 
 if __name__ == "__main__":
     options_path = sys.argv[1] if len(sys.argv) > 1 else "options.json"
-    port = int(sys.argv[2]) if len(sys.argv) > 2 else 80
+
+    # Validate port argument
+    if len(sys.argv) > 2:
+        try:
+            port = int(sys.argv[2])
+            if not (1 <= port <= 65535):
+                print(f"Warning: Port {port} out of range, using 80")
+                port = 80
+        except ValueError:
+            print(f"Warning: Invalid port '{sys.argv[2]}', using 80")
+            port = 80
+    else:
+        port = 80
+
     # Bind address: CLI arg > env var > safe default
     bind_address = (
         sys.argv[3]

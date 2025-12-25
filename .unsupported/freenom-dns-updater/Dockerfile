@@ -20,8 +20,7 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
-# Health check - verify main process is running
-HEALTHCHECK CMD pgrep -f run.sh >/dev/null || exit 1
+# Health check - verify main process is running (use exact path)\nHEALTHCHECK CMD pgrep -f "^/bin/bash /run.sh" >/dev/null || pgrep -x "bashio" >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="Freenom-dns-updater"

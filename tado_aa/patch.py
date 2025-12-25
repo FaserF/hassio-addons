@@ -1,4 +1,6 @@
+import ast
 import os
+import shutil
 
 FILE_PATH = "/tado_aa.py"
 
@@ -9,9 +11,13 @@ def replace_in_file(filepath, mapping):
 
     replaced = []
     failed = []
+    warnings = []
 
     for original, replacement in mapping.items():
-        if original not in content:
+        # Count occurrences before replacing
+        occurrences = content.count(original)
+
+        if occurrences == 0:
             failed.append(original)
             print(f"WARNING: Could not find original string: '{original}'")
             # Fail if critical parts are missing
@@ -19,16 +25,27 @@ def replace_in_file(filepath, mapping):
                 print(f"CRITICAL: Failed to patch '{original}'")
                 exit(1)
         else:
+            if occurrences > 1:
+                warnings.append((original, occurrences))
+                print(
+                    f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', "
+                    "replacing only first match"
+                )
+            # Replace only the first occurrence to avoid unintended changes
+            content = content.replace(original, replacement, 1)
             replaced.append(original)
-            content = content.replace(original, replacement)
 
-    with open(filepath, "w") as f:
-        f.write(content)
+    return content, replaced, failed, warnings
 
-    print(f"Successfully patched {filepath}")
-    print(f"Replaced: {len(replaced)}/{len(mapping)} patterns")
-    if failed:
-        print(f"Failed patterns: {len(failed)}")
+
+def validate_python_syntax(content: str) -> bool:
+    """Validate that content is syntactically valid Python."""
+    try:
+        ast.parse(content)
+        return True
+    except SyntaxError as e:
+        print(f"ERROR: Patched code has syntax error: {e}")
+        return False
 
 
 mapping = {
@@ -56,4 +73,32 @@ if __name__ == "__main__":
     if not os.path.exists(FILE_PATH):
         print(f"Error: {FILE_PATH} not found.")
         exit(1)
-    replace_in_file(FILE_PATH, mapping)
+
+    # Create backup before patching
+    backup_path = FILE_PATH + ".backup"
+    shutil.copy2(FILE_PATH, backup_path)
+    print(f"Created backup: {backup_path}")
+
+    # Apply patches
+    patched_content, replaced, failed, warnings = replace_in_file(FILE_PATH, mapping)
+
+    # Validate syntax before writing
+    if not validate_python_syntax(patched_content):
+        print("ERROR: Patched code is invalid. Restoring backup...")
+        shutil.copy2(backup_path, FILE_PATH)
+        exit(1)
+
+    # Write patched content
+    with open(FILE_PATH, "w") as f:
+        f.write(patched_content)
+
+    print(f"Successfully patched {FILE_PATH}")
+    print(f"Replaced: {len(replaced)}/{len(mapping)} patterns")
+    if failed:
+        print(f"Failed patterns: {len(failed)}")
+    if warnings:
+        print(f"Patterns with multiple occurrences (only first replaced): {len(warnings)}")
+
+    # Cleanup backup on success
+    os.remove(backup_path)
+    print("Backup removed after successful patch.")

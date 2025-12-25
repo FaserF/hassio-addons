@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE=""
 
 # Install requirements for add-on
 # hadolint ignore=DL3018
@@ -27,10 +27,11 @@ RUN npm install \
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-# Healthcheck
-HEALTHCHECK \
-    CMD nc -z -u 127.0.0.1 11451 || exit 1
+# Healthcheck - UDP checks are unreliable, use process check instead
+HEALTHCHECK CMD pgrep -f "node.*server" >/dev/null || exit 1
 
+# Reset workdir so run.sh's relative path works
+WORKDIR /
 CMD [ "/run.sh" ]
 
 # Labels

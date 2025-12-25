@@ -7,3 +7,8 @@ dist
 build
 __pycache__
 *.pyc
+
+# Home Assistant Add-on specific files (have strict HA formatting requirements)
+**/config.yaml
+**/config.json
+**/build.yaml

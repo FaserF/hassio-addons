@@ -2,8 +2,6 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE
-WORKDIR /usr/src/app
-ARG NODE_VERSION="20.12.2"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -21,9 +19,8 @@ RUN wget https://github.com/Requarks/wiki/releases/download/${WIKIJS_VERSION}/wi
 
 COPY run.sh /
 RUN chmod a+x /run.sh
-# Healthcheck
-HEALTHCHECK \
-    CMD curl --fail http://127.0.0.1:3000/ || exit 1
+# Healthcheck (use wget since it's available in base image)
+HEALTHCHECK CMD wget --spider -q http://127.0.0.1:3000/ || exit 1
 
 CMD [ "/run.sh" ]
 
