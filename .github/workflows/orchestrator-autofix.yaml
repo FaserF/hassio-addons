@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
@@ -133,5 +134,3 @@ jobs:
           commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
           branch: ${{ github.head_ref || github.ref_name }}
           file_pattern: .
-          # Use PAT to trigger downstream workflows (CI)
-          github_token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}

@@ -11,14 +11,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3003
 RUN apk add --no-cache \
-    curl=8.11.1-r0 \
-    sed=4.9-r2
+    curl \
+    sed
 
 # Download and patch tado_aa.py to use environment variables
 # Latest commit from adrianslabu/tado_aa (archived repo)
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-# renovate: datasource=github-tags depName=adrianslabu/tado_aa
-ARG TADO_AA_SHA="d5bfc32389d34208e983422e11a3648eb11e25e9"
+# renovate: datasource=github-commits depName=adrianslabu/tado_aa
+ARG TADO_AA_SHA="d5bfc325462d6aa770707fb666882b1b4942bcc7"
 RUN curl -fsSL "https://raw.githubusercontent.com/adrianslabu/tado_aa/${TADO_AA_SHA}/tado_aa.py" -o /tado_aa.py && \
     sed -i "s|TOKEN_FILE = \"refresh_token\"|TOKEN_FILE = \"/data/refresh_token\"|g" /tado_aa.py && \
     sed -i "s|checkingInterval = 10.0|checkingInterval = float(os.getenv(\"TADO_CHECK_INTERVAL\", \"10.0\"))|g" /tado_aa.py && \

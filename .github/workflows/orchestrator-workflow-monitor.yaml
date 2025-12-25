@@ -254,8 +254,7 @@ jobs:
     name: 🔬 Analyze Workflow Failures
     if: |
       github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'failure' &&
-      github.event.workflow_run.pull_requests[0]
+      github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -266,7 +265,20 @@ jobs:
         with:
           script: |
             const workflowRun = context.payload.workflow_run;
-            const prNumber = workflowRun.pull_requests[0]?.number;
+            let prNumber = workflowRun.pull_requests[0]?.number;
+
+            if (!prNumber) {
+              console.log("No PR in payload, searching by SHA...");
+              const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: workflowRun.head_sha,
+              });
+              if (pullRequests.length > 0) {
+                prNumber = pullRequests[0].number;
+                console.log(`Found PR #${prNumber} associated with commit ${workflowRun.head_sha}`);
+              }
+            }
 
             if (!prNumber) {
               console.log("No PR associated with this workflow run.");
