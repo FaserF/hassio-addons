@@ -1,8 +1,10 @@
 import os
+
 import yaml
 
+
 def fix_config(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         content = f.readlines()
 
     new_content = []
@@ -13,7 +15,11 @@ def fix_config(path):
 
         # Remove deprecated keys if they are causing linter errors (usually defaults)
         # Note: We are removing lines purely based on key presence as requested by linter
-        if (stripped.startswith("startup:") or stripped.startswith("boot:") or stripped.startswith("ingress_port:")):
+        if (
+            stripped.startswith("startup:")
+            or stripped.startswith("boot:")
+            or stripped.startswith("ingress_port:")
+        ):
             print(f"Removing deprecated line in {path}: {stripped}")
             changed = True
             continue
@@ -46,11 +52,12 @@ def fix_config(path):
         new_content.append(line)
 
     if changed:
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             f.writelines(new_content)
 
+
 def fix_build_json(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         content = f.read()
 
     # Simple string removal for "args": {} to avoid JSON parsing reformats
@@ -58,12 +65,17 @@ def fix_build_json(path):
         print(f"Removing empty args in {path}")
         # Handle trailing comma if present before (naive) or just remove the line/block
         # Better: use regex or replace
-        new_content = content.replace('"args": {},', '').replace(', "args": {}', '').replace('"args": {}', '')
+        new_content = (
+            content.replace('"args": {},', "")
+            .replace(', "args": {}', "")
+            .replace('"args": {}', "")
+        )
         # Clean up empty lines or bad commas?
         # For simplicity, if it fails JSON lint, user can fix. But mostly args is at end.
         if new_content != content:
-            with open(path, 'w') as f:
+            with open(path, "w") as f:
                 f.write(new_content)
+
 
 for root, dirs, files in os.walk("."):
     if "config.yaml" in files:
