@@ -113,6 +113,7 @@ def main():
 
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         print(f"Error in enforce_architectures.py: {e}")
         # Ensure downstream steps don't fail due to missing output
@@ -122,6 +123,7 @@ def main():
                 f.write("modified=false\n")
         # Exit 0 so the workflow continues (as requested for robustness)
         exit(0)
+
 
 if __name__ == "__main__":
     main()

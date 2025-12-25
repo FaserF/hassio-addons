@@ -42,10 +42,10 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 log_level: info
-maxTemp: int(5, 25)
-minTemp: int(5, 25)
-password: null
-username: null
+maxTemp: 25
+minTemp: 5
+password: ''
+username: ''
 ```
 
 ---

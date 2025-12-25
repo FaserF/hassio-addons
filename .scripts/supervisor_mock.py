@@ -16,7 +16,7 @@ Defaults to reading options.json from current dir and port 80.
 
 import json
 import sys
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 class SupervisorMockHandler(BaseHTTPRequestHandler):
@@ -37,30 +37,36 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         if self.path == "/addons/self/options":
             self._send_json(self.options_data)
         elif self.path == "/core/info":
-            self._send_json({
-                "version": "2025.1.0",
-                "arch": "amd64",
-                "machine": "generic-x86-64",
-                "state": "running"
-            })
+            self._send_json(
+                {
+                    "version": "2025.1.0",
+                    "arch": "amd64",
+                    "machine": "generic-x86-64",
+                    "state": "running",
+                }
+            )
         elif self.path == "/addons/self/info":
-            self._send_json({
-                "name": "Test Add-on",
-                "slug": "local_test",
-                "state": "started",
-                "version": "1.0.0",
-                "ingress": False,
-                "options": self.options_data
-            })
+            self._send_json(
+                {
+                    "name": "Test Add-on",
+                    "slug": "local_test",
+                    "state": "started",
+                    "version": "1.0.0",
+                    "ingress": False,
+                    "options": self.options_data,
+                }
+            )
         elif self.path == "/supervisor/ping":
             self._send_json({})
         elif self.path == "/supervisor/info":
-            self._send_json({
-                "version": "2025.12.3",
-                "channel": "stable",
-                "arch": "amd64",
-                "logging": "info"
-            })
+            self._send_json(
+                {
+                    "version": "2025.12.3",
+                    "channel": "stable",
+                    "arch": "amd64",
+                    "logging": "info",
+                }
+            )
         else:
             # Return empty success for unknown endpoints
             self._send_json({})
@@ -73,16 +79,18 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
 def run_server(options_path="options.json", port=80):
     # Load options
     try:
-        with open(options_path, 'r') as f:
+        with open(options_path, "r") as f:
             SupervisorMockHandler.options_data = json.load(f)
         print(f"Loaded options from {options_path}")
     except Exception as e:
         print(f"Warning: Could not load {options_path}: {e}")
         SupervisorMockHandler.options_data = {}
 
-    server = HTTPServer(('0.0.0.0', port), SupervisorMockHandler)
+    server = HTTPServer(("0.0.0.0", port), SupervisorMockHandler)
     print(f"Mock Supervisor API running on port {port}")
-    print("Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping")
+    print(
+        "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping"
+    )
     server.serve_forever()
 
 
