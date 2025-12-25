@@ -171,29 +171,13 @@ jobs:
             echo "status=success" >> $GITHUB_OUTPUT
           fi
 
-      - name: 💬 Comment Compliance Report
-        if: github.event_name == 'pull_request' && steps.compliance.outputs.status == 'failure'
-        uses: actions/github-script@v7
+      - name: 📤 Upload Compliance Report
+        if: steps.compliance.outputs.status == 'failure'
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const fs = require('fs');
-            try {
-              const report = fs.readFileSync('compliance_report.txt', 'utf8');
-              // Only comment if there are actual items of interest (Errors or Warnings)
-              if (report.includes('❌') || report.includes('⚠️')) {
-                const addon = "${{ matrix.addon }}";
-                const body = `### 🛡️ Platinum Compliance Report for ${addon}\n\n\`\`\`\n${report}\n\`\`\`\n\n💎 **Platinum Standards:**\n- Translations (EN Required, DE Recommended)\n- Images (Icon & Logo)\n- Official Base Image (Base/Debian/Python)\n- S6 Overlay & Healthchecks`;
-
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: body
-                });
-              }
-            } catch (error) {
-              console.log("Error posting comment: " + error);
-            }
+          name: compliance-${{ matrix.addon }}
+          path: compliance_report.txt
+          retention-days: 1
 
       - name: 🛑 Fail if Compliance Error
         if: steps.compliance.outputs.status == 'failure'
@@ -229,7 +213,167 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
+  report:
+    name: 📊 CI & Compliance Report
+    needs: [filter, lint, build]
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      actions: read
+    steps:
+      - name: 📥 Download Compliance Artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: compliance-*
+          merge-multiple: false
+          path: reports
 
+      - name: 📝 Post Platinum Compliance Report
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            if (!fs.existsSync('reports')) {
+                console.log("No compliance reports found.");
+                return;
+            }
+
+            const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
+            let summary = "## 🛡️ Platinum Compliance Issues\n\nThe following add-ons failed compliance checks:\n\n";
+            let hasContent = false;
+            let totalIssues = 0;
+            let missingHealtchecks = 0;
+            let missingLogos = 0;
+
+            for (const dir of dirs) {
+                const reportPath = path.join('reports', dir, 'compliance_report.txt');
+                if (fs.existsSync(reportPath)) {
+                   const content = fs.readFileSync(reportPath, 'utf8');
+                   const addonName = dir.replace('compliance-', '');
+
+                   if (content.includes("HEALTHCHECK")) missingHealtchecks++;
+                   if (content.includes("logo.png")) missingLogos++;
+                   totalIssues++;
+
+                   summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${content}\n\`\`\`\n</details>\n\n`;
+                   hasContent = true;
+                }
+            }
+
+            // AI Summary Simulation
+            summary += `<details>\n<summary>🤖 <strong>AI Summary (Effective Fix Strategy)</strong></summary>\n\n`;
+            summary += `> [!TIP]\n> **Quick Fix Analysis**\n>\n`;
+            summary += `> Found **${totalIssues}** add-ons with issues.\n`;
+            if (missingHealtchecks > 0) summary += `> - **${missingHealtchecks}** broken Healthchecks: Add \`HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1\` to Dockerfile.\n`;
+            if (missingLogos > 0) summary += `> - **${missingLogos}** missing Logos: Add \`logo.png\` (500x500px) to the add-on root.\n`;
+            summary += `\n</details>\n\n`;
+
+            summary += "\n💎 **Platinum Standards:**\n- Translations (EN/DE)\n- Images (Icon/Logo)\n- Official Base Image\n- S6 Overlay & Healthchecks";
+
+            if (hasContent) {
+                // Find existing comments by this bot with signature
+                const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+
+                const signature = "## 🛡️ Platinum Compliance Issues";
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) {
+                        console.error(`Failed to minimize comment ${comment.id}:`, error);
+                    }
+                }
+
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: summary
+                });
+            }
+
+      - name: 📝 Post General CI Failure Report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+
+            const failedJobs = jobs.jobs.filter(j => j.conclusion === 'failure');
+            if (failedJobs.length === 0) return;
+
+            let report = "## ❌ General CI Failure Report\n\nSome checks failed. Here is the diagnostic summary:\n\n";
+
+            // Failed Jobs List
+            report += "| Job | Step | Message |\n|---|---|---|\n";
+            let affectedAddons = new Set();
+
+            for (const job of failedJobs) {
+                // Try to extract addon name from job name (e.g., "Test Build (addon-slug - amd64)")
+                const match = job.name.match(/\((.*?) -/);
+                if (match) affectedAddons.add(match[1]);
+
+                const failedStep = job.steps.find(s => s.conclusion === 'failure');
+                const stepName = failedStep ? failedStep.name : "Unknown Step";
+                report += `| ${job.name} | ${stepName} | See logs |\n`;
+            }
+            report += "\n";
+
+            // AI Summary
+            report += `<details>\n<summary>🤖 <strong>AI Summary (Diagnostic)</strong></summary>\n\n`;
+            report += `> [!NOTE]\n> **Root Cause Analysis**\n>\n`;
+            if (affectedAddons.size > 0) {
+                 report += `> Failures detected in: **${Array.from(affectedAddons).join(', ')}**.\n`;
+                 report += `> Potential causes: Docker build errors, linting violations, or script failures.\n`;
+            } else {
+                 report += `> Global workflow failure detected.\n`;
+            }
+            report += `\n</details>\n\n`;
+
+            // Local Test Command
+            report += `<details open>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
+            report += "Run this PowerShell command locally to reproduce and fix issues:\n\n";
+            report += "```powershell\n";
+
+            if (affectedAddons.size > 0) {
+                const target = Array.from(affectedAddons)[0]; // Pick first one as example
+                report += `.\\.scripts\\verify_addons.ps1 -Addon "${target}" -Fix\n`;
+                if (affectedAddons.size > 1) report += "# Repeat for other addons: " + Array.from(affectedAddons).slice(1).join(', ') + "\n";
+            } else {
+                report += ".\\.scripts\\verify_addons.ps1 -Addon all -Fix\n";
+            }
+            report += "```\n";
+            report += "\n</details>";
+
+            // Post General Report
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+            });
       - name: ℹ️ Get Add-on Info
         id: info
         uses: home-assistant/actions/helpers/info@master

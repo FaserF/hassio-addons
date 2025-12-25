@@ -21,6 +21,10 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
+
+# Health check
+HEALTHCHECK CMD curl --fail http://127.0.0.1:8080 || exit 1
+
 # Labels
 LABEL org.opencontainers.image.title="pterodactyl Wings Gameserver"
 LABEL org.opencontainers.image.description="Open Source Gameserver"

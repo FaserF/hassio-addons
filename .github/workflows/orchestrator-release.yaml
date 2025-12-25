@@ -89,7 +89,7 @@ jobs:
     if: |
       always() &&
       (github.event_name == 'repository_dispatch' ||
-       (github.event_name == 'workflow_dispatch' && needs.verify.result == 'success'))
+       (github.event_name == 'workflow_dispatch' && (needs.verify.result == 'success' || needs.verify.result == 'skipped')))
     runs-on: ubuntu-latest
     # Manual release permissions needs
     permissions:

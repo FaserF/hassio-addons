@@ -74,6 +74,10 @@ RUN chmod a+x /run.sh \
     && chmod 775 /var/www/html/*
 CMD [ "/run.sh" ]
 
+
+# Health check
+HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+
 # Labels
 LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver - BETA"
 LABEL org.opencontainers.image.description="Open-Source Gameserver - Currently not fully working"

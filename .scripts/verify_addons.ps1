@@ -323,7 +323,8 @@ Write-Header "10. Base Image & Version Check"
 foreach ($a in $addons) {
     $buildFile = Join-Path $a.FullName "build.yaml"
     if (Test-Path $buildFile) {
-        $baseImage = Get-BuildFrom $buildFile
+        $base = Get-BuildFrom $buildFile
+        $baseImage = $base
         if ($baseImage) {
             # Check against known latest versions
             if ($baseImage -match "ghcr\.io/hassio-addons/base:([\d\.]+)") {

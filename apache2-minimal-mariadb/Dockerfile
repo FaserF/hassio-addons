@@ -26,6 +26,10 @@ RUN mkdir /run/apache2 \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
+
+# Health check
+HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+
 COPY run.sh /
 COPY index.html /
 RUN chmod a+x /run.sh

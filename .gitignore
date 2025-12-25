@@ -35,6 +35,9 @@ compliance.log
 markdown_report.txt
 shellcheck_*.txt
 verification_report*.txt
+*log.txt
+compliance_report.txt
+report.json
 
 # Node.js
 node_modules/
@@ -44,9 +47,4 @@ package.json
 # Local Artifacts
 *.bak
 *.exe
-
-*.log
-compliance_report.txt
-report.json
-verify_log.txt
-latest_log.txt
+check_addons.py

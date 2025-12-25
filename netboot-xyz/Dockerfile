@@ -35,8 +35,10 @@ EXPOSE 3000
 
 # Ensure all run files from the services are executable
 ARG BUILD_DATE
-RUN chmod a+x /etc/services.d/*/run \
     && chmod a+x /etc/cont-init.d/*
+
+# Health check
+HEALTHCHECK CMD curl --fail http://127.0.0.1:3000 || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="Netboot.xyz"

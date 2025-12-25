@@ -37,18 +37,27 @@ jobs:
 
             console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
 
-            // 2. Identify Changed Files
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
+            // 2. Identify Changed Files (with Pagination)
+            const changedFiles = [];
+            let page = 1;
+            while (true) {
+              const { data: files } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                per_page: 100,
+                page: page
+              });
+              if (files.length === 0) break;
+              changedFiles.push(...files);
+              page++;
+            }
 
-            const labelsToAdd = new Set();
+            console.log(`Total changed files found: ${changedFiles.length}`);
             const changedAddons = new Set();
 
             // 3. Map Changes to Add-ons
-            for (const file of files) {
+            for (const file of changedFiles) {
               const parts = file.filename.split('/');
               if (parts.length > 1) {
                 const rootDir = parts[0];

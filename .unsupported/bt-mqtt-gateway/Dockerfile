@@ -13,8 +13,10 @@ RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
     apk add --no-cache --update wget unzip && \
-    wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/refs/heads/${BT_MQTT_VERSION}.zip" -O "${BT_MQTT_VERSION}.zip" && \
-    unzip -d /tmp/ "${BT_MQTT_VERSION}.zip" && rm -r "${BT_MQTT_VERSION}.zip" && cp -r "/tmp/bt-mqtt-gateway-${BT_MQTT_VERSION}/"* /application && \
+    wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
+    tar xzf "${BT_MQTT_VERSION}.tar.gz" -C /tmp/ && \
+    rm "${BT_MQTT_VERSION}.tar.gz" && \
+    mv /tmp/bt-mqtt-gateway-*/* /application && \
     chmod +x /application/gateway.py
 
 COPY logger.yaml /application/logger.yaml

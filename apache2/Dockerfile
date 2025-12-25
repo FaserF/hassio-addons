@@ -78,7 +78,11 @@ RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
-COPY run.sh /
+
+# Health check
+HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+
+COPY rootfs /
 COPY index.html /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]

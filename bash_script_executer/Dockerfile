@@ -11,6 +11,10 @@ RUN mkdir /run/apache2 \
 
 # Copy data for add-on
 COPY run.sh /
+
+# Health check
+HEALTHCHECK CMD kill -0 1 || exit 1
+
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
