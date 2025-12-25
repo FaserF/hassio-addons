@@ -39,8 +39,8 @@ port=$(bashio::services "mysql" "port")
 username=$(bashio::services "mysql" "username")
 
 if [ -z "$host" ]; then
-    bashio::log.warning "MariaDB not found (Mock Supervisor?). Waiting..."
-    while true; do sleep 60; done
+	bashio::log.warning "MariaDB not found (Mock Supervisor?). Waiting..."
+	while true; do sleep 60; done
 fi
 
 #Drop database based on config flag
