@@ -18,7 +18,7 @@ jobs:
   # --------------------------------------------------------------------------------
   ci_start:
     name: 🚀 CI Start Notification
-    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -226,22 +226,23 @@ jobs:
           dockerfile: "./${{ matrix.addon }}/Dockerfile"
 
       # 3. Common Linters (Markdown/YAML/JSON/Prettier)
-      # We run these once per add-on to ensure focus, or globally if preferred.
-      # Running per add-on allows cleaner failure reporting.
+      # ADVISORY CHECKS: These use continue-on-error: true intentionally.
+      # Rationale: Formatting issues are auto-fixed by orchestrator-autofix.yaml,
+      # so we don't block PRs for style violations. Failures still appear in logs.
       - name: 📝 MarkdownLint
-        continue-on-error: true
+        continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         uses: actionshub/markdownlint@v3.1.4
         with:
           args: "${{ matrix.addon }}/*.md"
 
       - name: 📄 YAMLLint
-        continue-on-error: true
+        continue-on-error: true # Advisory - formatting issues are non-blocking
         uses: frenck/action-yamllint@v1.5
         with:
           args: "./${{ matrix.addon }}/*.yaml"
 
       - name: 💅 Prettier
-        continue-on-error: true
+        continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         run: |
           npm install -g prettier
           prettier --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
@@ -408,7 +409,13 @@ jobs:
             }
 
             const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
-            let summary = "## 🛡️ Platinum Compliance Issues\n\nThe following add-ons failed compliance checks:\n\n";
+
+            // Construct workflow run URL
+            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let summary = "## 🛡️ Platinum Compliance Issues\n\n";
+            summary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+            summary += "The following add-ons failed compliance checks:\n\n";
             let hasContent = false;
             let totalIssues = 0;
             let missingHealthchecks = 0;
@@ -560,7 +567,12 @@ jobs:
                 return;
             }
 
-            let report = "## ❌ General CI Failure Report\n\nSome checks failed. Here is the diagnostic summary:\n\n";
+            // Construct workflow run URL
+            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let report = "## ❌ General CI Failure Report\n\n";
+            report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+            report += "Some checks failed. Here is the diagnostic summary:\n\n";
 
             // Failed Jobs List (excluding Compliance)
             report += "| Job | Step | Message |\n|---|---|---|\n";

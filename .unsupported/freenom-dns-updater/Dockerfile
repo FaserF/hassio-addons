@@ -1,3 +1,4 @@
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1

@@ -14,13 +14,13 @@ def replace_in_file(filepath, mapping):
         if original not in content:
             failed.append(original)
             print(f"WARNING: Could not find original string: '{original}'")
-            # actually, given the nitpick was about fragility, let's fail if critical parts miss.
+            # Fail if critical parts are missing
             if "TOKEN_FILE" in original or "Tado(" in original:
                 print(f"CRITICAL: Failed to patch '{original}'")
                 exit(1)
         else:
             replaced.append(original)
-        content = content.replace(original, replacement)
+            content = content.replace(original, replacement)
 
     with open(filepath, "w") as f:
         f.write(content)
@@ -39,8 +39,10 @@ mapping = {
     "maxTemp = 25": 'maxTemp = int(os.getenv("TADO_MAX_TEMP", "25"))',
     "enableTempLimit = True": 'enableTempLimit = os.getenv("TADO_ENABLE_TEMP_LIMIT", "True").lower() == "true"',
     "saveLog = False": 'saveLog = os.getenv("TADO_SAVE_LOG", "False").lower() == "true"',
-    "t = Tado(token_file_path=TOKEN_FILE)": (
-        "def init_tado():\\n"
+    # Original line is at 8 spaces inside login() try block
+    # Replacement: define init_tado at same level, then call it
+    "        t = Tado(token_file_path=TOKEN_FILE)": (
+        "        def init_tado():\\n"
         '            username = os.getenv("TADO_USERNAME")\\n'
         '            password = os.getenv("TADO_PASSWORD")\\n'
         "            if username and password:\\n"

@@ -9,18 +9,36 @@ Provides minimal endpoints that bashio uses during add-on startup:
 - GET /supervisor/ping -> returns ok
 
 Usage:
-  python supervisor_mock.py [options_json_path] [port]
+  python supervisor_mock.py [options_json_path] [port] [bind_address]
 
-Defaults to reading options.json from current dir and port 80.
+Arguments:
+  options_json_path  Path to options.json (default: options.json)
+  port               Port to listen on (default: 80)
+  bind_address       Address to bind to (default: 127.0.0.1)
+
+Environment Variables:
+  MOCK_BIND_ADDRESS  Override bind address (default: 127.0.0.1)
+
+Examples:
+  # Local testing (safe default - localhost only)
+  python supervisor_mock.py /data/options.json 80
+
+  # Containerized/multi-host testing (bind to all interfaces)
+  python supervisor_mock.py /data/options.json 80 0.0.0.0
+  # or via environment:
+  MOCK_BIND_ADDRESS=0.0.0.0 python supervisor_mock.py /data/options.json 80
 """
 
+import ipaddress
 import json
+import os
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import ClassVar
 
 
 class SupervisorMockHandler(BaseHTTPRequestHandler):
-    options_data = {}
+    options_data: ClassVar[dict] = {}
 
     def log_message(self, format, *args):
         # Suppress logging for cleaner output
@@ -76,18 +94,39 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         self._send_json({})
 
 
-def run_server(options_path="options.json", port=80):
-    # Load options
+def validate_bind_address(address: str) -> str:
+    """Validate and return a bind address, defaulting to 127.0.0.1 if invalid."""
+    try:
+        ipaddress.ip_address(address)
+        return address
+    except ValueError:
+        print(f"Warning: Invalid bind address '{address}', using 127.0.0.1")
+        return "127.0.0.1"
+
+
+def run_server(options_path="options.json", port=80, bind_address="127.0.0.1"):
+    """Start the mock Supervisor API server."""
+    # Load options with specific exception handling
     try:
         with open(options_path, "r") as f:
             SupervisorMockHandler.options_data = json.load(f)
         print(f"Loaded options from {options_path}")
-    except Exception as e:
-        print(f"Warning: Could not load {options_path}: {e}")
+    except FileNotFoundError:
+        print(f"Warning: Options file not found: {options_path}")
         SupervisorMockHandler.options_data = {}
+    except PermissionError as e:
+        print(f"Warning: Permission denied reading {options_path}: {e}")
+        SupervisorMockHandler.options_data = {}
+    except json.JSONDecodeError as e:
+        print(f"Warning: Invalid JSON in {options_path}: {e}")
+        SupervisorMockHandler.options_data = {}
+    # Let other unexpected exceptions propagate
 
-    server = HTTPServer(("0.0.0.0", port), SupervisorMockHandler)
-    print(f"Mock Supervisor API running on port {port}")
+    # Validate bind address
+    bind_address = validate_bind_address(bind_address)
+
+    server = HTTPServer((bind_address, port), SupervisorMockHandler)
+    print(f"Mock Supervisor API running on {bind_address}:{port}")
     print(
         "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping"
     )
@@ -97,4 +136,10 @@ def run_server(options_path="options.json", port=80):
 if __name__ == "__main__":
     options_path = sys.argv[1] if len(sys.argv) > 1 else "options.json"
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 80
-    run_server(options_path, port)
+    # Bind address: CLI arg > env var > safe default
+    bind_address = (
+        sys.argv[3]
+        if len(sys.argv) > 3
+        else os.environ.get("MOCK_BIND_ADDRESS", "127.0.0.1")
+    )
+    run_server(options_path, port, bind_address)

@@ -27,9 +27,8 @@ Tado TRV detects an open window.
 The installation of this add-on is straightforward and similar to installing any
 other custom Home Assistant add-on.
 
-Just clickYou help many people to use this add-on from the main repository.
-to your Home Assistant
-add-on repositories:
+Just click the badge above to add this repository to your Home Assistant,
+or manually add the following URL to your add-on repositories:
 <https://github.com/FaserF/hassio-addons>
 
 ---

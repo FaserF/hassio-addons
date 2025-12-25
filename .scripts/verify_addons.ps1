@@ -275,15 +275,12 @@ if ("all" -in $Tests -or "YamlLint" -in $Tests) {
 }
 
 # --- 5. MARKDOWNLINT ---
-# --- 5. MARKDOWNLINT ---
 if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
     Write-Header "5. MarkdownLint"
     foreach ($a in $addons) {
         try {
-            $target = "**/*.md"
-            if ($Addon.Count -ne 1 -or $Addon[0] -ne "all") {
-               $target = "$($a.FullName)\**\*.md"
-            }
+            # Always use addon-specific target inside the loop to avoid cross-addon failures
+            $target = "$($a.FullName)\**\*.md"
             # Only run if files exist to avoid error
             if (Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md") {
                 npx markdownlint-cli $target --config .markdownlint.yaml --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
@@ -298,15 +295,12 @@ if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
 }
 
 # --- 6. PRETTIER ---
-# --- 6. PRETTIER ---
 if ("all" -in $Tests -or "Prettier" -in $Tests) {
     Write-Header "6. Prettier"
     foreach ($a in $addons) {
         try {
-            $ptarget = "**/*.{json,js,md,yaml}"
-            if ($Addon.Count -ne 1 -or $Addon[0] -ne "all") {
-                $ptarget = "$($a.FullName)\**\*.{json,js,md,yaml}"
-            }
+            # Always use addon-specific target inside the loop to avoid cross-addon failures
+            $ptarget = "$($a.FullName)\**\*.{json,js,md,yaml}"
             npx prettier --check $ptarget --ignore-path .prettierignore
             if ($LASTEXITCODE -ne 0) { throw "Fail" }
             Add-Result $a.Name "Prettier" "PASS" "OK"

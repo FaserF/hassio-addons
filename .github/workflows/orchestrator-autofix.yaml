@@ -16,9 +16,9 @@ concurrency:
 jobs:
   autofix:
     if: >-
-      ${{ !contains((github.event.head_commit.message || ''), 'style: auto-fix') &&
+      !contains((github.event.head_commit.message || ''), 'style: auto-fix') &&
       github.actor != 'git-auto-commit-action' &&
-      github.actor != 'github-actions[bot]' }}
+      github.actor != 'github-actions[bot]'
     name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
     permissions:

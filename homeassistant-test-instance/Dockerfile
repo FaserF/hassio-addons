@@ -2,10 +2,6 @@ ARG HA_VERSION=stable
 FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
 ARG BUILD_DATE
 
-# Re-declare ARG after FROM to make it available in this build stage
-ARG BUILD_DATE
-ARG BUILD_DATE
-
 # Persist data in the add-on data directory
 CMD [ "hass", "-c", "/data" ]
 
