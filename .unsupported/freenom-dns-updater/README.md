@@ -13,8 +13,6 @@
 
 ## 📖 About
 
-![Supports aarch64 Architecture][aarch64-shield]
-
 Freenom DNS Updater for Homeassistant OS
 
 Freenom is a (free) Registrar provider. This is a docker image based on

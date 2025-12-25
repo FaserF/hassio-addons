@@ -13,8 +13,6 @@
 
 ## 📖 About
 
-![Supports aarch64 Architecture][aarch64-shield]
-
 xqrepack - Repack and rebuild MiWifi Images to gain SSH access and other stuff.
 
 These scripts allow you to modify the Xiaomi R3600 (AX3600) / rm1800 (AX1800)

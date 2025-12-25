@@ -13,8 +13,6 @@
 
 ## 📖 About
 
-![Supports aarch64 Architecture][aarch64-shield]
-
 > [!WARNING]
 > Project has been deprecated by the original creator, therefore this Addon
 > won't receive new features

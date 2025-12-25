@@ -1,20 +1,22 @@
 import os
 
+
 def to_lf(path):
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         content = f.read()
 
     # Replace CRLF with LF
-    if b'\r\n' in content:
+    if b"\r\n" in content:
         print(f"Fixing CRLF in {path}")
-        content = content.replace(b'\r\n', b'\n')
-        with open(path, 'wb') as f:
+        content = content.replace(b"\r\n", b"\n")
+        with open(path, "wb") as f:
             f.write(content)
 
-extensions = ['.sh', '.md', '.yaml', '.yml', '.json', 'Dockerfile']
-skip_dirs = ['.git', 'node_modules', '.vscode']
 
-for root, dirs, files in os.walk('.'):
+extensions = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]
+skip_dirs = [".git", "node_modules", ".vscode"]
+
+for root, dirs, files in os.walk("."):
     # Skip ignored directories
     dirs[:] = [d for d in dirs if d not in skip_dirs]
 
