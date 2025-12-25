@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -61,44 +62,60 @@ jobs:
                 // Track Unsupported Addons (Label individually, don't count towards "All Supported")
                 if (rootDir === '.unsupported' && parts.length > 2) {
                     const unsupAddon = parts[1];
-                     // Verify it's an addon? Assuming yes if in .unsupported structure
-                    labelsToAdd.add(`addon/${unsupAddon}`);
+                    // Verify existence of config.yaml to confirming it is an add-on
+                    if (fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
+                        labelsToAdd.add(`addon/${unsupAddon}`);
+                    }
                 }
               }
             }
 
             console.log(`Changed Supported Add-ons: ${changedAddons.size}`);
 
-            // 4. Determine Label Strategy
-            // Priority:
-            // 1. "All Add-ons" (If Changed == Total)
-            // 2. "Many Add-ons" (If Changed > 8)
-            // 3. Individual Labels (If Changed <= 8)
+            // 4. Determine Managed Labels (What *should* be there)
+            const newManagedLabels = new Set();
 
             if (totalAddons.length > 0 && changedAddons.size === totalAddons.length) {
                 console.log("Triggering 'All Add-ons' Label");
-                // Clear specific supported addons, apply generic
-                for (const addon of changedAddons) {
-                    labelsToAdd.delete(`addon/${addon}`);
-                }
-                labelsToAdd.add("All Add-ons");
+                newManagedLabels.add("All Add-ons");
             }
             else if (changedAddons.size > 8) {
                 console.log(`Triggering 'Many Add-ons' Label (Changed: ${changedAddons.size})`);
-                // Clear specific supported addons, apply generic
-                for (const addon of changedAddons) {
-                    labelsToAdd.delete(`addon/${addon}`);
-                }
-                labelsToAdd.add("Many Add-ons");
+                newManagedLabels.add("Many Add-ons");
             }
-            // Else: Leave individual labels (<= 8)
+            else {
+                // Individual labels
+                for (const addon of labelsToAdd) {
+                    newManagedLabels.add(addon);
+                }
+            }
 
-            // 5. Apply Labels
-            if (labelsToAdd.size > 0) {
-              await github.rest.issues.addLabels({
+            // 5. Fetch, Merge, and Set Labels
+            // Fetch current labels to preserve manual ones (e.g., "help wanted")
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                labels: Array.from(labelsToAdd)
-              });
-            }
+            });
+
+            // Filter out existing "Managed" labels (stale ones)
+            // Managed = starts with "addon/" OR "All Add-ons" OR "Many Add-ons"
+            const preservedLabels = currentLabels.map(l => l.name).filter(name => {
+                if (name === "All Add-ons") return false;
+                if (name === "Many Add-ons") return false;
+                if (name.startsWith("addon/")) return false;
+                return true;
+            });
+
+            // Combine Preserved + New Managed
+            const finalLabels = [...preservedLabels, ...newManagedLabels];
+
+            console.log("Final Labels:", finalLabels);
+
+            // Set Labels (Atomic Update: Removes stale managed, keeps manual, adds new managed)
+            await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: finalLabels
+            });

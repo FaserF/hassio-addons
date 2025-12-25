@@ -23,11 +23,25 @@ find . -name 'config.yaml' -print0 |
 		# Simpler logic for Orchestrator:
 		# If build.yaml in this dir changed, bump config.yaml.
 		dir=$(dirname "$configfile")
-		if git diff --name-only HEAD~1 HEAD | grep -q "$dir/build.yaml"; then
+		# Robust check for changes (handle shallow clones)
+		if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+			changed_files=$(git diff --name-only HEAD~1 HEAD)
+		else
+			# Fallback for initial/shallow commits: check all files
+			changed_files=$(git ls-tree -r --name-only HEAD)
+		fi
+
+		if echo "$changed_files" | grep -F -q "$dir/build.yaml"; then
 			echo "Build.yaml changed in $dir. Bumping version..."
 
 			# ... Version Bump Logic (Major.Minor.Patch) ...
 			OLD_VERSION=$(grep -E '^[[:space:]]*version:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' "$configfile" | head -1 | awk '{print $2}' | tr -d '"')
+
+            # Validate Version Format
+            if [[ ! "$OLD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "Error: Invalid or missing version in $configfile: '$OLD_VERSION'. Skipping."
+                continue
+            fi
 
 			IFS='.' read -r major minor patch <<<"$OLD_VERSION"
 			patch=$((patch + 1))

@@ -65,6 +65,9 @@ function Add-Result {
     elseif ($Status -eq "WARN") {
         Write-Host "WARN: [$Addon] $Check - $Message" -ForegroundColor Yellow
     }
+    elseif ($Status -eq "INFO") {
+        Write-Host "INFO: [$Addon] $Check - $Message" -ForegroundColor Cyan
+    }
     else {
         Write-Host "MATCH: [$Addon] $Check" -ForegroundColor Green
     }
@@ -80,7 +83,7 @@ function Write-Header {
 function Check-Docker {
     Write-Host "Checking Docker..." -ForegroundColor Gray
     $dockerInfo = docker info 2>&1
-    if ($LASTEXITCODE -eq 0) { return $true }
+    if ($LASTEXITCODE -eq 0 -and $dockerInfo -match "Server Version") { return $true }
 
     if (Get-Process "Docker Desktop" -ErrorAction SilentlyContinue) {
         Write-Host "Docker Desktop running but not responsive..." -ForegroundColor Gray
@@ -92,7 +95,8 @@ function Check-Docker {
             Start-Process $dockerExe
             for ($i = 0; $i -lt 60; $i++) {
                 Start-Sleep -Seconds 2
-                if ((docker info 2>&1).length -gt 0) { return $true }
+                $info = docker info 2>&1
+                if ($LASTEXITCODE -eq 0 -and $info -match "Server Version") { return $true }
                 Write-Host -NoNewline "."
             }
         }
@@ -102,10 +106,11 @@ function Check-Docker {
 
 function Get-BuildFrom {
     param($Path)
-    # Extracts amd64 base image from build.yaml using Python
-    $script = "import yaml; print(yaml.safe_load(open('$Path'.replace('\','/')))['build_from'].get('amd64', ''))"
+    # Extracts amd64 base image from build.yaml using Python (Safe Arg Parsing)
+    $script = "import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))['build_from'].get('amd64', ''))"
     try {
-        $res = python -c $script 2>&1
+        $pathArg = $Path.Replace('\','/')
+        $res = python -c $script $pathArg 2>&1
         if ($LASTEXITCODE -eq 0) { return $res.Trim() }
         return $null
     }
@@ -281,7 +286,12 @@ foreach ($a in $addons) {
     try {
         $out = python .scripts/check_compliance.py $a.FullName 2>&1
         if ($LASTEXITCODE -eq 0) { Add-Result $a.Name "Compliance" "PASS" "OK" }
-        else { Add-Result $a.Name "Compliance" "FAIL" $out }
+        else {
+            Add-Result $a.Name "Compliance" "FAIL" "See details below"
+            Write-Host "`n--- COMPLIANCE REPORT FOR $($a.Name) ---" -ForegroundColor Red
+            Write-Host $out -ForegroundColor Gray
+            Write-Host "----------------------------------------`n" -ForegroundColor Red
+        }
     }
     catch { Add-Result $a.Name "Compliance" "FAIL" "Script Error" }
 }
@@ -297,7 +307,7 @@ if ($DockerAvailable) {
     }
     else {
         foreach ($a in $addons) {
-            $res = docker run --rm -v "trivy_cache:/root/.cache/trivy" -v "$($RepoRoot):/app" $trivy fs "/app/$($a.Name)" --severity CRITICAL, HIGH --ignore-unfixed --exit-code 1 2>&1
+            $res = docker run --rm -v "trivy_cache:/root/.cache/trivy" -v "$($RepoRoot):/app" $trivy fs "/app/$($a.Name)" --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 2>&1
             if ($LASTEXITCODE -ne 0) {
                 Add-Result $a.Name "Trivy" "WARN" "Vulnerabilities Found (See log)"
             }
@@ -360,28 +370,26 @@ if ($DockerAvailable -and -not $GlobalFailed) {
         $imgName = "local/test-$($a.Name.ToLower())"
         $date = Get-Date -Format "yyyy-MM-dd"
 
-        # Dynamic Build From
-        $buildFile = Join-Path $a.FullName "build.yaml"
-        $buildFromArg = ""
-        if (Test-Path $buildFile) {
-            $base = Get-BuildFrom $buildFile
-            if ($base) {
-                Write-Host "Using Base Image: $base" -ForegroundColor Gray
-                $buildFromArg = "--build-arg ""BUILD_FROM=$base"""
-            }
-            else {
-                Write-Host "Using Default Base Image" -ForegroundColor Yellow
-                $buildFromArg = "--build-arg ""BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest"""
-            }
-        }
-        else {
-            # Fallback if no build.yaml (rare)
-            $buildFromArg = "--build-arg ""BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest"""
-        }
-
         # Build
-        $cmd = "docker build --build-arg ""BUILD_DATE=$date"" $buildFromArg -t $imgName ""$($a.FullName)"" 2>&1"
-        $buildInfo = Invoke-Expression $cmd
+        $buildArgs = @("build", "--build-arg", "BUILD_DATE=$date")
+        if ($base) {
+             $buildArgs += "--build-arg"
+             $buildArgs += "BUILD_FROM=$base"
+        } else {
+             $buildArgs += "--build-arg"
+             $buildArgs += "BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest"
+        }
+        $buildArgs += "-t"
+        $buildArgs += $imgName
+        $buildArgs += $a.FullName
+
+        try {
+            & docker $buildArgs 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Build Failed" }
+            $buildInfo = "Built"
+        } catch {
+             $LASTEXITCODE = 1
+        }
 
         if ($LASTEXITCODE -ne 0) {
             Add-Result $a.Name "DockerBuild" "FAIL" "Build Failed"

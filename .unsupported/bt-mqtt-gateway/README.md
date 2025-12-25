@@ -17,15 +17,18 @@
 > Project has been deprecated by the original creator, therefore this Addon
 > won't receive new features
 
-Please have a look at the [official repository](https://github.com/zewelor/bt-mqtt-gateway),
-it is recommended to use Bluetooth Proxy.
+![Logo](logo.png)
 
-Bluetooth-MQTT-Gateway for Homeassistant OS
+# Bluetooth to MQTT Gateway (UNSUPPORTED)
 
-A simple Python script which provides a Bluetooth to MQTT gateway, easily
-extensible via custom workers.
-See [Wiki](https://github.com/zewelor/bt-mqtt-gateway/wiki) for more
-information (supported devices, features and much more).
+> [!WARNING]
+> **This add-on is no longer supported.**
+> The original repository (wealth/bt-mqtt-gateway) was archived in October 2023.
+>
+> **Recommended Alternatives for 2025:**
+> *   **OpenMQTTGateway**: Supports ESP32/ESP8266 devices.
+> *   **Theengs Gateway**: Ideal for Raspberry Pi or existing Linux hosts.
+> *   **ESPHome Bluetooth Proxy**: Good for Home Assistant native integration (note: may not publish raw MQTT as freely as the others).
 
 This can be used, to improve the reliability of bluetooth thermostats. See
 <https://github.com/home-assistant/core/issues/28601> for more information.

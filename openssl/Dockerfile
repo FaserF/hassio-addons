@@ -9,6 +9,9 @@ RUN apk --no-cache add openssl
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
+
+HEALTHCHECK CMD /usr/bin/openssl version || exit 1
+
 CMD [ "/run.sh" ]
 
 # Labels
@@ -21,7 +24,3 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/openssl"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/openssl/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-
-
-

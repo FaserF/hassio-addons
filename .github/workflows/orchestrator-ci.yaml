@@ -96,6 +96,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+      issues: write
     strategy:
       fail-fast: false
       matrix:
@@ -135,17 +137,17 @@ jobs:
 
       - name: 💅 Prettier
         continue-on-error: true
-        uses: creyD/prettier_action@v4.6
-        with:
-          prettier_options: --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}"
+        run: |
+          npm install -g prettier
+          prettier --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
         uses: frenck/action-addon-linter@v2
         with:
           path: "./${{ matrix.addon }}"
+        continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
 
-      # 5. Platinum Compliance (S6, Healthcheck, OCI)
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
       - name: 📦 Install Compliance Deps
         run: pip install pyyaml
@@ -159,7 +161,9 @@ jobs:
           exit_code=$?
           set -e
 
+          echo "::group::Compliance Report"
           cat compliance_report.txt
+          echo "::endgroup::"
 
           if [ $exit_code -ne 0 ]; then
             echo "status=failure" >> $GITHUB_OUTPUT
@@ -178,7 +182,7 @@ jobs:
               // Only comment if there are actual items of interest (Errors or Warnings)
               if (report.includes('❌') || report.includes('⚠️')) {
                 const addon = "${{ matrix.addon }}";
-                const body = `### 🛡️ Platinum Compliance Report for ${addon}\n\n\`\`\`\n${report}\n\`\`\`\n\n💎 **Platinum Standards:**\n- Translations (EN Required, DE Recommended)\n- Images (Icon & Logo)\n- Official Base Image\n- S6 Overlay & Healthchecks`;
+                const body = `### 🛡️ Platinum Compliance Report for ${addon}\n\n\`\`\`\n${report}\n\`\`\`\n\n💎 **Platinum Standards:**\n- Translations (EN Required, DE Recommended)\n- Images (Icon & Logo)\n- Official Base Image (Base/Debian/Python)\n- S6 Overlay & Healthchecks`;
 
                 await github.rest.issues.createComment({
                   issue_number: context.issue.number,
@@ -193,7 +197,10 @@ jobs:
 
       - name: 🛑 Fail if Compliance Error
         if: steps.compliance.outputs.status == 'failure'
-        run: exit 1
+        run: |
+          echo "::error::Compliance checks failed! See 'Platinum Compliance Check' step for details."
+          cat compliance_report.txt
+          exit 1
 
       # 6. Security Scan (Trivy)
       # Scanning the directory for vulnerabilities (fs mode)

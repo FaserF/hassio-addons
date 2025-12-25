@@ -2,15 +2,18 @@ import os
 
 
 def to_lf(path):
-    with open(path, "rb") as f:
-        content = f.read()
+    try:
+        with open(path, "rb") as f:
+            content = f.read()
 
-    # Replace CRLF with LF
-    if b"\r\n" in content:
-        print(f"Fixing CRLF in {path}")
-        content = content.replace(b"\r\n", b"\n")
-        with open(path, "wb") as f:
-            f.write(content)
+        # Replace CRLF with LF
+        if b"\r\n" in content:
+            print(f"Fixing CRLF in {path}")
+            content = content.replace(b"\r\n", b"\n")
+            with open(path, "wb") as f:
+                f.write(content)
+    except Exception as e:
+        print(f"Error processing {path}: {e}")
 
 
 extensions = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]

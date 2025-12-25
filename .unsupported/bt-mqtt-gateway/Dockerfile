@@ -5,7 +5,8 @@ FROM ${BUILD_FROM}
 
 # Install necessary packages and prepare environment
 # hadolint ignore=DL3018,DL3013,DL3042,DL3006
-ARG BT_MQTT_VERSION=master
+# Set version (pinned for reproducibility)
+ARG BT_MQTT_VERSION=827e251
 ARG BUILD_DATE
 # hadolint ignore=DL3018
 RUN mkdir /application && \
@@ -28,6 +29,10 @@ COPY start.sh /
 RUN chmod a+x /start.sh
 
 CMD [ "/start.sh" ]
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD pgrep -f "gateway.py" || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="bt-mqtt-gateway"
