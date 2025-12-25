@@ -22,7 +22,7 @@ jobs:
       # 1. Shell Scripts (Format)
       # 1. Shell Scripts (Format)
       - name: 🐚 Setup shfmt
-        uses: mfinelli/setup-shfmt@v3
+        uses: mfinelli/setup-shfmt@v4
         with:
           shfmt-version: "3.7.0"
 
