@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
 ARG BUILD_DATE
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
