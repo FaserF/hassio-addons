@@ -43,7 +43,7 @@ jobs:
   # --------------------------------------------------------------------------------
   verify:
     name: ✅ Verify ${{ github.event.inputs.addon || 'Automated' }}
-    needs: [] # Independent verification
+    # needs: [] # Independent verification
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:

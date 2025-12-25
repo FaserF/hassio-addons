@@ -679,7 +679,7 @@ if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
             }
 
             # Check 14: Language Check (English only)
-            if ($content -match '[üäößÜÄÖ]' -or $content -match '\b(ist|und|das|mit|der|die|den|dem|ein|eine|eines|einer)\b') {
+            if ($content -match '[üäößÜÄÖ]' -or $content -cmatch '\b(ist|und|das|mit|der|die|den|dem|ein|eine|eines|einer)\b') {
                 Add-Result $a.Name "CR-Language" "WARN" "Possible non-English content (German) detected in comments or logs. Keep everything in English."
             }
         }

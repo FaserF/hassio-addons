@@ -122,15 +122,19 @@ jobs:
             if grep -q "^# Changelog" "$CHANGELOG_FILE"; then
                sed -i "1r $TEMP_HEADER" "$CHANGELOG_FILE"
             else
-               echo "# Changelog" > "temp_changelog_full"
-               echo "" >> "temp_changelog_full"
-               cat "$TEMP_HEADER" >> "temp_changelog_full"
-               cat "$CHANGELOG_FILE" >> "temp_changelog_full"
-               mv "temp_changelog_full" "$CHANGELOG_FILE"
+                {
+                  echo "# Changelog"
+                  echo ""
+                  cat "$TEMP_HEADER"
+                  cat "$CHANGELOG_FILE"
+                } > "temp_changelog_full"
+                mv "temp_changelog_full" "$CHANGELOG_FILE"
             fi
 
-            echo "updated=true" >> "$GITHUB_OUTPUT"
-            echo "version=$NEW_ADDON_VERSION" >> "$GITHUB_OUTPUT"
+            {
+              echo "updated=true"
+              echo "version=$NEW_ADDON_VERSION"
+            } >> "$GITHUB_OUTPUT"
           else
             echo "updated=false" >> "$GITHUB_OUTPUT"
           fi

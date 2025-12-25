@@ -9,7 +9,7 @@ CMD [ "hass", "-c", "/data" ]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8123 || exit 1
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8123')" || exit 1
 
 # Labels
 LABEL \

@@ -38,6 +38,9 @@ verification_report*.txt
 *log.txt
 compliance_report.txt
 report.json
+temp_*.yaml
+temp_*.txt
+temp_*.log
 
 # Node.js
 node_modules/

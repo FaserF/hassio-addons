@@ -1,18 +1,16 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+# Build stage
 # hadolint ignore=DL3006
-FROM ${BUILD_FROM}
-ARG BUILD_DATE
+FROM ${BUILD_FROM} AS builder
 
-# Install requirements for add-on
+# Install build dependencies
 # hadolint ignore=DL3018
-RUN apk -U --no-cache add \
+RUN apk add --no-cache \
     libpcap-dev \
     libuv-dev \
     git \
     g++ \
     cmake \
-    nano \
-    screen \
     build-base
 
 # Pin to specific commit for reproducible builds (v0.2.3)
@@ -23,10 +21,21 @@ RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && mkdir build \
     && cd build \
     && cmake .. \
-    && make \
-    && cd src \
-    && chmod +x lan-play \
-    && cp lan-play /
+    && make
+
+# Runtime stage
+FROM ${BUILD_FROM}
+ARG BUILD_DATE="unknown"
+
+# Install runtime dependencies (procps for pgrep)
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
+    libpcap \
+    libuv \
+    procps
+
+# Copy binary from builder
+COPY --from=builder /switch-lan-play/build/src/lan-play /usr/local/bin/lan-play
 
 # Copy data for add-on
 COPY run.sh /

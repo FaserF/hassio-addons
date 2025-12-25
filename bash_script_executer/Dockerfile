@@ -1,12 +1,10 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="unknown"
 
-# Create directory for apache2 to store PID file
 # hadolint ignore=DL3018
-RUN mkdir /run/apache2 \
-    && apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
+RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash
 
 # Copy data for add-on
 COPY run.sh /

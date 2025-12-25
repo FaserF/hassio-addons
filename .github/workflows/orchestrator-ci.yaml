@@ -742,7 +742,7 @@ jobs:
             if (affectedAddons.size > 0) {
                 const addonsList = Array.from(affectedAddons).join('","');
                 report += `powershell: .\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
-                report += `bash: ./.scripts/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `bash: pwsh -File ./.scripts/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
             }
 
             report += "\n# Items NOT fixable by local script:\n";
@@ -780,7 +780,7 @@ jobs:
             report += testCommand + "\n";
             report += "```\n\n";
 
-            const bashCommand = testCommand.replace(/\\/g, '/').replace(/^\.\//, './');
+            const bashCommand = "pwsh -File " + testCommand.replace(/\\/g, '/').replace(/^\.\\/, './');
             report += "**Bash:**\n";
             report += "```bash\n";
             report += bashCommand + "\n";

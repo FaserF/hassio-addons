@@ -8,7 +8,7 @@ ARG BUILD_DATE="unknown"
 
 # Install Node.js and Yarn via APK
 # hadolint ignore=DL3018
-RUN apk add --no-cache nodejs npm yarn
+RUN apk add --no-cache nodejs npm yarn wget
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

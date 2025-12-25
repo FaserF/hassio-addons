@@ -35,6 +35,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
         run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Error: PR_NUMBER is not set."
+            exit 1
+          fi
+
+          echo "Fetching labels for PR #$PR_NUMBER..."
+          labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name' || true)
+
           if echo "$labels" | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
             echo "skip=true" >> "$GITHUB_OUTPUT"

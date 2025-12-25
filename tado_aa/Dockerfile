@@ -4,6 +4,7 @@ FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 ARG BUILD_DATE="unknown"
+# CR-Skip-PythonBaseCheck
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

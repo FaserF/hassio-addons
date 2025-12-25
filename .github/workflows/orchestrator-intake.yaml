@@ -58,10 +58,11 @@ jobs:
             done
           fi
 
-          CONTENT=$(cat compliance.log)
-          echo "CONTENT<<EOF" >> "$GITHUB_ENV"
-          echo "$CONTENT" >> "$GITHUB_ENV"
-          echo "EOF" >> "$GITHUB_ENV"
+          {
+            echo "CONTENT<<EOF"
+            cat compliance.log
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
           if grep -q "❌" compliance.log; then
              echo "status=failure" >> "$GITHUB_OUTPUT"

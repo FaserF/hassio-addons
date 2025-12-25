@@ -11,7 +11,10 @@ RUN apk --no-cache add wget go tar
 ARG MATTERBRIDGE_VERSION="v1.26.0"
 
 WORKDIR /matterbridge
-RUN wget -qO- https://github.com/42wim/matterbridge/archive/refs/tags/${MATTERBRIDGE_VERSION}.tar.gz | tar xz --strip-components=1 \
+RUN wget -qO /tmp/matterbridge.tar.gz https://github.com/42wim/matterbridge/archive/refs/tags/${MATTERBRIDGE_VERSION}.tar.gz \
+  && echo "00e1bbfe3b32f2feccf9a7f13a6f12b1ce28a5eb04cc7b922b344e3493497425  /tmp/matterbridge.tar.gz" | sha256sum -c - \
+  && tar xzf /tmp/matterbridge.tar.gz --strip-components=1 \
+  && rm /tmp/matterbridge.tar.gz \
   && CGO_ENABLED=0 go build -tags whatsappmulti -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=${MATTERBRIDGE_VERSION}" -o /bin/matterbridge
 
 # hadolint ignore=DL3006
