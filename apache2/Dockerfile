@@ -1,7 +1,7 @@
 ARG BUILD_FROM
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for apache2 to store PID file
 # Create directory for apache2 to store PID file and install dependencies
@@ -65,7 +65,7 @@ RUN mkdir /run/apache2 \
 #    && pecl install ssh2-1.3.1
 #RUN docker-php-ext-enable ssh2
 #From here beginning most likely needed
-ARG BUILD_DATE
+
 #RUN apk --no-cache add libssh2-dev
 #RUN wget -O ssh2.tgz https://pecl.php.net/get/ssh2-1.3.1.tgz \
 #    && mkdir ssh2 && tar vxzf ssh2.tgz -C ssh2 --strip-components 1 \

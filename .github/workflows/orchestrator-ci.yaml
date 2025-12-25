@@ -157,7 +157,9 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          python3 .scripts/check_compliance.py "./${{ matrix.addon }}" > compliance_report.txt 2>&1
+          # Add addon name as header for report aggregation
+          echo "ADDON: ${{ matrix.addon }}" > compliance_report.txt
+          python3 .scripts/check_compliance.py "./${{ matrix.addon }}" >> compliance_report.txt 2>&1
           exit_code=$?
           set -e
 
@@ -175,7 +177,7 @@ jobs:
         if: steps.compliance.outputs.status == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: compliance-${{ matrix.addon }}
+          name: compliance-${{ github.run_id }}-${{ strategy.job-index }}
           path: compliance_report.txt
           retention-days: 1
 
@@ -248,20 +250,24 @@ jobs:
             let summary = "## 🛡️ Platinum Compliance Issues\n\nThe following add-ons failed compliance checks:\n\n";
             let hasContent = false;
             let totalIssues = 0;
-            let missingHealtchecks = 0;
+            let missingHealthchecks = 0;
             let missingLogos = 0;
 
             for (const dir of dirs) {
                 const reportPath = path.join('reports', dir, 'compliance_report.txt');
                 if (fs.existsSync(reportPath)) {
                    const content = fs.readFileSync(reportPath, 'utf8');
-                   const addonName = dir.replace('compliance-', '');
+                   // Extract addon name from "ADDON: xyz" header line
+                   const addonMatch = content.match(/^ADDON: (.+)$/m);
+                   const addonName = addonMatch ? addonMatch[1] : dir.replace('compliance-', '');
+                   // Remove the ADDON line from display content
+                   const displayContent = content.replace(/^ADDON: .+\n/, '');
 
-                   if (content.includes("HEALTHCHECK")) missingHealtchecks++;
+                   if (content.includes("HEALTHCHECK")) missingHealthchecks++;
                    if (content.includes("logo.png")) missingLogos++;
                    totalIssues++;
 
-                   summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${content}\n\`\`\`\n</details>\n\n`;
+                   summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
                    hasContent = true;
                 }
             }
@@ -271,7 +277,7 @@ jobs:
             summary += `> [!TIP]\n> **Quick Fix Analysis**\n>\n`;
 
             let fixList = "";
-            if (missingHealtchecks > 0) fixList += `- broken Healthchecks: Add 'HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1' to Dockerfile.\n`;
+            if (missingHealthchecks > 0) fixList += `- broken Healthchecks: Add 'HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1' to Dockerfile.\n`;
             if (missingLogos > 0) fixList += `- missing Logos: Add 'logo.png' (500x500px) to the add-on root.\n`;
 
             summary += `\`\`\`text\nFound ${totalIssues} add-on${totalIssues > 1 ? 's' : ''} with issues.\n\n${fixList}\`\`\`\n`;

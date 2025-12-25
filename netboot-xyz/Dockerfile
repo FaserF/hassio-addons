@@ -9,6 +9,7 @@ ARG NETBOOTXYZ_VERSION="0.7.6"
 RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
+    curl \
     dnsmasq \
     nginx \
     nodejs \

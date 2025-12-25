@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 🏷️ Dynamic Labeler
         uses: actions/github-script@v7
@@ -24,16 +26,36 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
-            // 1. Identify Total Add-ons in Repo (Supported only? Or all?)
-            // "All Add-ons" usually implies the active, supported suite.
-            // We scan root folders for 'config.yaml'.
-            const rootEntries = fs.readdirSync('.', { withFileTypes: true });
-            const totalAddons = rootEntries.filter(dirent => {
-                if (!dirent.isDirectory()) return false;
-                if (dirent.name.startsWith('.')) return false; // Ignore .github, .scripts, .unsupported (unless user wants them)
-                // Check for config.yaml
-                return fs.existsSync(path.join(dirent.name, 'config.yaml'));
-            }).map(d => d.name);
+            // 1. Identify Total Add-ons in Repo from BASE BRANCH (not PR branch)
+            // This ensures "All Add-ons" is calculated against the target state, not the PR
+            const baseRef = context.payload.pull_request.base.ref;
+
+            // Get add-ons from base branch via git
+            const { execSync } = require('child_process');
+            let baseAddons = [];
+            try {
+                const lsTree = execSync(`git ls-tree --name-only origin/${baseRef}`, { encoding: 'utf8' });
+                baseAddons = lsTree.split('\n').filter(name => {
+                    if (!name || name.startsWith('.')) return false;
+                    // Check if this dir has config.yaml in base branch
+                    try {
+                        execSync(`git cat-file -e origin/${baseRef}:${name}/config.yaml`, { stdio: 'pipe' });
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                });
+            } catch (e) {
+                console.log('Failed to get base branch addons, falling back to current checkout');
+                const rootEntries = fs.readdirSync('.', { withFileTypes: true });
+                baseAddons = rootEntries.filter(dirent => {
+                    if (!dirent.isDirectory()) return false;
+                    if (dirent.name.startsWith('.')) return false;
+                    return fs.existsSync(path.join(dirent.name, 'config.yaml'));
+                }).map(d => d.name);
+            }
+
+            const totalAddons = baseAddons;
 
             console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
 
@@ -72,7 +94,7 @@ jobs:
                 // Track Unsupported Addons (Label individually, don't count towards "All Supported")
                 if (rootDir === '.unsupported' && parts.length > 2) {
                     const unsupAddon = parts[1];
-                    // Verify existence of config.yaml to confirming it is an add-on
+                    // Verify existence of config.yaml to confirm it is an add-on
                     if (fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
                         labelsToAdd.add(`addon/${unsupAddon}`);
                     }
