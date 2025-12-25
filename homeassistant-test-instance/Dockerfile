@@ -1,4 +1,4 @@
-ARG HA_VERSION=stable
+ARG HA_VERSION=beta
 FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
 ARG BUILD_DATE
 
