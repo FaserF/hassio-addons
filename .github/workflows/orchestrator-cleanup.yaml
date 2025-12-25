@@ -29,6 +29,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   event: 'pull_request',
+                  status: 'completed',
                   per_page: 100,
                   page: page
                 });

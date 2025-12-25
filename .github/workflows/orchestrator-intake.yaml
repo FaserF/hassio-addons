@@ -68,11 +68,35 @@ jobs:
         with:
           script: |
             const output = process.env.CONTENT;
+            const signature = "<!-- addon-intake-report -->";
+
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("### 🛡️ Add-on Compliance Check")));
+
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### 🛡️ Add-on Compliance Check\n\n${output}`
+              body: `${signature}\n### 🛡️ Add-on Compliance Check\n\n${output}`
             })
 
       - name: 🛑 Fail if Non-Compliant

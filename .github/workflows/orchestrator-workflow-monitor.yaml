@@ -4,7 +4,17 @@ on:
   # Trigger when any workflow completes
   workflow_run:
     workflows:
-      - "*"
+      - "Orchestrator Auto-Fix"
+      - "Orchestrator Auto-Merge"
+      - "Orchestrator CI"
+      - "Cleanup PR Artifacts"
+      - "Orchestrator Docs & Standards"
+      - "Orchestrator Governance"
+      - "Orchestrator New Add-on Intake"
+      - "Orchestrator Labeler"
+      - "Orchestrator Maintenance"
+      - "Orchestrator Release"
+      - "Orchestrator Updates"
     types:
       - completed
   # Trigger on PR changes to workflow files (for linting)
@@ -188,41 +198,54 @@ jobs:
             });
 
             const signature = "<!-- runner-minutes-warning -->";
-            const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
 
-            if (!alreadyPosted) {
-              let body = signature + "\n";
-              body += "## ⏱️ GitHub Actions Minuten Warnung\n\n";
-              body += message + "\n\n";
-
-              if (status === 'exhausted') {
-                body += "> [!CAUTION]\n";
-                body += "> Weitere Workflow-Runs werden fehlschlagen bis die Minuten am Monatsanfang zurückgesetzt werden.\n";
-                body += "> Kontaktiere einen Administrator um das Limit zu erhöhen.\n";
-              } else if (status === 'critical') {
-                body += "> [!WARNING]\n";
-                body += "> Bei fortgesetzter Nutzung werden die Minuten bald erschöpft sein.\n";
-                body += "> Erwäge, Workflows zu optimieren oder weniger häufig auszuführen.\n";
-              } else {
-                body += "> [!IMPORTANT]\n";
-                body += "> Überwache die Nutzung, um Unterbrechungen zu vermeiden.\n";
-              }
-
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body
-              });
-
-              // Add label
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                labels: ['infra/low-minutes']
-              });
+            // Minimize old warnings
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
             }
+
+            let body = signature + "\n";
+            body += "## ⏱️ GitHub Actions Minuten Warnung\n\n";
+            body += message + "\n\n";
+
+            if (status === 'exhausted') {
+              body += "> [!CAUTION]\n";
+              body += "> Weitere Workflow-Runs werden fehlschlagen bis die Minuten am Monatsanfang zurückgesetzt werden.\n";
+              body += "> Kontaktiere einen Administrator um das Limit zu erhöhen.\n";
+            } else if (status === 'critical') {
+              body += "> [!WARNING]\n";
+              body += "> Bei fortgesetzter Nutzung werden die Minuten bald erschöpft sein.\n";
+              body += "> Erwäge, Workflows zu optimieren oder weniger häufig auszuführen.\n";
+            } else {
+              body += "> [!IMPORTANT]\n";
+              body += "> Überwache die Nutzung, um Unterbrechungen zu vermeiden.\n";
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            // Add label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['infra/low-minutes']
+            });
 
   # --------------------------------------------------------------------------------
   # ANALYZE: Workflow Infrastructure Failures

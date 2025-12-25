@@ -430,16 +430,11 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
             $buildArgs += $imgName
             $buildArgs += $a.FullName
 
-            try {
-                & docker $buildArgs 2>&1 | Out-Null
-                if ($LASTEXITCODE -ne 0) { throw "Build Failed" }
-                $buildInfo = "Built"
-            } catch {
-                 $LASTEXITCODE = 1
-            }
+            $buildOutput = & docker $buildArgs 2>&1
+            $buildSuccess = ($LASTEXITCODE -eq 0)
 
-            if ($LASTEXITCODE -ne 0) {
-                Add-Result $a.Name "DockerBuild" "FAIL" "Build Failed"
+            if (-not $buildSuccess) {
+                Add-Result $a.Name "DockerBuild" "FAIL" "Build Failed. Output:`n$buildOutput"
             }
             else {
                 Add-Result $a.Name "DockerBuild" "PASS" "OK"

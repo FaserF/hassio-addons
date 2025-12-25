@@ -33,29 +33,41 @@ jobs:
                issue_number: context.issue.number,
             });
 
-            // Check if we already posted a start comment for this run
             const signature = "<!-- ci-start-comment -->";
-            const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
 
-            if (!alreadyPosted) {
-                let body = signature + "\n";
-                body += "## 🔄 CI Tests Running\n\n";
-                body += "Comprehensive CI tests are now running. This may take a few minutes.\n\n";
-                body += "A detailed feedback comment will be posted once all checks are complete.\n\n";
-                body += "---\n\n";
-                body += "**📋 Merge Policy:**\n";
-                body += "- PRs are typically only merged when **all CI tests pass**\n";
-                body += "- If tests fail, you will receive automated guidance on how to fix the issues\n";
-                body += "- PRs with failing tests may receive limited maintainer attention until resolved\n\n";
-                body += "_*Workflow configuration errors are handled by maintainers_";
-
-                await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    body: body
-                });
+            // Minimize old start comments
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
             }
+
+            let body = signature + "\n";
+            body += "## 🔄 CI Tests Running\n\n";
+            body += "Comprehensive CI tests are now running. This may take a few minutes.\n\n";
+            body += "A detailed feedback comment will be posted once all checks are complete.\n\n";
+            body += "---\n\n";
+            body += "**📋 Merge Policy:**\n";
+            body += "- PRs are typically only merged when **all CI tests pass**\n";
+            body += "- If tests fail, you will receive automated guidance on how to fix the issues\n";
+            body += "- PRs with failing tests may receive limited maintainer attention until resolved\n\n";
+            body += "_*Workflow configuration errors are handled by maintainers_";
+
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+            });
 
   # --------------------------------------------------------------------------------
   # FILTER: Detect which add-ons have changed
@@ -616,7 +628,8 @@ jobs:
             report += "```\n";
             report += "\n</details>";
 
-            const signature = "## ❌ General CI Failure Report";
+            const signature = "<!-- general-ci-failure-report -->";
+            const reportBody = signature + "\n" + report;
 
             // Find and minimize old failure reports
             const { data: comments } = await github.rest.issues.listComments({
@@ -625,7 +638,9 @@ jobs:
                 issue_number: context.issue.number,
             });
 
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+            // Standardize old signatures too for transition
+            const oldSignatures = ["## ❌ General CI Failure Report", signature];
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && oldSignatures.some(sig => c.body.includes(sig)));
 
             for (const comment of previousComments) {
                 try {
@@ -646,7 +661,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: report
+                body: reportBody
             });
 
             // Update CI status labels to ci/failed
@@ -694,7 +709,9 @@ jobs:
 
             // Signatures of comments to minimize (cleanup old failures and summaries)
             const signatures = [
+                "<!-- ci-start-comment -->",
                 "## 🛡️ Platinum Compliance Issues",
+                "<!-- general-ci-failure-report -->",
                 "## ❌ General CI Failure Report",
                 "## ✅ Verification Successful"
             ];
