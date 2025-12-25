@@ -1,4 +1,5 @@
 ARG HA_VERSION=beta
+# ARG HA_VERSION=2025.12.4
 FROM ghcr.io/home-assistant/home-assistant:$HA_VERSION
 ARG BUILD_DATE
 
