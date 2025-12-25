@@ -74,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       addons: ${{ steps.filter.outputs.changes }}
+      docs_only: ${{ steps.change-type.outputs.docs_only }}
+      needs_build: ${{ steps.change-type.outputs.needs_build }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -85,6 +87,53 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: ${{ needs.generate-config.outputs.filters }}
+
+      - name: 🔎 Analyze Change Types
+        id: change-type
+        run: |
+          # Get all changed files in this push/PR
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Categorize changes
+          docs_only="true"
+          needs_build="false"
+
+          for file in $CHANGED_FILES; do
+            # Check if file requires build (Dockerfile, config, scripts, etc.)
+            if [[ "$file" == */Dockerfile ]] || \
+               [[ "$file" == */build.yaml ]] || \
+               [[ "$file" == */build.json ]] || \
+               [[ "$file" == */config.yaml ]] || \
+               [[ "$file" == */config.json ]] || \
+               [[ "$file" == *run.sh ]] || \
+               [[ "$file" == *.py ]] || \
+               [[ "$file" == */rootfs/* ]] || \
+               [[ "$file" == */root/* ]]; then
+              needs_build="true"
+              docs_only="false"
+            # Check if it's NOT a documentation/workflow file
+            elif [[ "$file" != *.md ]] && \
+                 [[ "$file" != *.MD ]] && \
+                 [[ "$file" != .github/workflows/* ]] && \
+                 [[ "$file" != .github/*.md ]] && \
+                 [[ "$file" != LICENSE* ]] && \
+                 [[ "$file" != */CHANGELOG* ]] && \
+                 [[ "$file" != .gitignore ]] && \
+                 [[ "$file" != .editorconfig ]]; then
+              docs_only="false"
+            fi
+          done
+
+          echo "docs_only=$docs_only" >> $GITHUB_OUTPUT
+          echo "needs_build=$needs_build" >> $GITHUB_OUTPUT
+          echo "Results: docs_only=$docs_only, needs_build=$needs_build"
 
   # --------------------------------------------------------------------------------
   # LINT: Static Analysis (Fail Fast)
@@ -203,18 +252,34 @@ jobs:
   # BUILD: Test Build (No Push)
   # --------------------------------------------------------------------------------
   build:
-    name: 🏗️ Test Build (${{ matrix.addon }} - ${{ matrix.arch }})
+    name: 🏗️ Test Build (${{ matrix.addon }})
     needs: [filter, lint]
-    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    # Skip build if only docs/workflows changed (no Dockerfile, config, scripts)
+    if: |
+      needs.filter.outputs.addons != '[]' &&
+      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.needs_build == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # Only matrix on addons, build all arches sequentially on same runner
       matrix:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
-        arch: ["aarch64", "amd64"]
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 💾 Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            ${{ runner.os }}-buildx-
 
       - name: ℹ️ Get Add-on Info
         id: info
@@ -222,28 +287,37 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
 
-      - name: 🛑 Check Arch Support
-        id: check
+      - name: 🏗️ Build All Architectures
         run: |
-          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-             echo "build_arch=true" >> $GITHUB_OUTPUT
-             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT
-           else
-             echo "Skipping ${{ matrix.arch }} for ${{ matrix.addon }}"
-             echo "build_arch=false" >> $GITHUB_OUTPUT
-          fi
+          ARCHS="${{ steps.info.outputs.architectures }}"
+          IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
 
-      - name: 🐳 Build Add-on (Test)
-        if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2025.11.0
-        with:
-          args: |
-            --test \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          echo "Building ${{ matrix.addon }} for architectures: $ARCHS"
+
+          for arch in $ARCHS; do
+            # Skip 32-bit architectures (deprecated)
+            if [[ "$arch" == "armhf" || "$arch" == "armv7" || "$arch" == "i386" ]]; then
+              echo "⏭️ Skipping deprecated architecture: $arch"
+              continue
+            fi
+
+            echo "🔨 Building for $arch..."
+            docker run --rm --privileged \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$(pwd)":/data \
+              -v /tmp/.buildx-cache:/cache \
+              ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+              --test \
+              --$arch \
+              --target /data/${{ matrix.addon }} \
+              --image "$IMAGE" \
+              --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+              --addon \
+              --cache-from type=local,src=/cache \
+              --cache-to type=local,dest=/cache,mode=max || exit 1
+          done
+
+          echo "✅ All architectures built successfully"
 
   report:
     name: 📊 CI & Compliance Report
@@ -482,7 +556,12 @@ jobs:
   success_report:
     name: ✅ CI Success Summary
     needs: [filter, lint, build]
-    if: success() && github.event_name == 'pull_request'
+    # Run when lint passes and build passes OR was skipped (docs-only changes)
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      needs.lint.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -535,12 +614,49 @@ jobs:
                 autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
             }
 
+            // Check if build was skipped (docs-only changes)
+            const buildSkipped = '${{ needs.build.result }}' === 'skipped';
+            const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
+
+            // Check for unresolved errors from previous runs
+            let previousErrorsNote = "";
+            try {
+                // Get previous workflow runs for this PR
+                const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    event: 'pull_request',
+                    status: 'completed',
+                    per_page: 10,
+                });
+
+                // Filter runs for this PR that failed
+                const prRuns = runs.workflow_runs.filter(run =>
+                    run.pull_requests &&
+                    run.pull_requests.some(pr => pr.number === context.issue.number) &&
+                    run.id !== parseInt('${{ github.run_id }}')
+                );
+
+                const failedRuns = prRuns.filter(run => run.conclusion === 'failure');
+
+                // Check what files were changed in those failed runs vs now
+                if (failedRuns.length > 0 && buildSkipped) {
+                    // Build was skipped but there were previous failures
+                    // This means the previous failures might still exist!
+                    previousErrorsNote = "\n\n> ⚠️ **Note**: Build was skipped for this commit, but there were failed runs earlier in this PR. Make sure all previous issues with Dockerfiles/configs are resolved.";
+                }
+            } catch (e) {
+                console.log("Could not check previous runs:", e.message);
+            }
+
+
             let body = "## ✅ Verification Successful\n\n";
             body += "Thank you for your contribution!\n\n";
             body += "- 🛡️ **Platinum Standards**: Compliant\n";
             body += "- 🟢 **CI Checks**: Passed\n";
-            body += "- 🏗️ **Build**: Successful\n\n";
+            body += "- 🏗️ **Build**: " + buildStatus + "\n\n";
             body += "This PR meets high quality standards and is ready for review.";
+            body += previousErrorsNote;
             body += autoMergeNote;
 
             // Check if we already posted a success comment to avoid spamming
