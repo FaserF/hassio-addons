@@ -23,7 +23,28 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: ⏱️ Wait 1 minute before auto-merge
+        run: |
+          echo "Waiting 1 minute before enabling auto-merge..."
+          echo "To cancel: Add 'no-merge' label to the PR"
+          sleep 60
+
+      - name: 🔍 Check for no-merge label
+        id: check-label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          labels=$(gh pr view "$PR_NUMBER" --repo ${{ github.repository }} --json labels -q '.labels[].name' 2>/dev/null || echo "")
+          if echo "$labels" | grep -q "no-merge"; then
+            echo "🛑 'no-merge' label found. Skipping auto-merge."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: 🤖 Enable Native Auto-Merge
+        if: steps.check-label.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.workflow_run.pull_requests[0].html_url }}

@@ -460,6 +460,7 @@ jobs:
     steps:
       - name: 📝 Post Success Comment
         uses: actions/github-script@v7
+        continue-on-error: true
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -495,15 +496,24 @@ jobs:
                 }
             }
 
-            const body = \`## ✅ Verification Successful
+            // Check if author is maintainer/bot for auto-merge message
+            const author = context.payload.pull_request.user.login;
+            const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]'].includes(author);
 
-            Thank you for your contribution!
+            let autoMergeNote = "";
+            if (isMaintainer) {
+                autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
+            }
 
-            - 🛡️ **Platinum Standards**: Compliant
-            - 🟢 **CI Checks**: Passed
-            - 🏗️ **Build**: Successful
+            const body = `## ✅ Verification Successful
 
-            This PR is likely verifying high quality standards and is ready for review.\`;
+Thank you for your contribution!
+
+- 🛡️ **Platinum Standards**: Compliant
+- 🟢 **CI Checks**: Passed
+- 🏗️ **Build**: Successful
+
+This PR meets high quality standards and is ready for review.${autoMergeNote}`;
 
             // Check if we already posted a success comment to avoid spamming
             const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes("## ✅ Verification Successful"));
@@ -516,32 +526,3 @@ jobs:
                     body: body
                 });
             }
-
-      - name: ℹ️ Get Add-on Info
-        id: info
-        uses: home-assistant/actions/helpers/info@master
-        with:
-          path: "./${{ matrix.addon }}"
-
-      - name: 🛑 Check Arch Support
-        id: check
-        run: |
-          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-             echo "build_arch=true" >> $GITHUB_OUTPUT
-             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT
-           else
-             echo "Skipping ${{ matrix.arch }} for ${{ matrix.addon }}"
-             echo "build_arch=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: 🐳 Build Add-on (Test)
-        if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2025.11.0
-        with:
-          args: |
-            --test \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon

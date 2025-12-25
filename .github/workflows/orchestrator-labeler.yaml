@@ -60,15 +60,23 @@ jobs:
             console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
             console.log(`Add-on list: ${totalAddons.join(', ')}`);
 
+            // Blocklist of known non-addon directories that might appear
+            const blocklist = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests'];
+
             // Sanity check: filter out any obviously wrong entries
             const validAddonPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
             const validAddons = totalAddons.filter(name => {
+                if (blocklist.includes(name.toLowerCase())) {
+                    console.log(`Warning: Blocklisted name filtered: ${name}`);
+                    return false;
+                }
                 if (!validAddonPattern.test(name)) {
                     console.log(`Warning: Invalid addon name detected and filtered: ${name}`);
                     return false;
                 }
                 return true;
             });
+            console.log(`Valid Add-ons after filtering: ${validAddons.join(', ')}`);
 
             // 2. Identify Changed Files (with Pagination)
             const changedFiles = [];
@@ -91,15 +99,18 @@ jobs:
             const labelsToAdd = new Set();
 
             // 3. Map Changes to Add-ons
+            console.log("=== Changed files analysis ===");
             for (const file of changedFiles) {
               const parts = file.filename.split('/');
               if (parts.length > 1) {
                 const rootDir = parts[0];
+                console.log(`File: ${file.filename} -> rootDir: ${rootDir}`);
 
                 // Track Supported Addons
                 if (validAddons.includes(rootDir)) {
                     changedAddons.add(rootDir);
                     labelsToAdd.add(`addon/${rootDir}`);
+                    console.log(`  -> Added as supported addon: ${rootDir}`);
                 }
 
                 // Track Unsupported Addons (Label individually, don't count towards "All Supported")
@@ -108,6 +119,7 @@ jobs:
                     // Verify existence of config.yaml to confirm it is an add-on
                     if (fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
                         labelsToAdd.add(`addon/${unsupAddon}`);
+                        console.log(`  -> Added as unsupported addon: ${unsupAddon}`);
                     }
                 }
               }
