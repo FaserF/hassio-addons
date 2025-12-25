@@ -35,8 +35,6 @@ RUN apk add --no-cache \
     php81-zip \
     php81-xmlwriter \
     tini \
-    yarn \
-    git \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
     && ln -s /usr/bin/php81 /usr/bin/php
 
@@ -45,6 +43,9 @@ RUN apk add --no-cache \
 FROM base as build
 ARG BUILD_DATE
 WORKDIR /var/www/html
+# Install build-only dependencies (not needed in production)
+# hadolint ignore=DL3018
+RUN apk add --no-cache yarn git
 RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \

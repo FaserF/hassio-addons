@@ -215,6 +215,36 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
+
+      - name: ℹ️ Get Add-on Info
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🛑 Check Arch Support
+        id: check
+        run: |
+          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
+             echo "build_arch=true" >> $GITHUB_OUTPUT
+             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+           else
+             echo "Skipping ${{ matrix.arch }} for ${{ matrix.addon }}"
+             echo "build_arch=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🐳 Build Add-on (Test)
+        if: steps.check.outputs.build_arch == 'true'
+        uses: home-assistant/builder@2025.11.0
+        with:
+          args: |
+            --test \
+            --${{ matrix.arch }} \
+            --target /data/${{ matrix.addon }} \
+            --image "${{ steps.check.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon
+
   report:
     name: 📊 CI & Compliance Report
     needs: [filter, lint, build]
