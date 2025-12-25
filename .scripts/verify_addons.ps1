@@ -29,6 +29,13 @@
 
 .PARAMETER Fix
     Attempts to fix common issues (Prettier, Line Endings, Configs).
+
+.PARAMETER ChangedOnly
+    If set, only add-ons with uncommitted changes (git status) will be checked.
+    If an add-on only has README or CHANGELOG changes, only Markdown/Prettier tests are run.
+
+.PARAMETER Help
+    Displays a detailed usage guide and list of available tests.
 #>
 
 param(
@@ -36,8 +43,78 @@ param(
     [string[]]$Tests = @("all"),
     [switch]$IncludeUnsupported,
     [switch]$Fix,
-    [string]$OutputDir
+    [switch]$ChangedOnly,
+    [string]$OutputDir,
+    [switch]$Help
 )
+
+# --- HELP FUNCTION ---
+function Show-Help {
+    Write-Host "================================================================================" -ForegroundColor Cyan
+    Write-Host "                    Hass.io Add-ons Verification Script                         " -ForegroundColor White
+    Write-Host "================================================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "DESCRIPTION:" -ForegroundColor Yellow
+    Write-Host "  Verifies Home Assistant add-ons by running a suite of checks including linting,"
+    Write-Host "  security scanning, build validation, and functional testing."
+    Write-Host ""
+    Write-Host "USAGE:" -ForegroundColor Yellow
+    Write-Host "  .\verify_addons.ps1 [-Addon <Name>] [-Tests <List>] [-ChangedOnly] [-Fix] ..."
+    Write-Host ""
+    Write-Host "PARAMETERS:" -ForegroundColor Yellow
+    Write-Host "  -Addon <String[]>   : Specific add-on(s) to test. Default: 'all'."
+    Write-Host "                        Example: -Addon 'apache2', 'openssl'"
+    Write-Host ""
+    Write-Host "  -Tests <String[]>   : Specific tests to run. Default: 'all'."
+    Write-Host "                        Example: -Tests 'DockerBuild', 'ShellCheck'"
+    Write-Host "                        Valid Values: LineEndings, ShellCheck, Hadolint, YamlLint,"
+    Write-Host "                                      MarkdownLint, Prettier, AddonLinter, Compliance,"
+    Write-Host "                                      Trivy, VersionCheck, DockerBuild, CodeRabbit, DockerRun"
+    Write-Host ""
+    Write-Host "  -ChangedOnly        : Only check add-ons with uncommitted git changes."
+    Write-Host "                        Optimizes tests: Docs-only changes -> Docs-only tests."
+    Write-Host ""
+    Write-Host "  -Fix                : Auto-fix issues where possible (Prettier, LineEndings)."
+    Write-Host ""
+    Write-Host "  -IncludeUnsupported : Include add-ons in the .unsupported/ directory."
+    Write-Host ""
+    Write-Host "  -OutputDir <Path>   : Directory for logs and reports. Default: .script/"
+    Write-Host ""
+    Write-Host "EXAMPLES:" -ForegroundColor Yellow
+    Write-Host "  1. Run all tests on all add-ons:"
+    Write-Host "     .\verify_addons.ps1"
+    Write-Host ""
+    Write-Host "  2. Test only 'apache2' with Docker Build and Run:"
+    Write-Host "     .\verify_addons.ps1 -Addon apache2 -Tests DockerBuild,DockerRun"
+    Write-Host ""
+    Write-Host "  3. Fix formatting issues on all changed add-ons:"
+    Write-Host "     .\verify_addons.ps1 -ChangedOnly -Fix"
+    Write-Host ""
+}
+
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
+# --- PARAMETER VALIDATION ---
+# Check for unbound arguments (e.g. typos like -Testtt)
+if ($args) {
+    Write-Host "ERROR: Unknown parameters detected: $($args -join ' ')" -ForegroundColor Red
+    Write-Host ""
+    Show-Help
+    exit 1
+}
+
+$ValidTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "CodeRabbit", "DockerRun")
+foreach ($t in $Tests) {
+    if ($t -notin $ValidTests) {
+        Write-Host "ERROR: Invalid Test detected: '$t'" -ForegroundColor Red
+        Write-Host ""
+        Show-Help
+        exit 1
+    }
+}
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
@@ -49,8 +126,9 @@ if (-not $OutputDir) { $OutputDir = $PSScriptRoot }
 # Ensure directory exists
 if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null }
 
-$LogFile = Join-Path $OutputDir "verify_log.txt"
-$JsonFile = Join-Path $OutputDir "verification_results.json"
+$Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$LogFile = Join-Path $OutputDir "verify_log_$Timestamp.txt"
+$JsonFile = Join-Path $OutputDir "verification_results_$Timestamp.json"
 
 try {
     # Stop any existing transcript first to avoid errors
@@ -161,6 +239,20 @@ function Get-DefaultOptions {
     catch { return "{}" }
 }
 
+
+function Get-RequiredSchemaKeys {
+    param($Path)
+    # Extracts required keys from schema (those NOT ending with ?)
+    $script = "import sys, yaml; conf = yaml.safe_load(open(sys.argv[1])); print(','.join([k for k,v in conf.get('schema', {}).items() if isinstance(v, str) and not v.endswith('?')]))"
+    try {
+        $pathArg = $Path.Replace('\','/')
+        $res = python -c $script $pathArg 2>&1
+        if ($LASTEXITCODE -eq 0) { return $res.Trim() }
+        return ""
+    }
+    catch { return "" }
+}
+
 Set-Location $RepoRoot
 $GlobalFailed = $false
 
@@ -176,14 +268,66 @@ if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $DockerTests })) {
 }
 
 # --- SCOPE DEFINITION ---
+$ChangedAddons = @{} # Dictionary: AddonName -> Type ("Code" or "Docs")
+
+if ($ChangedOnly) {
+    Write-Host "Detecting changed files via git..." -ForegroundColor Gray
+    $gitStatus = git status --porcelain 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Git not available or not a git repository. -ChangedOnly ignored."
+        $ChangedOnly = $false
+    } else {
+        foreach ($line in $gitStatus) {
+            if ($line.Length -lt 4) { continue }
+            $file = $line.Substring(3).Trim()
+            $parts = $file.Split([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+
+            $addonName = $null
+            if ($parts.Count -ge 2 -and $parts[0] -eq ".unsupported") {
+                $addonName = $parts[1]
+            } elseif ($parts.Count -ge 1) {
+                # Check if it's a known addon directory (not a script or dotfile)
+                $potential = $parts[0]
+                if (Test-Path "$potential/config.yaml") {
+                    $addonName = $potential
+                }
+            }
+
+            if ($addonName) {
+                $isDoc = $file -match 'README\.md$|CHANGELOG\.md$'
+                $currentType = if ($ChangedAddons.ContainsKey($addonName)) { $ChangedAddons[$addonName] } else { "Docs" }
+
+                if (-not $isDoc) {
+                    $ChangedAddons[$addonName] = "Code"
+                } elseif ($currentType -eq "Docs") {
+                    $ChangedAddons[$addonName] = "Docs"
+                }
+            }
+        }
+
+        if ($ChangedAddons.Count -eq 0) {
+            Write-Host "No uncommitted changes detected in add-ons. Nothing to do." -ForegroundColor Green
+            if (try { Stop-Transcript | Out-Null; $true } catch { $false }) {}
+            exit 0
+        }
+
+        Write-Host "Changes detected in: $($ChangedAddons.Keys -join ', ')" -ForegroundColor Gray
+    }
+}
+
 # Handle both single string and array input for -Addon parameter
 if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") {
     $addons = Get-ChildItem -Path . -Directory | Where-Object {
-        (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported") -and ($_.Name -ne "homeassistant-test-instance")
+        (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported") -and ($_.Name -ne "homeassistant-test-instance") -and ($_.Name -notmatch "^tmp")
     }
     if ($IncludeUnsupported) {
         $unsup = Get-ChildItem -Path .unsupported -Directory -ErrorAction SilentlyContinue
         if ($unsup) { $addons += $unsup }
+    }
+
+    # Filter by changes if requested
+    if ($ChangedOnly) {
+        $addons = $addons | Where-Object { $ChangedAddons.ContainsKey($_.Name) }
     }
 }
 else {
@@ -201,8 +345,39 @@ else {
         }
     }
     if ($addons.Count -eq 0) {
-        Throw "No valid add-ons found from the provided list."
+        Write-Host "ERROR: No valid add-ons found from the provided list." -ForegroundColor Red
+        Write-Host ""
+        Show-Help
+        exit 1
     }
+
+    # If ChangedOnly is used with specific addons, only keep those that actually changed
+    if ($ChangedOnly) {
+        $addons = $addons | Where-Object { $ChangedAddons.ContainsKey($_.Name) }
+        if ($addons.Count -eq 0) {
+             Write-Host "None of the specified add-ons have uncommitted changes. Skipping." -ForegroundColor Green
+             if (try { Stop-Transcript | Out-Null; $true } catch { $false }) {}
+             exit 0
+        }
+    }
+}
+
+# Helper to check if a test should run for a specific addon
+function Should-RunTest {
+    param($AddonName, $TestName)
+
+    # If not in ChangedOnly mode, or if it's a code change, run everything requested
+    if (-not $ChangedOnly -or $ChangedAddons[$AddonName] -eq "Code") {
+        return $true
+    }
+
+    # If it's only a Doc change, only run MarkdownLint and Prettier
+    $AllowedDocsTests = @("MarkdownLint", "Prettier", "LineEndings")
+    if ($TestName -in $AllowedDocsTests) {
+        return $true
+    }
+
+    return $false
 }
 
 # --- AUTO FIX ---
@@ -219,6 +394,7 @@ if ($Fix) {
 if ("all" -in $Tests -or "LineEndings" -in $Tests) {
     Write-Header "1. Line Ending Check"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "LineEndings")) { continue }
         $files = Get-ChildItem $a.FullName -Recurse -Include "*.sh", "*.md", "*.yaml"
         $crlfFound = $false
         foreach ($f in $files) {
@@ -246,6 +422,7 @@ if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
     Write-Header "2. ShellCheck"
     $shellcheck = ".\shellcheck.exe"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "ShellCheck")) { continue }
         $sh = Get-ChildItem $a.FullName -Recurse -Filter "*.sh"
         $failed = $false
         foreach ($s in $sh) {
@@ -272,6 +449,7 @@ if ("all" -in $Tests -or "Hadolint" -in $Tests) {
     Write-Header "3. Hadolint"
     if ($DockerAvailable) {
         foreach ($a in $addons) {
+            if (-not (Should-RunTest $a.Name "Hadolint")) { continue }
             $df = Join-Path $a.FullName "Dockerfile"
             if (Test-Path $df) {
                 try {
@@ -291,6 +469,7 @@ if ("all" -in $Tests -or "Hadolint" -in $Tests) {
 if ("all" -in $Tests -or "YamlLint" -in $Tests) {
     Write-Header "4. YamlLint"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "YamlLint")) { continue }
         try {
              # Run YamlLint on the specific addon directory
              # We capture output to avoid spamming the console unless it fails
@@ -314,6 +493,7 @@ if ("all" -in $Tests -or "YamlLint" -in $Tests) {
 if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
     Write-Header "5. MarkdownLint"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "MarkdownLint")) { continue }
         try {
             # Always use addon-specific target inside the loop to avoid cross-addon failures
             # IMPORTANT: MarkdownLint/glob requires forward slashes even on Windows
@@ -335,6 +515,7 @@ if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
 if ("all" -in $Tests -or "Prettier" -in $Tests) {
     Write-Header "6. Prettier"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "Prettier")) { continue }
         try {
             # Always use addon-specific target inside the loop to avoid cross-addon failures
             $ptarget = "$($a.FullName)\**\*.{json,js,md,yaml}"
@@ -353,11 +534,14 @@ if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
     Write-Header "7. Add-on Linter"
     if ($DockerAvailable) {
         $img = "ghcr.io/frenck/action-addon-linter:v2"
-        if ((docker pull $img 2>&1) -match "denied") {
-            Add-Result "Global" "AddonLinter" "WARN" "Image pull failed (Auth needed). Skipping."
+        # Try to pull, but don't fail immediately if we have a local copy
+        $pullErr = (docker pull $img 2>&1)
+        if ($LASTEXITCODE -ne 0 -and -not (docker images -q $img)) {
+            Add-Result "Global" "AddonLinter" "WARN" "Image pull failed and not found locally. Skipping."
         }
         else {
             foreach ($a in $addons) {
+                if (-not (Should-RunTest $a.Name "AddonLinter")) { continue }
                 try {
                     $res = docker run --rm -v "$($a.FullName):/data" --entrypoint addon-linter $img --path /data 2>&1
                     if ($LASTEXITCODE -eq 0) {
@@ -381,6 +565,7 @@ if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
 if ("all" -in $Tests -or "Compliance" -in $Tests) {
     Write-Header "8. Compliance"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "Compliance")) { continue }
         try {
             $out = python .scripts/check_compliance.py $a.FullName 2>&1
             if ($LASTEXITCODE -eq 0) { Add-Result $a.Name "Compliance" "PASS" "OK" }
@@ -407,6 +592,7 @@ if ("all" -in $Tests -or "Trivy" -in $Tests) {
         }
         else {
             foreach ($a in $addons) {
+                if (-not (Should-RunTest $a.Name "Trivy")) { continue }
                 $relPath = $a.FullName.Substring("$RepoRoot".Length).TrimStart('\', '/').Replace('\', '/')
                 $res = docker run --rm -v "trivy_cache:/root/.cache/trivy" -v "$($RepoRoot):/app" $trivy fs "/app/$relPath" --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 2>&1
                 if ($LASTEXITCODE -ne 0) {
@@ -424,6 +610,7 @@ if ("all" -in $Tests -or "Trivy" -in $Tests) {
 if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
     Write-Header "10. Base Image & Version Check"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "VersionCheck")) { continue }
         $buildFile = Join-Path $a.FullName "build.yaml"
         if (Test-Path $buildFile) {
             $base = Get-BuildFrom $buildFile
@@ -444,6 +631,10 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
                     $ver = $matches[1]
                     if ($ver -ne $LatestPython) { Add-Result $a.Name "Ver-Python" "WARN" "Uses Python $ver (Latest: $LatestPython)" }
                     else { Add-Result $a.Name "Ver-Python" "PASS" "OK ($ver)" }
+                }
+                elseif ($baseImage -match "ghcr\.io/hassio-addons/.*python-base.*" -or $baseImage -match "ghcr\.io/hassio-addons/.*base-python.*") {
+                    # Official Hassio Python base image - recognized as valid (any version)
+                    Add-Result $a.Name "Ver-Python" "PASS" "OK (Official Hassio Python Base)"
                 }
                 else {
                     Add-Result $a.Name "Ver-Base" "INFO" "Unmonitored Base: $baseImage"
@@ -473,6 +664,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
     if ($DockerAvailable) {
         Write-Header "11. Docker Test (Dynamic Build)"
         foreach ($a in $addons) {
+            if (-not (Should-RunTest $a.Name "DockerBuild")) { continue }
             $imgName = "local/test-$($a.Name.ToLower())"
             $date = Get-Date -Format "yyyy-MM-dd"
 
@@ -525,11 +717,11 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 $contName = "test-run-$($a.Name.ToLower())"
                 $mockName = "mock-supervisor"
                 $networkName = "ha-addon-test-net"
-                docker rm -f $contName 2>$null | Out-Null
-                docker rm -f $mockName 2>$null | Out-Null
+                docker rm -f $contName 2>&1 | Out-Null
+                docker rm -f $mockName 2>&1 | Out-Null
 
                 # Create isolated network for this test
-                docker network rm $networkName 2>$null | Out-Null
+                docker network rm $networkName 2>&1 | Out-Null
                 docker network create $networkName 2>$null | Out-Null
 
                 # Prepare config
@@ -538,7 +730,23 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
                 $configFile = Join-Path $a.FullName "config.yaml"
-                $optionsPath = Join-Path $tempDir "options.json"
+                $dataDir = Join-Path $tempDir "data"
+                New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
+                $optionsPath = Join-Path $dataDir "options.json"
+
+                # Create dummy SSL certificates globally
+                $sslDir = Join-Path $tempDir "ssl"
+                New-Item -ItemType Directory -Path $sslDir -Force | Out-Null
+                Set-Content -Path (Join-Path $sslDir "fullchain.pem") -Value "DUMMY CERTIFICATE"
+                Set-Content -Path (Join-Path $sslDir "privkey.pem") -Value "DUMMY KEY"
+
+                # Create other common directories
+                $shareDir = Join-Path $tempDir "share"
+                $configDir = Join-Path $tempDir "config"
+                $mediaDir = Join-Path $tempDir "media"
+                New-Item -ItemType Directory -Path $shareDir -Force | Out-Null
+                New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+                New-Item -ItemType Directory -Path $mediaDir -Force | Out-Null
                 if (Test-Path $configFile) {
                     $jsonOpts = Get-DefaultOptions $configFile
                     # Inject default log_level if missing (required by bashio)
@@ -552,6 +760,36 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                         }
                         if ($a.Name -like "apache2*") {
                              $optObj | Add-Member -NotePropertyName "ssl" -NotePropertyValue $false -Force
+                             $optObj | Add-Member -NotePropertyName "default_conf" -NotePropertyValue "default" -Force
+                             $optObj | Add-Member -NotePropertyName "default_ssl_conf" -NotePropertyValue "default" -Force
+                             $optObj | Add-Member -NotePropertyName "website_name" -NotePropertyValue "localhost" -Force
+                        }
+                        if ($a.Name -eq "openssl") {
+                             $optObj | Add-Member -NotePropertyName "website_name" -NotePropertyValue "localhost" -Force
+                        }
+                        if ($a.Name -eq "switch-lan-play") {
+                             $optObj | Add-Member -NotePropertyName "server" -NotePropertyValue "mock-server:11451" -Force
+                        }
+                        if ($a.Name -eq "netboot-xyz") {
+                             # Ensure paths exist
+                             New-Item -ItemType Directory -Path "$mediaDir/netboot/image" -Force | Out-Null
+                             New-Item -ItemType Directory -Path "$mediaDir/netboot/config" -Force | Out-Null
+                        }
+                        if ($a.Name -eq "tado_aa") {
+                             $optObj | Add-Member -NotePropertyName "username" -NotePropertyValue "mockuser" -Force
+                             $optObj | Add-Member -NotePropertyName "password" -NotePropertyValue "mockpass" -Force
+                        }
+                        if ($a.Name -eq "pterodactyl-wings") {
+                             $optObj | Add-Member -NotePropertyName "config_file" -NotePropertyValue "/etc/pterodactyl/config.yml" -Force
+                        }
+                        if ($a.Name -eq "bt-mqtt-gateway") {
+                             $optObj | Add-Member -NotePropertyName "config_path" -NotePropertyValue "/share/bt-mqtt-gateway.yaml" -Force
+                             Set-Content -Path "$shareDir/bt-mqtt-gateway.yaml" -Value "mqtt:`n  host: mock`n"
+                        }
+                        if ($a.Name -eq "wiki.js") {
+                            # Depends on MySQL service which is hard to mock
+                            Add-Result $a.Name "DockerRun" "INFO" "Skipped (Requires MySQL Service)"
+                            continue
                         }
                         $optObj | ConvertTo-Json -Depth 10 | Out-File -FilePath $optionsPath -Encoding UTF8
                     } catch {
@@ -561,13 +799,31 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                     '{"log_level":"info"}' | Out-File -FilePath $optionsPath -Encoding UTF8
                 }
 
+                # --- VALIDATE MOCK SUPPORT ---
+                if (Test-Path $configFile) {
+                    $requiredKeys = (Get-RequiredSchemaKeys $configFile) -split "," | Where-Object { $_ -ne "" }
+                    if ($requiredKeys.Count -gt 0) {
+                        try {
+                            $finalOpts = Get-Content $optionsPath | ConvertFrom-Json
+                            $missingKeys = @()
+                            foreach ($key in $requiredKeys) {
+                                if (-not $finalOpts.PSObject.Properties[$key]) {
+                                    $missingKeys += $key
+                                }
+                            }
+                            if ($missingKeys.Count -gt 0) {
+                                Write-Host "    ! WARNING: Add-on may fail due to missing mock config: $($missingKeys -join ', ')" -ForegroundColor Yellow
+                                Add-Result $a.Name "DockerRun" "WARN" "Incomplete Mock Config. Missing: $($missingKeys -join ', ')"
+                            }
+                        } catch {
+                            Write-Host "    ! WARNING: Could not validate options.json" -ForegroundColor Yellow
+                        }
+                    }
+                }
+
                 # Skip AegisBot due to required GitHub Token/Network
                 if ($a.Name -eq "AegisBot") {
                     Add-Result $a.Name "DockerRun" "INFO" "Skipped (Requires Credentials)"
-                    continue
-                }
-                if ($a.Name -like "apache2*") {
-                    Add-Result $a.Name "DockerRun" "INFO" "Skipped (Local Env Incompatibility)"
                     continue
                 }
 
@@ -577,20 +833,29 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 $mockArgs = @("run", "-d", "--name", $mockName)
                 $mockArgs += "--network", $networkName
                 $mockArgs += "--network-alias", "supervisor"
-                $mockArgs += "-v", "$tempDir`:/data"
+                $mockArgs += "-v", "$($dataDir.Replace('\','/')):/data"
                 $mockArgs += "-v", "$($mockScript.Replace('\','/')):/mock.py"
                 $mockArgs += "-w", "/data"
                 $mockArgs += "python:3.11-alpine"
-                $mockArgs += "python", "/mock.py", "/data/options.json", "80"
+                $mockArgs += "python", "/mock.py", "/data/options.json", "80", "0.0.0.0"
                 & docker @mockArgs 2>&1 | Out-Null
                 Start-Sleep -Seconds 3
 
                 # Run add-on with HA-like env on the same network
+                # Mount common addon directories
+                # Directories created above ($sslDir, $shareDir, etc)
+
                 $runArgs = @("run", "-d", "--name", $contName)
                 $runArgs += "--network", $networkName
-                $runArgs += "-v", "$tempDir`:/data"
-                $runArgs += "-e", "SUPERVISOR_TOKEN=testing_token"
-                $runArgs += "-e", "HASSIO_TOKEN=testing_token"
+                $runArgs += "-v", "$($tempDir.Replace('\','/'))/data:/data"
+                $runArgs += "-v", "$($configDir.Replace('\','/')):/config"
+                $runArgs += "-v", "$($sslDir.Replace('\','/')):/ssl"
+                $runArgs += "-v", "$($shareDir.Replace('\','/')):/share"
+                $runArgs += "-v", "$($mediaDir.Replace('\','/')):/media"
+
+                $runArgs += "-e", "SUPERVISOR_TOKEN=mock_token"
+                $runArgs += "-e", "HASSIO_TOKEN=mock_token"
+                $runArgs += "-e", "SUPERVISOR_API=http://supervisor"
                 $runArgs += $imgName
 
                 $runInfo = & docker @runArgs 2>&1
@@ -612,10 +877,11 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
 
                 if (-not $isRunning) {
                      # Check if this is a Supervisor API issue (expected in local testing)
-                     if ($logs -match "Unknown log_level" -or $logs -match "Could not resolve host: supervisor" -or $logs -match "base-addon-log-level") {
-                         Add-Result $a.Name "DockerRun" "INFO" "Skipped (Supervisor API not available locally)"
+                     if ($logs -match "Could not resolve host: supervisor") {
+                         # If it's a resolution issue, it means the mock wasn't reachable or the container exited too early
+                         Add-Result $a.Name "DockerRun" "INFO" "Skipped (Supervisor Connection Issues). Logs:`n$($logs | Select-Object -Last 10)"
                      } else {
-                         Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 10)"
+                         Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 15)"
                      }
                 }
                 elseif ($healthStatus -eq "unhealthy") {
@@ -629,9 +895,9 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
                 }
 
                 # Cleanup
-                docker rm -f $contName 2>$null | Out-Null
-                docker rm -f $mockName 2>$null | Out-Null
-                docker network rm $networkName 2>$null | Out-Null
+                docker rm -f $contName 2>&1 | Out-Null
+                docker rm -f $mockName 2>&1 | Out-Null
+                docker network rm $networkName 2>&1 | Out-Null
                 Remove-Item $tempDir -Recurse -Force 2>$null
             }
         }
@@ -642,6 +908,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests) {
 if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
     Write-Header "12. CodeRabbit-Style Deep Checks"
     foreach ($a in $addons) {
+        if (-not (Should-RunTest $a.Name "CodeRabbit")) { continue }
         $df = Join-Path $a.FullName "Dockerfile"
         $buildFile = Join-Path $a.FullName "build.yaml"
 

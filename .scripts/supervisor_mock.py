@@ -57,7 +57,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/core/info":
             self._send_json(
                 {
-                    "version": "2025.1.0",
+                    "version": "2025.12.0",
                     "arch": "amd64",
                     "machine": "generic-x86-64",
                     "state": "running",
@@ -85,6 +85,12 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "logging": "info",
                 }
             )
+        elif self.path == "/discovery":
+            self._send_json({"discovery": []})
+        elif self.path == "/addons":
+            self._send_json({"addons": []})
+        elif self.path == "/info":
+            self._send_json({"supervisor": "2025.12.3", "homeassistant": "2025.12.0"})
         else:
             # Return empty success for unknown endpoints
             self._send_json({})
@@ -105,7 +111,7 @@ def validate_bind_address(address: str) -> str:
         return address
 
 
-def run_server(options_path="options.json", port=80, bind_address="127.0.0.1"):
+def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     """Start the mock Supervisor API server."""
     # Load options with specific exception handling
     try:
@@ -154,6 +160,6 @@ if __name__ == "__main__":
     bind_address = (
         sys.argv[3]
         if len(sys.argv) > 3
-        else os.environ.get("MOCK_BIND_ADDRESS", "127.0.0.1")
+        else os.environ.get("MOCK_BIND_ADDRESS", "0.0.0.0")
     )
     run_server(options_path, port, bind_address)
