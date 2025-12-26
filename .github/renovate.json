@@ -191,6 +191,17 @@
         "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "antigravity-server/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "Eidolf/Docker-AntiGravity"
     }
   ],
   "packageRules": [
@@ -230,7 +241,8 @@
         "Requarks/wiki",
         "FaserF/AegisBot",
         "FaserF/Solumati",
-        "spacemeowx2/switch-lan-play"
+        "spacemeowx2/switch-lan-play",
+        "Eidolf/Docker-AntiGravity"
       ],
       "automerge": false
     },
@@ -291,6 +303,13 @@
       ],
       "rangeStrategy": "pin",
       "automerge": true
+    },
+    {
+      "description": "Allow pre-releases for Antigravity-Server",
+      "matchDepNames": [
+        "Eidolf/Docker-AntiGravity"
+      ],
+      "ignoreUnstable": false
     }
   ]
 }

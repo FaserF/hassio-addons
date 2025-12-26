@@ -55,6 +55,7 @@ env:
     AegisBot
     solumati
     netboot-xyz
+    antigravity-server
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge
@@ -158,7 +159,8 @@ jobs:
             fi
 
             # Check for blocking labels
-            for label in ${{ env.BLOCK_LABELS }}; do
+            CLEAN_BLOCK_LABELS=$(echo "${{ env.BLOCK_LABELS }}" | tr '\n' ' ')
+            for label in $CLEAN_BLOCK_LABELS; do
               if echo "$PR_LABELS" | grep -qi "\"$label\""; then
                 echo "⛔ Found blocking label: $label"
                 {
@@ -173,7 +175,8 @@ jobs:
 
             # Check for safe labels
             HAS_SAFE="false"
-            for label in ${{ env.SAFE_LABELS }}; do
+            CLEAN_SAFE_LABELS=$(echo "${{ env.SAFE_LABELS }}" | tr '\n' ' ')
+            for label in $CLEAN_SAFE_LABELS; do
               if echo "$PR_LABELS" | grep -qi "\"$label\""; then
                 HAS_SAFE="true"
                 break
@@ -196,7 +199,8 @@ jobs:
 
             # Detect affected auto-release addons
             # Use grep -F for fixed string matching (handles special chars like . in wiki.js)
-            for addon in ${{ env.AUTO_RELEASE_ADDONS }}; do
+            CLEAN_AUTO_ADDONS=$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')
+            for addon in $CLEAN_AUTO_ADDONS; do
               if echo "$CHANGED" | grep -Fq "${addon}/"; then
                 [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
               fi

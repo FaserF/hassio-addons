@@ -392,6 +392,34 @@ except:
     catch { return "" }
 }
 
+function Get-AddonSchema {
+    <#
+    .SYNOPSIS
+        Extracts the 'schema' key from config.yaml as JSON.
+    .PARAMETER Path
+        Path to config.yaml file.
+    .OUTPUTS
+        JSON string of schema or "{}".
+    #>
+    param([Parameter(Mandatory)][string]$Path)
+
+    $script = @'
+import sys, yaml, json
+try:
+  print(json.dumps(yaml.safe_load(open(sys.argv[1])).get("schema", {})))
+except:
+  print("{}")
+'@
+    try {
+        $pathArg = $Path.Replace('\','/')
+        $json = python -c $script $pathArg 2>&1
+        $res = $json | Out-String
+        if ($LASTEXITCODE -eq 0 -and $res -match '^\s*\{.*\}\s*$') { return $res.Trim() }
+        return "{}"
+    }
+    catch { return "{}" }
+}
+
 # --- TEST FILTERING ---
 function Should-RunTest {
     <#
@@ -451,14 +479,14 @@ function Get-TestConfig {
         latestNode = ""
         builderImage = ""
         scriptVersion = ""
-        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks")
-        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks")
+        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks", "CustomTests")
+        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks", "CustomTests")
         docsOnlyTests = @("MarkdownLint", "Prettier", "LineEndings")
         testWeights = @{
             LineEndings = 0.2; ShellCheck = 1.0; Hadolint = 3.0; YamlLint = 0.5
             MarkdownLint = 0.5; Prettier = 1.5; AddonLinter = 10.0; Compliance = 1.0
             Trivy = 60.0; VersionCheck = 1.0; DockerBuild = 180.0; DockerRun = 60.0
-            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0
+            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0; CustomTests = 5.0
         }
     }
 

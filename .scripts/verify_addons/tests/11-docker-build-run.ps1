@@ -16,7 +16,8 @@ param(
     [bool]$DockerAvailable = $false,
     [bool]$RunTests = $true,
     [bool]$ChangedOnly = $false,
-    [hashtable]$ChangedAddons = @{}
+    [hashtable]$ChangedAddons = @{},
+    [bool]$CacheImages = $false
 )
 
 # Source common module
@@ -43,9 +44,16 @@ if ($doRuns) {
     '{}' | Set-Content -Path $globalOptionsPath -Encoding UTF8
 
     # Clean previous
-    try { docker rm -f $mockName 2>&1 | Out-Null } catch {}
-    try { docker network rm $networkName 2>&1 | Out-Null } catch {}
-    try { docker network create $networkName 2>$null | Out-Null } catch {}
+    Write-Host "    > Cleaning up previous mock environment..." -ForegroundColor Gray
+    if (docker ps -a -q -f name=$mockName) {
+        docker rm -f $mockName 2>&1 | Out-Null
+        Start-Sleep -Milliseconds 500
+    }
+    if (docker network ls -q -f name=$networkName) {
+        docker network rm $networkName 2>&1 | Out-Null
+        Start-Sleep -Milliseconds 500
+    }
+    docker network create $networkName 2>$null | Out-Null
 
     $mockScript = Join-Path $PSScriptRoot "../../supervisor_mock.py"
     $mockArgs = @("run", "-d", "--name", $mockName)
@@ -123,14 +131,29 @@ try {
         $buildArgs += "--image", $imgName
         $buildArgs += "--docker-hub", "local"
 
-        $buildOutput = & docker @buildArgs 2>&1
-        $buildSuccess = ($LASTEXITCODE -eq 0)
+        $buildSuccess = $false
+        $skippedBuild = $false
+
+        # Check for existing image (exact match first, then by name)
+        # We use strict sub-expressions $() to ensure command executes separate from -or
+        if ($CacheImages -and ($(docker images -q "local/${imgName}:latest") -or $(docker images -q "local/${imgName}"))) {
+             Write-Host "    > Cache enabled: Image 'local/$imgName' found. Skipping build." -ForegroundColor Green
+             $buildSuccess = $true
+             $skippedBuild = $true
+             Add-Result -Addon $a.Name -Check "DockerBuild" -Status "PASS" -Message "Cached Image Used"
+        }
+        else {
+            $buildOutput = & docker @buildArgs 2>&1
+            $buildSuccess = ($LASTEXITCODE -eq 0)
+        }
 
         if (-not $buildSuccess) {
             Add-Result -Addon $a.Name -Check "DockerBuild" -Status "FAIL" -Message "Build Failed. Output:`n$buildOutput"
         }
         else {
-            Add-Result -Addon $a.Name -Check "DockerBuild" -Status "PASS" -Message "OK"
+            if (-not $skippedBuild) {
+                Add-Result -Addon $a.Name -Check "DockerBuild" -Status "PASS" -Message "OK"
+            }
 
             # --- RUN TEST ---
             if ($RunTests) {
@@ -151,7 +174,10 @@ try {
             }
 
             $contName = "test-run-$($a.Name.ToLower())"
-            docker rm -f $contName 2>&1 | Out-Null
+            if (docker ps -a -q -f name=$contName) {
+                docker rm -f $contName 2>&1 | Out-Null
+                Start-Sleep -Milliseconds 200
+            }
 
             # Ensure network exists (resiliency against previous crashes)
             if (-not (docker network ls -q -f name=$networkName)) {
@@ -281,6 +307,41 @@ try {
                          $optObj | Add-Member -NotePropertyName "firmware_name" -NotePropertyValue "miwifi_r3600_firmware.bin" -Force
                          $optObj | Add-Member -NotePropertyName "firmware_path" -NotePropertyValue "/share/miwifi_firmware/" -Force
                     }
+                    if ($a.Name -eq "antigravity-server") {
+                        $optObj | Add-Member -NotePropertyName "vnc_password" -NotePropertyValue "" -Force
+                    }
+
+                    # Dynamic Falling: Fill missing required keys from schema
+                    $schemaJson = Get-AddonSchema $configFile
+                    if ($schemaJson -and $schemaJson -ne "{}") {
+                        try {
+                            $schema = $schemaJson | ConvertFrom-Json -ErrorAction Stop
+                            foreach ($prop in $schema.PSObject.Properties) {
+                                $key = $prop.Name
+                                $val = $prop.Value
+                                # Check if it's required (doesn't end with ?)
+                                if ($val -is [string] -and -not $val.EndsWith("?")) {
+                                    if (-not $optObj.PSObject.Properties[$key]) {
+                                        Write-Host "    > Auto-filling missing required key: $key ($val)" -ForegroundColor Gray
+                                        $cleanType = $val -replace '\[|\]' , ''
+                                        $defaultValue = switch ($cleanType) {
+                                            "bool" { $false }
+                                            "int" { 0 }
+                                            "float" { 0.0 }
+                                            "email" { "mock@example.com" }
+                                            "url" { "http://mock.example.com" }
+                                            { $_ -match "list" } { @() }
+                                            default { "mock_value" }
+                                        }
+                                        $optObj | Add-Member -NotePropertyName $key -NotePropertyValue $defaultValue -Force
+                                    }
+                                }
+                            }
+                        } catch {
+                            Write-Host "    ! WARNING: Failed to process schema for dynamic filling" -ForegroundColor Yellow
+                        }
+                    }
+
                     $jsonOutput = $optObj | ConvertTo-Json -Depth 10
                     $jsonOutput | Set-Content -Path $optionsPath -Encoding UTF8
                     Write-Host "    > Generated options.json: $jsonOutput" -ForegroundColor DarkGray
@@ -382,8 +443,8 @@ try {
             $runArgs += "-v", "$($mediaDir.Replace('\','/')):/media"
             $runArgs += "-e", "SUPERVISOR_TOKEN=mock_token"
             $runArgs += "-e", "HASSIO_TOKEN=mock_token"
-            $runArgs += "-e", "SUPERVISOR_API=http://mock-supervisor"
-            $runArgs += "-e", "HASSIO_URL=http://mock-supervisor/"
+            $runArgs += "-e", "SUPERVISOR_API=http://supervisor"
+            $runArgs += "-e", "HASSIO_URL=http://supervisor/"
             $runArgs += "local/$imgName"
 
             $runInfo = & docker @runArgs 2>&1
@@ -434,7 +495,7 @@ try {
                     }
                 }
                 else {
-                    Add-Result -Addon $a.Name -Check "DockerRun" -Status "FAIL" -Message "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 25)"
+                    Add-Result -Addon $a.Name -Check "DockerRun" -Status "FAIL" -Message "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 200)"
                 }
             }
             elseif ($healthStatus -eq "unhealthy") {
@@ -448,8 +509,16 @@ try {
             }
 
             # Cleanup
-            docker rm -f $contName 2>&1 | Out-Null
-            Remove-Item $tempDir -Recurse -Force 2>$null
+            $customTestPath = Join-Path $PSScriptRoot "../custom/$($a.Name)/test.ps1"
+            $hasCustomTest = Test-Path $customTestPath
+            $willRunCustom = ("all" -in $Tests -or "CustomTests" -in $Tests)
+
+            if ($hasCustomTest -and $willRunCustom) {
+                Write-Host "    > Custom test found for $($a.Name), keeping container '$contName' for later reuse." -ForegroundColor Gray
+            } else {
+                docker rm -f $contName 2>&1 | Out-Null
+                Remove-Item $tempDir -Recurse -Force 2>$null
+            }
             }
         }
     }

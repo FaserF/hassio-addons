@@ -42,7 +42,7 @@ jobs:
 
             # Fetch PR via GitHub API using commit SHA
             PR_DATA=$(gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/pulls" \
-              --jq '.[0] | {number: .number, url: .html_url, author: .user.login}' 2>/dev/null || echo "")
+              --jq '.[0] | {number: .number, author: .user.login}' 2>/dev/null || echo "")
 
             if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
               echo "No PR found for commit $HEAD_SHA"
@@ -197,3 +197,34 @@ jobs:
           # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
           # The PR will only merge once ALL required status checks (CI) have passed.
           gh pr merge --auto --squash "$PR_NUMBER"
+
+      - name: 📢 Post Merge Success Comment
+        if: >-
+          steps.find-pr.outputs.found == 'true' &&
+          steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.check-label.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
+            if (isNaN(prNumber)) return;
+
+            const generateMessage = require('./.scripts/generate_ci_success_message.js');
+
+            const autoMergeNote = "\n\n## 🚀 Auto-Merge Enabled\n\n**Auto-merge has been enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied.";
+            const previousErrorsNote = "";
+
+            const body = generateMessage({
+                skipped: false,
+                buildStatus: "✅ Successful",
+                autoMergeNote: autoMergeNote,
+                previousErrorsNote: previousErrorsNote
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body
+            });
