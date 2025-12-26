@@ -81,8 +81,50 @@ jobs:
             echo "allowed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: ⏱️ Wait 1 minute before auto-merge
+      - name: 🔬 Check if CI jobs actually ran
+        id: check-ci-ran
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          echo "Checking if actual CI jobs ran in workflow run $RUN_ID..."
+
+          # Get all jobs from the workflow run
+          JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --jq '.jobs[] | {name: .name, conclusion: .conclusion}')
+
+          # Count jobs that actually ran (not skipped)
+          RAN_COUNT=0
+          SKIPPED_COUNT=0
+
+          while IFS= read -r job; do
+            name=$(echo "$job" | jq -r '.name')
+            conclusion=$(echo "$job" | jq -r '.conclusion')
+
+            # Skip notification/summary jobs, only count actual CI jobs
+            if [[ "$name" == *"Lint"* ]] || [[ "$name" == *"Build"* ]] || [[ "$name" == *"Compliance"* ]]; then
+              if [ "$conclusion" = "skipped" ]; then
+                ((SKIPPED_COUNT++)) || true
+                echo "⏭️ Skipped: $name"
+              elif [ "$conclusion" = "success" ]; then
+                ((RAN_COUNT++)) || true
+                echo "✅ Ran: $name"
+              fi
+            fi
+          done <<< "$JOBS"
+
+          echo "CI jobs ran: $RAN_COUNT, skipped: $SKIPPED_COUNT"
+
+          if [ "$RAN_COUNT" -eq 0 ]; then
+            echo "⚠️ No actual CI jobs ran (docs-only or workflow-only changes)"
+            echo "ci_ran=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ CI verification jobs completed successfully"
+            echo "ci_ran=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ⏱️ Wait 1 minute before auto-merge
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
         run: |
           echo "Waiting 1 minute before enabling auto-merge..."
           echo "To cancel: Add 'no-merge' label to the PR"
@@ -90,7 +132,7 @@ jobs:
 
       - name: 🔍 Check for no-merge label
         id: check-label
-        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
@@ -114,6 +156,7 @@ jobs:
         if: >-
           steps.find-pr.outputs.found == 'true' &&
           steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.check-label.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
