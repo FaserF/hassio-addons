@@ -42,7 +42,8 @@ def remove_image_from_config(config_path: str) -> bool:
             return True
 
         return False
-    except Exception as e:
+        return False
+    except (OSError, ValueError) as e:
         print(f"⚠️ Error processing {config_path}: {e}")
         return False
 
@@ -84,7 +85,8 @@ def add_edge_notice_to_readme(readme_path: str) -> bool:
             f.write("\n".join(lines))
 
         return True
-    except Exception as e:
+        return True
+    except (OSError, ValueError) as e:
         print(f"⚠️ Error processing {readme_path}: {e}")
         return False
 
@@ -121,7 +123,8 @@ def update_repository_json() -> bool:
             f.write("\n")
 
         return True
-    except Exception as e:
+        return True
+    except (OSError, ValueError, json.JSONDecodeError) as e:
         print(f"⚠️ Error updating repository.json: {e}")
         return False
 

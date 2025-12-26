@@ -171,6 +171,8 @@ try {
             $optionsPath = Join-Path $dataDir "options.json"
 
             # Create SSL certificates
+            # NOTE: These are self-signed test certificates used only for the local mock environment.
+            # They are not valid for production use and are safe to be public in this test script.
             $sslDir = Join-Path $tempDir "ssl"
             New-Item -ItemType Directory -Path $sslDir -Force | Out-Null
 

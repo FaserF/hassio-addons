@@ -54,8 +54,12 @@ def get_addon_info(addon_path: str) -> dict:
     except (yaml.YAMLError, OSError, ValueError) as e:
         print(f"⚠️ Could not read config: {e}")
     except Exception as e:
-        # Fallback for unexpected errors (e.g. json decode error if json module used)
-        print(f"⚠️ Unexpected error reading config: {e}")
+        # Check if it's a JSON error specifically if json module was imported dynamically
+        import json
+        if isinstance(e, json.JSONDecodeError):
+             print(f"⚠️ JSON Decode Error: {e}")
+        else:
+             print(f"⚠️ Unexpected error reading config: {e}")
 
     return info
 
@@ -73,7 +77,8 @@ def generate_startup_banner_code(addon_info: dict, unsupported: bool) -> str:
     slug = addon_info["slug"]
 
     # Escape for bash
-    name_escaped = name.replace('"', '\\"')
+    # Escape for bash (escape \, ", `, $)
+    name_escaped = name.replace('\\', '\\\\').replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
 
     code = f"""
 # ============================================================================
@@ -125,7 +130,7 @@ _show_startup_banner() {{
 
         # Get latest stable version from config.yaml
         local LATEST_STABLE
-        LATEST_STABLE=$(curl -s "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//')
+        LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//')
 
         if [ -n "$LATEST_STABLE" ]; then
             # For DEV versions: Check if there are newer commits for this addon
@@ -133,7 +138,7 @@ _show_startup_banner() {{
                 if [ -n "$DEV_COMMIT" ]; then
                     # Get latest commit for this addon from GitHub
                     local LATEST_COMMIT
-                    LATEST_COMMIT=$(curl -s "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7)
+                    LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7)
 
                     if [ -n "$LATEST_COMMIT" ] && [ "$LATEST_COMMIT" != "$DEV_COMMIT" ]; then
                         UPDATE_MSG="⬆️  DEV UPDATE: New commits available"
@@ -212,11 +217,14 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
     name = addon_info["name"]
     slug = addon_info["slug"]
 
+    def escape_env(val):
+        return val.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+
     env_block = f"""
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="{version}"
-ENV ADDON_NAME="{name}"
-ENV ADDON_SLUG="{slug}"
+ENV ADDON_VERSION="{escape_env(version)}"
+ENV ADDON_NAME="{escape_env(name)}"
+ENV ADDON_SLUG="{escape_env(slug)}"
 ENV ADDON_UNSUPPORTED="{str(unsupported).lower()}"
 """
 
@@ -277,7 +285,9 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     run_script = find_run_script(addon_path)
 
     if not run_script:
-        print("ℹ️ No run script found, skipping banner injection")
+    if not run_script:
+        print("[INFO] No run script found, skipping banner injection")
+        return False
         return False
 
     with open(run_script, "r", encoding="utf-8") as f:
@@ -289,14 +299,16 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
 
     # Check if already injected (Markers)
     if START_MARKER in content and END_MARKER in content:
-        print("ℹ️ Startup banner (markers) found, updating...")
+        print("[INFO] Startup banner (markers) found, updating...")
+        # Remove old injection with markers
         # Remove old injection with markers
         pattern = re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER) + r"\n?"
         content = re.sub(pattern, "", content, flags=re.DOTALL)
 
     # Legacy cleanup (Regex)
     elif "_show_startup_banner" in content:
-        print("ℹ️ Legacy startup banner found, upgrading to markers...")
+        print("[INFO] Legacy startup banner found, upgrading to markers...")
+        content = re.sub(
         content = re.sub(
             r"\n# =+\n# Addon Startup Banner.*?_show_startup_banner\nfi\n",
             "\n",
@@ -360,17 +372,9 @@ def main():
 
     if not success_env and not success_run:
         print("⚠️ No changes made (no Dockerfile or run script found).")
-        # Ensure we don't fail silently if this was expected to work
-        # But if files are missing, maybe it's not an addon?
-        # Assuming if config.yaml exists, we usually expect at least one injection TARGET.
-        # However, purely configuration addons might have neither?
-        # Let's keep 0 but warn. User request said "Consider propagating...".
-        # If both fail, and it IS a directory we targeted...
-        pass
-
-    if not success_env and not success_run:
         # If neither succeeded, we might want to flag it?
-        pass
+        # User requested considering exit status.
+        sys.exit(1)
 
     print("✅ Injection complete!")
 

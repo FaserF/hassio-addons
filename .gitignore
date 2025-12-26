@@ -57,7 +57,5 @@ node_modules/
 *.bak
 *.exe
 check_addons.py
-/.scripts/verify_addons/logs/tmp_test_runs
-.scripts/verify_addons/logs/actionlint.txt
-/.scripts/verify_addons/logs
 Check-Syntax.ps1
+/.scripts/verify_addons/logs/

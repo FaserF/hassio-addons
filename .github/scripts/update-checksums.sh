@@ -6,6 +6,7 @@
 # Supported packages:
 #   - pterodactyl-wings: Downloads binaries from GitHub releases and computes checksums
 #   - matterbridge: Downloads source tarball and computes checksum
+#   - netboot-xyz: Downloads source tarball and computes checksum for WebApp
 
 set -euo pipefail
 
@@ -79,12 +80,38 @@ update_matterbridge() {
 	log "Updated $dockerfile with new checksum"
 }
 
+update_netboot_xyz() {
+	local version="$1"
+	local dockerfile="netboot-xyz/Dockerfile"
+
+	log "Fetching checksum for netbootxyz/webapp $version..."
+
+	# Download source tarball and compute checksum
+	local checksum
+	checksum=$(curl -sL "https://github.com/netbootxyz/webapp/archive/${version}.tar.gz" | sha256sum | cut -d' ' -f1)
+
+	if [[ -z "$checksum" || "$checksum" == *"Not Found"* ]]; then
+		log "ERROR: Failed to download source tarball for $version"
+		exit 1
+	fi
+
+	log "Source checksum: $checksum"
+
+	# Update Dockerfile
+	sed -i "s/ARG NETBOOTXYZ_SHA256=.*/ARG NETBOOTXYZ_SHA256=\"${checksum}\"/" "$dockerfile"
+
+	log "Updated $dockerfile with new checksum"
+}
+
 case "$PACKAGE" in
 pterodactyl-wings | pterodactyl/wings)
 	update_pterodactyl_wings "$VERSION"
 	;;
 matterbridge | 42wim/matterbridge)
 	update_matterbridge "$VERSION"
+	;;
+netboot-xyz | netbootxyz/webapp)
+	update_netboot_xyz "$VERSION"
 	;;
 *)
 	log "Unknown package: $PACKAGE"

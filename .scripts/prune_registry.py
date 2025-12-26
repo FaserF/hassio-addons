@@ -35,10 +35,6 @@ def is_unsupported_addon(package_name):
     # But we can try to find where it is locally
     # If the package_name exists in .unsupported/, we already caught it.
 
-    # 3. Fallback: Naming patterns
-    if "unsupported" in package_name.lower():
-        return True
-
     return False
 
 
@@ -93,13 +89,13 @@ def get_package_versions(package_name, package_type="container"):
 
 def delete_version(package_name, version_id, package_type="container"):
     url = f"https://api.github.com/orgs/{ORG_NAME}/packages/{package_type}/{package_name}/versions/{version_id}"
-    res = requests.delete(url, headers=HEADERS)
+    res = requests.delete(url, headers=HEADERS, timeout=10)
     if res.status_code == 204:
         print(f"✅ Deleted version ID {version_id}")
     else:
         # Try user
         url = f"https://api.github.com/user/packages/{package_type}/{package_name}/versions/{version_id}"
-        res = requests.delete(url, headers=HEADERS)
+        res = requests.delete(url, headers=HEADERS, timeout=10)
         if res.status_code == 204:
             print(f"✅ Deleted version ID {version_id}")
         else:

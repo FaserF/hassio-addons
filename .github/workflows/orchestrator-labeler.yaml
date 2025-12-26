@@ -201,6 +201,7 @@ jobs:
                 if (name === "Many Add-ons") return false;
                 if (name === "version-bump") return false;
                 if (name.startsWith("addon/")) return false;
+                if (name.startsWith("size/")) return false;
                 return true;
             });
 
@@ -231,9 +232,7 @@ jobs:
             const combinedText = `${prTitle} ${prBody}`;
 
             // Breaking Change Detection
-            if (combinedText.includes('breaking') ||
-                combinedText.includes('breaking change') ||
-                prTitle.includes('!:')) {
+            if (combinedText.includes('breaking') || prTitle.includes('!:')) {
                 finalLabels.push('breaking-change');
                 console.log("Added 'breaking-change' label");
             }
@@ -290,8 +289,7 @@ jobs:
 
             // CI/Workflow changes
             const hasWorkflowChanges = changedFiles.some(f =>
-                f.filename.startsWith('.github/workflows/') ||
-                f.filename.includes('Dockerfile')
+                f.filename.startsWith('.github/')
             );
             if (hasWorkflowChanges) {
                 finalLabels.push('ci');
@@ -313,9 +311,14 @@ jobs:
             console.log("Final Labels with semantics:", finalLabels);
 
             // Set Labels (Atomic Update)
-            await github.rest.issues.setLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                labels: finalLabels
-            });
+            try {
+                await github.rest.issues.setLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    labels: finalLabels
+                });
+            } catch (error) {
+                console.error("Failed to set labels: " + error.message);
+                core.setFailed("Failed to set labels: " + error.message);
+            }

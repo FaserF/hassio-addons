@@ -133,16 +133,20 @@ function Show-Notification {
             }
         }
 
+        $safeTitle = [System.Security.SecurityElement]::Escape($Title)
+        $safeMessage = [System.Security.SecurityElement]::Escape($Message)
+        $safeLogPath = [System.Security.SecurityElement]::Escape($LogPath)
+
         $template = @"
 <toast>
     <visual>
         <binding template='ToastGeneric'>
-            <text>$Title</text>
-            <text>$Message</text>
+            <text>$safeTitle</text>
+            <text>$safeMessage</text>
         </binding>
     </visual>
     <actions>
-        <action activationType='protocol' arguments='$LogPath' content='Open Log File'/>
+        <action activationType='protocol' arguments='$safeLogPath' content='Open Log File'/>
     </actions>
 </toast>
 "@

@@ -41,7 +41,7 @@ def main():
     cmd = ["git", "diff", "--name-only", base, current]
     changed_files = run_command(cmd)
     if changed_files is None:
-        sys.exit(0)
+        sys.exit(1)
 
     changed_files = changed_files.splitlines()
 
@@ -63,7 +63,7 @@ def main():
                 return None
             data = yaml.safe_load(content)
             return data.get("scriptVersion")
-        except:
+        except (yaml.YAMLError, OSError, ValueError):
             return None
 
     old_version = get_version_at(base)
@@ -90,7 +90,11 @@ def main():
         print(f"Invalid version format: {new_version}", file=sys.stderr)
         sys.exit(1)
 
-    parts[2] = str(int(parts[2]) + 1)
+    try:
+        parts[2] = str(int(parts[2]) + 1)
+    except ValueError:
+        print(f"Invalid version segment: {parts[2]}", file=sys.stderr)
+        sys.exit(1)
     bumped_version = ".".join(parts)
 
     print(f"Bumping script version: {new_version} -> {bumped_version}")
@@ -100,6 +104,10 @@ def main():
 
     pattern = r'(scriptVersion:\s*")[^"]+(")'
     new_content = re.sub(pattern, rf"\1{bumped_version}\2", content)
+
+    if new_content == content:
+        print("Error: Regex replacement failed (content unchanged). Check config format.", file=sys.stderr)
+        sys.exit(1)
 
     with open(config_path, "w") as f:
         f.write(new_content)

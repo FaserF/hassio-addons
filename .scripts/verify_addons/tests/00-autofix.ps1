@@ -78,7 +78,7 @@ if (Get-Command "shfmt" -ErrorAction SilentlyContinue) {
 # 4. Prettier & Markdown
 Write-Progress -Activity "Auto-Fixing" -Status "Running Prettier..." -PercentComplete 85
 try {
-    $prettierTargets = $FixPaths
+    $prettierTargets = $FixPaths | ForEach-Object { "$_\**\*.{json,js,md,yaml}" }
     $ignorePath = Join-Path $RepoRoot ".prettierignore"
     npx prettier --write $prettierTargets --ignore-path "$ignorePath"
 } catch { Write-Host "Skipping Prettier (failed/missing)" -ForegroundColor DarkGray }

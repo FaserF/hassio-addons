@@ -13,18 +13,98 @@ param(
     [switch]$Help
 )
 
+# --- SETUP ---
+$ErrorActionPreference = "Continue"
+$RepoRoot = Resolve-Path "$PSScriptRoot\..\.."
+$env:PYTHONIOENCODING = "utf-8"
+$ModuleDir = $PSScriptRoot
+$TestsDir = Join-Path $ModuleDir "tests"
+
+# Reset Global State
+$global:Results = @()
+$global:GlobalFailed = $false
+
+# Load Common Module
+. "$ModuleDir/lib/common.ps1"
+
+# Load Configuration
+$Config = Get-TestConfig "$ModuleDir/config/test-config.yaml"
+
+# --- UNIFIED HEADER ---
+function Show-Header {
+    $version = if ($Config.scriptVersion) { "v$($Config.scriptVersion)" } else { "" }
+    # Pad to ensure alignment if possible, roughly
+    Write-Host "================================================================================" -ForegroundColor Cyan
+    Write-Host "   🏠  Home Assistant Add-on Verification Suite (Modular) $version  ✅" -ForegroundColor White
+    Write-Host "================================================================================" -ForegroundColor Cyan
+    Write-Host ""
+}
+
 # --- HELP FUNCTION ---
 function Show-Help {
-    Write-Host "================================================================================" -ForegroundColor Cyan
-    Write-Host "                  Home Assistant Add-ons Verification Suite (Modular)           " -ForegroundColor White
-    Write-Host "================================================================================" -ForegroundColor Cyan
+    Show-Header
+    Write-Host "NAME" -ForegroundColor Yellow
+    Write-Host "    verify_addons.ps1 - Home Assistant Add-on Verification & CI/CD Tool"
     Write-Host ""
-    Write-Host "DESCRIPTION:" -ForegroundColor Yellow
-    Write-Host "  Verifies Home Assistant add-ons by running a suite of checks including linting,"
-    Write-Host "  security scanning, build validation, and functional testing."
+    Write-Host "SYNOPSIS" -ForegroundColor Yellow
+    Write-Host "    .\verify_addons.ps1 [-Addon <String[]>] [-Tests <String[]>] [-Fix] [-ChangedOnly]"
+    Write-Host "                        [-IncludesUnsupported] [-OutputDir <String>] [-Help]"
     Write-Host ""
-    Write-Host "USAGE:" -ForegroundColor Yellow
-    Write-Host "  .\verify_addons.ps1 [-Addon <Name>] [-Tests <List>] [-ChangedOnly] [-Fix] ..."
+    Write-Host "DESCRIPTION" -ForegroundColor Yellow
+    Write-Host "    The verify_addons utility is a comprehensive testing suite for Home Assistant"
+    Write-Host "    Add-ons. It automates linting, security scanning, configuration validation,"
+    Write-Host "    Dockerfile analysis, and functional testing using a mock Supervisor environment."
+    Write-Host ""
+    Write-Host "    It is designed to be used both locally by developers and automatically in CI/CD"
+    Write-Host "    pipelines (GitHub Actions)."
+    Write-Host ""
+    Write-Host "OPTIONS" -ForegroundColor Yellow
+    Write-Host "    -Addon <String[]>" -ForegroundColor Green
+    Write-Host "        Specifies which add-ons to verify. Accepts a comma-separated list of add-on"
+    Write-Host "        slugs (directory names). Use 'all' to verify all detected add-ons."
+    Write-Host "        Default: 'all'"
+    Write-Host ""
+    Write-Host "    -Tests <String[]>" -ForegroundColor Green
+    Write-Host "        Specifies which tests to run. Accepts a comma-separated list of test names."
+    Write-Host "        Available tests:"
+    Write-Host "          LineEndings, ShellCheck, Hadolint, YamlLint, MarkdownLint, Prettier,"
+    Write-Host "          AddonLinter, Compliance, Trivy, VersionCheck, DockerBuild, DockerRun,"
+    Write-Host "          CodeRabbit, WorkflowChecks, PythonChecks."
+    Write-Host "        Use 'all' to run all available tests."
+    Write-Host "        Default: 'all'"
+    Write-Host ""
+    Write-Host "    -Fix" -ForegroundColor Green
+    Write-Host "        Enables auto-fixing for compatible tests (e.g., Prettier, LineEndings)."
+    Write-Host "        WARNING: This modifies files in place."
+    Write-Host ""
+    Write-Host "    -ChangedOnly" -ForegroundColor Green
+    Write-Host "        Limits the verification to add-ons that have uncommitted changes or are"
+    Write-Host "        modified relative to the git 'origin'. Ideal for pre-commit hooks."
+    Write-Host ""
+    Write-Host "    -IncludeUnsupported" -ForegroundColor Green
+    Write-Host "        Includes add-ons located in the '.unsupported' directory in the verification"
+    Write-Host "        process. By default, these are ignored."
+    Write-Host ""
+    Write-Host "    -OutputDir <String>" -ForegroundColor Green
+    Write-Host "        Specifies a custom directory for log files and report artifacts."
+    Write-Host "        Default: './logs'"
+    Write-Host ""
+    Write-Host "    -Help" -ForegroundColor Green
+    Write-Host "        Displays this help message and exits."
+    Write-Host ""
+    Write-Host "EXAMPLES" -ForegroundColor Yellow
+    Write-Host "    .\verify_addons.ps1"
+    Write-Host "        Run all tests on all add-ons."
+    Write-Host ""
+    Write-Host "    .\verify_addons.ps1 -Addon 'apache2,mariadb' -Tests 'DockerBuild,DockerRun'"
+    Write-Host "        Run only Docker build and run tests for Apache2 and MariaDB."
+    Write-Host ""
+    Write-Host "    .\verify_addons.ps1 -ChangedOnly -Fix"
+    Write-Host "        Run verification on currently modified add-ons and auto-fix formatting issues."
+    Write-Host ""
+    Write-Host "EXIT STATUS" -ForegroundColor Yellow
+    Write-Host "    0    Success. All checks passed."
+    Write-Host "    1    Failure. One or more checks failed or invalid arguments were provided."
     Write-Host ""
 }
 
@@ -53,6 +133,8 @@ $Config = Get-TestConfig "$ModuleDir/config/test-config.yaml"
 # --- PARAMETER VALIDATION ---
 if ($args) {
     Write-Host "ERROR: Unknown parameters detected: $($args -join ' ')" -ForegroundColor Red
+    Write-Host ""
+    Show-Help
     exit 1
 }
 
@@ -89,12 +171,10 @@ catch {
 }
 
 # Banner
+# Banner
 $ScriptStartTime = Get-Date
 Write-Host ""
-Write-Host "================================================================================" -ForegroundColor Cyan
-Write-Host "   🏠  Home Assistant Add-on Verification Suite (Modular) v$($Config.scriptVersion)  ✅" -ForegroundColor White
-Write-Host "================================================================================" -ForegroundColor Cyan
-Write-Host ""
+Show-Header
 Write-Host "  Started at: $($ScriptStartTime.ToString())" -ForegroundColor Gray
 
 # Check for Updates (wrapped in try/catch to not block main execution)

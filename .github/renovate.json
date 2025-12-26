@@ -188,10 +188,9 @@
         "homeassistant-test-instance/Dockerfile$"
       ],
       "matchStrings": [
-        "ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:(?<currentValue>[\\d.]+)"
+        "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)"
       ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "ghcr.io/home-assistant/home-assistant"
+      "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
@@ -234,6 +233,22 @@
         "spacemeowx2/switch-lan-play"
       ],
       "automerge": false
+    },
+    {
+      "description": "Netboot.xyz - auto-update checksums",
+      "matchDepNames": [
+        "netbootxyz/webapp"
+      ],
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "netboot-xyz/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "description": "Pterodactyl Wings - auto-update checksums via postUpgradeTasks",
