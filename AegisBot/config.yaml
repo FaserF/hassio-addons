@@ -1,6 +1,6 @@
 ---
 name: AegisBot
-version: "0.1.10-dev+c885917"
+version: "0.1.11-dev+1784b58"
 slug: aegisbot
 description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
 url: https://github.com/FaserF/AegisBot
