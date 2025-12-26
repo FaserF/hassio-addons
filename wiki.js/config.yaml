@@ -1,6 +1,6 @@
 ---
 name: Wiki.JS
-version: 2.2.10-dev+7817ce7
+version: 2.2.11-dev+59edf2f
 slug: wikijs
 description: The most powerful and extensible open source Wiki software
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
