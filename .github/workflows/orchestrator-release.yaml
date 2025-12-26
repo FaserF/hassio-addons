@@ -148,10 +148,12 @@ jobs:
             # Check if PR was merged
             if [ "$PR_MERGED" != "true" ]; then
               echo "PR was not merged, skipping."
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-              echo "addons=[]" >> "$GITHUB_OUTPUT"
-              echo "is_auto=false" >> "$GITHUB_OUTPUT"
-              echo "version_type=patch" >> "$GITHUB_OUTPUT"
+              {
+                echo "should_release=false"
+                echo "addons=[]"
+                echo "is_auto=false"
+                echo "version_type=patch"
+              } >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
@@ -159,10 +161,12 @@ jobs:
             for label in ${{ env.BLOCK_LABELS }}; do
               if echo "$PR_LABELS" | grep -qi "\"$label\""; then
                 echo "⛔ Found blocking label: $label"
-                echo "should_release=false" >> "$GITHUB_OUTPUT"
-                echo "addons=[]" >> "$GITHUB_OUTPUT"
-                echo "is_auto=true" >> "$GITHUB_OUTPUT"
-                echo "version_type=patch" >> "$GITHUB_OUTPUT"
+                {
+                  echo "should_release=false"
+                  echo "addons=[]"
+                  echo "is_auto=true"
+                  echo "version_type=patch"
+                } >> "$GITHUB_OUTPUT"
                 exit 0
               fi
             done
@@ -178,10 +182,12 @@ jobs:
 
             if [ "$HAS_SAFE" != "true" ]; then
               echo "No safe labels found"
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-              echo "addons=[]" >> "$GITHUB_OUTPUT"
-              echo "is_auto=true" >> "$GITHUB_OUTPUT"
-              echo "version_type=patch" >> "$GITHUB_OUTPUT"
+              {
+                echo "should_release=false"
+                echo "addons=[]"
+                echo "is_auto=true"
+                echo "version_type=patch"
+              } >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
@@ -214,10 +220,12 @@ jobs:
           echo "Is auto: $IS_AUTO"
           echo "Version type: $VERSION_TYPE"
 
-          echo "addons=$JSON" >> "$GITHUB_OUTPUT"
-          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
-          echo "is_auto=$IS_AUTO" >> "$GITHUB_OUTPUT"
-          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+          {
+            echo "addons=$JSON"
+            echo "should_release=$SHOULD_RELEASE"
+            echo "is_auto=$IS_AUTO"
+            echo "version_type=$VERSION_TYPE"
+          } >> "$GITHUB_OUTPUT"
 
   # ================================================================================
   # VERIFY: Lint and test build before release
@@ -281,6 +289,7 @@ jobs:
       - name: 🏷️ Detect if unsupported
         id: status
         run: |
+          # shellcheck disable=SC2193
           if [[ "${{ matrix.addon }}" == .unsupported/* ]]; then
             echo "is_unsupported=true" >> "$GITHUB_OUTPUT"
             echo "📦 Addon is UNSUPPORTED"
@@ -358,9 +367,11 @@ jobs:
 
       - name: 📢 Release Summary
         run: |
-          echo "### 🚀 Release Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Add-on:** ${{ matrix.addon }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Type:** ${{ needs.detect.outputs.is_auto == 'true' && 'Auto-release' || 'Manual release' }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "### 🚀 Release Complete"
+            echo ""
+            echo "**Add-on:** ${{ matrix.addon }}"
+            echo "**Type:** ${{ needs.detect.outputs.is_auto == 'true' && 'Auto-release' || 'Manual release' }}"
+            echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}"
+            echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -58,3 +58,5 @@ node_modules/
 *.exe
 check_addons.py
 /.scripts/verify_addons/logs/tmp_test_runs
+.scripts/verify_addons/logs/actionlint.txt
+/.scripts/verify_addons/logs

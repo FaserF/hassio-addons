@@ -34,9 +34,10 @@ ARG SOLUMATI_VERSION="v2025.12.4b0"
 # renovate: datasource=github-releases depName=FaserF/Solumati
 ARG SOLUMATI_SHA256="fd5be5ca00e1f00a6205f15517f5fb3bad15ac7183e51ae5a8fdae2cab37e218"
 WORKDIR /tmp
-RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
+RUN mkdir src && \
+    curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
     echo "${SOLUMATI_SHA256}  solumati.tar.gz" | sha256sum -c - && \
-    mv Solumati-* src && \
+    tar xzf solumati.tar.gz -C src --strip-components=1 && \
     rm solumati.tar.gz
 
 # --- FRONTEND BUILD STAGE ---

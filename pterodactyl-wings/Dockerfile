@@ -14,7 +14,7 @@ ARG TARGETARCH
 # SHA256 checksums for version 1.11.13 (from official release notes)
 ARG WINGS_SHA256_AMD64=aca5fa45ddf1c10f092c16dd758b920d8a3fa9f91c37aacc62745e72958bf71a
 ARG WINGS_SHA256_ARM64=a3d71e8c67e261fdd287f73dcab98d2a55dbba9ce001794e0006e4ed88fafe6a
-# hadolint ignore=DL4006,SC3040
+# hadolint ignore=DL4006,SC3040,SC2039
 RUN set -o pipefail && \
     if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \
     curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/download/${WINGS_VERSION}/wings_linux_${ARCH}" && \

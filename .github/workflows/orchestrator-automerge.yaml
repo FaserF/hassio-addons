@@ -46,8 +46,7 @@ jobs:
           # Default to skip=true, only set to false after successful check
           echo "skip=true" >> "$GITHUB_OUTPUT"
 
-          labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name')
-          if [ $? -ne 0 ]; then
+          if ! labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name'); then
             echo "Error: Failed to fetch labels for PR #$PR_NUMBER"
             exit 1
           fi

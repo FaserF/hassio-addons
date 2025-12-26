@@ -237,7 +237,12 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
         content = f.read()
 
     # Regex to find version (supports -dev and -dev+commit suffix)
-    version_pattern = r'^(version: ["\'']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["\'']?)'
+    # Regex to find version (supports -dev and -dev+commit suffix)
+    version_pattern = (
+        r'^(version: ["\'']?)'
+        r'([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)'
+        r'(["\'']?)'
+    )
     match = re.search(version_pattern, content, re.MULTILINE)
 
     if not match:
