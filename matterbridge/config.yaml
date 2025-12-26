@@ -1,6 +1,6 @@
 ---
 name: Matterbridge
-version: 1.5.7-dev+1784b58
+version: 1.5.8-dev+f2fa456
 slug: matterbridge
 description: A simple chat bridge between different messanger apps
 url: https://github.com/FaserF/hassio-addons/tree/master/matterbridge
