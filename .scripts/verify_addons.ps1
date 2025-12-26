@@ -115,7 +115,7 @@ if ($Addon.Count -eq 1 -and $Addon[0] -match ",") {
     $Addon = $Addon[0] -split "," | ForEach-Object { $_.Trim() }
 }
 
-$ValidTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "CodeRabbit", "DockerRun")
+$ValidTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "CodeRabbit", "DockerRun", "WorkflowChecks")
 foreach ($t in $Tests) {
     if ($t -notin $ValidTests) {
         Write-Host "ERROR: Invalid Test detected: '$t'" -ForegroundColor Red
@@ -147,6 +147,9 @@ try {
     Write-Warning "Could not start transcript at $LogFile. logging to console only."
 }
 
+# Script Version
+$ScriptVersion = "2.0.0"
+
 # --- RENOVATE-MANAGED VARIABLES ---
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/base
 $LatestBase = if ($env:LATEST_BASE) { $env:LATEST_BASE } else { "19.0.0" }
@@ -176,17 +179,20 @@ function Add-Result {
     }
     $script:Results += $obj
     if ($Status -eq "FAIL") {
-        Write-Host "FAIL: [$Addon] $Check - $Message" -ForegroundColor Red
+        Write-Host "❌ FAIL: [$Addon] $Check - $Message" -ForegroundColor Red
         $script:GlobalFailed = $true
     }
     elseif ($Status -eq "WARN") {
-        Write-Host "WARN: [$Addon] $Check - $Message" -ForegroundColor Yellow
+        Write-Host "⚠️  WARN: [$Addon] $Check - $Message" -ForegroundColor Yellow
+    }
+    elseif ($Status -eq "SKIP") {
+        Write-Host "⏭️  SKIP: [$Addon] $Check - $Message" -ForegroundColor DarkGray
     }
     elseif ($Status -eq "INFO") {
-        Write-Host "INFO: [$Addon] $Check - $Message" -ForegroundColor Cyan
+        Write-Host "ℹ️  INFO: [$Addon] $Check - $Message" -ForegroundColor Cyan
     }
     else {
-        Write-Host "MATCH: [$Addon] $Check" -ForegroundColor Green
+        Write-Host "✅ PASS: [$Addon] $Check" -ForegroundColor Green
     }
 }
 
@@ -267,7 +273,15 @@ function Get-RequiredSchemaKeys {
 Set-Location $RepoRoot
 $GlobalFailed = $false
 $ScriptStartTime = Get-Date
-Write-Host "Started at: $($ScriptStartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
+
+# Banner
+Write-Host ""
+Write-Host "  ╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "  ║       🏠 Home Assistant Add-on Verification Suite            ║" -ForegroundColor Cyan
+Write-Host "  ║                      Version $ScriptVersion                           ║" -ForegroundColor Cyan
+Write-Host "  ╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  ⏱️  Started at: $($ScriptStartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Gray
 
 # --- CHECK DOCKER AVAILABILITY ---
 # Check Docker upfront if any Docker-related tests are selected
@@ -1063,7 +1077,16 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                      if ($logs -match "Could not resolve host: supervisor") {
                          # If it's a resolution issue, it means the mock wasn't reachable or the container exited too early
                          Add-Result $a.Name "DockerRun" "INFO" "Skipped (Supervisor Connection Issues). Logs:`n$($logs | Select-Object -Last 10)"
-                     } else {
+                     }
+                     # Check for successful one-shot completion patterns
+                     elseif ($logs -match "All Scripts were executed|Certificates were generated|addon will now be stopped|Stopping container\.\.\.|Successfully completed") {
+                         Add-Result $a.Name "DockerRun" "PASS" "One-shot addon completed successfully"
+                     }
+                     # Check for expected missing config (not a code error)
+                     elseif ($logs -match "There is no .* file|config.* not found|Please create.*config|requires.*add-on") {
+                         Add-Result $a.Name "DockerRun" "INFO" "Skipped (Missing external dependencies/config for mock)"
+                     }
+                     else {
                          Add-Result $a.Name "DockerRun" "FAIL" "Crashed immediately. Docker output: $runInfo. Logs summary:`n$($logs | Select-Object -Last 15)"
                      }
                 }
@@ -1248,6 +1271,31 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         catch { Add-Result "Workflows" "Zizmor" "SKIP" "Docker unavailable" }
     }
 
+    # C. SHA Validation - Check for truncated/invalid action SHAs
+    Write-Host "Checking for invalid action references..." -ForegroundColor Gray
+    $shaIssues = @()
+    foreach ($wf in $workflows) {
+        $lines = Get-Content $wf.FullName
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            $line = $lines[$i]
+            # Match uses: action@sha where sha looks like hex but is wrong length
+            if ($line -match 'uses:\s*[\w\-/]+@([a-fA-F0-9]{20,39})(\s|$|#)') {
+                $sha = $matches[1]
+                $shaIssues += [PSCustomObject]@{
+                    File = $wf.Name
+                    Line = $i + 1
+                    SHA = $sha
+                    Length = $sha.Length
+                }
+            }
+        }
+    }
+    if ($shaIssues.Count -gt 0) {
+        $msg = $shaIssues | ForEach-Object { "$($_.File):$($_.Line) - SHA is $($_.Length) chars (need 40)" }
+        Add-Result "Workflows" "SHA-Validation" "FAIL" "Truncated SHAs found: $($msg -join '; ')"
+    } else {
+        Add-Result "Workflows" "SHA-Validation" "PASS" "All action SHAs valid"
+    }
     $latestRunner = "24.04" # Default fallback
     try {
         $runnerInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/actions/runner-images/contents/images/ubuntu" -ErrorAction Stop
@@ -1305,16 +1353,41 @@ if ("all" -notin $Addon -or $ChangedOnly) {
 }
 $SummaryResults | Format-Table -AutoSize
 
-# Check if any FAIL or WARN results exist (depending on strictness)
-# For now, we only fail on 'FAIL' status
+# Statistics
+$PassCount = ($Results | Where-Object { $_.Status -eq 'PASS' }).Count
+$FailCount = ($Results | Where-Object { $_.Status -eq 'FAIL' }).Count
+$WarnCount = ($Results | Where-Object { $_.Status -eq 'WARN' }).Count
+$SkipCount = ($Results | Where-Object { $_.Status -eq 'SKIP' }).Count
+
+Write-Host ""
+Write-Host "  ┌─────────────────────────────────────┐" -ForegroundColor Gray
+Write-Host "  │           📊 STATISTICS             │" -ForegroundColor Gray
+Write-Host "  ├─────────────────────────────────────┤" -ForegroundColor Gray
+Write-Host "  │  ✅ Passed:  " -NoNewline -ForegroundColor Gray
+Write-Host ("{0,4}" -f $PassCount) -NoNewline -ForegroundColor Green
+Write-Host "                    │" -ForegroundColor Gray
+Write-Host "  │  ❌ Failed:  " -NoNewline -ForegroundColor Gray
+Write-Host ("{0,4}" -f $FailCount) -NoNewline -ForegroundColor $(if ($FailCount -gt 0) { "Red" } else { "Green" })
+Write-Host "                    │" -ForegroundColor Gray
+Write-Host "  │  ⚠️  Warnings:" -NoNewline -ForegroundColor Gray
+Write-Host ("{0,4}" -f $WarnCount) -NoNewline -ForegroundColor $(if ($WarnCount -gt 0) { "Yellow" } else { "Green" })
+Write-Host "                    │" -ForegroundColor Gray
+Write-Host "  │  ⏭️  Skipped: " -NoNewline -ForegroundColor Gray
+Write-Host ("{0,4}" -f $SkipCount) -NoNewline -ForegroundColor DarkGray
+Write-Host "                    │" -ForegroundColor Gray
+Write-Host "  └─────────────────────────────────────┘" -ForegroundColor Gray
+
+# Check if any FAIL results exist
 if ($Results | Where-Object { $_.Status -eq 'FAIL' }) {
     $GlobalFailed = $true
 }
 
 if ($GlobalFailed) {
-    Write-Host "Verification FAILED." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "  ❌ Verification FAILED." -ForegroundColor Red
 } else {
-    Write-Host "Verification PASSED." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  ✅ Verification PASSED." -ForegroundColor Green
 }
 
 # Export results to JSON

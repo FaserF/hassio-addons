@@ -1,35 +1,20 @@
+#!/usr/bin/env python3
+"""Fix CRLF line endings to LF in repository files."""
+
 import os
-
-
-def to_lf(path):
-    try:
-        with open(path, "rb") as f:
-            content = f.read()
-
-        # Replace CRLF with LF
-        if b"\r\n" in content:
-            print(f"Fixing CRLF in {path}")
-            content = content.replace(b"\r\n", b"\n")
-            with open(path, "wb") as f:
-                f.write(content)
-    except Exception as e:
-        print(f"Error processing {path}: {e}")
-
-
 import sys
 
-extensions = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]
-skip_dirs = [".git", "node_modules", ".vscode"]
-# simple prefix check for skip files
-skip_prefixes = ["verification_results"]
+EXTENSIONS = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]
+SKIP_DIRS = [".git", "node_modules", ".vscode"]
+SKIP_PREFIXES = ["verification_results"]
 
 
 def to_lf(path):
+    """Convert CRLF to LF in the given file."""
     try:
         with open(path, "rb") as f:
             content = f.read()
 
-        # Replace CRLF with LF
         if b"\r\n" in content:
             print(f"Fixing CRLF in {path}")
             content = content.replace(b"\r\n", b"\n")
@@ -40,17 +25,17 @@ def to_lf(path):
 
 
 def process_dir(start_dir):
+    """Recursively process directory for CRLF files."""
     for root, dirs, files in os.walk(start_dir):
-        # Skip ignored directories
-        dirs[:] = [d for d in dirs if d not in skip_dirs]
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
 
         for file in files:
             if (
-                any(file.startswith(prefix) for prefix in skip_prefixes)
+                any(file.startswith(prefix) for prefix in SKIP_PREFIXES)
                 or file == "verify_log.txt"
             ):
                 continue
-            if any(file.endswith(ext) or file == ext for ext in extensions):
+            if any(file.endswith(ext) or file == ext for ext in EXTENSIONS):
                 to_lf(os.path.join(root, file))
 
 
