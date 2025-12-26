@@ -6,8 +6,9 @@ This script reads all addon config.yaml files and generates a markdown table.
 
 import os
 import sys
-import yaml
 from pathlib import Path
+
+import yaml
 
 
 def parse_version(version_str: str) -> tuple:
@@ -40,11 +41,9 @@ def find_addons(repo_root: Path) -> list[dict]:
         if item.is_dir() and not item.name.startswith((".", "_")):
             config_path = item / "config.yaml"
             if config_path.exists():
-                addons.append({
-                    "path": item.name,
-                    "config": config_path,
-                    "unsupported": False
-                })
+                addons.append(
+                    {"path": item.name, "config": config_path, "unsupported": False}
+                )
 
     # Unsupported addons
     unsupported_dir = repo_root / ".unsupported"
@@ -53,11 +52,13 @@ def find_addons(repo_root: Path) -> list[dict]:
             if item.is_dir():
                 config_path = item / "config.yaml"
                 if config_path.exists():
-                    addons.append({
-                        "path": f".unsupported/{item.name}",
-                        "config": config_path,
-                        "unsupported": True
-                    })
+                    addons.append(
+                        {
+                            "path": f".unsupported/{item.name}",
+                            "config": config_path,
+                            "unsupported": True,
+                        }
+                    )
 
     return addons
 
@@ -66,7 +67,7 @@ def generate_table(addons: list[dict]) -> str:
     """Generate the markdown table from addon info."""
     lines = [
         "| Name                                                            | Description                               | Status |",
-        "| :-------------------------------------------------------------- | :---------------------------------------- | :----- |"
+        "| :-------------------------------------------------------------- | :---------------------------------------- | :----- |",
     ]
 
     for addon in addons:

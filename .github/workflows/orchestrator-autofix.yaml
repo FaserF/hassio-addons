@@ -104,21 +104,39 @@ jobs:
           shfmt-version: "3.7.0"
 
       - name: 🐚 Run shfmt
-        run: shfmt -l -w .
+        id: shfmt
+        run: |
+          shfmt -l -w .
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       # 2. Python (Format & Sort Imports)
       # We format the internal scripts and any add-on python files
       - name: 🐍 Run Black (Formatter)
+        id: black
         continue-on-error: true
-        uses: psf/black@1b2427a2b785cc4aac97c19bb4b9a0de063f9547 # v24.10.0
-        with:
-          options: "--verbose"
-          src: "."
+        run: |
+          pip install black
+          black --verbose .
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: 🐍 Run Isort (Import Sorter)
-        uses: isort/isort-action@24d8a7a51d33ca7f36c3f23598dafa33f7071326 # v1.1.1
-        with:
-          configuration: "--profile black"
+        id: isort
+        run: |
+          pip install isort
+          isort --profile black .
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       # 3. Node.js Tools (Prettier, Markdownlint)
       - name: 📦 Set up Node.js
@@ -127,10 +145,16 @@ jobs:
           node-version: "20"
 
       - name: 💅 Run Prettier
+        id: prettier
         continue-on-error: true
         run: |
           npm install -g prettier
           prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       # 4. Standardize (READMEs, Beta Labels, Configs)
       - name: 📄 Standardize READMEs
@@ -138,10 +162,16 @@ jobs:
 
       # 5. Markdown Fixes (markdownlint)
       - name: 📝 Fix Markdown
+        id: markdownlint
         continue-on-error: true
         run: |
           npm install -g markdownlint-cli
-          markdownlint --fix "**/*.md"
+          markdownlint --fix "**/*.md" || true
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       # 6. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
@@ -155,11 +185,30 @@ jobs:
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
 
+      # Build dynamic commit message
+      - name: 📝 Build Commit Message
+        id: commit_msg
+        run: |
+          tools=""
+          if [[ "${{ steps.shfmt.outputs.changed }}" == "true" ]]; then tools="$tools shfmt"; fi
+          if [[ "${{ steps.black.outputs.changed }}" == "true" ]]; then tools="$tools black"; fi
+          if [[ "${{ steps.isort.outputs.changed }}" == "true" ]]; then tools="$tools isort"; fi
+          if [[ "${{ steps.prettier.outputs.changed }}" == "true" ]]; then tools="$tools prettier"; fi
+          if [[ "${{ steps.markdownlint.outputs.changed }}" == "true" ]]; then tools="$tools markdownlint"; fi
+
+          tools=$(echo $tools | xargs | tr ' ' ', ')
+
+          if [[ -z "$tools" ]]; then
+            echo "message=style: auto-fix" >> $GITHUB_OUTPUT
+          else
+            echo "message=style: auto-fix ($tools)" >> $GITHUB_OUTPUT
+          fi
+
       # Commit back (using PAT to trigger subsequent workflows)
       - name: 💾 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
-          commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
+          commit_message: ${{ steps.commit_msg.outputs.message }}
           branch: ${{ github.head_ref || github.ref_name }}
           file_pattern: .
         env:
