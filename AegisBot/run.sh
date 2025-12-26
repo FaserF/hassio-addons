@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 
 # --- CONFIGURATION ---
 DATA_DIR="/data/aegisbot"
@@ -203,7 +204,8 @@ download_file() {
 		# Convert API URL to direct archive URL
 		# From: https://api.github.com/repos/OWNER/REPO/tarball/REF
 		# To:   https://github.com/OWNER/REPO/archive/REF.tar.gz
-		local direct_url=$(echo "$url" | sed 's|api.github.com/repos/|github.com/|' | sed 's|/tarball/|/archive/|')
+		local direct_url
+		direct_url=$(echo "$url" | sed 's|api.github.com/repos/|github.com/|' | sed 's|/tarball/|/archive/|')
 		direct_url="${direct_url}.tar.gz"
 		bashio::log.info "Trying direct archive URL: $direct_url"
 

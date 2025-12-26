@@ -20,11 +20,11 @@
   <strong>Your favorite operating systems in one place.</strong>
   <br>
 </div>
-<!-- markdownlint-enable MD033 MD013 -->
+<!-- markdownlint-enable MD033 -->
 
 **Netboot.xyz** allows you to PXE boot into a wide variety of Operating System
-installers and utilities from a lightweight, easy-to-use menu. This add-on lets
-you host your own Netboot.xyz instance directly from your Home Assistant server,
+installers and utilities from a lightweight,You help many people to use this add-on from the main repository.
+our own Netboot.xyz instance directly from your Home Assistant server,
 perfect for homelabs and network management.
 
 ## ✨ Features

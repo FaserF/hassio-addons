@@ -1,0 +1,90 @@
+# Verify Addons Configuration
+# This file contains Renovate-managed versions and test configuration
+
+# --- RENOVATE-MANAGED VERSIONS ---
+# renovate: datasource=docker depName=ghcr.io/hassio-addons/base
+latestBase: "19.0.0"
+
+# renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
+latestDebian: "9.1.0"
+
+# renovate: datasource=docker depName=ghcr.io/home-assistant/amd64-base-python
+latestPython: "3.13-alpine3.21"
+
+# renovate: datasource=node-version depName=node
+latestNode: "24.12.0"
+
+# renovate: datasource=docker depName=ghcr.io/home-assistant/amd64-builder
+builderImage: "ghcr.io/home-assistant/amd64-builder:2025.11.0"
+
+# --- MOCK EXTENSIONS ---
+mockCoreVersion: "2025.12.3"
+mockSupervisorVersion: "2025.12.3"
+mockOsVersion: "16.3"
+mockKernelVersion: "6.12.51-haos"
+mockArch: "amd64"
+
+# --- SCRIPT METADATA ---
+scriptVersion: "2.1.0"
+
+# --- DOCKER RUN SKIPS ---
+# Addons to skip during DockerRun test with reason
+skipDockerRun:
+  wiki.js: "Requires MySQL Service"
+  switch_lan_play: "Requires external switch-lan-play server"
+  netboot-xyz: "Complex initialization requires real environment"
+
+# --- VALID TEST NAMES ---
+validTests:
+  - all
+  - LineEndings
+  - ShellCheck
+  - Hadolint
+  - YamlLint
+  - MarkdownLint
+  - Prettier
+  - AddonLinter
+  - Compliance
+  - Trivy
+  - VersionCheck
+  - DockerBuild
+  - DockerRun
+  - CodeRabbit
+  - WorkflowChecks
+  - PythonChecks
+
+# --- DOCKER-DEPENDENT TESTS ---
+dockerTests:
+  - Hadolint
+  - AddonLinter
+  - Trivy
+  - DockerBuild
+  - DockerRun
+  - WorkflowChecks
+
+# --- DOCS-ONLY ALLOWED TESTS ---
+# Tests that run even when only documentation files changed
+docsOnlyTests:
+  - MarkdownLint
+  - Prettier
+  - LineEndings
+
+# --- TEST WEIGHTS (Seconds per Add-on) ---
+# Used for ETA calculation
+testWeights:
+  LineEndings: 0.2
+  ShellCheck: 1.0
+  Hadolint: 3.0
+  YamlLint: 0.5
+  MarkdownLint: 0.5
+  Prettier: 1.5
+  AddonLinter: 10.0
+  Compliance: 1.0
+  Trivy: 60.0
+  VersionCheck: 1.0
+  DockerBuild: 180.0
+  DockerRun: 60.0
+  CodeRabbit: 1.0
+  WorkflowChecks: 2.0
+  PythonChecks: 2.0
+  AutoFix: 3.0

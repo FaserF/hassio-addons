@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bash
+# shellcheck disable=SC1091
+# shellcheck shell=bash
 source /usr/lib/bashio/bashio.sh
 
 # Define local paths
@@ -128,7 +130,8 @@ bashio::log.info "  Ports (Initial): DoT:${DOT_PORT}, DoH:${DOH_PORT}"
 # Pre-flight Check: Port Availability & Smart Fallback
 # ------------------------------------------------------------------------------
 is_port_busy() {
-	local PORT=$1
+	local PORT
+	PORT=$1
 	if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
 		if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then
 			return 0 # Busy
@@ -154,7 +157,7 @@ if is_port_busy "${DOT_PORT}"; then
 	else
 		bashio::log.fatal "❌ Port ${DOT_PORT} is ALREADY IN USE!"
 		# Try to identify process
-		local PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
+		PROC_INFO=$(netstat -tulpn 2>/dev/null | grep ":$DOT_PORT " | head -n 1)
 		if [ -n "$PROC_INFO" ]; then bashio::log.fatal "   Conflict: $PROC_INFO"; fi
 		sleep 30
 		exit 1
@@ -268,7 +271,7 @@ if [ -n "${DOT_PORT}" ] && [ "${DOT_PORT}" != "null" ]; then
 tls://.:${DOT_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
+    $(echo -e "${DNS_LOG_CONFIG}")
 }
 EOF
 fi
@@ -284,7 +287,7 @@ if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
 https://.:${ACTUAL_COREDNS_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${ACTIVE_DNS_SERVER}
-    $(echo -e ${DNS_LOG_CONFIG})
+    $(echo -e "${DNS_LOG_CONFIG}")
 }
 EOF
 	fi
@@ -298,11 +301,13 @@ if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
 	# Wait for ANY
 	PIDS="$DNS_PID ${TUNNEL_PID:-} ${NGINX_PID:-}"
 	# Clean PIDS list (remove empty)
-	PIDS=$(echo $PIDS | xargs)
+	PIDS=$(echo "$PIDS" | xargs)
 
+	# shellcheck disable=SC2086
 	wait -n $PIDS
 
 	bashio::log.error "❌ One of the processes exited. Shutting down..."
+	# shellcheck disable=SC2086
 	kill $PIDS 2>/dev/null
 	exit 1
 else

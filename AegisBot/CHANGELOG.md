@@ -2,6 +2,10 @@
 
 # Changelog
 
+## [0.1.5] - 2025-12-25
+
+- General addon improvements
+
 ## [0.1.4] - 2025-12-20
 
 ### Added

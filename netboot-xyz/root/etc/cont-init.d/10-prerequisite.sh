@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC2034,SC2129,SC2016
+# shellcheck shell=bash
 nginx_uid=abc
 declare nginx_port
 nginx_port=$(bashio::addon.port 85)
@@ -11,15 +13,15 @@ path_config=$(bashio::config 'path_config')
 echo "Creating user $nginx_uid and setting permissions..."
 
 # Set the uid:gid to run as
-adduser --disabled-password --system --no-create-home $nginx_uid
-addgroup $nginx_uid
-adduser $nginx_uid $nginx_uid
-adduser $nginx_uid nginx
+adduser --disabled-password --system --no-create-home "$nginx_uid"
+addgroup "$nginx_uid"
+adduser "$nginx_uid" "$nginx_uid"
+adduser "$nginx_uid" nginx
 
 echo "Generating nginx config..."
 if bashio::var.has_value "${nginx_port}"; then
 	echo "server {" >/defaults/default
-	echo "	listen $nginx_port;" >>/defaults/default
+	echo "	listen ${nginx_port};" >>/defaults/default
 	echo "	location / {" >>/defaults/default
 	echo "		root /assets;" >>/defaults/default
 	echo "		autoindex on;" >>/defaults/default
@@ -51,16 +53,28 @@ if [ -d /config ]; then
 	ls -l /config
 fi
 
-if [ ! -d $path ]; then
+if [ ! -d "$path" ]; then
 	echo "Looks like the path $path did not exist! We will create it. Copy your installations ISOs etc there."
-	mkdir -p $path
+	mkdir -p "$path"
 fi
-ln -s $path /assets
-if [ ! -d $path_config ]; then
+if [ -L /assets ]; then rm /assets; elif [ -d /assets ]; then rm -rf /assets; else rm -f /assets; fi
+ln -s "$path" /assets
+if [ ! -d "$path_config" ]; then
 	echo "Looks like the path $path_config did not exist! We will still start the addon with default options!"
-	mkdir -p $path_config
+	mkdir -p "$path_config"
 fi
-ln -s $path_config /config
+if [ -L /config ]; then
+	rm /config
+elif [ -d /config ]; then
+	# Try to remove if empty/not mount, otherwise warn and skip
+	rmdir /config 2>/dev/null || echo "Info: /config is a mount or non-empty/busy, skipping replacement with symlink."
+else
+	rm -f /config
+fi
+
+if [ ! -e /config ]; then
+	ln -s "$path_config" /config
+fi
 
 if [ ! -d /config/menus ]; then
 	mkdir /config/menus

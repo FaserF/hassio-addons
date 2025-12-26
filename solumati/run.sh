@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 
 # --- CONFIGURATION ---
 DATA_DIR="/data/postgresql"
@@ -135,6 +136,7 @@ if bashio::config.true 'dev_use_main_branch'; then
 		# -L: Follow redirects
 		# -s: Silent mode
 		# -S: Show error message if it fails
+		# shellcheck disable=SC2086
 		if eval curl -fL -s -S $HEADER_ARGS "$URL" -o main.tar.gz; then
 			return 0
 		else

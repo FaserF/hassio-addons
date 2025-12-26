@@ -1,55 +1,123 @@
-# Home Assistant Community Add-ons 🏠
+# FaserF's Home Assistant Add-ons 🏠
 
 This repository contains a collection of custom **Home Assistant Add-ons**
 maintained by FaserF.
 
+> [!NOTE]
+> These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
+
 ## Installation 🚀
 
-1. Click the button below to to add this repository to your Home Assistant.
-   [![Install Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+### 📦 Stable Channel (Recommended)
 
-2. Or manually add this URL:
+Pre-built Docker images from official releases. Best for most users.
 
-    ```text
-    https://github.com/FaserF/hassio-addons
-    ```
+1. Click to add the stable repository:
+   [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+
+2. Or manually add:
+   ```text
+   https://github.com/FaserF/hassio-addons
+   ```
+
+### 🚧 Edge Channel (Development)
+
+Latest development builds - built locally from your device. For testing new features.
+
+1. Click to add the edge repository:
+   [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
+
+2. Or manually add:
+   ```text
+   https://github.com/FaserF/hassio-addons#edge
+   ```
+
+> [!WARNING]
+> **Edge builds are built locally on your device** from the Dockerfile source code.
+> This takes longer and uses more resources than pre-built images.
+> Edge versions may contain bugs or incomplete features.
+
+| Channel | Pre-built Images | Update Speed | Stability |
+|---------|------------------|--------------|-----------|
+| **Stable** | ✅ Yes | Fast | 🟢 High |
+| **Edge** | ❌ No (local build) | Slow | 🟡 Medium |
 
 ## Add-ons List 📦
 
+The table below shows **all add-ons** in this repository, including unsupported ones.
+
 <!-- markdownlint-disable MD060 -->
-| Name | Description | Status |
-| :--- | :--- | :--- |
-| **[Apache2](apache2)** | Webserver (Minimal / MariaDB / PHP) | ✅ |
-| **[Bash Script Executer](bash_script_executer)** | Execute bash scripts in HA OS | ✅ |
 
-| **[Matterbridge](matterbridge)** | Simple chat bridge | ✅ |
-| **[Netboot.xyz](netboot-xyz)** | PXE Booting Service | ✅ |
-| **[OpenSSL](openssl)** | Self-signed certificate generator | ✅ |
-| **[Pterodactyl](pterodactyl-panel)** | GameServer Stack (Panel & Wings) | ✅ |
-| **[Switch LAN Play](switch_lan_play)** | Nintendo Switch LAN Play Client | ✅ |
-| **[Tado Auto Assist](tado_aa)** | Auto-adjust heating based on presence | ✅ |
-| **[WhatsApp](whatsapp)** | Home Assistant WhatsApp Backend (Baileys) | ✅ |
-| **[Wiki.js](wiki.js)** | Wiki.js | ✅ |
+| Name                                                            | Description                               | Status |
+| :-------------------------------------------------------------- | :---------------------------------------- | :----- |
+| **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     |
+| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     |
+| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     |
+| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     |
+| **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     |
+| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     |
+| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     |
+| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     |
+| **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     |
+| **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     |
+| **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     |
+| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     |
+| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                   | ✅     |
+| **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server               | ✅     |
+| **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                       | ✅     |
+| **[Solumati](solumati)**                                        | Solar Panel Monitoring                    | ✅     |
+| **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client           | ✅     |
+| **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server           | ✅     |
+| **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     |
+| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     |
+| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     |
+| **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     |
+| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     |
+
 <!-- markdownlint-enable MD060 -->
+<!-- markdownlint-disable MD028 -->
 
-> [!NOTE]
-> **Deprecated Add-on:** `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
+> **Legend:**
+>
+> - ✅ = Stable (version ≥ 1.0.0)
+> - ⚠️ = Beta (version < 1.0.0, functional but in development)
+> - ❌ = Unsupported (no longer maintained)
 
-## 🪦 Unsupported / Deprecated
+<!-- markdownlint-enable MD028 -->
 
-The following add-ons are no longer supported or maintained. They have been moved to the `unsupported/` directory.
+## 🪦 Unsupported Add-ons Info
 
-- **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**
-- **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**
-- **[HyperionNG](.unsupported/HyperionNG)**
-- **[Silverstrike](.unsupported/Silverstrike)**
-- **[Tuya Convert](.unsupported/tuya-convert)**
-- **[xqrepack](.unsupported/xqrepack)**
+Add-ons marked with ❌ are located in the `.unsupported/` directory and **will not appear** in the Home Assistant Add-on Store.
 
-## Support 🙋‍♂️
+To install them manually as a **Local Add-on**:
+
+1. Access your Home Assistant host via SSH or Samba.
+2. Navigate to the `/addons` directory (create it if it doesn't exist).
+3. Create a folder, e.g., `/addons/local`.
+4. Copy the entire add-on folder from `.unsupported/` to `/addons/local/`.
+5. In Home Assistant, go to **Settings > Add-ons > Add-on Store**.
+6. Click the **three dots** (top right) -> **Check for updates**.
+7. The add-on should appear in the "Local Add-ons" section.
+
+> [!WARNING]
+> Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
 
 Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
 Tested on **amd64** architecture.
+
+## 🏆 Platinum Standard Quality
+
+This repository adheres to a **Platinum Standard** for Home Assistant Add-ons, ensuring robust stability, security, and code quality.
+
+Every add-on in this repository undergoes extensive CI/CD verification, including:
+
+- **Automated Builds:** Verified across multiple architectures.
+- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and **Hadolint**.
+- **Strict Linting:** Enforced by **Add-on Linter**, **Actionlint**, **MarkdownLint**, and **Shellcheck**.
+- **Code Consistency:** Automated formatting via **Prettier**, **Black**, and **isort**.
+- **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
+
+We strive to provide add-ons that are not just functional, but also secure, maintainable, and reliable.
 
 ---
 

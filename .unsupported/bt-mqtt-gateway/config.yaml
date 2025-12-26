@@ -1,24 +1,22 @@
----
-name: bt-mqtt-gateway
-version: 1.7.1
-slug: bt-mqtt-gateway
-description: Bluetooth MQTT Gateway Server
-url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
-host_network: true
 arch:
   - aarch64
   - amd64
-startup: services
-services:
-  - mqtt:want
+description: Bluetooth MQTT Gateway Server (Unsupported)
+host_dbus: true
+host_network: true
+init: false
 map:
   - share
-init: false
-host_dbus: true
-panel_icon: mdi:bluetooth-transfer
+name: bt-mqtt-gateway
 options:
-  config_path: "/share/bt-mqtt-gateway.yaml"
+  config_path: /share/bt-mqtt-gateway.yaml
   debug: false
+panel_icon: mdi:bluetooth-transfer
 schema:
   config_path: str
   debug: bool
+services:
+  - mqtt:want
+slug: bt-mqtt-gateway
+url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
+version: 1.7.1

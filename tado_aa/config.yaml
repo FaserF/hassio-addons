@@ -10,10 +10,10 @@ arch:
 image: ghcr.io/faserf/tado_aa-{arch}
 init: false
 options:
-  username:
-  password:
-  minTemp: int(5, 25)
-  maxTemp: int(5, 25)
+  username: ""
+  password: ""
+  minTemp: 5
+  maxTemp: 25
   log_level: info
 schema:
   username: str

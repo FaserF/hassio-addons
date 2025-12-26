@@ -1,10 +1,13 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+# hadolint ignore=DL3006
 FROM $BUILD_FROM
+ARG BUILD_DATE="unknown"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # 1. Install Node.js & Git (Using standard repos for stability)
+# hadolint ignore=DL3018
 RUN \
     apk add --no-cache \
         nodejs \
@@ -18,8 +21,9 @@ WORKDIR /opt/whatsapp
 COPY . .
 
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
-RUN \
-    apk add --no-cache dos2unix && \
+# hadolint ignore=DL3018
+    RUN \
+    apk add --no-cache dos2unix~=7.5 && \
     if [ -d "rootfs" ]; then \
         cp -rv rootfs/* /; \
         # Fix potential Windows CRLF in s6 scripts
@@ -41,7 +45,6 @@ RUN \
 
 # Build arguments
 ARG BUILD_ARCH
-ARG BUILD_DATE
 ARG BUILD_DESCRIPTION
 ARG BUILD_NAME
 ARG BUILD_REF
@@ -56,3 +59,19 @@ LABEL \
     io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
     maintainer="FaserF"
+
+# Labels
+LABEL \
+    org.opencontainers.image.title="WhatsApp" \
+    org.opencontainers.image.description="Home Assistant WhatsApp Backend (Baileys/Node.js)" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
+    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/whatsapp" \
+    org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/whatsapp" \
+    org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md" \
+    org.opencontainers.image.created="${BUILD_DATE}"
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
+    CMD curl --fail http://127.0.0.1:8066/ || exit 1

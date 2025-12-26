@@ -1,5 +1,15 @@
 {
   "name": "FaserF's Home Assistant Add-ons",
   "url": "https://github.com/faserf/hassio-addons",
-  "maintainer": "FaserF"
+  "maintainer": "FaserF",
+  "channels": {
+    "stable": {
+      "name": "Stable",
+      "description": "Official releases with pre-built Docker images"
+    },
+    "edge": {
+      "name": "Edge (Development)",
+      "description": "Latest development builds - built locally from source"
+    }
+  }
 }

@@ -1,28 +1,105 @@
 name: Orchestrator Auto-Fix
 
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - master
-
 permissions:
   contents: write
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  auto-fix:
-    name: 🔧 Auto-Fix Everything
+  autofix:
+    if: >-
+      !contains((github.event.head_commit.message || ''), 'style: auto-fix') &&
+      github.actor != 'git-auto-commit-action' &&
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'coderabbitai[bot]'
+    name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        # zizmor: ignore[artipacked]
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.head_ref }}
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Deps
+        run: pip install pyyaml
+
+      - name: 🏷️ Auto-Generate OCI Labels
+        continue-on-error: true
+        run: python3 .scripts/fix_oci_labels.py
+
+      - name: ⚠️ Update Unsupported Status
+        continue-on-error: true
+        run: python3 .scripts/update_unsupported_status.py
+
+      - name: 🏷️ Update README Beta Status
+        continue-on-error: true
+        run: python3 .scripts/update_readme_status.py
+
+      - name: 🛡️ Enforce 64-bit Architectures
+        id: enforce_arch
+        run: python3 .scripts/enforce_architectures.py
+
+      # COMMENTED OUT: This step requires pull_request trigger which was removed.
+      # Keep for future reference if PR autofix is re-enabled.
+      # - name: 💬 Comment on PR (32-bit Removal)
+      #   if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
+      #   uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      #   with:
+      #     script: |
+      #       const signature = "<!-- autofix-32bit-notice -->";
+      #
+      #       const { data: comments } = await github.rest.issues.listComments({
+      #          owner: context.repo.owner,
+      #          repo: context.repo.repo,
+      #          issue_number: context.issue.number,
+      #       });
+      #
+      #       const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("**Notice:** 32-bit architectures")));
+      #
+      #       for (const comment of previousComments) {
+      #           try {
+      #               await github.graphql(`
+      #                   mutation($subjectId: ID!) {
+      #                       minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+      #                           minimizedComment { isMinimized }
+      #                       }
+      #                   }
+      #               `, { subjectId: comment.node_id });
+      #           } catch (error) {
+      #               console.error(`Failed to minimize comment ${comment.id}:`, error);
+      #           }
+      #       }
+      #
+      #       await github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: signature + '\n⚠️ **Notice:** 32-bit architectures (armhf, armv7, i386) have been automatically removed from this PR. These architectures are no longer supported by Home Assistant or this repository.'
+      #       })
+
+      - name: 🏁 Renormalize Line Endings
+        run: git add --renormalize .
 
       # 1. Shell Scripts (Format)
-      # 1. Shell Scripts (Format)
       - name: 🐚 Setup shfmt
-        uses: mfinelli/setup-shfmt@v4
+        uses: mfinelli/setup-shfmt@1a143389339b48c4b48ae3cdc058f3dbe336a701 # v3.0.2
         with:
           shfmt-version: "3.7.0"
 
@@ -32,29 +109,59 @@ jobs:
       # 2. Python (Format & Sort Imports)
       # We format the internal scripts and any add-on python files
       - name: 🐍 Run Black (Formatter)
-        uses: psf/black@stable
+        continue-on-error: true
+        uses: psf/black@1b2427a2b785cc4aac97c19bb4b9a0de063f9547 # v24.10.0
         with:
           options: "--verbose"
           src: "."
 
       - name: 🐍 Run Isort (Import Sorter)
-        uses: isort/isort-action@master
+        uses: isort/isort-action@24d8a7a51d33ca7f36c3f23598dafa33f7071326 # v1.1.1
         with:
           configuration: "--profile black"
 
-      # 3. Prettier (JSON, YAML, MD)
-      - name: 💅 Run Prettier
-        uses: creyD/prettier_action@v4.6
+      # 3. Node.js Tools (Prettier, Markdownlint)
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          prettier_options: --write "**/*.{json,js,md,yaml}"
+          node-version: "20"
+
+      - name: 💅 Run Prettier
+        continue-on-error: true
+        run: |
+          npm install -g prettier
+          prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
       # 4. Standardize (READMEs, Beta Labels, Configs)
       - name: 📄 Standardize READMEs
         run: python3 .scripts/standardize_readmes.py
 
-      # Commit back
+      # 5. Markdown Fixes (markdownlint)
+      - name: 📝 Fix Markdown
+        continue-on-error: true
+        run: |
+          npm install -g markdownlint-cli
+          markdownlint --fix "**/*.md"
+
+      # 6. Clean Excessive Blank Lines
+      - name: 🧹 Clean Excessive Blank Lines
+        run: |
+          find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
+
+      # 7. Bump Test Script Version
+      - name: 🆙 Bump Test Script Version
+        continue-on-error: true
+        run: python3 .scripts/bump_script_version.py
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      # Commit back (using PAT to trigger subsequent workflows)
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
-          commit_message: "style: auto-fix (shfmt, black, isort, prettier)"
-          branch: ${{ github.head_ref }}
+          commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
+          branch: ${{ github.head_ref || github.ref_name }}
+          file_pattern: .
+        env:
+          # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}

@@ -15,7 +15,8 @@
 
 ![Ingress Support](../_images/apache2/ingress.png)
 
-A lightweight Apache2 web server add-on for Home Assistant OS, with optional
+A lightweightYou help many people to use this add-on from the main repository.
+stant OS, with optional
 PHP 8 and MariaDB support.
 
 This add-on allows you to serve static or dynamic websites, run PHP-based
@@ -28,12 +29,7 @@ versions are available to fit different needs and use cases.
 - [Versions](#-versions)
 - [Installation](#-installation)
 - [Configuration](#️-configuration)
-- [Authentication](#-authentication)
-- [Ingress](#-ingress)
-- [MariaDB Usage](#-mariadb-usage)
-- [Limitations](#️-limitations)
-- [Support](#-support)
-- [License](#-license)
+- [Credits & License](#-credits--license)
 
 This add-on provides the [Apache HTTP Server](https://httpd.apache.org/) for
 Home Assistant OS. It supports:
@@ -54,8 +50,6 @@ Apache Software Foundation.
 | [Full][full_url]                         | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
 | [Minimal][minimal_url]                   | Apache2 only                                                                 |
 | [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules                              |
-
-<!-- markdownlint-enable MD013 -->
 
 [full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2
 [minimal_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal

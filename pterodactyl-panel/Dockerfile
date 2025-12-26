@@ -1,34 +1,76 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
-RUN apk --update add redis curl gettext mariadb-client nginx php82 php82-bcmath php82-common php82-dom php82-fileinfo
-RUN apk --update add php82-fpm php82-gd php82-pecl-memcached php82-mbstring php82-openssl php82-pdo php82-phar php82-json
-RUN apk --update add php82-sodium php82-pdo_mysql php82-session php82-simplexml php82-tokenizer php82-ctype php82-zlib php82-zip php82-xmlwriter tini
-RUN mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/
-RUN ln -s /usr/bin/php82 /usr/bin/php
+
+# Install system requirements
+# IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
+# Added Alpine 3.19 repositories to maintain PHP 8.1 compatibility
+# NOTE: We mix Alpine 3.21 (base) and 3.19 (php81) repositories.
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/community \
+    redis \
+    curl \
+    gettext \
+    mariadb-client \
+    nginx \
+    php81 \
+    php81-bcmath \
+    php81-common \
+    php81-dom \
+    php81-fileinfo \
+    php81-fpm \
+    php81-gd \
+    php81-pecl-memcached \
+    php81-mbstring \
+    php81-openssl \
+    php81-pdo \
+    php81-phar \
+    php81-sodium \
+    php81-pdo_mysql \
+    php81-session \
+    php81-simplexml \
+    php81-tokenizer \
+    php81-ctype \
+    php81-zip \
+    php81-xmlwriter \
+    tini \
+    && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
+    && ln -s /usr/bin/php81 /usr/bin/php
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
 FROM base as build
+
 WORKDIR /var/www/html
-RUN apk add yarn git
-RUN git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4
-RUN rm -rf .git
-RUN chmod -R 755 storage/* bootstrap/cache
-RUN find storage -type d > .storage.tmpl
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN cp .env.example .env
-RUN composer install --ansi --no-dev --optimize-autoloader
-RUN chown -R nginx:nginx *
-RUN yarn install --production
-RUN yarn add cross-env
-RUN yarn run build:production
-RUN rm -rf node_modules
+# Install build-only dependencies (not needed in production)
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
+    yarn \
+    git \
+    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
+    && rm -rf .git \
+    && chmod -R 755 storage/* bootstrap/cache \
+    && find storage -type d > .storage.tmpl \
+    # Safe Composer installation \
+    && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm /tmp/composer-setup.php \
+    && cp .env.example .env \
+    && composer install --ansi --no-dev --optimize-autoloader \
+    && chown -R nginx:nginx . \
+    && yarn install --production \
+    && yarn add cross-env \
+    && export NODE_OPTIONS=--openssl-legacy-provider \
+    && yarn run build:production \
+    && rm -rf node_modules
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
 FROM base as production
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 WORKDIR /var/www/html
 
@@ -37,6 +79,22 @@ COPY ./root/ /
 
 # Copy data for add-on
 COPY run.sh /
-RUN chmod a+x /run.sh
-RUN chmod 775 /var/www/html/*
+RUN chmod a+x /run.sh \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 CMD [ "/run.sh" ]
+
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+  CMD curl --fail http://127.0.0.1:80 || exit 1
+
+# Labels
+LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver - BETA"
+LABEL org.opencontainers.image.description="Open-Source Gameserver - Currently not fully working"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/pterodactyl-panel/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

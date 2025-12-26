@@ -1,113 +1,296 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "rebaseWhen": "behind-base-branch",
   "dependencyDashboard": true,
-  "labels": ["dependencies", "no-stale"],
+  "labels": [
+    "dependencies",
+    "no-stale"
+  ],
   "commitMessagePrefix": "⬆️",
+  "allowedPostUpgradeCommands": [
+    "^curl",
+    "^sed",
+    "^bash"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/", "//build.yaml$/"],
+      "fileMatch": [
+        "(^|/)Dockerfile$",
+        "(^|/)build.yaml$"
+      ],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
-        "(aarch64|amd64|armhf|armv7|i386):\\s[\"']?(?<depName>.*?):(?<currentValue>.*?)[\"']?\\s"
+        "(aarch64|amd64):\\s[\"']?(?<depName>.*?):(?<currentValue>.*?)[\"']?\\s"
       ],
       "datasourceTemplate": "docker"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG NODE_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+",
+        "ENV NODE_VERSION v?(?<currentValue>.+?)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "nodejs/node"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ENV YARN_VERSION (?<currentValue>.+?)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "yarnpkg/yarn"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "matterbridge/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "42wim/matterbridge"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "pterodactyl-wings/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "pterodactyl/wings"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "netbootxyz/webapp"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": [
-        "(?<packages>(?<depName>php[0-9]+(?:-[a-z0-9-]+)*)(\\s+php[0-9]+(?:-[a-z0-9-]+)*)*)",
-        "php(?<currentValue>\\d+)"
+      "fileMatch": [
+        "(^|/)Dockerfile$"
       ],
-      "datasourceTemplate": "alpine",
-      "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
+      "matchStrings": [
+        "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/Solumati"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["//Dockerfile$/"],
-      "matchStrings": ["ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"],
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
+      ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "FaserF/Solumati"
+      "depNameTemplate": "Requarks/wiki"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/AegisBot"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "spacemeowx2/switch-lan-play"
+    },
+    {
+      "customType": "regex",
+      "description": "Track xqrepack git commit for script pinning",
+      "fileMatch": [
+        ".unsupported/xqrepack/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG XQREPACK_COMMIT=[\"']?(?<currentDigest>[a-f0-9]+)[\"']?"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/geekman/xqrepack",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track bt-mqtt-gateway version (commit hash)",
+      "fileMatch": [
+        ".unsupported/bt-mqtt-gateway/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/zewelor/bt-mqtt-gateway",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Pterodactyl Panel release branch",
+      "fileMatch": [
+        "pterodactyl-panel/Dockerfile$"
+      ],
+      "matchStrings": [
+        "--branch release/v(?<currentValue>[\\d.]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "pterodactyl/panel",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track tuya-convert git commit",
+      "fileMatch": [
+        ".unsupported/tuya-convert/Dockerfile$"
+      ],
+      "matchStrings": [
+        "git checkout (?<currentDigest>[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/ct-Open-Source/tuya-convert",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Home Assistant version for test instance",
+      "fileMatch": [
+        "homeassistant-test-instance/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)"
+      ],
+      "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "automerge": true,
       "ignoreTests": true
     },
     {
-      "groupName": "Add-on base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/base"],
+      "groupName": "Add-on base images",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "ghcr.io/hassio-addons/base",
+        "ghcr.io/hassio-addons/debian-base",
+        "ghcr.io/hassio-addons/base-python"
+      ],
       "automerge": true,
       "ignoreTests": true
     },
     {
-      "groupName": "Add-on Debian base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/debian-base"],
-      "automerge": true,
-      "ignoreTests": true
-    },
-    {
-      "groupName": "Add-on python base image",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["ghcr.io/hassio-addons/base-python"],
-      "automerge": true,
-      "ignoreTests": true
-    },
-    {
-      "groupName": "Matterbridge",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["42wim/matterbridge"],
+      "groupName": "Development Tools",
+      "matchDepNames": [
+        "nodejs/node",
+        "yarnpkg/yarn"
+      ],
       "automerge": true
     },
     {
-      "groupName": "Netbootxyz",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["netbootxyz/webapp"],
-      "automerge": true
+      "groupName": "Add-on Softwares",
+      "matchDepNames": [
+        "42wim/matterbridge",
+        "netbootxyz/webapp",
+        "Requarks/wiki",
+        "FaserF/AegisBot",
+        "FaserF/Solumati",
+        "spacemeowx2/switch-lan-play"
+      ],
+      "automerge": false
     },
     {
-      "matchManagers": ["pip_requirements"],
-      "addLabels": ["python"],
-      "rangeStrategy": "pin"
-    },
-    {
-      "matchManagers": ["pip_requirements"],
-      "automerge": true
-    },
-    {
-      "groupName": "PHP Packages",
-      "matchDatasources": ["alpine"],
+      "description": "Netboot.xyz - auto-update checksums",
+      "matchDepNames": [
+        "netbootxyz/webapp"
+      ],
       "automerge": true,
-      "matchPackageNames": ["/php\\d+/"]
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "netboot-xyz/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
-      "groupName": "Solumati",
-      "matchDatasources": ["github-releases"],
-      "matchDepNames": ["FaserF/Solumati"],
+      "description": "Pterodactyl Wings - auto-update checksums via postUpgradeTasks",
+      "matchDepNames": [
+        "pterodactyl/wings"
+      ],
       "automerge": true,
-      "ignoreUnstable": false
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "pterodactyl-wings/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
+    },
+    {
+      "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
+      "matchDepNames": [
+        "42wim/matterbridge"
+      ],
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "matterbridge/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
+    },
+    {
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "addLabels": [
+        "python"
+      ],
+      "rangeStrategy": "pin",
+      "automerge": true
     }
   ]
 }

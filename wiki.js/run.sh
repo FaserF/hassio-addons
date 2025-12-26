@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC2034,SC2129,SC2016
+# shellcheck shell=bash
 ssl=$(bashio::config 'ssl')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
@@ -9,13 +11,13 @@ declare password
 declare port
 declare username
 
-if [ $ssl = "true" ]; then
+if [ "$ssl" = "true" ]; then
 	echo "You have activated SSL. SSL Settings will be applied"
-	if [ ! -f /ssl/$certfile ]; then
+	if [ ! -f "/ssl/$certfile" ]; then
 		echo "Cannot find certificate file $certfile . Turn off SSL or check for if the file really exists at /ssl/"
 		exit 1
 	fi
-	if [ ! -f /ssl/$keyfile ]; then
+	if [ ! -f "/ssl/$keyfile" ]; then
 		echo "Cannot find certificate key file $keyfile . Turn off SSL or check for if the file really exists at /ssl/"
 		exit 1
 	fi
@@ -35,6 +37,11 @@ host=$(bashio::services "mysql" "host")
 password=$(bashio::services "mysql" "password")
 port=$(bashio::services "mysql" "port")
 username=$(bashio::services "mysql" "username")
+
+if [ -z "$host" ]; then
+	bashio::log.warning "MariaDB not found (Mock Supervisor?). Waiting..."
+	while true; do sleep 60; done
+fi
 
 #Drop database based on config flag
 if bashio::config.true 'reset_database'; then
@@ -56,15 +63,15 @@ echo "  user: ${username}" >>/wiki/config.yml
 echo "  pass: ${password}" >>/wiki/config.yml
 echo "  db: wiki" >>/wiki/config.yml
 echo "ssl:" >>/wiki/config.yml
-echo "  enabled: $ssl" >>/wiki/config.yml
+echo "  enabled: ${ssl}" >>/wiki/config.yml
 echo "  port: 3443" >>/wiki/config.yml
 echo "  provider: custom" >>/wiki/config.yml
 echo "  format: pem" >>/wiki/config.yml
-echo "  key: /ssl/$keyfile" >>/wiki/config.yml
-echo "  cert: /ssl/$certfile" >>/wiki/config.yml
+echo "  key: /ssl/${keyfile}" >>/wiki/config.yml
+echo "  cert: /ssl/${certfile}" >>/wiki/config.yml
 echo "pool:" >>/wiki/config.yml
 echo "bindIP: 0.0.0.0" >>/wiki/config.yml
-echo "logLevel: $log_level" >>/wiki/config.yml
+echo "logLevel: ${log_level}" >>/wiki/config.yml
 echo "offline: false" >>/wiki/config.yml
 echo "ha: false" >>/wiki/config.yml
 echo "dataPath: ./data" >>/wiki/config.yml

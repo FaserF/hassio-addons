@@ -1,31 +1,67 @@
 name: Orchestrator Auto-Merge
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
-  pull_request:
+  workflow_run:
+    workflows: ["Orchestrator CI"]
     types:
-      - opened
-      - synchronize
-      - reopened
+      - completed
 
 jobs:
   enable-auto-merge:
     name: 🤖 Enable Auto-Merge
     runs-on: ubuntu-latest
     if: >-
-      github.event.pull_request.head.repo.fork == false &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.fork == false &&
       (
-        github.event.pull_request.user.login == 'dependabot[bot]' ||
-        github.event.pull_request.user.login == 'renovate[bot]' ||
-        github.event.pull_request.user.login == 'FaserF'
-      )
-    permissions:
-      contents: write
-      pull-requests: write
+        github.event.workflow_run.actor.login == 'dependabot[bot]' ||
+        github.event.workflow_run.actor.login == 'renovate[bot]' ||
+        github.event.workflow_run.actor.login == 'github-actions[bot]' ||
+        github.event.workflow_run.actor.login == 'FaserF'
+      ) &&
+      github.event.workflow_run.pull_requests[0] != null
     steps:
-      - name: 🤖 Enable Native Auto-Merge
+      - name: ⏱️ Wait 1 minute before auto-merge
+        run: |
+          echo "Waiting 1 minute before enabling auto-merge..."
+          echo "To cancel: Add 'no-merge' label to the PR"
+          sleep 60
+
+      - name: 🔍 Check for no-merge label
+        id: check-label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Error: PR_NUMBER is not set."
+            exit 1
+          fi
+
+          echo "Fetching labels for PR #$PR_NUMBER..."
+          # Default to skip=true, only set to false after successful check
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+
+          if ! labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name'); then
+            echo "Error: Failed to fetch labels for PR #$PR_NUMBER"
+            exit 1
+          fi
+
+          if echo "$labels" | grep -q "no-merge"; then
+            echo "🛑 'no-merge' label found. Skipping auto-merge."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🤖 Enable Native Auto-Merge
+        if: steps.check-label.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.workflow_run.pull_requests[0].html_url }}
         run: |
           # Enable strict auto-merge.
           # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.

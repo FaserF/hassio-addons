@@ -3,13 +3,12 @@ version: "0.2.1"
 slug: "whatsapp"
 description: "Home Assistant WhatsApp Backend (Baileys/Node.js)"
 url: "https://github.com/FaserF/ha-whatsapp"
-startup: application
 arch:
   - aarch64
   - amd64
 init: false
 map:
-  - config:rw
+  - homeassistant_config:rw
 panel_icon: mdi:whatsapp
 options:
   log_level: info
@@ -18,5 +17,4 @@ schema:
 ports:
   8066/tcp: 8066
 ingress: true
-ingress_port: 8066
 ingress_entry: /

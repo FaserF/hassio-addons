@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.14
+
+- General addon improvements
+
 ## 1.0.13
 
 - Fixed `filebrowser users update` syntax error ("accepts 1 arg, received 2").

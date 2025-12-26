@@ -2,12 +2,12 @@ name: Orchestrator Updates
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Daily check (replacing HA Test Instance schedule)
+    - cron: "0 4 * * *" # Daily check (replacing HA Test Instance schedule)
   push:
     branches:
       - master
     paths:
-      - '**/build.yaml' # Trigger on base image updates (replacing Bump-Addon-Version-base)
+      - "**/build.yaml" # Trigger on base image updates (replacing Bump-Addon-Version-base)
   workflow_dispatch:
     inputs:
       target:
@@ -33,12 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Determine latest version
         id: version
@@ -122,25 +122,36 @@ jobs:
             if grep -q "^# Changelog" "$CHANGELOG_FILE"; then
                sed -i "1r $TEMP_HEADER" "$CHANGELOG_FILE"
             else
-               echo "# Changelog" > "temp_changelog_full"
-               echo "" >> "temp_changelog_full"
-               cat "$TEMP_HEADER" >> "temp_changelog_full"
-               cat "$CHANGELOG_FILE" >> "temp_changelog_full"
-               mv "temp_changelog_full" "$CHANGELOG_FILE"
+                {
+                  echo "# Changelog"
+                  echo ""
+                  cat "$TEMP_HEADER"
+                  cat "$CHANGELOG_FILE"
+                } > "temp_changelog_full"
+                mv "temp_changelog_full" "$CHANGELOG_FILE"
             fi
 
-            echo "updated=true" >> $GITHUB_OUTPUT
-            echo "version=$NEW_ADDON_VERSION" >> $GITHUB_OUTPUT
+            {
+              echo "updated=true"
+              echo "version=$NEW_ADDON_VERSION"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "updated=false" >> $GITHUB_OUTPUT
+            echo "updated=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit and Push
         if: steps.update.outputs.updated == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
           commit_message: "Bumps Home Assistant Test Instance to ${{ steps.update.outputs.version }}"
           file_pattern: homeassistant-test-instance/*
+
+      - name: 📨 Trigger Release Build
+        if: steps.update.outputs.updated == 'true'
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
+        with:
+          event-type: dependency-update
+          client-payload: '{"addon": "homeassistant-test-instance", "version": "patch"}'
 
   # --------------------------------------------------------------------------------
   # BASE IMAGE UPDATES (Generic)
@@ -151,28 +162,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: "Retrieve version & increment it"
-        # Using the script logic we've seen, but let's encourage using a standardized script if possible.
-        # For now, converting the shell logic from Bump-Addon-Version-base.yml to Python or keeping shell.
-        # Keeping shell for fidelity to original logic, but simplified.
         run: |
-           # ... (Logic from Bump-Addon-Version-base.yml) ...
-           # For brevity in this artifact, I will call the existing Python script if available or implement concise logic.
-           # Since we don't have a specific python script for *this* mass update, I will reuse the shell logic
-           # but ensure it's robust.
-           # Actually, to be safe and clean, I will suggest we use the existing shell logic pattern but inside this job.
-           # See Bump-Addon-Version-base.yml for logic.
-           echo "Running Base Image Update Logic..."
-           # (We can copy the hefty shell script here or put it in .scripts/update_base.sh to call it)
+          echo "Running Base Image Update Logic..."
 
       - name: Call Update Script
-        # To avoid massive in-line YAML, I'll assume we move the logic to a script.
-        # But wait, I must implement it NOW.
-        # I will Create .scripts/update_base_images.sh first.
         run: bash .scripts/update_base_images.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

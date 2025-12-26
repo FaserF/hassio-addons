@@ -1,0 +1,75 @@
+name: Orchestrator Edge Sync
+
+# This workflow keeps the 'edge' branch in sync with 'master'
+# and prepares it for local development builds (removes image tags)
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      force_sync:
+        description: "Force sync edge branch"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  sync-edge:
+    name: 🔄 Sync Edge Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 🌿 Create or update edge branch
+        run: |
+          # Check if edge branch exists
+          if git ls-remote --heads origin edge | grep -q edge; then
+            echo "Edge branch exists, updating..."
+            git checkout edge
+            git merge master --no-edit -m "Sync edge with master [skip ci]"
+          else
+            echo "Creating edge branch..."
+            git checkout -b edge
+          fi
+
+      - name: 📝 Prepare edge for local builds
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/prepare_edge_branch.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Update version to dev
+        run: |
+          # Bump all supported addon versions to dev
+          for config in */config.yaml; do
+            if [ -f "$config" ]; then
+              ADDON_DIR=$(dirname "$config")
+              # Skip .unsupported directory entry
+              if [[ "$ADDON_DIR" != "." ]] && [[ ! "$ADDON_DIR" =~ ^\. ]]; then
+                echo "Processing $ADDON_DIR..."
+                python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev 2>/dev/null || echo "Skipping $ADDON_DIR"
+              fi
+            fi
+          done
+
+      - name: 🚀 Push edge branch
+        run: |
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: prepare edge branch for local builds [skip ci]"
+          git push origin edge --force-with-lease

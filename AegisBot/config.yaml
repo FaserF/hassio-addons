@@ -1,18 +1,14 @@
 ---
 name: AegisBot
-version: "0.1.4"
+version: "0.1.5"
 slug: aegisbot
 description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
 url: https://github.com/FaserF/AegisBot
 arch:
   - aarch64
   - amd64
-  - armv7
-startup: application
-boot: auto
 init: false
 ingress: true
-ingress_port: 8099
 ingress_stream: true
 panel_icon: mdi:robot
 ports:

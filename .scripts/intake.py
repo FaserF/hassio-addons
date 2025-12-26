@@ -109,6 +109,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--fix", action="store_true", help="Add to README")
+    parser.add_argument("--list", action="store_true", help="Output only slugs")
     args = parser.parse_args()
 
-    print(detect_new_addons(fix=args.fix))
+    new = detect_new_addons(fix=args.fix)
+    if args.list:
+        for a in new:
+            print(a)
+    else:
+        print(new)
