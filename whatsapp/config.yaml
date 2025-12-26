@@ -1,5 +1,5 @@
 name: "WhatsApp"
-version: "0.2.11-dev+59edf2f"
+version: "0.2.12-dev+4eb40c1"
 slug: "whatsapp"
 description: "Home Assistant WhatsApp Backend (Baileys/Node.js)"
 url: "https://github.com/FaserF/ha-whatsapp"
