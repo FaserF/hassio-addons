@@ -285,9 +285,7 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     run_script = find_run_script(addon_path)
 
     if not run_script:
-    if not run_script:
         print("[INFO] No run script found, skipping banner injection")
-        return False
         return False
 
     with open(run_script, "r", encoding="utf-8") as f:

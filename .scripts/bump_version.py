@@ -69,7 +69,9 @@ def get_git_log_for_addon(addon_path, since_tag=None):
             )
             tags = result.stdout.strip().split("\n")
             addon_tags = [
-                t for t in tags if f"{addon_name}-v" in t or t.startswith("v") or t == f"v{addon_name}"
+                t
+                for t in tags
+                if f"{addon_name}-v" in t or t.startswith("v") or t == f"v{addon_name}"
             ]
             # If no tags found specific to this addon, fallback to broader search but warn?
             # Actually, standard pattern is usually just vX.Y.Z for single addon, or addon-vX.Y.Z for monorepo.
@@ -78,10 +80,11 @@ def get_git_log_for_addon(addon_path, since_tag=None):
             # This avoids matching "other-addon-v1.0.0" when looking for "addon".
 
             addon_tags = [
-               t for t in tags
-               if t == f"v{addon_name}"
-               or t.startswith(f"{addon_name}-")
-               or (t.startswith("v") and len(t.split("-")) == 1) # simple v1.2.3
+                t
+                for t in tags
+                if t == f"v{addon_name}"
+                or t.startswith(f"{addon_name}-")
+                or (t.startswith("v") and len(t.split("-")) == 1)  # simple v1.2.3
             ]
             tag = addon_tags[0] if addon_tags else None
 

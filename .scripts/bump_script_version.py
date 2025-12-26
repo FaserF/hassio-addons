@@ -106,7 +106,10 @@ def main():
     new_content = re.sub(pattern, rf"\1{bumped_version}\2", content)
 
     if new_content == content:
-        print("Error: Regex replacement failed (content unchanged). Check config format.", file=sys.stderr)
+        print(
+            "Error: Regex replacement failed (content unchanged). Check config format.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     with open(config_path, "w") as f:

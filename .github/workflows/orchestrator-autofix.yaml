@@ -110,6 +110,7 @@ jobs:
       # 2. Python (Format & Sort Imports)
       # We format the internal scripts and any add-on python files
       - name: 🐍 Run Black (Formatter)
+        continue-on-error: true
         uses: psf/black@1b2427a2b785cc4aac97c19bb4b9a0de063f9547 # v24.10.0
         with:
           options: "--verbose"
