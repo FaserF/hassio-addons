@@ -272,14 +272,17 @@ try {
     # --- EXECUTE TESTS ---
 
     # 0. Auto-Fix
+    # 0. Auto-Fix
     if ($Fix) {
-        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 13] Running Auto-Fix..." -PercentComplete 0
+        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 14] Running Auto-Fix..." -PercentComplete 0
+        $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
         try {
             & "$TestsDir/00-autofix.ps1" -Addons $addons -Config $Config -GlobalFix ("all" -in $Addon -and -not $ChangedOnly) -RepoRoot $RepoRoot
         }
         catch {
             Add-Result -Addon "System" -Check "AutoFix" -Status "SKIP" -Message "Module Crashed: $_"
         }
+        finally { $ProgressPreference = $oldPP }
     }
 
     # 1. Line Endings
@@ -426,6 +429,20 @@ try {
         }
     }
 
+    # 14. Python Checks
+    # 14. Python Checks
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 14] Python Checks" -PercentComplete 95
+    if ("all" -in $Tests -or "PythonChecks" -in $Tests) {
+        $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
+        try {
+            & "$TestsDir/14-python-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -Fix $Fix
+        }
+        catch {
+            Add-Result -Addon "System" -Check "PythonChecks" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        finally { $ProgressPreference = $oldPP }
+    }
+
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Completed
 }
 catch {
@@ -452,36 +469,55 @@ finally {
     }
 
     # Statistics
-    $PassCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq 'PASS' }).Count } else { 0 }
-    $FailCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq 'FAIL' }).Count } else { 0 }
-    $WarnCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq 'WARN' }).Count } else { 0 }
-    $SkipCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq 'SKIP' }).Count } else { 0 }
+    $PassCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq "PASS" }).Count } else { 0 }
+    $FailCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq "FAIL" }).Count } else { 0 }
+    $WarnCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq "WARN" }).Count } else { 0 }
+    $SkipCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq "SKIP" }).Count } else { 0 }
 
     Write-Host ""
-    Write-Host "  ┌─────────────────────────────────────┐" -ForegroundColor Gray
-    Write-Host "  │           📊 STATISTICS             │" -ForegroundColor Gray
-    Write-Host "  ├─────────────────────────────────────┤" -ForegroundColor Gray
-    Write-Host "  │  ✅  Passed:   " -NoNewline -ForegroundColor Gray
+    Write-Host ""
+    Write-Host ""
+    # Safe Box Drawing & Emojis
+    $c_ul = [char]0x250C; $c_h = [char]0x2500; $c_ur = [char]0x2510
+    $c_v  = [char]0x2502; $c_l = [char]0x251C; $c_r  = [char]0x2524
+    $c_bl = [char]0x2514; $c_br = [char]0x2518
+
+    # Emojis (Surrogates handling)
+    $e_chart = "$([char]0xD83D)$([char]0xDCCA)" # 📊
+    $e_pass  = "$([char]0x2705)"                 # ✅
+    $e_fail  = "$([char]0x274C)"                 # ❌
+    $e_warn  = "$([char]0x26A0)$([char]0xFE0F)"  # ⚠️
+    $e_skip  = "$([char]0x23ED)$([char]0xFE0F)"  # ⏭️
+
+    $line_top = "$c_ul$("$c_h" * 37)$c_ur"
+    $line_mid = "$c_l$("$c_h" * 37)$c_r"
+    $line_bot = "$c_bl$("$c_h" * 37)$c_br"
+
+    Write-Host ""
+    Write-Host "  $line_top" -ForegroundColor Gray
+    Write-Host "  $c_v           $e_chart STATISTICS             $c_v" -ForegroundColor Gray
+    Write-Host "  $line_mid" -ForegroundColor Gray
+    Write-Host "  $c_v  $e_pass  Passed:   " -NoNewline -ForegroundColor Gray
     Write-Host ("{0,5}" -f $PassCount) -NoNewline -ForegroundColor Green
-    Write-Host "                │" -ForegroundColor Gray
-    Write-Host "  │  ❌  Failed:   " -NoNewline -ForegroundColor Gray
+    Write-Host "                $c_v" -ForegroundColor Gray
+    Write-Host "  $c_v  $e_fail  Failed:   " -NoNewline -ForegroundColor Gray
     Write-Host ("{0,5}" -f $FailCount) -NoNewline -ForegroundColor $(if ($FailCount -gt 0) { "Red" } else { "Gray" })
-    Write-Host "                │" -ForegroundColor Gray
-    Write-Host "  │  ⚠️  Warnings: " -NoNewline -ForegroundColor Gray
+    Write-Host "                $c_v" -ForegroundColor Gray
+    Write-Host "  $c_v  $e_warn  Warnings: " -NoNewline -ForegroundColor Gray
     Write-Host ("{0,5}" -f $WarnCount) -NoNewline -ForegroundColor $(if ($WarnCount -gt 0) { "Yellow" } else { "Gray" })
-    Write-Host "                │" -ForegroundColor Gray
-    Write-Host "  │  ⏭️  Skipped:  " -NoNewline -ForegroundColor Gray
+    Write-Host "                $c_v" -ForegroundColor Gray
+    Write-Host "  $c_v  $e_skip  Skipped:  " -NoNewline -ForegroundColor Gray
     Write-Host ("{0,5}" -f $SkipCount) -NoNewline -ForegroundColor DarkGray
-    Write-Host "                │" -ForegroundColor Gray
-    Write-Host "  └─────────────────────────────────────┘" -ForegroundColor Gray
+    Write-Host "                $c_v" -ForegroundColor Gray
+    Write-Host "  $line_bot" -ForegroundColor Gray
 
     if ($global:GlobalFailed) {
         Write-Host ""
-        Write-Host "  ❌ Verification FAILED!" -ForegroundColor Red
+        Write-Host "  $e_fail Verification FAILED!" -ForegroundColor Red
     }
     else {
         Write-Host ""
-        Write-Host "  🚀 Verification PASSED!" -ForegroundColor Green
+        Write-Host "  $e_pass Verification PASSED!" -ForegroundColor Green
     }
 
     # Export results
@@ -496,7 +532,7 @@ finally {
     # 1. Remove Temp Files
     if (Test-Path $OutputDir) {
         $oldProgress = $ProgressPreference
-        $ProgressPreference = 'SilentlyContinue'
+        $ProgressPreference = "SilentlyContinue"
         try {
             Get-ChildItem -Path $OutputDir -Filter "tmp_*" -Directory | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
         }
@@ -538,7 +574,7 @@ finally {
     Write-Host "Duration: $($Duration.ToString())" -ForegroundColor Cyan
 
     # Final Notification
-    $finalStatus = if ($global:GlobalFailed) { "❌ Failed" } else { "✅ Passed" }
+    $finalStatus = if ($global:GlobalFailed) { "$e_fail Failed" } else { "$e_pass Passed" }
     $stats = "P: $PassCount, F: $FailCount, W: $WarnCount, S: $SkipCount"
     Show-Notification -Title "Verification $finalStatus" -Message "$stats | Duration: $($Duration.ToString())" -LogPath $LogFile
 

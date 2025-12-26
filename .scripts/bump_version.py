@@ -68,20 +68,23 @@ def get_git_log_for_addon(addon_path, since_tag=None):
                 cwd=os.path.dirname(addon_path) or ".",
             )
             tags = result.stdout.strip().split("\n")
-            addon_tags = [t for t in tags if addon_name in t.lower() or t.startswith("v")]
+            addon_tags = [
+                t for t in tags if addon_name in t.lower() or t.startswith("v")
+            ]
             tag = addon_tags[0] if addon_tags else None
 
         # Get full hash for commit links
         if tag:
             cmd = [
-                "git", "log", f"{tag}..HEAD", "--pretty=format:%s|%H|%h",
-                "--", addon_path
+                "git",
+                "log",
+                f"{tag}..HEAD",
+                "--pretty=format:%s|%H|%h",
+                "--",
+                addon_path,
             ]
         else:
-            cmd = [
-                "git", "log", "-20", "--pretty=format:%s|%H|%h",
-                "--", addon_path
-            ]
+            cmd = ["git", "log", "-20", "--pretty=format:%s|%H|%h", "--", addon_path]
 
         result = subprocess.run(
             cmd,
@@ -95,11 +98,13 @@ def get_git_log_for_addon(addon_path, since_tag=None):
             for line in result.stdout.strip().split("\n"):
                 parts = line.split("|")
                 if len(parts) >= 3:
-                    commits.append({
-                        "message": parts[0],
-                        "full_hash": parts[1],
-                        "short_hash": parts[2],
-                    })
+                    commits.append(
+                        {
+                            "message": parts[0],
+                            "full_hash": parts[1],
+                            "short_hash": parts[2],
+                        }
+                    )
             return commits
 
         return []
@@ -146,7 +151,9 @@ def categorize_commits(commits, repo_url):
         # Clean up message (remove conventional commit prefix)
         clean_msg = re.sub(
             r"^(feat|fix|docs|style|refactor|test|chore|deps?|config)(\([^)]+\))?:\s*",
-            "", msg, flags=re.IGNORECASE
+            "",
+            msg,
+            flags=re.IGNORECASE,
         )
 
         # Make version references clickable
@@ -164,7 +171,18 @@ def categorize_commits(commits, repo_url):
             categories["✨ Features"].append(entry)
         elif any(prefix in msg_lower for prefix in ["fix:", "fix(", "bug:", "bugfix:"]):
             categories["🐛 Bug Fixes"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["deps:", "dep:", "⬆️", "bump", "renovate", "dependency", "update"]):
+        elif any(
+            prefix in msg_lower
+            for prefix in [
+                "deps:",
+                "dep:",
+                "⬆️",
+                "bump",
+                "renovate",
+                "dependency",
+                "update",
+            ]
+        ):
             categories["📦 Dependencies"].append(entry)
         elif any(prefix in msg_lower for prefix in ["config:", "conf:", "chore:"]):
             categories["🔧 Configuration"].append(entry)
@@ -200,7 +218,10 @@ def generate_changelog_entry(version, addon_path, changelog_message=None):
                     entry += f"- {item}\n"
                 entry += "\n"
 
-        if changelog_message and changelog_message not in ["Manual Release via Orchestrator", "Automatic release after dependency update"]:
+        if changelog_message and changelog_message not in [
+            "Manual Release via Orchestrator",
+            "Automatic release after dependency update",
+        ]:
             entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
     else:
         if changelog_message:
@@ -238,7 +259,9 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
 
     # Regex to find version (supports -dev and -dev+commit suffix)
     # Regex to find version (supports -dev and -dev+commit suffix)
-    version_pattern = r'^(version: ["\'']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["\'']?)'
+    version_pattern = (
+        r"""^(version: ["']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["']?)"""
+    )
     match = re.search(version_pattern, content, re.MULTILINE)
 
     if not match:
@@ -274,7 +297,8 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
             try:
                 result = subprocess.run(
                     ["git", "log", "-1", "--format=%h", "--", addon_path],
-                    capture_output=True, text=True
+                    capture_output=True,
+                    text=True,
                 )
                 commit_sha = result.stdout.strip()[:7] if result.returncode == 0 else ""
             except Exception:
@@ -329,13 +353,17 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bump add-on version with auto-generated changelog")
+    parser = argparse.ArgumentParser(
+        description="Bump add-on version with auto-generated changelog"
+    )
     parser.add_argument("addon", help="Path to add-on directory")
     parser.add_argument(
         "increment", choices=["major", "minor", "patch"], help="Version increment type"
     )
     parser.add_argument("--message", help="Additional changelog message", default=None)
-    parser.add_argument("--dev", action="store_true", help="Set version to dev (e.g., 1.2.3-dev)")
+    parser.add_argument(
+        "--dev", action="store_true", help="Set version to dev (e.g., 1.2.3-dev)"
+    )
 
     args = parser.parse_args()
 

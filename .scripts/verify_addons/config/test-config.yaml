@@ -51,6 +51,7 @@ validTests:
   - DockerRun
   - CodeRabbit
   - WorkflowChecks
+  - PythonChecks
 
 # --- DOCKER-DEPENDENT TESTS ---
 dockerTests:
@@ -85,4 +86,5 @@ testWeights:
   DockerRun: 60.0
   CodeRabbit: 1.0
   WorkflowChecks: 2.0
+  PythonChecks: 2.0
   AutoFix: 3.0

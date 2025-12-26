@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import os
-import subprocess
-import yaml
-import sys
 import re
+import subprocess
+import sys
+
+import yaml
+
 
 def run_command(cmd):
     try:
@@ -13,6 +15,7 @@ def run_command(cmd):
         print(f"Error running {' '.join(cmd)}: {e.stderr}")
         return None
 
+
 def get_base_ref():
     # In PRs, use the base ref (e.g. master)
     base_ref = os.environ.get("GITHUB_BASE_REF")
@@ -21,6 +24,7 @@ def get_base_ref():
 
     # For pushes to master, compare with previous commit
     return "HEAD~1"
+
 
 def main():
     base = get_base_ref()
@@ -55,7 +59,8 @@ def main():
     def get_version_at(ref):
         try:
             content = run_command(["git", "show", f"{ref}:{config_path}"])
-            if not content: return None
+            if not content:
+                return None
             data = yaml.safe_load(content)
             return data.get("scriptVersion")
         except:
@@ -67,7 +72,7 @@ def main():
         print(f"Config file {config_path} not found.")
         sys.exit(1)
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         current_data = yaml.safe_load(f)
         new_version = current_data.get("scriptVersion")
 
@@ -80,26 +85,27 @@ def main():
         print("Could not find scriptVersion in config.")
         sys.exit(1)
 
-    parts = new_version.split('.')
+    parts = new_version.split(".")
     if len(parts) != 3:
         print(f"Invalid version format: {new_version}")
         sys.exit(1)
 
     parts[2] = str(int(parts[2]) + 1)
-    bumped_version = '.'.join(parts)
+    bumped_version = ".".join(parts)
 
     print(f"Bumping script version: {new_version} -> {bumped_version}")
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         content = f.read()
 
     pattern = r'(scriptVersion:\s*")[^"]+(")'
-    new_content = re.sub(pattern, rf'\1{bumped_version}\2', content)
+    new_content = re.sub(pattern, rf"\1{bumped_version}\2", content)
 
-    with open(config_path, 'w') as f:
+    with open(config_path, "w") as f:
         f.write(new_content)
 
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

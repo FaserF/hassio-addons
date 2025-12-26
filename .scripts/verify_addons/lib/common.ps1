@@ -441,20 +441,20 @@ function Get-TestConfig {
 
     # Default values (fallback if YAML parsing fails)
     $defaults = @{
-        latestBase = "19.0.0"
-        latestDebian = "9.1.0"
-        latestPython = "3.13-alpine3.21"
-        latestNode = "24.12.0"
-        builderImage = "ghcr.io/home-assistant/amd64-builder:2025.11.0"
-        scriptVersion = "2.1.0"
-        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks")
+        latestBase = ""
+        latestDebian = ""
+        latestPython = ""
+        latestNode = ""
+        builderImage = ""
+        scriptVersion = ""
+        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks")
         dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks")
         docsOnlyTests = @("MarkdownLint", "Prettier", "LineEndings")
         testWeights = @{
             LineEndings = 0.2; ShellCheck = 1.0; Hadolint = 3.0; YamlLint = 0.5
             MarkdownLint = 0.5; Prettier = 1.5; AddonLinter = 10.0; Compliance = 1.0
             Trivy = 60.0; VersionCheck = 1.0; DockerBuild = 180.0; DockerRun = 60.0
-            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0
+            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0
         }
     }
 

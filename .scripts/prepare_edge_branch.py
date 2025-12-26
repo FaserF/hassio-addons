@@ -15,6 +15,7 @@ Usage:
 import os
 import re
 import sys
+
 import yaml
 
 
@@ -32,7 +33,7 @@ def remove_image_from_config(config_path: str) -> bool:
             return False
 
         # Remove image line (handles both quoted and unquoted)
-        new_content = re.sub(r'^image:.*$\n?', '', content, flags=re.MULTILINE)
+        new_content = re.sub(r"^image:.*$\n?", "", content, flags=re.MULTILINE)
 
         if new_content != content:
             with open(config_path, "w", encoding="utf-8") as f:
@@ -96,6 +97,7 @@ def update_repository_json() -> bool:
 
     try:
         import json
+
         with open(repo_json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 

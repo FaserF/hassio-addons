@@ -8,8 +8,8 @@ ORG_NAME = os.environ.get("GITHUB_REPOSITORY_OWNER")
 TOKEN = os.environ.get("GITHUB_TOKEN")
 
 # Retention settings
-KEEP_VERSIONS_SUPPORTED = 2      # Keep 2 versions for supported addons
-KEEP_VERSIONS_UNSUPPORTED = 1    # Keep only 1 version for unsupported addons
+KEEP_VERSIONS_SUPPORTED = 2  # Keep 2 versions for supported addons
+KEEP_VERSIONS_UNSUPPORTED = 1  # Keep only 1 version for unsupported addons
 
 # List of unsupported addon names (detected from .unsupported folder or naming convention)
 UNSUPPORTED_ADDONS = [
@@ -99,7 +99,9 @@ def main():
     for pkg in packages:
         name = pkg["name"]
         is_unsupported = is_unsupported_addon(name)
-        keep_versions = KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
+        keep_versions = (
+            KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
+        )
         addon_type = "🏚️ UNSUPPORTED" if is_unsupported else "📦 Supported"
 
         print(f"👉 {addon_type}: {name} (keep {keep_versions})...")
