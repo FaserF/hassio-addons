@@ -56,41 +56,43 @@ jobs:
         id: enforce_arch
         run: python3 .scripts/enforce_architectures.py
 
-      - name: 💬 Comment on PR (32-bit Removal)
-        if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          script: |
-            const signature = "<!-- autofix-32bit-notice -->";
-
-            const { data: comments } = await github.rest.issues.listComments({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               issue_number: context.issue.number,
-            });
-
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("**Notice:** 32-bit architectures")));
-
-            for (const comment of previousComments) {
-                try {
-                    await github.graphql(`
-                        mutation($subjectId: ID!) {
-                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
-                                minimizedComment { isMinimized }
-                            }
-                        }
-                    `, { subjectId: comment.node_id });
-                } catch (error) {
-                    console.error(`Failed to minimize comment ${comment.id}:`, error);
-                }
-            }
-
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: signature + '\n⚠️ **Notice:** 32-bit architectures (armhf, armv7, i386) have been automatically removed from this PR. These architectures are no longer supported by Home Assistant or this repository.'
-            })
+      # COMMENTED OUT: This step requires pull_request trigger which was removed.
+      # Keep for future reference if PR autofix is re-enabled.
+      # - name: 💬 Comment on PR (32-bit Removal)
+      #   if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
+      #   uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      #   with:
+      #     script: |
+      #       const signature = "<!-- autofix-32bit-notice -->";
+      #
+      #       const { data: comments } = await github.rest.issues.listComments({
+      #          owner: context.repo.owner,
+      #          repo: context.repo.repo,
+      #          issue_number: context.issue.number,
+      #       });
+      #
+      #       const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("**Notice:** 32-bit architectures")));
+      #
+      #       for (const comment of previousComments) {
+      #           try {
+      #               await github.graphql(`
+      #                   mutation($subjectId: ID!) {
+      #                       minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+      #                           minimizedComment { isMinimized }
+      #                       }
+      #                   }
+      #               `, { subjectId: comment.node_id });
+      #           } catch (error) {
+      #               console.error(`Failed to minimize comment ${comment.id}:`, error);
+      #           }
+      #       }
+      #
+      #       await github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: signature + '\n⚠️ **Notice:** 32-bit architectures (armhf, armv7, i386) have been automatically removed from this PR. These architectures are no longer supported by Home Assistant or this repository.'
+      #       })
 
       - name: 🏁 Renormalize Line Endings
         run: git add --renormalize .
@@ -118,7 +120,12 @@ jobs:
         with:
           configuration: "--profile black"
 
-      # 3. Prettier (JSON, YAML, MD)
+      # 3. Node.js Tools (Prettier, Markdownlint)
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: 💅 Run Prettier
         continue-on-error: true
         run: |

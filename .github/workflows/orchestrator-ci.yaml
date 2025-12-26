@@ -842,10 +842,11 @@ jobs:
   success_report:
     name: ✅ CI Success Summary
     needs: [filter, lint, build]
-    # Run when lint passes and build passes OR was skipped (docs-only changes)
+    # Run when filter and lint pass, and build passes OR was skipped (docs-only changes)
     if: |
       always() &&
       github.event_name == 'pull_request' &&
+      needs.filter.result == 'success' &&
       needs.lint.result == 'success' &&
       (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
@@ -946,17 +947,13 @@ jobs:
             body += previousErrorsNote;
             body += autoMergeNote;
 
-            // Check if we already posted a success comment to avoid spamming
-            const alreadyPosted = comments.find(c => c.user.type === 'Bot' && c.body.includes("## ✅ Verification Successful"));
-
-            if (!alreadyPosted) {
-                await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    body: body
-                });
-            }
+            // Always post a fresh success comment (old ones are minimized above)
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+            });
 
             // Update CI status labels
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
@@ -965,8 +962,9 @@ jobs:
                 issue_number: context.issue.number,
             });
 
-            const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
-            const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+            // Labels to remove on success (CI status + workflow errors)
+            const labelsToRemove = ['ci/passed', 'ci/failed', 'ci/platinum-issues', 'workflow/lint-error', 'workflow/lint-warning'];
+            const filteredLabels = currentLabels.map(l => l.name).filter(n => !labelsToRemove.includes(n));
             filteredLabels.push('ci/passed');
 
             await github.rest.issues.setLabels({

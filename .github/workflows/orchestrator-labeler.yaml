@@ -310,15 +310,24 @@ jobs:
 
             console.log("Final Labels with semantics:", finalLabels);
 
-            // Set Labels (Atomic Update)
-            try {
-                await github.rest.issues.setLabels({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    labels: finalLabels
-                });
-            } catch (error) {
-                console.error("Failed to set labels: " + error.message);
-                core.setFailed("Failed to set labels: " + error.message);
+            // Compare with current labels to avoid unnecessary API calls
+            const currentLabelNames = currentLabels.map(l => l.name).sort();
+            const newLabelNames = [...finalLabels].sort();
+
+            if (JSON.stringify(currentLabelNames) === JSON.stringify(newLabelNames)) {
+                console.log("Labels unchanged, skipping API call");
+            } else {
+                console.log("Labels changed, updating via API");
+                // Set Labels (Atomic Update)
+                try {
+                    await github.rest.issues.setLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: finalLabels
+                    });
+                } catch (error) {
+                    console.error("Failed to set labels: " + error.message);
+                    core.setFailed("Failed to set labels: " + error.message);
+                }
             }
