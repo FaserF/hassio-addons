@@ -1,5 +1,5 @@
 name: "Home Assistant Test Instance"
-version: "0.1.18-dev+9edd37c"
+version: "0.1.19-dev+256e2fb"
 slug: "ha_test_instance"
 description: "A standalone Home Assistant Core instance for testing purposes."
 url: "https://github.com/home-assistant/home-assistant"
