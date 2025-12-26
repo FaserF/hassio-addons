@@ -18,7 +18,8 @@ jobs:
     # Actor check and PR detection moved to steps for better reliability
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_repository.fork == false
+      github.event.workflow_run.head_repository.fork == false &&
+      github.event.workflow_run.head_branch != 'master'
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -50,17 +51,14 @@ jobs:
             fi
 
             PR_NUMBER=$(echo "$PR_DATA" | jq -r '.number')
-            PR_URL=$(echo "$PR_DATA" | jq -r '.url')
             PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author')
           else
-            PR_URL="${{ github.event.workflow_run.pull_requests[0].html_url }}"
             PR_AUTHOR="${{ github.event.workflow_run.actor.login }}"
           fi
 
           echo "Found PR #$PR_NUMBER by $PR_AUTHOR"
           {
             echo "pr_number=$PR_NUMBER"
-            echo "pr_url=$PR_URL"
             echo "pr_author=$PR_AUTHOR"
             echo "found=true"
           } >> "$GITHUB_OUTPUT"
@@ -192,10 +190,10 @@ jobs:
           steps.check-label.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ steps.find-pr.outputs.pr_url }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
-          echo "🚀 Enabling auto-merge for $PR_URL"
+          echo "🚀 Enabling auto-merge for PR #$PR_NUMBER"
           # Enable strict auto-merge.
           # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
           # The PR will only merge once ALL required status checks (CI) have passed.
-          gh pr merge --auto --squash "$PR_URL"
+          gh pr merge --auto --squash "$PR_NUMBER"
