@@ -20,6 +20,11 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_repository.fork == false
     steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: 🔍 Find PR for this commit
         id: find-pr
         env:
