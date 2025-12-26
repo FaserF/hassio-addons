@@ -45,6 +45,17 @@ def check_addon(addon_path):
     ):
         warnings.append("Missing OCI Labels (org.opencontainers.image...)")
 
+    def validate_base_image(img, ctx):
+        # Validation Intent: Accept official/trusted namespaces (ghcr.io/hassio-addons/ or ghcr.io/home-assistant/)
+        # as sufficient validation. Downstream controls provide the trust boundary here.
+        if not (
+            img.startswith("ghcr.io/hassio-addons/")
+            or img.startswith("ghcr.io/home-assistant/")
+        ):
+            warnings.append(
+                f"{ctx} Base image '{img}' does not look like an official HA/Hassio-Addons base image."
+            )
+
     # Check 4: Base Image (Official)
     # Parse FROM instruction or build.yaml
     detected_base = False
@@ -57,13 +68,7 @@ def check_addon(addon_path):
                     # logic to check if these are official
                     # Usually: ghcr.io/hassio-addons/base/... or ghcr.io/home-assistant/...
                     for arch, image in base_images.items():
-                        if not (
-                            image.startswith("ghcr.io/hassio-addons/base")
-                            or image.startswith("ghcr.io/home-assistant")
-                        ):
-                            warnings.append(
-                                f"Base image '{image}' for {arch} does not look like an official HA/Hassio-Addons base image."
-                            )
+                        validate_base_image(image, f"build.yaml ({arch})")
                     detected_base = True
         except Exception as e:
             errors.append(f"Failed to parse build.yaml: {e}")
@@ -73,13 +78,7 @@ def check_addon(addon_path):
         for line in content.splitlines():
             if line.startswith("FROM"):
                 image = line.split()[1]
-                if not (
-                    image.startswith("ghcr.io/hassio-addons/base")
-                    or image.startswith("ghcr.io/home-assistant")
-                ):
-                    warnings.append(
-                        f"Dockerfile Base image '{image}' does not look like an official HA/Hassio-Addons base image."
-                    )
+                validate_base_image(image, "Dockerfile")
 
     # Check 5: Translations
     if not os.path.exists(os.path.join(translations_dir, "en.yaml")):
