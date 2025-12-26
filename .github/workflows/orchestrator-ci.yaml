@@ -366,12 +366,7 @@ jobs:
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon || exit 1
 
-          echo "✅ amd64 build successful"
-
-
-
-
-  report:
+          echo "✅ amd64 build successful"  report:
     name: 📊 CI & Compliance Report
     needs: [filter, lint, build]
     if: failure() && github.event_name == 'pull_request'
@@ -939,10 +934,7 @@ jobs:
                 }
             } catch (e) {
                 console.log("Could not check previous runs:", e.message);
-            }
-
-
-            let body = "## ✅ Verification Successful\n\n";
+            }            let body = "## ✅ Verification Successful\n\n";
             body += "Thank you for your contribution!\n\n";
             body += "- 🛡️ **Platinum Standards**: Compliant\n";
             body += "- 🟢 **CI Checks**: Passed\n";

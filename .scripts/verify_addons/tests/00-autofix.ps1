@@ -88,5 +88,32 @@ try {
     npx markdownlint-cli $mdTargets --config "$configPath" --fix --ignore "node_modules" --ignore ".git"
 } catch {}
 
+
+# 5. Clean Excessive Blank Lines (Workflows & YAMLs)
+Write-Progress -Activity "Auto-Fixing" -Status "Cleaning Blank Lines..." -PercentComplete 98
+try {
+    $targets = @()
+    if ($GlobalFix) {
+        $targets += Get-ChildItem -Path (Join-Path $RepoRoot ".github/workflows") -Filter "*.yaml"
+    }
+    # Add target addons yamls
+    foreach ($path in $FixPaths) {
+        if (Test-Path $path) {
+            $targets += Get-ChildItem -Path $path -Filter "*.yaml" -Recurse
+        }
+    }
+
+    foreach ($file in $targets) {
+        $content = Get-Content $file.FullName -Raw
+        if ($content -match '(\r?\n){3,}') {
+            $newContent = $content -replace '(\r?\n){3,}', "$1$1"
+            if ($newContent -ne $content) {
+                $newContent | Set-Content -Path $file.FullName -NoNewline
+                Write-Host "Fixed blank lines in: $($file.Name)" -ForegroundColor DarkGray
+            }
+        }
+    }
+} catch { Write-Host "Error cleaning blank lines: $_" -ForegroundColor Red }
+
 Write-Progress -Activity "Auto-Fixing" -Completed
 Write-Host "Auto-fix complete." -ForegroundColor Green
