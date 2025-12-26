@@ -7,12 +7,14 @@ FROM ${BUILD_FROM}
 # hadolint ignore=DL3018,DL3013,DL3042,DL3006
 # Set version (pinned for reproducibility)
 ARG BT_MQTT_VERSION=827e251
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
+# CR-Skip-PythonBaseCheck: Uses venv with base image
 # hadolint ignore=DL3018
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
     apk add --no-cache --update wget unzip && \
+
     wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
     tar xzf "${BT_MQTT_VERSION}.tar.gz" -C /tmp/ && \
     rm "${BT_MQTT_VERSION}.tar.gz" && \

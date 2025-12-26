@@ -11,8 +11,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache python3 python3-dev bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 && \
     python3 -m venv $VIRTUAL_ENV && \
-    pip install --no-cache-dir --upgrade paho-mqtt==1.6.1 tornado==6.4.2 git+https://github.com/drbild/sslpsk.git pycryptodomex==3.20.0 && \
-    git clone --depth 1 https://github.com/ct-Open-Source/tuya-convert /usr/local/tuya-convert && \
+    pip install --no-cache-dir --upgrade paho-mqtt==1.6.1 tornado==6.4.2 git+https://github.com/drbild/sslpsk.git@e944d86eb1c41bf10250586c16ed6b1bd933ed2b pycryptodomex==3.20.0 && \
+    git clone https://github.com/ct-Open-Source/tuya-convert /usr/local/tuya-convert && \
+    cd /usr/local/tuya-convert && \
+    git checkout b202d18b81f5c93d06188f02c02ec65be6efd7ec && \
     sed -i 's|ls -m|ls|' /usr/local/tuya-convert/scripts/setup_checks.sh
 WORKDIR "/usr/local/tuya-convert"
 
@@ -21,8 +23,10 @@ COPY start.sh /
 RUN chmod a+x /start.sh
 CMD [ "/start.sh" ]
 
-# Health check - verify main process is running
-HEALTHCHECK CMD pgrep -f start_flash.sh >/dev/null || exit 1
+# Health check - verify addon is still running (start.sh is a one-time operation, so we check the main process)
+# Note: This addon runs a one-time flash operation; the healthcheck verifies the container is alive
+HEALTHCHECK --interval=300s --timeout=3s \
+    CMD pgrep -x "bash" >/dev/null || pgrep -f "start.sh" >/dev/null || exit 1
 
 # Labels
 LABEL \

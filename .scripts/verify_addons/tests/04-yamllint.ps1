@@ -16,7 +16,6 @@ param(
 Write-Header "4. YamlLint"
 
 $i = 0
-$i = 0
 foreach ($a in $Addons) {
     $i++
     Write-Progress -Id 1 -Activity "Checking Add-ons" -Status "[$i / $($Addons.Count)] $($a.Name)" -PercentComplete (($i / $Addons.Count) * 100)

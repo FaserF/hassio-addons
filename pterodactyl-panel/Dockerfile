@@ -70,7 +70,7 @@ RUN apk add --no-cache \
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
 FROM base as production
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 WORKDIR /var/www/html
 

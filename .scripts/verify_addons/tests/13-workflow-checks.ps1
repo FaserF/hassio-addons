@@ -58,20 +58,24 @@ foreach ($wf in $workflows) {
     $lines = Get-Content $wf.FullName
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $line = $lines[$i]
-        if ($line -match 'uses:\s*[\w\-/]+@([a-fA-F0-9]{20,39})(\s|$|#)') {
+        # Capture any hex SHA reference (broad match)
+        if ($line -match 'uses:\s*[\w\-/]+@([a-fA-F0-9]+)(\s|$|#)') {
             $sha = $matches[1]
-            $shaIssues += [PSCustomObject]@{
-                File = $wf.Name
-                Line = $i + 1
-                SHA = $sha
-                Length = $sha.Length
+            # Only flag if SHA length is NOT exactly 40 characters
+            if ($sha.Length -ne 40) {
+                $shaIssues += [PSCustomObject]@{
+                    File = $wf.Name
+                    Line = $i + 1
+                    SHA = $sha
+                    Length = $sha.Length
+                }
             }
         }
     }
 }
 if ($shaIssues.Count -gt 0) {
     $msg = $shaIssues | ForEach-Object { "$($_.File):$($_.Line) - SHA is $($_.Length) chars (need 40)" }
-    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "FAIL" -Message "Truncated SHAs found: $($msg -join '; ')"
+    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "FAIL" -Message "Invalid SHAs found: $($msg -join '; ')"
 } else {
     Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "PASS" -Message "All action SHAs valid"
 }

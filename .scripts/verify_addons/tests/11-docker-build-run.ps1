@@ -274,7 +274,6 @@ try {
             }
 
             # Sync with global mock
-            # Sync with global mock
             if ($globalOptionsPath) {
                 try {
                     if (-not (Test-Path $globalDataDir)) { New-Item -ItemType Directory -Path $globalDataDir -Force | Out-Null }

@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -44,8 +44,8 @@ RUN \
     # 1. Resolve Version URL
     DOWNLOAD_URL="" && \
     if [ "${AEGISBOT_VERSION}" = "latest" ]; then \
-        # Try to find latest tag via API
-        TAG_NAME=$(curl -s https://api.github.com/repos/FaserF/AegisBot/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/'); \
+        # Try to find latest tag via API (with Accept header for better rate limits)
+        TAG_NAME=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/FaserF/AegisBot/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/'); \
         if [ -n "$TAG_NAME" ]; then \
             echo "Resolved latest version to: ${TAG_NAME}"; \
             DOWNLOAD_URL="https://api.github.com/repos/FaserF/AegisBot/tarball/${TAG_NAME}"; \
@@ -77,6 +77,9 @@ RUN \
             npm install && \
             sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
             sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts && \
+            # Verify sed modifications were applied
+            grep -q "base: './" vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
+            grep -q "API_BASE = './api/v1'" src/api/client.ts || { echo "Failed to patch client.ts"; exit 1; } && \
             npm run build && \
             cp -r dist/* /app/frontend/ && \
             \
@@ -107,7 +110,7 @@ COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
 # Health check
-HEALTHCHECK \
+HEALTHCHECK --interval=300s --timeout=3s \
     CMD curl --fail http://127.0.0.1:8000/api/health || exit 1
 
 CMD [ "/run.sh" ]
@@ -120,5 +123,5 @@ LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/AegisBot"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/AegisBot"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/AegisBot/blob/master/AegisBot/README.md"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/AegisBot#readme"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"

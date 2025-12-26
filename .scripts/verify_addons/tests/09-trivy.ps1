@@ -20,8 +20,10 @@ if ($DockerAvailable) {
     $trivy = "aquasec/trivy:latest"
     docker volume create trivy_cache >$null
 
-    if ((docker pull $trivy 2>&1) -match "denied") {
-        Add-Result -Addon "Global" -Check "Trivy" -Status "WARN" -Message "Skipping Trivy due to pull failure."
+    $pullOutput = docker pull $trivy 2>&1
+    $pullFailed = ($LASTEXITCODE -ne 0) -or ($pullOutput -match "denied")
+    if ($pullFailed) {
+        Add-Result -Addon "Global" -Check "Trivy" -Status "WARN" -Message "Skipping Trivy due to pull failure: $pullOutput"
     }
     else {
         $i = 0

@@ -56,3 +56,5 @@ if __name__ == "__main__":
             process_dir(target)
         elif os.path.isfile(target):
             to_lf(target)
+        else:
+            print(f"Warning: '{target}' is not a valid file or directory, skipping.")

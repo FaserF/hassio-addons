@@ -19,7 +19,7 @@ RUN wget -qO /tmp/matterbridge.tar.gz https://github.com/42wim/matterbridge/arch
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018
 RUN apk --no-cache add ca-certificates mailcap
 

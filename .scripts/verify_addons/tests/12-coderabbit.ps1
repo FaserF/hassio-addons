@@ -58,13 +58,9 @@ foreach ($a in $Addons) {
             Add-Result -Addon $a.Name -Check "CR-LatestTag" -Status "WARN" -Message "Using :latest tag in FROM. Pin to specific version for reproducible builds."
         }
 
-        # Check 7: Unpinned package versions in apk add
-        if ($content -match 'apk add' -and $content -notmatch '(?m)apk add(.*\s+[\w\-._]+[=~][\d.]+)') {
-            $cleanContent = $content -replace '--no-cache', ''
-            if ($cleanContent -match 'apk add\s+((?![\w\-._]+[=~])[\w\-._]+\s*)+') {
-                Add-Result -Addon $a.Name -Check "CR-UnpinnedPackage" -Status "WARN" -Message "Unpinned package versions in 'apk add' detected. Pin versions for reproducibility."
-            }
-        }
+
+        # Check 7: Unpinned package versions in apk add - DISABLED per user request (too high maintenance)
+        # Version pinning is only required for security-critical cases
 
         # Check 8: Missing HEALTHCHECK timing parameters
         if ($content -match 'HEALTHCHECK' -and ($content -notmatch '--interval' -or $content -notmatch '--timeout')) {
@@ -106,6 +102,19 @@ foreach ($a in $Addons) {
         # Check 14: Language Check (English only)
         if ($content -match '[üäößÜÄÖ]' -or $content -cmatch '\b(ist|und|das|mit|der|die|den|dem|ein|eine|eines|einer)\b') {
             Add-Result -Addon $a.Name -Check "CR-Language" -Status "WARN" -Message "Possible non-English content (German) detected in comments or logs. Keep everything in English."
+        }
+
+        # Check 15: Fragile sed replacements without verification
+        if ($content -match 'sed -i.*&&' -and $content -notmatch 'grep -q.*\|\|.*exit 1') {
+            # Only warn if there's a sed followed by npm/make/build without grep verification
+            if ($content -match 'sed -i.*&&\s*(npm|make|cmake|python|go)\s') {
+                Add-Result -Addon $a.Name -Check "CR-FragileSed" -Status "INFO" -Message "sed replacement without verification detected. Consider adding 'grep -q' after sed to verify changes were applied."
+            }
+        }
+
+        # Check 16: GitHub API calls without Accept header
+        if ($content -match 'curl.*api\.github\.com' -and $content -notmatch 'Accept:.*application/vnd\.github') {
+            Add-Result -Addon $a.Name -Check "CR-GitHubAPIHeader" -Status "INFO" -Message "GitHub API call without Accept header. Add '-H \"Accept: application/vnd.github.v3+json\"' for better rate limits."
         }
     }
 

@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # hadolint ignore=DL3018
 RUN \
@@ -10,10 +10,16 @@ apk add --no-cache ca-certificates curl tini tzdata; \
 mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl
 
 # Download wings binary with multi-arch support
+# Pin to specific version for reproducible builds
+ARG WINGS_VERSION=v1.11.13
 ARG TARGETARCH
-RUN if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; else ARCH="amd64"; fi && \
-    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_${ARCH}" \
-    && chmod u+x /usr/local/bin/wings
+# SHA256 checksums for version 1.11.13 (from official release notes)
+ARG WINGS_SHA256_AMD64=aca5fa45ddf1c10f092c16dd758b920d8a3fa9f91c37aacc62745e72958bf71a
+ARG WINGS_SHA256_ARM64=a3d71e8c67e261fdd287f73dcab98d2a55dbba9ce001794e0006e4ed88fafe6a
+RUN if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \
+    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/download/${WINGS_VERSION}/wings_linux_${ARCH}" && \
+    echo "${CHECKSUM}  /usr/local/bin/wings" | sha256sum -c - && \
+    chmod u+x /usr/local/bin/wings
 
 # Copy data for add-on
 COPY run.sh /

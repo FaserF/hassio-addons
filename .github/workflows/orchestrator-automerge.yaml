@@ -20,6 +20,7 @@ jobs:
       (
         github.event.workflow_run.actor.login == 'dependabot[bot]' ||
         github.event.workflow_run.actor.login == 'renovate[bot]' ||
+        github.event.workflow_run.actor.login == 'github-actions[bot]' ||
         github.event.workflow_run.actor.login == 'FaserF'
       ) &&
       github.event.workflow_run.pull_requests[0] != null

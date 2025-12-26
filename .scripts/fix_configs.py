@@ -1,6 +1,5 @@
 import os
-
-import yaml
+import sys
 
 
 def fix_config(path):

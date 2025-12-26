@@ -53,7 +53,7 @@ if ($DockerAvailable) {
                 }
             }
             catch {
-                Add-Result -Addon $a.Name -Check "AddonLinter" -Status "SKIP" -Message "Docker unavailable"
+                Add-Result -Addon $a.Name -Check "AddonLinter" -Status "FAIL" -Message "Docker run failed: $($_.Exception.Message)"
             }
         }
     }

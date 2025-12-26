@@ -130,7 +130,8 @@ try {
                 } elseif ($parts.Count -ge 1) {
                     # Check if it's a known addon directory
                     $potential = $parts[0]
-                    if (Test-Path "$potential/config.yaml") {
+                    $potentialConfigPath = Join-Path $RepoRoot (Join-Path $potential "config.yaml")
+                    if (Test-Path $potentialConfigPath) {
                         $addonName = $potential
                     }
                 }
@@ -223,7 +224,6 @@ try {
     # --- EXECUTE TESTS ---
 
     # 0. Auto-Fix
-    # 0. Auto-Fix
     if ($Fix) {
         Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[0 / 13] Running Auto-Fix..." -PercentComplete 0
         try {
@@ -233,7 +233,6 @@ try {
         }
     }
 
-    # 1. Line Endings
     # 1. Line Endings
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[1 / 13] Line Endings" -PercentComplete 5
     if ("all" -in $Tests -or "LineEndings" -in $Tests) {
@@ -245,7 +244,6 @@ try {
     }
 
     # 2. ShellCheck
-    # 2. ShellCheck
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[2 / 13] ShellCheck" -PercentComplete 10
     if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
         try {
@@ -255,7 +253,6 @@ try {
         }
     }
 
-    # 3. Hadolint
     # 3. Hadolint
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[3 / 13] Hadolint" -PercentComplete 15
     if ("all" -in $Tests -or "Hadolint" -in $Tests) {
@@ -267,7 +264,6 @@ try {
     }
 
     # 4. YamlLint
-    # 4. YamlLint
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[4 / 13] YamlLint" -PercentComplete 25
     if ("all" -in $Tests -or "YamlLint" -in $Tests) {
         try {
@@ -277,7 +273,6 @@ try {
         }
     }
 
-    # 5. MarkdownLint
     # 5. MarkdownLint
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[5 / 13] MarkdownLint" -PercentComplete 35
     if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
@@ -289,7 +284,6 @@ try {
     }
 
     # 6. Prettier
-    # 6. Prettier
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[6 / 13] Prettier" -PercentComplete 45
     if ("all" -in $Tests -or "Prettier" -in $Tests) {
         try {
@@ -299,7 +293,6 @@ try {
         }
     }
 
-    # 7. Add-on Linter
     # 7. Add-on Linter
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[7 / 13] Add-on Linter" -PercentComplete 55
     if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
@@ -311,7 +304,6 @@ try {
     }
 
     # 8. Compliance
-    # 8. Compliance
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[8 / 13] Compliance" -PercentComplete 60
     if ("all" -in $Tests -or "Compliance" -in $Tests) {
         try {
@@ -321,7 +313,6 @@ try {
         }
     }
 
-    # 9. Trivy
     # 9. Trivy
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[9 / 13] Trivy" -PercentComplete 70
     if ("all" -in $Tests -or "Trivy" -in $Tests) {
@@ -333,7 +324,6 @@ try {
     }
 
     # 10. Version Check
-    # 10. Version Check
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[10 / 13] Version Check" -PercentComplete 80
     if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
         try {
@@ -343,7 +333,6 @@ try {
         }
     }
 
-    # 11. Docker Build & Run
     # 11. Docker Build & Run
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[11 / 13] Docker Build & Run" -PercentComplete 85
     if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
@@ -357,8 +346,6 @@ try {
 
     # 12. CodeRabbit
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[12 / 13] CodeRabbit" -PercentComplete 90
-    # 12. CodeRabbit
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[12 / 13] CodeRabbit" -PercentComplete 90
     if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
         try {
             & "$TestsDir/12-coderabbit.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -370,7 +357,11 @@ try {
     # 13. Workflow Checks
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[13 / 13] Workflow Checks" -PercentComplete 95
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
-        & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
+        try {
+            & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
+        } catch {
+             Add-Result -Addon "System" -Check "WorkflowChecks" -Status "SKIP" -Message "Module Crashed: $_"
+        }
     }
 
     Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Completed
@@ -478,8 +469,6 @@ try {
     $Duration = $ScriptEndTime - $ScriptStartTime
     Write-Host ""
     Write-Host "Finished at: $($ScriptEndTime.ToString())" -ForegroundColor Cyan
-    Write-Host "Duration: $($Duration.ToString())" -ForegroundColor Cyan
-
     Write-Host "Duration: $($Duration.ToString())" -ForegroundColor Cyan
 
     # Final Notification

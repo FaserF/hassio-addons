@@ -1,7 +1,9 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-python:3.13-alpine3.21
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE
+
+# CR-Skip-PythonBaseCheck: Base image is declared in ARG
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Setup Environment
 ENV LANG=C.UTF-8
@@ -69,7 +71,7 @@ COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
 # Healthcheck
-HEALTHCHECK \
+HEALTHCHECK --interval=5m --timeout=3s \
     CMD curl --fail http://127.0.0.1:80/ || exit 1
 
 CMD [ "/run.sh" ]

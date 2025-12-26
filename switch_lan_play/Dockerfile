@@ -17,7 +17,7 @@ RUN apk add --no-cache \
 WORKDIR /switch-lan-play
 # hadolint ignore=DL3003
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
-    && git checkout v0.2.3 \
+    && git checkout c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 \
     && mkdir build \
     && cd build \
     && cmake .. \
@@ -45,7 +45,7 @@ RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
 # Healthcheck
-HEALTHCHECK \
+HEALTHCHECK --interval=300s --timeout=3s \
     CMD pgrep lan-play || exit 1
 
 # Labels

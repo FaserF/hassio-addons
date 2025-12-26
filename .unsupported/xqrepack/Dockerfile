@@ -4,10 +4,12 @@ FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ARG BUILD_DATE="unknown"
 
+# CR-Skip-PythonBaseCheck
+
 # hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3 python3-dev py3-pip && \
-    pip install python-lzo ubi_reader && \
+    pip install --no-cache-dir python-lzo ubi_reader && \
     mkdir /xqrepack && \
     wget -q -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
     wget -q -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
