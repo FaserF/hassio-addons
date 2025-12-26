@@ -35,20 +35,11 @@ module.exports = async ({ github, context, core }) => {
   for (const err of errors) {
     if (err.message.includes('shellcheck')) {
       categories.shellcheck.push(err);
-    } else if (
-      err.message.includes('syntax') ||
-      err.message.includes('unexpected')
-    ) {
+    } else if (err.message.includes('syntax') || err.message.includes('unexpected')) {
       categories.syntax.push(err);
-    } else if (
-      err.message.includes('action') ||
-      err.message.includes('uses:')
-    ) {
+    } else if (err.message.includes('action') || err.message.includes('uses:')) {
       categories.action.push(err);
-    } else if (
-      err.message.includes('${{') ||
-      err.message.includes('expression')
-    ) {
+    } else if (err.message.includes('${{') || err.message.includes('expression')) {
       categories.expression.push(err);
     } else {
       categories.other.push(err);
@@ -98,10 +89,7 @@ module.exports = async ({ github, context, core }) => {
   for (const err of errors.slice(0, 20)) {
     // Limit to 20 to avoid huge comments
     const fileLink = `[${err.file}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${err.file}#L${err.line})`;
-    const shortMsg =
-      err.message.length > 80
-        ? err.message.substring(0, 77) + '...'
-        : err.message;
+    const shortMsg = err.message.length > 80 ? err.message.substring(0, 77) + '...' : err.message;
     body += `| ${fileLink} | L${err.line} | ${shortMsg} |\n`;
   }
   if (errors.length > 20) {
@@ -208,8 +196,7 @@ module.exports = async ({ github, context, core }) => {
   body += '\nvalidation_command: actionlint .github/workflows/\n';
   body += '```\n';
   body += '\n</details>\n\n';
-  body +=
-    '📚 [actionlint documentation](https://github.com/rhysd/actionlint)\n';
+  body += '📚 [actionlint documentation](https://github.com/rhysd/actionlint)\n';
 
   await github.rest.issues.createComment({
     owner: context.repo.owner,
