@@ -64,16 +64,16 @@ if [ ! -d "$path_config" ]; then
 	mkdir -p "$path_config"
 fi
 if [ -L /config ]; then
-    rm /config
+	rm /config
 elif [ -d /config ]; then
-    # Try to remove if empty/not mount, otherwise warn and skip
-    rmdir /config 2>/dev/null || echo "Info: /config is a mount or non-empty/busy, skipping replacement with symlink."
+	# Try to remove if empty/not mount, otherwise warn and skip
+	rmdir /config 2>/dev/null || echo "Info: /config is a mount or non-empty/busy, skipping replacement with symlink."
 else
-    rm -f /config
+	rm -f /config
 fi
 
 if [ ! -e /config ]; then
-    ln -s "$path_config" /config
+	ln -s "$path_config" /config
 fi
 
 if [ ! -d /config/menus ]; then
