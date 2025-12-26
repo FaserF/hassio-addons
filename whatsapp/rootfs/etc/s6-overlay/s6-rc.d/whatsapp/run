@@ -2,5 +2,5 @@
 
 bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
-cd /app
+cd /opt/whatsapp
 exec npm start

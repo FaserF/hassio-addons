@@ -3,5 +3,4 @@ configuration:
     name: Log Level
     description: Controls the verbosity of the logs.
 network:
-  8000/tcp:
-    description: Internal API Port for the Integration to connect to.
+  8000/tcp: Internal API Port for the Integration to connect to.
