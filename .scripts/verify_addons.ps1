@@ -663,6 +663,48 @@ if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
 if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
     if ($DockerAvailable) {
         Write-Header "11. Docker Test (Dynamic Build)"
+
+        # --- GLOBAL MOCK SETUP ---
+        $doRuns = "all" -in $Tests -or "DockerRun" -in $Tests
+        $mockName = "mock-supervisor"
+        $networkName = "ha-addon-test-net"
+        $globalMockDir = Join-Path $OutputDir "tmp_mock_global"
+        $globalOptionsPath = $null
+
+        if ($doRuns) {
+            Write-Host "    > Setting up global persistent mock environment..." -ForegroundColor Gray
+            if (Test-Path $globalMockDir) { Remove-Item $globalMockDir -Recurse -Force }
+            New-Item -ItemType Directory -Path $globalMockDir -Force | Out-Null
+            $globalDataDir = Join-Path $globalMockDir "data"
+            New-Item -ItemType Directory -Path $globalDataDir -Force | Out-Null
+            $globalOptionsPath = Join-Path $globalDataDir "options.json"
+            '{}' | Set-Content -Path $globalOptionsPath -Encoding UTF8
+
+            # Clean previous
+            docker rm -f $mockName 2>&1 | Out-Null
+            docker network rm $networkName 2>&1 | Out-Null
+            docker network create $networkName 2>$null | Out-Null
+
+            $mockScript = Join-Path $PSScriptRoot "supervisor_mock.py"
+            $mockArgs = @("run", "-d", "--name", $mockName)
+            $mockArgs += "--network", $networkName
+            $mockArgs += "--network-alias", "supervisor"
+            $mockArgs += "-v", "$($globalDataDir.Replace('\','/')):/data"
+            $mockArgs += "-v", "$($mockScript.Replace('\','/')):/mock.py"
+            $mockArgs += "-w", "/data"
+            $mockArgs += "python:3.11-alpine"
+            $mockArgs += "python", "/mock.py", "/data/options.json", "80", "0.0.0.0"
+
+            $mockOut = & docker @mockArgs 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                 Write-Host "    ! ERROR: Failed to start global mock supervisor: $mockOut" -ForegroundColor Red
+                 $doRuns = $false
+            } else {
+                 Start-Sleep -Seconds 2
+            }
+        }
+
+        try {
         foreach ($a in $addons) {
             if (-not (Should-RunTest $a.Name "DockerBuild")) { continue }
             $imgName = "test-$($a.Name.ToLower())"
@@ -714,15 +756,13 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                 Add-Result $a.Name "DockerBuild" "PASS" "OK"
 
                 # --- ENHANCED RUN TEST with MOCK SUPERVISOR ---
-                $contName = "test-run-$($a.Name.ToLower())"
-                $mockName = "mock-supervisor"
-                $networkName = "ha-addon-test-net"
-                docker rm -f $contName 2>&1 | Out-Null
-                docker rm -f $mockName 2>&1 | Out-Null
+                if (-not $doRuns) { continue }
 
-                # Create isolated network for this test
-                docker network rm $networkName 2>&1 | Out-Null
-                docker network create $networkName 2>$null | Out-Null
+                $contName = "test-run-$($a.Name.ToLower())"
+                docker rm -f $contName 2>&1 | Out-Null
+
+                # Network is global ($networkName)
+
 
                 # Prepare config (Use local repo path to ensure Docker File Sharing works)
                 $tempDir = Join-Path $OutputDir "tmp_test_runs"
@@ -816,6 +856,11 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                     '{"log_level":"info"}' | Set-Content -Path $optionsPath -Encoding UTF8
                 }
 
+                # SYNC WITH GLOBAL MOCK
+                if ($globalOptionsPath) {
+                    Copy-Item -Path $optionsPath -Destination $globalOptionsPath -Force
+                }
+
                 # --- VALIDATE MOCK SUPPORT ---
                 if (Test-Path $configFile) {
                     $requiredKeys = (Get-RequiredSchemaKeys $configFile) -split "," | Where-Object { $_ -ne "" }
@@ -831,6 +876,7 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                             if ($missingKeys.Count -gt 0) {
                                 Write-Host "    ! WARNING: Add-on may fail due to missing mock config: $($missingKeys -join ', ')" -ForegroundColor Yellow
                                 Add-Result $a.Name "DockerRun" "WARN" "Incomplete Mock Config. Missing: $($missingKeys -join ', ')"
+                                continue
                             }
                         } catch {
                             Write-Host "    ! WARNING: Could not validate options.json" -ForegroundColor Yellow
@@ -844,23 +890,10 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                     continue
                 }
 
-                # Start Mock Supervisor API container
-                Write-Host "    > Starting mock Supervisor API..." -ForegroundColor Gray
-                $mockScript = Join-Path $PSScriptRoot "supervisor_mock.py"
-                $mockArgs = @("run", "-d", "--name", $mockName)
-                $mockArgs += "--network", $networkName
-                $mockArgs += "--network-alias", "supervisor"
-                $mockArgs += "-v", "$($dataDir.Replace('\','/')):/data"
-                $mockArgs += "-v", "$($mockScript.Replace('\','/')):/mock.py"
-                $mockArgs += "-w", "/data"
-                $mockArgs += "python:3.11-alpine"
-                $mockArgs += "python", "/mock.py", "/data/options.json", "80", "0.0.0.0"
-                $mockOut = & docker @mockArgs 2>&1
-                if ($LASTEXITCODE -ne 0) {
-                     Write-Host "    ! ERROR: Failed to start mock supervisor: $mockOut" -ForegroundColor Red
-                }
+                # Start Mock Supervisor API container - SKIPPED (Global)
+                # Write-Host "    > Starting mock Supervisor API..." -ForegroundColor Gray
+                # ... (Moved to global setup)
 
-                Start-Sleep -Seconds 3
 
                 # Run add-on with HA-like env on the same network
                 # Mount common addon directories
@@ -920,10 +953,19 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
 
                 # Cleanup
                 docker rm -f $contName 2>&1 | Out-Null
-                docker rm -f $mockName 2>&1 | Out-Null
-                docker network rm $networkName 2>&1 | Out-Null
+                # docker rm -f $mockName 2>&1 | Out-Null # Global now
+                # docker network rm $networkName 2>&1 | Out-Null # Global now
                 Remove-Item $tempDir -Recurse -Force 2>$null
             }
+        }
+        } finally {
+             # Global Cleanup
+             if ($doRuns) {
+                 Write-Host "    > Cleaning up global mock environment..." -ForegroundColor Gray
+                 docker rm -f $mockName 2>&1 | Out-Null
+                 docker network rm $networkName 2>&1 | Out-Null
+                 Remove-Item $globalMockDir -Recurse -Force 2>$null
+             }
         }
     }
 }

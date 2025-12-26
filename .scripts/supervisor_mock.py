@@ -33,7 +33,7 @@ from typing import ClassVar
 
 
 class SupervisorMockHandler(BaseHTTPRequestHandler):
-    options_data: ClassVar[dict] = {}
+    options_path: ClassVar[str] = "options.json"
 
     def log_message(self, format, *args):
         # Allow some logging to help debug
@@ -41,6 +41,15 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                          (self.address_string(),
                           self.log_date_time_string(),
                           format % args))
+
+    def get_options(self):
+        """Load options from file dynamically."""
+        try:
+            with open(self.options_path, "r", encoding="utf-8-sig") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"DEBUG: Failed to reload options from {self.options_path}: {e}", file=sys.stderr)
+            return {}
 
     def _send_json(self, data, status=200):
         response = json.dumps({"data": data, "result": "ok"})
@@ -53,8 +62,11 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         # Log request details for debugging
         print(f"DEBUG: GET request to {self.path} from {self.client_address}", file=sys.stderr)
 
-        if self.path == "/addons/self/options" or re.match(r"^/addons/[^/]+/options$", self.path):
-            self._send_json(self.options_data)
+        # Reload options dynamically
+        current_options = self.get_options()
+
+        if self.path == "/addons/self/options" or self.path == "/addons/self/options/config" or re.match(r"^/addons/[^/]+/options$", self.path):
+            self._send_json(current_options)
         elif self.path == "/core/info":
             self._send_json(
                 {
@@ -72,7 +84,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "state": "started",
                     "version": "1.0.0",
                     "ingress": False,
-                    "options": self.options_data,
+                    "options": current_options,
                 }
             )
         elif self.path == "/supervisor/ping":
@@ -160,25 +172,9 @@ def validate_bind_address(address: str) -> str:
 
 def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     """Start the mock Supervisor API server."""
-    # Load options with specific exception handling
-    try:
-        # Use utf-8 so we don't crash on BOM if present, and to be robust
-        with open(options_path, "r", encoding="utf-8-sig") as f:
-            SupervisorMockHandler.options_data = json.load(f)
-        print(f"Loaded options from {options_path}")
-    except FileNotFoundError:
-        print(f"Warning: Options file not found: {options_path}")
-        SupervisorMockHandler.options_data = {}
-    except PermissionError as e:
-        print(f"Warning: Permission denied reading {options_path}: {e}")
-        SupervisorMockHandler.options_data = {}
-    except json.JSONDecodeError as e:
-        print(f"Warning: Invalid JSON in {options_path}: {e}")
-        SupervisorMockHandler.options_data = {}
-    except Exception as e:
-        # Catch all so we don't crash loop
-        print(f"Warning: Failed to load options: {e}")
-        SupervisorMockHandler.options_data = {}
+    # Set the options path for dynamic loading
+    SupervisorMockHandler.options_path = options_path
+    print(f"Mock server configured to serve options from: {options_path}")
 
     # Validate bind address
     bind_address = validate_bind_address(bind_address)

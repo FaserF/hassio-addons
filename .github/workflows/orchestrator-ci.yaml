@@ -373,9 +373,43 @@ jobs:
 
           echo "✅ All architectures built successfully"
 
+
+  # --------------------------------------------------------------------------------
+  # TEST: Runtime Verification (Docker Run)
+  # --------------------------------------------------------------------------------
+  runtime_test:
+    name: 🏃 Runtime Test (${{ matrix.addon }})
+    needs: [filter, lint, build]
+    # Only run if build is required (skip for docs-only)
+    if: |
+      always() &&
+      needs.filter.outputs.addons != '[]' &&
+      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.needs_build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install Python Dependencies
+        run: pip install pyyaml
+
+      - name: 🏃 Run Verification Script (DockerBuild + DockerRun)
+        run: |
+          pwsh -File ./.scripts/verify_addons.ps1 -Addon "${{ matrix.addon }}" -Tests DockerBuild,DockerRun
+
   report:
     name: 📊 CI & Compliance Report
-    needs: [filter, lint, build]
+    needs: [filter, lint, build, runtime_test]
     if: failure() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
