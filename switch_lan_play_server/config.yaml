@@ -1,6 +1,6 @@
 ---
 name: Switch LAN Play Server
-version: 1.8.15-dev+5e05187
+version: 1.8.16-dev+926834f
 slug: switch-lan-play-server
 description: Nintendo Switch Lan Play -Server
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
