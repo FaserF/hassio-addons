@@ -1,6 +1,6 @@
 ---
 name: Apache2
-version: 2.15.20-dev+502bc8f
+version: 2.15.21-dev+960196e
 slug: apache2
 description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2
