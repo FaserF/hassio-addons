@@ -854,6 +854,9 @@ jobs:
       pull-requests: write
       issues: write
     steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v4
+
       - name: 📝 Post Success Comment
         uses: actions/github-script@v7
         continue-on-error: true
@@ -944,14 +947,15 @@ jobs:
             } catch (e) {
                 console.log("Could not check previous runs:", e.message);
             }
-            let body = "## ✅ Verification Successful\n\n";
-            body += "Thank you for your contribution!\n\n";
-            body += "- 🛡️ **Platinum Standards**: Compliant\n";
-            body += "- 🟢 **CI Checks**: " + (allSkipped ? "⏭️ Skipped" : "Passed") + "\n";
-            body += "- 🏗️ **Build**: " + buildStatus + "\n\n";
-            body += "This PR meets high quality standards and is ready for review.";
-            body += previousErrorsNote;
-            body += autoMergeNote;
+
+            // Generate message using shared script
+            const generateMessage = require('./.scripts/generate_ci_success_message.js');
+            const body = generateMessage({
+                skipped: allSkipped,
+                buildStatus: buildStatus,
+                autoMergeNote: autoMergeNote,
+                previousErrorsNote: previousErrorsNote
+            });
 
             // Always post a fresh success comment (old ones are minimized above)
             await github.rest.issues.createComment({

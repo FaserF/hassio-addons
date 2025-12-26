@@ -1,0 +1,16 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: Antigravity-Server
+# Runs the NoVNC websocket proxy
+# ==============================================================================
+
+bashio::log.info "Starting NoVNC on port 6080..."
+
+# Wait a moment for VNC to be ready
+sleep 2
+
+# Start NoVNC websocket proxy
+exec /usr/bin/novnc_server \
+    --listen 6080 \
+    --vnc localhost:5901

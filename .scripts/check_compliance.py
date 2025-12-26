@@ -58,8 +58,8 @@ def check_addon(addon_path):
                     # Usually: ghcr.io/hassio-addons/base/... or ghcr.io/home-assistant/...
                     for arch, image in base_images.items():
                         if not (
-                            image.startswith("ghcr.io/hassio-addons/base")
-                            or image.startswith("ghcr.io/home-assistant")
+                            image.startswith("ghcr.io/hassio-addons/")
+                            or image.startswith("ghcr.io/home-assistant/")
                         ):
                             warnings.append(
                                 f"Base image '{image}' for {arch} does not look like an official HA/Hassio-Addons base image."
@@ -74,8 +74,8 @@ def check_addon(addon_path):
             if line.startswith("FROM"):
                 image = line.split()[1]
                 if not (
-                    image.startswith("ghcr.io/hassio-addons/base")
-                    or image.startswith("ghcr.io/home-assistant")
+                    image.startswith("ghcr.io/hassio-addons/")
+                    or image.startswith("ghcr.io/home-assistant/")
                 ):
                     warnings.append(
                         f"Dockerfile Base image '{image}' does not look like an official HA/Hassio-Addons base image."

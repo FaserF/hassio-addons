@@ -1,0 +1,65 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: Antigravity-Server
+# Initialize VNC password and environment
+# ==============================================================================
+
+bashio::log.info "Initializing Antigravity-Server..."
+
+# Create required directories
+mkdir -p /root/.vnc
+mkdir -p /tmp/.X11-unix
+chmod 1777 /tmp/.X11-unix
+
+# Setup VNC password
+if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_password')" ]; then
+    VNC_PASSWORD=$(bashio::config 'vnc_password')
+    bashio::log.info "Setting custom VNC password..."
+else
+    VNC_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
+    bashio::log.info "Generated random VNC password: ${VNC_PASSWORD}"
+fi
+
+# Set VNC password
+touch /root/.vnc/passwd
+chmod 600 /root/.vnc/passwd
+
+bashio::log.info "Setting password using expect..."
+
+if [ -x /usr/bin/tigervncpasswd ]; then
+    VNCPASSWD_BIN="/usr/bin/tigervncpasswd"
+else
+    VNCPASSWD_BIN="vncpasswd"
+fi
+
+# Use expect to handle interactive prompt, avoiding -f issues and TTY requirements
+expect <<EOF
+spawn $VNCPASSWD_BIN /root/.vnc/passwd
+expect "Password:"
+send "${VNC_PASSWORD}\r"
+expect "Verify:"
+send "${VNC_PASSWORD}\r"
+expect "Would you like to enter a view-only password (y/n)?"
+send "n\r"
+expect eof
+EOF
+
+if [ $? -ne 0 ]; then
+    bashio::log.error "Failed to set VNC password via expect"
+    exit 1
+fi
+
+chmod 600 /root/.vnc/passwd
+bashio::log.info "VNC password set successfully."
+
+# Create xstartup script for XFCE4
+cat > /root/.vnc/xstartup << 'EOF'
+#!/bin/bash
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+exec startxfce4
+EOF
+chmod +x /root/.vnc/xstartup
+
+bashio::log.info "VNC environment initialized"

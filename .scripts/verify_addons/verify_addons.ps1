@@ -9,6 +9,7 @@ param(
     [switch]$IncludeUnsupported,
     [switch]$Fix,
     [switch]$ChangedOnly,
+    [switch]$CacheImages,
     [string]$OutputDir,
     [switch]$Help
 )
@@ -353,7 +354,7 @@ try {
 
     # 0. Auto-Fix
     if ($Fix) {
-        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 14] Running Auto-Fix..." -PercentComplete 0
+        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 15] Running Auto-Fix..." -PercentComplete 0
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
         try {
             & "$TestsDir/00-autofix.ps1" -Addons $addons -Config $Config -GlobalFix ("all" -in $Addon -and -not $ChangedOnly) -RepoRoot $RepoRoot
@@ -365,7 +366,7 @@ try {
     }
 
     # 1. Line Endings
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[1 / 14] Line Endings" -PercentComplete 5
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[1 / 15] Line Endings" -PercentComplete 5
     if ("all" -in $Tests -or "LineEndings" -in $Tests) {
         try {
             & "$TestsDir/01-line-endings.ps1" -Addons $addons -Config $Config -Fix $Fix -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -376,7 +377,7 @@ try {
     }
 
     # 2. ShellCheck
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[2 / 14] ShellCheck" -PercentComplete 10
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[2 / 15] ShellCheck" -PercentComplete 10
     if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
         try {
             & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -387,7 +388,7 @@ try {
     }
 
     # 3. Hadolint
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[3 / 14] Hadolint" -PercentComplete 15
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[3 / 15] Hadolint" -PercentComplete 15
     if ("all" -in $Tests -or "Hadolint" -in $Tests) {
         try {
             & "$TestsDir/03-hadolint.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -398,7 +399,7 @@ try {
     }
 
     # 4. YamlLint
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[4 / 14] YamlLint" -PercentComplete 25
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[4 / 15] YamlLint" -PercentComplete 25
     if ("all" -in $Tests -or "YamlLint" -in $Tests) {
         try {
             & "$TestsDir/04-yamllint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -409,7 +410,7 @@ try {
     }
 
     # 5. MarkdownLint
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[5 / 14] MarkdownLint" -PercentComplete 35
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[5 / 15] MarkdownLint" -PercentComplete 35
     if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
         try {
             & "$TestsDir/05-markdownlint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -420,7 +421,7 @@ try {
     }
 
     # 6. Prettier
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[6 / 14] Prettier" -PercentComplete 45
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[6 / 15] Prettier" -PercentComplete 45
     if ("all" -in $Tests -or "Prettier" -in $Tests) {
         try {
             & "$TestsDir/06-prettier.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -431,7 +432,7 @@ try {
     }
 
     # 7. Add-on Linter
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[7 / 14] Add-on Linter" -PercentComplete 55
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[7 / 15] Add-on Linter" -PercentComplete 55
     if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
         try {
             & "$TestsDir/07-addon-linter.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -442,7 +443,7 @@ try {
     }
 
     # 8. Compliance
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[8 / 14] Compliance" -PercentComplete 60
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[8 / 15] Compliance" -PercentComplete 60
     if ("all" -in $Tests -or "Compliance" -in $Tests) {
         try {
             & "$TestsDir/08-compliance.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -453,7 +454,7 @@ try {
     }
 
     # 9. Trivy
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[9 / 14] Trivy" -PercentComplete 70
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[9 / 15] Trivy" -PercentComplete 70
     if ("all" -in $Tests -or "Trivy" -in $Tests) {
         try {
             & "$TestsDir/09-trivy.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
@@ -464,7 +465,7 @@ try {
     }
 
     # 10. Version Check
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[10 / 14] Version Check" -PercentComplete 80
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[10 / 15] Version Check" -PercentComplete 80
     if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
         try {
             & "$TestsDir/10-version-check.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -475,11 +476,11 @@ try {
     }
 
     # 11. Docker Build & Run
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[11 / 14] Docker Build & Run" -PercentComplete 85
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[11 / 15] Docker Build & Run" -PercentComplete 85
     if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
         try {
             $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
-            & "$TestsDir/11-docker-build-run.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+            & "$TestsDir/11-docker-build-run.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
         }
         catch {
             Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
@@ -487,7 +488,7 @@ try {
     }
 
     # 12. CodeRabbit
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[12 / 14] CodeRabbit" -PercentComplete 90
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[12 / 15] CodeRabbit" -PercentComplete 90
     if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
         try {
             & "$TestsDir/12-coderabbit.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
@@ -498,7 +499,7 @@ try {
     }
 
     # 13. Workflow Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 14] Workflow Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 15] Workflow Checks" -PercentComplete 95
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         try {
             & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
@@ -509,7 +510,7 @@ try {
     }
 
     # 14. Python Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 14] Python Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 15] Python Checks" -PercentComplete 95
     if ("all" -in $Tests -or "PythonChecks" -in $Tests) {
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
         try {
@@ -519,6 +520,17 @@ try {
             Add-Result -Addon "System" -Check "PythonChecks" -Status "SKIP" -Message "Module Crashed: $_"
         }
         finally { $ProgressPreference = $oldPP }
+    }
+
+    # 15. Custom Addon Tests
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 15] Custom Addon Tests" -PercentComplete 98
+    if ("all" -in $Tests -or "CustomTests" -in $Tests) {
+        try {
+            & "$TestsDir/15-custom-addon-tests.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+        }
+        catch {
+            Add-Result -Addon "System" -Check "CustomTests" -Status "SKIP" -Message "Module Crashed: $_"
+        }
     }
 
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Completed
