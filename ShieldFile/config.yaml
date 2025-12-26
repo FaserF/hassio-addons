@@ -1,5 +1,5 @@
 name: "ShieldFile"
-version: "1.0.21-dev+938091e"
+version: "1.0.22-dev+17cd97f"
 slug: "shieldfile"
 description: "Secure, Web-based File Manager (SFTP over HTTPS)"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
