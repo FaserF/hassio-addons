@@ -75,7 +75,7 @@ jobs:
 
           echo "Checking if '$AUTHOR' is in allowed list..."
 
-          if echo "$ALLOWED_AUTHORS" | grep -qw "$AUTHOR"; then
+          if echo "$ALLOWED_AUTHORS" | grep -Fqw "$AUTHOR"; then
             echo "✅ Author '$AUTHOR' is allowed for auto-merge"
             echo "allowed=true" >> "$GITHUB_OUTPUT"
           else
