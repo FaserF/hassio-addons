@@ -77,7 +77,17 @@ def fix_build_json(path):
                 f.write(new_content)
 
 
-SKIP_DIRS = {".git", "node_modules", ".vscode", "dist", "build", "coverage", ".venv", "env", "tmp"}
+SKIP_DIRS = {
+    ".git",
+    "node_modules",
+    ".vscode",
+    "dist",
+    "build",
+    "coverage",
+    ".venv",
+    "env",
+    "tmp",
+}
 
 
 def main():

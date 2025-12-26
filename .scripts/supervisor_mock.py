@@ -159,7 +159,9 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/info":
             self._send_json(
                 {
-                    "supervisor": os.environ.get("MOCK_SUPERVISOR_VERSION", "2025.12.3"),
+                    "supervisor": os.environ.get(
+                        "MOCK_SUPERVISOR_VERSION", "2025.12.3"
+                    ),
                     "homeassistant": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
                     "hassos": os.environ.get("MOCK_OS_VERSION", "16.3"),
                 }
@@ -185,7 +187,12 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                 }
             )
         elif self.path == "/multicast/info":
-            self._send_json({"host": "172.30.32.1", "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3")})
+            self._send_json(
+                {
+                    "host": "172.30.32.1",
+                    "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
+                }
+            )
         else:
             # Return empty success for unknown endpoints
             self._send_json({})

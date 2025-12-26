@@ -54,22 +54,22 @@ Run the main orchestrator from the repository root:
 
 ## Available Tests
 
-| Test | Description | Requires Docker |
-|------|-------------|-----------------|
-| `LineEndings` | Detects CRLF line endings | No |
-| `ShellCheck` | Lints shell scripts | No |
-| `Hadolint` | Lints Dockerfiles | Yes |
-| `YamlLint` | Lints YAML files | No |
-| `MarkdownLint` | Lints Markdown files | No |
-| `Prettier` | Checks code formatting | No |
-| `AddonLinter` | Official HA addon linter | Yes |
-| `Compliance` | Python compliance checks | No |
-| `Trivy` | Security vulnerability scanning | Yes |
-| `VersionCheck` | Base image version validation | No |
-| `DockerBuild` | Builds addon Docker images | Yes |
-| `DockerRun` | Runs addons in mock environment | Yes |
-| `CodeRabbit` | Static analysis (Dockerfile) | No |
-| `WorkflowChecks` | GitHub Actions validation | Yes |
+| Test             | Description                     | Requires Docker |
+| ---------------- | ------------------------------- | --------------- |
+| `LineEndings`    | Detects CRLF line endings       | No              |
+| `ShellCheck`     | Lints shell scripts             | No              |
+| `Hadolint`       | Lints Dockerfiles               | Yes             |
+| `YamlLint`       | Lints YAML files                | No              |
+| `MarkdownLint`   | Lints Markdown files            | No              |
+| `Prettier`       | Checks code formatting          | No              |
+| `AddonLinter`    | Official HA addon linter        | Yes             |
+| `Compliance`     | Python compliance checks        | No              |
+| `Trivy`          | Security vulnerability scanning | Yes             |
+| `VersionCheck`   | Base image version validation   | No              |
+| `DockerBuild`    | Builds addon Docker images      | Yes             |
+| `DockerRun`      | Runs addons in mock environment | Yes             |
+| `CodeRabbit`     | Static analysis (Dockerfile)    | No              |
+| `WorkflowChecks` | GitHub Actions validation       | Yes             |
 
 ## Running Individual Tests
 
@@ -148,5 +148,6 @@ The `lib/common.ps1` module provides:
 ## Output
 
 Results are saved to:
+
 - `verify_log_YYYYMMDD_HHMMSS.txt` - Full transcript
 - `verification_results_YYYYMMDD_HHMMSS.json` - JSON results
