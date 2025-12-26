@@ -151,10 +151,13 @@ jobs:
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
 
-      # Commit back
+      # Commit back (using PAT to trigger subsequent workflows)
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
+        uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
           commit_message: "style: auto-fix (shfmt, black, isort, prettier, markdownlint)"
           branch: ${{ github.head_ref || github.ref_name }}
           file_pattern: .
+        env:
+          # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}

@@ -115,8 +115,8 @@ jobs:
                 const rootDir = parts[0];
                 console.log(`File: ${file.filename} -> rootDir: ${rootDir}`);
 
-                // Track Supported Addons
-                if (validAddons.includes(rootDir)) {
+                // Track Supported Addons (with blocklist check)
+                if (validAddons.includes(rootDir) && !BLOCKLIST.includes(rootDir.toLowerCase())) {
                     changedAddons.add(rootDir);
                     labelsToAdd.add(`addon/${rootDir}`);
                     console.log(`  -> Added as supported addon: ${rootDir}`);
@@ -125,8 +125,8 @@ jobs:
                 // Track Unsupported Addons (Label individually, don't count towards "All Supported")
                 if (rootDir === '.unsupported' && parts.length > 2) {
                     const unsupAddon = parts[1];
-                    // Verify existence of config.yaml to confirm it is an add-on
-                    if (fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
+                    // Verify existence of config.yaml and not in blocklist
+                    if (!BLOCKLIST.includes(unsupAddon.toLowerCase()) && fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
                         labelsToAdd.add(`addon/${unsupAddon}`);
                         console.log(`  -> Added as unsupported addon: ${unsupAddon}`);
                     }

@@ -53,13 +53,6 @@ def get_addon_info(addon_path: str) -> dict:
             info["slug"] = config.get("slug", info["slug"])
     except (yaml.YAMLError, OSError, ValueError) as e:
         print(f"⚠️ Could not read config: {e}")
-    except Exception as e:
-        # Check if it's a JSON error specifically if json module was imported dynamically
-        import json
-        if isinstance(e, json.JSONDecodeError):
-             print(f"⚠️ JSON Decode Error: {e}")
-        else:
-             print(f"⚠️ Unexpected error reading config: {e}")
 
     return info
 
@@ -299,14 +292,12 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     if START_MARKER in content and END_MARKER in content:
         print("[INFO] Startup banner (markers) found, updating...")
         # Remove old injection with markers
-        # Remove old injection with markers
         pattern = re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER) + r"\n?"
         content = re.sub(pattern, "", content, flags=re.DOTALL)
 
     # Legacy cleanup (Regex)
     elif "_show_startup_banner" in content:
         print("[INFO] Legacy startup banner found, upgrading to markers...")
-        content = re.sub(
         content = re.sub(
             r"\n# =+\n# Addon Startup Banner.*?_show_startup_banner\nfi\n",
             "\n",

@@ -68,17 +68,7 @@ def get_git_log_for_addon(addon_path, since_tag=None):
                 cwd=os.path.dirname(addon_path) or ".",
             )
             tags = result.stdout.strip().split("\n")
-            addon_tags = [
-                t
-                for t in tags
-                if f"{addon_name}-v" in t or t.startswith("v") or t == f"v{addon_name}"
-            ]
-            # If no tags found specific to this addon, fallback to broader search but warn?
-            # Actually, standard pattern is usually just vX.Y.Z for single addon, or addon-vX.Y.Z for monorepo.
-            # The original code was `addon_name in t.lower() or t.startswith("v")`.
-            # I will change it to `t.startswith(f"{addon_name}-v") or (t.startswith("v") and "-" not in t)`
-            # This avoids matching "other-addon-v1.0.0" when looking for "addon".
-
+            # Match tags specific to this addon or simple vX.Y.Z format
             addon_tags = [
                 t
                 for t in tags
@@ -278,7 +268,6 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
     with open(config_path, "r") as f:
         content = f.read()
 
-    # Regex to find version (supports -dev and -dev+commit suffix)
     # Regex to find version (supports -dev and -dev+commit suffix)
     version_pattern = (
         r"""^(version: ["']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["']?)"""

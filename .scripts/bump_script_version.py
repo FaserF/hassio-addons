@@ -72,9 +72,13 @@ def main():
         print(f"Config file {config_path} not found.", file=sys.stderr)
         sys.exit(1)
 
-    with open(config_path, "r") as f:
-        current_data = yaml.safe_load(f)
-        new_version = current_data.get("scriptVersion")
+    try:
+        with open(config_path, "r") as f:
+            current_data = yaml.safe_load(f)
+            new_version = current_data.get("scriptVersion")
+    except (yaml.YAMLError, OSError) as e:
+        print(f"Error reading config file: {e}", file=sys.stderr)
+        sys.exit(1)
 
     if old_version and new_version and old_version != new_version:
         print(f"Version already bumped from {old_version} to {new_version}.")
