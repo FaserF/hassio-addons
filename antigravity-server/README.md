@@ -72,6 +72,15 @@ Controls the level of log output.
 
 ---
 
+## 🔒 Security & Limitations
+
+### Root Execution & `--no-sandbox`
+
+This add-on currently runs the desktop session and the Antigravity IDE as the **root** user.
+*   **Implication**: Electron-based applications (including Antigravity) require the `--no-sandbox` flag to run as root. This disables the Chrome sandbox security layer.
+*   **Risk**: If the IDE is compromised, an attacker could theoretically gain root access to the **container** (though not necessarily the host, due to Docker/Supervisor isolation).
+*   **Mitigation**: Avoid browsing untrusted malicious websites within the embedded browser if possible.
+
 ## ❓ Troubleshooting & Known Issues
 
 During startup, you may see the following warnings in the logs. These are **normal** and expected behavior:

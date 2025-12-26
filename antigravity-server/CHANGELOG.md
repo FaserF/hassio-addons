@@ -6,9 +6,10 @@
 - Full Antigravity IDE integration
 - Idempotent autostart implementation (Kiosk Mode)
 - Robust VNC/NoVNC configuration with persistent password logic
-## 0.0.1
 
-- Initial release
+## 0.0.1 (Pre-release)
+
+- Initial development release
 - Based on Docker-AntiGravity 2025.12.0-nightly.20251226.1451
 - Features:
   - NoVNC browser-based desktop access

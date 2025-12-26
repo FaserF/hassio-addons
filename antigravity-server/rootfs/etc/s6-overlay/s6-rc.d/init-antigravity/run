@@ -84,7 +84,9 @@ if [ ! -f "/root/.config/autostart/antigravity.desktop" ]; then
 [Desktop Entry]
 Type=Application
 Name=Antigravity
-Exec=antigravity --start-maximized --start-fullscreen --no-sandbox --user-data-dir=/data/antigravity
+# --no-sandbox is required because the desktop session runs as root.
+# Electron applications (like VS Code/Antigravity) refuse to run as root without this flag.
+Exec=antigravity --kiosk --no-sandbox --user-data-dir=/data/antigravity
 StartupNotify=false
 Terminal=false
 Hidden=false

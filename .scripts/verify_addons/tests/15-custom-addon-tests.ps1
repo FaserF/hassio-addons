@@ -29,7 +29,7 @@ function Cleanup-Test-Container {
     param($AddonName, $OutputDir, $DockerAvailable)
     $contName = "test-run-$($AddonName.ToLower())"
 
-    if ($DockerAvailable -and (docker ps -a -q -f "name=$contName")) {
+    if ($DockerAvailable -and (docker ps -a -q -f "name=^$contName$")) {
         Write-Host "    > [Cleanup] Removing container '$contName'..." -ForegroundColor Gray
         docker rm -f "$contName" 2>&1 | Out-Null
     }

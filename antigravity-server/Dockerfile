@@ -5,6 +5,7 @@ FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=Eidolf/Docker-AntiGravity versioning=loose
 ARG ANTIGRAVITY_VERSION="2025.12.0-nightly.20251226.1451"
+ARG LAZYGIT_VERSION=0.40.2
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Set shell
@@ -71,7 +72,6 @@ RUN \
     && apt-get update && apt-get install -y --no-install-recommends antigravity \
     \
     # Install LazyGit
-    && LAZYGIT_VERSION=0.40.2 \
     && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
     && tar xf lazygit.tar.gz lazygit \
     && install lazygit /usr/local/bin \
