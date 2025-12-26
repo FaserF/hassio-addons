@@ -1,5 +1,14 @@
 # FaserF's Home Assistant Add-ons 🏠
 
+> [!CAUTION]
+> **EDGE/DEVELOPMENT BUILD**
+>
+> You are viewing the `edge` branch. This version is built locally from source
+> and may contain bugs or incomplete features. For stable releases, switch to
+> the `master` branch or use the stable repository URL.
+
+
+
 This repository contains a collection of custom **Home Assistant Add-ons**
 maintained by FaserF.
 
