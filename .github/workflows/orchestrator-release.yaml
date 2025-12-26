@@ -21,6 +21,11 @@ on:
   schedule:
     - cron: "0 5 1 * *" # Monthly Edge Updates
 
+permissions:
+  contents: write
+  packages: write
+  actions: write
+
 jobs:
   # --------------------------------------------------------------------------------
   # SCHEDULE: Monthly Edge Updates
@@ -92,9 +97,6 @@ jobs:
        (github.event_name == 'workflow_dispatch' && (needs.verify.result == 'success' || needs.verify.result == 'skipped')))
     runs-on: ubuntu-latest
     # Manual release permissions needs
-    permissions:
-      contents: write
-      packages: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4

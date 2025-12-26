@@ -279,7 +279,7 @@ jobs:
         if: steps.compliance.outputs.status == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: compliance-${{ github.run_id }}-${{ strategy.job-index }}
+          name: compliance-${{ github.run_id }}-${{ matrix.addon }}
           path: compliance_report.txt
           retention-days: 1
 
@@ -366,9 +366,7 @@ jobs:
                 --target "/data/${{ matrix.addon }}" \
                 --image "$IMAGE" \
                 --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-                --addon \
-                --cache-from type=local,src=/cache \
-                --cache-to type=local,dest=/cache,mode=max || exit 1
+                --addon || exit 1
           done
 
           echo "✅ All architectures built successfully"

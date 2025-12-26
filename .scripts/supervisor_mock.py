@@ -17,10 +17,10 @@ Usage:
 Arguments:
   options_json_path  Path to options.json (default: options.json)
   port               Port to listen on (default: 80)
-  bind_address       Address to bind to (default: 127.0.0.1)
+  bind_address       Address to bind to (default: 0.0.0.0)
 
 Environment Variables:
-  MOCK_BIND_ADDRESS  Override bind address (default: 127.0.0.1)
+  MOCK_BIND_ADDRESS  Override bind address (default: 0.0.0.0)
 """
 
 import ipaddress
@@ -47,7 +47,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         try:
             with open(self.options_path, "r", encoding="utf-8-sig") as f:
                 return json.load(f)
-        except Exception as e:
+        except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
             print(
                 f"DEBUG: Failed to reload options from {self.options_path}: {e}",
                 file=sys.stderr,

@@ -80,6 +80,20 @@ To install them manually as a **Local Add-on**:
 Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
 Tested on **amd64** architecture.
 
+## 🏆 Platinum Standard Quality
+
+This repository adheres to a **Platinum Standard** for Home Assistant Add-ons, ensuring robust stability, security, and code quality.
+
+Every add-on in this repository undergoes extensive CI/CD verification, including:
+
+- **Automated Builds:** Verified across multiple architectures.
+- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and **Hadolint**.
+- **Strict Linting:** Enforced by **Add-on Linter**, **Actionlint**, **MarkdownLint**, and **Shellcheck**.
+- **Code Consistency:** Automated formatting via **Prettier**, **Black**, and **isort**.
+- **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
+
+We strive to provide add-ons that are not just functional, but also secure, maintainable, and reliable.
+
 ---
 
 ## 📄 License

@@ -1,5 +1,9 @@
 name: Orchestrator Auto-Merge
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   workflow_run:
     workflows: ["Orchestrator CI"]
@@ -19,9 +23,6 @@ jobs:
         github.event.workflow_run.actor.login == 'FaserF'
       ) &&
       github.event.workflow_run.pull_requests[0] != null
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: ⏱️ Wait 1 minute before auto-merge
         run: |

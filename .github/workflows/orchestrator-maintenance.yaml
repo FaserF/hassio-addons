@@ -30,6 +30,11 @@ on:
   schedule:
     - cron: "0 0 * * 0" # Weekly Cleanup
 
+permissions:
+  contents: write
+  packages: write
+  actions: write
+
 jobs:
   # --------------------------------------------------------------------------------
   # CLEANUP: Delete old runs & Stale items

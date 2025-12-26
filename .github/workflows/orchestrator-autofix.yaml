@@ -1,5 +1,9 @@
 name: Orchestrator Auto-Fix
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   push:
     branches:
@@ -21,11 +25,9 @@ jobs:
       github.actor != 'github-actions[bot]'
     name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: ⤵️ Check out code
+        # zizmor: ignore[artipacked]
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}

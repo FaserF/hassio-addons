@@ -4,6 +4,7 @@ github_conf/
 all_build_yamls.txt
 tmp_tuya/
 /.scripts/tmp_test_runs
+/.scripts/tmp_mock_global*
 
 # Python
 __pycache__/

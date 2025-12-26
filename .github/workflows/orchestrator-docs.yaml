@@ -1,5 +1,9 @@
 name: Orchestrator Docs & Standards
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   schedule:
     - cron: "0 0 * * 1" # Weekly check
@@ -9,9 +13,6 @@ jobs:
   doc-audit:
     name: 📚 Documentation Audit
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

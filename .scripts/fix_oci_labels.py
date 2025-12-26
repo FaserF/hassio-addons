@@ -77,20 +77,26 @@ def main():
     # Root dirs + .unsupported dirs
     addons = []
 
-    # 1. Root level add-ons
-    for item in os.listdir("."):
-        if os.path.isdir(item) and not item.startswith("."):
-            if os.path.exists(os.path.join(item, "config.yaml")):
-                addons.append(item)
-
-    # 2. Unsupported add-ons
-    if os.path.exists(".unsupported"):
-        for item in os.listdir(".unsupported"):
-            path = os.path.join(".unsupported", item)
-            if os.path.isdir(path) and os.path.exists(
-                os.path.join(path, "config.yaml")
-            ):
+    if len(sys.argv) > 1:
+        # Use provided paths
+        for path in sys.argv[1:]:
+            if os.path.exists(path) and os.path.isdir(path):
                 addons.append(path)
+    else:
+        # 1. Root level add-ons
+        for item in os.listdir("."):
+            if os.path.isdir(item) and not item.startswith("."):
+                if os.path.exists(os.path.join(item, "config.yaml")):
+                    addons.append(item)
+
+        # 2. Unsupported add-ons
+        if os.path.exists(".unsupported"):
+            for item in os.listdir(".unsupported"):
+                path = os.path.join(".unsupported", item)
+                if os.path.isdir(path) and os.path.exists(
+                    os.path.join(path, "config.yaml")
+                ):
+                    addons.append(path)
 
     changed = False
     for addon in addons:

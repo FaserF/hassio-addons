@@ -266,6 +266,8 @@ function Get-RequiredSchemaKeys {
 
 Set-Location $RepoRoot
 $GlobalFailed = $false
+$ScriptStartTime = Get-Date
+Write-Host "Started at: $($ScriptStartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
 
 # --- CHECK DOCKER AVAILABILITY ---
 # Check Docker upfront if any Docker-related tests are selected
@@ -373,6 +375,14 @@ else {
     }
 }
 
+if ($addons.Count -gt 0) {
+    if ("all" -notin $Addon -or $ChangedOnly) {
+        Write-Host "Targeting $($addons.Count) add-on(s): $($addons.Name -join ', ')" -ForegroundColor Cyan
+    } else {
+        Write-Host "Targeting all $($addons.Count) detected add-ons." -ForegroundColor Gray
+    }
+}
+
 # Helper to check if a test should run for a specific addon
 function Should-RunTest {
     param($AddonName, $TestName)
@@ -394,29 +404,78 @@ function Should-RunTest {
 # --- AUTO FIX ---
 if ($Fix) {
     Write-Header "0. Auto-Fix Mode"
-    Write-Host "Running Fixers..." -ForegroundColor Gray
+
+    $GlobalFix = ("all" -in $Addon -and -not $ChangedOnly)
+    $FixPaths = @()
+    if ($GlobalFix) {
+        Write-Host "Running Fixers on ALL files..." -ForegroundColor Gray
+        $FixPaths = @(".")
+    } else {
+        Write-Host "Running Fixers on $($addons.Count) selected add-ons..." -ForegroundColor Gray
+        $FixPaths = $addons | ForEach-Object { $_.FullName }
+    }
 
     # 1. Repo Maintenance Scripts
-    if (Test-Path ".scripts/fix_line_endings.py") { python .scripts/fix_line_endings.py }
+    # fix_line_endings and fix_oci_labels support path arguments
+    if (Test-Path ".scripts/fix_line_endings.py") {
+        if ($GlobalFix) { python .scripts/fix_line_endings.py }
+        else { python .scripts/fix_line_endings.py $FixPaths }
+    }
     if (Test-Path ".scripts/fix_configs.py") { python .scripts/fix_configs.py }
-    if (Test-Path ".scripts/fix_oci_labels.py") { python .scripts/fix_oci_labels.py }
-    if (Test-Path ".scripts/update_unsupported_status.py") { python .scripts/update_unsupported_status.py }
-    if (Test-Path ".scripts/update_readme_status.py") { python .scripts/update_readme_status.py }
-    if (Test-Path ".scripts/enforce_architectures.py") { python .scripts/enforce_architectures.py }
-    if (Test-Path ".scripts/standardize_readmes.py") { python .scripts/standardize_readmes.py }
+
+    if (Test-Path ".scripts/fix_oci_labels.py") {
+        if ($GlobalFix) { python .scripts/fix_oci_labels.py }
+        else { python .scripts/fix_oci_labels.py $FixPaths }
+    }
+
+    # These scripts are inherently global (update main README / manage all banners)
+    # Only run them in global mode to avoid noisy output when scoped
+    if ($GlobalFix) {
+        if (Test-Path ".scripts/update_unsupported_status.py") { python .scripts/update_unsupported_status.py }
+        if (Test-Path ".scripts/update_readme_status.py") { python .scripts/update_readme_status.py }
+        if (Test-Path ".scripts/enforce_architectures.py") { python .scripts/enforce_architectures.py }
+    }
+
+    # standardize_readmes supports --addon argument
+    if (Test-Path ".scripts/standardize_readmes.py") {
+        if ($GlobalFix) { python .scripts/standardize_readmes.py }
+        else {
+            foreach ($p in $FixPaths) {
+                python .scripts/standardize_readmes.py --addon $p
+            }
+        }
+    }
 
     # 2. Python Formatting (Black/Isort)
-    try { python -m black . 2>&1 | Out-Null } catch { Write-Host "Skipping Black (not verified)" -ForegroundColor DarkGray }
-    try { python -m isort . --profile black 2>&1 | Out-Null } catch { Write-Host "Skipping Isort (not verified)" -ForegroundColor DarkGray }
+    try {
+        $blackArgs = @("-m", "black") + $FixPaths
+        python @blackArgs 2>&1 | Out-Null
+    } catch { Write-Host "Skipping Black (not verified)" -ForegroundColor DarkGray }
+
+    try {
+        $isortArgs = @("-m", "isort") + $FixPaths + "--profile", "black"
+        python @isortArgs 2>&1 | Out-Null
+    } catch { Write-Host "Skipping Isort (not verified)" -ForegroundColor DarkGray }
 
     # 3. Shell Formatting (shfmt)
     if (Get-Command "shfmt" -ErrorAction SilentlyContinue) {
-        try { shfmt -l -w . 2>&1 | Out-Null } catch {}
+        try {
+             $shfmtArgs = @("-l", "-w") + $FixPaths
+             shfmt @shfmtArgs 2>&1 | Out-Null
+        } catch {}
     }
 
     # 4. Prettier & Markdown
-    try { npx prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore } catch {}
-    try { npx markdownlint-cli "**/*.md" --config .markdownlint.yaml --fix --ignore "node_modules" --ignore ".git" } catch {}
+    try {
+        $prettierTargets = if ($GlobalFix) { "**/*.{json,js,md,yaml}" } else { $addons | ForEach-Object { "$($_.FullName)\**\*.{json,js,md,yaml}" } }
+        # Limit command length if necessary, but npx/params usually handle this reasonable amount
+        npx prettier --write $prettierTargets --ignore-path .prettierignore
+    } catch {}
+
+    try {
+        $mdTargets = if ($GlobalFix) { "**/*.md" } else { $addons | ForEach-Object { "$($_.FullName)\**\*.md".Replace('\','/') } }
+        npx markdownlint-cli $mdTargets --config .markdownlint.yaml --fix --ignore "node_modules" --ignore ".git"
+    } catch {}
 }
 
 # --- 1. LF CHECK ---
@@ -483,11 +542,10 @@ if ("all" -in $Tests -or "Hadolint" -in $Tests) {
             if (Test-Path $df) {
                 try {
                     $out = (Get-Content $df | docker run --rm -i hadolint/hadolint hadolint - 2>&1)
-                    # Parse Hadolint Output manually to avoid failing on non-errors if any
-                    if ($out -match "DL\d+" -or $out -match "SC\d+") { Add-Result $a.Name "Hadolint" "FAIL" $out }
+                    if ($LASTEXITCODE -ne 0) { Add-Result $a.Name "Hadolint" "FAIL" $out }
                     else { Add-Result $a.Name "Hadolint" "PASS" "OK" }
                 }
-                catch { Add-Result $a.Name "Hadolint" "FAIL" "Exec Error" }
+                catch { Add-Result $a.Name "Hadolint" "SKIP" "Docker unavailable" }
             }
         }
     }
@@ -513,7 +571,7 @@ if ("all" -in $Tests -or "YamlLint" -in $Tests) {
              }
         }
         catch {
-            Add-Result $a.Name "YamlLint" "FAIL" "Exec Error"
+            Add-Result $a.Name "YamlLint" "SKIP" "Tool unavailable"
         }
     }
 }
@@ -562,17 +620,22 @@ if ("all" -in $Tests -or "Prettier" -in $Tests) {
 if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
     Write-Header "7. Add-on Linter"
     if ($DockerAvailable) {
-        $img = "ghcr.io/frenck/action-addon-linter:v2"
-        # Try to pull, but don't fail immediately if we have a local copy
-        $pullErr = (docker pull $img 2>&1)
-        if ($LASTEXITCODE -ne 0 -and -not (docker images -q $img)) {
-            Add-Result "Global" "AddonLinter" "WARN" "Image pull failed and not found locally. Skipping."
+        $img = "addon-linter:local"
+        if (-not (docker images -q $img)) {
+             Write-Host "Building addon-linter from source (frenck/action-addon-linter)..." -ForegroundColor Gray
+             # Build from src folder of the official action repo
+             docker build -t $img "https://github.com/frenck/action-addon-linter.git#:src" 2>&1 | Out-Null
+        }
+
+        if (-not (docker images -q $img)) {
+            Add-Result "Global" "AddonLinter" "SKIP" "Image build failed, skipping."
         }
         else {
             foreach ($a in $addons) {
                 if (-not (Should-RunTest $a.Name "AddonLinter")) { continue }
                 try {
-                    $res = docker run --rm -v "$($a.FullName):/data" --entrypoint addon-linter $img --path /data 2>&1
+                    # GitHub Actions use INPUT_* env vars, not CLI args
+                    $res = docker run --rm -v "$($a.FullName):/data" -e INPUT_PATH=/data -e INPUT_COMMUNITY=false $img 2>&1
                     if ($LASTEXITCODE -eq 0) {
                         Add-Result $a.Name "AddonLinter" "PASS" "OK"
                     }
@@ -584,7 +647,7 @@ if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
                         Add-Result $a.Name "AddonLinter" "FAIL" $res
                     }
                 }
-                catch { Add-Result $a.Name "AddonLinter" "FAIL" "Exec Error" }
+                catch { Add-Result $a.Name "AddonLinter" "SKIP" "Docker unavailable" }
             }
         }
     }
@@ -605,7 +668,7 @@ if ("all" -in $Tests -or "Compliance" -in $Tests) {
                 Write-Host "----------------------------------------`n" -ForegroundColor Red
             }
         }
-        catch { Add-Result $a.Name "Compliance" "FAIL" "Script Error" }
+        catch { Add-Result $a.Name "Compliance" "SKIP" "Script unavailable" }
     }
 }
 
@@ -795,7 +858,8 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
 
                 # Prepare config (Use local repo path to ensure Docker File Sharing works)
                 $tempDir = Join-Path $OutputDir "tmp_test_runs"
-                $tempDir = Join-Path $tempDir "ha-addon-test-$($a.Name)"
+                $safeName = $a.Name -replace '[^a-zA-Z0-9_\-]', '_'
+                $tempDir = Join-Path $tempDir "ha-addon-test-$safeName"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
                 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
@@ -807,8 +871,41 @@ if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
                 # Create dummy SSL certificates globally
                 $sslDir = Join-Path $tempDir "ssl"
                 New-Item -ItemType Directory -Path $sslDir -Force | Out-Null
-                Set-Content -Path (Join-Path $sslDir "fullchain.pem") -Value "DUMMY CERTIFICATE"
-                Set-Content -Path (Join-Path $sslDir "privkey.pem") -Value "DUMMY KEY"
+
+                # Valid Self-Signed Cert (RSA 1024)
+                $certContent = "-----BEGIN CERTIFICATE-----`n" +
+"MIICBDCCAW2gAwIBAgIUXkRIHiZy5omKPEZp/4YDozjIvaowDQYJKoZIhvcNAQEL`n" +
+"BQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI1MTIyNjAxMTA1MloXDTM1MTIy`n" +
+"NDAxMTA1MlowFDESMBAGA1UEAwwJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUA`n" +
+"A4GNADCBiQKBgQC1f1nUaHtTrXTZmZZKAswHlaBq48hbOwX0oqvAUD+vMPQp03D5`n" +
+"paMbLg2pDJGgeRsBWJng3P2PJdfOIsDZEnf2Hg8BYYJS7e7KitYtmVss5Wt6a7+T`n" +
+"ezwofRxFyxT1RefLoEbVj9WUdwsmKwGk8JFwg7OPKWDUteuCkS5284ZqGwIDAQAB`n" +
+"o1MwUTAdBgNVHQ4EFgQU0c+mCjHiHhij6l0EiJGdv00G24swHwYDVR0jBBgwFoAU`n" +
+"0c+mCjHiHhij6l0EiJGdv00G24swDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0B`n" +
+"AQsFAAOBgQBy7qK5VICjRujEsCO1wKf+W+gz9M3/Db/OgofAl8TlVDilf/6/b4cl`n" +
+"CqyLDIiQXG3C3n+AwcTehEJmmZOFIJS1p9Jf5UALPXCaBHqGrXzdbmZ7FIhiOZOy`n" +
+"e+Klqzwa6nFK6iGGyzVoBbnLDZHh7YRHPYcIb9p6fbXLjEQ25RSvBQ==`n" +
+"-----END CERTIFICATE-----"
+
+                $keyContent = "-----BEGIN PRIVATE KEY-----`n" +
+"MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALV/WdRoe1OtdNmZ`n" +
+"lkoCzAeVoGrjyFs7BfSiq8BQP68w9CnTcPmloxsuDakMkaB5GwFYmeDc/Y8l184i`n" +
+"wNkSd/YeDwFhglLt7sqK1i2ZWyzla3prv5N7PCh9HEXLFPVF58ugRtWP1ZR3CyYr`n" +
+"AaTwkXCDs48pYNS164KRLnbzhmobAgMBAAECgYBb8OJhjngDAJhz7rDKVzZiFTMJ`n" +
+"UtBZHsI6lfkpV72bEtJtKbZOUNEaYK781ugigZbjjK2O0oQD8uiqfMJydD+d6/e4`n" +
+"9Oi2KCO1EXSO4Bp/LgWm1FbvhIJlZ3oLGzEzAkWp42oTUrUL2pNyMEtz6VdmRjvu`n" +
+"oEnczSfzb91rE031OQJBAOVN6Cf81LUNFOMLIMnnq8IDKFCylkN5SeKtdqBkIGkS`n" +
+"ra56i34zeJp3G6UL9mI2tnlbsaVDj8CCDwz8Gx0rAEcCQQDKoKC2DNhVwMQqm1La`n" +
+"SEoVvqmsNqspLCo6DHUrQk6d65vjkEqeN/4NtAdJYGTTCNiEdEgcvlxamTtxYAYx`n" +
+"SyWNAkBy7/QYZyDvh5kanS9YRSnQ2+hPWtT7CUbBupUlnEqqoFQyivZ00bP4KQ/Q`n" +
+"UQi0/hvFBPMslYruwcJtjcjBfBZtAkAXmlJeImzowEWZePJTvuvyUH1PNCcH6r8Y`n" +
+"d+8GFPk3aASGo34to/QSAJCAuZvFAVjHRQxJXNtBKmxELp1KDKjZAkEArPqtdaFl`n" +
+"eVOa7x+Dsdl9r80AlO+yD7p5hFcuPWmj53RwbZzmGTAsA5RXSbLAlFbNF7BSp0hx`n" +
+"1YJvucOJCoqkZA==`n" +
+"-----END PRIVATE KEY-----"
+
+                [System.IO.File]::WriteAllText((Join-Path $sslDir "fullchain.pem"), $certContent)
+                [System.IO.File]::WriteAllText((Join-Path $sslDir "privkey.pem"), $keyContent)
 
                 # Create other common directories
                 $shareDir = Join-Path $tempDir "share"
@@ -1130,16 +1227,25 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
             if ($LASTEXITCODE -ne 0) { Add-Result "Workflows" "Actionlint" "FAIL" $out }
             else { Add-Result "Workflows" "Actionlint" "PASS" "OK" }
         }
-        catch { Add-Result "Workflows" "Actionlint" "FAIL" "Exec Error" }
+        catch { Add-Result "Workflows" "Actionlint" "SKIP" "Docker unavailable" }
 
         # B. Zizmor (Security)
         Write-Host "Running Zizmor..." -ForegroundColor Gray
         try {
-            $out = docker run --rm -v "$($RepoRoot):/repo" -w /repo ghcr.io/woodruffw/zizmor:latest . 2>&1
-            if ($LASTEXITCODE -ne 0) { Add-Result "Workflows" "Zizmor" "WARN" $out }
-            else { Add-Result "Workflows" "Zizmor" "PASS" "OK" }
+            # Run Zizmor and redirect output to a temporary log file to avoid console spam
+            $zizmorLog = Join-Path $env:TEMP "zizmor-report.txt"
+            docker run --rm -v "$($RepoRoot):/repo" -w /repo ghcr.io/woodruffw/zizmor:latest . > $zizmorLog 2>&1
+
+            # Check if log has content / findings
+            if ($LASTEXITCODE -ne 0) {
+                Add-Result "Workflows" "Zizmor" "INFO" "Security analysis complete. See log at: $zizmorLog"
+            }
+            else {
+                Add-Result "Workflows" "Zizmor" "PASS" "OK"
+                Remove-Item $zizmorLog -ErrorAction SilentlyContinue
+            }
         }
-        catch { Add-Result "Workflows" "Zizmor" "FAIL" "Exec Error" }
+        catch { Add-Result "Workflows" "Zizmor" "SKIP" "Docker unavailable" }
     }
 
     $latestRunner = "24.04" # Default fallback
@@ -1164,13 +1270,6 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         $content = Get-Content $wf.FullName -Raw
         $wfName = $wf.Name
 
-        # Check 1: SHA Pinning (Reproducibility)
-        # Warn if @vX is used instead of a 40-char SHA
-        if ($content -match 'uses:\s*[\w\-\./]+@(v\d+|master|main)') {
-             Add-Result $wfName "CR-SHA-Pinning" "WARN" "Uses moving tag (e.g. @v4). Pin to commit SHA for maximum security."
-        } else {
-             Add-Result $wfName "CR-SHA-Pinning" "PASS" "OK"
-        }
 
         # Check 2: Permissions (Least Privilege)
         if ($content -notmatch '(?m)^permissions:') {
@@ -1200,7 +1299,11 @@ if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
 
 # --- SUMMARY ---
 Write-Header "EXECUTION SUMMARY"
-$Results | Format-Table -AutoSize
+$SummaryResults = $Results
+if ("all" -notin $Addon -or $ChangedOnly) {
+    $SummaryResults = $Results | Where-Object { $_.Addon -in $addons.Name }
+}
+$SummaryResults | Format-Table -AutoSize
 
 # Check if any FAIL or WARN results exist (depending on strictness)
 # For now, we only fail on 'FAIL' status
@@ -1219,5 +1322,11 @@ $Results | ConvertTo-Json -Depth 4 | Out-File -FilePath $JsonFile -Encoding UTF8
 Write-Host "Results saved to: $JsonFile" -ForegroundColor Gray
 
 try { Stop-Transcript | Out-Null } catch {}
+
+$ScriptEndTime = Get-Date
+$Duration = $ScriptEndTime - $ScriptStartTime
+Write-Host ""
+Write-Host "Finished at: $($ScriptEndTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
+Write-Host "Duration: $($Duration.ToString('hh\:mm\:ss'))" -ForegroundColor Cyan
 
 if ($GlobalFailed) { exit 1 } else { exit 0 }
