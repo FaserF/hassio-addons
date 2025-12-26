@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0
+
+- Initial stable release
+- Full Antigravity IDE integration
+- Idempotent autostart implementation (Kiosk Mode)
+- Robust VNC/NoVNC configuration with persistent password logic
 ## 0.0.1
 
 - Initial release

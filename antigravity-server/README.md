@@ -72,6 +72,17 @@ Controls the level of log output.
 
 ---
 
+## ❓ Troubleshooting & Known Issues
+
+During startup, you may see the following warnings in the logs. These are **normal** and expected behavior:
+
+*   `/usr/bin/xauth: file /root/.Xauthority does not exist`
+    *   Occurs on the first run when the VNC authority file is being generated.
+*   `Warning: could not find self.pem` (from websockify)
+    *   Occurs because the container uses HTTP internally, while Home Assistant Ingress handles the SSL encryption externally.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.
