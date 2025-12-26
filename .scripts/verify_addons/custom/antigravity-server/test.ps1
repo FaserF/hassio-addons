@@ -24,17 +24,50 @@ if (-not $containerRunning) {
    return
 }
 
-# 2. Test: Check if certain processes are running inside the container
-# Antigravity server likely runs some node or python process
-Write-Host "      - Verifying internal processes..." -ForegroundColor Gray
-$processes = docker exec $ContainerName ps aux 2>$null
+# 2. Test: Check for Critical Processes
+Write-Host "      - Verifying internal processes (Xvnc, NoVNC, XFCE4)..." -ForegroundColor Gray
+$processes = docker exec $ContainerName ps aux
 
-# Example check for s6-rc or a specific service
-if ($processes -match "s6-svscan") {
-    # 3. Test: Verify some API response (mocked or internal)
-    # We could try to curl an internal port if we know it
-    # For now, let's just do a basic check
-    Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "PASS" -Message "Antigravity Server verified (s6-svscan present)"
+$criticalProcesses = @("Xvnc", "novnc_server", "xfce4-session")
+$missingProcesses = @()
+
+foreach ($proc in $criticalProcesses) {
+    if ($processes -notmatch $proc) {
+        $missingProcesses += $proc
+    }
+}
+
+if ($missingProcesses.Count -eq 0) {
+    Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "PASS" -Message "All critical processes (Xvnc, NoVNC, XFCE4) are running."
 } else {
-    Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "FAIL" -Message "Antigravity Server critical processes missing."
+    Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "FAIL" -Message "Missing processes: $($missingProcesses -join ', ')"
+}
+
+# 3. Test: Password Persistence
+Write-Host "      - Verifying password persistence..." -ForegroundColor Gray
+$passwordFileContent = docker exec $ContainerName cat /data/vnc_password
+
+if ($null -ne $passwordFileContent -and $passwordFileContent.Length -ge 8) {
+     Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "PASS" -Message "Persistent password file exists and has content."
+} else {
+     Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "FAIL" -Message "Persistent password file /data/vnc_password missing or empty."
+}
+
+# 4. Test: Log Scan for Known Errors
+Write-Host "      - Scanning logs for critical errors..." -ForegroundColor Gray
+$logs = docker logs $ContainerName 2>&1 | Out-String
+
+if ($logs -match "Unable to load a failsafe session") {
+    Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "FAIL" -Message "Found 'Unable to load a failsafe session' error in logs."
+} else {
+    Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "PASS" -Message "No critical session errors found in logs."
+}
+
+# 5. Connectivity Check (Internal Curl)
+Write-Host "      - Verifying NoVNC connectivity..." -ForegroundColor Gray
+$curlOutput = docker exec $ContainerName curl -I http://127.0.0.1:6080/
+if ($curlOutput -match "HTTP/1.1 200 OK" -or $curlOutput -match "HTTP/1.0 200 OK") {
+     Add-Result -Addon $Addon.Name -Check "Connectivity" -Status "PASS" -Message "NoVNC service is responding on port 6080."
+} else {
+     Add-Result -Addon $Addon.Name -Check "Connectivity" -Status "FAIL" -Message "Failed to verify NoVNC on port 6080."
 }

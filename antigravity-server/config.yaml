@@ -24,4 +24,4 @@ options:
   log_level: info
 schema:
   vnc_password: str?
-  log_level: list(info|debug)?
+  log_level: str?

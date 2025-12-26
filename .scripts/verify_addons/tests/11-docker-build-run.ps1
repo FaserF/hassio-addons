@@ -495,7 +495,7 @@ try {
                     }
                 }
                 else {
-                    Add-Result -Addon $a.Name -Check "DockerRun" -Status "FAIL" -Message "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 1000)"
+                    Add-Result -Addon $a.Name -Check "DockerRun" -Status "FAIL" -Message "Crashed immediately. Logs summary:`n$($logs | Select-Object -Last 200)"
                 }
             }
             elseif ($healthStatus -eq "unhealthy") {

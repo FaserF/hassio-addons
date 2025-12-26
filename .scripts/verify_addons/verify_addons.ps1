@@ -70,13 +70,17 @@ function Show-Help {
     Write-Host "        Available tests:"
     Write-Host "          LineEndings, ShellCheck, Hadolint, YamlLint, MarkdownLint, Prettier,"
     Write-Host "          AddonLinter, Compliance, Trivy, VersionCheck, DockerBuild, DockerRun,"
-    Write-Host "          CodeRabbit, WorkflowChecks, PythonChecks."
+    Write-Host "          CodeRabbit, WorkflowChecks, PythonChecks, CustomTests."
     Write-Host "        Use 'all' to run all available tests."
     Write-Host "        Default: 'all'"
     Write-Host ""
     Write-Host "    -Fix" -ForegroundColor Green
     Write-Host "        Enables auto-fixing for compatible tests (e.g., Prettier, LineEndings)."
     Write-Host "        WARNING: This modifies files in place."
+    Write-Host ""
+    Write-Host "    -CacheImages" -ForegroundColor Green
+    Write-Host "        If enabled, skips rebuilding Docker images if a valid 'local/test-<addon>' image"
+    Write-Host "        already exists. Useful for repeated test runs. Default: Disabled (Always Rebuild)."
     Write-Host ""
     Write-Host "    -ChangedOnly" -ForegroundColor Green
     Write-Host "        Limits the verification to add-ons that have uncommitted changes or are"

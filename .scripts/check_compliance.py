@@ -57,6 +57,8 @@ def check_addon(addon_path):
                     # logic to check if these are official
                     # Usually: ghcr.io/hassio-addons/base/... or ghcr.io/home-assistant/...
                     for arch, image in base_images.items():
+                        # Validation Intent: Accept official/trusted namespaces (ghcr.io/hassio-addons/ or ghcr.io/home-assistant/)
+                        # as sufficient validation. Downstream controls provide the trust boundary here.
                         if not (
                             image.startswith("ghcr.io/hassio-addons/")
                             or image.startswith("ghcr.io/home-assistant/")
@@ -73,6 +75,8 @@ def check_addon(addon_path):
         for line in content.splitlines():
             if line.startswith("FROM"):
                 image = line.split()[1]
+                # Validation Intent: Accept official/trusted namespaces (ghcr.io/hassio-addons/ or ghcr.io/home-assistant/)
+                # as sufficient validation. Downstream controls provide the trust boundary here.
                 if not (
                     image.startswith("ghcr.io/hassio-addons/")
                     or image.startswith("ghcr.io/home-assistant/")

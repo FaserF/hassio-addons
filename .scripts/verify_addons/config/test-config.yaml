@@ -62,7 +62,7 @@ dockerTests:
   - DockerBuild
   - DockerRun
   - WorkflowChecks
-  # - CustomTests
+  - CustomTests
 
 # --- DOCS-ONLY ALLOWED TESTS ---
 # Tests that run even when only documentation files changed

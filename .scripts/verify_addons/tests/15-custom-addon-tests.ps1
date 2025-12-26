@@ -72,4 +72,21 @@ try {
 }
 finally {
     # Ensure no containers are left hanging in case of a crash in the loop
+    if ($Addons) {
+        try {
+            foreach ($a in $Addons) {
+                 $contName = "test-run-$($a.Name.ToLower())"
+                 if (docker ps -a -q -f name=$contName) {
+                     Write-Host "    > [Cleanup] Removing container '$contName'..." -ForegroundColor Gray
+                     docker rm -f $contName 2>&1 | Out-Null
+                 }
+                 # Also cleanup temp dir if needed
+                 $safeName = $a.Name -replace '[^a-zA-Z0-9_\-]', '_'
+                 $tempDir = Join-Path $OutputDir "tmp_test_runs/ha-addon-test-$safeName"
+                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force 2>$null }
+            }
+        } catch {
+            Write-Warning "Cleanup failed: $_"
+        }
+    }
 }

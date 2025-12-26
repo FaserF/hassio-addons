@@ -17,8 +17,14 @@ if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_passwo
     VNC_PASSWORD=$(bashio::config 'vnc_password')
     bashio::log.info "Setting custom VNC password..."
 else
-    VNC_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
-    bashio::log.info "Generated random VNC password: ${VNC_PASSWORD}"
+    if [ -f "/data/vnc_password" ]; then
+        VNC_PASSWORD=$(cat "/data/vnc_password")
+        bashio::log.info "Using persisted random VNC password..."
+    else
+        VNC_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
+        echo "${VNC_PASSWORD}" > /data/vnc_password
+        bashio::log.info "Generated and persisted new random VNC password."
+    fi
 fi
 
 # Set VNC password
@@ -58,7 +64,8 @@ cat > /root/.vnc/xstartup << 'EOF'
 #!/bin/bash
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
-exec startxfce4
+export XDG_CONFIG_DIRS=/etc/xdg:/etc/xfce4
+exec dbus-launch --exit-with-session startxfce4
 EOF
 chmod +x /root/.vnc/xstartup
 
