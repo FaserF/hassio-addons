@@ -71,7 +71,12 @@ def generate_startup_banner_code(addon_info: dict, unsupported: bool) -> str:
 
     # Escape for bash
     # Escape for bash (escape \, ", `, $)
-    name_escaped = name.replace('\\', '\\\\').replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
+    name_escaped = (
+        name.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("`", "\\`")
+        .replace("$", "\\$")
+    )
 
     code = f"""
 # ============================================================================
@@ -211,7 +216,7 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
     slug = addon_info["slug"]
 
     def escape_env(val):
-        return val.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+        return val.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
     env_block = f"""
 # Addon metadata (injected by CI)
