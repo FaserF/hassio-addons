@@ -343,7 +343,7 @@ jobs:
 
       - name: 🏗️ Build All Architectures
         run: |
-          ARCHS="${{ steps.info.outputs.architectures }}"
+          ARCHS="${{ join(fromJSON(steps.info.outputs.architectures), ' ') }}"
           IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
 
           echo "Building ${{ matrix.addon }} for architectures: $ARCHS"
@@ -402,6 +402,18 @@ jobs:
 
       - name: 📦 Install Python Dependencies
         run: pip install pyyaml
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 💾 Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            ${{ runner.os }}-buildx-
 
       - name: 🏃 Run Verification Script (DockerBuild + DockerRun)
         run: |

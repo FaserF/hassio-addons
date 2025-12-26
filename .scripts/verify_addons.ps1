@@ -106,6 +106,15 @@ if ($args) {
     exit 1
 }
 
+
+# Handle comma-separated strings passed from Bash/CI
+if ($Tests.Count -eq 1 -and $Tests[0] -match ",") {
+    $Tests = $Tests[0] -split "," | ForEach-Object { $_.Trim() }
+}
+if ($Addon.Count -eq 1 -and $Addon[0] -match ",") {
+    $Addon = $Addon[0] -split "," | ForEach-Object { $_.Trim() }
+}
+
 $ValidTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "CodeRabbit", "DockerRun")
 foreach ($t in $Tests) {
     if ($t -notin $ValidTests) {
@@ -193,19 +202,21 @@ function Check-Docker {
     $dockerInfo = docker info 2>&1
     if ($LASTEXITCODE -eq 0 -and $dockerInfo -match "Server Version") { return $true }
 
-    if (Get-Process "Docker Desktop" -ErrorAction SilentlyContinue) {
-        Write-Host "Docker Desktop running but not responsive..." -ForegroundColor Gray
-    }
-    else {
-        $dockerExe = "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
-        if (Test-Path $dockerExe) {
-            Write-Host "Starting Docker Desktop..." -ForegroundColor Gray
-            Start-Process $dockerExe
-            for ($i = 0; $i -lt 60; $i++) {
-                Start-Sleep -Seconds 2
-                $info = docker info 2>&1
-                if ($LASTEXITCODE -eq 0 -and $info -match "Server Version") { return $true }
-                Write-Host -NoNewline "."
+    if ($IsWindows) {
+        if (Get-Process "Docker Desktop" -ErrorAction SilentlyContinue) {
+            Write-Host "Docker Desktop running but not responsive..." -ForegroundColor Gray
+        }
+        else {
+            $dockerExe = "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+            if (Test-Path $dockerExe) {
+                Write-Host "Starting Docker Desktop..." -ForegroundColor Gray
+                Start-Process $dockerExe
+                for ($i = 0; $i -lt 60; $i++) {
+                    Start-Sleep -Seconds 2
+                    $info = docker info 2>&1
+                    if ($LASTEXITCODE -eq 0 -and $info -match "Server Version") { return $true }
+                    Write-Host -NoNewline "."
+                }
             }
         }
     }
@@ -384,8 +395,26 @@ function Should-RunTest {
 if ($Fix) {
     Write-Header "0. Auto-Fix Mode"
     Write-Host "Running Fixers..." -ForegroundColor Gray
+
+    # 1. Repo Maintenance Scripts
     if (Test-Path ".scripts/fix_line_endings.py") { python .scripts/fix_line_endings.py }
     if (Test-Path ".scripts/fix_configs.py") { python .scripts/fix_configs.py }
+    if (Test-Path ".scripts/fix_oci_labels.py") { python .scripts/fix_oci_labels.py }
+    if (Test-Path ".scripts/update_unsupported_status.py") { python .scripts/update_unsupported_status.py }
+    if (Test-Path ".scripts/update_readme_status.py") { python .scripts/update_readme_status.py }
+    if (Test-Path ".scripts/enforce_architectures.py") { python .scripts/enforce_architectures.py }
+    if (Test-Path ".scripts/standardize_readmes.py") { python .scripts/standardize_readmes.py }
+
+    # 2. Python Formatting (Black/Isort)
+    try { python -m black . 2>&1 | Out-Null } catch { Write-Host "Skipping Black (not verified)" -ForegroundColor DarkGray }
+    try { python -m isort . --profile black 2>&1 | Out-Null } catch { Write-Host "Skipping Isort (not verified)" -ForegroundColor DarkGray }
+
+    # 3. Shell Formatting (shfmt)
+    if (Get-Command "shfmt" -ErrorAction SilentlyContinue) {
+        try { shfmt -l -w . 2>&1 | Out-Null } catch {}
+    }
+
+    # 4. Prettier & Markdown
     try { npx prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore } catch {}
     try { npx markdownlint-cli "**/*.md" --config .markdownlint.yaml --fix --ignore "node_modules" --ignore ".git" } catch {}
 }
