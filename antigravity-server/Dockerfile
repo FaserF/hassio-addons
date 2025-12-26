@@ -16,7 +16,7 @@ RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \
         coreutils \
-        expect \
+        coreutils \
         curl \
         dbus-x11 \
         git \
@@ -40,7 +40,7 @@ RUN ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
 
 # Copy S6-Overlay services
 COPY rootfs /
-RUN chmod -R +x /etc/s6-overlay/s6-rc.d/*/run
+RUN chmod -R +x /etc/s6-overlay/s6-rc.d/
 
 # Healthcheck - verify NoVNC is responding
 HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \

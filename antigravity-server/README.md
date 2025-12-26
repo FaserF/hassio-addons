@@ -57,6 +57,19 @@ log_level: info
 vnc_password: ''
 ```
 
+#### Option: `vnc_password` (Optional)
+
+Set a custom VNC password (max 8 characters).
+
+**If left empty (Default):**
+*   A secure random password is generated on the first start.
+*   **Storage**: Saved in `/data/vnc_password` to ensure it stays the same across restarts (Persistent).
+*   **Visibility**: Printed prominently in the Add-on logs so you can copy it.
+
+#### Option: `log_level` (Optional)
+
+Controls the level of log output.
+
 ---
 
 ## 👨‍💻 Credits & License

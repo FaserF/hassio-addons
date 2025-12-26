@@ -14,7 +14,7 @@ Write-Host "      - Running Antigravity Server Specific Checks..." -ForegroundCo
 # 1. Check if we have a running container to reuse
 $containerRunning = $false
 if ($ContainerName) {
-    if (docker ps -q -f name=$ContainerName) {
+    if (docker ps -q -f "name=$ContainerName") {
         $containerRunning = $true
     }
 }
@@ -26,13 +26,14 @@ if (-not $containerRunning) {
 
 # 2. Test: Check for Critical Processes
 Write-Host "      - Verifying internal processes (Xvnc, NoVNC, XFCE4)..." -ForegroundColor Gray
-$processes = docker exec $ContainerName ps aux
+$processes = docker exec "$ContainerName" ps aux
 
 $criticalProcesses = @("Xvnc", "novnc_server", "xfce4-session")
 $missingProcesses = @()
 
 foreach ($proc in $criticalProcesses) {
-    if ($processes -notmatch $proc) {
+    $safeProc = [regex]::Escape($proc)
+    if ($processes -notmatch "(?i)\b$safeProc\b") {
         $missingProcesses += $proc
     }
 }
@@ -45,27 +46,44 @@ if ($missingProcesses.Count -eq 0) {
 
 # 3. Test: Password Persistence
 Write-Host "      - Verifying password persistence..." -ForegroundColor Gray
-$passwordFileContent = docker exec $ContainerName cat /data/vnc_password
+try {
+    $passwordFileContent = docker exec "$ContainerName" cat /data/vnc_password
+    $trimmedContent = if ($passwordFileContent) { $passwordFileContent.Trim() } else { $null }
 
-if ($null -ne $passwordFileContent -and $passwordFileContent.Length -ge 8) {
-     Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "PASS" -Message "Persistent password file exists and has content."
-} else {
-     Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "FAIL" -Message "Persistent password file /data/vnc_password missing or empty."
+    if ($trimmedContent -and $trimmedContent.Length -ge 8) {
+         Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "PASS" -Message "Persistent password file exists and has valid content."
+    } else {
+         Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "FAIL" -Message "Persistent password file /data/vnc_password missing or too short."
+    }
+} catch {
+     Add-Result -Addon $Addon.Name -Check "PasswordPersistence" -Status "FAIL" -Message "Failed to read password file: $_"
 }
 
 # 4. Test: Log Scan for Known Errors
 Write-Host "      - Scanning logs for critical errors..." -ForegroundColor Gray
-$logs = docker logs $ContainerName 2>&1 | Out-String
+$logs = docker logs "$ContainerName" 2>&1 | Out-String
 
-if ($logs -match "Unable to load a failsafe session") {
-    Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "FAIL" -Message "Found 'Unable to load a failsafe session' error in logs."
-} else {
-    Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "PASS" -Message "No critical session errors found in logs."
+$criticalErrors = @(
+    @{ Pattern = "Unable to load a failsafe session"; Label = "XFCE_Startup_Fail" },
+    @{ Pattern = "s6-rc failed to properly bring all the services up"; Label = "S6_Init_Fail" },
+    @{ Pattern = "fatal: stopping the container"; Label = "Fatal_Crash" }
+)
+
+$foundErrors = $false
+foreach ($err in $criticalErrors) {
+    if ($logs -match [regex]::Escape($err.Pattern)) {
+        Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "FAIL" -Message "Found critical error: '$($err.Pattern)'"
+        $foundErrors = $true
+    }
+}
+
+if (-not $foundErrors) {
+    Add-Result -Addon $Addon.Name -Check "LogHealth" -Status "PASS" -Message "No known critical errors found in logs."
 }
 
 # 5. Connectivity Check (Internal Curl)
 Write-Host "      - Verifying NoVNC connectivity..." -ForegroundColor Gray
-$curlOutput = docker exec $ContainerName curl -I http://127.0.0.1:6080/
+$curlOutput = docker exec "$ContainerName" curl -I http://127.0.0.1:6080/
 if ($curlOutput -match "HTTP/1.1 200 OK" -or $curlOutput -match "HTTP/1.0 200 OK") {
      Add-Result -Addon $Addon.Name -Check "Connectivity" -Status "PASS" -Message "NoVNC service is responding on port 6080."
 } else {

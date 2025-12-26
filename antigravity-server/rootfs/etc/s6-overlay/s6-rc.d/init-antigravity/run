@@ -8,30 +8,40 @@
 bashio::log.info "Initializing Antigravity-Server..."
 
 # Create required directories
-mkdir -p /root/.vnc
+mkdir -p /root/.config/tigervnc
 mkdir -p /tmp/.X11-unix
 chmod 1777 /tmp/.X11-unix
 
 # Setup VNC password
 if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_password')" ]; then
     VNC_PASSWORD=$(bashio::config 'vnc_password')
+    if [ ${#VNC_PASSWORD} -gt 8 ]; then
+        bashio::log.warning "User provided VNC password is longer than 8 characters. Truncating to the first 8 characters due to VNC protocol limitations."
+        VNC_PASSWORD=$(echo "$VNC_PASSWORD" | head -c 8)
+    fi
     bashio::log.info "Setting custom VNC password..."
 else
     if [ -f "/data/vnc_password" ]; then
         VNC_PASSWORD=$(cat "/data/vnc_password")
         bashio::log.info "Using persisted random VNC password..."
     else
-        VNC_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
-        echo "${VNC_PASSWORD}" > /data/vnc_password
+        VNC_PASSWORD=$(python3 -c 'import secrets,string; print("".join(secrets.choice(string.ascii_letters + string.digits) for i in range(8)))')
+        # atomic write with strict permissions
+        echo "${VNC_PASSWORD}" > /data/vnc_password.tmp
+        chmod 600 /data/vnc_password.tmp
+        mv /data/vnc_password.tmp /data/vnc_password
         bashio::log.info "Generated and persisted new random VNC password."
     fi
+    bashio::log.info "---------------------------------------------------"
+    bashio::log.info " VNC PASSWORD: ${VNC_PASSWORD}"
+    bashio::log.info "---------------------------------------------------"
 fi
 
 # Set VNC password
-touch /root/.vnc/passwd
-chmod 600 /root/.vnc/passwd
+touch /root/.config/tigervnc/passwd
+chmod 600 /root/.config/tigervnc/passwd
 
-bashio::log.info "Setting password using expect..."
+bashio::log.info "Setting password using tigervncpasswd..."
 
 if [ -x /usr/bin/tigervncpasswd ]; then
     VNCPASSWD_BIN="/usr/bin/tigervncpasswd"
@@ -39,34 +49,25 @@ else
     VNCPASSWD_BIN="vncpasswd"
 fi
 
-# Use expect to handle interactive prompt, avoiding -f issues and TTY requirements
-expect <<EOF
-spawn $VNCPASSWD_BIN /root/.vnc/passwd
-expect "Password:"
-send "${VNC_PASSWORD}\r"
-expect "Verify:"
-send "${VNC_PASSWORD}\r"
-expect "Would you like to enter a view-only password (y/n)?"
-send "n\r"
-expect eof
-EOF
+# Use filter mode (-f) to set password non-interactively
+echo "${VNC_PASSWORD}" | $VNCPASSWD_BIN -f > /root/.config/tigervnc/passwd
 
-if [ $? -ne 0 ]; then
-    bashio::log.error "Failed to set VNC password via expect"
+if [ ${PIPESTATUS[1]} -ne 0 ]; then
+    bashio::log.error "Failed to set VNC password"
     exit 1
 fi
 
-chmod 600 /root/.vnc/passwd
+chmod 600 /root/.config/tigervnc/passwd
 bashio::log.info "VNC password set successfully."
 
 # Create xstartup script for XFCE4
-cat > /root/.vnc/xstartup << 'EOF'
+cat > /root/.config/tigervnc/xstartup << 'EOF'
 #!/bin/bash
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
 export XDG_CONFIG_DIRS=/etc/xdg:/etc/xfce4
 exec dbus-launch --exit-with-session startxfce4
 EOF
-chmod +x /root/.vnc/xstartup
+chmod +x /root/.config/tigervnc/xstartup
 
 bashio::log.info "VNC environment initialized"

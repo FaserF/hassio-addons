@@ -25,6 +25,20 @@ if (-not (Test-Path $customBaseDir)) {
     New-Item -ItemType Directory -Path $customBaseDir -Force | Out-Null
 }
 
+function Cleanup-Test-Container {
+    param($AddonName, $OutputDir, $DockerAvailable)
+    $contName = "test-run-$($AddonName.ToLower())"
+
+    if ($DockerAvailable -and (docker ps -a -q -f "name=$contName")) {
+        Write-Host "    > [Cleanup] Removing container '$contName'..." -ForegroundColor Gray
+        docker rm -f "$contName" 2>&1 | Out-Null
+    }
+
+    $safeName = $AddonName -replace '[^a-zA-Z0-9_\-]', '_'
+    $tempDir = Join-Path $OutputDir "tmp_test_runs/ha-addon-test-$safeName"
+    if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force 2>$null }
+}
+
 try {
     $i = 0
     foreach ($a in $Addons) {
@@ -40,7 +54,13 @@ try {
 
             # Check if DockerRun failed for this addon
             $dockerRunResult = $global:Results | Where-Object { $_.Addon -eq $a.Name -and $_.Check -eq "DockerRun" }
-            if ($dockerRunResult -and $dockerRunResult.Status -eq "FAIL") {
+
+            if (-not $dockerRunResult) {
+                Add-Result -Addon $a.Name -Check "CustomTests" -Status "SKIP" -Message "Skipped because DockerRun was not executed or returned no result."
+                continue
+            }
+
+            if ($dockerRunResult.Status -eq "FAIL") {
                 Add-Result -Addon $a.Name -Check "CustomTests" -Status "SKIP" -Message "Skipped because previous Docker Test failed."
                 continue
             }
@@ -58,16 +78,8 @@ try {
             Add-Result -Addon $a.Name -Check "CustomTests" -Status "SKIP" -Message "No custom addon test found (this is common and uncritical)"
         }
 
-        # FINAL CLEANUP: Remove the container if it was kept alive
-        if ($DockerAvailable -and (docker ps -a -q -f name=$contName)) {
-            Write-Host "    > Cleaning up container '$contName'..." -ForegroundColor Gray
-            docker rm -f $contName 2>&1 | Out-Null
-
-            # Also cleanup temp dir from Test 11 if possible
-            $safeName = $a.Name -replace '[^a-zA-Z0-9_\-]', '_'
-            $tempDir = Join-Path $OutputDir "tmp_test_runs/ha-addon-test-$safeName"
-            if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force 2>$null }
-        }
+        # FINAL CLEANUP via Helper
+        Cleanup-Test-Container -AddonName $a.Name -OutputDir $OutputDir -DockerAvailable $DockerAvailable
     }
 }
 finally {
@@ -75,15 +87,7 @@ finally {
     if ($Addons) {
         try {
             foreach ($a in $Addons) {
-                 $contName = "test-run-$($a.Name.ToLower())"
-                 if (docker ps -a -q -f name=$contName) {
-                     Write-Host "    > [Cleanup] Removing container '$contName'..." -ForegroundColor Gray
-                     docker rm -f $contName 2>&1 | Out-Null
-                 }
-                 # Also cleanup temp dir if needed
-                 $safeName = $a.Name -replace '[^a-zA-Z0-9_\-]', '_'
-                 $tempDir = Join-Path $OutputDir "tmp_test_runs/ha-addon-test-$safeName"
-                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force 2>$null }
+                 Cleanup-Test-Container -AddonName $a.Name -OutputDir $OutputDir -DockerAvailable $DockerAvailable
             }
         } catch {
             Write-Warning "Cleanup failed: $_"

@@ -14,4 +14,4 @@ exec vncserver :1 \
     -depth 24 \
     -fg \
     -SecurityTypes VncAuth \
-    -rfbauth /root/.vnc/passwd
+    -rfbauth /root/.config/tigervnc/passwd
