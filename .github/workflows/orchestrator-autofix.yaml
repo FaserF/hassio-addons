@@ -108,9 +108,9 @@ jobs:
         run: |
           shfmt -l -w .
           if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       # 2. Python (Format & Sort Imports)
@@ -122,9 +122,9 @@ jobs:
           pip install black
           black --verbose .
           if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: 🐍 Run Isort (Import Sorter)
@@ -133,9 +133,9 @@ jobs:
           pip install isort
           isort --profile black .
           if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       # 3. Node.js Tools (Prettier, Markdownlint)
@@ -151,9 +151,9 @@ jobs:
           npm install -g prettier
           prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore
           if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       # 4. Standardize (READMEs, Beta Labels, Configs)
@@ -168,9 +168,9 @@ jobs:
           npm install -g markdownlint-cli
           markdownlint --fix "**/*.md" || true
           if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       # 6. Clean Excessive Blank Lines
@@ -196,12 +196,12 @@ jobs:
           if [[ "${{ steps.prettier.outputs.changed }}" == "true" ]]; then tools="$tools prettier"; fi
           if [[ "${{ steps.markdownlint.outputs.changed }}" == "true" ]]; then tools="$tools markdownlint"; fi
 
-          tools=$(echo $tools | xargs | tr ' ' ', ')
+          tools=$(echo "$tools" | xargs | tr ' ' ', ')
 
           if [[ -z "$tools" ]]; then
-            echo "message=style: auto-fix" >> $GITHUB_OUTPUT
+            echo "message=style: auto-fix" >> "$GITHUB_OUTPUT"
           else
-            echo "message=style: auto-fix ($tools)" >> $GITHUB_OUTPUT
+            echo "message=style: auto-fix ($tools)" >> "$GITHUB_OUTPUT"
           fi
 
       # Commit back (using PAT to trigger subsequent workflows)
