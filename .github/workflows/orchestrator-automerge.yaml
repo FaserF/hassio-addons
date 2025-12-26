@@ -53,10 +53,12 @@ jobs:
           fi
 
           echo "Found PR #$PR_NUMBER by $PR_AUTHOR"
-          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-          echo "pr_author=$PR_AUTHOR" >> "$GITHUB_OUTPUT"
-          echo "found=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "pr_number=$PR_NUMBER"
+            echo "pr_url=$PR_URL"
+            echo "pr_author=$PR_AUTHOR"
+            echo "found=true"
+          } >> "$GITHUB_OUTPUT"
 
       - name: 🚫 Skip if no PR found
         if: steps.find-pr.outputs.found != 'true'
@@ -81,7 +83,7 @@ jobs:
             echo "allowed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: 🔬 Check if CI jobs actually ran
+      - name: 🔬 Check if CI jobs actually ran and succeeded
         id: check-ci-ran
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
         env:
@@ -93,34 +95,59 @@ jobs:
           # Get all jobs from the workflow run
           JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --jq '.jobs[] | {name: .name, conclusion: .conclusion}')
 
-          # Count jobs that actually ran (not skipped)
-          RAN_COUNT=0
+          # Count jobs by status
+          SUCCESS_COUNT=0
+          FAILED_COUNT=0
           SKIPPED_COUNT=0
 
           while IFS= read -r job; do
             name=$(echo "$job" | jq -r '.name')
             conclusion=$(echo "$job" | jq -r '.conclusion')
 
-            # Skip notification/summary jobs, only count actual CI jobs
+            # Check for actual CI jobs (Lint, Build, Compliance) - NOT summary/notification jobs
             if [[ "$name" == *"Lint"* ]] || [[ "$name" == *"Build"* ]] || [[ "$name" == *"Compliance"* ]]; then
-              if [ "$conclusion" = "skipped" ]; then
-                ((SKIPPED_COUNT++)) || true
-                echo "⏭️ Skipped: $name"
-              elif [ "$conclusion" = "success" ]; then
-                ((RAN_COUNT++)) || true
-                echo "✅ Ran: $name"
-              fi
+              case "$conclusion" in
+                "skipped")
+                  ((SKIPPED_COUNT++)) || true
+                  echo "⏭️ Skipped: $name"
+                  ;;
+                "success")
+                  ((SUCCESS_COUNT++)) || true
+                  echo "✅ Success: $name"
+                  ;;
+                "failure"|"cancelled"|"timed_out")
+                  ((FAILED_COUNT++)) || true
+                  echo "❌ Failed: $name ($conclusion)"
+                  ;;
+                *)
+                  echo "❓ Unknown: $name ($conclusion)"
+                  ;;
+              esac
             fi
           done <<< "$JOBS"
 
-          echo "CI jobs ran: $RAN_COUNT, skipped: $SKIPPED_COUNT"
+          echo ""
+          echo "Summary: success=$SUCCESS_COUNT, failed=$FAILED_COUNT, skipped=$SKIPPED_COUNT"
 
-          if [ "$RAN_COUNT" -eq 0 ]; then
+          # Determine if auto-merge is allowed
+          if [ "$FAILED_COUNT" -gt 0 ]; then
+            echo "❌ CI jobs failed - auto-merge blocked"
+            {
+              echo "ci_ran=false"
+              echo "reason=failed"
+            } >> "$GITHUB_OUTPUT"
+          elif [ "$SUCCESS_COUNT" -eq 0 ]; then
             echo "⚠️ No actual CI jobs ran (docs-only or workflow-only changes)"
-            echo "ci_ran=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "ci_ran=false"
+              echo "reason=skipped"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "✅ CI verification jobs completed successfully"
-            echo "ci_ran=true" >> "$GITHUB_OUTPUT"
+            echo "✅ All CI verification jobs completed successfully"
+            {
+              echo "ci_ran=true"
+              echo "reason=success"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: ⏱️ Wait 1 minute before auto-merge
