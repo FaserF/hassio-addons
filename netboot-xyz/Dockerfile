@@ -42,7 +42,7 @@ COPY root/ /
 EXPOSE 3000
 
 # Ensure all run files from the services are executable
-RUN chmod a+x /etc/cont-init.d/* /etc/services.d/*/run 2>/dev/null || chmod a+x /etc/cont-init.d/*
+RUN chmod a+x /etc/cont-init.d/* /etc/services.d/*/run
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=30s \

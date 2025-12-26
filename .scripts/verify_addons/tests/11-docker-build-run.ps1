@@ -70,8 +70,14 @@ if ($doRuns) {
         Write-Host "    ! ERROR: Failed to start global mock supervisor: $mockOut" -ForegroundColor Red
         $doRuns = $false
     } else {
-        # Wait for mock to be ready
-        Start-Sleep -Seconds 5
+        # Wait for mock to be ready (Polling)
+        Write-Host "    > Waiting for mock supervisor..." -NoNewline -ForegroundColor Gray
+        for ($k=0; $k -lt 10; $k++) {
+             if (docker inspect -f '{{.State.Running}}' $mockName 2>$null | Select-String "true") { break }
+             Start-Sleep -Milliseconds 500
+             Write-Host "." -NoNewline -ForegroundColor Gray
+        }
+        Write-Host " OK" -ForegroundColor Gray
     }
 }
 
@@ -384,8 +390,17 @@ try {
             }
 
             # Wait for startup
-            Write-Host "    > Waiting 20s for startup verification..." -ForegroundColor Gray
-            Start-Sleep -Seconds 20
+            # Wait for startup (Polling up to 30s)
+            Write-Host "    > Waiting for startup (max 30s)..." -NoNewline -ForegroundColor Gray
+            for ($k=0; $k -lt 30; $k++) {
+                $st = docker inspect -f '{{.State.Running}}' $contName 2>$null
+                if ($st -ne "true") { break } # Crashed
+                # If health check exists, wait for healthy?
+                # For now, just simple delay loop to allow init
+                Start-Sleep -Seconds 1
+                Write-Host "." -NoNewline -ForegroundColor Gray
+            }
+            Write-Host ""
 
             $inspectJson = docker inspect $contName | ConvertFrom-Json
             $isRunning = ($inspectJson.State.Running -eq $true)

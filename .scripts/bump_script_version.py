@@ -12,7 +12,7 @@ def run_command(cmd):
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"Error running {' '.join(cmd)}: {e.stderr}")
+        print(f"Error running {' '.join(cmd)}: {e.stderr}", file=sys.stderr)
         return None
 
 
@@ -69,7 +69,7 @@ def main():
     old_version = get_version_at(base)
 
     if not os.path.exists(config_path):
-        print(f"Config file {config_path} not found.")
+        print(f"Config file {config_path} not found.", file=sys.stderr)
         sys.exit(1)
 
     with open(config_path, "r") as f:
@@ -82,12 +82,12 @@ def main():
 
     # 3. Bump version
     if not new_version:
-        print("Could not find scriptVersion in config.")
+        print("Could not find scriptVersion in config.", file=sys.stderr)
         sys.exit(1)
 
     parts = new_version.split(".")
     if len(parts) != 3:
-        print(f"Invalid version format: {new_version}")
+        print(f"Invalid version format: {new_version}", file=sys.stderr)
         sys.exit(1)
 
     parts[2] = str(int(parts[2]) + 1)

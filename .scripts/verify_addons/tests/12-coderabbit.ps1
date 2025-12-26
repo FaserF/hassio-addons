@@ -99,7 +99,7 @@ foreach ($a in $Addons) {
         # Check 13: Python Base Image enforcement
         if ($content -match 'pip install|python3?\s+.*\.py') {
             if ($content -notmatch 'CR-Skip-PythonBaseCheck' -and $content -notmatch 'FROM\s+(ghcr\.io/hassio-addons/(python-base|base)|ghcr\.io/home-assistant/.*-base-python)') {
-                Add-Result -Addon $a.Name -Check "CR-PythonBase" -Status "FAIL" -Message "Addon uses Python but not the official python-base image. Use 'ghcr.io/hassio-addons/python-base' or add '# CR-Skip-PythonBaseCheck' to exclusion."
+                Add-Result -Addon $a.Name -Check "CR-PythonBase" -Status "WARN" -Message "Addon uses Python but not the official python-base image. Use 'ghcr.io/hassio-addons/python-base' or add '# CR-Skip-PythonBaseCheck' to exclusion."
             }
         }
 

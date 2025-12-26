@@ -124,17 +124,6 @@
         "(^|/)Dockerfile$"
       ],
       "matchStrings": [
-        "(?<depName>php)(?<currentValue>\\d+)(?:-[a-z0-9-]+)*"
-      ],
-      "datasourceTemplate": "repology",
-      "versioningTemplate": "regex:^(?<major>\\d)(?<minor>\\d+)"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
-      "matchStrings": [
         "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
@@ -285,22 +274,7 @@
       "addLabels": [
         "python"
       ],
-      "rangeStrategy": "pin"
-    },
-    {
-      "matchManagers": [
-        "pip_requirements"
-      ],
-      "automerge": true
-    },
-    {
-      "groupName": "PHP Packages",
-      "matchDatasources": [
-        "repology"
-      ],
-      "matchPackageNames": [
-        "/php\\d+/"
-      ],
+      "rangeStrategy": "pin",
       "automerge": true
     }
   ]

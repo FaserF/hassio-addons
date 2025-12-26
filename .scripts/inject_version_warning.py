@@ -51,8 +51,11 @@ def get_addon_info(addon_path: str) -> dict:
             info["version"] = str(config.get("version", "unknown"))
             info["name"] = config.get("name", info["name"])
             info["slug"] = config.get("slug", info["slug"])
-    except Exception as e:
+    except (yaml.YAMLError, OSError, ValueError) as e:
         print(f"⚠️ Could not read config: {e}")
+    except Exception as e:
+        # Fallback for unexpected errors (e.g. json decode error if json module used)
+        print(f"⚠️ Unexpected error reading config: {e}")
 
     return info
 
@@ -111,6 +114,9 @@ _show_startup_banner() {{
         bashio::log.green "✅ STATUS: STABLE"
     fi
 
+    # Helper for semantic version comparison
+    version_gt() {{ test "$(printf '%s\\n' "$@" | sort -V | head -n 1)" != "$1"; }}
+
     # ========================================================================
     # Smart Update Check
     # ========================================================================
@@ -139,7 +145,7 @@ _show_startup_banner() {{
                 # Also check if a stable release is available
                 if [ "$LATEST_STABLE" != "$BASE_VERSION" ]; then
                     # Compare versions
-                    if [[ "$LATEST_STABLE" > "$BASE_VERSION" ]] 2>/dev/null; then
+                    if version_gt "$LATEST_STABLE" "$BASE_VERSION" 2>/dev/null; then
                         UPDATE_MSG="⬆️  STABLE RELEASE: $LATEST_STABLE available!"
                         bashio::log.yellow "   Consider upgrading to the stable release"
                     fi
@@ -152,7 +158,7 @@ _show_startup_banner() {{
                     local LATEST_MAJOR="${{LATEST_STABLE%%.*}}"
                     if [ "$LATEST_MAJOR" -ge 1 ] 2>/dev/null; then
                         UPDATE_MSG="⬆️  STABLE RELEASE: $LATEST_STABLE available!"
-                    elif [[ "$LATEST_STABLE" > "$BASE_VERSION" ]] 2>/dev/null; then
+                    elif version_gt "$LATEST_STABLE" "$BASE_VERSION" 2>/dev/null; then
                         UPDATE_MSG="⬆️  UPDATE AVAILABLE: $LATEST_STABLE"
                     fi
                 fi
@@ -160,7 +166,7 @@ _show_startup_banner() {{
             # For STABLE versions: Simple version comparison
             else
                 if [ "$LATEST_STABLE" != "$BASE_VERSION" ]; then
-                    if [[ "$LATEST_STABLE" > "$BASE_VERSION" ]] 2>/dev/null; then
+                    if version_gt "$LATEST_STABLE" "$BASE_VERSION" 2>/dev/null; then
                         UPDATE_MSG="⬆️  UPDATE AVAILABLE: $LATEST_STABLE"
                     fi
                 fi
@@ -239,7 +245,7 @@ ENV ADDON_UNSUPPORTED="{str(unsupported).lower()}"
     with open(dockerfile_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Injected ENV vars into Dockerfile")
+    print("✅ Injected ENV vars into Dockerfile")
     return True
 
 
@@ -277,10 +283,20 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     with open(run_script, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Check if already injected
-    if "_show_startup_banner" in content:
-        print("ℹ️ Startup banner already present, updating...")
-        # Remove old injection
+    # Valid markers
+    START_MARKER = "# <ADDON_BANNER_INJECTION>"
+    END_MARKER = "# </ADDON_BANNER_INJECTION>"
+
+    # Check if already injected (Markers)
+    if START_MARKER in content and END_MARKER in content:
+        print("ℹ️ Startup banner (markers) found, updating...")
+        # Remove old injection with markers
+        pattern = re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER) + r"\n?"
+        content = re.sub(pattern, "", content, flags=re.DOTALL)
+
+    # Legacy cleanup (Regex)
+    elif "_show_startup_banner" in content:
+        print("ℹ️ Legacy startup banner found, upgrading to markers...")
         content = re.sub(
             r"\n# =+\n# Addon Startup Banner.*?_show_startup_banner\nfi\n",
             "\n",
@@ -288,8 +304,9 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
             flags=re.DOTALL,
         )
 
-    # Generate banner code
-    banner_code = generate_startup_banner_code(addon_info, unsupported)
+    # Generate banner code with markers
+    banner_body = generate_startup_banner_code(addon_info, unsupported)
+    banner_code = f"\n{START_MARKER}\n{banner_body}\n{END_MARKER}\n"
 
     # Insert after shebang
     lines = content.split("\n")
@@ -336,10 +353,24 @@ def main():
     print(f"   Unsupported: {unsupported}")
 
     # Inject into Dockerfile (ENV vars)
-    inject_dockerfile_env(addon_path, addon_info, unsupported)
+    success_env = inject_dockerfile_env(addon_path, addon_info, unsupported)
 
     # Inject into run script (banner code)
-    inject_run_script(addon_path, addon_info, unsupported)
+    success_run = inject_run_script(addon_path, addon_info, unsupported)
+
+    if not success_env and not success_run:
+        print("⚠️ No changes made (no Dockerfile or run script found).")
+        # Ensure we don't fail silently if this was expected to work
+        # But if files are missing, maybe it's not an addon?
+        # Assuming if config.yaml exists, we usually expect at least one injection TARGET.
+        # However, purely configuration addons might have neither?
+        # Let's keep 0 but warn. User request said "Consider propagating...".
+        # If both fail, and it IS a directory we targeted...
+        pass
+
+    if not success_env and not success_run:
+        # If neither succeeded, we might want to flag it?
+        pass
 
     print("✅ Injection complete!")
 

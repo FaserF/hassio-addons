@@ -233,13 +233,19 @@ def generate_changelog_entry(version, addon_path, changelog_message=None):
 
 
 def parse_version(version_str):
-    """Parse version string, handling dev suffix."""
-    # Remove -dev suffix if present
-    clean_version = version_str.replace("-dev", "")
+    """Parse version string, handling dev suffix and build metadata."""
+    # Split off build metadata (everything after +)
+    version_base = version_str.split("+")[0]
+
+    # Check for dev suffix
+    is_dev = "-dev" in version_base
+    clean_version = version_base.replace("-dev", "")
+
     parts = clean_version.split(".")
-    if len(parts) >= 3:
-        return int(parts[0]), int(parts[1]), int(parts[2]), "-dev" in version_str
-    return 0, 0, 0, False
+    if len(parts) != 3:
+        raise ValueError(f"Invalid version format: {version_str}")
+
+    return int(parts[0]), int(parts[1]), int(parts[2]), is_dev
 
 
 def bump_version(addon_path, increment, changelog_message=None, set_dev=False):

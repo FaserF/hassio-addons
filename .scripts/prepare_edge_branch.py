@@ -12,6 +12,7 @@ Usage:
     python3 prepare_edge_branch.py
 """
 
+import json
 import os
 import re
 import sys
@@ -96,17 +97,28 @@ def update_repository_json() -> bool:
         return False
 
     try:
-        import json
 
         with open(repo_json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Add edge indicator
         data["name"] = "FaserF's Home Assistant Add-ons (Edge)"
-        data["channel"] = "edge"
+
+        # Initialize channels if missing
+        if "channels" not in data:
+            data["channels"] = {}
+
+        # Set up edge channel, inheriting from stable if available
+        base_channel = data.get("channels", {}).get(
+            "stable", {"description": "Stable builds"}
+        )
+        data["channels"]["edge"] = base_channel.copy()
+        data["channels"]["edge"]["name"] = "Edge"
+        data["channels"]["edge"]["description"] = "Development/Edge builds"
 
         with open(repo_json_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
+            f.write("\n")
 
         return True
     except Exception as e:
@@ -163,7 +175,7 @@ def main():
     if add_edge_notice_to_readme(main_readme):
         print("📝 Added edge notice to main README.MD")
 
-    print(f"\n✅ Edge preparation complete!")
+    print("\n✅ Edge preparation complete!")
     print(f"   📦 Images removed: {images_removed}")
     print(f"   📝 READMEs updated: {readmes_updated}")
 

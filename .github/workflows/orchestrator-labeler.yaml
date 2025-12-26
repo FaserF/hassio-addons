@@ -66,17 +66,18 @@ jobs:
             console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
             console.log(`Add-on list: ${totalAddons.join(', ')}`);
 
-            // Blocklist of known non-addon directories that might appear
-            const blocklist = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests'];
+            // Blocklist of known non-addon directories
+            const BLOCKLIST = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests', 'node_modules'];
 
             // Sanity check: filter out any obviously wrong entries
             const validAddonPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
             const validAddons = totalAddons.filter(name => {
-                if (blocklist.includes(name.toLowerCase())) {
+                if (BLOCKLIST.includes(name.toLowerCase())) {
                     console.log(`Warning: Blocklisted name filtered: ${name}`);
                     return false;
                 }
                 if (!validAddonPattern.test(name)) {
+                // ... (abbreviated context) ...
                     console.log(`Warning: Invalid addon name detected and filtered: ${name}`);
                     return false;
                 }
@@ -207,11 +208,10 @@ jobs:
             let finalLabels = [...preservedLabels, ...newManagedLabels];
 
             // FINAL SAFETY CHECK: Remove any addon/* labels that don't match known valid addons
-            const hardcodedBlocklist = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'node_modules'];
             finalLabels = finalLabels.filter(label => {
                 if (label.startsWith('addon/')) {
                     const addonName = label.replace('addon/', '');
-                    if (hardcodedBlocklist.includes(addonName.toLowerCase())) {
+                    if (BLOCKLIST.includes(addonName.toLowerCase())) {
                         console.log(`BLOCKED invalid label: ${label}`);
                         return false;
                     }
@@ -233,7 +233,6 @@ jobs:
             // Breaking Change Detection
             if (combinedText.includes('breaking') ||
                 combinedText.includes('breaking change') ||
-                prTitle.startsWith('!') ||
                 prTitle.includes('!:')) {
                 finalLabels.push('breaking-change');
                 console.log("Added 'breaking-change' label");

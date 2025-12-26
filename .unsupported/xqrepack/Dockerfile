@@ -19,6 +19,9 @@ RUN apk add --no-cache \
     mkdir /xqrepack && \
     wget -q -O /xqrepack/repack-squashfs.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/repack-squashfs.sh" && \
     wget -q -O /xqrepack/ubinize.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/ubinize.sh" && \
+    echo "2bbc5b552519dda4cde9c2b65728ac049836b2a1c000f2a87112d346ea1be615  /xqrepack/repack-squashfs.sh" > /xqrepack/checksums.txt && \
+    echo "0fc2d057545ebf58d79eb680c0b1cc618122f310121fbe67de6babeb34719c8a  /xqrepack/ubinize.sh" >> /xqrepack/checksums.txt && \
+    sha256sum -c /xqrepack/checksums.txt && \
     chmod a+x /xqrepack/*.sh
 
 # Copy data for add-on

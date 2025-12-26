@@ -12,6 +12,11 @@ set -euo pipefail
 PACKAGE="$1"
 VERSION="$2"
 
+if [[ -z "$PACKAGE" || -z "$VERSION" ]]; then
+    echo "Error: Missing arguments. Usage: $0 <package> <version>"
+    exit 1
+fi
+
 log() {
 	echo "[update-checksums] $*"
 }

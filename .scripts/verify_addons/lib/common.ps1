@@ -475,78 +475,39 @@ function Get-TestConfig {
             }
             return $config
         }
-
-        # Fallback: Parse YAML manually
-        $config = @{}
-        $content = Get-Content $ConfigPath
-        $currentSection = $null
-        $currentKey = $null
-
-        foreach ($line in $content) {
-            # Skip comments and empty lines
-            if ($line -match '^\s*#' -or $line -match '^\s*$') { continue }
-
-            # Section Header (e.g., testWeights:)
-            if ($line -match '^(\w+):\s*$') {
-                $currentSection = $matches[1]
-                $config[$currentSection] = @{}
-                continue
-            }
-
-            # Array item in section
-            if ($line -match '^\s*-\s+(.+)$' -and $currentSection) {
-                if ($config[$currentSection] -is [hashtable]) {
-                    # Actually it was an array, convert it
-                    $config[$currentSection] = @()
-                }
-                $config[$currentSection] += $matches[1].Trim('"', "'")
-                continue
-            }
-
-            # Key: value in section (indented)
-            if ($line -match '^\s+(\w+):\s*"?([^"]+)"?\s*$' -and $currentSection) {
-                $val = $matches[2].Trim()
-                # Parse as number if possible (Invariant for dots)
-                if ($val -match '^\d+(\.\d+)?$') {
-                    try { $val = [double]::Parse($val, [System.Globalization.CultureInfo]::InvariantCulture) } catch { }
-                }
-                $config[$currentSection][$matches[1]] = $val
-                continue
-            }
-
-            # Top-level Key: value
-            if ($line -match '^(\w+):\s*"?([^"]+)"?\s*$') {
-                $currentSection = $null
-                $val = $matches[2].Trim()
-                if ($val -match '^\d+(\.\d+)?$') {
-                    try { $val = [double]::Parse($val, [System.Globalization.CultureInfo]::InvariantCulture) } catch { }
-                }
-                $config[$matches[1]] = $val
-                continue
-            }
-        }
-
-        # Recursive Merge Function
-        $merge = {
-            param($target, $source)
-            foreach ($key in $source.Keys) {
-                if (-not $target.ContainsKey($key)) {
-                    $target[$key] = $source[$key]
-                } elseif ($target[$key] -is [hashtable] -and $source[$key] -is [hashtable]) {
-                    # Recursive merge for sections
-                    & $merge $target[$key] $source[$key]
-                }
-            }
-        }
-
-        # Perform Merge
-        & $merge $config $defaults
-        return $config
+    } catch {
+        Write-Warning "Failed to parse config file with YAML parser: $_"
     }
-    catch {
-        Write-Warning "Failed to parse config file, using defaults: $_"
-        return $defaults
+
+    # Fallback: Parse YAML manually with Regex (Robust for simple key: value)
+    Write-Host "Using regex fallback to parse config..." -ForegroundColor DarkGray
+    $config = @{}
+    $content = Get-Content $ConfigPath -Raw
+
+    # Extract simple string keys
+    if ($content -match 'latestBase: "([^"]+)"') { $config.latestBase = $matches[1] }
+    if ($content -match 'latestDebian: "([^"]+)"') { $config.latestDebian = $matches[1] }
+    if ($content -match 'latestPython: "([^"]+)"') { $config.latestPython = $matches[1] }
+    if ($content -match 'latestNode: "([^"]+)"') { $config.latestNode = $matches[1] }
+    if ($content -match 'builderImage: "([^"]+)"') { $config.builderImage = $matches[1] }
+    if ($content -match 'scriptVersion: "([^"]+)"') { $config.scriptVersion = $matches[1] }
+
+    # Mock versions
+    if ($content -match 'mockCoreVersion: "([^"]+)"') { $config.mockCoreVersion = $matches[1] }
+    if ($content -match 'mockSupervisorVersion: "([^"]+)"') { $config.mockSupervisorVersion = $matches[1] }
+    if ($content -match 'mockOsVersion: "([^"]+)"') { $config.mockOsVersion = $matches[1] }
+    if ($content -match 'mockKernelVersion: "([^"]+)"') { $config.mockKernelVersion = $matches[1] }
+    if ($content -match 'mockArch: "([^"]+)"') { $config.mockArch = $matches[1] }
+
+    # Merge defaults for arrays/hashtables which are hard to regex
+    foreach ($key in $defaults.Keys) {
+        if (-not $config.ContainsKey($key)) {
+            $config[$key] = $defaults[$key]
+        }
     }
+
+    return $config
+
 }
 
 # Export functions for module usage

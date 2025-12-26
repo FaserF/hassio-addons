@@ -27,13 +27,15 @@ Write-Host "Running Fixers on $($Addons.Count) targeted paths..." -ForegroundCol
 # 1. Repo Maintenance Scripts
 Write-Progress -Activity "Auto-Fixing" -Status "Running Repo Maintenance Scripts..." -PercentComplete 10
 if (Test-Path ".scripts/fix_line_endings.py") {
-    python .scripts/fix_line_endings.py $FixPaths
+    try { python .scripts/fix_line_endings.py $FixPaths } catch { Write-Warning "fix_line_endings.py failed: $_" }
 }
 Write-Progress -Activity "Auto-Fixing" -Status "Fixing Configs..." -PercentComplete 20
-if (Test-Path ".scripts/fix_configs.py") { python .scripts/fix_configs.py $FixPaths }
+if (Test-Path ".scripts/fix_configs.py") {
+    try { python .scripts/fix_configs.py $FixPaths } catch { Write-Warning "fix_configs.py failed: $_" }
+}
 
 if (Test-Path ".scripts/fix_oci_labels.py") {
-    python .scripts/fix_oci_labels.py $FixPaths
+    try { python .scripts/fix_oci_labels.py $FixPaths } catch { Write-Warning "fix_oci_labels.py failed: $_" }
 }
 
 # These scripts are inherently global
@@ -70,7 +72,7 @@ if (Get-Command "shfmt" -ErrorAction SilentlyContinue) {
     try {
         $shfmtArgs = @("-l", "-w") + $FixPaths
         shfmt @shfmtArgs 2>&1 | Out-Null
-    } catch {}
+    } catch { Write-Host "Skipping shfmt (failed)" -ForegroundColor DarkGray }
 }
 
 # 4. Prettier & Markdown
@@ -79,14 +81,14 @@ try {
     $prettierTargets = $FixPaths
     $ignorePath = Join-Path $RepoRoot ".prettierignore"
     npx prettier --write $prettierTargets --ignore-path "$ignorePath"
-} catch {}
+} catch { Write-Host "Skipping Prettier (failed/missing)" -ForegroundColor DarkGray }
 
 Write-Progress -Activity "Auto-Fixing" -Status "Running MarkdownLint..." -PercentComplete 95
 try {
     $mdTargets = $FixPaths
     $configPath = Join-Path $RepoRoot ".markdownlint.yaml"
     npx markdownlint-cli $mdTargets --config "$configPath" --fix --ignore "node_modules" --ignore ".git"
-} catch {}
+} catch { Write-Host "Skipping MarkdownLint (failed/missing)" -ForegroundColor DarkGray }
 
 
 # 5. Clean Excessive Blank Lines (Workflows & YAMLs)
