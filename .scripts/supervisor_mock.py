@@ -26,8 +26,8 @@ Environment Variables:
 import ipaddress
 import json
 import os
-import sys
 import re
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import ClassVar
 
@@ -37,10 +37,10 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # Allow some logging to help debug
-        sys.stderr.write("%s - - [%s] %s\n" %
-                         (self.address_string(),
-                          self.log_date_time_string(),
-                          format % args))
+        sys.stderr.write(
+            "%s - - [%s] %s\n"
+            % (self.address_string(), self.log_date_time_string(), format % args)
+        )
 
     def get_options(self):
         """Load options from file dynamically."""
@@ -48,7 +48,10 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
             with open(self.options_path, "r", encoding="utf-8-sig") as f:
                 return json.load(f)
         except Exception as e:
-            print(f"DEBUG: Failed to reload options from {self.options_path}: {e}", file=sys.stderr)
+            print(
+                f"DEBUG: Failed to reload options from {self.options_path}: {e}",
+                file=sys.stderr,
+            )
             return {}
 
     def _send_json(self, data, status=200):
@@ -60,12 +63,19 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         # Log request details for debugging
-        print(f"DEBUG: GET request to {self.path} from {self.client_address}", file=sys.stderr)
+        print(
+            f"DEBUG: GET request to {self.path} from {self.client_address}",
+            file=sys.stderr,
+        )
 
         # Reload options dynamically
         current_options = self.get_options()
 
-        if self.path == "/addons/self/options" or self.path == "/addons/self/options/config" or re.match(r"^/addons/[^/]+/options$", self.path):
+        if (
+            self.path == "/addons/self/options"
+            or self.path == "/addons/self/options/config"
+            or re.match(r"^/addons/[^/]+/options$", self.path)
+        ):
             self._send_json(current_options)
         elif self.path == "/core/info":
             self._send_json(
@@ -76,7 +86,9 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "state": "running",
                 }
             )
-        elif self.path == "/addons/self/info" or re.match(r"^/addons/[^/]+/info$", self.path):
+        elif self.path == "/addons/self/info" or re.match(
+            r"^/addons/[^/]+/info$", self.path
+        ):
             self._send_json(
                 {
                     "name": "Test Add-on",
@@ -117,7 +129,13 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "operating_system": "Home Assistant OS 16.3 (mocked)",
                     "kernel": "6.12.51-haos",
                     "hostname": "homeassistant",
-                    "features": ["reboot", "shutdown", "services", "network", "hostname"],
+                    "features": [
+                        "reboot",
+                        "shutdown",
+                        "services",
+                        "network",
+                        "hostname",
+                    ],
                     "disk_free": 1000,
                     "disk_total": 2000,
                     "disk_used": 1000,
@@ -139,22 +157,45 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/addons":
             self._send_json({"addons": []})
         elif self.path == "/info":
-            self._send_json({"supervisor": "2025.12.3", "homeassistant": "2025.12.3", "hassos": "16.3"})
+            self._send_json(
+                {
+                    "supervisor": "2025.12.3",
+                    "homeassistant": "2025.12.3",
+                    "hassos": "16.3",
+                }
+            )
         elif self.path == "/store":
             self._send_json({"repositories": [], "addons": []})
         elif self.path == "/dns/info":
-             self._send_json({"host": "172.30.32.3", "version": "2025.12.3", "servers": [], "locals": []})
+            self._send_json(
+                {
+                    "host": "172.30.32.3",
+                    "version": "2025.12.3",
+                    "servers": [],
+                    "locals": [],
+                }
+            )
         elif self.path == "/audio/info":
-             self._send_json({"host": "172.30.32.1", "version": "2025.12.3", "input": "default", "output": "default"})
+            self._send_json(
+                {
+                    "host": "172.30.32.1",
+                    "version": "2025.12.3",
+                    "input": "default",
+                    "output": "default",
+                }
+            )
         elif self.path == "/multicast/info":
-             self._send_json({"host": "172.30.32.1", "version": "2025.12.3"})
+            self._send_json({"host": "172.30.32.1", "version": "2025.12.3"})
         else:
             # Return empty success for unknown endpoints
             self._send_json({})
 
     def do_POST(self):
         # Log POST request details
-        print(f"DEBUG: POST request to {self.path} from {self.client_address}", file=sys.stderr)
+        print(
+            f"DEBUG: POST request to {self.path} from {self.client_address}",
+            file=sys.stderr,
+        )
         # Handle POST requests (some bashio calls use POST)
         self._send_json({})
 
