@@ -897,16 +897,22 @@ jobs:
 
             // Check if author is maintainer/bot for auto-merge message
             const author = context.payload.pull_request.user.login;
-            const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]'].includes(author);
-
-            let autoMergeNote = "";
-            if (isMaintainer) {
-                autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
-            }
+            const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
 
             // Check if build was skipped (docs-only changes)
             const buildSkipped = '${{ needs.build.result }}' === 'skipped';
+            const lintSkipped = '${{ needs.lint.result }}' === 'skipped';
+            const allSkipped = buildSkipped && lintSkipped;
             const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
+
+            // Auto-merge only if actual CI jobs ran
+            let autoMergeNote = "";
+            if (allSkipped) {
+                // No CI ran - warn user
+                autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.\n> If this is unexpected, check for workflow configuration issues.";
+            } else if (isMaintainer) {
+                autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
+            }
 
             // Check for unresolved errors from previous runs
             let previousErrorsNote = "";
@@ -941,7 +947,7 @@ jobs:
             let body = "## ✅ Verification Successful\n\n";
             body += "Thank you for your contribution!\n\n";
             body += "- 🛡️ **Platinum Standards**: Compliant\n";
-            body += "- 🟢 **CI Checks**: Passed\n";
+            body += "- 🟢 **CI Checks**: " + (allSkipped ? "⏭️ Skipped" : "Passed") + "\n";
             body += "- 🏗️ **Build**: " + buildStatus + "\n\n";
             body += "This PR meets high quality standards and is ready for review.";
             body += previousErrorsNote;

@@ -195,12 +195,13 @@ jobs:
             CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' || echo "")
 
             # Detect affected auto-release addons
+            # Use grep -F for fixed string matching (handles special chars like . in wiki.js)
             for addon in ${{ env.AUTO_RELEASE_ADDONS }}; do
-              if echo "$CHANGED" | grep -q "^${addon}/"; then
+              if echo "$CHANGED" | grep -Fq "${addon}/"; then
                 [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
               fi
               # Check .unsupported too
-              if echo "$CHANGED" | grep -q "^.unsupported/${addon}/"; then
+              if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
                 [ -z "$ADDONS" ] && ADDONS=".unsupported/$addon" || ADDONS="$ADDONS,.unsupported/$addon"
               fi
             done
