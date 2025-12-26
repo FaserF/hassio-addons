@@ -1,28 +1,34 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ARG BUILD_DATE="unknown"
 
 # CR-Skip-PythonBaseCheck
+# Use virtual environment for clean package isolation (PEP 668 compliant)
+ENV VIRTUAL_ENV=/usr/local/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Pin scripts to specific commit for reproducible builds: https://github.com/geekman/xqrepack
+ARG XQREPACK_RELEASE="v1.1"
 
 # hadolint ignore=DL3018,DL3013,DL3042
 RUN apk add --no-cache \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3 python3-dev py3-pip && \
+    python3 -m venv $VIRTUAL_ENV && \
     pip install --no-cache-dir python-lzo ubi_reader && \
     mkdir /xqrepack && \
-    wget -q -O /xqrepack/repack-squashfs.sh https://raw.githubusercontent.com/geekman/xqrepack/master/repack-squashfs.sh && \
-    wget -q -O /xqrepack/ubinize.sh https://raw.githubusercontent.com/geekman/xqrepack/master/ubinize.sh
-#RUN wget -O /xqrepack/xqflash https://raw.githubusercontent.com/geekman/xqrepack/master/xqflash
+    wget -q -O /xqrepack/repack-squashfs.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/repack-squashfs.sh" && \
+    wget -q -O /xqrepack/ubinize.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/ubinize.sh" && \
+    chmod a+x /xqrepack/*.sh
 
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
-# Health check - verify run.sh is the main process
+# Health check - use pgrep -f to match script name in process args
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD pgrep -x run.sh >/dev/null || exit 1
+    CMD pgrep -f "/run.sh" >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="xqrepack"

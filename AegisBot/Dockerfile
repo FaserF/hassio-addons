@@ -34,6 +34,7 @@ RUN \
 
 # Try to download and build during Docker build if repo is public.
 # If this fails (e.g. private repo), we continue and let run.sh handle it.
+# CR-Skip-TarballIntegrity: Dynamic tarball from GitHub API, checksum not applicable
 
 ARG AEGISBOT_VERSION="latest"
 
@@ -109,8 +110,8 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
-# Health check
-HEALTHCHECK --interval=300s --timeout=3s \
+# Health check - faster detection with startup grace period
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD curl --fail http://127.0.0.1:8000/api/health || exit 1
 
 CMD [ "/run.sh" ]

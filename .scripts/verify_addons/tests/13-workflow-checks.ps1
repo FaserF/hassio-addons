@@ -109,8 +109,16 @@ foreach ($wf in $workflows) {
         Add-Result -Addon $wfName -Check "CR-Permissions" -Status "PASS" -Message "OK"
     }
 
-    # Check 3: Trigger Optimization
-    if (($content -match 'on:\s*(push|pull_request)') -and ($content -notmatch 'paths:')) {
+    # Check 3: Trigger Optimization (skip orchestrator workflows that intentionally run on all changes)
+    $triggerOptWhitelist = @(
+        'orchestrator-ci',
+        'orchestrator-labeler',
+        'orchestrator-cleanup',
+        'orchestrator-autofix',
+        'orchestrator-edge-sync'
+    )
+    $isWhitelisted = $triggerOptWhitelist | Where-Object { $wfName -like "*$_*" }
+    if (-not $isWhitelisted -and ($content -match 'on:\s*(push|pull_request)') -and ($content -notmatch 'paths:')) {
         Add-Result -Addon $wfName -Check "CR-TriggerOpt" -Status "INFO" -Message "Trigger lacks 'paths' filter. Workflow might run unnecessarily."
     } else {
         Add-Result -Addon $wfName -Check "CR-TriggerOpt" -Status "PASS" -Message "OK"
@@ -119,8 +127,18 @@ foreach ($wf in $workflows) {
     # Check 4: GitHub Runner Version
     if ($content -match 'runs-on:\s*ubuntu-(\d+\.\d+|latest)') {
         $usedVersion = $matches[1]
-        if ($usedVersion -ne "latest" -and $usedVersion -lt $latestRunner) {
-            Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "WARN" -Message "Uses older GitHub Runner ($usedVersion). The latest available version is $latestRunner. It is recommended to use the latest version or 'ubuntu-latest' for better performance and security."
+        if ($usedVersion -ne "latest") {
+            try {
+                $usedVer = [version]$usedVersion
+                $latestVer = [version]$latestRunner
+                if ($usedVer -lt $latestVer) {
+                    Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "WARN" -Message "Uses older GitHub Runner ($usedVersion). The latest available version is $latestRunner. It is recommended to use the latest version or 'ubuntu-latest' for better performance and security."
+                } else {
+                    Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
+                }
+            } catch {
+                Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
+            }
         } else {
             Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
         }

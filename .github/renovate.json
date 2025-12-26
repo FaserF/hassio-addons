@@ -10,6 +10,11 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
+  "allowedPostUpgradeCommands": [
+    "^curl",
+    "^sed",
+    "^bash"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -50,13 +55,24 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "(^|/)Dockerfile$"
+        "matterbridge/Dockerfile$"
       ],
       "matchStrings": [
         "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "42wim/matterbridge"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "pterodactyl-wings/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "pterodactyl/wings"
     },
     {
       "customType": "regex",
@@ -123,6 +139,70 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "spacemeowx2/switch-lan-play"
+    },
+    {
+      "customType": "regex",
+      "description": "Track xqrepack git commit for script pinning",
+      "fileMatch": [
+        ".unsupported/xqrepack/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG XQREPACK_COMMIT=[\"']?(?<currentDigest>[a-f0-9]+)[\"']?"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/geekman/xqrepack",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track bt-mqtt-gateway version (commit hash)",
+      "fileMatch": [
+        ".unsupported/bt-mqtt-gateway/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/zewelor/bt-mqtt-gateway",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Pterodactyl Panel release branch",
+      "fileMatch": [
+        "pterodactyl-panel/Dockerfile$"
+      ],
+      "matchStrings": [
+        "--branch release/v(?<currentValue>[\\d.]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "pterodactyl/panel",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track tuya-convert git commit",
+      "fileMatch": [
+        ".unsupported/tuya-convert/Dockerfile$"
+      ],
+      "matchStrings": [
+        "git checkout (?<currentDigest>[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/ct-Open-Source/tuya-convert",
+      "currentValueTemplate": "master"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Home Assistant version for test instance",
+      "fileMatch": [
+        "homeassistant-test-instance/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:(?<currentValue>[\\d.]+)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/home-assistant/home-assistant"
     }
   ],
   "packageRules": [
@@ -164,7 +244,39 @@
         "FaserF/Solumati",
         "spacemeowx2/switch-lan-play"
       ],
-      "automerge": true
+      "automerge": false
+    },
+    {
+      "description": "Pterodactyl Wings - auto-update checksums via postUpgradeTasks",
+      "matchDepNames": [
+        "pterodactyl/wings"
+      ],
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "pterodactyl-wings/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
+    },
+    {
+      "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
+      "matchDepNames": [
+        "42wim/matterbridge"
+      ],
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "matterbridge/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "matchManagers": [

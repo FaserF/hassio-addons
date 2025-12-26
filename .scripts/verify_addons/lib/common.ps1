@@ -227,32 +227,80 @@ function Check-Docker {
     .OUTPUTS
         Boolean indicating Docker availability.
     #>
-    Write-Host "Checking Docker..." -ForegroundColor Gray
-    $dockerInfo = docker info 2>&1
-    if ($LASTEXITCODE -eq 0 -and $dockerInfo -match "Server Version") { return $true }
+    if ($env:GITHUB_ACTIONS) {
+        # CI environment has Docker pre-installed and running
+        return $true
+    }
 
     if ($IsWindows) {
-        if (Get-Process "Docker Desktop" -ErrorAction SilentlyContinue) {
-            Write-Host "Docker Desktop running but not responsive..." -ForegroundColor Gray
-        }
-        else {
-            $dockerExe = "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
-            if (Test-Path $dockerExe) {
-                Write-Host "Starting Docker Desktop..." -ForegroundColor Gray
-                Start-Process $dockerExe
-                for ($i = 0; $i -lt 60; $i++) {
-                    Start-Sleep -Seconds 2
-                    $info = docker info 2>&1
-                    if ($LASTEXITCODE -eq 0 -and $info -match "Server Version") { return $true }
-                    Write-Host -NoNewline "."
+        # Check if Docker Desktop is even installed
+        $dockerPath = where.exe docker 2>$null
+        if (-not $dockerPath) { return $false }
+
+        Write-Host "Checking Docker..." -ForegroundColor Gray
+        # Use a short timeout for the check to avoid hangs
+        $dockerCheck = docker version --format '{{.Server.Version}}' 2>$null | Out-String
+        if ($LASTEXITCODE -eq 0 -and $dockerCheck.Trim()) { return $true }
+
+        Write-Host "Docker is not running. Attempting to start Docker Desktop..." -ForegroundColor Yellow
+        $dockerDesktop = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+        if (Test-Path $dockerDesktop) {
+            Start-Process $dockerDesktop -ErrorAction SilentlyContinue
+            Write-Host "Waiting for Docker to start (up to 30s)..." -ForegroundColor Gray
+            for ($i = 0; $i -lt 30; $i++) {
+                Start-Sleep -Seconds 1
+                $info = docker version --format '{{.Server.Version}}' 2>$null | Out-String
+                if ($LASTEXITCODE -eq 0 -and $info.Trim()) {
+                    Write-Host "Docker started!" -ForegroundColor Green
+                    return $true
                 }
+                Write-Host -NoNewline "."
             }
+            Write-Host ""
         }
+    } else {
+        # Linux/macOS simple check
+        docker version --format '{{.Server.Version}}' 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) { return $true }
     }
     return $false
 }
 
 # --- YAML/CONFIG PARSING HELPERS ---
+function Get-AddonAttributes {
+    <#
+    .SYNOPSIS
+        Extracts various attributes (privileged, host_network, full_access) from config.yaml.
+    #>
+    param([Parameter(Mandatory)][string]$Path)
+    $res = @{
+        Privileged = $false
+        HostNetwork = $false
+        Caps = @()
+    }
+    if (-not (Test-Path $Path)) { return $res }
+
+    $content = Get-Content $Path
+    $inPrivileged = $false
+    foreach ($line in $content) {
+        # Simple flags
+        if ($line -match '^privileged:\s*true\s*$') { $res.Privileged = $true }
+        if ($line -match '^host_network:\s*true\s*$') { $res.HostNetwork = $true }
+        if ($line -match '^full_access:\s*true\s*$') { $res.Privileged = $true }
+
+        # Start of privileged list
+        if ($line -match '^privileged:\s*$') { $inPrivileged = $true; continue }
+        if ($line -match '^\w+:') { $inPrivileged = $false }
+
+        if ($inPrivileged -and $line -match '^\s*-\s+(\w+)') {
+            $cap = $matches[1]
+            if ($cap -eq "NET_ADMIN") { $res.Privileged = $true }
+            $res.Caps += $cap
+        }
+    }
+    return $res
+}
+
 function Get-BuildFrom {
     <#
     .SYNOPSIS
@@ -402,6 +450,12 @@ function Get-TestConfig {
         validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks")
         dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks")
         docsOnlyTests = @("MarkdownLint", "Prettier", "LineEndings")
+        testWeights = @{
+            LineEndings = 0.2; ShellCheck = 1.0; Hadolint = 3.0; YamlLint = 0.5
+            MarkdownLint = 0.5; Prettier = 1.5; AddonLinter = 10.0; Compliance = 1.0
+            Trivy = 60.0; VersionCheck = 1.0; DockerBuild = 180.0; DockerRun = 60.0
+            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0
+        }
     }
 
     if (-not $ConfigPath -or -not (Test-Path $ConfigPath)) {
@@ -422,56 +476,71 @@ function Get-TestConfig {
             return $config
         }
 
-        # Fallback: Parse YAML manually for simple key:value pairs
+        # Fallback: Parse YAML manually
         $config = @{}
         $content = Get-Content $ConfigPath
-        $currentArray = $null
+        $currentSection = $null
         $currentKey = $null
 
         foreach ($line in $content) {
             # Skip comments and empty lines
             if ($line -match '^\s*#' -or $line -match '^\s*$') { continue }
 
-            # Array item
-            if ($line -match '^\s*-\s+(.+)$') {
-                if ($currentKey -and $currentArray -ne $null) {
-                    $currentArray += $matches[1].Trim('"', "'")
-                }
+            # Section Header (e.g., testWeights:)
+            if ($line -match '^(\w+):\s*$') {
+                $currentSection = $matches[1]
+                $config[$currentSection] = @{}
+                continue
             }
-            # Key: value
-            elseif ($line -match '^(\w+):\s*"?([^"]+)"?\s*$') {
-                if ($currentKey -and $currentArray -ne $null) {
-                    $config[$currentKey] = $currentArray
+
+            # Array item in section
+            if ($line -match '^\s*-\s+(.+)$' -and $currentSection) {
+                if ($config[$currentSection] -is [hashtable]) {
+                    # Actually it was an array, convert it
+                    $config[$currentSection] = @()
                 }
-                $currentKey = $matches[1]
-                $value = $matches[2].Trim()
-                if ($value) {
-                    $config[$currentKey] = $value
-                    $currentArray = $null
-                } else {
-                    $currentArray = @()
-                }
+                $config[$currentSection] += $matches[1].Trim('"', "'")
+                continue
             }
-            # Key with array start
-            elseif ($line -match '^(\w+):\s*$') {
-                if ($currentKey -and $currentArray -ne $null) {
-                    $config[$currentKey] = $currentArray
+
+            # Key: value in section (indented)
+            if ($line -match '^\s+(\w+):\s*"?([^"]+)"?\s*$' -and $currentSection) {
+                $val = $matches[2].Trim()
+                # Parse as number if possible (Invariant for dots)
+                if ($val -match '^\d+(\.\d+)?$') {
+                    try { $val = [double]::Parse($val, [System.Globalization.CultureInfo]::InvariantCulture) } catch { }
                 }
-                $currentKey = $matches[1]
-                $currentArray = @()
+                $config[$currentSection][$matches[1]] = $val
+                continue
             }
-        }
-        # Save last array
-        if ($currentKey -and $currentArray -ne $null) {
-            $config[$currentKey] = $currentArray
+
+            # Top-level Key: value
+            if ($line -match '^(\w+):\s*"?([^"]+)"?\s*$') {
+                $currentSection = $null
+                $val = $matches[2].Trim()
+                if ($val -match '^\d+(\.\d+)?$') {
+                    try { $val = [double]::Parse($val, [System.Globalization.CultureInfo]::InvariantCulture) } catch { }
+                }
+                $config[$matches[1]] = $val
+                continue
+            }
         }
 
-        # Merge with defaults
-        foreach ($key in $defaults.Keys) {
-            if (-not $config.ContainsKey($key)) {
-                $config[$key] = $defaults[$key]
+        # Recursive Merge Function
+        $merge = {
+            param($target, $source)
+            foreach ($key in $source.Keys) {
+                if (-not $target.ContainsKey($key)) {
+                    $target[$key] = $source[$key]
+                } elseif ($target[$key] -is [hashtable] -and $source[$key] -is [hashtable]) {
+                    # Recursive merge for sections
+                    & $merge $target[$key] $source[$key]
+                }
             }
         }
+
+        # Perform Merge
+        & $merge $config $defaults
         return $config
     }
     catch {

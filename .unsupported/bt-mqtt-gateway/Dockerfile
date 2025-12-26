@@ -7,15 +7,21 @@ FROM ${BUILD_FROM}
 # hadolint ignore=DL3018,DL3013,DL3042,DL3006
 # Set version (pinned for reproducibility)
 ARG BT_MQTT_VERSION=827e251
+# renovate: datasource=git-refs depName=zewelor/bt-mqtt-gateway
+ARG BT_MQTT_SHA256="771a144eb156da03fb930977bd6f231ba0e7e51b29b613d3c05200a3ae0f98d8"
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # CR-Skip-PythonBaseCheck: Uses venv with base image
+
+# Set shell for pipefail support
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3018
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
-    apk add --no-cache --update wget unzip && \
-
+    apk add --no-cache --update wget && \
     wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
+    echo "${BT_MQTT_SHA256}  ${BT_MQTT_VERSION}.tar.gz" | sha256sum -c - && \
     tar xzf "${BT_MQTT_VERSION}.tar.gz" -C /tmp/ && \
     rm "${BT_MQTT_VERSION}.tar.gz" && \
     mv /tmp/bt-mqtt-gateway-*/* /application && \
@@ -26,7 +32,7 @@ COPY logger.yaml /application/logger.yaml
 # PIP setup - install requirements only (no runtime execution during build)
 RUN python3 -m venv /application/venv && \
     /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir -r /application/requirements.txt" && \
-    apk del build-dependencies wget unzip
+    apk del build-dependencies wget
 
 # Copy start script and make it executable
 COPY start.sh /

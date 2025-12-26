@@ -6,7 +6,18 @@ import requests
 # Configuration
 ORG_NAME = os.environ.get("GITHUB_REPOSITORY_OWNER")
 TOKEN = os.environ.get("GITHUB_TOKEN")
-KEEP_VERSIONS = 2
+
+# Retention settings
+KEEP_VERSIONS_SUPPORTED = 2      # Keep 2 versions for supported addons
+KEEP_VERSIONS_UNSUPPORTED = 1    # Keep only 1 version for unsupported addons
+
+# List of unsupported addon names (detected from .unsupported folder or naming convention)
+UNSUPPORTED_ADDONS = [
+    "bt-mqtt-gateway",
+    "freenom-dns-updater",
+    "tuya-convert",
+    "xqrepack",
+]
 
 if not ORG_NAME or not TOKEN:
     print("❌ Error: GITHUB_REPOSITORY_OWNER and GITHUB_TOKEN must be set.")
@@ -16,6 +27,18 @@ HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
     "Accept": "application/vnd.github.v3+json",
 }
+
+
+def is_unsupported_addon(package_name):
+    """Check if this package is an unsupported addon."""
+    # Check against known unsupported list
+    for unsupported in UNSUPPORTED_ADDONS:
+        if unsupported.lower() in package_name.lower():
+            return True
+    # Also check for naming patterns
+    if "unsupported" in package_name.lower():
+        return True
+    return False
 
 
 def get_packages(package_type="container"):
@@ -67,12 +90,19 @@ def delete_version(package_name, version_id, package_type="container"):
 
 
 def main():
-    print(f"🧹 Pruning registry for {ORG_NAME} (Keep Latest + {KEEP_VERSIONS})...")
+    print(f"🧹 Pruning registry for {ORG_NAME}...")
+    print(f"   📦 Supported addons: Keep {KEEP_VERSIONS_SUPPORTED} versions")
+    print(f"   🏚️ Unsupported addons: Keep {KEEP_VERSIONS_UNSUPPORTED} version(s)")
+
     packages = get_packages()
 
     for pkg in packages:
         name = pkg["name"]
-        print(f"👉 Analyzing {name}...")
+        is_unsupported = is_unsupported_addon(name)
+        keep_versions = KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
+        addon_type = "🏚️ UNSUPPORTED" if is_unsupported else "📦 Supported"
+
+        print(f"👉 {addon_type}: {name} (keep {keep_versions})...")
         versions = get_package_versions(name)
 
         # Filter versions. Usually sorted by created_at desc.
@@ -92,7 +122,7 @@ def main():
                 to_keep.append(v)
                 continue
 
-            if count < KEEP_VERSIONS:
+            if count < keep_versions:
                 to_keep.append(v)
                 count += 1
             else:

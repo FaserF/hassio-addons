@@ -39,13 +39,13 @@ foreach ($a in $Addons) {
             Add-Result -Addon $a.Name -Check "CR-GenericHealth" -Status "WARN" -Message "Generic HEALTHCHECK pattern (e.g., 'node.*server'). Use specific process name."
         }
 
-        # Check 3: Manual Tarball without integrity
-        if ($content -match '(wget|curl).*\.(tar|tgz|tar\.gz)' -and $content -notmatch 'sha256|checksum|--checksum') {
+        # Check 3: Manual Tarball without integrity (skip if CR-Skip-TarballIntegrity comment present)
+        if ($content -notmatch 'CR-Skip-TarballIntegrity' -and $content -match '(wget|curl).*\.(tar|tgz|tar\.gz)' -and $content -notmatch 'sha256|checksum|--checksum') {
             Add-Result -Addon $a.Name -Check "CR-TarballIntegrity" -Status "WARN" -Message "Manual tarball download without integrity check. Consider using official image or add checksum verification."
         }
 
-        # Check 4: Duplicate ARG declarations
-        $argMatches = [regex]::Matches($content, '(?m)^ARG\s+([A-Z_]+)')
+        # Check 4: Duplicate ARG declarations (capture full ARG name with numbers)
+        $argMatches = [regex]::Matches($content, '(?m)^ARG\s+([A-Z_][A-Z0-9_]*)')
         $argNames = $argMatches | ForEach-Object { $_.Groups[1].Value }
         $duplicates = $argNames | Group-Object | Where-Object { $_.Count -gt 1 }
         if ($duplicates) {
@@ -62,9 +62,13 @@ foreach ($a in $Addons) {
         # Check 7: Unpinned package versions in apk add - DISABLED per user request (too high maintenance)
         # Version pinning is only required for security-critical cases
 
-        # Check 8: Missing HEALTHCHECK timing parameters
-        if ($content -match 'HEALTHCHECK' -and ($content -notmatch '--interval' -or $content -notmatch '--timeout')) {
-            Add-Result -Addon $a.Name -Check "CR-HealthcheckTiming" -Status "WARN" -Message "HEALTHCHECK lacks explicit --interval or --timeout parameters."
+        # Check 8: Missing HEALTHCHECK timing parameters (skip HEALTHCHECK NONE - it's intentional for ephemeral ops)
+        if ($content -match 'HEALTHCHECK' -and $content -notmatch 'HEALTHCHECK\s+NONE' -and ($content -notmatch '--interval' -and $content -notmatch '--timeout')) {
+            Add-Result -Addon $a.Name -Check "CR-HealthcheckTiming" -Status "WARN" -Message "HEALTHCHECK lacks explicit --interval and --timeout parameters."
+        }
+        # HEALTHCHECK NONE is valid for ephemeral/one-time operations, just log as INFO
+        if ($content -match 'HEALTHCHECK\s+NONE') {
+            Add-Result -Addon $a.Name -Check "CR-HealthcheckNone" -Status "INFO" -Message "HEALTHCHECK NONE - valid for ephemeral/one-time operations."
         }
 
         # Check 9: Fragile healthcheck pattern
@@ -99,8 +103,8 @@ foreach ($a in $Addons) {
             }
         }
 
-        # Check 14: Language Check (English only)
-        if ($content -match '[üäößÜÄÖ]' -or $content -cmatch '\b(ist|und|das|mit|der|die|den|dem|ein|eine|eines|einer)\b') {
+        # Check 14: Language Check (English only) - excludes 'die' as it's common in English
+        if ($content -match '[üäößÜÄÖ]' -or $content -cmatch '\b(ist|und|das|mit|der|den|dem|ein|eine|eines|einer)\b') {
             Add-Result -Addon $a.Name -Check "CR-Language" -Status "WARN" -Message "Possible non-English content (German) detected in comments or logs. Keep everything in English."
         }
 

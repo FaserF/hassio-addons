@@ -4,11 +4,17 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 ARG NETBOOTXYZ_VERSION="0.7.6"
+# renovate: datasource=github-releases depName=netbootxyz/webapp
+ARG NETBOOTXYZ_SHA256="9b5a46830e60c51a36cbfff204d383f2d2f68969f12e24df0c74e76f2b637121"
+
+# Set shell for pipefail support
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
+    bash \
     curl \
     dnsmasq \
     nginx \
@@ -19,6 +25,7 @@ RUN \
     npm && \
   echo "**** install WebApp version ${NETBOOTXYZ_VERSION} ****" && \
   curl -o /tmp/webapp.tar.gz -L https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz && \
+  echo "${NETBOOTXYZ_SHA256}  /tmp/webapp.tar.gz" | sha256sum -c - && \
   mkdir -p /app/ && tar xf /tmp/webapp.tar.gz -C \
     /app/ --strip-components=1 && \
   npm install --prefix /app && \
@@ -35,7 +42,7 @@ COPY root/ /
 EXPOSE 3000
 
 # Ensure all run files from the services are executable
-RUN chmod a+x /etc/cont-init.d/*
+RUN chmod a+x /etc/cont-init.d/* /etc/services.d/*/run 2>/dev/null || chmod a+x /etc/cont-init.d/*
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=30s \

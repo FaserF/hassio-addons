@@ -57,14 +57,24 @@ if [ ! -d "$path" ]; then
 	echo "Looks like the path $path did not exist! We will create it. Copy your installations ISOs etc there."
 	mkdir -p "$path"
 fi
-rm -f /assets
+if [ -L /assets ]; then rm /assets; elif [ -d /assets ]; then rm -rf /assets; else rm -f /assets; fi
 ln -s "$path" /assets
 if [ ! -d "$path_config" ]; then
 	echo "Looks like the path $path_config did not exist! We will still start the addon with default options!"
 	mkdir -p "$path_config"
 fi
-rm -f /config
-ln -s "$path_config" /config
+if [ -L /config ]; then
+    rm /config
+elif [ -d /config ]; then
+    # Try to remove if empty/not mount, otherwise warn and skip
+    rmdir /config 2>/dev/null || echo "Info: /config is a mount or non-empty/busy, skipping replacement with symlink."
+else
+    rm -f /config
+fi
+
+if [ ! -e /config ]; then
+    ln -s "$path_config" /config
+fi
 
 if [ ! -d /config/menus ]; then
 	mkdir /config/menus

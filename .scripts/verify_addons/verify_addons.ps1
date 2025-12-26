@@ -83,7 +83,8 @@ $JsonFile = Join-Path $OutputDir "verification_results_$Timestamp.json"
 try {
     try { Stop-Transcript | Out-Null } catch {}
     Start-Transcript -Path $LogFile -Force
-} catch {
+}
+catch {
     Write-Warning "Could not start transcript at $LogFile. logging to console only."
 }
 
@@ -96,19 +97,15 @@ Write-Host "====================================================================
 Write-Host ""
 Write-Host "  Started at: $($ScriptStartTime.ToString())" -ForegroundColor Gray
 
-    # Check for Updates
+# Check for Updates (wrapped in try/catch to not block main execution)
+try {
     Check-ForUpdates -CurrentVersion $Config.scriptVersion -CacheDir $OutputDir
+}
+catch {
+    Write-Host "Warning: Update check failed: $_" -ForegroundColor Yellow
+}
 
 try {
-    # --- DOCKER AVAILABILITY ---
-    $DockerAvailable = $false
-    if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $Config.dockerTests })) {
-        $DockerAvailable = Check-Docker
-        if (-not $DockerAvailable) {
-            Write-Host "WARNING: Docker is not available. Docker-related tests will be skipped." -ForegroundColor Yellow
-        }
-    }
-
     # --- SCOPE DEFINITION ---
     $ChangedAddons = @{}
 
@@ -118,7 +115,8 @@ try {
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Git not available or not a git repository. -ChangedOnly ignored."
             $ChangedOnly = $false
-        } else {
+        }
+        else {
             foreach ($line in $gitStatus) {
                 if ($line.Length -lt 4) { continue }
                 $file = $line.Substring(3).Trim()
@@ -127,7 +125,8 @@ try {
                 $addonName = $null
                 if ($parts.Count -ge 2 -and $parts[0] -eq ".unsupported") {
                     $addonName = $parts[1]
-                } elseif ($parts.Count -ge 1) {
+                }
+                elseif ($parts.Count -ge 1) {
                     # Check if it's a known addon directory
                     $potential = $parts[0]
                     $potentialConfigPath = Join-Path $RepoRoot (Join-Path $potential "config.yaml")
@@ -142,7 +141,8 @@ try {
 
                     if (-not $isDoc) {
                         $ChangedAddons[$addonName] = "Code"
-                    } elseif ($currentType -eq "Docs") {
+                    }
+                    elseif ($currentType -eq "Docs") {
                         $ChangedAddons[$addonName] = "Docs"
                     }
                 }
@@ -159,8 +159,8 @@ try {
     # Get Addons List
     if ($Addon.Count -eq 1 -and $Addon[0] -eq "all") {
         $addons = @(Get-ChildItem -Path $RepoRoot -Directory | Where-Object {
-            (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported") -and ($_.Name -ne "homeassistant-test-instance") -and ($_.Name -notmatch "^tmp")
-        })
+                (Test-Path "$($_.FullName)\config.yaml") -and ($_.Name -ne ".git") -and ($_.Name -ne ".unsupported") -and ($_.Name -ne "homeassistant-test-instance") -and ($_.Name -notmatch "^tmp")
+            })
         if ($IncludeUnsupported) {
             $unsupPath = Join-Path $RepoRoot ".unsupported"
             $unsup = Get-ChildItem -Path $unsupPath -Directory -ErrorAction SilentlyContinue
@@ -179,9 +179,11 @@ try {
 
             if (Test-Path $fullPath) {
                 $addons += Get-Item $fullPath
-            } elseif (Test-Path $unsupportedPath) {
+            }
+            elseif (Test-Path $unsupportedPath) {
                 $addons += Get-Item $unsupportedPath
-            } else {
+            }
+            else {
                 Write-Host "WARNING: Add-on '$addonName' not found, skipping." -ForegroundColor Yellow
             }
         }
@@ -216,8 +218,54 @@ try {
     if ($addons.Count -gt 0) {
         if ("all" -notin $Addon -or $ChangedOnly) {
             Write-Host "Targeting $($addons.Count) add-on(s): $($addons.Name -join ', ')" -ForegroundColor Cyan
-        } else {
+        }
+        else {
             Write-Host "Targeting all $($addons.Count) detected add-ons." -ForegroundColor Gray
+        }
+
+        # --- ETA CALCULATION ---
+        $totalSeconds = 0.0
+        $activeTests = @()
+        if ("all" -in $Tests) {
+            $activeTests = $Config['validTests'] | Where-Object { $_ -ne "all" }
+        }
+        else {
+            $activeTests = $Tests
+        }
+
+        if ($Fix -and $Config['testWeights'] -and $Config['testWeights']['AutoFix']) {
+            $totalSeconds += ([double]$addons.Count * [double]$Config['testWeights']['AutoFix'])
+        }
+
+        if ($Config['testWeights']) {
+            foreach ($t in $activeTests) {
+                # Heuristic: Docker tests skip if docker missing, but we show max ETA first.
+                $weight = $Config['testWeights'][$t]
+                if ($weight) {
+                    $totalSeconds += ([double]$addons.Count * [double]$weight)
+                }
+            }
+        }
+
+        if ($totalSeconds -gt 0) {
+            $etaSpan = [TimeSpan]::FromSeconds($totalSeconds)
+            $etaStr = ""
+            if ($etaSpan.Hours -gt 0) { $etaStr += "$($etaSpan.Hours)h " }
+            if ($etaSpan.Minutes -gt 0) { $etaStr += "$($etaSpan.Minutes)m " }
+            $etaStr += "$($etaSpan.Seconds)s"
+
+            # Write to Console (Colored) - captured by transcript automatically
+            Write-Host "  Estimated Duration: ~$($etaStr.Trim()) (varies by hardware and addon complexity)" -ForegroundColor Gray
+            Write-Host ""
+        }
+
+        # --- DOCKER AVAILABILITY ---
+        $DockerAvailable = $false
+        if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $Config['dockerTests'] })) {
+            $DockerAvailable = Check-Docker
+            if (-not $DockerAvailable) {
+                Write-Host "WARNING: Docker is not available. Docker-related tests will be skipped." -ForegroundColor Yellow
+            }
         }
     }
 
@@ -225,150 +273,166 @@ try {
 
     # 0. Auto-Fix
     if ($Fix) {
-        Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[0 / 13] Running Auto-Fix..." -PercentComplete 0
+        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 13] Running Auto-Fix..." -PercentComplete 0
         try {
             & "$TestsDir/00-autofix.ps1" -Addons $addons -Config $Config -GlobalFix ("all" -in $Addon -and -not $ChangedOnly) -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "AutoFix" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "AutoFix" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 1. Line Endings
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[1 / 13] Line Endings" -PercentComplete 5
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[1 / 13] Line Endings" -PercentComplete 5
     if ("all" -in $Tests -or "LineEndings" -in $Tests) {
         try {
             & "$TestsDir/01-line-endings.ps1" -Addons $addons -Config $Config -Fix $Fix -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "LineEndings" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "LineEndings" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 2. ShellCheck
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[2 / 13] ShellCheck" -PercentComplete 10
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[2 / 13] ShellCheck" -PercentComplete 10
     if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
         try {
             & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "ShellCheck" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "ShellCheck" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 3. Hadolint
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[3 / 13] Hadolint" -PercentComplete 15
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[3 / 13] Hadolint" -PercentComplete 15
     if ("all" -in $Tests -or "Hadolint" -in $Tests) {
         try {
             & "$TestsDir/03-hadolint.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "Hadolint" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "Hadolint" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 4. YamlLint
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[4 / 13] YamlLint" -PercentComplete 25
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[4 / 13] YamlLint" -PercentComplete 25
     if ("all" -in $Tests -or "YamlLint" -in $Tests) {
         try {
             & "$TestsDir/04-yamllint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "YamlLint" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "YamlLint" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 5. MarkdownLint
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[5 / 13] MarkdownLint" -PercentComplete 35
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[5 / 13] MarkdownLint" -PercentComplete 35
     if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
         try {
             & "$TestsDir/05-markdownlint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "MarkdownLint" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "MarkdownLint" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 6. Prettier
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[6 / 13] Prettier" -PercentComplete 45
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[6 / 13] Prettier" -PercentComplete 45
     if ("all" -in $Tests -or "Prettier" -in $Tests) {
         try {
             & "$TestsDir/06-prettier.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "Prettier" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "Prettier" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 7. Add-on Linter
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[7 / 13] Add-on Linter" -PercentComplete 55
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[7 / 13] Add-on Linter" -PercentComplete 55
     if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
         try {
             & "$TestsDir/07-addon-linter.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "AddonLinter" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "AddonLinter" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 8. Compliance
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[8 / 13] Compliance" -PercentComplete 60
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[8 / 13] Compliance" -PercentComplete 60
     if ("all" -in $Tests -or "Compliance" -in $Tests) {
         try {
             & "$TestsDir/08-compliance.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "Compliance" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "Compliance" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 9. Trivy
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[9 / 13] Trivy" -PercentComplete 70
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[9 / 13] Trivy" -PercentComplete 70
     if ("all" -in $Tests -or "Trivy" -in $Tests) {
         try {
             & "$TestsDir/09-trivy.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
-        } catch {
-             Add-Result -Addon "System" -Check "Trivy" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "Trivy" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 10. Version Check
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[10 / 13] Version Check" -PercentComplete 80
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[10 / 13] Version Check" -PercentComplete 80
     if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
         try {
             & "$TestsDir/10-version-check.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "VersionCheck" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "VersionCheck" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 11. Docker Build & Run
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[11 / 13] Docker Build & Run" -PercentComplete 85
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[11 / 13] Docker Build & Run" -PercentComplete 85
     if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
         try {
             $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
             & "$TestsDir/11-docker-build-run.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
-        } catch {
-             Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 12. CodeRabbit
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[12 / 13] CodeRabbit" -PercentComplete 90
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[12 / 13] CodeRabbit" -PercentComplete 90
     if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
         try {
             & "$TestsDir/12-coderabbit.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
-        } catch {
-             Add-Result -Addon "System" -Check "CodeRabbit" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "CodeRabbit" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
     # 13. Workflow Checks
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Status "[13 / 13] Workflow Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 13] Workflow Checks" -PercentComplete 95
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         try {
             & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
-        } catch {
-             Add-Result -Addon "System" -Check "WorkflowChecks" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+        catch {
+            Add-Result -Addon "System" -Check "WorkflowChecks" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
-    Write-Progress -Activity "Verifying $($Addons.Count) Add-ons" -Completed
-} catch {
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Completed
+}
+catch {
     Write-Host "X ERROR: $($_.Exception.Message)" -ForegroundColor Red
     $global:GlobalFailed = $true
-} finally {
+}
+finally {
 
     # --- SUMMARY ---
     # Only show summary header if results exist or specific addons targeted
@@ -394,29 +458,30 @@ try {
     $SkipCount = if ($global:Results) { ($global:Results | Where-Object { $_.Status -eq 'SKIP' }).Count } else { 0 }
 
     Write-Host ""
-    Write-Host "  +-------------------------------------+" -ForegroundColor Gray
-    Write-Host "  |           STATISTICS                |" -ForegroundColor Gray
-    Write-Host "  +-------------------------------------+" -ForegroundColor Gray
-    Write-Host "  |  OK  Passed:  " -NoNewline -ForegroundColor Gray
-    Write-Host ("{0,4}" -f $PassCount) -NoNewline -ForegroundColor Green
-    Write-Host "                    |" -ForegroundColor Gray
-    Write-Host "  |  X   Failed:  " -NoNewline -ForegroundColor Gray
-    Write-Host ("{0,4}" -f $FailCount) -NoNewline -ForegroundColor $(if ($FailCount -gt 0) { "Red" } else { "Green" })
-    Write-Host "                    |" -ForegroundColor Gray
-    Write-Host "  |  !   Warnings:" -NoNewline -ForegroundColor Gray
-    Write-Host ("{0,4}" -f $WarnCount) -NoNewline -ForegroundColor $(if ($WarnCount -gt 0) { "Yellow" } else { "Green" })
-    Write-Host "                    |" -ForegroundColor Gray
-    Write-Host "  |  >>  Skipped: " -NoNewline -ForegroundColor Gray
-    Write-Host ("{0,4}" -f $SkipCount) -NoNewline -ForegroundColor DarkGray
-    Write-Host "                    |" -ForegroundColor Gray
-    Write-Host "  +-------------------------------------+" -ForegroundColor Gray
+    Write-Host "  ┌─────────────────────────────────────┐" -ForegroundColor Gray
+    Write-Host "  │           📊 STATISTICS             │" -ForegroundColor Gray
+    Write-Host "  ├─────────────────────────────────────┤" -ForegroundColor Gray
+    Write-Host "  │  ✅  Passed:   " -NoNewline -ForegroundColor Gray
+    Write-Host ("{0,5}" -f $PassCount) -NoNewline -ForegroundColor Green
+    Write-Host "                │" -ForegroundColor Gray
+    Write-Host "  │  ❌  Failed:   " -NoNewline -ForegroundColor Gray
+    Write-Host ("{0,5}" -f $FailCount) -NoNewline -ForegroundColor $(if ($FailCount -gt 0) { "Red" } else { "Gray" })
+    Write-Host "                │" -ForegroundColor Gray
+    Write-Host "  │  ⚠️  Warnings: " -NoNewline -ForegroundColor Gray
+    Write-Host ("{0,5}" -f $WarnCount) -NoNewline -ForegroundColor $(if ($WarnCount -gt 0) { "Yellow" } else { "Gray" })
+    Write-Host "                │" -ForegroundColor Gray
+    Write-Host "  │  ⏭️  Skipped:  " -NoNewline -ForegroundColor Gray
+    Write-Host ("{0,5}" -f $SkipCount) -NoNewline -ForegroundColor DarkGray
+    Write-Host "                │" -ForegroundColor Gray
+    Write-Host "  └─────────────────────────────────────┘" -ForegroundColor Gray
 
     if ($global:GlobalFailed) {
         Write-Host ""
-        Write-Host "  X Verification FAILED." -ForegroundColor Red
-    } else {
+        Write-Host "  ❌ Verification FAILED!" -ForegroundColor Red
+    }
+    else {
         Write-Host ""
-        Write-Host "  OK Verification PASSED." -ForegroundColor Green
+        Write-Host "  🚀 Verification PASSED!" -ForegroundColor Green
     }
 
     # Export results
@@ -434,7 +499,8 @@ try {
         $ProgressPreference = 'SilentlyContinue'
         try {
             Get-ChildItem -Path $OutputDir -Filter "tmp_*" -Directory | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-        } finally {
+        }
+        finally {
             $ProgressPreference = $oldProgress
         }
     }
@@ -454,7 +520,7 @@ try {
         # Re-fetch and cap at 10
         $files = Get-ChildItem -Path $OutputDir -Filter $filter | Sort-Object LastWriteTime -Descending
         if ($files.Count -gt $retentionCount) {
-             $files | Select-Object -Skip $retentionCount | Remove-Item -Force
+            $files | Select-Object -Skip $retentionCount | Remove-Item -Force
         }
     }
 

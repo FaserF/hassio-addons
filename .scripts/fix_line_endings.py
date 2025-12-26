@@ -30,7 +30,7 @@ def to_lf(path):
             content = content.replace(b"\r\n", b"\n")
             with open(path, "wb") as f:
                 f.write(content)
-    except Exception as e:
+    except OSError as e:
         print(f"Error processing {path}: {e}")
 
 

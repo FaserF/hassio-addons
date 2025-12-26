@@ -1,10 +1,15 @@
+import json
 import os
 import sys
 
 
 def fix_config(path):
-    with open(path, "r") as f:
-        content = f.readlines()
+    try:
+        with open(path, "r") as f:
+            content = f.readlines()
+    except (OSError, IOError) as e:
+        print(f"Error reading {path}: {e}")
+        return
 
     new_content = []
     changed = False
@@ -51,29 +56,39 @@ def fix_config(path):
         new_content.append(line)
 
     if changed:
-        with open(path, "w") as f:
-            f.writelines(new_content)
+        try:
+            with open(path, "w") as f:
+                f.writelines(new_content)
+        except (OSError, IOError) as e:
+            print(f"Error writing {path}: {e}")
 
 
 def fix_build_json(path):
-    with open(path, "r") as f:
-        content = f.read()
+    """Remove empty 'args' objects from build.json files using proper JSON parsing."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, IOError) as e:
+        print(f"Error reading {path}: {e}")
+        return
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON in {path}: {e}")
+        return
 
-    # Simple string removal for "args": {} to avoid JSON parsing reformats
-    if '"args": {}' in content:
+    # Remove empty 'args' key if present
+    changed = False
+    if "args" in data and data["args"] == {}:
         print(f"Removing empty args in {path}")
-        # Handle trailing comma if present before (naive) or just remove the line/block
-        # Better: use regex or replace
-        new_content = (
-            content.replace('"args": {},', "")
-            .replace(', "args": {}', "")
-            .replace('"args": {}', "")
-        )
-        # Clean up empty lines or bad commas?
-        # For simplicity, if it fails JSON lint, user can fix. But mostly args is at end.
-        if new_content != content:
-            with open(path, "w") as f:
-                f.write(new_content)
+        del data["args"]
+        changed = True
+
+    if changed:
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+                f.write("\n")  # Add trailing newline
+        except (OSError, IOError) as e:
+            print(f"Error writing {path}: {e}")
 
 
 SKIP_DIRS = {

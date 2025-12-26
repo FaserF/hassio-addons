@@ -25,12 +25,17 @@ RUN \
     curl
 
 
+# Set shell for pipefail support
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
 ARG SOLUMATI_VERSION="v2025.12.4b0"
+# renovate: datasource=github-releases depName=FaserF/Solumati
+ARG SOLUMATI_SHA256="fd5be5ca00e1f00a6205f15517f5fb3bad15ac7183e51ae5a8fdae2cab37e218"
 WORKDIR /tmp
 RUN curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
-    tar -xzf solumati.tar.gz && \
+    echo "${SOLUMATI_SHA256}  solumati.tar.gz" | sha256sum -c - && \
     mv Solumati-* src && \
     rm solumati.tar.gz
 
@@ -71,10 +76,8 @@ COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
 # Healthcheck
-HEALTHCHECK --interval=5m --timeout=3s \
+HEALTHCHECK --interval=5m --timeout=3s --start-period=60s --retries=3 \
     CMD curl --fail http://127.0.0.1:80/ || exit 1
-
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="Solumati"
@@ -86,3 +89,5 @@ LABEL org.opencontainers.image.url="https://github.com/FaserF/Solumati"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/Solumati"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/solumati/README.md"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+CMD [ "/run.sh" ]

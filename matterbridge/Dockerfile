@@ -8,11 +8,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 RUN apk --no-cache add wget go tar
+# Version and checksum must be updated together
+# Find checksums at: https://github.com/42wim/matterbridge/releases
 ARG MATTERBRIDGE_VERSION="v1.26.0"
+ARG MATTERBRIDGE_SHA256="00e1bbfe3b32f2feccf9a7f13a6f12b1ce28a5eb04cc7b922b344e3493497425"
 
 WORKDIR /matterbridge
 RUN wget -qO /tmp/matterbridge.tar.gz https://github.com/42wim/matterbridge/archive/refs/tags/${MATTERBRIDGE_VERSION}.tar.gz \
-  && echo "00e1bbfe3b32f2feccf9a7f13a6f12b1ce28a5eb04cc7b922b344e3493497425  /tmp/matterbridge.tar.gz" | sha256sum -c - \
+  && echo "${MATTERBRIDGE_SHA256}  /tmp/matterbridge.tar.gz" | sha256sum -c - \
   && tar xzf /tmp/matterbridge.tar.gz --strip-components=1 \
   && rm /tmp/matterbridge.tar.gz \
   && CGO_ENABLED=0 go build -tags whatsappmulti -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=${MATTERBRIDGE_VERSION}" -o /bin/matterbridge

@@ -28,8 +28,14 @@ import json
 import os
 import re
 import sys
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from typing import ClassVar
+
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
 
 
 class SupervisorMockHandler(BaseHTTPRequestHandler):
@@ -43,16 +49,22 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         )
 
     def get_options(self):
-        """Load options from file dynamically."""
-        try:
-            with open(self.options_path, "r", encoding="utf-8-sig") as f:
-                return json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
-            print(
-                f"DEBUG: Failed to reload options from {self.options_path}: {e}",
-                file=sys.stderr,
-            )
-            return {}
+        """Load options from file dynamically with retries for file locks."""
+        for _ in range(3):
+            try:
+                with open(self.options_path, "r", encoding="utf-8-sig") as f:
+                    data = json.load(f)
+                    # Ensure at least info log_level exists
+                    if not data.get("log_level"):
+                        data["log_level"] = "info"
+                    return data
+            except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
+                print(
+                    f"DEBUG: Failed to reload options from {self.options_path}: {e}",
+                    file=sys.stderr,
+                )
+                time.sleep(0.5)
+        return {"log_level": "info"}
 
     def _send_json(self, data, status=200):
         response = json.dumps({"data": data, "result": "ok"})
@@ -193,6 +205,8 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
                 }
             )
+        elif self.path == "/services" or self.path == "/services/mqtt":
+            self._send_json({})
         else:
             # Return empty success for unknown endpoints
             self._send_json({})
@@ -227,7 +241,7 @@ def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
     # Validate bind address
     bind_address = validate_bind_address(bind_address)
 
-    server = HTTPServer((bind_address, port), SupervisorMockHandler)
+    server = ThreadedHTTPServer((bind_address, port), SupervisorMockHandler)
     print(f"Mock Supervisor API running on {bind_address}:{port}")
     print(
         "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping, /os/info, /host/info"

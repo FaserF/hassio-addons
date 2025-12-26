@@ -221,7 +221,99 @@ jobs:
 
             console.log("Final Labels:", finalLabels);
 
-            // Set Labels (Atomic Update: Removes stale managed, keeps manual, adds new managed)
+            // ================================================================
+            // SEMANTIC LABELING: Detect PR characteristics
+            // ================================================================
+
+            // Get PR title and body for semantic analysis
+            const prTitle = context.payload.pull_request.title.toLowerCase();
+            const prBody = (context.payload.pull_request.body || '').toLowerCase();
+            const combinedText = `${prTitle} ${prBody}`;
+
+            // Breaking Change Detection
+            if (combinedText.includes('breaking') ||
+                combinedText.includes('breaking change') ||
+                prTitle.startsWith('!') ||
+                prTitle.includes('!:')) {
+                finalLabels.push('breaking-change');
+                console.log("Added 'breaking-change' label");
+            }
+
+            // Semantic Version Labels (from conventional commits)
+            if (prTitle.startsWith('feat') || prTitle.includes('feature')) {
+                finalLabels.push('enhancement');
+                console.log("Added 'enhancement' label");
+            }
+            if (prTitle.startsWith('fix') || prTitle.includes('bugfix')) {
+                finalLabels.push('bug');
+                console.log("Added 'bug' label");
+            }
+            if (prTitle.startsWith('docs') || prTitle.includes('documentation')) {
+                finalLabels.push('documentation');
+                console.log("Added 'documentation' label");
+            }
+            if (prTitle.startsWith('security') || combinedText.includes('cve-') || combinedText.includes('vulnerability')) {
+                finalLabels.push('security');
+                console.log("Added 'security' label");
+            }
+            if (prTitle.startsWith('perf') || combinedText.includes('performance')) {
+                finalLabels.push('performance');
+                console.log("Added 'performance' label");
+            }
+
+            // Size Labels (based on changes)
+            const additions = context.payload.pull_request.additions || 0;
+            const deletions = context.payload.pull_request.deletions || 0;
+            const totalChanges = additions + deletions;
+
+            if (totalChanges <= 10) {
+                finalLabels.push('size/XS');
+            } else if (totalChanges <= 50) {
+                finalLabels.push('size/S');
+            } else if (totalChanges <= 200) {
+                finalLabels.push('size/M');
+            } else if (totalChanges <= 500) {
+                finalLabels.push('size/L');
+            } else {
+                finalLabels.push('size/XL');
+            }
+            console.log(`Added size label for ${totalChanges} changes`);
+
+            // Dependency Updates (Renovate/Dependabot)
+            const prAuthor = context.payload.pull_request.user.login;
+            if (prAuthor === 'renovate[bot]' || prAuthor === 'dependabot[bot]') {
+                if (!finalLabels.includes('dependencies')) {
+                    finalLabels.push('dependencies');
+                }
+                finalLabels.push('automerge');
+                console.log("Added dependency bot labels");
+            }
+
+            // CI/Workflow changes
+            const hasWorkflowChanges = changedFiles.some(f =>
+                f.filename.startsWith('.github/workflows/') ||
+                f.filename.includes('Dockerfile')
+            );
+            if (hasWorkflowChanges) {
+                finalLabels.push('ci');
+                console.log("Added 'ci' label");
+            }
+
+            // Unsupported addon detection
+            const hasUnsupportedChanges = changedFiles.some(f =>
+                f.filename.startsWith('.unsupported/')
+            );
+            if (hasUnsupportedChanges) {
+                finalLabels.push('unsupported');
+                console.log("Added 'unsupported' label");
+            }
+
+            // Remove duplicates
+            finalLabels = [...new Set(finalLabels)];
+
+            console.log("Final Labels with semantics:", finalLabels);
+
+            // Set Labels (Atomic Update)
             await github.rest.issues.setLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

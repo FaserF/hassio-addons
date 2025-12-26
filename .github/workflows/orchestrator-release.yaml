@@ -1,10 +1,16 @@
 name: Orchestrator Release
 
+# Unified release workflow combining:
+# - Manual releases (workflow_dispatch)
+# - Auto-releases after Renovate PRs merge (pull_request.closed)
+# - Scheduled edge updates (schedule)
+# - Repository dispatch from other workflows
+
 on:
   workflow_dispatch:
     inputs:
       addon:
-        description: "Add-on slug (folder name)"
+        description: "Add-on slug (folder name, or 'detect' for auto)"
         required: true
         type: string
       version:
@@ -16,8 +22,20 @@ on:
           - patch
           - minor
           - major
+      skip_verification:
+        description: "Skip lint/build verification"
+        required: false
+        default: false
+        type: boolean
+
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
   repository_dispatch:
-    types: [dependency-update, base-image-update]
+    types: [dependency-update, base-image-update, auto-release]
+
   schedule:
     - cron: "0 5 1 * *" # Monthly Edge Updates
 
@@ -25,11 +43,29 @@ permissions:
   contents: write
   packages: write
   actions: write
+  pull-requests: read
+
+env:
+  # Addons that should get auto-releases on dependency updates
+  AUTO_RELEASE_ADDONS: |
+    homeassistant-test-instance
+    wiki.js
+    matterbridge
+    pterodactyl-wings
+    AegisBot
+    solumati
+    netboot-xyz
+
+  # Labels that indicate safe auto-release
+  SAFE_LABELS: dependencies automerge
+
+  # Labels that block auto-release
+  BLOCK_LABELS: breaking-change major no-release needs-review
 
 jobs:
-  # --------------------------------------------------------------------------------
+  # ================================================================================
   # SCHEDULE: Monthly Edge Updates
-  # --------------------------------------------------------------------------------
+  # ================================================================================
   schedule-edge:
     name: 🗓️ Monthly Edge Trigger
     if: github.event_name == 'schedule'
@@ -43,81 +79,227 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
-  # --------------------------------------------------------------------------------
-  # VERIFY: Functional Check Before Release
-  # --------------------------------------------------------------------------------
-  verify:
-    name: ✅ Verify ${{ github.event.inputs.addon || 'Automated' }}
-    # needs: [] # Independent verification
-    if: github.event_name == 'workflow_dispatch'
+  # ================================================================================
+  # DETECT: Determine which addons need release
+  # ================================================================================
+  detect:
+    name: 🔍 Detect Release Targets
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.detect.outputs.addons }}
+      should_release: ${{ steps.detect.outputs.should_release }}
+      is_auto: ${{ steps.detect.outputs.is_auto }}
+      version_type: ${{ steps.detect.outputs.version_type }}
+    steps:
+      - name: ⤵️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Detect release targets
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          INPUT_ADDON: ${{ github.event.inputs.addon }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          set -e
+          ADDONS=""
+          SHOULD_RELEASE="false"
+          IS_AUTO="false"
+          VERSION_TYPE="patch"
+
+          # ----------------------------------------------------------------
+          # MANUAL DISPATCH
+          # ----------------------------------------------------------------
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            IS_AUTO="false"
+            VERSION_TYPE="${INPUT_VERSION:-patch}"
+
+            if [ "$INPUT_ADDON" != "detect" ]; then
+              ADDONS="$INPUT_ADDON"
+              SHOULD_RELEASE="true"
+            fi
+
+          # ----------------------------------------------------------------
+          # REPOSITORY DISPATCH
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            IS_AUTO="true"
+            VERSION_TYPE="${DISPATCH_VERSION:-patch}"
+
+            if [ -n "$DISPATCH_ADDON" ]; then
+              ADDONS="$DISPATCH_ADDON"
+              SHOULD_RELEASE="true"
+            fi
+
+          # ----------------------------------------------------------------
+          # MERGED PR (Auto-release)
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            IS_AUTO="true"
+
+            # Check if PR was merged
+            if [ "$PR_MERGED" != "true" ]; then
+              echo "PR was not merged, skipping."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              echo "addons=[]" >> "$GITHUB_OUTPUT"
+              echo "is_auto=false" >> "$GITHUB_OUTPUT"
+              echo "version_type=patch" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # Check for blocking labels
+            for label in ${{ env.BLOCK_LABELS }}; do
+              if echo "$PR_LABELS" | grep -qi "\"$label\""; then
+                echo "⛔ Found blocking label: $label"
+                echo "should_release=false" >> "$GITHUB_OUTPUT"
+                echo "addons=[]" >> "$GITHUB_OUTPUT"
+                echo "is_auto=true" >> "$GITHUB_OUTPUT"
+                echo "version_type=patch" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done
+
+            # Check for safe labels
+            HAS_SAFE="false"
+            for label in ${{ env.SAFE_LABELS }}; do
+              if echo "$PR_LABELS" | grep -qi "\"$label\""; then
+                HAS_SAFE="true"
+                break
+              fi
+            done
+
+            if [ "$HAS_SAFE" != "true" ]; then
+              echo "No safe labels found"
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              echo "addons=[]" >> "$GITHUB_OUTPUT"
+              echo "is_auto=true" >> "$GITHUB_OUTPUT"
+              echo "version_type=patch" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # Get changed files
+            CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' || echo "")
+
+            # Detect affected auto-release addons
+            for addon in ${{ env.AUTO_RELEASE_ADDONS }}; do
+              if echo "$CHANGED" | grep -q "^${addon}/"; then
+                [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
+              fi
+              # Check .unsupported too
+              if echo "$CHANGED" | grep -q "^.unsupported/${addon}/"; then
+                [ -z "$ADDONS" ] && ADDONS=".unsupported/$addon" || ADDONS="$ADDONS,.unsupported/$addon"
+              fi
+            done
+
+            [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
+          fi
+
+          # Convert to JSON array
+          if [ -n "$ADDONS" ]; then
+            JSON=$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)
+          else
+            JSON="[]"
+          fi
+
+          echo "Addons: $ADDONS"
+          echo "Should release: $SHOULD_RELEASE"
+          echo "Is auto: $IS_AUTO"
+          echo "Version type: $VERSION_TYPE"
+
+          echo "addons=$JSON" >> "$GITHUB_OUTPUT"
+          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+          echo "is_auto=$IS_AUTO" >> "$GITHUB_OUTPUT"
+          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+
+  # ================================================================================
+  # VERIFY: Lint and test build before release
+  # ================================================================================
+  verify:
+    name: ✅ Verify ${{ matrix.addon }}
+    needs: detect
+    if: needs.detect.outputs.should_release == 'true' && github.event.inputs.skip_verification != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
 
-      # If manual dispatch, verify the specific add-on
-      - name: 🕵️ Add-on Linter (Manual)
-        if: github.event_name == 'workflow_dispatch'
+      - name: 🕵️ Add-on Linter
         uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
         with:
-          path: "./${{ github.event.inputs.addon }}"
-
-      # If repository dispatch or schedule, we need detection logic (Future Implementation: Smart Add-on Detection)
-      # For now, we assume this job runs for manual or specific events.
+          path: "./${{ matrix.addon }}"
 
       - name: ℹ️ Get Add-on Info
         id: info
-        if: github.event_name == 'workflow_dispatch'
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ github.event.inputs.addon }}"
+          path: "./${{ matrix.addon }}"
 
-      - name: 🏗️ Test Build (Manual)
-        if: github.event_name == 'workflow_dispatch'
+      - name: 🏗️ Test Build
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
             --test \
-            --target /data/${{ github.event.inputs.addon }} \
+            --target /data/${{ matrix.addon }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
             --docker-args "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
-  # --------------------------------------------------------------------------------
+  # ================================================================================
   # RELEASE: Build & Push
-  # --------------------------------------------------------------------------------
+  # ================================================================================
   release:
-    name: 🚀 Release ${{ github.event.inputs.addon || 'Automated' }}
-    needs: verify
-    # Run for repository_dispatch/schedule (verify skipped), or after verify passes for manual dispatch
+    name: 🚀 Release ${{ matrix.addon }}
+    needs: [detect, verify]
     if: |
       always() &&
-      (github.event_name == 'repository_dispatch' ||
-       (github.event_name == 'workflow_dispatch' && (needs.verify.result == 'success' || needs.verify.result == 'skipped')))
+      needs.detect.outputs.should_release == 'true' &&
+      (needs.verify.result == 'success' || needs.verify.result == 'skipped' || github.event.inputs.skip_verification == 'true')
     runs-on: ubuntu-latest
-    # Manual release permissions needs
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
-      - name: 🛑 Fail if no addon
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+      - name: 🏷️ Detect if unsupported
+        id: status
         run: |
-          ADDON="${{ github.event.inputs.addon || github.event.client_payload.addon }}"
-          if [ -z "$ADDON" ]; then
-            echo "::error::No add-on specified for release!"
-            exit 1
+          if [[ "${{ matrix.addon }}" == .unsupported/* ]]; then
+            echo "is_unsupported=true" >> "$GITHUB_OUTPUT"
+            echo "📦 Addon is UNSUPPORTED"
+          else
+            echo "is_unsupported=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: 🔧 Inject Version Warning
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ℹ️ Get Add-on Info
         id: info
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ github.event.inputs.addon || github.event.client_payload.addon }}"
+          path: "./${{ matrix.addon }}"
 
       - name: 🐋 Login to GitHub Container Registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
@@ -126,30 +308,59 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: ⬆️ Bump Version & Changelog
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+      - name: 📝 Bump Version & Changelog
         run: |
-          python3 .scripts/bump_version.py "${{ github.event.inputs.addon || github.event.client_payload.addon }}" "${{ github.event.inputs.version || github.event.client_payload.version }}" --message "Manual Release via Orchestrator"
+          VERSION_TYPE="${{ needs.detect.outputs.version_type }}"
+          IS_AUTO="${{ needs.detect.outputs.is_auto }}"
+
+          if [ "$IS_AUTO" == "true" ]; then
+            MSG="Automatic release after dependency update"
+          else
+            MSG="Manual release via Orchestrator"
+          fi
+
+          python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Version Bump
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         with:
-          commit_message: "chore: release ${{ github.event.inputs.addon || github.event.client_payload.addon }} version bump [skip ci]"
-          file_pattern: "${{ github.event.inputs.addon || github.event.client_payload.addon }}/*"
+          commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip ci]"
+          file_pattern: "${{ matrix.addon }}/*"
 
       - name: 🏗️ Build & Push Add-on
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
             --aarch64 \
             --amd64 \
-            --target /data/${{ github.event.inputs.addon || github.event.client_payload.addon }} \
+            --target /data/${{ matrix.addon }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
             --docker-args "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             --no-cache
+
+      - name: 🔄 Bump to Dev Version
+        if: success()
+        run: |
+          python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Commit Dev Version
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
+        with:
+          commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip ci]"
+          file_pattern: "${{ matrix.addon }}/*"
+
+      - name: 📢 Release Summary
+        run: |
+          echo "### 🚀 Release Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Add-on:** ${{ matrix.addon }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** ${{ needs.detect.outputs.is_auto == 'true' && 'Auto-release' || 'Manual release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
