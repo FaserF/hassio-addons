@@ -80,8 +80,8 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/core/info":
             self._send_json(
                 {
-                    "version": "2025.12.3",
-                    "arch": "amd64",
+                    "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
+                    "arch": os.environ.get("MOCK_ARCH", "amd64"),
                     "machine": "qemux86-64",
                     "state": "running",
                 }
@@ -104,9 +104,9 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/supervisor/info":
             self._send_json(
                 {
-                    "version": "2025.12.3",
+                    "version": os.environ.get("MOCK_SUPERVISOR_VERSION", "2025.12.3"),
                     "channel": "stable",
-                    "arch": "amd64",
+                    "arch": os.environ.get("MOCK_ARCH", "amd64"),
                     "logging": "info",
                     "supported": True,
                     "healthy": True,
@@ -115,8 +115,8 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/os/info":
             self._send_json(
                 {
-                    "version": "16.3",
-                    "upgrade": "16.3",
+                    "version": os.environ.get("MOCK_OS_VERSION", "16.3"),
+                    "upgrade": os.environ.get("MOCK_OS_VERSION", "16.3"),
                     "board": "ova",
                     "boot": "B",
                     "update_available": False,
@@ -126,8 +126,8 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
             self._send_json(
                 {
                     "chassis": "vm",
-                    "operating_system": "Home Assistant OS 16.3 (mocked)",
-                    "kernel": "6.12.51-haos",
+                    "operating_system": f"Home Assistant OS {os.environ.get('MOCK_OS_VERSION', '16.3')} (mocked)",
+                    "kernel": os.environ.get("MOCK_KERNEL_VERSION", "6.12.51-haos"),
                     "hostname": "homeassistant",
                     "features": [
                         "reboot",
@@ -159,9 +159,9 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/info":
             self._send_json(
                 {
-                    "supervisor": "2025.12.3",
-                    "homeassistant": "2025.12.3",
-                    "hassos": "16.3",
+                    "supervisor": os.environ.get("MOCK_SUPERVISOR_VERSION", "2025.12.3"),
+                    "homeassistant": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
+                    "hassos": os.environ.get("MOCK_OS_VERSION", "16.3"),
                 }
             )
         elif self.path == "/store":
@@ -170,7 +170,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
             self._send_json(
                 {
                     "host": "172.30.32.3",
-                    "version": "2025.12.3",
+                    "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
                     "servers": [],
                     "locals": [],
                 }
@@ -179,13 +179,13 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
             self._send_json(
                 {
                     "host": "172.30.32.1",
-                    "version": "2025.12.3",
+                    "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
                     "input": "default",
                     "output": "default",
                 }
             )
         elif self.path == "/multicast/info":
-            self._send_json({"host": "172.30.32.1", "version": "2025.12.3"})
+            self._send_json({"host": "172.30.32.1", "version": os.environ.get("MOCK_CORE_VERSION", "2025.12.3")})
         else:
             # Return empty success for unknown endpoints
             self._send_json({})

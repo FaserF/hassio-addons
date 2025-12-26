@@ -23,7 +23,7 @@ Make documentation a joy to write using Wiki.js's beautiful and intuitive interf
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other custom Home Assistant add-on.
 
-Just click the link above or add my repo to the hassio addons repositorys:
+Just click the link above or add my repo to the Home Assistant Add-ons repository:
 <https://github.com/FaserF/hassio-addons>
 
 Please ensure that the MariaDB Addon is installed!

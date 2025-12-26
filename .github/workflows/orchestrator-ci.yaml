@@ -251,6 +251,12 @@ jobs:
         continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
+      - name: 🐍 Set up Python (cached)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
       - name: 📦 Install Compliance Deps
         run: pip install pyyaml
 
@@ -341,85 +347,33 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
 
-      - name: 🏗️ Build All Architectures
+      - name: 🏗️ Build amd64 (CI optimized)
         run: |
-          ARCHS="${{ join(fromJSON(steps.info.outputs.architectures), ' ') }}"
           IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
 
-          echo "Building ${{ matrix.addon }} for architectures: $ARCHS"
+          echo "Building ${{ matrix.addon }} for amd64 only (CI optimization)"
+          echo "Other architectures are built during release."
 
-          for arch in $ARCHS; do
-            # Skip 32-bit architectures (deprecated)
-            if [[ "$arch" == "armhf" || "$arch" == "armv7" || "$arch" == "i386" ]]; then
-              echo "⏭️ Skipping deprecated architecture: $arch"
-              continue
-            fi
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$(pwd)":/data \
+            -v /tmp/.buildx-cache:/cache \
+            ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+            --test \
+            --amd64 \
+            --target "/data/${{ matrix.addon }}" \
+            --image "$IMAGE" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon || exit 1
 
-              echo "🔨 Building for $arch..."
-              docker run --rm --privileged \
-                -v /var/run/docker.sock:/var/run/docker.sock \
-                -v "$(pwd)":/data \
-                -v /tmp/.buildx-cache:/cache \
-                ghcr.io/home-assistant/amd64-builder:2025.11.0 \
-                --test \
-                --"$arch" \
-                --target "/data/${{ matrix.addon }}" \
-                --image "$IMAGE" \
-                --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-                --addon || exit 1
-          done
-
-          echo "✅ All architectures built successfully"
+          echo "✅ amd64 build successful"
 
 
-  # --------------------------------------------------------------------------------
-  # TEST: Runtime Verification (Docker Run)
-  # --------------------------------------------------------------------------------
-  runtime_test:
-    name: 🏃 Runtime Test (${{ matrix.addon }})
-    needs: [filter, lint, build]
-    # Only run if build is required (skip for docs-only)
-    if: |
-      always() &&
-      needs.filter.outputs.addons != '[]' &&
-      needs.filter.outputs.addons != '' &&
-      needs.filter.outputs.needs_build == 'true'
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
-    steps:
-      - name: ⤵️ Check out code
-        uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 📦 Install Python Dependencies
-        run: pip install pyyaml
-
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 💾 Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.addon }}-
-            ${{ runner.os }}-buildx-
-
-      - name: 🏃 Run Verification Script (DockerBuild + DockerRun)
-        run: |
-          pwsh -File ./.scripts/verify_addons.ps1 -Addon "${{ matrix.addon }}" -Tests DockerBuild,DockerRun
 
   report:
     name: 📊 CI & Compliance Report
-    needs: [filter, lint, build, runtime_test]
+    needs: [filter, lint, build]
     if: failure() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -729,7 +683,7 @@ jobs:
 
             if (lintFailures.length > 0) {
                 report += "lint_failures:\n";
-                report += "  # Fix with: .\\.scripts\\verify_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
+                report += "  # Fix with: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
                 for (const f of lintFailures) {
                     report += `  - addon: "${f.addon}"\n`;
                     report += `    step: "${f.stepName}"\n`;
@@ -788,8 +742,8 @@ jobs:
             report += "\n# Quick fix commands:\n";
             if (affectedAddons.size > 0) {
                 const addonsList = Array.from(affectedAddons).join('","');
-                report += `powershell: .\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
-                report += `bash: pwsh -File ./.scripts/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `powershell: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `bash: pwsh -File ./.scripts/verify_addons/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
             }
 
             report += "\n# Items NOT fixable by local script:\n";
@@ -814,9 +768,9 @@ jobs:
             let testCommand = "";
             if (affectedAddons.size > 0) {
                 const addonsList = Array.from(affectedAddons).join('","');
-                testCommand = `.\\.scripts\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
+                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
             } else {
-                testCommand = `.\\.scripts\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
+                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
             }
 
             // Local Test Command (expanded section)

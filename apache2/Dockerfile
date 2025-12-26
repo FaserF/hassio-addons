@@ -66,7 +66,7 @@ RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
 # Copy data for add-on
 
 # Health check
-HEALTHCHECK CMD curl --fail http://127.0.0.1:80 || exit 1
+HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:80 || exit 1
 
 COPY index.html /
 COPY run.sh /

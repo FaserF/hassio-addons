@@ -9,8 +9,8 @@ log_level=$(bashio::config 'log_level')
 
 export TADO_USERNAME="${username}"
 export TADO_PASSWORD="${password}"
-export TADO_MIN_TEMP="${minTemp}"
-export TADO_MAX_TEMP="${maxTemp}"
+export TADO_MIN_TEMP="${minTemp:-5}"
+export TADO_MAX_TEMP="${maxTemp:-25}"
 
 source ./venv/bin/activate
 

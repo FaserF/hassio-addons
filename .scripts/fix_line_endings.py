@@ -5,7 +5,7 @@ import os
 import sys
 
 EXTENSIONS = [".sh", ".md", ".yaml", ".yml", ".json", "Dockerfile"]
-SKIP_DIRS = [".git", "node_modules", ".vscode"]
+SKIP_DIRS = [".git", "node_modules", ".vscode", "dist", "build", "coverage", ".venv", "env", "tmp"]
 SKIP_PREFIXES = ["verification_results"]
 
 

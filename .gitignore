@@ -47,8 +47,8 @@ report.json
 temp_*.yaml
 temp_*.txt
 temp_*.log
-.scripts/verification_results*.json
-.scripts/verify_log*.txt
+.scripts/verify_addons/logs/verification_results*.json
+.scripts/verify_addons/logs/verify_log*.txt
 
 # Node.js
 node_modules/
@@ -57,3 +57,4 @@ node_modules/
 *.bak
 *.exe
 check_addons.py
+/.scripts/verify_addons/logs/tmp_test_runs

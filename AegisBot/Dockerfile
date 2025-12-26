@@ -12,8 +12,8 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 
-# Install System Requirements
-# hadolint ignore=DL3018,DL3017,SC2012,SC2086
+# Install System Requirements including Node.js
+# hadolint ignore=DL3018,DL3017
 RUN \
     apk upgrade --no-cache && \
     apk add --no-cache \
@@ -25,34 +25,9 @@ RUN \
     curl \
     postgresql-client \
     xz \
-    python3 && \
-    # Install Node.js 22.12.0 (LTS) to meet package requirements (>=20.19.0 || >=22.12.0 || >=24.0.0)
-    # Detect architecture and install appropriate Node.js binary
-    ARCH=$(uname -m) && \
-    NODE_VERSION="v22.12.0" && \
-    case "$ARCH" in \
-        x86_64) \
-            NODE_URL="https://unofficial-builds.nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64-musl.tar.xz" \
-            ;; \
-        aarch64) \
-            NODE_URL="https://unofficial-builds.nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-linux-arm64-musl.tar.xz" \
-            ;; \
-        *) \
-            echo "Unsupported architecture: $ARCH" && exit 1 \
-            ;; \
-    esac && \
-    echo "Installing Node.js ${NODE_VERSION} for architecture ${ARCH}..." && \
-    curl -fsSL "$NODE_URL" -o /tmp/node.tar.xz && \
-    tar -xJf /tmp/node.tar.xz -C /tmp && \
-    NODE_DIR=$(ls -d /tmp/node-${NODE_VERSION}-linux-* 2>/dev/null | head -1) && \
-    if [ -z "$NODE_DIR" ]; then \
-        echo "Failed to extract Node.js" && exit 1; \
-    fi && \
-    mv "$NODE_DIR" /opt/nodejs && \
-    ln -sf /opt/nodejs/bin/node /usr/local/bin/node && \
-    ln -sf /opt/nodejs/bin/npm /usr/local/bin/npm && \
-    ln -sf /opt/nodejs/bin/npx /usr/local/bin/npx && \
-    rm -rf /tmp/node.tar.xz /tmp/node-${NODE_VERSION}-linux-* && \
+    python3 \
+    nodejs \
+    npm && \
     # Verify Node.js version
     node --version && \
     npm --version

@@ -77,8 +77,27 @@ def fix_build_json(path):
                 f.write(new_content)
 
 
-for root, dirs, files in os.walk("."):
-    if "config.yaml" in files:
-        fix_config(os.path.join(root, "config.yaml"))
-    if "build.json" in files:
-        fix_build_json(os.path.join(root, "build.json"))
+SKIP_DIRS = {".git", "node_modules", ".vscode", "dist", "build", "coverage", ".venv", "env", "tmp"}
+
+
+def main():
+    targets = sys.argv[1:] if len(sys.argv) > 1 else ["."]
+
+    for target in targets:
+        if os.path.isfile(target):
+            if target.endswith("config.yaml"):
+                fix_config(target)
+            if target.endswith("build.json"):
+                fix_build_json(target)
+        elif os.path.isdir(target):
+            for root, dirs, files in os.walk(target):
+                dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+
+                if "config.yaml" in files:
+                    fix_config(os.path.join(root, "config.yaml"))
+                if "build.json" in files:
+                    fix_build_json(os.path.join(root, "build.json"))
+
+
+if __name__ == "__main__":
+    main()
