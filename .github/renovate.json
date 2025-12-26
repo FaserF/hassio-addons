@@ -3,7 +3,8 @@
   "extends": [
     "config:recommended"
   ],
-  "rebaseWhen": "behind-base-branch",
+  "rebaseWhen": "conflicted",
+  "prConcurrentLimit": 5,
   "dependencyDashboard": true,
   "labels": [
     "dependencies",
