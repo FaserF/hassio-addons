@@ -1,6 +1,6 @@
 ---
 name: Bash Script Executer
-version: 1.9.21-dev+960196e
+version: 1.9.22-dev+d23bf28
 slug: bashscriptexecuter
 description: >-
   Execute your own bash scripts inside this Homeassistant Addon environment.
