@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs local CI/CD verification for Home Assistant Add-ons V2.2 (Modular).
+    Runs local CI/CD verification for Home Assistant Add-ons V3.0.0.
 #>
 
 param(
@@ -11,7 +11,10 @@ param(
     [switch]$ChangedOnly,
     [switch]$CacheImages,
     [string]$OutputDir,
-    [switch]$Help
+    [switch]$SupervisorTest,
+    [switch]$DisableNotifications,
+    [switch]$Help,
+    [switch]$Debug
 )
 
 # --- SETUP ---
@@ -36,7 +39,7 @@ function Show-Header {
     $version = if ($Config.scriptVersion) { "v$($Config.scriptVersion)" } else { "" }
     # Pad to ensure alignment if possible, roughly
     Write-Host "================================================================================" -ForegroundColor Cyan
-    Write-Host "   🏠  Home Assistant Add-on Verification Suite (Modular) $version  ✅" -ForegroundColor White
+    Write-Host "   🏠  Home Assistant Add-on Verification Suite $version  ✅" -ForegroundColor White
     Write-Host "================================================================================" -ForegroundColor Cyan
     Write-Host ""
 }
@@ -70,7 +73,8 @@ function Show-Help {
     Write-Host "        Available tests:"
     Write-Host "          LineEndings, ShellCheck, Hadolint, YamlLint, MarkdownLint, Prettier,"
     Write-Host "          AddonLinter, Compliance, Trivy, VersionCheck, DockerBuild, DockerRun,"
-    Write-Host "          CodeRabbit, WorkflowChecks, PythonChecks, CustomTests."
+    Write-Host "          CodeRabbit, WorkflowChecks, PythonChecks, CustomTests, IngressCheck."
+    Write-Host "        Note: SupervisorTest requires the -SupervisorTest flag (not included in 'all')."
     Write-Host "        Use 'all' to run all available tests."
     Write-Host "        Default: 'all'"
     Write-Host ""
@@ -93,6 +97,18 @@ function Show-Help {
     Write-Host "    -OutputDir <String>" -ForegroundColor Green
     Write-Host "        Specifies a custom directory for log files and report artifacts."
     Write-Host "        Default: './logs'"
+    Write-Host ""
+    Write-Host "    -SupervisorTest" -ForegroundColor Green
+    Write-Host "        Enables real Supervisor integration testing using the official HA devcontainer."
+    Write-Host "        This runs actual 'ha addons install/start' commands in a real Supervisor environment."
+    Write-Host "        WARNING: This is resource-intensive (5-15 min per add-on) and requires Docker."
+    Write-Host ""
+    Write-Host "    -DisableNotifications" -ForegroundColor Green
+    Write-Host "        Suppresses all terminal notifications (e.g., success/failure pop-ups)."
+    Write-Host "        Useful for CI/CD environments where notifications are not desired."
+    Write-Host ""
+    Write-Host "    -Debug" -ForegroundColor Green
+    Write-Host "        Enables verbose debug logging and terminal output."
     Write-Host ""
     Write-Host "    -Help" -ForegroundColor Green
     Write-Host "        Displays this help message and exits."
@@ -128,6 +144,7 @@ $TestsDir = Join-Path $ModuleDir "tests"
 # Reset Global State
 $global:Results = @()
 $global:GlobalFailed = $false
+$global:DisableNotifications = $DisableNotifications
 
 # Load Common Module
 . "$ModuleDir/lib/common.ps1"
@@ -312,10 +329,16 @@ try {
         $totalSeconds = 0.0
         $activeTests = @()
         if ("all" -in $Tests) {
-            $activeTests = $Config['validTests'] | Where-Object { $_ -ne "all" }
+            # SupervisorTest is resource intensive and excluded from 'all'
+            $activeTests = @($Config['validTests']) | Where-Object { $_ -ne "all" -and $_ -ne "SupervisorTest" }
         }
         else {
-            $activeTests = $Tests
+            $activeTests = @($Tests)
+        }
+
+        # Add SupervisorTest if switch is ON and not already included
+        if ($SupervisorTest -and "SupervisorTest" -notin $activeTests) {
+            $activeTests += "SupervisorTest"
         }
 
         if ($Fix -and $Config['testWeights'] -and $Config['testWeights']['AutoFix']) {
@@ -324,6 +347,13 @@ try {
 
         if ($Config['testWeights']) {
             foreach ($t in $activeTests) {
+                # SupervisorTest: One-time startup cost (~5m) + per-addon cost (~2m)
+                if ($t -eq "SupervisorTest") {
+                    $totalSeconds += 300
+                    $totalSeconds += ([double]$addons.Count * 120)
+                    continue
+                }
+
                 # Heuristic: Docker tests skip if docker missing, but we show max ETA first.
                 $weight = $Config['testWeights'][$t]
                 if ($weight) {
@@ -346,7 +376,7 @@ try {
 
         # --- DOCKER AVAILABILITY ---
         $DockerAvailable = $false
-        if ("all" -in $Tests -or ($Tests | Where-Object { $_ -in $Config['dockerTests'] })) {
+        if ($activeTests | Where-Object { $_ -in $Config['dockerTests'] }) {
             $DockerAvailable = Check-Docker
             if (-not $DockerAvailable) {
                 Write-Host "WARNING: Docker is not available. Docker-related tests will be skipped." -ForegroundColor Yellow
@@ -483,8 +513,27 @@ try {
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[11 / 15] Docker Build & Run" -PercentComplete 85
     if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
         try {
-            $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
-            & "$TestsDir/11-docker-build-run.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
+            $dockerAddons = $addons
+
+            # Optimization: Skip redundant DockerBuild/Run if SupervisorTest handles it
+            if ("SupervisorTest" -in $activeTests) {
+                $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { @{} }
+
+                $dockerAddons = $addons | Where-Object {
+                     $isUnsupported = $_.FullName -match "\\.unsupported\\"
+                     $isSkipped = $skipList.ContainsKey($_.Name)
+                     return ($isUnsupported -or $isSkipped)
+                }
+
+                if ($addons.Count -gt $dockerAddons.Count) {
+                    Write-Host "    NOTE: Skipping DockerBuild/Run for supported add-ons (covered by SupervisorTest)." -ForegroundColor Gray
+                }
+            }
+
+            if ($dockerAddons.Count -gt 0) {
+                $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
+                & "$TestsDir/11-docker-build-run.ps1" -Addons $dockerAddons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
+            }
         }
         catch {
             Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
@@ -527,13 +576,35 @@ try {
     }
 
     # 15. Custom Addon Tests
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 15] Custom Addon Tests" -PercentComplete 98
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 16] Custom Addon Tests" -PercentComplete 94
     if ("all" -in $Tests -or "CustomTests" -in $Tests) {
         try {
             & "$TestsDir/15-custom-addon-tests.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
         }
         catch {
             Add-Result -Addon "System" -Check "CustomTests" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+    }
+
+    # 16. Ingress Check
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[16 / 17] Ingress Validation" -PercentComplete 94
+    if ("IngressCheck" -in $activeTests) {
+        try {
+            & "$TestsDir/16-ingress-check.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+        }
+        catch {
+            Add-Result -Addon "System" -Check "IngressCheck" -Status "SKIP" -Message "Module Crashed: $_"
+        }
+    }
+
+    # 17. Supervisor Integration Test (Optional - requires -SupervisorTest flag or explicit -Tests)
+    if ("SupervisorTest" -in $activeTests) {
+        Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[17 / 17] Supervisor Integration Test" -PercentComplete 98
+        try {
+            & "$TestsDir/17-supervisor-test.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -OutputDir $OutputDir -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -Debug:$Debug
+        }
+        catch {
+            Add-Result -Addon "System" -Check "SupervisorTest" -Status "SKIP" -Message "Module Crashed: $_"
         }
     }
 
@@ -668,9 +739,36 @@ finally {
     Write-Host "Duration: $($Duration.ToString())" -ForegroundColor Cyan
 
     # Final Notification
-    $finalStatus = if ($global:GlobalFailed) { "$e_fail Failed" } else { "$e_pass Passed" }
-    $stats = "P: $PassCount, F: $FailCount, W: $WarnCount, S: $SkipCount"
-    Show-Notification -Title "Verification $finalStatus" -Message "$stats | Duration: $($Duration.ToString())" -LogPath $LogFile
+    # Final Notification
+    $notifTitle = ""
+    $notifMsg = ""
+    $durStr = $Duration.ToString("hh\:mm\:ss")
+
+    if ($FailCount -eq 0 -and $WarnCount -eq 0 -and $GlobalFailed -eq $false) {
+        $notifTitle = "🎉 All Tests Passed!"
+        $notifMsg = "✅ $PassCount tests passed | ⏱ $durStr"
+    }
+    elseif ($PassCount -eq 0 -and $FailCount -gt 0) {
+        $notifTitle = "❌ All Tests Failed!"
+        $notifMsg = "❌ $FailCount tests failed | ⏱ $durStr"
+    }
+    else {
+        # Mixed results
+        $statusIcon = if ($global:GlobalFailed) { "❌" } else { "✅" }
+        $statusText = if ($global:GlobalFailed) { "Failed" } else { "Passed" }
+        $notifTitle = "$statusIcon Verification $statusText"
+
+        # Build Stats String with Emojis
+        $statsParts = @()
+        if ($PassCount -gt 0) { $statsParts += "✅ $PassCount" }
+        if ($FailCount -gt 0) { $statsParts += "❌ $FailCount" }
+        if ($WarnCount -gt 0) { $statsParts += "⚠ $WarnCount" }
+        if ($SkipCount -gt 0) { $statsParts += "⏭ $SkipCount" }
+
+        $notifMsg = "$($statsParts -join '  ') | ⏱ $durStr"
+    }
+
+    Show-Notification -Title $notifTitle -Message $notifMsg -LogPath $LogFile
 
     if ($global:GlobalFailed) { exit 1 } else { exit 0 }
 }

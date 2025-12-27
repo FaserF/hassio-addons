@@ -25,7 +25,7 @@ mockKernelVersion: "6.12.51-haos"
 mockArch: "amd64"
 
 # --- SCRIPT METADATA ---
-scriptVersion: "2.1.0"
+scriptVersion: "3.0.0"
 
 # --- DOCKER RUN SKIPS ---
 # Addons to skip during DockerRun test with reason
@@ -53,10 +53,13 @@ validTests:
   - WorkflowChecks
   - PythonChecks
   - CustomTests
+  - IngressCheck
+  - SupervisorTest
 
 # --- DOCKER-DEPENDENT TESTS ---
 dockerTests:
   - Hadolint
+  - SupervisorTest
   - AddonLinter
   - Trivy
   - DockerBuild
@@ -91,3 +94,22 @@ testWeights:
   PythonChecks: 2.0
   AutoFix: 3.0
   CustomTests: 5.0
+  IngressCheck: 1.0
+  SupervisorTest: 600.0
+
+# --- SUPERVISOR INTEGRATION TEST SETTINGS ---
+# These settings are used for the real Supervisor integration test (optional)
+# Note: SupervisorTest is NOT included in 'all' - requires explicit -SupervisorTest flag
+supervisorTests:
+  # Add-ons to skip during real Supervisor testing (require external services/hardware)
+  skipSupervisorTest:
+    bt-mqtt-gateway: "Requires Bluetooth hardware"
+    tuya-convert: "Requires WiFi hardware for AP mode"
+    switch_lan_play: "Requires external switch-lan-play server"
+    netboot-xyz: "Complex initialization requires real environment"
+    antigravity-server: "Execution takes too long for standard tests"
+
+  # Timeout settings (in seconds)
+  supervisorStartupTimeout: 300
+  addonInstallTimeout: 300
+  addonStartTimeout: 600

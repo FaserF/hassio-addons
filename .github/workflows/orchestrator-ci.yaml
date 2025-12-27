@@ -128,6 +128,7 @@ jobs:
       addons: ${{ steps.filter.outputs.changes }}
       docs_only: ${{ steps.change-type.outputs.docs_only }}
       needs_build: ${{ steps.change-type.outputs.needs_build }}
+      force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
@@ -183,8 +184,28 @@ jobs:
             fi
           done
 
+          # Check for Manual Triggers in Commit Message or PR Title
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          SEARCH_TEXT="$COMMIT_MSG $PR_TITLE"
+          echo "Run Trigger Check on: $SEARCH_TEXT"
+
+          force_supervisor="false"
+          if [[ "$SEARCH_TEXT" == *"[supervisor]"* ]] || [[ "$SEARCH_TEXT" == *"[test-supervisor]"* ]]; then
+             echo "✅ Found [supervisor] trigger!"
+             force_supervisor="true"
+             needs_build="true"
+             # If we force supervisor test, we treat it as if code changed so build runs
+          fi
+
+          if [[ "$SEARCH_TEXT" == *"[build]"* ]] || [[ "$SEARCH_TEXT" == *"[force build]"* ]]; then
+             echo "✅ Found [build] trigger!"
+             needs_build="true"
+          fi
+
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
           echo "needs_build=$needs_build" >> "$GITHUB_OUTPUT"
+          echo "force_supervisor=$force_supervisor" >> "$GITHUB_OUTPUT"
           echo "Results: docs_only=$docs_only, needs_build=$needs_build"
 
   # --------------------------------------------------------------------------------
@@ -370,8 +391,12 @@ jobs:
 
   report:
     name: 📊 CI & Compliance Report
-    needs: [filter, lint, build]
-    if: failure() && github.event_name == 'pull_request'
+    needs: [filter, lint, build, supervisor-test]
+    # Run on failure of any job
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      (needs.lint.result == 'failure' || needs.build.result == 'failure' || needs.supervisor-test.result == 'failure')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -839,16 +864,41 @@ jobs:
                 labels: filteredLabels
             });
 
+  # --------------------------------------------------------------------------------
+  # SUPERVISOR TEST: Real Supervisor Integration (Only on PRs with code changes)
+  # --------------------------------------------------------------------------------
+  supervisor-test:
+    name: 🏠 Supervisor Integration Test
+    needs: [filter, lint, build]
+    # Only run on PRs with actual code changes (not docs-only), and only if build succeeded
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      needs.build.result == 'success' &&
+      (
+        (
+          needs.filter.outputs.addons != '[]' &&
+          needs.filter.outputs.addons != '' &&
+          needs.filter.outputs.docs_only != 'true'
+        ) ||
+        needs.filter.outputs.force_supervisor == 'true'
+      )
+    uses: ./.github/workflows/orchestrator-supervisor-test.yaml
+    with:
+      addons: ${{ needs.filter.outputs.addons }}
+      timeout: "15"
+
   success_report:
     name: ✅ CI Success Summary
-    needs: [filter, lint, build]
-    # Run when filter and lint pass, and build passes OR was skipped (docs-only changes)
+    needs: [filter, lint, build, supervisor-test]
+    # Run when filter and lint pass, build and supervisor-test pass OR were skipped (docs-only changes)
     if: |
       always() &&
       github.event_name == 'pull_request' &&
       needs.filter.result == 'success' &&
       needs.lint.result == 'success' &&
-      (needs.build.result == 'success' || needs.build.result == 'skipped')
+      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      (needs.supervisor-test.result == 'success' || needs.supervisor-test.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

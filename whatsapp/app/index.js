@@ -15,7 +15,7 @@ import crypto from 'crypto';
 const app = express();
 app.use(express.json());
 
-const PORT = 8066;
+const PORT = 8099;
 // Adapt path for local Windows testing vs Docker
 const IS_WIN = process.platform === 'win32';
 const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
@@ -317,17 +317,19 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -335,8 +337,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -388,6 +390,6 @@ app.get(/(.*)/, (req, res) => {
     `);
 });
 
-app.listen(PORT, () => {
-  console.log(`WhatsApp API listening on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`WhatsApp API listening on 0.0.0.0:${PORT}`);
 });

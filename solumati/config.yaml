@@ -10,6 +10,7 @@ arch:
 # image: ghcr.io/faserf/solumati-{arch}
 init: false
 ingress: true
+ingress_port: 80
 panel_icon: mdi:heart-multiple
 panel_title: Solumati
 map:

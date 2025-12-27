@@ -1,0 +1,378 @@
+# Supervisor Integration Test Workflow
+# Runs real Home Assistant Supervisor environment to test add-on installation, startup, and ingress
+#
+# This workflow is called by the main CI orchestrator (orchestrator-ci.yaml)
+# It only runs when:
+# - A PR has relevant code changes (not just documentation)
+# - The add-on has ingress enabled
+#
+# Uses the official HA devcontainer with full Supervisor support
+
+name: "🧪 Supervisor Integration Test"
+
+on:
+  workflow_call:
+    inputs:
+      addons:
+        description: "Add-ons to test (JSON array of addon names)"
+        required: true
+        type: string
+      timeout:
+        description: "Timeout per add-on in minutes"
+        required: false
+        default: "15"
+        type: string
+  workflow_dispatch:
+    inputs:
+      addons:
+        description: "Add-ons to test (comma-separated slugs, or 'ingress' for all ingress-enabled)"
+        required: true
+        default: "whatsapp"
+        type: string
+      timeout:
+        description: "Timeout per add-on in minutes"
+        required: false
+        default: "15"
+        type: string
+
+concurrency:
+  group: supervisor-test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
+  HA_PORT: 7123
+  SUPERVISOR_STARTUP_TIMEOUT: 300
+  ADDON_INSTALL_TIMEOUT: 300
+  ADDON_START_TIMEOUT: 600
+
+jobs:
+  # Filter to only ingress-enabled addons
+  filter-ingress:
+    name: "🔍 Filter Ingress Add-ons"
+    runs-on: ubuntu-latest
+    outputs:
+      ingress_addons: ${{ steps.filter.outputs.ingress_addons }}
+      has_addons: ${{ steps.filter.outputs.has_addons }}
+    steps:
+      - name: "📥 Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "🔧 Filter Ingress-Enabled Add-ons"
+        id: filter
+        run: |
+          # shellcheck disable=SC2086
+          # Parse input - handle both JSON array (from workflow_call) and comma-separated (from dispatch)
+          INPUT='${{ inputs.addons }}'
+
+          # Check if it's a JSON array
+          if echo "$INPUT" | jq -e 'type == "array"' > /dev/null 2>&1; then
+            ADDONS=$(echo "$INPUT" | jq -r '.[]')
+          elif [ "$INPUT" = "ingress" ]; then
+            # Find all add-ons with ingress: true
+            ADDONS=""
+            while IFS= read -r config_file; do
+              addon_dir=$(dirname "$config_file")
+              addon_name=$(basename "$addon_dir")
+              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ]; then
+                ADDONS="${ADDONS}${addon_name}"$'\n'
+              fi
+            done < <(find . -maxdepth 2 -name "config.yaml" -exec grep -l "^ingress: true" {} +)
+          else
+            # Comma-separated list
+            ADDONS=$(echo "$INPUT" | tr ',' '\n')
+          fi
+
+          echo "Input addons:"
+          echo "$ADDONS"
+
+          # Filter to only ingress-enabled addons
+          INGRESS_ADDONS=""
+          for addon in $ADDONS; do
+            addon=$(echo "$addon" | xargs)  # trim whitespace
+            config_file=""
+
+            if [ -f "./$addon/config.yaml" ]; then
+              config_file="./$addon/config.yaml"
+            elif [ -f "./.unsupported/$addon/config.yaml" ]; then
+              echo "⏭️ $addon is unsupported - skipping"
+              continue
+            fi
+
+            if [ -n "$config_file" ] && grep -q "^ingress: true" "$config_file" 2>/dev/null; then
+              echo "✅ $addon has ingress enabled"
+              if [ -n "$INGRESS_ADDONS" ]; then
+                INGRESS_ADDONS="$INGRESS_ADDONS,$addon"
+              else
+                INGRESS_ADDONS="$addon"
+              fi
+            else
+              echo "⏭️ $addon does not have ingress - skipping"
+            fi
+          done
+
+          if [ -z "$INGRESS_ADDONS" ]; then
+            echo "No ingress-enabled add-ons to test"
+            echo "ingress_addons=" >> $GITHUB_OUTPUT
+            echo "has_addons=false" >> $GITHUB_OUTPUT
+          else
+            echo "Ingress add-ons to test: $INGRESS_ADDONS"
+            echo "ingress_addons=$INGRESS_ADDONS" >> $GITHUB_OUTPUT
+            echo "has_addons=true" >> $GITHUB_OUTPUT
+          fi
+
+  supervisor-test:
+    name: "🏠 Supervisor Test"
+    needs: filter-ingress
+    if: needs.filter-ingress.outputs.has_addons == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: "📥 Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "🐳 Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "📦 Pull Devcontainer Image"
+        run: docker pull ${{ env.DEVCONTAINER_IMAGE }}
+
+      - name: "🚀 Start Supervisor Environment"
+        id: supervisor
+        run: |
+          # Create network
+          docker network create ha-test-net 2>/dev/null || true
+
+          # Create data directories
+          mkdir -p /tmp/ha-data/addons/local
+          mkdir -p /tmp/ha-data/config
+          mkdir -p /tmp/ha-data/share
+          mkdir -p /tmp/ha-data/ssl
+
+          # Generate dummy SSL certs for universal support
+          openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
+            -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
+            -keyout /tmp/ha-data/ssl/privkey.pem \
+            -out /tmp/ha-data/ssl/fullchain.pem
+
+          # Copy add-ons to local addons directory
+          IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
+          for addon in "${ADDON_ARRAY[@]}"; do
+            addon=$(echo "$addon" | xargs)  # trim whitespace
+            if [ -d "./$addon" ]; then
+              echo "Copying $addon to local addons..."
+              cp -r "./$addon" "/tmp/ha-data/addons/local/"
+            elif [ -d "./.unsupported/$addon" ]; then
+              echo "Copying $addon from unsupported to local addons..."
+              cp -r "./.unsupported/$addon" "/tmp/ha-data/addons/local/"
+            else
+              echo "Warning: Add-on $addon not found"
+            fi
+          done
+
+          # Start the devcontainer with Supervisor
+          docker run -d \
+            --name ha-supervisor-test \
+            --privileged \
+            --network ha-test-net \
+            -p ${{ env.HA_PORT }}:7123 \
+            -v /tmp/ha-data/addons:/mnt/supervisor/addons \
+            -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
+            -v /tmp/ha-data/share:/mnt/supervisor/share \
+            -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
+            -e SUPERVISOR_SHARE_DATA=1 \
+            -v /var/lib/docker \
+            ${{ env.DEVCONTAINER_IMAGE }} \
+            sleep infinity
+
+          echo "Container started, waiting for initialization..."
+          sleep 10
+
+          # Create missing directory for Docker
+          docker exec ha-supervisor-test mkdir -p /var/lib/docker
+
+          # Start Supervisor inside the container (detached)
+          # Use 'script' to maintain TTY for stty checks while logging
+          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log || true
+
+          echo "Waiting for Supervisor to be ready..."
+          for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
+            if docker exec ha-supervisor-test ha supervisor info >/dev/null 2>&1; then
+              echo "✅ Supervisor is ready after ${i}s"
+              echo "supervisor_ready=true" >> $GITHUB_OUTPUT
+              break
+            fi
+
+            # Fail fast if container crashed
+            if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
+              echo "Container stopped unexpectedly!"
+              break
+            fi
+
+            echo "Waiting... ($i/${{ env.SUPERVISOR_STARTUP_TIMEOUT }})"
+            sleep 1
+          done
+
+          if ! grep -q supervisor_ready=true $GITHUB_OUTPUT 2>/dev/null; then
+            echo "❌ Supervisor failed to start"
+            echo "::group::Internal Supervisor Logs"
+            docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
+            echo "::endgroup::"
+            echo "::group::Docker Logs"
+            docker logs ha-supervisor-test
+            echo "::endgroup::"
+            echo "supervisor_ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Dependencies
+          MYSQL_FAILED=false
+          if echo "${{ needs.filter-ingress.outputs.ingress_addons }}" | grep -qE "wiki.js|pterodactyl-panel"; then
+            echo "Installing Dependency: MariaDB (core_mariadb)..."
+            if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
+                 echo "⚠️ Failed to install core_mariadb"
+                 MYSQL_FAILED=true
+            elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
+                 echo "⚠️ Failed to start core_mariadb"
+                 MYSQL_FAILED=true
+            else
+                 echo "Waiting for MariaDB..."
+                 sleep 30
+            fi
+          fi
+
+      - name: "🔍 Test Add-ons"
+        if: steps.supervisor.outputs.supervisor_ready == 'true'
+        id: test
+        run: |
+          RESULTS=""
+          FAILED=0
+          TIMEOUT="${{ inputs.timeout || '15' }}"
+
+          IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
+
+          for addon in "${ADDON_ARRAY[@]}"; do
+            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki.js|pterodactyl-panel"; then
+                 echo "⏭️ $addon dependency failed - skipping"
+                 RESULTS="$RESULTS\n⏭️ $addon: SKIP (Dependency failed)"
+                 continue
+            fi
+            addon=$(echo "$addon" | xargs)  # trim whitespace
+            echo ""
+            echo "=========================================="
+            echo "Testing: $addon"
+            echo "=========================================="
+
+            # Get add-on slug (might be different from directory name)
+            SLUG="local_$addon"
+
+            # Refresh add-on store
+            echo "Refreshing add-on store..."
+            docker exec ha-supervisor-test ha addons reload || true
+            sleep 5
+
+            # Install add-on
+            echo "Installing $addon..."
+            if timeout ${ADDON_INSTALL_TIMEOUT}s docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1; then
+              echo "✅ Install successful"
+
+              # Start add-on
+              echo "Starting $addon..."
+              if timeout ${ADDON_START_TIMEOUT}s docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1; then
+                echo "✅ Start command successful"
+
+                # Poll for status (wait for start)
+                echo "Waiting for add-on to start (up to ${ADDON_START_TIMEOUT}s)..."
+                START_TIME=$(date +%s)
+                END_TIME=$((START_TIME + ADDON_START_TIMEOUT))
+                STATUS="unknown"
+
+                while [ $(date +%s) -lt $END_TIME ]; do
+                  STATUS=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')
+                  if [ "$STATUS" = "started" ]; then
+                    break
+                  fi
+                  # Echo dots for progress to avoid huge logs
+                  echo -n "."
+                  sleep 5
+                done
+                echo ""
+                echo "Final Add-on state: $STATUS"
+
+                if [ "$STATUS" = "started" ]; then
+                  # Test ingress
+                  echo "Testing ingress endpoint..."
+                  INGRESS_URL=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')
+                  if [ -n "$INGRESS_URL" ]; then
+                    HTTP_CODE=$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")
+                    if echo "$HTTP_CODE" | grep -q "^[23]"; then
+                      echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
+                      RESULTS="$RESULTS\n✅ $addon: PASS (Ingress OK)"
+                    else
+                      echo "⚠️ Ingress returned HTTP $HTTP_CODE"
+                      RESULTS="$RESULTS\n⚠️ $addon: WARN (Ingress HTTP $HTTP_CODE)"
+                    fi
+                  else
+                    RESULTS="$RESULTS\n✅ $addon: PASS (Running, no ingress URL)"
+                  fi
+                else
+                  echo "❌ Add-on not in 'started' state"
+                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
+                  RESULTS="$RESULTS\n❌ $addon: FAIL (State: $STATUS)"
+                  FAILED=1
+                fi
+              else
+                echo "❌ Start failed"
+                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
+                RESULTS="$RESULTS\n❌ $addon: FAIL (Start failed)"
+                FAILED=1
+              fi
+
+              # Stop and uninstall
+              echo "Cleaning up $addon..."
+              docker exec ha-supervisor-test ha addons stop "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
+
+            else
+              echo "❌ Install failed"
+              RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
+              FAILED=1
+            fi
+          done
+
+          echo ""
+          echo "=========================================="
+          echo "SUMMARY"
+          echo "=========================================="
+          echo -e "$RESULTS"
+
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: "🧹 Cleanup"
+        if: always()
+        run: |
+          echo "Stopping and removing containers..."
+          docker stop ha-supervisor-test 2>/dev/null || true
+          docker rm -f ha-supervisor-test 2>/dev/null || true
+          docker network rm ha-test-net 2>/dev/null || true
+          rm -rf /tmp/ha-data
+
+      - name: "📊 Summary"
+        if: always()
+        run: |
+          {
+            echo "## 🧪 Supervisor Integration Test Results"
+            echo ""
+            echo "**Add-ons tested:** ${{ needs.filter-ingress.outputs.ingress_addons }}"
+            echo ""
+            if [ "${{ steps.test.outputs.failed }}" = "1" ]; then
+              echo "❌ **Some tests failed**"
+            else
+              echo "✅ **All tests passed**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

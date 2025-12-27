@@ -59,3 +59,4 @@ node_modules/
 check_addons.py
 Check-Syntax.ps1
 /.scripts/verify_addons/logs/
+*.pem

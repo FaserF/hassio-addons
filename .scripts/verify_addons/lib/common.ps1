@@ -97,7 +97,7 @@ function Show-Notification {
         [string]$LogPath
     )
 
-    if (-not $IsWindows -or $env:GITHUB_ACTIONS) { return }
+    if (-not $IsWindows -or $env:GITHUB_ACTIONS -or $global:DisableNotifications) { return }
 
     # Constraint: Skip on PowerShell 5 (Desktop) as requested
     if ($PSVersionTable.PSVersion.Major -lt 6) {
@@ -120,13 +120,17 @@ function Show-Notification {
                 }
 
                 # Import if needed
-                if (-not (Get-Module BurntToast)) { Import-Module BurntToast -ErrorAction Stop }
-
                 # Send Notification using BurntToast
-                $btn = New-BurntToastButton -Content "Open Log File" -Argument $LogPath -ActivationType Protocol
-                New-BurntToastNotification -Text $Title, $Message -Button $btn -AppLogo "https://raw.githubusercontent.com/home-assistant/assets/master/logo/logo.png" -Silent
+                $header = New-BTHeader -Id "HA_Addon_Verify" -Title "FaserF's HA Addon Verification"
+                $btn = New-BTButton -Content "Open Log File" -Arguments $LogPath -ActivationType Protocol
+
+                $logoPath = Join-Path $ModuleDir "assets\logo.png"
+                if (-not (Test-Path $logoPath)) { $logoPath = $null }
+
+                New-BurntToastNotification -Text $Title, $Message -Button $btn -Header $header -AppLogo $logoPath -Silent
                 return
             } catch {
+                Write-Host "  ! NOTE: Notifications on PS7 failed: $($_.Exception.Message)" -ForegroundColor Red
                 Write-Host "  ! NOTE: Notifications on PS7 require 'BurntToast'." -ForegroundColor DarkGray
                 Write-Host "    Install manually: Install-Module BurntToast -Scope CurrentUser" -ForegroundColor DarkGray
                 return
@@ -154,7 +158,7 @@ function Show-Notification {
         $xml = [Activator]::CreateInstance($xmlType)
         $xml.LoadXml($template)
         $toast = [Activator]::CreateInstance($toastType, $xml)
-        $notifier = $notifierType::CreateToastNotifier("HA Addon Verify")
+        $notifier = $notifierType::CreateToastNotifier("FaserF's HA Addon Verification")
         $notifier.Show($toast)
     } catch {
         Write-Host "  ! NOTE: Notification failed to send: $($_.Exception.Message)" -ForegroundColor DarkGray
@@ -479,14 +483,14 @@ function Get-TestConfig {
         latestNode = ""
         builderImage = ""
         scriptVersion = ""
-        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks", "CustomTests")
-        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks", "CustomTests")
+        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks", "CustomTests", "IngressCheck", "SupervisorTest")
+        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks", "CustomTests", "SupervisorTest")
         docsOnlyTests = @("MarkdownLint", "Prettier", "LineEndings")
         testWeights = @{
             LineEndings = 0.2; ShellCheck = 1.0; Hadolint = 3.0; YamlLint = 0.5
             MarkdownLint = 0.5; Prettier = 1.5; AddonLinter = 10.0; Compliance = 1.0
             Trivy = 60.0; VersionCheck = 1.0; DockerBuild = 180.0; DockerRun = 60.0
-            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0; CustomTests = 5.0
+            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0; CustomTests = 5.0; IngressCheck = 1.0; SupervisorTest = 600.0
         }
     }
 
