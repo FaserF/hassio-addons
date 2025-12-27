@@ -210,7 +210,7 @@ jobs:
           steps.check-author.outputs.allowed == 'true' &&
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.check-label.outputs.skip != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
