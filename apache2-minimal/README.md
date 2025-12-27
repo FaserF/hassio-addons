@@ -6,6 +6,7 @@
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 [![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)](https://github.com/FaserF/hassio-addons/releases)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+[![View in Code Wiki](https://img.shields.io/badge/View_in-Code_Wiki-8A2BE2?style=flat-square&logo=google&logoColor=white)](https://codewiki.google/github.com/FaserF/hassio-addons/tree/master/apache2-minimal)
 
 > Open Source Webserver without PHP and minimal extra modules.
 

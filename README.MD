@@ -6,6 +6,8 @@ maintained by FaserF.
 > [!NOTE]
 > These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
 
+[![View in Code Wiki](https://img.shields.io/badge/View_in-Code_Wiki-8A2BE2?style=flat-square&logo=google&logoColor=white)](https://codewiki.google/github.com/FaserF/hassio-addons)
+
 ## Installation 🚀
 
 ### 📦 Stable Channel (Recommended)
