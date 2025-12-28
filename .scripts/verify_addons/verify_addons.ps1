@@ -569,8 +569,7 @@ try {
                 if ($dockerAddons.Count -gt 0) {
                     $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
                     & "$TestsDir/11-docker-build-run.ps1" -Addons $dockerAddons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
-                }
-                if ($dockerAddons.Count -gt 0) {
+
                     # Smart Notification for Docker Completion (heaviest part)
                     Show-Notification -Title "🐳 Docker Tests Complete" -Message "Docker build/run phase finished. Proceeding with remaining checks..." -LogPath $LogFile
                 }
@@ -911,25 +910,53 @@ finally {
 
         # Mapping of Test Names to IDs (Arbitrary but consistent)
         $TestIDs = @{
-            "LineEndings"    = 1
-            "ShellCheck"     = 2
-            "Hadolint"       = 3
-            "YamlLint"       = 4
-            "MarkdownLint"   = 5
-            "Prettier"       = 6
-            "AddonLinter"    = 7
-            "Compliance"     = 8
-            "Trivy"          = 9
-            "VersionCheck"   = 10
-            "DockerBuild"    = 11
-            "DockerRun"      = 12
-            "CodeRabbit"     = 13
-            "WorkflowChecks" = 14
-            "PythonChecks"   = 15
-            "CustomTests"    = 16
-            "IngressCheck"   = 17
-            "SupervisorTest" = 18
-            "AutoFix"        = 19
+            "LineEndings"            = 1
+            "ShellCheck"             = 2
+            "Hadolint"               = 3
+            "YamlLint"               = 4
+            "MarkdownLint"           = 5
+            "Prettier"               = 6
+            "AddonLinter"            = 7
+            "Compliance"             = 8
+            "Trivy"                  = 9
+            "VersionCheck"           = 10
+            "Ver-Base"               = 10
+            "Ver-Debian"             = 10
+            "Ver-Node"               = 10
+            "Ver-Python"             = 10
+            "DockerBuild"            = 11
+            "DockerRun"              = 12
+            "DockerBuildRun"         = 12
+            "CodeRabbit"             = 13
+            "CR-UnpinnedGit"         = 13
+            "CR-GenericHealth"       = 13
+            "CR-TarballIntegrity"    = 13
+            "CR-DuplicateARG"        = 13
+            "CR-LatestTag"           = 13
+            "CR-HealthcheckTiming"   = 13
+            "CR-HealthcheckNone"     = 13
+            "CR-FragileHealth"       = 13
+            "CR-PipNoCache"          = 13
+            "CR-BuildDateDefault"    = 13
+            "CR-NonStandardHadolint" = 13
+            "CR-PythonBase"          = 13
+            "CR-Language"            = 13
+            "CR-FragileSed"          = 13
+            "CR-GitHubAPIHeader"     = 13
+            "CR-MovingTag"           = 13
+            "WorkflowChecks"         = 14
+            "Actionlint"             = 14
+            "Zizmor"                 = 14
+            "CR-SHA-Validation"      = 14
+            "CR-Permissions"         = 14
+            "CR-TriggerOpt"          = 14
+            "CR-RunnerVersion"       = 14
+            "CR-SHA-Pinning"         = 14
+            "PythonChecks"           = 15
+            "CustomTests"            = 16
+            "IngressCheck"           = 17
+            "SupervisorTest"         = 18
+            "AutoFix"                = 19
         }
 
         $failedChecks = $global:Results | Where-Object { $_.Status -eq "FAIL" } | Select-Object -ExpandProperty Check -Unique

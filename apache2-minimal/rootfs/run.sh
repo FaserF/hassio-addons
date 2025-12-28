@@ -107,9 +107,6 @@ sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
 	if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
 		cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
 		echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
 	fi
@@ -140,7 +137,7 @@ if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 fi
 
 if [ "$default_ssl_conf" = "get_config" ]; then
-	if [ -f /etc/apache2/httpd.conf ]; then
+	if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 		cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
 		echo "You have requested a copy of the apache2 ssl config. You can now find it at /share/000-default-le-ssl.conf ."
 	fi

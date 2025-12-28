@@ -93,12 +93,14 @@ users:
 In version **1.0.14**, the configuration for users was changed from a single set of keys to a list-based format.
 
 ### Old Config (v1.0.13 and below)
+
 ```yaml
 username: admin
 password: changeme
 ```
 
 ### New Config (v1.0.14 and above)
+
 ```yaml
 users:
   - username: admin
@@ -106,6 +108,7 @@ users:
 ```
 
 > [!IMPORTANT]
+>
 > - Ensure you validate your YAML indentation when converting to the list format.
 > - After updating the configuration, you must **restart** the add-on for the changes to take effect.
 

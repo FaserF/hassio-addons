@@ -48,7 +48,7 @@ if ($DockerAvailable) {
         }
     }
     catch {
-        Add-Result -Addon "Workflows" -Check "Zizmor" -Status "SKIP" -Message "Docker unavailable"
+        Add-Result -Addon "Workflows" -Check "Zizmor" -Status "SKIP" -Message "Zizmor command failed: $_"
     }
 }
 

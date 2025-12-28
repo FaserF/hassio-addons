@@ -95,11 +95,13 @@ try {
     $configDir = Join-Path $dataDir "config"
     $shareDir = Join-Path $dataDir "share"
     $sslDir = Join-Path $dataDir "ssl"
+    $mediaDir = Join-Path $dataDir "media"
 
     New-Item -ItemType Directory -Path $addonsDir -Force | Out-Null
     New-Item -ItemType Directory -Path $configDir -Force | Out-Null
     New-Item -ItemType Directory -Path $shareDir -Force | Out-Null
     New-Item -ItemType Directory -Path $sslDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $mediaDir -Force | Out-Null
 
     # Create dummy certs for all add-ons (universal SSL support)
     $certContent = @"
@@ -179,6 +181,15 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         Write-Host "      Copying $($addon.Name) as $safeName..." -ForegroundColor DarkGray
         Copy-Item -Path $addonPath -Destination $targetPath -Recurse -Force
+
+        # Special setup for netboot-xyz
+        if ($safeName -eq "local_netboot-xyz" -or $addon.Name -eq "netboot-xyz") {
+             $nbImage = Join-Path $mediaDir "netboot/image"
+             $nbConfig = Join-Path $mediaDir "netboot/config"
+             New-Item -ItemType Directory -Path $nbImage -Force | Out-Null
+             New-Item -ItemType Directory -Path $nbConfig -Force | Out-Null
+             Write-Host "      Created netboot media directories for $safeName" -ForegroundColor DarkGray
+        }
     }
 
     # Start the devcontainer
@@ -195,7 +206,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${dataDirUnix}/addons:/mnt/supervisor/addons",
         "-v", "${dataDirUnix}/config:/mnt/supervisor/homeassistant",
         "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rslave",
+        "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rslave",
         "-v", "${dataDirUnix}/ssl:/mnt/supervisor/ssl",
+        "-v", "${dataDirUnix}/media:/mnt/supervisor/media",
         "-v", "${logFileUnix}:/tmp/supervisor.log",
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",
@@ -451,7 +464,8 @@ echo "Successfully updated addons.json"
 
                             # Execute shell script inside container
                             # $addonsDir is mounted at /mnt/supervisor/addons/local
-                            docker exec $containerName sh /mnt/supervisor/addons/local/update_config.sh $slug $opts 2>&1 | Write-Host
+                            # Use sh -c and single quotes to protect the JSON string from shell separation
+                            docker exec $containerName sh -c "/mnt/supervisor/addons/local/update_config.sh '$slug' '$opts'" 2>&1 | Write-Host
 
                             if ($LASTEXITCODE -ne 0) {
                                 Write-Warning "Failed to set options via direct file edit"

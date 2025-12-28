@@ -142,6 +142,7 @@ fi
 
 if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 	if [ -f "$default_conf" ]; then
+		mkdir -p /etc/apache2/sites-enabled
 		if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default.conf
 		fi
@@ -164,6 +165,7 @@ fi
 
 if [ "$default_ssl_conf" != "default" ]; then
 	if [ -f "$default_ssl_conf" ]; then
+		mkdir -p /etc/apache2/sites-enabled
 		if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		fi
