@@ -214,12 +214,13 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${logFileUnix}:/tmp/supervisor.log",
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",
+        "-e", "SUPERVISOR_TOKEN=TestToken123", # Required for direct API calls via curl
         $devcontainerImage,
         "sleep", "infinity"
     )
 
     if ($PSBoundParameters['Debug']) {
-        Write-Host "    > Debug: Running docker with args: @runArgs" -ForegroundColor DarkGray
+        Write-Host "    > Debug: Running docker with args: $($runArgs -join ' ')" -ForegroundColor DarkGray
     }
     $startResult = & docker @runArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -426,6 +427,15 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                 if ($installOutput -match "error|failed|Error") {
                     $testPassed = $false
                     $testMessage = "Install failed: $installOutput"
+
+                    # Try to fetch logs if install failed (sometimes helpful)
+                    if ($installOutput -match "500") {
+                        $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                        if ($logs) {
+                             $logStr = $logs -join "`n"
+                             $testMessage += ". Logs: $logStr"
+                        }
+                    }
                 }
                 else {
                     Write-Host "    ✅ Install successful" -ForegroundColor Green
@@ -466,8 +476,6 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                             # Create text file with options locally
                             # Use proper .NET write to avoid BOM and ensure LF
-                            # Create text file with options locally
-                            # Use proper .NET write to avoid BOM and ensure LF
                             $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
                             # Check HA Supervisor API docs. POST /addons/{slug}/options takes {"options": { ... }}
                             # My $opts string is usually '{"key": "val"}'. So I need to wrap it.
@@ -479,9 +487,11 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                             # Execute CURL directly to Supervisor API
                             # This bypasses HA CLI issues completely. We use sh -c to allow variable expansion of SUPERVISOR_TOKEN
-                            $curlOut = docker exec $containerName sh -c "curl -s -o /tmp/curl_out.json -w ""%{http_code}"" -X POST -H ""Authorization: Bearer \$(printenv SUPERVISOR_TOKEN)"" -H ""Content-Type: application/json"" -d @/tmp/options.json http://supervisor/addons/$slug/options" 2>&1
+                            # Ensure $SUPERVISOR_TOKEN is NOT expanded by PowerShell (use backtick escape)
+                            $curlCmd = "curl -s -o /tmp/curl_out.json -w ""%{http_code}"" -X POST -H ""Authorization: Bearer `$SUPERVISOR_TOKEN"" -H ""Content-Type: application/json"" -d @/tmp/options.json http://supervisor/addons/$slug/options"
+                            $curlOut = docker exec $containerName sh -c $curlCmd 2>&1
 
-                            if ($curlOut -ne "200") {
+                            if ("$curlOut".Trim() -ne "200") {
                                 Write-Warning "Failed to set options via API. status=$curlOut"
                                 $errDetails = docker exec $containerName cat /tmp/curl_out.json
                                 Write-Warning "API Response: $errDetails"
@@ -499,7 +509,6 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                                 }
                             }
 
-                            Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
 
                             Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
                         }
@@ -518,7 +527,34 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         $startOutput = Receive-Job $startJob
                         Remove-Job $startJob -Force
 
+                        # Check for immediate start failure (e.g. 500 error)
+                        if ($startOutput -match "error|failed|Error|500 Server Error") {
+                            $testPassed = $false
+                            $testMessage = "Start failed: $startOutput"
+                             # Add logs for start failures
+                            $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                            if ($logs) {
+                                 $logStr = $logs -join "`n"
+                                 $testMessage += ". Logs: $logStr"
+                            }
+                            Write-Host "    ❌ Start command failed" -ForegroundColor Red
+                        }
+
                         Start-Sleep -Seconds 2
+
+                        # Check for immediate start failure (e.g. 500 error)
+                        if ($startOutput -match "error|failed|Error|500 Server Error") {
+                            $testPassed = $false
+                            $testMessage = "Start failed: $startOutput"
+                             # Add logs for start failures
+                            $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                            if ($logs) {
+                                 $logStr = $logs -join "`n"
+                                 $testMessage += ". Logs: $logStr"
+                            }
+                            Write-Host "    ❌ Start command failed" -ForegroundColor Red
+                        }
+
 
                         # Poll for status (wait for start/pull)
                         $pollingTimeout = $addonStartTimeout
