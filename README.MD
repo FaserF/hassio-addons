@@ -6,6 +6,8 @@ maintained by FaserF.
 > [!NOTE]
 > These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
 
+[![View in Code Wiki](https://img.shields.io/badge/View_in-Code_Wiki-8A2BE2?style=flat-square&logo=google&logoColor=white)](https://codewiki.google/github.com/FaserF/hassio-addons)
+
 ## Installation 🚀
 
 ### 📦 Stable Channel (Recommended)
@@ -48,31 +50,32 @@ The table below shows **all add-ons** in this repository, including unsupported 
 
 <!-- markdownlint-disable MD060 -->
 
-| Name                                                            | Description                               | Status |
-| :-------------------------------------------------------------- | :---------------------------------------- | :----- |
-| **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     |
-| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     |
-| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     |
-| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     |
-| **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     |
-| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     |
-| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     |
-| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     |
-| **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     |
-| **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     |
-| **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     |
-| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     |
-| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                   | ✅     |
-| **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server               | ✅     |
-| **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                       | ✅     |
-| **[Solumati](solumati)**                                        | Solar Panel Monitoring                    | ✅     |
-| **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client           | ✅     |
-| **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server           | ✅     |
-| **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     |
-| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     |
-| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     |
-| **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     |
-| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     |
+| Name                                                            | Description                               | Status | Added |
+| :-------------------------------------------------------------- | :---------------------------------------- | :----- | :---- |
+| **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     | 2025-12 |
+| **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC              | ⚠️     | 2025-12 |
+| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     | 2023-03 |
+| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     | 2023-03 |
+| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     | 2023-03 |
+| **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     | 2023-05 |
+| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     | 2025-12 |
+| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     | 2025-12 |
+| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     | 2025-12 |
+| **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     | 2023-05 |
+| **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     | 2023-05 |
+| **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     | 2023-05 |
+| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     | 2023-05 |
+| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                   | ✅     | 2023-05 |
+| **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server               | ✅     | 2025-12 |
+| **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                       | ✅     | 2025-12 |
+| **[Solumati](solumati)**                                        | Solar Panel Monitoring                    | ✅     | 2025-12 |
+| **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client           | ✅     | 2023-05 |
+| **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server           | ✅     | 2023-05 |
+| **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     | 2023-05 |
+| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     | 2025-12 |
+| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     | 2025-12 |
+| **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     | 2023-05 |
+| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2025-12 |
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
@@ -84,6 +87,13 @@ The table below shows **all add-ons** in this repository, including unsupported 
 > - ❌ = Unsupported (no longer maintained)
 
 <!-- markdownlint-enable MD028 -->
+
+---
+
+Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
+Tested on **amd64** architecture.
+
+---
 
 ## 🪦 Unsupported Add-ons Info
 
@@ -102,9 +112,6 @@ To install them manually as a **Local Add-on**:
 > [!WARNING]
 > Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
 
-Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
-Tested on **amd64** architecture.
-
 ## 🏆 Platinum Standard Quality
 
 This repository adheres to a **Platinum Standard** for Home Assistant Add-ons, ensuring robust stability, security, and code quality.
@@ -112,9 +119,9 @@ This repository adheres to a **Platinum Standard** for Home Assistant Add-ons, e
 Every add-on in this repository undergoes extensive CI/CD verification, including:
 
 - **Automated Builds:** Verified across multiple architectures.
-- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and **Hadolint**.
-- **Strict Linting:** Enforced by **Add-on Linter**, **Actionlint**, **MarkdownLint**, and **Shellcheck**.
-- **Code Consistency:** Automated formatting via **Prettier**, **Black**, and **isort**.
+- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and [Hadolint](https://github.com/hadolint/hadolint).
+- **Strict Linting:** Enforced by [Add-on Linter](https://github.com/home-assistant/hassio-addons/tree/master/linter), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
+- **Code Consistency:** Automated formatting via [Prettier](https://prettier.io/), [Black](https://github.com/psf/black), and [isort](https://github.com/PyCQA/isort).
 - **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
 
 We strive to provide add-ons that are not just functional, but also secure, maintainable, and reliable.
