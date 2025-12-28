@@ -44,4 +44,4 @@ schema:
 #   # Removing this section avoids the "Network" configuration tab in HA, which is misleading here.
 #   # 853/tcp: 853
 #   # 443/tcp: 3443
-# image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build
+image: "ghcr.io/faserf/shielddns" # Disabled for local dev / bashio build

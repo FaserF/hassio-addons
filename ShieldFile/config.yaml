@@ -32,4 +32,4 @@ schema:
   base_directory: str
   port: port
   log_level: list(debug|info|error|warning)
-# image: "ghcr.io/faserf/shieldfile-{arch}" # Disabled for local dev / bashio build
+image: "ghcr.io/faserf/shieldfile-{arch}" # Disabled for local dev / bashio build

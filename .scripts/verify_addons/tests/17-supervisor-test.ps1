@@ -185,6 +185,14 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         Write-Host "      Copying $($addon.Name) as $safeName..." -ForegroundColor DarkGray
         Copy-Item -Path $addonPath -Destination $targetPath -Recurse -Force
 
+        # Strip 'image' key from config.yaml to force local build/avoid pull errors
+        # The CI environment needs the image key for tagging, but the test environment
+        # will fail if it tries to pull that non-existent image.
+        $testConfig = Join-Path $targetPath "config.yaml"
+        if (Test-Path $testConfig) {
+            (Get-Content $testConfig) | Where-Object { $_ -notmatch "^\s*image:" } | Set-Content $testConfig
+        }
+
         # Special setup for netboot-xyz
         if ($safeName -eq "local_netboot-xyz" -or $addon.Name -eq "netboot-xyz") {
              $nbImage = Join-Path $mediaDir "netboot/image"
