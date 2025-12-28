@@ -28,6 +28,8 @@ $TestsDir = Join-Path $ModuleDir "tests"
 # Reset Global State
 $global:Results = @()
 $global:GlobalFailed = $false
+$global:DisableNotifications = $DisableNotifications
+$global:TestTimings = @{}
 
 # Load Common Module
 . "$ModuleDir/lib/common.ps1"
@@ -135,26 +137,6 @@ if ($Help) {
     exit 0
 }
 
-# --- SETUP ---
-$ErrorActionPreference = "Continue"
-$RepoRoot = Resolve-Path "$PSScriptRoot\..\.."
-$env:PYTHONIOENCODING = "utf-8"
-$ModuleDir = $PSScriptRoot
-$TestsDir = Join-Path $ModuleDir "tests"
-
-# Reset Global State
-$global:Results = @()
-$global:GlobalFailed = $false
-$global:GlobalFailed = $false
-$global:DisableNotifications = $DisableNotifications
-$global:TestTimings = @{}
-
-# Load Common Module
-. "$ModuleDir/lib/common.ps1"
-
-# Load Configuration
-$Config = Get-TestConfig "$ModuleDir/config/test-config.yaml"
-
 # --- PARAMETER VALIDATION ---
 if ($args) {
     Write-Host "ERROR: Unknown parameters detected: $($args -join ' ')" -ForegroundColor Red
@@ -195,8 +177,6 @@ catch {
     Write-Warning "Could not start transcript at $LogFile. logging to console only."
 }
 
-# Banner
-# Banner
 $ScriptStartTime = Get-Date
 Write-Host ""
 Show-Header
@@ -373,8 +353,6 @@ try {
             $etaStr += "$($etaSpan.Seconds)s"
 
             # Write to Console (Colored) - captured by transcript automatically
-            Write-Host "  Estimated Duration: ~$($etaStr.Trim()) (varies by hardware and addon complexity)" -ForegroundColor Gray
-            Write-Host ""
             Write-Host "  Estimated Duration: ~$($etaStr.Trim()) (varies by hardware and addon complexity)" -ForegroundColor Gray
             Write-Host ""
         }

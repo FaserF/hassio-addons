@@ -30,10 +30,22 @@ module.exports = async ({ github, context, core }) => {
 
   let body = signature + '\n';
   body += '## 🔧 Workflow Lint Errors\n\n';
-  body += 'The following issues were found in the workflow files:\n\n';
-  body += '```\n';
-  body += process.env.ACTIONLINT_OUTPUT || 'See workflow logs for details.';
-  body += '\n```\n\n';
+
+  const output = (process.env.ACTIONLINT_OUTPUT || '').trim();
+  const hasZeroIssues = output.includes('Found 0 issues');
+  const isEmpty = output === '' || output === 'See workflow logs for details.';
+
+  if (hasZeroIssues || isEmpty) {
+    body += '> [!WARNING]\n';
+    body += '> `actionlint` exited with an error code, but no specific issues were found in the standard output.\n';
+    body += '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed.\n\n';
+    body += 'Please check the [workflow logs](' + context.payload.repository.html_url + '/actions/runs/' + context.runId + ') for the raw error messages.\n\n';
+  } else {
+    body += 'The following issues were found in the workflow files:\n\n';
+    body += '```\n';
+    body += output;
+    body += '\n```\n\n';
+  }
   body += '<details open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n';
   body += '> **Instructions for AI**: Fix all workflow lint errors below.\n\n';
   body += '```yaml\n';

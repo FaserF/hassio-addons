@@ -232,19 +232,21 @@ jobs:
           fi
 
           # Dependencies
-          MYSQL_FAILED=false
           if echo "${{ needs.filter-ingress.outputs.ingress_addons }}" | grep -qE "wiki.js|pterodactyl-panel"; then
             echo "Installing Dependency: MariaDB (core_mariadb)..."
             if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
-                 export MYSQL_FAILED=true
+                 echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
                  echo "⚠️ Failed to start core_mariadb"
-                 export MYSQL_FAILED=true
+                 echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
                  echo "Waiting for MariaDB..."
+                 echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
                  sleep 30
             fi
+          else
+            echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
           fi
 
       - name: "🔍 Test Add-ons"
@@ -260,19 +262,33 @@ jobs:
           IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
 
           for addon in "${ADDON_ARRAY[@]}"; do
+            addon=$(echo "$addon" | xargs)  # trim whitespace
+            if [ -z "$addon" ]; then continue; fi
+
             if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki.js|pterodactyl-panel"; then
                  echo "⏭️ $addon dependency failed - skipping"
                  RESULTS="$RESULTS\n⏭️ $addon: SKIP (Dependency failed)"
                  continue
             fi
-            addon=$(echo "$addon" | xargs)  # trim whitespace
+
             echo ""
             echo "=========================================="
             echo "Testing: $addon"
             echo "=========================================="
 
-            # Get add-on slug (might be different from directory name)
-            SLUG="local_$addon"
+            # Get exact slug from config.yaml
+            CONFIG_FILE="./$addon/config.yaml"
+            if [ ! -f "$CONFIG_FILE" ]; then
+              CONFIG_FILE="./.unsupported/$addon/config.yaml"
+            fi
+
+            # Extract slug using grep/sed (avoids yq dependency)
+            SLUG_VAL=$(grep "^slug:" "$CONFIG_FILE" | head -n 1 | cut -d':' -f2 | tr -d ' "' | xargs)
+            if [ -z "$SLUG_VAL" ]; then
+              SLUG_VAL="$addon"
+            fi
+            SLUG="local_$SLUG_VAL"
+            echo "Slug detected: $SLUG"
 
             # Refresh add-on store
             echo "Refreshing add-on store..."
@@ -280,9 +296,36 @@ jobs:
             sleep 5
 
             # Install add-on
-            echo "Installing $addon..."
+            echo "Installing $addon ($SLUG)..."
             if timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1; then
               echo "✅ Install successful"
+
+              # Configure options if needed (matching PowerShell logic)
+              OPTS=""
+              if grep -q "website_name" "$CONFIG_FILE"; then
+                OPTS='{"website_name": "example.com"}'
+              elif [ "$addon" = "bash_script_executer" ]; then
+                OPTS='{"script_path": "/share/test.sh"}'
+              fi
+
+              if [ -n "$OPTS" ]; then
+                echo "Configuring options for $SLUG..."
+                # Create the update script if it doesn't exist
+                # shellcheck disable=SC2016
+                cat << 'EOF' > /tmp/ha-data/addons/local/update_config.sh
+#!/bin/sh
+slug="$1"
+opts="$2"
+file="/mnt/supervisor/addons.json"
+if [ ! -f "$file" ]; then exit 1; fi
+tmp=$(mktemp)
+jq --arg slug "$slug" --argjson opts "$opts" '
+  if .user[$slug] == null then .user[$slug] = {} else . end |
+  .user[$slug].options = $opts
+' "$file" > "$tmp" && mv "$tmp" "$file"
+EOF
+                docker exec ha-supervisor-test sh /mnt/supervisor/addons/local/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
+              fi
 
               # Start add-on
               echo "Starting $addon..."
@@ -296,11 +339,16 @@ jobs:
                 STATUS="unknown"
 
                 while [ "$(date +%s)" -lt "$END_TIME" ]; do
+                  # Check if container is running (more reliable than CLI)
+                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_$SLUG_VAL"; then
+                    STATUS="started"
+                    break
+                  fi
+                  # Fallback to CLI check
                   STATUS="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
                   if [ "$STATUS" = "started" ]; then
                     break
                   fi
-                  # Echo dots for progress to avoid huge logs
                   echo -n "."
                   sleep 5
                 done
@@ -367,7 +415,7 @@ jobs:
           docker stop ha-supervisor-test 2>/dev/null || true
           docker rm -f ha-supervisor-test 2>/dev/null || true
           docker network rm ha-test-net 2>/dev/null || true
-          rm -rf /tmp/ha-data
+          sudo rm -rf /tmp/ha-data
 
       - name: "📊 Summary"
         if: always()

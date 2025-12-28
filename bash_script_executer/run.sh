@@ -2,33 +2,9 @@
 
 # Enable strict mode
 set -e
-
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
 # Get Addon Version
-addon_version=$(bashio::addon.version)
-
-# Banner Function
-print_banner() {
-    bashio::log.blue " \n"
-    bashio::log.blue "-----------------------------------------------------------"
-    bashio::log.blue " 📦 FaserF's Addon Repository"
-    bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
-    bashio::log.blue "-----------------------------------------------------------\n"
-
-    # Version Checks
-    if [[ "$addon_version" == *"dev"* ]]; then
-        bashio::log.warning "⚠️  You are running a Development Build ($addon_version)!"
-        bashio::log.warning "⚠️  This version may be unstable and contain bugs."
-    elif [[ "$addon_version" =~ ^0\. ]]; then
-         bashio::log.info "🚧  You are running a BETA version ($addon_version)."
-    fi
-
-    bashio::log.blue "-----------------------------------------------------------"
-    bashio::log.info "ℹ️  Disclaimer: Not all errors are addon-related."
-    bashio::log.info "ℹ️  Some issues may originate from the software itself."
-    bashio::log.blue "-----------------------------------------------------------\n"
-}
-
-print_banner
 
 script_path=$(bashio::config 'script_path')
 script_argument1=$(bashio::config 'script_argument1')
@@ -70,13 +46,13 @@ fi
 #Set 711 rights to script
 echo "Fixing permissions."
 if [ "$script_path" != "false" ]; then
-	find "$script_path" -type d -exec chmod 711 {} \;
+	chmod 711 "$script_path"
 fi
 if [ "$script_path2" != "false" ]; then
-	find "$script_path2" -type d -exec chmod 711 {} \;
+	chmod 711 "$script_path2"
 fi
 if [ "$script_path3" != "false" ]; then
-	find "$script_path3" -type d -exec chmod 711 {} \;
+	chmod 711 "$script_path3"
 fi
 
 if [ "$script_path" != "false" ]; then

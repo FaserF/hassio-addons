@@ -135,6 +135,9 @@ function Show-Notification {
                      $btn = New-BTButton -Content "Dismiss" -Arguments "dismiss" -ActivationType Protocol
                 }
 
+                if ($null -eq $ModuleDir) {
+                    $ModuleDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+                }
                 $logoPath = Join-Path $ModuleDir "assets\logo.png"
                 if (-not (Test-Path $logoPath)) { $logoPath = $null }
 

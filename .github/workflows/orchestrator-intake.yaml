@@ -33,7 +33,7 @@ jobs:
         id: new-addons
         run: |
           # Use python script
-          OUTPUT=$(python3 .scripts/intake.py)
+          OUTPUT="$(python3 .scripts/intake.py)"
           echo "$OUTPUT"
           # Check if new add-ons found (string representation of list in last line)
           if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
@@ -49,9 +49,10 @@ jobs:
         id: compliance
         run: |
           # Run compliance on detected new add-ons
-          NEW_ADDONS=$(python3 .scripts/intake.py --list)
+          NEW_ADDONS="$(python3 .scripts/intake.py --list)"
           if [ -n "$NEW_ADDONS" ]; then
             # Iterate over new addons and run compliance
+            # shellcheck disable=SC2046
             for addon in $NEW_ADDONS; do
               echo "Checking $addon..."
               python3 .scripts/check_compliance.py "$addon" >> compliance.log 2>&1 || true

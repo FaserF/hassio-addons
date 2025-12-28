@@ -2,7 +2,9 @@
 
 ## 1.0.14
 
-- General addon improvements
+- Added support for multiple users via list format in configuration.
+- **Breaking Change**: The `username` and `password` options have been replaced by the `users` list.
+- Improved documentation with multi-user examples.
 
 ## 1.0.13
 

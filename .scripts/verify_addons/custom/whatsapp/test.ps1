@@ -25,14 +25,14 @@ if (-not $containerRunning) {
 }
 
 # 2. Test: Verify Health Endpoint
-# The addon starts a web server on port 8066
-Write-Host "      - Verifying health endpoint (http://127.0.0.1:8066/)..." -ForegroundColor Gray
+# The addon starts a web server on port 8099
+Write-Host "      - Verifying health endpoint (http://127.0.0.1:8099/)..." -ForegroundColor Gray
 
-# Wait loop (up to 30 seconds)
+# Wait loop (up to 120 seconds)
 $healthPassed = $false
 for ($i = 0; $i -lt 24; $i++) {
     # Attempt curl inside container
-    $curlResult = docker exec $ContainerName curl -f -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8066/ 2>$null
+    $curlResult = docker exec $ContainerName curl -f -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8099/ 2>$null
     $curlResult = $curlResult.Trim()
 
     # Write-Host "DEBUG: Curl result: '$curlResult'" -ForegroundColor DarkGray
@@ -59,6 +59,6 @@ if ($healthPassed) {
     if (-not $nodeProcesses) {
          Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "FAIL" -Message "Node process not found in container. Processes: $($processes -join ', ')"
     } else {
-         Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "FAIL" -Message "Health endpoint not reachable after 30s. Last Code: '$curlResult'"
+         Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "FAIL" -Message "Health endpoint not reachable after 120s. Last Code: '$curlResult'"
     }
 }

@@ -21,6 +21,16 @@ if [ "$phpini" = "get_file" ]; then
 	exit 0
 fi
 
+# ------------------------------------------------------------------------------
+# Security Note: The following block executes custom initialization commands
+# provided via the 'init_commands' configuration option.
+# These commands are executed using 'eval', which allows for arbitrary code
+# execution within the container environment.
+#
+# USERS MUST ONLY PROVIDE TRUSTED COMMANDS.
+# No further sandboxing or sanitization is performed by the add-on.
+# Reference: https://github.com/FaserF/hassio-addons/tree/master/apache2#security
+# ------------------------------------------------------------------------------
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."
 	while read -r cmd; do
@@ -45,7 +55,9 @@ fi
 if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
-		adduser -S "$username" -G www-data
+		if ! id "$username" &>/dev/null; then
+			adduser -S "$username" -G www-data
+		fi
 		echo "$username:$password" | chpasswd
 		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
 		find "$webrootdocker" -type f -exec chown "$username":www-data {} \;
@@ -150,7 +162,7 @@ if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 fi
 
 if [ "$default_ssl_conf" = "get_config" ]; then
-	if [ -f /etc/apache2/httpd.conf ]; then
+	if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 		cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
 		echo "You have requested a copy of the apache2 ssl config. You can now find it at /share/000-default-le-ssl.conf ."
 	fi

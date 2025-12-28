@@ -2,42 +2,11 @@
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 
-# ==============================================================================
-#  FaserF's Addon Repository
-#  GitHub: https://github.com/FaserF/hassio-addons
-# ==============================================================================
-
 # Enable strict mode
 set -e
-
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
 # Get Addon Version
-addon_version=$(bashio::addon.version)
-
-# Banner Function
-print_banner() {
-    bashio::log.blue " \n"
-    bashio::log.blue "-----------------------------------------------------------"
-    bashio::log.blue " 📦 FaserF's Addon Repository"
-    bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
-    bashio::log.blue "-----------------------------------------------------------\n"
-
-    # Version Checks
-    if [[ "$addon_version" == *"dev"* ]]; then
-        bashio::log.warning "⚠️  You are running a Development Build ($addon_version)!"
-        bashio::log.warning "⚠️  This version may be unstable and contain bugs."
-    elif [[ "$addon_version" =~ ^0\. ]]; then
-         bashio::log.info "🚧  You are running a BETA version ($addon_version)."
-    else
-         bashio::log.info "✅  Addon Version: $addon_version"
-    fi
-
-    bashio::log.blue "-----------------------------------------------------------"
-    bashio::log.info "ℹ️  Disclaimer: Not all errors are addon-related."
-    bashio::log.info "ℹ️  Some issues may originate from the software itself."
-    bashio::log.blue "-----------------------------------------------------------\n"
-}
-
-print_banner
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
@@ -75,7 +44,9 @@ fi
 if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
-		adduser -S "$username" -G www-data
+		if ! id "$username" &>/dev/null; then
+			adduser -S "$username" -G www-data
+		fi
 		echo "$username:$password" | chpasswd
 		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
 		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
@@ -180,7 +151,7 @@ if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 fi
 
 if [ "$default_ssl_conf" = "get_config" ]; then
-	if [ -f /etc/apache2/httpd.conf ]; then
+	if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 		cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
 		echo "You have requested a copy of the apache2 ssl config. You can now find it at /share/000-default-le-ssl.conf ."
 	fi

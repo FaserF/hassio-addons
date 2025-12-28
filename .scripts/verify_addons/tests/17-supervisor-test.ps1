@@ -169,7 +169,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         if (Test-Path $configFile) {
             $configContent = Get-Content $configFile -Raw
-            if ($configContent -match "(?m)^slug:\s*([a-zA-Z0-9-_]+)") {
+            if ($configContent -match "(?m)^slug:\s*['""]?([a-zA-Z0-9-_]+)['""]?") {
                 $safeName = $matches[1].Trim()
                 Write-Host "      Detected slug in config: $safeName" -ForegroundColor DarkGray
             }
@@ -470,6 +470,11 @@ echo "Successfully updated addons.json"
                              $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
                              if ($runningContainers -match "addon_$slug") {
                                  $state = "started"
+                                 # Populate $info for ingress check
+                                 $infoJson = docker exec $containerName ha addons info $slug --raw-json 2>$null
+                                 if ($infoJson) {
+                                     $info = $infoJson | ConvertFrom-Json
+                                 }
                              } else {
                                  $state = "stopped"
                              }
@@ -576,6 +581,9 @@ finally {
         Write-Host "    > Preserving test data for debugging at: $dataDir" -ForegroundColor Yellow
     }
     elseif (Test-Path $dataDir) {
+        Write-Host "    > Wiping test data using Docker (to handle root-owned files)..." -ForegroundColor Gray
+        $dataDirUnix = $dataDir.Replace('\', '/')
+        docker run --rm -v "${dataDirUnix}:/data" busybox sh -c "rm -rf /data/*" 2>$null | Out-Null
         Remove-Item $dataDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 }

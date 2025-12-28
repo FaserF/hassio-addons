@@ -80,8 +80,10 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-  - password: changeme
-    username: admin
+  - username: admin
+    password: changeme
+  - username: user2
+    password: password123
 ```
 
 ---
