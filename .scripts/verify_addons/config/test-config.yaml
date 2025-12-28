@@ -58,6 +58,7 @@ validTests:
 
 # --- DOCKER-DEPENDENT TESTS ---
 dockerTests:
+  - ShellCheck
   - Hadolint
   - SupervisorTest
   - AddonLinter

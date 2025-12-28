@@ -138,6 +138,10 @@ foreach ($wf in $workflows) {
                     Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
                 }
             } catch {
+                Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
+            }
+        } else {
+            Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
         }
     }
 

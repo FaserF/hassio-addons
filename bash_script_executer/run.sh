@@ -2,6 +2,7 @@
 
 # Enable strict mode
 set -euo pipefail
+# shellcheck disable=SC1091
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
 

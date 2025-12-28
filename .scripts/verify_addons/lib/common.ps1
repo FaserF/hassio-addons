@@ -71,8 +71,11 @@ function Add-Result {
                 $global:FailureNotified = $true
             }
 
-            # Send Notification
-            # (Old logic removed to prevent spam)
+            # Fast Fail
+            if ($global:ExitOnError) {
+                # We won't exit directly here to allow cleanup, but we throw a specific error that verify_addons.ps1 catches
+                throw "FAST_FAIL: $Addon : $Check failed and -ExitOnError is enabled."
+            }
         }
         "WARN" {
             Write-Host "  $iconWarn  [WARN] $Addon : $Check" -ForegroundColor Yellow
@@ -95,14 +98,29 @@ function Show-Notification {
     <#
     .SYNOPSIS
         Sends a Windows Toast Notification.
+    .PARAMETER Title
+        Notification Title.
+    .PARAMETER Message
+        Notification Body.
+    .PARAMETER LogPath
+        Path to open when clicked.
+    .PARAMETER Verbose
+        If set, this notification is considered "verbose" / low priority.
+        It will ONLY be shown if $global:VerboseNotifications is $true.
     #>
     param(
         [string]$Title,
         [string]$Message,
-        [string]$LogPath
+        [string]$LogPath,
+        [switch]$Verbose
     )
 
     if (-not $IsWindows -or $env:GITHUB_ACTIONS -or $global:DisableNotifications) { return }
+
+    # Filter Verbose notifications
+    if ($Verbose -and -not $global:VerboseNotifications) {
+        return
+    }
 
     # Constraint: Skip on PowerShell 5 (Desktop) as requested
     if ($PSVersionTable.PSVersion.Major -lt 6) {

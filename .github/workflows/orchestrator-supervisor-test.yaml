@@ -330,17 +330,17 @@ jobs:
                 # Create the update script if it doesn't exist
                 # shellcheck disable=SC2016
                 cat << 'EOF' > /tmp/ha-data/addons/local/update_config.sh
-                #!/bin/sh
-                slug="$1"
-                opts="$2"
-                file="/mnt/supervisor/addons.json"
-                if [ ! -f "$file" ]; then exit 1; fi
-                tmp=$(mktemp)
-                jq --arg slug "$slug" --argjson opts "$opts" '
-                  if .user[$slug] == null then .user[$slug] = {} else . end |
-                  .user[$slug].options = $opts
-                ' "$file" > "$tmp" && mv "$tmp" "$file"
-                EOF
+          #!/bin/sh
+          slug="$1"
+          opts="$2"
+          file="/mnt/supervisor/addons.json"
+          if [ ! -f "$file" ]; then exit 1; fi
+          tmp=$(mktemp)
+          jq --arg slug "$slug" --argjson opts "$opts" '
+            if .user[$slug] == null then .user[$slug] = {} else . end |
+            .user[$slug].options = $opts
+          ' "$file" > "$tmp" && mv "$tmp" "$file"
+          EOF
                 docker exec ha-supervisor-test sh /mnt/supervisor/addons/local/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
               fi
 

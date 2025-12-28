@@ -814,6 +814,10 @@ jobs:
             report += "```\n";
             report += "\n</details>";
 
+            // Link to Step Summary
+            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            report += `\n\n> 📊 **View Full Test Summary**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
+
             const signature = "<!-- general-ci-failure-report -->";
             const reportBody = signature + "\n" + report;
 
@@ -843,6 +847,13 @@ jobs:
             }
 
             // Post General Report
+            console.log("Posting General Failure Report...");
+            try {
+                await core.summary.addRaw(reportBody).write();
+            } catch (err) {
+                console.log("Could not write to Job Summary:", err);
+            }
+
             await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

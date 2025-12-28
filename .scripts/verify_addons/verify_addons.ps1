@@ -15,7 +15,9 @@ param(
     [switch]$DisableNotifications,
     [switch]$Json,
     [switch]$Help,
-    [switch]$Debug
+    [switch]$Debug,
+    [switch]$VerboseNotifications,
+    [switch]$ExitOnError
 )
 
 # --- SETUP ---
@@ -29,6 +31,8 @@ $TestsDir = Join-Path $ModuleDir "tests"
 $global:Results = @()
 $global:GlobalFailed = $false
 $global:DisableNotifications = $DisableNotifications
+$global:VerboseNotifications = $VerboseNotifications
+$global:ExitOnError = $ExitOnError
 $global:TestTimings = @{}
 
 # Load Common Module
@@ -110,6 +114,14 @@ function Show-Help {
     Write-Host "        Suppresses all terminal notifications (e.g., success/failure pop-ups)."
     Write-Host "        Useful for CI/CD environments where notifications are not desired."
     Write-Host ""
+    Write-Host "    -VerboseNotifications" -ForegroundColor Green
+    Write-Host "        Enables more frequent notifications for intermediate steps (e.g. Docker completion)."
+    Write-Host "        Default: Disabled (Only shows Start/Finish/Failures)."
+    Write-Host ""
+    Write-Host "    -ExitOnError" -ForegroundColor Green
+    Write-Host "        Immediately stops execution upon the first test failure."
+    Write-Host "        Useful for debugging or fail-fast CI."
+    Write-Host ""
     Write-Host "    -Debug" -ForegroundColor Green
     Write-Host "        Enables verbose debug logging and terminal output."
     Write-Host ""
@@ -127,8 +139,10 @@ function Show-Help {
     Write-Host "        Run verification on currently modified add-ons and auto-fix formatting issues."
     Write-Host ""
     Write-Host "EXIT STATUS" -ForegroundColor Yellow
-    Write-Host "    0    Success. All checks passed."
-    Write-Host "    1    Failure. One or more checks failed or invalid arguments were provided."
+    Write-Host "    0      Success. All checks passed."
+    Write-Host "    1      General Failure or Invalid Arguments."
+    Write-Host "    1XX    Specific Test Failure (100 + Test ID)."
+    Write-Host "    2XX    Multiple Failures (200 + Sum of unique failure IDs, capped at 255)."
     Write-Host ""
 }
 
@@ -409,7 +423,7 @@ try {
     if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
         $time = Measure-Command {
             try {
-                & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+                & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
             }
             catch {
                 Add-Result -Addon "System" -Check "ShellCheck" -Status "SKIP" -Message "Module Crashed: $_"
@@ -657,8 +671,16 @@ try {
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Completed
 }
 catch {
-    Write-Host "X ERROR: $($_.Exception.Message)" -ForegroundColor Red
-    $global:GlobalFailed = $true
+    if ($_.Exception.Message -like "FAST_FAIL:*") {
+        Write-Host ""
+        Write-Host "🛑 FAIL-FAST TRIGGERED: Execution stopped due to failure in a test." -ForegroundColor Red
+        Write-Host "   $($_.Exception.Message)" -ForegroundColor Red
+        $global:GlobalFailed = $true
+    }
+    else {
+        Write-Host "X ERROR: $($_.Exception.Message)" -ForegroundColor Red
+        $global:GlobalFailed = $true
+    }
 }
 finally {
 
@@ -749,6 +771,59 @@ finally {
         Write-Host "  - $key : $([math]::Round($global:TestTimings[$key], 2))s" -ForegroundColor Gray
     }
 
+    # --- GITHUB SUMMARY ---
+    if ($env:GITHUB_STEP_SUMMARY) {
+        Write-Host "Writing GitHub Step Summary..." -ForegroundColor Gray
+        try {
+            $summaryLines = @()
+            $summaryLines += "# 📊 Verification Results"
+            $summaryLines += ""
+
+            # Statistics
+            $summaryLines += "### Statistics"
+            $summaryLines += "| Status | Count |"
+            $summaryLines += "| :--- | :---: |"
+            $summaryLines += "| ✅ Passed | $PassCount |"
+            $summaryLines += "| ❌ Failed | $FailCount |"
+            $summaryLines += "| ⚠️ Warning | $WarnCount |"
+            $summaryLines += "| ⏭️ Skipped | $SkipCount |"
+            $summaryLines += ""
+
+            # Failed/Warn items details (Always visible)
+            if ($FailCount -gt 0 -or $WarnCount -gt 0) {
+                $summaryLines += "### ⚠️ Issues Found"
+                $summaryLines += "| Add-on | Check | Status | Message |"
+                $summaryLines += "| :--- | :--- | :--- | :--- |"
+
+                $issues = $global:Results | Where-Object { $_.Status -in @("FAIL", "WARN") }
+                foreach ($res in $issues) {
+                    $sanitizedMsg = $res.Message -replace "\|", "\|" -replace "`r`n", " " -replace "`n", " "
+                    $icon = switch ($res.Status) { "FAIL" { "❌" } "WARN" { "⚠️" } default { "" } }
+                    $summaryLines += "| $($res.Addon) | $($res.Check) | $icon $($res.Status) | $sanitizedMsg |"
+                }
+                $summaryLines += ""
+            }
+
+             # Full Breakdown (Collapsible)
+            $summaryLines += "<details><summary><b>📂 Full Execution Breakdown</b></summary>"
+            $summaryLines += ""
+            $summaryLines += "| Add-on | Check | Status | Message |"
+            $summaryLines += "| :--- | :--- | :--- | :--- |"
+            foreach ($res in $global:Results) {
+                 $sanitizedMsg = $res.Message -replace "\|", "\|" -replace "`r`n", " " -replace "`n", " "
+                 $icon = switch ($res.Status) { "PASS" { "✅" } "FAIL" { "❌" } "WARN" { "⚠️" } "SKIP" { "⏭️" } "INFO" { "ℹ️" } }
+                 $summaryLines += "| $($res.Addon) | $($res.Check) | $icon $($res.Status) | $sanitizedMsg |"
+            }
+            $summaryLines += ""
+            $summaryLines += "</details>"
+
+            $summaryLines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding UTF8
+        }
+        catch {
+            Write-Warning "Failed to write GitHub Step Summary: $_"
+        }
+    }
+
     # --- CLEANUP & ROTATION ---
     Write-Host "Cleaning up..." -ForegroundColor Gray
 
@@ -828,5 +903,71 @@ finally {
 
     Show-Notification -Title $notifTitle -Message $notifMsg -LogPath $LogFile
 
-    if ($global:GlobalFailed) { exit 1 } else { exit 0 }
+    if ($global:GlobalFailed) {
+        # --- STRUCTURED EXIT CODES ---
+        # 0: Success
+        # 1: General/Unknown Error (or manual exit 1 above)
+        # 1XX: Specific Single Test Failure
+        # 2XX: Multiple Failures (200 + Sum, capped at 255)
+
+        # Mapping of Test Names to IDs (Arbitrary but consistent)
+        $TestIDs = @{
+            "LineEndings"    = 1
+            "ShellCheck"     = 2
+            "Hadolint"       = 3
+            "YamlLint"       = 4
+            "MarkdownLint"   = 5
+            "Prettier"       = 6
+            "AddonLinter"    = 7
+            "Compliance"     = 8
+            "Trivy"          = 9
+            "VersionCheck"   = 10
+            "DockerBuild"    = 11
+            "DockerRun"      = 12
+            "CodeRabbit"     = 13
+            "WorkflowChecks" = 14
+            "PythonChecks"   = 15
+            "CustomTests"    = 16
+            "IngressCheck"   = 17
+            "SupervisorTest" = 18
+            "AutoFix"        = 19
+        }
+
+        $failedChecks = $global:Results | Where-Object { $_.Status -eq "FAIL" } | Select-Object -ExpandProperty Check -Unique
+
+        if ($failedChecks.Count -eq 0) {
+            # GlobalFailed was true but no specific checks failed? (e.g. general exception)
+            exit 1
+        }
+        elseif ($failedChecks.Count -eq 1) {
+            $checkName = $failedChecks[0]
+            if ($TestIDs.ContainsKey($checkName)) {
+                $code = 100 + $TestIDs[$checkName]
+                Write-Host "Exiting with code $code (Failure in $checkName)" -ForegroundColor DarkGray
+                exit $code
+            } else {
+                exit 1
+            }
+        }
+        else {
+            # Multiple Failures
+            $sum = 0
+            foreach ($c in $failedChecks) {
+                if ($TestIDs.ContainsKey($c)) {
+                    $sum += $TestIDs[$c]
+                }
+            }
+            # Cap at 255 (standard exit code limit)
+            # Base is 200 using our scheme
+            $code = 200 + $sum
+            if ($code -gt 255) { $code = 255 }
+
+            Write-Host "Exiting with code $code (Multiple Failures)" -ForegroundColor DarkGray
+            exit $code
+        }
+    }
+    else {
+        exit 0
+    }
 }
+```

@@ -58,10 +58,40 @@ module.exports = async ({ github, context, core }) => {
   const hasZeroIssues = output.includes('Found 0 issues');
   const isEmpty = output === '';
 
+  // --- Generate GitHub Step Summary ---
+  if (core && core.summary) {
+    core.summary
+      .addHeading('🔧 Workflow Lint Results', 2)
+      .addRaw(`Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files.`)
+      .addRaw('\n\n');
+
+    if (errors.length > 0) {
+      const rows = [
+        ['File', 'Line', 'Issue']
+      ];
+      for (const err of errors) {
+        const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
+        const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
+        rows.push([err.file, `L${err.line}`, `${severityIcon} ${err.message}`]);
+      }
+      core.summary.addTable(rows);
+    } else if (hasZeroIssues || isEmpty) {
+      core.summary.addRaw('❌ **Internal Error**: `actionlint` failed but reported 0 issues. Check logs.');
+    } else {
+      core.summary.addRaw('✅ No issues found.');
+    }
+
+    await core.summary.write();
+  }
+
+  // --- Generate PR Comment ---
+  body += '### 🔗 Results\n';
+  body += `> 📊 **View Full Report**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
+
   if (errors.length === 0 && (hasZeroIssues || isEmpty)) {
     body += '> [!CAUTION]\n';
     body += '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
-
+    // ... rest of the existing error reporting logic ...
     if (stderr) {
       body += '### 🛑 Fatal / Infrastructure Error\n\n';
       body += '```\n';
@@ -84,13 +114,13 @@ module.exports = async ({ github, context, core }) => {
     body += '\n```\n\n';
     body += `> 💡 **Tip**: Check the [live workflow logs](${workflowRunUrl}) for more context.\n\n`;
   } else {
+    // Normal Error Reporting
     if (stderr) {
       body += '<details>\n<summary>⚠️ <strong>Infrastructure Warnings (stderr)</strong></summary>\n\n';
       body += '```\n' + stderr + '\n```\n\n';
       body += '</details>\n\n';
     }
 
-    body += `> ⚠️ **Note**: Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
     body += `Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files:\n\n`;
 
     // Error table with clickable links
@@ -100,7 +130,8 @@ module.exports = async ({ github, context, core }) => {
       const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
       const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
       const shortMsg = err.message.length > 80 ? err.message.substring(0, 77) + '...' : err.message;
-      body += `| ${fileLink} | L${err.line} | ${severityIcon} ${shortMsg} |\n`;
+      const fileLink = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${err.file}`;
+      body += `| [${err.file}](${fileLink}) | L${err.line} | ${severityIcon} ${shortMsg} |\n`;
     }
     if (errors.length > 20) {
       body += `\n*...and ${errors.length - 20} more errors. See workflow logs for complete list.*\n`;
