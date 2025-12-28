@@ -6,7 +6,6 @@
 set -e
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 ssl=$(bashio::config 'ssl')
 certfile=$(bashio::config 'certfile')

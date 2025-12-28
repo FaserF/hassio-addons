@@ -4,8 +4,6 @@
 set -e
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
-addon_version=$(bashio::addon.version)
 
 echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND

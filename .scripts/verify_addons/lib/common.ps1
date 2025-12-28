@@ -136,7 +136,7 @@ function Show-Notification {
                 }
 
                 if ($null -eq $ModuleDir) {
-                    $ModuleDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+                    $ModuleDir = $PSScriptRoot
                 }
                 $logoPath = Join-Path $ModuleDir "assets\logo.png"
                 if (-not (Test-Path $logoPath)) { $logoPath = $null }

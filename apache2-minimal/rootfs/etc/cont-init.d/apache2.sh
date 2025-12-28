@@ -19,6 +19,12 @@ default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 
+# WARNING: The init_commands option uses `eval`.
+# This executes arbitrary shell commands as the container user/root.
+# Only use trusted input for this option.
+# No further sandboxing is performed.
+# For more information, see:
+# https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."
 	while read -r cmd; do

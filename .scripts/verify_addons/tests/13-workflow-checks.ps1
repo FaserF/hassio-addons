@@ -76,9 +76,9 @@ foreach ($wf in $workflows) {
 }
 if ($shaIssues.Count -gt 0) {
     $msg = $shaIssues | ForEach-Object { "$($_.File):$($_.Line) - SHA is $($_.Length) chars (need 40)" }
-    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "FAIL" -Message "Invalid SHAs found: $($msg -join '; ')"
+    Add-Result -Addon "Workflows" -Check "CR-SHA-Validation" -Status "FAIL" -Message "Invalid SHAs found: $($msg -join '; ')"
 } else {
-    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "PASS" -Message "All action SHAs valid"
+    Add-Result -Addon "Workflows" -Check "CR-SHA-Validation" -Status "PASS" -Message "All action SHAs valid"
 }
 
 # Get latest runner version
@@ -138,10 +138,14 @@ foreach ($wf in $workflows) {
                     Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
                 }
             } catch {
-                Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
-            }
-        } else {
-            Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
         }
+    }
+
+    # Check 5: SHA Pinning (Informational)
+    if ($content -match 'uses:\s*[\w\-/]+@(?![a-fA-F0-9]{40})(\s|$|#|[^\s]+)') {
+        # Broad check for anything that uses @ but NOT followed by 40 hex chars
+        Add-Result -Addon $wfName -Check "CR-SHA-Pinning" -Status "INFO" -Message "Action uses tag or branch. Pinning to a specific commit SHA is recommended for security."
+    } else {
+        Add-Result -Addon $wfName -Check "CR-SHA-Pinning" -Status "PASS" -Message "OK"
     }
 }

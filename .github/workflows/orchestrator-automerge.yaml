@@ -202,7 +202,7 @@ jobs:
             --subject "${PR_TITLE} (#${PR_NUMBER}) [skip ci]" \
             --body "Auto-merged after successful CI verification.
 
-[skip ci] - This PR passed all CI checks before merge."
+            [skip ci] - This PR passed all CI checks before merge."
 
       - name: 📢 Post Merge Success Comment
         if: >-

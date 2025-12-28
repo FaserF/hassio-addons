@@ -4,7 +4,6 @@
 set -e
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 #VARIABLES
 server=$(bashio::config 'server')

@@ -298,7 +298,26 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                  Write-Warning "Failed to start MariaDB: $start"
                  $mysqlFailed = $true
              } else {
-                 Start-Sleep -Seconds 30
+                 Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
+                 $mariadbReady = $false
+                 $maxWait = 60
+                 $start = Get-Date
+                 while (((Get-Date) - $start).TotalSeconds -lt $maxWait) {
+                     $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
+                     if ($statusJson) {
+                         $status = $statusJson | ConvertFrom-Json
+                         if ($status.data.state -eq "started") {
+                             Write-Host "    ✅ MariaDB is ready." -ForegroundColor Green
+                             $mariadbReady = $true
+                             break
+                         }
+                     }
+                     Start-Sleep -Seconds 5
+                 }
+                 if (-not $mariadbReady) {
+                     Write-Warning "MariaDB failed to reach 'started' state within ${maxWait}s"
+                     $mysqlFailed = $true
+                 }
              }
         } else {
              Write-Warning "Failed to install MariaDB: $inst"

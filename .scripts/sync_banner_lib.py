@@ -30,10 +30,11 @@ def sync_lib():
         # Exception: netboot-xyz uses root/ instead of rootfs/
         if addon == "netboot-xyz":
             target_dir = os.path.join(addon, "root", "usr", "lib", "bashio")
-        elif not os.path.exists(os.path.join(addon, "rootfs")):
-             # If no rootfs, some might just use / (unlikely for our structure but safer)
-             # Let's check if it's a "standard" layout
-             pass
+        elif os.path.exists(os.path.join(addon, "rootfs")):
+            target_dir = os.path.join(addon, "rootfs", "usr", "lib", "bashio")
+        else:
+            print(f"  ⏭️ {addon} -> skipped (no rootfs/root directory)")
+            continue
 
         if not os.path.exists(target_dir):
             os.makedirs(target_dir, exist_ok=True)

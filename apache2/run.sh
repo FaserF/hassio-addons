@@ -6,7 +6,6 @@
 set -e
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
@@ -124,9 +123,7 @@ sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
 	if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
+		mkdir -p /etc/apache2/sites-enabled
 		cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
 		echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
 	fi
@@ -181,7 +178,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
-mkdir /usr/lib/php84/modules/opcache
+mkdir -p /usr/lib/php84/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"

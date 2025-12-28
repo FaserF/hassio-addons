@@ -60,3 +60,6 @@ check_addons.py
 Check-Syntax.ps1
 /.scripts/verify_addons/logs/
 *.pem
+markdown_report.txt
+refine_run_sh.py
+workflow_report.txt

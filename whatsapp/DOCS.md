@@ -7,7 +7,7 @@ via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom
 Component** connects to.
 
 **Flow:**
-`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8000)` -> `This Addon`
+`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon`
 -> `Playwright (Chrome)` -> `WhatsApp Web`
 
 ## Troubleshooting

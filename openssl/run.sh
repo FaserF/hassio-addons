@@ -4,7 +4,6 @@
 set -e
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 website_name=$(bashio::config 'website_name')
 key_file=/ssl/key_openssl.pem
@@ -23,4 +22,4 @@ fi
 openssl req -x509 -newkey rsa:4096 -keyout "$key_file" -out "$cert_file" -days 10000 -nodes -subj "/CN=$website_name"
 
 echo "Certificates were generated. They are now located here: $key_file & $cert_file . The addon will now be stopped."
-exit
+exit 0

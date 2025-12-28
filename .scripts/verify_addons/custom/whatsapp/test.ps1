@@ -43,6 +43,9 @@ for ($i = 0; $i -lt 24; $i++) {
              $healthPassed = $true
              break
         }
+        Write-Host "      ... Health probe returned $curlResult (initializing)" -ForegroundColor DarkGray
+    } else {
+        Write-Host "      ... Health probe returned $curlResult (waiting)" -ForegroundColor DarkGray
     }
     Start-Sleep -Seconds 5
 }

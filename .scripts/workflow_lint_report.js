@@ -32,6 +32,7 @@ module.exports = async ({ github, context, core }) => {
   body += '## 🔧 Workflow Lint Errors\n\n';
 
   const output = (process.env.ACTIONLINT_OUTPUT || '').trim();
+  const stderr = (process.env.ACTIONLINT_STDERR || '').trim();
   const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
   // Robust parsing of actionlint output
@@ -55,21 +56,40 @@ module.exports = async ({ github, context, core }) => {
   }
 
   const hasZeroIssues = output.includes('Found 0 issues');
-  const isEmpty = output === '' || output === 'See workflow logs for details.';
+  const isEmpty = output === '';
 
   if (errors.length === 0 && (hasZeroIssues || isEmpty)) {
-    body += '> [!WARNING]\n';
-    body += '> `actionlint` exited with an error code, but no specific issues were found in the standard output.\n';
-    body += '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed.\n\n';
-    body += `Please check the [live workflow logs](${workflowRunUrl}) for the raw error messages.\n\n`;
+    body += '> [!CAUTION]\n';
+    body += '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
+
+    if (stderr) {
+      body += '### 🛑 Fatal / Infrastructure Error\n\n';
+      body += '```\n';
+      body += stderr;
+      body += '\n```\n\n';
+    } else {
+      body += '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed without outputting to stdout or stderr.\n\n';
+    }
+    body += `Please check the [live workflow logs](${workflowRunUrl}) for the full execution trace.\n\n`;
   } else if (errors.length === 0) {
     // If we have output but it didn't match our regex, show raw output
-    body += 'The following issues were found in the workflow files:\n\n';
+    body += '### ⚠️ Raw actionlint Output\n\n';
+    body += 'The tool produced output that could not be parsed into a table:\n\n';
     body += '```\n';
     body += output;
+    if (stderr) {
+      body += '\n\n--- Standard Error ---\n';
+      body += stderr;
+    }
     body += '\n```\n\n';
-    body += `> ⚠️ **Note**: Check the [live workflow logs](${workflowRunUrl}) for more details.\n\n`;
+    body += `> 💡 **Tip**: Check the [live workflow logs](${workflowRunUrl}) for more context.\n\n`;
   } else {
+    if (stderr) {
+      body += '<details>\n<summary>⚠️ <strong>Infrastructure Warnings (stderr)</strong></summary>\n\n';
+      body += '```\n' + stderr + '\n```\n\n';
+      body += '</details>\n\n';
+    }
+
     body += `> ⚠️ **Note**: Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
     body += `Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files:\n\n`;
 
@@ -77,9 +97,10 @@ module.exports = async ({ github, context, core }) => {
     body += '| File | Line | Issue |\n|---|---|---|\n';
     for (const err of errors.slice(0, 20)) {
       // Limit to 20 to avoid huge comments
-      const fileLink = `[${err.file}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${err.file}#L${err.line})`;
+      const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
+      const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
       const shortMsg = err.message.length > 80 ? err.message.substring(0, 77) + '...' : err.message;
-      body += `| ${fileLink} | L${err.line} | ${shortMsg} |\n`;
+      body += `| ${fileLink} | L${err.line} | ${severityIcon} ${shortMsg} |\n`;
     }
     if (errors.length > 20) {
       body += `\n*...and ${errors.length - 20} more errors. See workflow logs for complete list.*\n`;

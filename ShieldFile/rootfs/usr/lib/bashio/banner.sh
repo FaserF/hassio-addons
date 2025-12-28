@@ -18,7 +18,7 @@ bashio::addon.print_banner() {
         bashio::log.warning "⚠️  You are running a Development Build ($addon_version)!"
         bashio::log.warning "⚠️  This version may be unstable and contain bugs."
     elif [[ "$addon_version" =~ ^0\. ]]; then
-         bashio::log.info "🚧  You are running a BETA version ($addon_version)."
+        bashio::log.info "🚧  You are running a BETA version ($addon_version)."
     fi
 
     bashio::log.blue "-----------------------------------------------------------"

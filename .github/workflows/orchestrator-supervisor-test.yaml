@@ -241,9 +241,26 @@ jobs:
                  echo "⚠️ Failed to start core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
-                 echo "Waiting for MariaDB..."
+                 echo "Waiting for MariaDB to be ready..."
                  echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
-                 sleep 30
+                 # Poll for MariaDB status
+                 MAX_WAIT=60
+                 START_TIME=$(date +%s)
+                 READY=false
+                 while [ $(($(date +%s) - START_TIME)) -lt $MAX_WAIT ]; do
+                   STATUS=$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo "unknown")
+                   if [ "$STATUS" = "started" ]; then
+                     echo "✅ MariaDB is started and ready."
+                     READY=true
+                     break
+                   fi
+                   echo "  ... MariaDB status: $STATUS (waiting)"
+                   sleep 5
+                 done
+                 if [ "$READY" != "true" ]; then
+                   echo "⚠️ MariaDB failed to reach 'started' state within ${MAX_WAIT}s"
+                   echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
+                 fi
             fi
           else
             echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
@@ -313,17 +330,17 @@ jobs:
                 # Create the update script if it doesn't exist
                 # shellcheck disable=SC2016
                 cat << 'EOF' > /tmp/ha-data/addons/local/update_config.sh
-#!/bin/sh
-slug="$1"
-opts="$2"
-file="/mnt/supervisor/addons.json"
-if [ ! -f "$file" ]; then exit 1; fi
-tmp=$(mktemp)
-jq --arg slug "$slug" --argjson opts "$opts" '
-  if .user[$slug] == null then .user[$slug] = {} else . end |
-  .user[$slug].options = $opts
-' "$file" > "$tmp" && mv "$tmp" "$file"
-EOF
+                #!/bin/sh
+                slug="$1"
+                opts="$2"
+                file="/mnt/supervisor/addons.json"
+                if [ ! -f "$file" ]; then exit 1; fi
+                tmp=$(mktemp)
+                jq --arg slug "$slug" --argjson opts "$opts" '
+                  if .user[$slug] == null then .user[$slug] = {} else . end |
+                  .user[$slug].options = $opts
+                ' "$file" > "$tmp" && mv "$tmp" "$file"
+                EOF
                 docker exec ha-supervisor-test sh /mnt/supervisor/addons/local/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
               fi
 

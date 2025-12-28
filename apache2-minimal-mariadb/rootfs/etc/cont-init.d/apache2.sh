@@ -21,6 +21,12 @@ default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
+# WARNING: The init_commands option uses `eval`.
+# This executes arbitrary shell commands as the container user/root.
+# Only use trusted input for this option.
+# No further sandboxing is performed.
+# For more information, see:
+# https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."
 	while read -r cmd; do
@@ -48,12 +54,12 @@ if [ -d "$DocumentRoot" ]; then
 			adduser -S "$username" -G www-data
 		fi
 		echo "$username:$password" | chpasswd
-		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
+		find "$webrootdocker" -type f -exec chown "$username":www-data {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find "$webrootdocker" -type d -exec chown www-data:www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown www-data:www-data -R {} \;
+		find "$webrootdocker" -type d -exec chown www-data:www-data {} \;
+		find "$webrootdocker" -type f -exec chown www-data:www-data {} \;
 	fi
 fi
 
@@ -118,9 +124,6 @@ sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
 	if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
 		cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
 		echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
 	fi
@@ -136,9 +139,6 @@ fi
 
 if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 	if [ -f "$default_conf" ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
 		if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default.conf
 		fi
@@ -161,9 +161,6 @@ fi
 
 if [ "$default_ssl_conf" != "default" ]; then
 	if [ -f "$default_ssl_conf" ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
 		if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		fi

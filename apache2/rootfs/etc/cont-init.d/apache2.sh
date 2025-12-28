@@ -59,12 +59,10 @@ if [ -d "$DocumentRoot" ]; then
 			adduser -S "$username" -G www-data
 		fi
 		echo "$username:$password" | chpasswd
-		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
-		find "$webrootdocker" -type f -exec chown "$username":www-data {} \;
+		chown -R "$username":www-data "$webrootdocker"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find "$webrootdocker" -type d -exec chown www-data:www-data {} \;
-		find "$webrootdocker" -type f -exec chown www-data:www-data {} \;
+		chown -R www-data:www-data "$webrootdocker"
 	fi
 fi
 

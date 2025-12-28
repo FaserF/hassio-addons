@@ -44,7 +44,9 @@ fi
 if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
-		adduser -S "$username" -G www-data
+		if ! id "$username" &>/dev/null; then
+			adduser -S "$username" -G www-data
+		fi
 		echo "$username:$password" | chpasswd
 		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
 		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
@@ -143,13 +145,13 @@ if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 		cp -rf "$default_conf" /etc/apache2/sites-enabled/000-default.conf
 		echo "Your custom apache config at $default_conf will be used."
 	else
-		echo "Cant find your custom 000-default.conf file $default_conf - be sure you have chosen the full path. Exiting now..."
+		echo "Cannot find your custom 000-default.conf file $default_conf - be sure you have chosen the full path. Exiting now..."
 		exit 1
 	fi
 fi
 
 if [ "$default_ssl_conf" = "get_config" ]; then
-	if [ -f /etc/apache2/httpd.conf ]; then
+	if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 		cp /etc/apache2/sites-enabled/000-default-le-ssl.conf /share/000-default-le-ssl.conf
 		echo "You have requested a copy of the apache2 ssl config. You can now find it at /share/000-default-le-ssl.conf ."
 	fi
@@ -168,7 +170,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 		cp -rf "$default_ssl_conf" /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		echo "Your custom apache config at $default_ssl_conf will be used."
 	else
-		echo "Cant find your custom 000-default-le-ssl.conf file $default_ssl_conf - be sure you have chosen the full path. Exiting now..."
+		echo "Cannot find your custom 000-default-le-ssl.conf file $default_ssl_conf - be sure you have chosen the full path. Exiting now..."
 		exit 1
 	fi
 fi
