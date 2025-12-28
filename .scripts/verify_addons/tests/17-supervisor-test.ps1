@@ -203,6 +203,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "sleep", "infinity"
     )
 
+    if ($PSBoundParameters['Debug']) {
+        Write-Host "    > Debug: Running docker with args: @runArgs" -ForegroundColor DarkGray
+    }
     $startResult = & docker @runArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
         Add-Result -Addon "System" -Check "SupervisorTest" -Status "FAIL" -Message "Failed to start container: $startResult"
