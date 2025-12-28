@@ -344,6 +344,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         }
     }
 
+    $storeRefreshed = $false
+
     # Test each add-on
     foreach ($addon in $Addons) {
         if (-not (Should-RunTest -AddonName $addon.Name -TestName "SupervisorTest" -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -DocsOnlyTests $Config.docsOnlyTests)) {
@@ -391,13 +393,30 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         $testMessage = ""
 
         try {
-            # Install add-on
-            Write-Host "    > Installing $($addon.Name)..." -ForegroundColor Gray
-            $installJob = Start-Job -ScriptBlock {
-                param($containerName, $slug, $debugPref)
-                if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                docker exec $containerName ha addons install $slug 2>&1
-            } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
+            if ($slug) {
+                Write-Host "    Slug detected: $slug" -ForegroundColor Gray
+
+                # Refresh store to pick up local changes
+                # Only do this once to reduce noise
+                if (-not $storeRefreshed) {
+                    Write-Host "    Refreshing add-on store..." -ForegroundColor Gray
+                    docker exec $containerName ha store refresh 2>&1 | Out-Null
+                    $storeRefreshed = $true
+
+                     # Debug: list addons
+                    if ($PSBoundParameters['Debug']) {
+                         docker exec $containerName ha addons 2>&1 | Out-Host
+                    }
+                }
+
+                # Install add-on
+                Write-Host "    Installing $($addon.Name) ($slug)..." -ForegroundColor Gray
+                $installJob = Start-Job -ScriptBlock {
+                    param($containerName, $slug, $debugPref)
+                    if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
+                    docker exec $containerName ha addons install $slug 2>&1
+                } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
+            }
 
             $installResult = Wait-Job $installJob -Timeout $addonInstallTimeout
             if ($installResult.State -eq "Completed") {
@@ -447,8 +466,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                             # Create text file with options locally
                             # Use proper .NET write to avoid BOM and ensure LF
+                            # Create text file with options locally
+                            # Use proper .NET write to avoid BOM and ensure LF
                             $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
-                            [System.IO.File]::WriteAllText($tmpOptsFile, "{@{options=$($opts)}}" -replace "`r`n", "`n") # Wrap in 'options' key for API? No, usually body IS the options object. Wait, ha api expects {"options": {...}} usually. Let's check ha cli source if possible. Actually standard is usually just the options object for the CLI --options arg, but API endpoint might expect wrapped. The HA CLI wraps it?
                             # Check HA Supervisor API docs. POST /addons/{slug}/options takes {"options": { ... }}
                             # My $opts string is usually '{"key": "val"}'. So I need to wrap it.
                             $wrappedOpts = '{ "options": ' + $opts + ' }'
@@ -458,8 +478,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                             docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
 
                             # Execute CURL directly to Supervisor API
-                            # This bypasses HA CLI issues completely
-                            $curlOut = docker exec $containerName curl -s -o /tmp/curl_out.json -w "%{http_code}" -X POST -H "Authorization: Bearer \$(printenv SUPERVISOR_TOKEN)" -H "Content-Type: application/json" -d @/tmp/options.json http://supervisor/addons/$slug/options 2>&1
+                            # This bypasses HA CLI issues completely. We use sh -c to allow variable expansion of SUPERVISOR_TOKEN
+                            $curlOut = docker exec $containerName sh -c "curl -s -o /tmp/curl_out.json -w ""%{http_code}"" -X POST -H ""Authorization: Bearer \$(printenv SUPERVISOR_TOKEN)"" -H ""Content-Type: application/json"" -d @/tmp/options.json http://supervisor/addons/$slug/options" 2>&1
 
                             if ($curlOut -ne "200") {
                                 Write-Warning "Failed to set options via API. status=$curlOut"
