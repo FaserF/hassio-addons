@@ -511,7 +511,7 @@ except Exception as e:
     sys.exit(1)
 "@
                             $tmpPyFile = Join-Path $env:TEMP "set_options_$($addon.Name).py"
-                            [System.IO.File]::WriteAllText($tmpPyFile, $pyScript -replace "`r`n", "`n")
+                            [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
                             docker cp $tmpPyFile "${containerName}:/tmp/set_options.py" 2>$null | Out-Null
 
                             # Execute Python script
