@@ -75,7 +75,7 @@ jobs:
       filters: ${{ steps.generator.outputs.filters }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🐍 Generate Dynamic Filters
         id: generator
@@ -131,7 +131,7 @@ jobs:
       force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -230,7 +230,7 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
@@ -352,7 +352,7 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -920,7 +920,7 @@ jobs:
       issues: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📝 Post Success Comment
         uses: actions/github-script@v7

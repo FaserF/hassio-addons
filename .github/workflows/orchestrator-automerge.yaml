@@ -22,7 +22,7 @@ jobs:
       github.event.workflow_run.head_branch != 'master'
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
