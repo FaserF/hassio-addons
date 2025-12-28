@@ -7,7 +7,6 @@ set -e
 # shellcheck disable=SC1091
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
@@ -42,17 +41,20 @@ if [ ! -d "$DocumentRoot" ]; then
 	echo "You haven't put your website to $DocumentRoot"
 	echo "Creating the folder for you."
 	mkdir -p "$DocumentRoot"
-else
-	#Create Shortcut to shared html folder
-	ln -s "$DocumentRoot" /var/www/localhost/htdocs
 fi
+
+# Create Shortcut to shared html folder
+# Remove existing symlink or directory at target first
+rm -rf /var/www/localhost/htdocs
+mkdir -p /var/www/localhost
+ln -s "$DocumentRoot" /var/www/localhost/htdocs
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
 	find "$DocumentRoot" -type d -exec chmod 771 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		if ! id "$username" &>/dev/null; then
-			adduser -S "$username" -G www-data
+			adduser "$username" -G www-data -D
 		fi
 		echo "$username:$password" | chpasswd
 		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
@@ -84,7 +86,7 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		echo "Cannot find certificate key file $keyfile"
 		exit 1
 	fi
-	mkdir /etc/apache2/sites-enabled
+	mkdir -p /etc/apache2/sites-enabled
 	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
 	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf

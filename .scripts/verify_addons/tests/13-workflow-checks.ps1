@@ -146,7 +146,7 @@ foreach ($wf in $workflows) {
     }
 
     # Check 5: SHA Pinning (Informational)
-    if ($content -match 'uses:\s*[\w\-/]+@(?![a-fA-F0-9]{40})(\s|$|#|[^\s]+)') {
+    if ($content -match 'uses:\s*[\w\-/]+@(?![a-fA-F0-9]{40}\b)') {
         # Broad check for anything that uses @ but NOT followed by 40 hex chars
         Add-Result -Addon $wfName -Check "CR-SHA-Pinning" -Status "INFO" -Message "Action uses tag or branch. Pinning to a specific commit SHA is recommended for security."
     } else {

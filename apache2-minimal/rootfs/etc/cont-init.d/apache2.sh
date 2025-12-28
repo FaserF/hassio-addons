@@ -3,24 +3,23 @@
 # shellcheck shell=bash
 
 # Enable strict mode
-set -e
+set -euo pipefail
 # shellcheck disable=SC1091
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
-DocumentRoot=$(bashio::config 'document_root')
+document_root=$(bashio::config 'document_root')
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
 
-# WARNING: The init_commands option uses `eval`.
+# WARNING: The init_commands option uses \`eval\`.
 # This executes arbitrary shell commands as the container user/root.
 # Only use trusted input for this option.
 # No further sandboxing is performed.
@@ -34,33 +33,32 @@ if bashio::config.has_value 'init_commands'; then
 	done <<<"$(bashio::config 'init_commands')"
 fi
 
-rm -r "$webrootdocker"
+rm -rf -- "$webrootdocker"
 
-if [ ! -d "$DocumentRoot" ]; then
-	echo "You haven't put your website to $DocumentRoot"
+if [ ! -d "$document_root" ]; then
+	echo "You haven't put your website to $document_root"
 	echo "DEBUGGING: $certfile $website_name $ssl"
 	echo "A default website will now be used"
-	mkdir "$webrootdocker"
+	mkdir -p "$webrootdocker"
 	cp /index.html "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
-	ln -s "$DocumentRoot" /var/www/localhost/htdocs
+	mkdir -p /var/www/localhost
+	ln -s "$document_root" /var/www/localhost/htdocs
 fi
 
 #Set rights to web folders and create user
-if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} \;
+if [ -d "$document_root" ]; then
+	find "$document_root" -type d -exec chmod 755 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		if ! id "$username" &>/dev/null; then
 			adduser -S "$username" -G www-data
 		fi
 		echo "$username:$password" | chpasswd
-		find "$webrootdocker" -type d -exec chown "$username":www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown "$username":www-data -R {} \;
+		chown -R "$username":www-data "$webrootdocker"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find "$webrootdocker" -type d -exec chown www-data:www-data -R {} \;
-		find "$webrootdocker" -type f -exec chown www-data:www-data -R {} \;
+		chown -R www-data:www-data "$webrootdocker"
 	fi
 fi
 
@@ -74,36 +72,39 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		echo "Cannot find certificate key file $keyfile"
 		exit 1
 	fi
-	mkdir /etc/apache2/sites-enabled
+	mkdir -p /etc/apache2/sites-enabled
 	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
-	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf
-	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "ServerAdmin webmaster@localhost" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "DocumentRoot $webrootdocker" >>/etc/apache2/sites-enabled/000-default.conf
 
-	echo "#Redirect http to https" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "    RewriteEngine On" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "    RewriteCond %{HTTPS} off" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "#End Redirect http to https" >>/etc/apache2/sites-enabled/000-default.conf
+	cat >/etc/apache2/sites-enabled/000-default.conf <<EOF
+<VirtualHost *:80>
+ServerName $website_name
+ServerAdmin webmaster@localhost
+DocumentRoot $webrootdocker
+#Redirect http to https
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+#End Redirect http to https
+    ErrorLog /var/log/error.log
+        #CustomLog /var/log/access.log combined
+</VirtualHost>
+EOF
 
-	echo "    ErrorLog /var/log/error.log" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "        #CustomLog /var/log/access.log combined" >>/etc/apache2/sites-enabled/000-default.conf
-	echo "</VirtualHost>" >>/etc/apache2/sites-enabled/000-default.conf
+	cat >/etc/apache2/sites-enabled/000-default-le-ssl.conf <<EOF
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+ServerName $website_name
+ServerAdmin webmaster@localhost
+DocumentRoot $webrootdocker
+    ErrorLog /var/log/error.log
+        #CustomLog /var/log/access.log combined
+SSLCertificateFile /ssl/$certfile
+SSLCertificateKeyFile /ssl/$keyfile
+</VirtualHost>
+</IfModule>
+EOF
 
-	echo "<IfModule mod_ssl.c>" >/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "<VirtualHost *:443>" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "ServerAdmin webmaster@localhost" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "DocumentRoot $webrootdocker" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-
-	echo "    ErrorLog /var/log/error.log" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "        #CustomLog /var/log/access.log combined" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "SSLCertificateFile /ssl/$certfile" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "SSLCertificateKeyFile /ssl/$keyfile" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "</VirtualHost>" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
-	echo "</IfModule>" >>/etc/apache2/sites-enabled/000-default-le-ssl.conf
 else
 	echo "SSL is deactivated and/or you are using a custom config."
 fi
@@ -115,9 +116,7 @@ sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
 if [ "$default_conf" = "get_config" ]; then
 	if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
+		mkdir -p /etc/apache2/sites-enabled
 		cp /etc/apache2/sites-enabled/000-default.conf /share/000-default.conf
 		echo "You have requested a copy of the apache2 config. You can now find it at /share/000-default.conf ."
 	fi
@@ -133,13 +132,11 @@ fi
 
 if [[ ! $default_conf =~ ^(default|get_config)$ ]]; then
 	if [ -f "$default_conf" ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
+		mkdir -p /etc/apache2/sites-enabled
 		if [ -f /etc/apache2/sites-enabled/000-default.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default.conf
 		fi
-		cp -rf "$default_conf" /etc/apache2/sites-enabled/000-default.conf
+		cp -f "$default_conf" /etc/apache2/sites-enabled/000-default.conf
 		echo "Your custom apache config at $default_conf will be used."
 	else
 		echo "Cant find your custom 000-default.conf file $default_conf - be sure you have chosen the full path. Exiting now..."
@@ -158,13 +155,11 @@ fi
 
 if [ "$default_ssl_conf" != "default" ]; then
 	if [ -f "$default_ssl_conf" ]; then
-		if [ ! -d /etc/apache2/sites-enabled ]; then
-			mkdir /etc/apache2/sites-enabled
-		fi
+		mkdir -p /etc/apache2/sites-enabled
 		if [ -f /etc/apache2/sites-enabled/000-default-le-ssl.conf ]; then
 			rm /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		fi
-		cp -rf "$default_ssl_conf" /etc/apache2/sites-enabled/000-default-le-ssl.conf
+		cp -f "$default_ssl_conf" /etc/apache2/sites-enabled/000-default-le-ssl.conf
 		echo "Your custom apache config at $default_ssl_conf will be used."
 	else
 		echo "Cant find your custom 000-default-le-ssl.conf file $default_ssl_conf - be sure you have chosen the full path. Exiting now..."

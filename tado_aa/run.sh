@@ -3,11 +3,9 @@
 # shellcheck shell=bash
 
 # Enable strict mode
-set -e
-# shellcheck disable=SC1091
+set -euo pipefail
 source /usr/lib/bashio/banner.sh
 bashio::addon.print_banner
-# Get Addon Version
 
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')

@@ -88,7 +88,11 @@ module.exports = async ({ github, context, core }) => {
   body += '### 🔗 Results\n';
   body += `> 📊 **View Full Report**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
 
-  if (errors.length === 0 && (hasZeroIssues || isEmpty)) {
+  if (errors.length === 0 && hasZeroIssues) {
+    body += '### ✅ Success\n\n';
+    body += 'No linting issues were found.\n\n';
+  } else if (errors.length === 0 && isEmpty) {
+    // True empty output = unexpected failure
     body += '> [!CAUTION]\n';
     body += '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
     // ... rest of the existing error reporting logic ...

@@ -327,7 +327,7 @@ try {
         $activeTests = @()
         if ("all" -in $Tests) {
             # SupervisorTest is resource intensive and excluded from 'all'
-            $activeTests = @($Config['validTests']) | Where-Object { $_ -ne "all" -and $_ -ne "SupervisorTest" }
+            $activeTests = @($Config.validTests) | Where-Object { $_ -ne "all" -and $_ -ne "SupervisorTest" }
         }
         else {
             $activeTests = @($Tests)
@@ -753,7 +753,6 @@ finally {
         Write-Host "  $e_pass Verification PASSED!" -ForegroundColor Green
     }
 
-    # Export results
     # Export results
     if ($JsonFile -and $Json) {
         $exportData = @{

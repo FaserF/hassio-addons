@@ -29,7 +29,7 @@ if (Get-Command "shellcheck" -ErrorAction SilentlyContinue) {
     if ($Config.dockerTests -contains "ShellCheck" -or $DockerAvailable) {
          # Fallback to Docker
          $useDocker = $true
-         $shellcheck = "docker run --rm -v ""$($RepoRoot):/mnt"" -w /mnt koalaman/shellcheck:stable"
+         # $shellcheck variable is not used for Docker runs, logic is inline below
     }
 }
 
@@ -39,7 +39,7 @@ foreach ($a in $Addons) {
     Write-Progress -Id 1 -Activity "Checking Add-ons" -Status "[$i / $($Addons.Count)] $($a.Name)" -PercentComplete (($i / $Addons.Count) * 100)
     if (-not (Should-RunTest -AddonName $a.Name -TestName "ShellCheck" -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -DocsOnlyTests $Config.docsOnlyTests)) { continue }
 
-    if (-not $shellcheck) {
+    if (-not $shellcheck -and -not $useDocker) {
         Add-Result -Addon $a.Name -Check "ShellCheck" -Status "SKIP" -Message "Binary missing"
         continue
     }
@@ -50,8 +50,15 @@ foreach ($a in $Addons) {
     foreach ($s in $sh) {
         try {
             if ($useDocker) {
-                # Relative path from RepoRoot for Docker
-                $relPath = $s.FullName.Substring($RepoRoot.Length).Replace("\", "/").TrimStart("/")
+                # Relative path calculation that handles trailing slashes in RepoRoot robustly
+                # Ensure RepoRoot does not end with separator for consistent subtraction
+                $rootLen = $RepoRoot.TrimEnd('\').TrimEnd('/').Length
+                if ($s.FullName.Length -gt $rootLen) {
+                     $relPath = $s.FullName.Substring($rootLen).Replace("\", "/").TrimStart("/")
+                } else {
+                     $relPath = $s.Name # Fallback
+                }
+
                 # We need to invoke docker command string. Invoke-Expression is risky but we control the string relative to known command.
                 # Safer: Argument splitting
                 docker run --rm -v "$($RepoRoot):/mnt" -w /mnt koalaman/shellcheck:stable -s bash -e SC2086 "$relPath"

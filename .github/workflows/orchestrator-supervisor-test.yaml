@@ -187,7 +187,7 @@ jobs:
             -v /tmp/ha-data/share:/mnt/supervisor/share \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
-            -v /var/lib/docker \
+            -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
             sleep infinity
 
@@ -357,7 +357,7 @@ jobs:
 
                 while [ "$(date +%s)" -lt "$END_TIME" ]; do
                   # Check if container is running (more reliable than CLI)
-                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_$SLUG_VAL"; then
+                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG_VAL"; then
                     STATUS="started"
                     break
                   fi

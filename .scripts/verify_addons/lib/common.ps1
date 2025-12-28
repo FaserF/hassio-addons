@@ -150,7 +150,7 @@ function Show-Notification {
                 if (-not [string]::IsNullOrWhiteSpace($LogPath)) {
                     $btn = New-BTButton -Content "Open Log File" -Arguments $LogPath -ActivationType Protocol
                 } else {
-                     $btn = New-BTButton -Content "Dismiss" -Arguments "dismiss" -ActivationType Protocol
+                     $btn = New-BTButton -Content "Dismiss" -Arguments "dismiss"
                 }
 
                 if ($null -eq $ModuleDir) {

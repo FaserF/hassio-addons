@@ -815,7 +815,7 @@ jobs:
             report += "\n</details>";
 
             // Link to Step Summary
-            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            // workflowRunUrl is already defined in outer scope
             report += `\n\n> 📊 **View Full Test Summary**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
 
             const signature = "<!-- general-ci-failure-report -->";
