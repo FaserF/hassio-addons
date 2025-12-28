@@ -13,7 +13,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install dependencies for NoVNC and VNC server
 # Install dependencies and tools
-# hadolint ignore=DL3008,DL3013,DL4006
+# hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

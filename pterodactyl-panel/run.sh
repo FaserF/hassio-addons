@@ -2,6 +2,13 @@
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+# Get Addon Version
+
 SSL_CERT=/ssl/$(bashio::config 'certfile')
 SSL_CERT_KEY=/ssl/$(bashio::config 'keyfile')
 password_mariadb=$(bashio::config 'password')

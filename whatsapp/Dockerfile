@@ -12,7 +12,8 @@ RUN \
     apk add --no-cache \
         nodejs \
         npm \
-        git
+        git \
+        curl
 
 # 2. Set workdir
 WORKDIR /opt/whatsapp
@@ -74,4 +75,4 @@ LABEL \
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8066/ || exit 1
+    CMD curl --fail http://127.0.0.1:8099/ || exit 1

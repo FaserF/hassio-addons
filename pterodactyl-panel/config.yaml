@@ -1,6 +1,6 @@
 ---
 name: pterodactyl Panel Gameserver - BETA
-version: 0.9.1
+version: 0.9.2
 slug: pterodactyl_panel
 description: Open-Source Gameserver - Currently not fully working
 url: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel
@@ -31,7 +31,7 @@ schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_database: bool?
 ports:
-  "443": 443
+  443/tcp: 443
   80/tcp: 80
 ports_description:
   80/tcp: Web interface http

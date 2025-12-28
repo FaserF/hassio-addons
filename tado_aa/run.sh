@@ -1,6 +1,12 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck disable=SC1091
 # shellcheck shell=bash
+
+# Enable strict mode
+set -euo pipefail
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 minTemp=$(bashio::config 'minTemp')

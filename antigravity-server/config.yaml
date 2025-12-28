@@ -9,6 +9,7 @@ arch:
 image: ghcr.io/faserf/antigravity-server-{arch}
 init: false
 ingress: true
+ingress_port: 6080
 panel_icon: mdi:rocket-launch
 panel_title: Antigravity
 map:

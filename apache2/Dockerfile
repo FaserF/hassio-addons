@@ -8,16 +8,15 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018,DL3003,DL3047
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
+    # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
     apache2 \
     curl \
     php84-apache2 \
-    libxml2-dev \
     apache2-utils \
     apache2-mod-wsgi \
     apache2-ssl \
     apache2-proxy \
     php84 \
-    php84-dev \
     php84-fpm \
     php84-mysqli \
     php84-opcache \
@@ -36,8 +35,8 @@ RUN mkdir /run/apache2 \
     php84-soap \
     php84-fileinfo \
     php84-xml \
+
     php84-ctype \
-    php84-pecl-xdebug \
     php84-pdo_sqlite \
     php84-tokenizer \
     php84-exif \
@@ -49,33 +48,28 @@ RUN mkdir /run/apache2 \
     php84-imap \
     php84-apcu \
     mosquitto \
-    mosquitto-dev \
     mariadb-client \
     ffmpeg \
-    cmake make musl-dev gcc gettext-dev libintl \
+    cmake make musl-dev gcc gettext-dev libintl libxml2 \
     && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-    && cd .. && rm -r musl-locales-master
+    && cd .. && rm -r musl-locales-master \
+    && apk del --no-cache cmake make gcc gettext-dev libintl
 
 # Configure Logging
 RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
+COPY rootfs /
+COPY index.html /
+
+RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:80 || exit 1
-
-COPY index.html /
-COPY run.sh /
-# hadolint ignore=DL3018
-RUN chmod a+x /run.sh \
-    && apk add --no-cache dos2unix \
-    && dos2unix /run.sh
-
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="Apache2"

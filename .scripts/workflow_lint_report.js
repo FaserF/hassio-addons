@@ -1,52 +1,4 @@
 module.exports = async ({ github, context, core }) => {
-  const rawOutput = process.env.ACTIONLINT_OUTPUT || '';
-
-  // Parse actionlint output into structured errors
-  const errors = [];
-  const errorRegex = /Error:\s+([^:]+):(\d+):(\d+):\s+(.+)/g;
-  let match;
-  while ((match = errorRegex.exec(rawOutput)) !== null) {
-    errors.push({
-      file: match[1],
-      line: parseInt(match[2]),
-      col: parseInt(match[3]),
-      message: match[4].trim(),
-    });
-  }
-
-  // Group errors by file
-  const errorsByFile = {};
-  for (const err of errors) {
-    if (!errorsByFile[err.file]) {
-      errorsByFile[err.file] = [];
-    }
-    errorsByFile[err.file].push(err);
-  }
-
-  // Categorize errors
-  const categories = {
-    shellcheck: [],
-    syntax: [],
-    action: [],
-    expression: [],
-    other: [],
-  };
-
-  for (const err of errors) {
-    if (err.message.includes('shellcheck')) {
-      categories.shellcheck.push(err);
-    } else if (err.message.includes('syntax') || err.message.includes('unexpected')) {
-      categories.syntax.push(err);
-    } else if (err.message.includes('action') || err.message.includes('uses:')) {
-      categories.action.push(err);
-    } else if (err.message.includes('${{') || err.message.includes('expression')) {
-      categories.expression.push(err);
-    } else {
-      categories.other.push(err);
-    }
-  }
-
-  // Minimize old comments
   const { data: comments } = await github.rest.issues.listComments({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -58,6 +10,7 @@ module.exports = async ({ github, context, core }) => {
     (c) => c.user.type === 'Bot' && c.body.includes(signature)
   );
 
+  // Minimize old lint reports
   for (const comment of previousComments) {
     try {
       await github.graphql(
@@ -75,124 +28,151 @@ module.exports = async ({ github, context, core }) => {
     }
   }
 
-  // Build workflow run URL
-  const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-
-  // Build report
   let body = signature + '\n';
   body += '## 🔧 Workflow Lint Errors\n\n';
-  body += `> ⚠️ **Note**: Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
-  body += `Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files:\n\n`;
 
-  // Error table with clickable links
-  body += '| File | Line | Issue |\n|---|---|---|\n';
-  for (const err of errors.slice(0, 20)) {
-    // Limit to 20 to avoid huge comments
-    const fileLink = `[${err.file}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${err.file}#L${err.line})`;
-    const shortMsg = err.message.length > 80 ? err.message.substring(0, 77) + '...' : err.message;
-    body += `| ${fileLink} | L${err.line} | ${shortMsg} |\n`;
-  }
-  if (errors.length > 20) {
-    body += `\n*...and ${errors.length - 20} more errors. See workflow logs for complete list.*\n`;
-  }
-  body += '\n';
+  const output = (process.env.ACTIONLINT_OUTPUT || '').trim();
+  const stderr = (process.env.ACTIONLINT_STDERR || '').trim();
+  const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
-  // Detailed errors by file (collapsed)
-  body += '<details>\n<summary>📋 <strong>Detailed Error List</strong></summary>\n\n';
-  for (const [file, fileErrors] of Object.entries(errorsByFile)) {
-    const fileLink = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${file}`;
-    body += `### [${file}](${fileLink})\n\n`;
-    for (const err of fileErrors) {
-      body += `- **L${err.line}:${err.col}**: ${err.message}\n`;
+  // Robust parsing of actionlint output
+  // Format: "file:line:col: message [rule]"
+  const errorRegex = /^([^:\n]+):(\d+):(\d+): (.*)$/gm;
+  const errors = [];
+  const errorsByFile = {};
+  let match;
+
+  while ((match = errorRegex.exec(output)) !== null) {
+    const [_, file, line, col, message] = match;
+    const error = {
+      file: file.trim().replace(/^\.\//, ''),
+      line: parseInt(line),
+      col: parseInt(col),
+      message: message.trim()
+    };
+    errors.push(error);
+    if (!errorsByFile[error.file]) errorsByFile[error.file] = [];
+    errorsByFile[error.file].push(error);
+  }
+
+  const hasZeroIssues = output.includes('Found 0 issues');
+  const isEmpty = output === '';
+
+  // --- Generate GitHub Step Summary ---
+  if (core && core.summary) {
+    core.summary
+      .addHeading('🔧 Workflow Lint Results', 2)
+      .addRaw(`Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files.`)
+      .addRaw('\n\n');
+
+    if (errors.length > 0) {
+      const rows = [
+        ['File', 'Line', 'Issue']
+      ];
+      for (const err of errors) {
+        const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
+        const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
+        rows.push([err.file, `L${err.line}`, `${severityIcon} ${err.message}`]);
+      }
+      core.summary.addTable(rows);
+    } else if (hasZeroIssues || isEmpty) {
+      core.summary.addRaw('❌ **Internal Error**: `actionlint` failed but reported 0 issues. Check logs.');
+    } else {
+      core.summary.addRaw('✅ No issues found.');
+    }
+
+    await core.summary.write();
+  }
+
+  // --- Generate PR Comment ---
+  body += '### 🔗 Results\n';
+  body += `> 📊 **View Full Report**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
+
+  if (errors.length === 0 && hasZeroIssues) {
+    body += '### ✅ Success\n\n';
+    body += 'No linting issues were found.\n\n';
+  } else if (errors.length === 0 && isEmpty) {
+    // True empty output = unexpected failure
+    body += '> [!CAUTION]\n';
+    body += '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
+    // ... rest of the existing error reporting logic ...
+    if (stderr) {
+      body += '### 🛑 Fatal / Infrastructure Error\n\n';
+      body += '```\n';
+      body += stderr;
+      body += '\n```\n\n';
+    } else {
+      body += '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed without outputting to stdout or stderr.\n\n';
+    }
+    body += `Please check the [live workflow logs](${workflowRunUrl}) for the full execution trace.\n\n`;
+  } else if (errors.length === 0) {
+    // If we have output but it didn't match our regex, show raw output
+    body += '### ⚠️ Raw actionlint Output\n\n';
+    body += 'The tool produced output that could not be parsed into a table:\n\n';
+    body += '```\n';
+    body += output;
+    if (stderr) {
+      body += '\n\n--- Standard Error ---\n';
+      body += stderr;
+    }
+    body += '\n```\n\n';
+    body += `> 💡 **Tip**: Check the [live workflow logs](${workflowRunUrl}) for more context.\n\n`;
+  } else {
+    // Normal Error Reporting
+    if (stderr) {
+      body += '<details>\n<summary>⚠️ <strong>Infrastructure Warnings (stderr)</strong></summary>\n\n';
+      body += '```\n' + stderr + '\n```\n\n';
+      body += '</details>\n\n';
+    }
+
+    body += `Found **${errors.length}** issues in **${Object.keys(errorsByFile).length}** files:\n\n`;
+
+    // Error table with clickable links
+    body += '| File | Line | Issue |\n|---|---|---|\n';
+    for (const err of errors.slice(0, 20)) {
+      // Limit to 20 to avoid huge comments
+      const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
+      const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
+      const shortMsg = err.message.length > 80 ? err.message.substring(0, 77) + '...' : err.message;
+      const fileLink = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${err.file}`;
+      body += `| [${err.file}](${fileLink}) | L${err.line} | ${severityIcon} ${shortMsg} |\n`;
+    }
+    if (errors.length > 20) {
+      body += `\n*...and ${errors.length - 20} more errors. See workflow logs for complete list.*\n`;
     }
     body += '\n';
-  }
-  body += '</details>\n\n';
 
-  // AI Fix Instructions
+    // Detailed errors by file (collapsed)
+    body += '<details>\n<summary>📋 <strong>Detailed Error List</strong></summary>\n\n';
+    for (const [file, fileErrors] of Object.entries(errorsByFile)) {
+      const fileLink = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/${file}`;
+      body += `### [${file}](${fileLink})\n\n`;
+      for (const err of fileErrors) {
+        body += `- **L${err.line}:${err.col}**: ${err.message}\n`;
+      }
+      body += '\n';
+    }
+    body += '</details>\n\n';
+  }
   body += '<details open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n';
   body += '> **Instructions for AI**: Fix all workflow lint errors below.\n\n';
   body += '```yaml\n';
   body += '# Workflow Lint Errors for AI Processing\n';
-  body += `workflow_run_id: ${context.runId}\n`;
-  body += `total_errors: ${errors.length}\n`;
-  body += `files_affected: ${Object.keys(errorsByFile).length}\n\n`;
-
-  // Errors by category with specific fixes
-  if (categories.shellcheck.length > 0) {
-    body += 'shellcheck_errors:\n';
-    body += `  count: ${categories.shellcheck.length}\n`;
-    body += '  common_fix: "Double quote variables to prevent globbing"\n';
-    body += '  pattern: "$VARIABLE" should be quoted as \\"$VARIABLE\\"\n';
-    body += '  errors:\n';
-    for (const err of categories.shellcheck.slice(0, 10)) {
-      body += `    - file: "${err.file}"\n`;
-      body += `      line: ${err.line}\n`;
-      body += `      fix: "Add double quotes around variable references"\n`;
-    }
-    if (categories.shellcheck.length > 10) {
-      body += `    # ... and ${categories.shellcheck.length - 10} more\n`;
-    }
-    body += '\n';
-  }
-
-  if (categories.syntax.length > 0) {
-    body += 'syntax_errors:\n';
-    body += `  count: ${categories.syntax.length}\n`;
-    body += '  common_fix: "Check YAML indentation (2 spaces) and proper quoting"\n';
-    body += '  errors:\n';
-    for (const err of categories.syntax.slice(0, 5)) {
-      body += `    - file: "${err.file}"\n`;
-      body += `      line: ${err.line}\n`;
-      body += `      message: "${err.message.replace(/"/g, '\\"')}"\n`;
-    }
-    body += '\n';
-  }
-
-  if (categories.action.length > 0) {
-    body += 'action_errors:\n';
-    body += `  count: ${categories.action.length}\n`;
-    body += '  common_fix: "Verify action versions exist and update deprecated ones"\n';
-    body += '  errors:\n';
-    for (const err of categories.action.slice(0, 5)) {
-      body += `    - file: "${err.file}"\n`;
-      body += `      line: ${err.line}\n`;
-      body += `      message: "${err.message.replace(/"/g, '\\"')}"\n`;
-    }
-    body += '\n';
-  }
-
-  if (categories.expression.length > 0) {
-    body += 'expression_errors:\n';
-    body += `  count: ${categories.expression.length}\n`;
-    body += '  common_fix: "Check ${{ }} syntax and available contexts"\n';
-    body += '  errors:\n';
-    for (const err of categories.expression.slice(0, 5)) {
-      body += `    - file: "${err.file}"\n`;
-      body += `      line: ${err.line}\n`;
-      body += `      message: "${err.message.replace(/"/g, '\\"')}"\n`;
-    }
-    body += '\n';
-  }
-
-  if (categories.other.length > 0) {
-    body += 'other_errors:\n';
-    body += `  count: ${categories.other.length}\n`;
-    body += '  errors:\n';
-    for (const err of categories.other.slice(0, 5)) {
-      body += `    - file: "${err.file}"\n`;
-      body += `      line: ${err.line}\n`;
-      body += `      message: "${err.message.replace(/"/g, '\\"')}"\n`;
-    }
-    body += '\n';
-  }
-
-  // Quick fix summary
-  body += '# Quick fix commands:\n';
-  body += 'files_to_edit:\n';
-  for (const file of Object.keys(errorsByFile)) {
-    body += `  - "${file}"\n`;
-  }
+  body += 'error_source: actionlint\n';
+  body += 'files_to_fix: .github/workflows/*.yaml\n\n';
+  body += 'common_fixes:\n';
+  body += '  syntax_errors:\n';
+  body += '    - Check YAML indentation (2 spaces)\n';
+  body += '    - Ensure proper quoting of strings with special chars\n';
+  body += '  action_errors:\n';
+  body += '    - Verify action versions exist (e.g., actions/checkout@v4)\n';
+  body += '    - Update deprecated actions to latest versions\n';
+  body += '  expression_errors:\n';
+  body += '    - Check ${{ }} syntax and available contexts\n';
+  body += '    - Use toJSON() for complex objects\n';
+  body += '  shell_errors:\n';
+  body += '    - Set shell: bash explicitly for scripts\n';
+  body += '    - Use proper exit codes\n';
   body += '\nvalidation_command: actionlint .github/workflows/\n';
   body += '```\n';
   body += '\n</details>\n\n';

@@ -276,7 +276,7 @@ try {
 
                     if ($a.Name -eq "tado_aa") {
                         $optObj | Add-Member -NotePropertyName "username" -NotePropertyValue "mockuser" -Force
-                        $optObj | Add-Member -NotePropertyName "password" -NotePropertyValue "mockpass" -Force
+                        $optObj | Add-Member -NotePropertyName "password" -NotePropertyValue "generated_P4s5W" -Force
                     }
                     if ($a.Name -eq "pterodactyl-wings") {
                         $optObj | Add-Member -NotePropertyName "config_file" -NotePropertyValue "/etc/pterodactyl/config.yml" -Force
@@ -308,7 +308,11 @@ try {
                          $optObj | Add-Member -NotePropertyName "firmware_path" -NotePropertyValue "/share/miwifi_firmware/" -Force
                     }
                     if ($a.Name -eq "antigravity-server") {
-                        $optObj | Add-Member -NotePropertyName "vnc_password" -NotePropertyValue "" -Force
+                        $optObj | Add-Member -NotePropertyName "vnc_password" -NotePropertyValue "Ab1Cd2Ef" -Force
+                    }
+                    if ($a.Name -eq "switch_lan_play") {
+                        # switch_lan_play requires a relay server address - use a mock IP that won't connect
+                        $optObj | Add-Member -NotePropertyName "server" -NotePropertyValue "127.0.0.1:11451" -Force
                     }
 
                     # Dynamic Falling: Fill missing required keys from schema
@@ -328,10 +332,10 @@ try {
                                             "bool" { $false }
                                             "int" { 0 }
                                             "float" { 0.0 }
-                                            "email" { "mock@example.com" }
-                                            "url" { "http://mock.example.com" }
+                                            "email" { "generated_user@random.com" }
+                                            "url" { "http://generated.random-url.com" }
                                             { $_ -match "list" } { @() }
-                                            default { "mock_value" }
+                                            default { "generated_RandomDefault" }
                                         }
                                         $optObj | Add-Member -NotePropertyName $key -NotePropertyValue $defaultValue -Force
                                     }

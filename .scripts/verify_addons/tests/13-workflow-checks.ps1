@@ -22,14 +22,15 @@ if ($DockerAvailable) {
     try {
         $out = docker run --rm -v "$($RepoRoot):/repo" -w /repo rhysd/actionlint:latest 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Add-Result -Addon "Workflows" -Check "Actionlint" -Status "FAIL" -Message $out
+            $msg = $out | Out-String
+            Add-Result -Addon "Workflows" -Check "Actionlint" -Status "FAIL" -Message $msg
         }
         else {
             Add-Result -Addon "Workflows" -Check "Actionlint" -Status "PASS" -Message "OK"
         }
     }
     catch {
-        Add-Result -Addon "Workflows" -Check "Actionlint" -Status "SKIP" -Message "Docker unavailable"
+        Add-Result -Addon "Workflows" -Check "Actionlint" -Status "SKIP" -Message "Actionlint command failed: $_"
     }
 
     # B. Zizmor (Security)
@@ -47,7 +48,7 @@ if ($DockerAvailable) {
         }
     }
     catch {
-        Add-Result -Addon "Workflows" -Check "Zizmor" -Status "SKIP" -Message "Docker unavailable"
+        Add-Result -Addon "Workflows" -Check "Zizmor" -Status "SKIP" -Message "Zizmor command failed: $_"
     }
 }
 
@@ -75,9 +76,9 @@ foreach ($wf in $workflows) {
 }
 if ($shaIssues.Count -gt 0) {
     $msg = $shaIssues | ForEach-Object { "$($_.File):$($_.Line) - SHA is $($_.Length) chars (need 40)" }
-    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "FAIL" -Message "Invalid SHAs found: $($msg -join '; ')"
+    Add-Result -Addon "Workflows" -Check "CR-SHA-Validation" -Status "FAIL" -Message "Invalid SHAs found: $($msg -join '; ')"
 } else {
-    Add-Result -Addon "Workflows" -Check "SHA-Validation" -Status "PASS" -Message "All action SHAs valid"
+    Add-Result -Addon "Workflows" -Check "CR-SHA-Validation" -Status "PASS" -Message "All action SHAs valid"
 }
 
 # Get latest runner version
@@ -142,5 +143,13 @@ foreach ($wf in $workflows) {
         } else {
             Add-Result -Addon $wfName -Check "CR-RunnerVersion" -Status "PASS" -Message "OK"
         }
+    }
+
+    # Check 5: SHA Pinning (Informational)
+    if ($content -match 'uses:\s*[\w\-/]+@(?![a-fA-F0-9]{40}\b)') {
+        # Broad check for anything that uses @ but NOT followed by 40 hex chars
+        Add-Result -Addon $wfName -Check "CR-SHA-Pinning" -Status "INFO" -Message "Action uses tag or branch. Pinning to a specific commit SHA is recommended for security."
+    } else {
+        Add-Result -Addon $wfName -Check "CR-SHA-Pinning" -Status "PASS" -Message "OK"
     }
 }

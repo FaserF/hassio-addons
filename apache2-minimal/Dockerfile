@@ -20,12 +20,11 @@ RUN mkdir /run/apache2 \
 COPY rootfs /
 COPY index.html /
 
+RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl --fail http://127.0.0.1:80 || exit 1
-
-RUN chmod a+x /run.sh
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="Apache2 Minimal"

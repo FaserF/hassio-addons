@@ -4,41 +4,38 @@ FROM ${BUILD_FROM} as base
 
 
 # Install system requirements
-# IMPORTANT: Pterodactyl Panel v1.10.4 requires PHP 8.1 - DO NOT UPGRADE
-# Added Alpine 3.19 repositories to maintain PHP 8.1 compatibility
-# NOTE: We mix Alpine 3.21 (base) and 3.19 (php81) repositories.
+# Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/community \
     redis \
     curl \
     gettext \
     mariadb-client \
     nginx \
-    php81 \
-    php81-bcmath \
-    php81-common \
-    php81-dom \
-    php81-fileinfo \
-    php81-fpm \
-    php81-gd \
-    php81-pecl-memcached \
-    php81-mbstring \
-    php81-openssl \
-    php81-pdo \
-    php81-phar \
-    php81-sodium \
-    php81-pdo_mysql \
-    php81-session \
-    php81-simplexml \
-    php81-tokenizer \
-    php81-ctype \
-    php81-zip \
-    php81-xmlwriter \
+    php83 \
+    php83-bcmath \
+    php83-common \
+    php83-dom \
+    php83-fileinfo \
+    php83-fpm \
+    php83-gd \
+    php83-pecl-memcached \
+    php83-mbstring \
+    php83-openssl \
+    php83-posix \
+    php83-pdo \
+    php83-phar \
+    php83-sodium \
+    php83-pdo_mysql \
+    php83-session \
+    php83-simplexml \
+    php83-tokenizer \
+    php83-ctype \
+    php83-zip \
+    php83-xmlwriter \
     tini \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
-    && ln -s /usr/bin/php81 /usr/bin/php
+    && ln -sf /usr/bin/php83 /usr/bin/php
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
@@ -50,7 +47,7 @@ WORKDIR /var/www/html
 RUN apk add --no-cache \
     yarn \
     git \
-    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.10.4 \
+    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.11.11 \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \

@@ -25,7 +25,7 @@ mockKernelVersion: "6.12.51-haos"
 mockArch: "amd64"
 
 # --- SCRIPT METADATA ---
-scriptVersion: "2.1.0"
+scriptVersion: "3.0.0"
 
 # --- DOCKER RUN SKIPS ---
 # Addons to skip during DockerRun test with reason
@@ -53,10 +53,14 @@ validTests:
   - WorkflowChecks
   - PythonChecks
   - CustomTests
+  - IngressCheck
+  - SupervisorTest
 
 # --- DOCKER-DEPENDENT TESTS ---
 dockerTests:
+  - ShellCheck
   - Hadolint
+  - SupervisorTest
   - AddonLinter
   - Trivy
   - DockerBuild
@@ -72,22 +76,43 @@ docsOnlyTests:
   - LineEndings
 
 # --- TEST WEIGHTS (Seconds per Add-on) ---
-# Used for ETA calculation
+# Used for ETA calculation. These are empirical estimates from measured runs.
+# Note: Add ~20% buffer for slower hardware; Docker tests vary by addon complexity.
 testWeights:
-  LineEndings: 0.2
-  ShellCheck: 1.0
-  Hadolint: 3.0
-  YamlLint: 0.5
-  MarkdownLint: 0.5
-  Prettier: 1.5
-  AddonLinter: 10.0
-  Compliance: 1.0
-  Trivy: 60.0
-  VersionCheck: 1.0
-  DockerBuild: 180.0
-  DockerRun: 60.0
-  CodeRabbit: 1.0
-  WorkflowChecks: 2.0
-  PythonChecks: 2.0
-  AutoFix: 3.0
-  CustomTests: 5.0
+  LineEndings: 0.3
+  ShellCheck: 1.5
+  Hadolint: 4.0
+  YamlLint: 0.8
+  MarkdownLint: 0.8
+  Prettier: 2.5
+  AddonLinter: 12.0
+  Compliance: 1.5
+  Trivy: 45.0
+  VersionCheck: 1.5
+  DockerBuild: 150.0
+  DockerRun: 45.0
+  CodeRabbit: 2.0
+  WorkflowChecks: 3.0
+  PythonChecks: 2.5
+  AutoFix: 4.0
+  CustomTests: 6.0
+  IngressCheck: 1.5
+  SupervisorTest: 600.0
+
+
+# --- SUPERVISOR INTEGRATION TEST SETTINGS ---
+# These settings are used for the real Supervisor integration test (optional)
+# Note: SupervisorTest is NOT included in 'all' - requires explicit -SupervisorTest flag
+supervisorTests:
+  # Add-ons to skip during real Supervisor testing (require external services/hardware)
+  skipSupervisorTest:
+    bt-mqtt-gateway: "Requires Bluetooth hardware"
+    tuya-convert: "Requires WiFi hardware for AP mode"
+    switch_lan_play: "Requires external switch-lan-play server"
+    netboot-xyz: "Complex initialization requires real environment"
+    antigravity-server: "Execution takes too long for standard tests"
+
+  # Timeout settings (in seconds)
+  supervisorStartupTimeout: 300
+  addonInstallTimeout: 300
+  addonStartTimeout: 600

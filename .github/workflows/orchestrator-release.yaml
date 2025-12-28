@@ -199,7 +199,7 @@ jobs:
 
             # Detect affected auto-release addons
             # Use grep -F for fixed string matching (handles special chars like . in wiki.js)
-            CLEAN_AUTO_ADDONS=$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')
+            CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
             for addon in $CLEAN_AUTO_ADDONS; do
               if echo "$CHANGED" | grep -Fq "${addon}/"; then
                 [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
@@ -215,7 +215,7 @@ jobs:
 
           # Convert to JSON array
           if [ -n "$ADDONS" ]; then
-            JSON=$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)
+            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)"
           else
             JSON="[]"
           fi

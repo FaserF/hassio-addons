@@ -1,6 +1,13 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+# Get Addon Version
+
 # --- CONFIGURATION ---
 DATA_DIR="/data/aegisbot"
 DB_DIR="$DATA_DIR/database"

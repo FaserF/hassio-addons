@@ -1,5 +1,11 @@
 #!/usr/bin/env bashio
 
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+
 #VARIABLES
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')

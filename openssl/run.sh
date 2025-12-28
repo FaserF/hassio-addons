@@ -1,4 +1,11 @@
 #!/usr/bin/env bashio
+
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+
 website_name=$(bashio::config 'website_name')
 key_file=/ssl/key_openssl.pem
 cert_file=/ssl/cert_openssl.pem
@@ -16,4 +23,4 @@ fi
 openssl req -x509 -newkey rsa:4096 -keyout "$key_file" -out "$cert_file" -days 10000 -nodes -subj "/CN=$website_name"
 
 echo "Certificates were generated. They are now located here: $key_file & $cert_file . The addon will now be stopped."
-exit
+exit 0

@@ -15,8 +15,7 @@
 
 ![Ingress Support](../_images/apache2/ingress.png)
 
-A lightweightYou help many people to use this add-on from the main repository.
-stant OS, with optional
+A lightweight Apache 2 web server for Home Assistant OS, with optional
 PHP 8 and MariaDB support.
 
 This add-on allows you to serve static or dynamic websites, run PHP-based

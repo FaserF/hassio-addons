@@ -1,7 +1,15 @@
 #!/usr/bin/with-contenv bash
 # shellcheck disable=SC1091
 # shellcheck shell=bash
+
+# Enable strict mode
+set -e
+
 source /usr/lib/bashio/bashio.sh
+# shellcheck disable=SC1091
+source /usr/lib/bashio/banner.sh
+bashio::addon.print_banner
+# Get Addon Version
 
 # Define local paths
 COREFILE_PATH="/etc/Corefile"

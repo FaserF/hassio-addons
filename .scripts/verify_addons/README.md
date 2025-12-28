@@ -10,22 +10,26 @@ verify_addons/
 ├── lib/
 │   └── common.ps1          # Shared functions (Add-Result, Write-Header, etc.)
 ├── tests/
-│   ├── 00-autofix.ps1      # Auto-fix mode
-│   ├── 01-line-endings.ps1 # CRLF detection/fix
-│   ├── 02-shellcheck.ps1   # Shell script linting
-│   ├── 03-hadolint.ps1     # Dockerfile linting
-│   ├── 04-yamllint.ps1     # YAML linting
-│   ├── 05-markdownlint.ps1 # Markdown linting
-│   ├── 06-prettier.ps1     # Code formatting
-│   ├── 07-addon-linter.ps1 # HA addon linting
-│   ├── 08-compliance.ps1   # Python compliance
-│   ├── 09-trivy.ps1        # Security scanning
-│   ├── 10-version-check.ps1# Base image versions
+│   ├── 00-autofix.ps1          # Auto-fix mode
+│   ├── 01-line-endings.ps1     # CRLF detection/fix
+│   ├── 02-shellcheck.ps1       # Shell script linting
+│   ├── 03-hadolint.ps1         # Dockerfile linting
+│   ├── 04-yamllint.ps1         # YAML linting
+│   ├── 05-markdownlint.ps1     # Markdown linting
+│   ├── 06-prettier.ps1         # Code formatting
+│   ├── 07-addon-linter.ps1     # HA addon linting
+│   ├── 08-compliance.ps1       # Python compliance
+│   ├── 09-trivy.ps1            # Security scanning
+│   ├── 10-version-check.ps1    # Base image versions
 │   ├── 11-docker-build-run.ps1 # Build & run tests
-│   ├── 12-coderabbit.ps1   # Static analysis
-│   └── 13-workflow-checks.ps1 # GitHub Actions
+│   ├── 12-coderabbit.ps1       # Static analysis
+│   ├── 13-workflow-checks.ps1  # GitHub Actions
+│   ├── 14-python-checks.ps1    # Python code checks
+│   ├── 15-custom-tests.ps1     # Custom test scripts
+│   ├── 16-ingress-check.ps1    # Ingress validation
+│   └── 17-supervisor-test.ps1  # Real Supervisor testing
 └── config/
-    └── test-config.yaml    # Renovate-managed versions
+    └── test-config.yaml        # Renovate-managed versions
 ```
 
 ## Usage
@@ -50,6 +54,12 @@ Run the main orchestrator from the repository root:
 
 # Include unsupported add-ons
 .\.scripts\verify_addons.ps1 -IncludeUnsupported
+
+# Run real Supervisor integration test (resource-intensive!)
+.\.scripts\verify_addons.ps1 -Addon whatsapp -SupervisorTest
+
+# Run without desktop notifications
+.\.scripts\verify_addons.ps1 -DisableNotifications
 ```
 
 ## Available Tests
@@ -70,6 +80,12 @@ Run the main orchestrator from the repository root:
 | `DockerRun`      | Runs addons in mock environment | Yes             |
 | `CodeRabbit`     | Static analysis (Dockerfile)    | No              |
 | `WorkflowChecks` | GitHub Actions validation       | Yes             |
+| `PythonChecks`   | Python code analysis            | No              |
+| `CustomTests`    | Custom test script execution    | No              |
+| `IngressCheck`   | Validates Ingress configuration | No              |
+| `SupervisorTest` | Real HA Supervisor testing*     | Yes             |
+
+> **Note**: `SupervisorTest` requires the `-SupervisorTest` flag and is not included in `all`.
 
 ## Running Individual Tests
 

@@ -15,7 +15,7 @@ import crypto from 'crypto';
 const app = express();
 app.use(express.json());
 
-const PORT = 8066;
+const PORT = 8099;
 // Adapt path for local Windows testing vs Docker
 const IS_WIN = process.platform === 'win32';
 const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
@@ -246,7 +246,7 @@ app.post('/send_message', async (req, res) => {
 });
 
 // --- Dashboard (Server-Side Rendered) ---
-app.get('*', (req, res) => {
+app.get(/(.*)/, (req, res) => {
   if (
     req.path.startsWith('/api') ||
     req.path === '/qr' ||
@@ -390,6 +390,6 @@ app.get('*', (req, res) => {
     `);
 });
 
-app.listen(PORT, () => {
-  console.log(`WhatsApp API listening on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`WhatsApp API listening on 0.0.0.0:${PORT}`);
 });

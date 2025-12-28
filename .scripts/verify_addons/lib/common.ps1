@@ -16,6 +16,7 @@
 # Results array (shared across all test files)
 if ($null -eq $global:Results) { $global:Results = @() }
 if ($null -eq $global:GlobalFailed) { $global:GlobalFailed = $false }
+if ($null -eq $global:FailureNotified) { $global:FailureNotified = $false }
 
 # --- RESULT TRACKING ---
 function Add-Result {
@@ -64,9 +65,16 @@ function Add-Result {
             if ($Message) { Write-Host "           $Message" -ForegroundColor Red }
             $global:GlobalFailed = $true
 
-            # Send Notification
-            if ($global:LogFile) {
-                Show-Notification -Title "❌ $Addon : $Check Failed" -Message "$Message" -LogPath $global:LogFile
+            # Smart Notification: Notify on First Failure Only
+            if (-not $global:FailureNotified) {
+                Show-Notification -Title "❌ First Failure Detected" -Message "$Addon : $Check failed. See log for details." -LogPath $global:LogFile
+                $global:FailureNotified = $true
+            }
+
+            # Fast Fail
+            if ($global:ExitOnError) {
+                # We won't exit directly here to allow cleanup, but we throw a specific error that verify_addons.ps1 catches
+                throw "FAST_FAIL: $Addon : $Check failed and -ExitOnError is enabled."
             }
         }
         "WARN" {
@@ -90,14 +98,29 @@ function Show-Notification {
     <#
     .SYNOPSIS
         Sends a Windows Toast Notification.
+    .PARAMETER Title
+        Notification Title.
+    .PARAMETER Message
+        Notification Body.
+    .PARAMETER LogPath
+        Path to open when clicked.
+    .PARAMETER Verbose
+        If set, this notification is considered "verbose" / low priority.
+        It will ONLY be shown if $global:VerboseNotifications is $true.
     #>
     param(
         [string]$Title,
         [string]$Message,
-        [string]$LogPath
+        [string]$LogPath,
+        [switch]$Verbose
     )
 
-    if (-not $IsWindows -or $env:GITHUB_ACTIONS) { return }
+    if (-not $IsWindows -or $env:GITHUB_ACTIONS -or $global:DisableNotifications) { return }
+
+    # Filter Verbose notifications
+    if ($Verbose -and -not $global:VerboseNotifications) {
+        return
+    }
 
     # Constraint: Skip on PowerShell 5 (Desktop) as requested
     if ($PSVersionTable.PSVersion.Major -lt 6) {
@@ -120,13 +143,26 @@ function Show-Notification {
                 }
 
                 # Import if needed
-                if (-not (Get-Module BurntToast)) { Import-Module BurntToast -ErrorAction Stop }
-
                 # Send Notification using BurntToast
-                $btn = New-BurntToastButton -Content "Open Log File" -Argument $LogPath -ActivationType Protocol
-                New-BurntToastNotification -Text $Title, $Message -Button $btn -AppLogo "https://raw.githubusercontent.com/home-assistant/assets/master/logo/logo.png" -Silent
+                $header = New-BTHeader -Id "HA_Addon_Verify" -Title "FaserF's HA Addon Verification"
+
+                $btn = $null
+                if (-not [string]::IsNullOrWhiteSpace($LogPath)) {
+                    $btn = New-BTButton -Content "Open Log File" -Arguments $LogPath -ActivationType Protocol
+                } else {
+                     $btn = New-BTButton -Content "Dismiss" -Arguments "dismiss"
+                }
+
+                if ($null -eq $ModuleDir) {
+                    $ModuleDir = $PSScriptRoot
+                }
+                $logoPath = Join-Path $ModuleDir "assets\logo.png"
+                if (-not (Test-Path $logoPath)) { $logoPath = $null }
+
+                New-BurntToastNotification -Text $Title, $Message -Button $btn -Header $header -AppLogo $logoPath -Silent
                 return
             } catch {
+                Write-Host "  ! NOTE: Notifications on PS7 failed: $($_.Exception.Message)" -ForegroundColor Red
                 Write-Host "  ! NOTE: Notifications on PS7 require 'BurntToast'." -ForegroundColor DarkGray
                 Write-Host "    Install manually: Install-Module BurntToast -Scope CurrentUser" -ForegroundColor DarkGray
                 return
@@ -154,7 +190,7 @@ function Show-Notification {
         $xml = [Activator]::CreateInstance($xmlType)
         $xml.LoadXml($template)
         $toast = [Activator]::CreateInstance($toastType, $xml)
-        $notifier = $notifierType::CreateToastNotifier("HA Addon Verify")
+        $notifier = $notifierType::CreateToastNotifier("FaserF's HA Addon Verification")
         $notifier.Show($toast)
     } catch {
         Write-Host "  ! NOTE: Notification failed to send: $($_.Exception.Message)" -ForegroundColor DarkGray
@@ -258,9 +294,9 @@ function Check-Docker {
                     Write-Host "Docker started!" -ForegroundColor Green
                     return $true
                 }
-                Write-Host -NoNewline "."
+                Write-Progress -Activity "Starting Docker Desktop" -Status "Waiting for Docker ($i/30s)..." -PercentComplete (($i/30)*100)
             }
-            Write-Host ""
+            Write-Progress -Activity "Starting Docker Desktop" -Completed
         }
     } else {
         # Linux/macOS simple check
@@ -479,14 +515,14 @@ function Get-TestConfig {
         latestNode = ""
         builderImage = ""
         scriptVersion = ""
-        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks", "CustomTests")
-        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks", "CustomTests")
+        validTests = @("all", "LineEndings", "ShellCheck", "Hadolint", "YamlLint", "MarkdownLint", "Prettier", "AddonLinter", "Compliance", "Trivy", "VersionCheck", "DockerBuild", "DockerRun", "CodeRabbit", "WorkflowChecks", "PythonChecks", "CustomTests", "IngressCheck", "SupervisorTest")
+        dockerTests = @("Hadolint", "AddonLinter", "Trivy", "DockerBuild", "DockerRun", "WorkflowChecks", "CustomTests", "SupervisorTest")
         docsOnlyTests = @("MarkdownLint", "Prettier", "LineEndings")
         testWeights = @{
             LineEndings = 0.2; ShellCheck = 1.0; Hadolint = 3.0; YamlLint = 0.5
             MarkdownLint = 0.5; Prettier = 1.5; AddonLinter = 10.0; Compliance = 1.0
             Trivy = 60.0; VersionCheck = 1.0; DockerBuild = 180.0; DockerRun = 60.0
-            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0; CustomTests = 5.0
+            CodeRabbit = 1.0; WorkflowChecks = 2.0; AutoFix = 3.0; PythonChecks = 1.0; CustomTests = 5.0; IngressCheck = 1.0; SupervisorTest = 600.0
         }
     }
 

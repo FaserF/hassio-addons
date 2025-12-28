@@ -1,5 +1,5 @@
 name: "WhatsApp"
-version: "0.2.1"
+version: "0.2.3"
 slug: "whatsapp"
 description: "Home Assistant WhatsApp Backend (Baileys/Node.js)"
 url: "https://github.com/FaserF/ha-whatsapp"
@@ -15,6 +15,9 @@ options:
 schema:
   log_level: str
 ports:
-  8066/tcp: 8066
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: WhatsApp API (for Integration)
 ingress: true
+
 ingress_entry: /

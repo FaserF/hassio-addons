@@ -1,6 +1,6 @@
 {
   "name": "hassio-addon-whatsapp",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "WhatsApp Addon using Baileys",
   "main": "index.js",
   "type": "module",
