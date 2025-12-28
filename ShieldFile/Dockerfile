@@ -16,7 +16,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 RUN apk add --no-cache curl bash dos2unix openssl \
     && mkdir -p /data/database
 
-COPY --from=filebrowser /filebrowser /usr/local/bin/filebrowser
+COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser
 
 # Copy Addon run script to S6 services directory
 # Copy Run Script
