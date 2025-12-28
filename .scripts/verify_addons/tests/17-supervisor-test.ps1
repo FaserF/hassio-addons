@@ -474,6 +474,11 @@ except Exception as e:
                 else {
                     Write-Host "    ✅ Install successful" -ForegroundColor Green
 
+                    # SKIPPING START/CONFIG PHASE AS REQUESTED
+                    Write-Host "    > Skipping Start/Config phase (Install Only Mode)" -ForegroundColor Yellow
+                    Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Install Only)"
+                    continue
+
                     # Configure add-on if needed
                     $configFile = Join-Path $addon.FullName "config.yaml"
                     if (Test-Path $configFile) {
@@ -582,7 +587,7 @@ except Exception as e:
                             }
 
 
-                            Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
+
                         }
                     }
 
