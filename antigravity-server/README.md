@@ -57,41 +57,6 @@ log_level: info
 vnc_password: ''
 ```
 
-#### Option: `vnc_password` (Optional)
-
-Set a custom VNC password (max 8 characters).
-
-**If left empty (Default):**
-
-- A secure random password is generated on the first start.
-- **Storage**: Saved in `/data/vnc_password` to ensure it stays the same across restarts (Persistent).
-- **Visibility**: Printed prominently in the Add-on logs so you can copy it.
-
-#### Option: `log_level` (Optional)
-
-Controls the level of log output.
-
----
-
-## 🔒 Security & Limitations
-
-### Root Execution & `--no-sandbox`
-
-This add-on currently runs the desktop session and the Antigravity IDE as the **root** user.
-
-- **Implication**: Electron-based applications (including Antigravity) require the `--no-sandbox` flag to run as root. This disables the Chrome sandbox security layer.
-- **Risk**: If the IDE is compromised, an attacker could theoretically gain root access to the **container** (though not necessarily the host, due to Docker/Supervisor isolation).
-- **Mitigation**: Avoid browsing untrusted malicious websites within the embedded browser if possible.
-
-## ❓ Troubleshooting & Known Issues
-
-During startup, you may see the following warnings in the logs. These are **normal** and expected behavior:
-
-- `/usr/bin/xauth: file /root/.Xauthority does not exist`
-  - Occurs on the first run when the VNC authority file is being generated.
-- `Warning: could not find self.pem` (from websockify)
-  - Occurs because the container uses HTTP internally, while Home Assistant Ingress handles the SSL encryption externally.
-
 ---
 
 ## 👨‍💻 Credits & License

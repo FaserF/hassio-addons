@@ -12,7 +12,6 @@ image: ghcr.io/faserf/pterodactyl-wings-{arch}
 map:
   - share:rw
 ingress: true
-ingress_port: 8080
 init: false
 panel_icon: mdi:controller
 options:

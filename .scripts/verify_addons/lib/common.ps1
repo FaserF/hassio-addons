@@ -16,6 +16,7 @@
 # Results array (shared across all test files)
 if ($null -eq $global:Results) { $global:Results = @() }
 if ($null -eq $global:GlobalFailed) { $global:GlobalFailed = $false }
+if ($null -eq $global:FailureNotified) { $global:FailureNotified = $false }
 
 # --- RESULT TRACKING ---
 function Add-Result {
@@ -64,10 +65,14 @@ function Add-Result {
             if ($Message) { Write-Host "           $Message" -ForegroundColor Red }
             $global:GlobalFailed = $true
 
-            # Send Notification
-            if ($global:LogFile) {
-                Show-Notification -Title "❌ $Addon : $Check Failed" -Message "$Message" -LogPath $global:LogFile
+            # Smart Notification: Notify on First Failure Only
+            if (-not $global:FailureNotified) {
+                Show-Notification -Title "❌ First Failure Detected" -Message "$Addon : $Check failed. See log for details." -LogPath $global:LogFile
+                $global:FailureNotified = $true
             }
+
+            # Send Notification
+            # (Old logic removed to prevent spam)
         }
         "WARN" {
             Write-Host "  $iconWarn  [WARN] $Addon : $Check" -ForegroundColor Yellow
@@ -122,7 +127,13 @@ function Show-Notification {
                 # Import if needed
                 # Send Notification using BurntToast
                 $header = New-BTHeader -Id "HA_Addon_Verify" -Title "FaserF's HA Addon Verification"
-                $btn = New-BTButton -Content "Open Log File" -Arguments $LogPath -ActivationType Protocol
+
+                $btn = $null
+                if (-not [string]::IsNullOrWhiteSpace($LogPath)) {
+                    $btn = New-BTButton -Content "Open Log File" -Arguments $LogPath -ActivationType Protocol
+                } else {
+                     $btn = New-BTButton -Content "Dismiss" -Arguments "dismiss" -ActivationType Protocol
+                }
 
                 $logoPath = Join-Path $ModuleDir "assets\logo.png"
                 if (-not (Test-Path $logoPath)) { $logoPath = $null }
@@ -262,9 +273,9 @@ function Check-Docker {
                     Write-Host "Docker started!" -ForegroundColor Green
                     return $true
                 }
-                Write-Host -NoNewline "."
+                Write-Progress -Activity "Starting Docker Desktop" -Status "Waiting for Docker ($i/30s)..." -PercentComplete (($i/30)*100)
             }
-            Write-Host ""
+            Write-Progress -Activity "Starting Docker Desktop" -Completed
         }
     } else {
         # Linux/macOS simple check

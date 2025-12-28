@@ -13,6 +13,7 @@ param(
     [string]$OutputDir,
     [switch]$SupervisorTest,
     [switch]$DisableNotifications,
+    [switch]$Json,
     [switch]$Help,
     [switch]$Debug
 )
@@ -144,7 +145,9 @@ $TestsDir = Join-Path $ModuleDir "tests"
 # Reset Global State
 $global:Results = @()
 $global:GlobalFailed = $false
+$global:GlobalFailed = $false
 $global:DisableNotifications = $DisableNotifications
+$global:TestTimings = @{}
 
 # Load Common Module
 . "$ModuleDir/lib/common.ps1"
@@ -372,6 +375,13 @@ try {
             # Write to Console (Colored) - captured by transcript automatically
             Write-Host "  Estimated Duration: ~$($etaStr.Trim()) (varies by hardware and addon complexity)" -ForegroundColor Gray
             Write-Host ""
+            Write-Host "  Estimated Duration: ~$($etaStr.Trim()) (varies by hardware and addon complexity)" -ForegroundColor Gray
+            Write-Host ""
+        }
+
+        # Smart Notification: Started
+        if ($addons.Count -gt 3 -or ("all" -in $Addon -and -not $ChangedOnly)) {
+            Show-Notification -Title "🚀 Verification Started" -Message "Running tests for $($addons.Count) add-ons... | ETA: ~$etaStr" -LogPath $LogFile
         }
 
         # --- DOCKER AVAILABILITY ---
@@ -390,222 +400,280 @@ try {
     if ($Fix) {
         Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[0 / 15] Running Auto-Fix..." -PercentComplete 0
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
-        try {
-            & "$TestsDir/00-autofix.ps1" -Addons $addons -Config $Config -GlobalFix ("all" -in $Addon -and -not $ChangedOnly) -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/00-autofix.ps1" -Addons $addons -Config $Config -GlobalFix ("all" -in $Addon -and -not $ChangedOnly) -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "AutoFix" -Status "SKIP" -Message "Module Crashed: $_"
+            }
+            finally { $ProgressPreference = $oldPP }
         }
-        catch {
-            Add-Result -Addon "System" -Check "AutoFix" -Status "SKIP" -Message "Module Crashed: $_"
-        }
-        finally { $ProgressPreference = $oldPP }
+        $global:TestTimings["AutoFix"] = $time.TotalSeconds
     }
 
     # 1. Line Endings
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[1 / 15] Line Endings" -PercentComplete 5
     if ("all" -in $Tests -or "LineEndings" -in $Tests) {
-        try {
-            & "$TestsDir/01-line-endings.ps1" -Addons $addons -Config $Config -Fix $Fix -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/01-line-endings.ps1" -Addons $addons -Config $Config -Fix $Fix -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "LineEndings" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "LineEndings" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["LineEndings"] = $time.TotalSeconds
     }
 
     # 2. ShellCheck
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[2 / 15] ShellCheck" -PercentComplete 10
     if ("all" -in $Tests -or "ShellCheck" -in $Tests) {
-        try {
-            & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/02-shellcheck.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "ShellCheck" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "ShellCheck" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["ShellCheck"] = $time.TotalSeconds
     }
 
     # 3. Hadolint
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[3 / 15] Hadolint" -PercentComplete 15
     if ("all" -in $Tests -or "Hadolint" -in $Tests) {
-        try {
-            & "$TestsDir/03-hadolint.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/03-hadolint.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "Hadolint" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "Hadolint" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["Hadolint"] = $time.TotalSeconds
     }
 
     # 4. YamlLint
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[4 / 15] YamlLint" -PercentComplete 25
     if ("all" -in $Tests -or "YamlLint" -in $Tests) {
-        try {
-            & "$TestsDir/04-yamllint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/04-yamllint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "YamlLint" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "YamlLint" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["YamlLint"] = $time.TotalSeconds
     }
 
     # 5. MarkdownLint
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[5 / 15] MarkdownLint" -PercentComplete 35
     if ("all" -in $Tests -or "MarkdownLint" -in $Tests) {
-        try {
-            & "$TestsDir/05-markdownlint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/05-markdownlint.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "MarkdownLint" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "MarkdownLint" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["MarkdownLint"] = $time.TotalSeconds
     }
 
     # 6. Prettier
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[6 / 15] Prettier" -PercentComplete 45
     if ("all" -in $Tests -or "Prettier" -in $Tests) {
-        try {
-            & "$TestsDir/06-prettier.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/06-prettier.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "Prettier" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "Prettier" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["Prettier"] = $time.TotalSeconds
     }
 
     # 7. Add-on Linter
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[7 / 15] Add-on Linter" -PercentComplete 55
     if ("all" -in $Tests -or "AddonLinter" -in $Tests) {
-        try {
-            & "$TestsDir/07-addon-linter.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/07-addon-linter.ps1" -Addons $addons -Config $Config -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "AddonLinter" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "AddonLinter" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["AddonLinter"] = $time.TotalSeconds
     }
 
     # 8. Compliance
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[8 / 15] Compliance" -PercentComplete 60
     if ("all" -in $Tests -or "Compliance" -in $Tests) {
-        try {
-            & "$TestsDir/08-compliance.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/08-compliance.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "Compliance" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "Compliance" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["Compliance"] = $time.TotalSeconds
     }
 
     # 9. Trivy
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[9 / 15] Trivy" -PercentComplete 70
     if ("all" -in $Tests -or "Trivy" -in $Tests) {
-        try {
-            & "$TestsDir/09-trivy.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/09-trivy.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+            }
+            catch {
+                Add-Result -Addon "System" -Check "Trivy" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "Trivy" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["Trivy"] = $time.TotalSeconds
     }
 
     # 10. Version Check
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[10 / 15] Version Check" -PercentComplete 80
     if ("all" -in $Tests -or "VersionCheck" -in $Tests) {
-        try {
-            & "$TestsDir/10-version-check.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/10-version-check.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "VersionCheck" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "VersionCheck" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["VersionCheck"] = $time.TotalSeconds
     }
 
     # 11. Docker Build & Run
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[11 / 15] Docker Build & Run" -PercentComplete 85
     if ("all" -in $Tests -or "DockerBuild" -in $Tests -or "DockerRun" -in $Tests) {
-        try {
-            $dockerAddons = $addons
+        $time = Measure-Command {
+            try {
+                $dockerAddons = $addons
 
-            # Optimization: Skip redundant DockerBuild/Run if SupervisorTest handles it
-            if ("SupervisorTest" -in $activeTests) {
-                $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { @{} }
+                # Optimization: Skip redundant DockerBuild/Run if SupervisorTest handles it
+                if ("SupervisorTest" -in $activeTests) {
+                    $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { @{} }
 
-                $dockerAddons = $addons | Where-Object {
-                     $isUnsupported = $_.FullName -match "\\.unsupported\\"
-                     $isSkipped = $skipList.ContainsKey($_.Name)
-                     return ($isUnsupported -or $isSkipped)
+                    $dockerAddons = $addons | Where-Object {
+                        $isUnsupported = $_.FullName -match "\\.unsupported\\"
+                        $isSkipped = $skipList.ContainsKey($_.Name)
+                        return ($isUnsupported -or $isSkipped)
+                    }
+
+                    if ($addons.Count -gt $dockerAddons.Count) {
+                        Write-Host "    NOTE: Skipping DockerBuild/Run for supported add-ons (covered by SupervisorTest)." -ForegroundColor Gray
+                    }
                 }
 
-                if ($addons.Count -gt $dockerAddons.Count) {
-                    Write-Host "    NOTE: Skipping DockerBuild/Run for supported add-ons (covered by SupervisorTest)." -ForegroundColor Gray
+                if ($dockerAddons.Count -gt 0) {
+                    $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
+                    & "$TestsDir/11-docker-build-run.ps1" -Addons $dockerAddons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
+                }
+                if ($dockerAddons.Count -gt 0) {
+                    # Smart Notification for Docker Completion (heaviest part)
+                    Show-Notification -Title "🐳 Docker Tests Complete" -Message "Docker build/run phase finished. Proceeding with remaining checks..." -LogPath $LogFile
                 }
             }
-
-            if ($dockerAddons.Count -gt 0) {
-                $runTests = ("all" -in $Tests -or "DockerRun" -in $Tests)
-                & "$TestsDir/11-docker-build-run.ps1" -Addons $dockerAddons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -RunTests $runTests -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -CacheImages:$CacheImages
+            catch {
+                Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
             }
         }
-        catch {
-            Add-Result -Addon "System" -Check "DockerBuildRun" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["DockerBuild"] = $time.TotalSeconds
     }
 
     # 12. CodeRabbit
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[12 / 15] CodeRabbit" -PercentComplete 90
     if ("all" -in $Tests -or "CodeRabbit" -in $Tests) {
-        try {
-            & "$TestsDir/12-coderabbit.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/12-coderabbit.ps1" -Addons $addons -Config $Config -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -RepoRoot $RepoRoot
+            }
+            catch {
+                Add-Result -Addon "System" -Check "CodeRabbit" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "CodeRabbit" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["CodeRabbit"] = $time.TotalSeconds
     }
 
     # 13. Workflow Checks
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 15] Workflow Checks" -PercentComplete 95
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
-        try {
-            & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/13-workflow-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable
+            }
+            catch {
+                Add-Result -Addon "System" -Check "WorkflowChecks" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "WorkflowChecks" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["WorkflowChecks"] = $time.TotalSeconds
     }
 
     # 14. Python Checks
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 15] Python Checks" -PercentComplete 95
     if ("all" -in $Tests -or "PythonChecks" -in $Tests) {
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
-        try {
-            & "$TestsDir/14-python-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -Fix:$Fix
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/14-python-checks.ps1" -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -Fix:$Fix
+            }
+            catch {
+                Add-Result -Addon "System" -Check "PythonChecks" -Status "SKIP" -Message "Module Crashed: $_"
+            }
+            finally { $ProgressPreference = $oldPP }
         }
-        catch {
-            Add-Result -Addon "System" -Check "PythonChecks" -Status "SKIP" -Message "Module Crashed: $_"
-        }
-        finally { $ProgressPreference = $oldPP }
+        $global:TestTimings["PythonChecks"] = $time.TotalSeconds
     }
 
     # 15. Custom Addon Tests
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 16] Custom Addon Tests" -PercentComplete 94
     if ("all" -in $Tests -or "CustomTests" -in $Tests) {
-        try {
-            & "$TestsDir/15-custom-addon-tests.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/15-custom-addon-tests.ps1" -Addons $addons -Config $Config -OutputDir $OutputDir -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+            }
+            catch {
+                Add-Result -Addon "System" -Check "CustomTests" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "CustomTests" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["CustomTests"] = $time.TotalSeconds
     }
 
     # 16. Ingress Check
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[16 / 17] Ingress Validation" -PercentComplete 94
     if ("IngressCheck" -in $activeTests) {
-        try {
-            & "$TestsDir/16-ingress-check.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/16-ingress-check.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons
+            }
+            catch {
+                Add-Result -Addon "System" -Check "IngressCheck" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "IngressCheck" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["IngressCheck"] = $time.TotalSeconds
     }
 
     # 17. Supervisor Integration Test (Optional - requires -SupervisorTest flag or explicit -Tests)
     if ("SupervisorTest" -in $activeTests) {
         Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[17 / 17] Supervisor Integration Test" -PercentComplete 98
-        try {
-            & "$TestsDir/17-supervisor-test.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -OutputDir $OutputDir -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -Debug:$Debug
+        $time = Measure-Command {
+            try {
+                & "$TestsDir/17-supervisor-test.ps1" -Addons $addons -Config $Config -RepoRoot $RepoRoot -OutputDir $OutputDir -DockerAvailable $DockerAvailable -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -Debug:$Debug
+            }
+            catch {
+                Add-Result -Addon "System" -Check "SupervisorTest" -Status "SKIP" -Message "Module Crashed: $_"
+            }
         }
-        catch {
-            Add-Result -Addon "System" -Check "SupervisorTest" -Status "SKIP" -Message "Module Crashed: $_"
-        }
+        $global:TestTimings["SupervisorTest"] = $time.TotalSeconds
     }
 
     Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Completed
@@ -686,9 +754,21 @@ finally {
     }
 
     # Export results
-    if ($JsonFile) {
-        $global:Results | ConvertTo-Json -Depth 10 -Compress:$false | Out-File -FilePath $JsonFile -Encoding UTF8
+    # Export results
+    if ($JsonFile -and $Json) {
+        $exportData = @{
+            Results = $global:Results
+            Timings = $global:TestTimings
+        }
+        $exportData | ConvertTo-Json -Depth 10 -Compress:$false | Out-File -FilePath $JsonFile -Encoding UTF8
         Write-Host "Results saved to: $JsonFile" -ForegroundColor Gray
+    }
+
+    # Print Timings to Console
+    Write-Host ""
+    Write-Host "Test Durations:" -ForegroundColor Gray
+    foreach ($key in $global:TestTimings.Keys) {
+        Write-Host "  - $key : $([math]::Round($global:TestTimings[$key], 2))s" -ForegroundColor Gray
     }
 
     # --- CLEANUP & ROTATION ---

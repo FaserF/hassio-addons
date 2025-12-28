@@ -143,12 +143,14 @@ jobs:
 
       - name: 🔎 Analyze Change Types
         id: change-type
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # Get all changed files in this push/PR
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only)
+            CHANGED_FILES=$({ git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only; })
           else
-            CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only)
+            CHANGED_FILES=$({ git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only; })
           fi
 
           echo "Changed files:"
@@ -186,7 +188,7 @@ jobs:
 
           # Check for Manual Triggers in Commit Message or PR Title
           COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          # PR_TITLE is passed via env
           SEARCH_TEXT="$COMMIT_MSG $PR_TITLE"
           echo "Run Trigger Check on: $SEARCH_TEXT"
 
@@ -203,9 +205,11 @@ jobs:
              needs_build="true"
           fi
 
-          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
-          echo "needs_build=$needs_build" >> "$GITHUB_OUTPUT"
-          echo "force_supervisor=$force_supervisor" >> "$GITHUB_OUTPUT"
+          {
+            echo "docs_only=$docs_only"
+            echo "needs_build=$needs_build"
+            echo "force_supervisor=$force_supervisor"
+          } >> "$GITHUB_OUTPUT"
           echo "Results: docs_only=$docs_only, needs_build=$needs_build"
 
   # --------------------------------------------------------------------------------

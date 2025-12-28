@@ -162,9 +162,22 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     Write-Host "    > Preparing add-ons for testing..." -ForegroundColor Gray
     foreach ($addon in $Addons) {
         $addonPath = $addon.FullName
-        $targetPath = Join-Path $addonsDir $addon.Name
 
-        Write-Host "      Copying $($addon.Name)..." -ForegroundColor DarkGray
+        # Try to get slug from config.yaml for best compatibility
+        $configFile = Join-Path $addonPath "config.yaml"
+        $safeName = $addon.Name.Replace('_', '-')
+
+        if (Test-Path $configFile) {
+            $configContent = Get-Content $configFile -Raw
+            if ($configContent -match "(?m)^slug:\s*([a-zA-Z0-9-_]+)") {
+                $safeName = $matches[1].Trim()
+                Write-Host "      Detected slug in config: $safeName" -ForegroundColor DarkGray
+            }
+        }
+
+        $targetPath = Join-Path $addonsDir $safeName
+
+        Write-Host "      Copying $($addon.Name) as $safeName..." -ForegroundColor DarkGray
         Copy-Item -Path $addonPath -Destination $targetPath -Recurse -Force
     }
 
@@ -181,7 +194,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-p", "${haPort}:7123",
         "-v", "${dataDirUnix}/addons:/mnt/supervisor/addons",
         "-v", "${dataDirUnix}/config:/mnt/supervisor/homeassistant",
-        "-v", "${dataDirUnix}/share:/mnt/supervisor/share",
+        "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rslave",
         "-v", "${dataDirUnix}/ssl:/mnt/supervisor/ssl",
         "-v", "${logFileUnix}:/tmp/supervisor.log",
         "-v", "${dockerVolName}:/var/lib/docker",
@@ -230,7 +243,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             break
         }
 
-        # Write-Host "." -NoNewline -ForegroundColor Gray
+        # Dot output removed to prevent log spam
         Start-Sleep -Seconds 1
     }
     Write-Progress -Activity "Initializing Supervisor" -Completed
@@ -298,6 +311,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         # Check unsupported
         if ($addon.FullName -match "\\.unsupported\\") {
+            Write-Host "    > Skipping unsupported add-on: $($addon.Name)" -ForegroundColor Yellow
             Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "SKIP" -Message "Unsupported add-on"
             continue
         }
@@ -319,7 +333,19 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         Write-Host "    Testing: $($addon.Name)" -ForegroundColor Cyan
         Write-Host "    ========================================" -ForegroundColor Cyan
 
-        $slug = "local_$($addon.Name)"
+        # Sanitize slug
+        $safeName = $addon.Name.Replace('_', '-')
+
+        # Try to get slug from config.yaml to match what we copied
+        $configFile = Join-Path $addon.FullName "config.yaml"
+        if (Test-Path $configFile) {
+            $configContent = Get-Content $configFile -Raw
+            if ($configContent -match "(?m)^slug:\s*([a-zA-Z0-9-_]+)") {
+                $safeName = $matches[1].Trim()
+            }
+        }
+
+        $slug = "local_$safeName"
         $testPassed = $true
         $testMessage = ""
 
@@ -348,9 +374,56 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                     $configFile = Join-Path $addon.FullName "config.yaml"
                     if (Test-Path $configFile) {
                         $configContent = Get-Content $configFile -Raw
+                        $opts = $null
+
                         if ($configContent -match "website_name") {
-                            Write-Host "    > Configuring required options (website_name)..." -ForegroundColor Gray
-                            docker exec $containerName ha addons options $slug --options "website_name=example.com" 2>&1
+                             $opts = '{"website_name": "example.com"}'
+                        } elseif ($addon.Name -eq "bash_script_executer") {
+                             $opts = '{"script_path": "/share/test.sh"}'
+                        }
+
+                        if ($opts) {
+                            Write-Host "    > Configuring options (direct file edit)..." -ForegroundColor Gray
+
+                            # Create shell helper to edit addons.json reliably with jq
+                            $shScriptPath = Join-Path $addonsDir "update_config.sh"
+
+                            # Use `jq` which is available in the supervisor container
+                            $shScriptContent = @'
+#!/bin/sh
+slug="$1"
+opts="$2"
+file="/mnt/supervisor/addons.json"
+
+if [ ! -f "$file" ]; then
+  echo "Error: $file not found"
+  exit 1
+fi
+
+echo "Updating options for $slug..."
+
+# Use jq to update the options in place (using temp file)
+# Ensure the slug key exists in 'user' object if not present, then set options
+tmp=$(mktemp)
+jq --arg slug "$slug" --argjson opts "$opts" '
+  if .user[$slug] == null then .user[$slug] = {} else . end |
+  .user[$slug].options = $opts
+' "$file" > "$tmp" && mv "$tmp" "$file"
+
+echo "Successfully updated addons.json"
+'@
+
+                            # Write script with Unix line endings for safety
+                            $shScriptContent = $shScriptContent -replace "`r`n", "`n"
+                            [System.IO.File]::WriteAllText($shScriptPath, $shScriptContent)
+
+                            # Execute shell script inside container
+                            # $addonsDir is mounted at /mnt/supervisor/addons/local
+                            docker exec $containerName sh /mnt/supervisor/addons/local/update_config.sh $slug $opts 2>&1 | Write-Host
+
+                            if ($LASTEXITCODE -ne 0) {
+                                Write-Warning "Failed to set options via direct file edit"
+                            }
                         }
                     }
 
@@ -376,25 +449,27 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         $infoJson = ""
 
                         for ($i = 0; $i -lt $pollingTimeout; $i+=5) {
-                            $infoJson = docker exec $containerName ha addons info $slug --raw-json 2>$null
-                            if ($infoJson) {
-                                $info = $infoJson | ConvertFrom-Json
-                                $state = $info.data.state
-                                if ($state -eq "started") {
-                                    $started = $true
-                                    break
-                                }
+                            # Use docker ps to check if container is running (bypassing potentially hanging ha CLI)
+                            # The container name format is usually addon_slug
+                            $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
+                            if ($runningContainers -match "addon_$slug") {
+                                $started = $true
+                                $state = "started"
+                                break
                             }
 
-                            Write-Host "." -NoNewline -ForegroundColor Gray
                             Start-Sleep -Seconds 5
                         }
                         Write-Host "" # Newline
 
                         if ($started) {
-                            $infoJson = docker exec $containerName ha addons info $slug --raw-json 2>$null
-                            $info = $infoJson | ConvertFrom-Json
-                            $state = $info.data.state
+                            # Verify running state again
+                             $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
+                             if ($runningContainers -match "addon_$slug") {
+                                 $state = "started"
+                             } else {
+                                 $state = "stopped"
+                             }
 
 
                             if ($state -eq "started") {
@@ -483,7 +558,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     }
 }
 catch {
-    Add-Result -Addon "System" -Check "SupervisorTest" -Status "FAIL" -Message "Unexpected error: $_"
+    Add-Result -Addon "System" -Check "SupervisorTest" -Status "FAIL" -Message "Unexpected error: $($_.Exception.Message)"
 }
 finally {
     # Global cleanup

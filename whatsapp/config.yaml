@@ -19,5 +19,4 @@ ports:
 ports_description:
   8099/tcp: WhatsApp API (for Integration)
 ingress: true
-ingress_port: 8099
 ingress_entry: /

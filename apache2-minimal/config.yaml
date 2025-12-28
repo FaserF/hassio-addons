@@ -13,7 +13,6 @@ map:
   - media:rw
   - share:rw
 ingress: true
-ingress_port: 80
 init: false
 panel_icon: mdi:web-box
 options:

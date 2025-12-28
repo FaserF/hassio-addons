@@ -310,6 +310,10 @@ try {
                     if ($a.Name -eq "antigravity-server") {
                         $optObj | Add-Member -NotePropertyName "vnc_password" -NotePropertyValue "" -Force
                     }
+                    if ($a.Name -eq "switch_lan_play") {
+                        # switch_lan_play requires a relay server address - use a mock IP that won't connect
+                        $optObj | Add-Member -NotePropertyName "server" -NotePropertyValue "127.0.0.1:11451" -Force
+                    }
 
                     # Dynamic Falling: Fill missing required keys from schema
                     $schemaJson = Get-AddonSchema $configFile

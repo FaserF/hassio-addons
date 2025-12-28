@@ -15,7 +15,6 @@ map:
   - share:rw
   - ssl
 ingress: true
-ingress_port: 80
 init: false
 panel_icon: mdi:controller
 options:

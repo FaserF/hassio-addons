@@ -39,6 +39,9 @@ concurrency:
   group: supervisor-test-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
@@ -61,7 +64,7 @@ jobs:
       - name: "🔧 Filter Ingress-Enabled Add-ons"
         id: filter
         run: |
-          # shellcheck disable=SC2086
+          # shellcheck disable=SC2086,SC2129
           # Parse input - handle both JSON array (from workflow_call) and comma-separated (from dispatch)
           INPUT='${{ inputs.addons }}'
 
@@ -88,6 +91,7 @@ jobs:
 
           # Filter to only ingress-enabled addons
           INGRESS_ADDONS=""
+          # shellcheck disable=SC2086
           for addon in $ADDONS; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
             config_file=""
@@ -113,12 +117,12 @@ jobs:
 
           if [ -z "$INGRESS_ADDONS" ]; then
             echo "No ingress-enabled add-ons to test"
-            echo "ingress_addons=" >> $GITHUB_OUTPUT
-            echo "has_addons=false" >> $GITHUB_OUTPUT
+            echo "ingress_addons=" >> "$GITHUB_OUTPUT"
+            echo "has_addons=false" >> "$GITHUB_OUTPUT"
           else
             echo "Ingress add-ons to test: $INGRESS_ADDONS"
-            echo "ingress_addons=$INGRESS_ADDONS" >> $GITHUB_OUTPUT
-            echo "has_addons=true" >> $GITHUB_OUTPUT
+            echo "ingress_addons=$INGRESS_ADDONS" >> "$GITHUB_OUTPUT"
+            echo "has_addons=true" >> "$GITHUB_OUTPUT"
           fi
 
   supervisor-test:
@@ -141,6 +145,7 @@ jobs:
       - name: "🚀 Start Supervisor Environment"
         id: supervisor
         run: |
+          # shellcheck disable=SC2086,SC2129,SC2034
           # Create network
           docker network create ha-test-net 2>/dev/null || true
 
@@ -200,7 +205,7 @@ jobs:
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
             if docker exec ha-supervisor-test ha supervisor info >/dev/null 2>&1; then
               echo "✅ Supervisor is ready after ${i}s"
-              echo "supervisor_ready=true" >> $GITHUB_OUTPUT
+              echo "supervisor_ready=true" >> "$GITHUB_OUTPUT"
               break
             fi
 
@@ -214,7 +219,7 @@ jobs:
             sleep 1
           done
 
-          if ! grep -q supervisor_ready=true $GITHUB_OUTPUT 2>/dev/null; then
+          if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
             echo "::group::Internal Supervisor Logs"
             docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
@@ -222,7 +227,7 @@ jobs:
             echo "::group::Docker Logs"
             docker logs ha-supervisor-test
             echo "::endgroup::"
-            echo "supervisor_ready=false" >> $GITHUB_OUTPUT
+            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -232,10 +237,10 @@ jobs:
             echo "Installing Dependency: MariaDB (core_mariadb)..."
             if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
-                 MYSQL_FAILED=true
+                 export MYSQL_FAILED=true
             elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
                  echo "⚠️ Failed to start core_mariadb"
-                 MYSQL_FAILED=true
+                 export MYSQL_FAILED=true
             else
                  echo "Waiting for MariaDB..."
                  sleep 30
@@ -246,9 +251,11 @@ jobs:
         if: steps.supervisor.outputs.supervisor_ready == 'true'
         id: test
         run: |
+          # shellcheck disable=SC2086,SC2129,SC2034
           RESULTS=""
           FAILED=0
-          TIMEOUT="${{ inputs.timeout || '15' }}"
+          # TIMEOUT="${{ inputs.timeout || '15' }}" # Unused currently
+          # TIMEOUT=15
 
           IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
 
@@ -274,12 +281,12 @@ jobs:
 
             # Install add-on
             echo "Installing $addon..."
-            if timeout ${ADDON_INSTALL_TIMEOUT}s docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1; then
+            if timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1; then
               echo "✅ Install successful"
 
               # Start add-on
               echo "Starting $addon..."
-              if timeout ${ADDON_START_TIMEOUT}s docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1; then
+              if timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1; then
                 echo "✅ Start command successful"
 
                 # Poll for status (wait for start)
@@ -288,8 +295,8 @@ jobs:
                 END_TIME=$((START_TIME + ADDON_START_TIMEOUT))
                 STATUS="unknown"
 
-                while [ $(date +%s) -lt $END_TIME ]; do
-                  STATUS=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')
+                while [ "$(date +%s)" -lt "$END_TIME" ]; do
+                  STATUS="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
                   if [ "$STATUS" = "started" ]; then
                     break
                   fi
@@ -303,9 +310,9 @@ jobs:
                 if [ "$STATUS" = "started" ]; then
                   # Test ingress
                   echo "Testing ingress endpoint..."
-                  INGRESS_URL=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')
+                  INGRESS_URL="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
                   if [ -n "$INGRESS_URL" ]; then
-                    HTTP_CODE=$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")
+                    HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
                     if echo "$HTTP_CODE" | grep -q "^[23]"; then
                       echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
                       RESULTS="$RESULTS\n✅ $addon: PASS (Ingress OK)"
@@ -347,7 +354,7 @@ jobs:
           echo "=========================================="
           echo -e "$RESULTS"
 
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
 
           if [ "$FAILED" -eq 1 ]; then
             exit 1

@@ -26,15 +26,14 @@ RUN mkdir /run/apache2 \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
-
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl --fail http://127.0.0.1:80 || exit 1
 
-COPY run.sh /
+COPY rootfs /
 COPY index.html /
-RUN chmod a+x /run.sh
-CMD [ "/run.sh" ]
+
+RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run
 
 # Labels
 LABEL org.opencontainers.image.title="Apache2 Minimal with MariaDB Client"

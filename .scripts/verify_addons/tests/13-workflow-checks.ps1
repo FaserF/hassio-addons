@@ -22,14 +22,15 @@ if ($DockerAvailable) {
     try {
         $out = docker run --rm -v "$($RepoRoot):/repo" -w /repo rhysd/actionlint:latest 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Add-Result -Addon "Workflows" -Check "Actionlint" -Status "FAIL" -Message $out
+            $msg = $out | Out-String
+            Add-Result -Addon "Workflows" -Check "Actionlint" -Status "FAIL" -Message $msg
         }
         else {
             Add-Result -Addon "Workflows" -Check "Actionlint" -Status "PASS" -Message "OK"
         }
     }
     catch {
-        Add-Result -Addon "Workflows" -Check "Actionlint" -Status "SKIP" -Message "Docker unavailable"
+        Add-Result -Addon "Workflows" -Check "Actionlint" -Status "SKIP" -Message "Actionlint command failed: $_"
     }
 
     # B. Zizmor (Security)
