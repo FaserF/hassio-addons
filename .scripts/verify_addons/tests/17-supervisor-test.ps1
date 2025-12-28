@@ -402,10 +402,16 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         $configContent = Get-Content $configFile -Raw
                         $opts = $null
 
-                        if ($configContent -match "website_name") {
-                             $opts = '{"website_name": "example.com"}'
+                        if ($addon.Name -match "apache2") {
+                             # Handle all apache2 variants
+                             $opts = '{"website_name": "example.com", "default_conf": "default", "default_ssl_conf": "default", "php_ini": "default"}'
+                        } elseif ($addon.Name -match "^pterodactyl-wings$") {
+                             $opts = '{"config_file": "config.yml"}'
                         } elseif ($addon.Name -eq "bash_script_executer") {
                              $opts = '{"script_path": "/share/test.sh"}'
+                        } elseif ($configContent -match "website_name") {
+                             # Fallback generic detection
+                             $opts = '{"website_name": "example.com"}'
                         }
 
                         if ($opts) {
