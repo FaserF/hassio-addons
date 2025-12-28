@@ -99,7 +99,6 @@ testWeights:
   IngressCheck: 1.5
   SupervisorTest: 600.0
 
-
 # --- SUPERVISOR INTEGRATION TEST SETTINGS ---
 # These settings are used for the real Supervisor integration test (optional)
 # Note: SupervisorTest is NOT included in 'all' - requires explicit -SupervisorTest flag

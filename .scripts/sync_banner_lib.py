@@ -3,6 +3,7 @@ import shutil
 
 SOURCE_LIB = os.path.join(".scripts", "bashio", "banner.sh")
 
+
 def get_addons():
     addons = []
     for item in os.listdir("."):
@@ -13,6 +14,7 @@ def get_addons():
         ):
             addons.append(item)
     return addons
+
 
 def sync_lib():
     if not os.path.exists(SOURCE_LIB):
@@ -42,6 +44,7 @@ def sync_lib():
         target_path = os.path.join(target_dir, "banner.sh")
         shutil.copy2(SOURCE_LIB, target_path)
         print(f"  ✅ {addon} -> {target_path}")
+
 
 if __name__ == "__main__":
     sync_lib()

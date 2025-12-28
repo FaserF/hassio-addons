@@ -36,10 +36,6 @@ ssl: true
 website_name: null
 ```
 
-> [!CAUTION]
-> **Security Warning**: Using `init_commands` allows for arbitrary command execution during addon startup.
-> Only provide trusted commands in this configuration, as any command specified will be executed with elevated privileges.
-
 ---
 
 ## 👨‍💻 Credits & License

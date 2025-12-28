@@ -83,7 +83,7 @@ Run the main orchestrator from the repository root:
 | `PythonChecks`   | Python code analysis            | No              |
 | `CustomTests`    | Custom test script execution    | No              |
 | `IngressCheck`   | Validates Ingress configuration | No              |
-| `SupervisorTest` | Real HA Supervisor testing*     | Yes             |
+| `SupervisorTest` | Real HA Supervisor testing\*    | Yes             |
 
 > **Note**: `SupervisorTest` requires the `-SupervisorTest` flag and is not included in `all`.
 

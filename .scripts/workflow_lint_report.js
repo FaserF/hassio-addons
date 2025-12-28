@@ -48,7 +48,7 @@ module.exports = async ({ github, context, core }) => {
       file: file.trim().replace(/^\.\//, ''),
       line: parseInt(line),
       col: parseInt(col),
-      message: message.trim()
+      message: message.trim(),
     };
     errors.push(error);
     if (!errorsByFile[error.file]) errorsByFile[error.file] = [];
@@ -66,9 +66,7 @@ module.exports = async ({ github, context, core }) => {
       .addRaw('\n\n');
 
     if (errors.length > 0) {
-      const rows = [
-        ['File', 'Line', 'Issue']
-      ];
+      const rows = [['File', 'Line', 'Issue']];
       for (const err of errors) {
         const isUnpinned = err.message.includes('not pinned to a full length commit SHA');
         const severityIcon = isUnpinned ? 'ℹ️' : '⚠️';
@@ -76,7 +74,9 @@ module.exports = async ({ github, context, core }) => {
       }
       core.summary.addTable(rows);
     } else if (hasZeroIssues || isEmpty) {
-      core.summary.addRaw('❌ **Internal Error**: `actionlint` failed but reported 0 issues. Check logs.');
+      core.summary.addRaw(
+        '❌ **Internal Error**: `actionlint` failed but reported 0 issues. Check logs.'
+      );
     } else {
       core.summary.addRaw('✅ No issues found.');
     }
@@ -94,7 +94,8 @@ module.exports = async ({ github, context, core }) => {
   } else if (errors.length === 0 && isEmpty) {
     // True empty output = unexpected failure
     body += '> [!CAUTION]\n';
-    body += '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
+    body +=
+      '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
     // ... rest of the existing error reporting logic ...
     if (stderr) {
       body += '### 🛑 Fatal / Infrastructure Error\n\n';
@@ -102,7 +103,8 @@ module.exports = async ({ github, context, core }) => {
       body += stderr;
       body += '\n```\n\n';
     } else {
-      body += '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed without outputting to stdout or stderr.\n\n';
+      body +=
+        '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed without outputting to stdout or stderr.\n\n';
     }
     body += `Please check the [live workflow logs](${workflowRunUrl}) for the full execution trace.\n\n`;
   } else if (errors.length === 0) {
@@ -120,7 +122,8 @@ module.exports = async ({ github, context, core }) => {
   } else {
     // Normal Error Reporting
     if (stderr) {
-      body += '<details>\n<summary>⚠️ <strong>Infrastructure Warnings (stderr)</strong></summary>\n\n';
+      body +=
+        '<details>\n<summary>⚠️ <strong>Infrastructure Warnings (stderr)</strong></summary>\n\n';
       body += '```\n' + stderr + '\n```\n\n';
       body += '</details>\n\n';
     }
