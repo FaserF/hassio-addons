@@ -346,7 +346,7 @@ try {
             foreach ($t in $activeTests) {
                 # SupervisorTest: One-time startup cost (~5m) + per-addon cost (~2m)
                 if ($t -eq "SupervisorTest") {
-                    $totalSeconds += 300
+                    $totalSeconds += 90
                     $totalSeconds += ([double]$addons.Count * 120)
                     continue
                 }

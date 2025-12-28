@@ -37,7 +37,7 @@ $devcontainerImage = "ghcr.io/home-assistant/devcontainer:addons"
 $containerName = "ha-supervisor-test-local"
 $networkName = "ha-supervisor-test-net"
 $haPort = 7123
-$supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 300
+$supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 90
 $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 300
 $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 600
 
@@ -293,6 +293,10 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         $inst = docker exec $containerName ha addons install core_mariadb 2>&1
         if ($LASTEXITCODE -eq 0) {
+             # Configure MariaDB (Password is required)
+             Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
+             docker exec $containerName ha addons options core_mariadb --options '{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "password123"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}]}' 2>&1 | Out-Null
+
              $start = docker exec $containerName ha addons start core_mariadb 2>&1
              if ($LASTEXITCODE -ne 0) {
                  Write-Warning "Failed to start MariaDB: $start"
