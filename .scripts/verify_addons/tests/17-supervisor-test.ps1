@@ -446,20 +446,40 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                             }
 
                             # Create text file with options locally
+                            # Use proper .NET write to avoid BOM and ensure LF
                             $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
-                            $opts | Out-File -FilePath $tmpOptsFile -Encoding UTF8 -Force
+                            [System.IO.File]::WriteAllText($tmpOptsFile, "{@{options=$($opts)}}" -replace "`r`n", "`n") # Wrap in 'options' key for API? No, usually body IS the options object. Wait, ha api expects {"options": {...}} usually. Let's check ha cli source if possible. Actually standard is usually just the options object for the CLI --options arg, but API endpoint might expect wrapped. The HA CLI wraps it?
+                            # Check HA Supervisor API docs. POST /addons/{slug}/options takes {"options": { ... }}
+                            # My $opts string is usually '{"key": "val"}'. So I need to wrap it.
+                            $wrappedOpts = '{ "options": ' + $opts + ' }'
+                            [System.IO.File]::WriteAllText($tmpOptsFile, $wrappedOpts -replace "`r`n", "`n")
 
-                            # Copy to container to avoid shell quoting hell
+                            # Copy to container
                             docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
 
-                            # Execute CLI reading from file and CAPTURE OUTPUT
-                            $haOutput = docker exec $containerName sh -c "ha addons options $slug --options ""$(cat /tmp/options.json)""" 2>&1
+                            # Execute CURL directly to Supervisor API
+                            # This bypasses HA CLI issues completely
+                            $curlOut = docker exec $containerName curl -s -o /tmp/curl_out.json -w "%{http_code}" -X POST -H "Authorization: Bearer \$(printenv SUPERVISOR_TOKEN)" -H "Content-Type: application/json" -d @/tmp/options.json http://supervisor/addons/$slug/options 2>&1
 
-                            if ($LASTEXITCODE -ne 0) {
-                                Write-Warning "Failed to set options for $slug. Output: $haOutput"
-                            } elseif ($PSBoundParameters['Debug']) {
-                                Write-Host "      DEBUG: Config Update Output: $haOutput" -ForegroundColor DarkGray
+                            if ($curlOut -ne "200") {
+                                Write-Warning "Failed to set options via API. status=$curlOut"
+                                $errDetails = docker exec $containerName cat /tmp/curl_out.json
+                                Write-Warning "API Response: $errDetails"
+                            } else {
+                                if ($PSBoundParameters['Debug']) {
+                                    Write-Host "      DEBUG: API Config Set Success (200)" -ForegroundColor DarkGray
+                                }
+                                # Verify option set by reading back
+                                $verifyInfo = docker exec $containerName ha addons info $slug --output json 2>$null | ConvertFrom-Json
+                                if ($verifyInfo.result -eq "ok") {
+                                    $currOpts = $verifyInfo.data.options | ConvertTo-Json -Depth 5 -Compress
+                                    if ($PSBoundParameters['Debug']) {
+                                        Write-Host "      DEBUG: Options after set: $currOpts" -ForegroundColor DarkGray
+                                    }
+                                }
                             }
+
+                            Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
 
                             Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
                         }
@@ -524,13 +544,25 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                                     Write-Host "    > Testing ingress endpoint..." -ForegroundColor Gray
                                     $ingressUrl = $info.data.ingress_url
                                     if ($ingressUrl) {
-                                        $curlResult = docker exec $containerName curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$ingressUrl" 2>&1
-                                        if ($curlResult -match "^[23]") {
+                                        # Retry loop for Ingress (up to 30s)
+                                        $retries = 6
+                                        $ingressOk = $false
+                                        while ($retries -gt 0) {
+                                            $curlResult = docker exec $containerName curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$ingressUrl" 2>&1
+                                            if ($curlResult -match "^[23]") {
+                                                $ingressOk = $true
+                                                break
+                                            }
+                                            Start-Sleep -Seconds 5
+                                            $retries--
+                                        }
+
+                                        if ($ingressOk) {
                                             Write-Host "    ✅ Ingress reachable (HTTP $curlResult)" -ForegroundColor Green
                                             $testMessage = "PASS (Ingress OK, State: $state)"
                                         }
                                         else {
-                                            Write-Host "    ⚠️ Ingress returned HTTP $curlResult" -ForegroundColor Yellow
+                                            Write-Host "    ⚠️ Ingress returned HTTP $curlResult after retries" -ForegroundColor Yellow
                                             $testMessage = "WARN (Ingress HTTP $curlResult, State: $state)"
                                         }
                                     }
