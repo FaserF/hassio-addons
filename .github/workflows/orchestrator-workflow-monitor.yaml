@@ -56,7 +56,7 @@ jobs:
 
       - name: 🧹 Run actionlint
         id: actionlint
-        uses: raven-actions/actionlint@d2ecf0c9a68600fc1b5d85d7c970e4e5ef3e6f1c # v2.0.1
+        uses: raven-actions/actionlint@v2
         with:
           matcher: true
           fail-on-error: false
