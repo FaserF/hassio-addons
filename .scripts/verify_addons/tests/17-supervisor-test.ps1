@@ -440,6 +440,11 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         if ($opts) {
                             Write-Host "    > Configuring options (using ha addons options via strict file pass)..." -ForegroundColor Gray
 
+                            # Debug: Show what we are sending
+                            if ($PSBoundParameters['Debug']) {
+                                Write-Host "      DEBUG: Sending Config: $opts" -ForegroundColor DarkGray
+                            }
+
                             # Create text file with options locally
                             $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
                             $opts | Out-File -FilePath $tmpOptsFile -Encoding UTF8 -Force
@@ -447,12 +452,13 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                             # Copy to container to avoid shell quoting hell
                             docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
 
-                            # Execute CLI reading from file
-                            # using sh -c to allow command substitution $(cat ...)
-                            docker exec $containerName sh -c "ha addons options $slug --options ""$(cat /tmp/options.json)""" 2>&1 | Out-Null
+                            # Execute CLI reading from file and CAPTURE OUTPUT
+                            $haOutput = docker exec $containerName sh -c "ha addons options $slug --options ""$(cat /tmp/options.json)""" 2>&1
 
                             if ($LASTEXITCODE -ne 0) {
-                                Write-Warning "Failed to set options for $slug"
+                                Write-Warning "Failed to set options for $slug. Output: $haOutput"
+                            } elseif ($PSBoundParameters['Debug']) {
+                                Write-Host "      DEBUG: Config Update Output: $haOutput" -ForegroundColor DarkGray
                             }
 
                             Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
