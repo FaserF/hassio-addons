@@ -475,21 +475,59 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                             }
 
                             # Create text file with options locally
-                            # Use proper .NET write to avoid BOM and ensure LF
-                            $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
-                            # Check HA Supervisor API docs. POST /addons/{slug}/options takes {"options": { ... }}
-                            # My $opts string is usually '{"key": "val"}'. So I need to wrap it.
-                            $wrappedOpts = '{ "options": ' + $opts + ' }'
-                            [System.IO.File]::WriteAllText($tmpOptsFile, $wrappedOpts -replace "`r`n", "`n")
+                            # Create Python script to set options (Bypasses shell/curl issues)
+                            $pyScript = @"
+import os, sys, json, urllib.request, urllib.error
 
-                            # Copy to container
-                            docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
+slug = "$slug"
+token = os.environ.get("SUPERVISOR_TOKEN")
 
-                            # Execute CURL directly to Supervisor API
-                            # This bypasses HA CLI issues completely. We use sh -c to allow variable expansion of SUPERVISOR_TOKEN
-                            # Ensure $SUPERVISOR_TOKEN is NOT expanded by PowerShell (use backtick escape)
-                            $curlCmd = "curl -s -o /tmp/curl_out.json -w ""%{http_code}"" -X POST -H ""Authorization: Bearer `$SUPERVISOR_TOKEN"" -H ""Content-Type: application/json"" -d @/tmp/options.json http://supervisor/addons/$slug/options"
-                            $curlOut = docker exec $containerName sh -c $curlCmd 2>&1
+if not token:
+    print("Error: No SUPERVISOR_TOKEN found in environment")
+    sys.exit(1)
+
+try:
+    with open("/tmp/options.json", "r") as f:
+        data = json.load(f)
+except Exception as e:
+    print(f"Error reading options: {e}")
+    sys.exit(1)
+
+url = f"http://supervisor/addons/{slug}/options"
+req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
+req.add_header("Authorization", f"Bearer {token}")
+req.add_header("Content-Type", "application/json")
+
+try:
+    with urllib.request.urlopen(req) as response:
+        print(response.getcode())
+        print(response.read().decode("utf-8"))
+except urllib.error.HTTPError as e:
+    print(e.code)
+    print(e.read().decode("utf-8"))
+    sys.exit(1)
+except Exception as e:
+    print(f"Exception: {e}")
+    sys.exit(1)
+"@
+                            $tmpPyFile = Join-Path $env:TEMP "set_options_$($addon.Name).py"
+                            [System.IO.File]::WriteAllText($tmpPyFile, $pyScript -replace "`r`n", "`n")
+                            docker cp $tmpPyFile "${containerName}:/tmp/set_options.py" 2>$null | Out-Null
+
+                            # Execute Python script
+                            $pyOut = docker exec $containerName python3 /tmp/set_options.py 2>&1
+
+                            # Check output for success (200)
+                            if ($pyOut -notmatch "200") {
+                                Write-Warning "Failed to set options via Python API."
+                                Write-Warning "Output: $pyOut"
+                            } else {
+                                if ($PSBoundParameters['Debug']) {
+                                    Write-Host "      DEBUG: Python API Config Set Success" -ForegroundColor DarkGray
+                                }
+                            }
+
+                            Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
 
                             if ("$curlOut".Trim() -ne "200") {
                                 Write-Warning "Failed to set options via API. status=$curlOut"
