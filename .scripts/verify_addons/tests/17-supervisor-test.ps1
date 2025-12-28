@@ -162,6 +162,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
     # Copy add-ons to local addons directory
     Write-Host "    > Preparing add-ons for testing..." -ForegroundColor Gray
+
+    $anyFailure = $false
+
     foreach ($addon in $Addons) {
         $addonPath = $addon.FullName
 
@@ -378,7 +381,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         $configFile = Join-Path $addon.FullName "config.yaml"
         if (Test-Path $configFile) {
             $configContent = Get-Content $configFile -Raw
-            if ($configContent -match "(?m)^slug:\s*([a-zA-Z0-9-_]+)") {
+            if ($configContent -match "(?m)^slug:\s*['""]?([a-zA-Z0-9-_]+)['""]?") {
                 $safeName = $matches[1].Trim()
             }
         }
@@ -435,15 +438,24 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         }
 
                         if ($opts) {
-                            Write-Host "    > Configuring options (using ha addons options)..." -ForegroundColor Gray
+                            Write-Host "    > Configuring options (using ha addons options via strict file pass)..." -ForegroundColor Gray
 
-                            # Use official CLI to set options (more reliable than manual JSON editing)
-                            # Single quotes for outer, double quotes for inner JSON
-                            docker exec $containerName ha addons options $slug --options "$opts" 2>&1 | Out-Null
+                            # Create text file with options locally
+                            $tmpOptsFile = Join-Path $env:TEMP "ha_options_$($addon.Name).json"
+                            $opts | Out-File -FilePath $tmpOptsFile -Encoding UTF8 -Force
+
+                            # Copy to container to avoid shell quoting hell
+                            docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
+
+                            # Execute CLI reading from file
+                            # using sh -c to allow command substitution $(cat ...)
+                            docker exec $containerName sh -c "ha addons options $slug --options ""$(cat /tmp/options.json)""" 2>&1 | Out-Null
 
                             if ($LASTEXITCODE -ne 0) {
                                 Write-Warning "Failed to set options for $slug"
                             }
+
+                            Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
                         }
                     }
 
@@ -537,6 +549,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                                 } else {
                                     Write-Host "No log file found at $logFileHost" -ForegroundColor Yellow
                                 }
+
+                                $logStr = $logs -join "`n"
+                                $testMessage = "State: $state. Logs: $logStr"
                             }
                         }
                         else {
@@ -578,6 +593,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             }
         }
         else {
+            $anyFailure = $true
             Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message $testMessage
         }
     }
@@ -594,7 +610,7 @@ finally {
     docker network rm $networkName 2>$null | Out-Null
 
     $dataDir = Join-Path $OutputDir "supervisor_test_data"
-    if ($PSBoundParameters['Debug'] -or ($testPassed -eq $false)) {
+    if ($PSBoundParameters['Debug'] -or $anyFailure) {
         Write-Host "    > Preserving test data for debugging at: $dataDir" -ForegroundColor Yellow
     }
     elseif (Test-Path $dataDir) {

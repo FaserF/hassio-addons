@@ -600,7 +600,7 @@ try {
     }
 
     # 13. Workflow Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 17] Workflow Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 17] Workflow Checks" -PercentComplete 85
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         $time = Measure-Command {
             try {
@@ -614,7 +614,7 @@ try {
     }
 
     # 14. Python Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 17] Python Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 17] Python Checks" -PercentComplete 88
     if ("all" -in $Tests -or "PythonChecks" -in $Tests) {
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
         $time = Measure-Command {
@@ -630,7 +630,7 @@ try {
     }
 
     # 15. Custom Addon Tests
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 17] Custom Addon Tests" -PercentComplete 94
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 17] Custom Addon Tests" -PercentComplete 91
     if ("all" -in $Tests -or "CustomTests" -in $Tests) {
         $time = Measure-Command {
             try {
