@@ -206,7 +206,6 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${dataDirUnix}/addons:/mnt/supervisor/addons",
         "-v", "${dataDirUnix}/config:/mnt/supervisor/homeassistant",
         "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rslave",
-        "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rslave",
         "-v", "${dataDirUnix}/ssl:/mnt/supervisor/ssl",
         "-v", "${dataDirUnix}/media:/mnt/supervisor/media",
         "-v", "${logFileUnix}:/tmp/supervisor.log",
@@ -318,8 +317,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                  Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
                  $mariadbReady = $false
                  $maxWait = 60
-                 $start = Get-Date
-                 while (((Get-Date) - $start).TotalSeconds -lt $maxWait) {
+                 $mariadbWaitStart = Get-Date
+                 while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
                      $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
                      if ($statusJson) {
                          $status = $statusJson | ConvertFrom-Json

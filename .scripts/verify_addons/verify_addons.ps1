@@ -114,6 +114,10 @@ function Show-Help {
     Write-Host "        Suppresses all terminal notifications (e.g., success/failure pop-ups)."
     Write-Host "        Useful for CI/CD environments where notifications are not desired."
     Write-Host ""
+    Write-Host "    -Json" -ForegroundColor Green
+    Write-Host "        Enables export of verification results to a JSON file in the output directory."
+    Write-Host "        The file path is auto-generated (e.g., verification_results_timestamp.json)."
+    Write-Host ""
     Write-Host "    -VerboseNotifications" -ForegroundColor Green
     Write-Host "        Enables more frequent notifications for intermediate steps (e.g. Docker completion)."
     Write-Host "        Default: Disabled (Only shows Start/Finish/Failures)."
@@ -596,7 +600,7 @@ try {
     }
 
     # 13. Workflow Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 15] Workflow Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[13 / 17] Workflow Checks" -PercentComplete 95
     if ("all" -in $Tests -or "WorkflowChecks" -in $Tests) {
         $time = Measure-Command {
             try {
@@ -610,7 +614,7 @@ try {
     }
 
     # 14. Python Checks
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 15] Python Checks" -PercentComplete 95
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[14 / 17] Python Checks" -PercentComplete 95
     if ("all" -in $Tests -or "PythonChecks" -in $Tests) {
         $oldPP = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
         $time = Measure-Command {
@@ -626,7 +630,7 @@ try {
     }
 
     # 15. Custom Addon Tests
-    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 16] Custom Addon Tests" -PercentComplete 94
+    Write-Progress -Activity "Verifying $($addons.Count) Add-ons" -Status "[15 / 17] Custom Addon Tests" -PercentComplete 94
     if ("all" -in $Tests -or "CustomTests" -in $Tests) {
         $time = Measure-Command {
             try {
@@ -869,7 +873,6 @@ finally {
     Write-Host "Finished at: $($ScriptEndTime.ToString())" -ForegroundColor Cyan
     Write-Host "Duration: $($Duration.ToString())" -ForegroundColor Cyan
 
-    # Final Notification
     # Final Notification
     $notifTitle = ""
     $notifMsg = ""

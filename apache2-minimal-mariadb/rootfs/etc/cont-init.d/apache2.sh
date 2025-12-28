@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck disable=SC2034,SC2129,SC2016
+# shellcheck disable=SC2129,SC2016
 # shellcheck shell=bash
 
 # Enable strict mode
@@ -57,19 +57,19 @@ if [ -d "$DocumentRoot" ]; then
 			adduser "$username" -G www-data -D
 		fi
 		echo "$username:$password" | chpasswd
-		find "$webrootdocker" -type d -exec chown "$username":www-data {} \;
-		find "$webrootdocker" -type f -exec chown "$username":www-data {} \;
+		find "$DocumentRoot" -type d -exec chown "$username":www-data {} \;
+		find "$DocumentRoot" -type f -exec chown "$username":www-data {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
-		find "$webrootdocker" -type d -exec chown www-data:www-data {} \;
-		find "$webrootdocker" -type f -exec chown www-data:www-data {} \;
+		find "$DocumentRoot" -type d -exec chown www-data:www-data {} \;
+		find "$DocumentRoot" -type f -exec chown www-data:www-data {} \;
 	fi
 fi
 
 if [ "$phpini" != "default" ]; then
 	if [ -f "$phpini" ]; then
 		echo "Your custom php.ini at $phpini will be used."
-		rm "$phppath"
+		rm -f "$phppath"
 		cp "$phpini" "$phppath"
 	else
 		echo "You have changed the php_ini variable, but the new file could not be found! Default php.ini file will be used instead."
