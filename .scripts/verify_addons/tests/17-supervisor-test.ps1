@@ -214,7 +214,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${logFileUnix}:/tmp/supervisor.log",
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",
-        "-e", "SUPERVISOR_TOKEN=TestToken123", # Required for direct API calls via curl
+        "-e", "SUPERVISOR_TOKEN=generated_T9k8L", # Required for direct API calls via curl
         $devcontainerImage,
         "sleep", "infinity"
     )
@@ -311,7 +311,41 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         if ($LASTEXITCODE -eq 0) {
              # Configure MariaDB (Password is required)
              Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
-             docker exec $containerName ha addons options core_mariadb --options '{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "password123"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}]}' 2>&1 | Out-Null
+
+             # Use Python API to set options reliably (avoiding CLI quoting issues)
+             $mariaDbOpts = @{
+                 databases = @("homeassistant")
+                 logins = @(
+                     @{ username = "homeassistant"; password = "generated_m7R2x" }
+                 )
+                 rights = @(
+                     @{ username = "homeassistant"; database = "homeassistant" }
+                 )
+             } | ConvertTo-Json -Depth 5 -Compress
+
+             # Escape for Python string
+             $mariaDbOptsStr = $mariaDbOpts.Replace('"', '\"')
+
+             $pyScript = @"
+import os, sys, json, urllib.request, urllib.error
+token = os.environ.get("SUPERVISOR_TOKEN")
+url = "http://supervisor/addons/core_mariadb/options"
+data = json.loads("$mariaDbOptsStr")
+req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
+req.add_header("Authorization", f"Bearer {token}")
+req.add_header("Content-Type", "application/json")
+try:
+    with urllib.request.urlopen(req) as response:
+        print(response.getcode())
+except Exception as e:
+    print(e)
+    sys.exit(1)
+"@
+             $tmpPyFile = Join-Path $env:TEMP "set_options_mariadb.py"
+             [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
+             docker cp $tmpPyFile "${containerName}:/tmp/set_options_mariadb.py" 2>$null | Out-Null
+             docker exec $containerName python3 /tmp/set_options_mariadb.py 2>&1 | Out-Null
+             Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
 
              $start = docker exec $containerName ha addons start core_mariadb 2>&1
              if ($LASTEXITCODE -ne 0) {
@@ -456,9 +490,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         } elseif ($addon.Name -eq "netboot-xyz") {
                              $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
                         } elseif ($addon.Name -eq "antigravity-server") {
-                             $opts = '{"vnc_password": "password", "log_level": "info"}'
+                             $opts = '{"vnc_password": "Ab1Cd2Ef", "log_level": "info"}'
                         } elseif ($addon.Name -eq "aegisbot") {
-                             $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "secret", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
+                             $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "generated_K3y9P", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
                         } elseif ($addon.Name -eq "solumati") {
                              $opts = '{"log_level": "info", "test_mode": true}'
                         } elseif ($configContent -match "website_name") {
