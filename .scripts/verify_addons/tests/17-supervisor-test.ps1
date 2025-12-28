@@ -421,53 +421,28 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                              $opts = '{"config_file": "config.yml"}'
                         } elseif ($addon.Name -eq "bash_script_executer") {
                              $opts = '{"script_path": "/share/test.sh"}'
+                        } elseif ($addon.Name -eq "netboot-xyz") {
+                             $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
+                        } elseif ($addon.Name -eq "antigravity-server") {
+                             $opts = '{"vnc_password": "password", "log_level": "info"}'
+                        } elseif ($addon.Name -eq "aegisbot") {
+                             $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "secret", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
+                        } elseif ($addon.Name -eq "solumati") {
+                             $opts = '{"log_level": "info", "test_mode": true}'
                         } elseif ($configContent -match "website_name") {
                              # Fallback generic detection
                              $opts = '{"website_name": "example.com"}'
                         }
 
                         if ($opts) {
-                            Write-Host "    > Configuring options (direct file edit)..." -ForegroundColor Gray
+                            Write-Host "    > Configuring options (using ha addons options)..." -ForegroundColor Gray
 
-                            # Create shell helper to edit addons.json reliably with jq
-                            $shScriptPath = Join-Path $addonsDir "update_config.sh"
-
-                            # Use `jq` which is available in the supervisor container
-                            $shScriptContent = @'
-#!/bin/sh
-slug="$1"
-opts="$2"
-file="/mnt/supervisor/addons.json"
-
-if [ ! -f "$file" ]; then
-  echo "Error: $file not found"
-  exit 1
-fi
-
-echo "Updating options for $slug..."
-
-# Use jq to update the options in place (using temp file)
-# Ensure the slug key exists in 'user' object if not present, then set options
-tmp=$(mktemp)
-jq --arg slug "$slug" --argjson opts "$opts" '
-  if .user[$slug] == null then .user[$slug] = {} else . end |
-  .user[$slug].options = $opts
-' "$file" > "$tmp" && mv "$tmp" "$file"
-
-echo "Successfully updated addons.json"
-'@
-
-                            # Write script with Unix line endings for safety
-                            $shScriptContent = $shScriptContent -replace "`r`n", "`n"
-                            [System.IO.File]::WriteAllText($shScriptPath, $shScriptContent)
-
-                            # Execute shell script inside container
-                            # $addonsDir is mounted at /mnt/supervisor/addons/local
-                            # Use sh -c and single quotes to protect the JSON string from shell separation
-                            docker exec $containerName sh -c "/mnt/supervisor/addons/local/update_config.sh '$slug' '$opts'" 2>&1 | Write-Host
+                            # Use official CLI to set options (more reliable than manual JSON editing)
+                            # Single quotes for outer, double quotes for inner JSON
+                            docker exec $containerName ha addons options $slug --options "$opts" 2>&1 | Out-Null
 
                             if ($LASTEXITCODE -ne 0) {
-                                Write-Warning "Failed to set options via direct file edit"
+                                Write-Warning "Failed to set options for $slug"
                             }
                         }
                     }
