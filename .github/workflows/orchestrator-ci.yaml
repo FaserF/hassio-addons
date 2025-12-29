@@ -308,7 +308,7 @@ jobs:
 
       - name: 📤 Upload Compliance Report
         if: steps.compliance.outputs.status == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: compliance-${{ github.run_id }}-${{ matrix.addon }}
           path: compliance_report.txt
@@ -408,7 +408,7 @@ jobs:
       actions: read
     steps:
       - name: 📥 Download Compliance Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           pattern: compliance-*
