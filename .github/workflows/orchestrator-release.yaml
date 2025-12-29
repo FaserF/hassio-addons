@@ -338,7 +338,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Version Bump
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip ci]"
           file_pattern: "${{ matrix.addon }}/*"
@@ -365,7 +365,7 @@ jobs:
 
       - name: 🚀 Commit Dev Version
         if: success()
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip ci]"
           file_pattern: "${{ matrix.addon }}/*"
