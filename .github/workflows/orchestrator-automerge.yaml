@@ -96,7 +96,7 @@ jobs:
           echo "Checking if actual CI jobs ran in workflow run $RUN_ID..."
 
           # Get all jobs from the workflow run
-          JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --jq '.jobs[] | {name: .name, conclusion: .conclusion}')
+          JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --paginate --jq '.jobs[] | {name: .name, conclusion: .conclusion}' | jq -c .)
 
           # Count jobs by status
           SUCCESS_COUNT=0
