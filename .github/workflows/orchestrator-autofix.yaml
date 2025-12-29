@@ -99,7 +99,7 @@ jobs:
 
       # 1. Shell Scripts (Format)
       - name: 🐚 Setup shfmt
-        uses: mfinelli/setup-shfmt@1a143389339b48c4b48ae3cdc058f3dbe336a701 # v3.0.2
+        uses: mfinelli/setup-shfmt@a25fda4c1fe115aec0f85e04126610841bc3141d # v4.0.1
         with:
           shfmt-version: "3.7.0"
 
