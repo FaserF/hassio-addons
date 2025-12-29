@@ -121,7 +121,7 @@ jobs:
           EOF
 
       - name: 📤 Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-sync addon list in README"
           file_pattern: "README.md README.MD"
