@@ -315,7 +315,7 @@ jobs:
 
             # Check supervisor logs for any validation errors
             echo "Checking supervisor logs for errors..."
-            docker exec ha-supervisor-test ha supervisor logs --tail 50 2>&1 | grep -iE "(error|warn|$addon|$SLUG)" || echo "No relevant errors found in logs"
+            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -50 | grep -iE "(error|warn|$addon|$SLUG)" || echo "No relevant errors found in logs"
 
             # Verify add-on is detected
             echo "Checking if add-on is detected..."
@@ -328,7 +328,7 @@ jobs:
               echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
               echo "Checking add-on directory structure..."
-              docker exec ha-supervisor-test ls -la /mnt/data/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
+              docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
             fi
 
             # Install add-on

@@ -1,6 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+# Base image includes s6-overlay; services use /usr/bin/with-contenv
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose
