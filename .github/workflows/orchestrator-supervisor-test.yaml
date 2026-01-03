@@ -360,19 +360,20 @@ jobs:
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
                 docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
-                
+
                 # Verify if add-on was actually installed despite the 500 error
                 echo "Verifying if add-on was actually installed..."
                 ADDON_INFO=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>&1 || echo "")
+                ADDON_INSTALLED=$(echo "$ADDON_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
                 ADDON_STATE=$(echo "$ADDON_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
-                
-                # Check if add-on is installed by looking for state or installed flag
-                if echo "$ADDON_INFO" | grep -qE '"installed":\s*true|"state":\s*"(started|stopped|error)"' || [ "$ADDON_STATE" != "unknown" ]; then
-                  echo "✅ Add-on was installed despite 500 error (state: $ADDON_STATE), continuing..."
+
+                # Check if add-on is installed by looking at the installed flag or state
+                if [ "$ADDON_INSTALLED" = "true" ] || [ "$ADDON_STATE" != "unknown" ]; then
+                  echo "✅ Add-on was installed despite 500 error (installed: $ADDON_INSTALLED, state: $ADDON_STATE), continuing..."
                   INSTALL_EXIT=0
                   RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error but installed - likely CI issue)"
-                elif echo "$ADDON_INFO" | grep -qi "not installed\|not found"; then
-                  echo "❌ Add-on was NOT installed despite 500 error"
+                elif [ "$ADDON_INSTALLED" = "false" ]; then
+                  echo "❌ Add-on was NOT installed despite 500 error (installed: false)"
                   echo "Checking supervisor logs for validation errors..."
                   docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
                   RESULTS="$RESULTS\n❌ $addon: FAIL (Install 500 error and not installed)"
