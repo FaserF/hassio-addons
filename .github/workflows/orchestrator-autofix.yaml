@@ -141,7 +141,7 @@ jobs:
 
       # 3. Node.js Tools (Prettier, Markdownlint)
       - name: 📦 Set up Node.js
-        uses: actions/setup-node@395ad32d8b5b0e3b0b0b0b0b0b0b0b0b0b0b0b0b # v6.1.0
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: "24"
 
@@ -205,7 +205,7 @@ jobs:
 
       # Commit back (using PAT to trigger subsequent workflows)
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v7.1.0
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: ${{ steps.commit_msg.outputs.message }}
           branch: ${{ github.ref_name }}

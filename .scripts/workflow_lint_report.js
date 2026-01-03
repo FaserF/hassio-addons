@@ -83,7 +83,7 @@ module.exports = async ({ github, context, core }) => {
   const hasZeroIssues = output.includes('Found 0 issues');
   const isEmpty = output === '';
   const hasStderr = stderr && stderr.trim().length > 0;
-  
+
   // Determine if this is a real error or just a successful run with exit code != 0
   // If actionlint reports "Found 0 issues" and there's no stderr, it likely succeeded
   // even if exit code was non-zero (can happen with some actionlint versions/configs)
