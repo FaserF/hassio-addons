@@ -104,6 +104,17 @@ def delete_version(package_name, version_id, package_type="container"):
             )
 
 
+def is_invalid_package(name):
+    """Check if package name is invalid and should be deleted."""
+    # Delete packages with "null" name
+    if name == "null" or name.lower() == "null":
+        return True
+    # Delete packages with incorrect "hassio-addons-" prefix
+    if name.startswith("hassio-addons-"):
+        return True
+    return False
+
+
 def main():
     print(f"🧹 Pruning registry for {ORG_NAME}...")
     print(f"   📦 Supported addons: Keep {KEEP_VERSIONS_SUPPORTED} versions")
@@ -113,6 +124,18 @@ def main():
 
     for pkg in packages:
         name = pkg["name"]
+        
+        # Check if this is an invalid package that should be completely deleted
+        if is_invalid_package(name):
+            print(f"🗑️ Invalid package detected: {name} - deleting all versions...")
+            versions = get_package_versions(name)
+            for v in versions:
+                v_id = v["id"]
+                tags = v["metadata"]["container"]["tags"]
+                print(f"   🗑️ Deleting {tags} (ID: {v_id})")
+                delete_version(name, v_id)
+            continue
+        
         is_unsupported = is_unsupported_addon(name)
         keep_versions = (
             KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED

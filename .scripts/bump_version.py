@@ -397,11 +397,11 @@ def update_image_tag(content, addon_path, is_dev):
 
         # Check if already present and uncomment if needed
         if "# image: local build only" in content:
-            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+            image_line = f"image: ghcr.io/faserf/{slug.lower()}-{{arch}}"
             content = content.replace("# image: local build only", image_line)
             print(f"🔧 Restored image tag: {image_line}")
         elif not re.search(image_pattern, content, re.MULTILINE):
-            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+            image_line = f"image: ghcr.io/faserf/{slug.lower()}-{{arch}}"
             # Append after slug or version
             content = re.sub(
                 r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE
@@ -534,7 +534,7 @@ def bump_version(
                      existing_entry = existing_changelog[start_idx:end_idx]
                  else:
                      existing_entry = existing_changelog[start_idx:]
-                 
+
                  # Check if existing entry already has auto-generated content
                  # Check for all category headers used by categorize_commits
                  ALL_CATEGORY_MARKERS = [
@@ -549,7 +549,7 @@ def bump_version(
                      "### 🚀 Other",
                  ]
                  has_auto_content = any(marker in existing_entry for marker in ALL_CATEGORY_MARKERS)
-                 
+
                  if has_auto_content:
                      print(f"ℹ️ Auto-generated changelog already exists for version {new_version}, skipping auto-generation.")
                      skip_auto_generation = True
@@ -606,17 +606,17 @@ def bump_version(
                     # Auto content already exists, but we want to merge/extend it
                     # Parse existing categories and merge with new ones
                     print(f"ℹ️ Auto-generated content already exists for version {new_version}, merging with new content...")
-                    
+
                     # Extract existing categories from current_section
                     existing_categories = parse_existing_changelog_entry(current_section)
-                    
+
                     # Parse new auto-generated categories from auto_body
                     new_categories = parse_existing_changelog_entry(auto_body)
-                    
+
                     # Merge categories: keep existing items, add new ones (avoid duplicates)
                     merged_categories = {}
                     all_category_names = set(list(existing_categories.keys()) + list(new_categories.keys()))
-                    
+
                     for cat_name in all_category_names:
                         merged_items = []
                         # Add existing items first
@@ -631,7 +631,7 @@ def bump_version(
                                     merged_items.append(new_item)
                         if merged_items:
                             merged_categories[cat_name] = merged_items
-                    
+
                     # Rebuild the section with merged content
                     # Keep the original header and any manual content before categories
                     section_lines = current_section.split("\n")
@@ -642,12 +642,12 @@ def bump_version(
                             break
                     if header_end_idx == 0:
                         header_end_idx = len(section_lines)
-                    
+
                     # Rebuild section: header + merged categories
                     merged_section = "\n".join(section_lines[:header_end_idx]).rstrip()
                     if merged_section and not merged_section.endswith("\n"):
                         merged_section += "\n\n"
-                    
+
                     # Add merged categories
                     for category, items in sorted(merged_categories.items()):
                         if items:
@@ -655,7 +655,7 @@ def bump_version(
                             for item in items[:15]:  # Limit items
                                 merged_section += f"- {item}\n"
                             merged_section += "\n"
-                    
+
                     combined_section = merged_section.rstrip() + "\n"
                     changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
                 elif auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:

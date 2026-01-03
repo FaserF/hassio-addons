@@ -21,7 +21,7 @@ import sys
 import yaml
 
 # Image naming convention
-IMAGE_TEMPLATE = "ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+IMAGE_TEMPLATE = "ghcr.io/faserf/{slug}-{{arch}}"
 
 
 def get_current_branch():
