@@ -49,6 +49,7 @@ on:
       - master
     paths:
       - "**/config.yaml"
+      - ".github/workflows/orchestrator-release.yaml"
 
 
 permissions:
@@ -101,7 +102,11 @@ jobs:
   # ================================================================================
   detect:
     name: 🔍 Detect Release Targets
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'release(all)'))
     runs-on: ubuntu-latest
     outputs:
       addons: ${{ steps.detect.outputs.addons }}
@@ -147,16 +152,26 @@ jobs:
             if [ "$INPUT_ADDON" == "all" ]; then
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
+              SKIP_ADDONS="homeassistant-test-instance"
+              
               # Regular addons (top-level directories with config.yaml)
               for item in */; do
                 item_name="${item%/}"
                 if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
                   # Skip test add-ons
-                  if [ "$item_name" != "homeassistant-test-instance" ]; then
+                  skip=false
+                  for skip_item in $SKIP_ADDONS; do
+                    if [ "$item_name" == "$skip_item" ]; then
+                      skip=true
+                      break
+                    fi
+                  done
+                  if [ "$skip" == "false" ]; then
                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
                   fi
                 fi
               done
+              
               # Unsupported addons
               if [ -d ".unsupported" ]; then
                 for item in .unsupported/*/; do
@@ -166,8 +181,10 @@ jobs:
                   fi
                 done
               fi
+              
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
+              echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
             elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
               # Single addon specified
               ADDONS="$INPUT_ADDON"
@@ -262,37 +279,74 @@ jobs:
 
             [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
           # ----------------------------------------------------------------
-          # PUSH TO MASTER (Manual Version Bump Detection)
+          # PUSH TO MASTER (Manual Version Bump Detection or release(all) trigger)
           # ----------------------------------------------------------------
           elif [ "${{ github.event_name }}" == "push" ]; then
              IS_AUTO="false"
 
-             # Get list of changed files
-             CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-
-             for file in $CHANGED_FILES; do
-               if [[ "$file" == *"/config.yaml" ]]; then
-                 addon_dir=$(dirname "$file")
-                 addon_name=$(basename "$addon_dir")
-
-                 # Check if version changed
-                 # We need to install yq or use python to check versions reliably, or simple grep
-                 # Let's use python one-liner since we have python environment
-
-                 # Get old version
-                 OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-                 # Get new version
-                 NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-
-                 if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
-                    echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
-                    [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
-                    SHOULD_RELEASE="true"
-                    IS_MANUAL_BUMP="true"
-                    VERSION_TYPE="$NEW_VERSION" # Pass exact version
+             # Check for "release(all)" in commit message
+             COMMIT_MSG="${github.event.head_commit.message}"
+             if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
+               echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
+               SKIP_ADDONS="homeassistant-test-instance"
+               
+               # Regular addons (top-level directories with config.yaml)
+               for item in */; do
+                 item_name="${item%/}"
+                 if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
+                   # Skip test add-ons
+                   skip=false
+                   for skip_item in $SKIP_ADDONS; do
+                     if [ "$item_name" == "$skip_item" ]; then
+                       skip=true
+                       break
+                     fi
+                   done
+                   if [ "$skip" == "false" ]; then
+                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                   fi
                  fi
+               done
+               
+               # Unsupported addons
+               if [ -d ".unsupported" ]; then
+                 for item in .unsupported/*/; do
+                   if [ -f "${item}config.yaml" ]; then
+                     item_name=".unsupported/$(basename "$item")"
+                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                   fi
+                 done
                fi
-             done
+               
+               SHOULD_RELEASE="true"
+               VERSION_TYPE="patch" # Default for release(all)
+               echo "📦 Found add-ons: $ADDONS"
+             else
+               # Original logic: Detect manual version bumps
+               # Get list of changed files
+               CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+               for file in $CHANGED_FILES; do
+                 if [[ "$file" == *"/config.yaml" ]]; then
+                   addon_dir=$(dirname "$file")
+                   addon_name=$(basename "$addon_dir")
+
+                   # Check if version changed
+                   # Get old version
+                   OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                   # Get new version
+                   NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                   if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                      echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
+                      [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                      SHOULD_RELEASE="true"
+                      IS_MANUAL_BUMP="true"
+                      VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                   fi
+                 fi
+               done
+             fi
 
           fi
 
