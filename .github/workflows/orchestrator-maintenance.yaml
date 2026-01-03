@@ -34,6 +34,7 @@ permissions:
   contents: write
   packages: write
   actions: write
+  # Note: packages: write includes delete permission for package versions
 
 jobs:
   # --------------------------------------------------------------------------------

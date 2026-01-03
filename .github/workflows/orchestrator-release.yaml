@@ -639,12 +639,12 @@ jobs:
 
           echo "🏗️ Building with args:"
           echo -e "$BUILDER_ARGS"
-          
+
           # Extract image name from config.yaml directly
           # The builder expects only the package name (e.g., "aegisbot-{arch}" or "hassio-addons-aegisbot-{arch}")
           # We need to remove the registry prefix and extract just the package part
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-          
+
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
             # Fallback: use slug from config
             SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
@@ -655,12 +655,14 @@ jobs:
             # Remove hassio-addons- prefix (legacy format)
             IMAGE_NAME=$(echo "$IMAGE_NAME" | sed 's|^hassio-addons-||')
           fi
-          
+
           echo "📦 Using image name: $IMAGE_NAME"
-          
+
           # Use docker run directly to have full control over args
+          # Mount Docker config so builder can access GHCR credentials
           docker run --rm --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
             -v "$(pwd)":/data \
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             $(echo -e "$BUILDER_ARGS") \

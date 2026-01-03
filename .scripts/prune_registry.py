@@ -14,7 +14,14 @@ KEEP_VERSIONS_UNSUPPORTED = 1  # Keep only 1 version for unsupported addons
 
 if not ORG_NAME or not TOKEN:
     print("❌ Error: GITHUB_REPOSITORY_OWNER and GITHUB_TOKEN must be set.")
+    print(f"   ORG_NAME: {ORG_NAME if ORG_NAME else 'NOT SET'}")
+    print(f"   TOKEN: {'SET' if TOKEN else 'NOT SET'}")
     sys.exit(1)
+
+print(f"🔧 Configuration:")
+print(f"   ORG_NAME: {ORG_NAME}")
+print(f"   TOKEN: {'SET' if TOKEN else 'NOT SET'}")
+print()
 
 HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
@@ -39,29 +46,58 @@ def is_unsupported_addon(package_name):
 
 
 def get_packages(package_type="container"):
-    # List packages for organization
-    url = f"https://api.github.com/orgs/{ORG_NAME}/packages?package_type={package_type}"
-    # If using user account: f"https://api.github.com/user/packages?package_type={package_type}"
-    # Assuming Org context based on hassio-addons
-    try:
-        res = requests.get(url, headers=HEADERS)
-    except requests.RequestException as e:
-        print(f"❌ API Request Failed: {e}")
-        return []
-
-    if res.status_code != 200:
-        # Try user endpoint if org fails
-        url = f"https://api.github.com/user/packages?package_type={package_type}"
+    """Get all packages with pagination support."""
+    all_packages = []
+    page = 1
+    per_page = 100
+    
+    # Try org endpoint first
+    base_url = f"https://api.github.com/orgs/{ORG_NAME}/packages"
+    print(f"🔍 Fetching packages from: orgs/{ORG_NAME}")
+    
+    while True:
+        url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
         try:
             res = requests.get(url, headers=HEADERS)
+            print(f"   Page {page} - Response status: {res.status_code}")
         except requests.RequestException as e:
             print(f"❌ API Request Failed: {e}")
-            return []
+            break
 
-    if res.status_code != 200:
-        print(f"❌ Failed to list packages: {res.status_code} {res.text}")
-        return []
-    return res.json()
+        if res.status_code == 404:
+            # Try user endpoint if org fails
+            if page == 1:
+                print(f"⚠️ Org endpoint failed, trying user endpoint...")
+                base_url = f"https://api.github.com/user/packages"
+                url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
+                try:
+                    res = requests.get(url, headers=HEADERS)
+                    print(f"   Page {page} - Response status: {res.status_code}")
+                except requests.RequestException as e:
+                    print(f"❌ API Request Failed: {e}")
+                    break
+            else:
+                break
+
+        if res.status_code != 200:
+            if page == 1:
+                print(f"❌ Failed to list packages: {res.status_code} {res.text}")
+            break
+        
+        page_packages = res.json()
+        if not page_packages:
+            break
+        
+        all_packages.extend(page_packages)
+        
+        # Check if there are more pages
+        if len(page_packages) < per_page:
+            break
+        
+        page += 1
+    
+    print(f"   Found {len(all_packages)} package(s) total")
+    return all_packages
 
 
 def get_package_versions(package_name, package_type="container"):
@@ -91,17 +127,18 @@ def delete_version(package_name, version_id, package_type="container"):
     url = f"https://api.github.com/orgs/{ORG_NAME}/packages/{package_type}/{package_name}/versions/{version_id}"
     res = requests.delete(url, headers=HEADERS, timeout=10)
     if res.status_code == 204:
-        print(f"✅ Deleted version ID {version_id}")
+        return True
     else:
         # Try user
         url = f"https://api.github.com/user/packages/{package_type}/{package_name}/versions/{version_id}"
         res = requests.delete(url, headers=HEADERS, timeout=10)
         if res.status_code == 204:
-            print(f"✅ Deleted version ID {version_id}")
+            return True
         else:
             print(
-                f"❌ Failed to delete version {version_id}: {res.status_code} {res.text}"
+                f"❌ Failed to delete version {version_id} for {package_name}: {res.status_code} {res.text}"
             )
+            return False
 
 
 def is_invalid_package(name):
@@ -119,9 +156,18 @@ def main():
     print(f"🧹 Pruning registry for {ORG_NAME}...")
     print(f"   📦 Supported addons: Keep {KEEP_VERSIONS_SUPPORTED} versions")
     print(f"   🏚️ Unsupported addons: Keep {KEEP_VERSIONS_UNSUPPORTED} version(s)")
+    print()
 
     packages = get_packages()
+    
+    if not packages:
+        print("⚠️ No packages found in registry")
+        return
+    
+    print(f"📦 Found {len(packages)} package(s) in registry")
+    print()
 
+    deleted_count = 0
     for pkg in packages:
         name = pkg["name"]
 
@@ -129,11 +175,15 @@ def main():
         if is_invalid_package(name):
             print(f"🗑️ Invalid package detected: {name} - deleting all versions...")
             versions = get_package_versions(name)
+            if not versions:
+                print(f"   ℹ️ No versions found for {name}")
+                continue
             for v in versions:
                 v_id = v["id"]
                 tags = v["metadata"]["container"]["tags"]
                 print(f"   🗑️ Deleting {tags} (ID: {v_id})")
-                delete_version(name, v_id)
+                if delete_version(name, v_id):
+                    deleted_count += 1
             continue
 
         is_unsupported = is_unsupported_addon(name)
@@ -144,6 +194,10 @@ def main():
 
         print(f"👉 {addon_type}: {name} (keep {keep_versions})...")
         versions = get_package_versions(name)
+        
+        if not versions:
+            print(f"   ℹ️ No versions found for {name}")
+            continue
 
         # Filter versions. Usually sorted by created_at desc.
         # We need to identify 'latest' tag.
@@ -170,11 +224,18 @@ def main():
 
         print(f"   Stats: Keeping {len(to_keep)}, Deleting {len(to_delete)}")
 
-        for v in to_delete:
-            v_id = v["id"]
-            tags = v["metadata"]["container"]["tags"]
-            print(f"   🗑️ Deleting {tags} (ID: {v_id})")
-            delete_version(name, v_id)
+        if not to_delete:
+            print(f"   ✅ No versions to delete for {name}")
+        else:
+            for v in to_delete:
+                v_id = v["id"]
+                tags = v["metadata"]["container"]["tags"]
+                print(f"   🗑️ Deleting {tags} (ID: {v_id})")
+                if delete_version(name, v_id):
+                    deleted_count += 1
+    
+    print()
+    print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
 
 
 if __name__ == "__main__":

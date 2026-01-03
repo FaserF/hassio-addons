@@ -96,7 +96,7 @@ def add_image_field(config_path, slug, dry_run=False):
         # Generate correct image name
         normalized_slug = normalize_slug_for_image(slug)
         correct_image_value = IMAGE_TEMPLATE.format(slug=normalized_slug)
-        
+
         # Check if image field already exists
         image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
         if image_match:
