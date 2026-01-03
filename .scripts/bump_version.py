@@ -378,7 +378,8 @@ def bump_version(
                 commit_sha = ""
 
             if commit_sha:
-                new_version = f"{major}.{minor}.{patch}-dev+{commit_sha}"
+                # Docker tags cannot contain '+', so use '-' instead
+                new_version = f"{major}.{minor}.{patch}-dev-{commit_sha}"
             else:
                 new_version = f"{major}.{minor}.{patch}-dev"
         else:
