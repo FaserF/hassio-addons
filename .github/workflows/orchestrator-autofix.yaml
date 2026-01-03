@@ -141,7 +141,7 @@ jobs:
 
       # 3. Node.js Tools (Prettier, Markdownlint)
       - name: 📦 Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad32d8b5b0e3b0b0b0b0b0b0b0b0b0b0b0b0b # v6.1.0
         with:
           node-version: "24"
 
@@ -176,7 +176,6 @@ jobs:
 
       # 6. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
-        if: ${{ secrets.PAT != '' }}
         run: |
           find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
 

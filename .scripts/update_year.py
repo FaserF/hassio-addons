@@ -71,7 +71,7 @@ def update_readme_md(readme_path, old_year, new_year):
 
 def main():
     """Main function to update all year references.
-    
+
     Returns:
         int: Exit code
             - 0: Changes were made

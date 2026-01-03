@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: 🧹 Run actionlint
         id: actionlint
@@ -64,8 +64,9 @@ jobs:
           fail-on-error: false
 
       - name: 📝 Post Lint Report on Failure
+        id: lint-report
         if: steps.actionlint.outputs.exit-code != '0'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           ACTIONLINT_OUTPUT: "${{ steps.actionlint.outputs.stdout }}"
           ACTIONLINT_STDERR: "${{ steps.actionlint.outputs.stderr }}"
@@ -75,7 +76,9 @@ jobs:
             await script({github, context, core})
 
       - name: ❌ Fail on Lint Errors
-        if: steps.actionlint.outputs.exit-code != '0'
+        if: |
+          steps.actionlint.outputs.exit-code != '0' &&
+          steps.lint-report.outputs.has-errors == 'true'
         run: exit 1
 
   # --------------------------------------------------------------------------------
@@ -269,7 +272,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: 📝 Analyze and Report Infrastructure Errors
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0

@@ -82,6 +82,13 @@ module.exports = async ({ github, context, core }) => {
 
   const hasZeroIssues = output.includes('Found 0 issues');
   const isEmpty = output === '';
+  const hasStderr = stderr && stderr.trim().length > 0;
+  
+  // Determine if this is a real error or just a successful run with exit code != 0
+  // If actionlint reports "Found 0 issues" and there's no stderr, it likely succeeded
+  // even if exit code was non-zero (can happen with some actionlint versions/configs)
+  const isLikelySuccess = hasZeroIssues && !hasStderr && errors.length === 0;
+  const isInternalError = !isLikelySuccess && errors.length === 0 && (hasZeroIssues || isEmpty) && hasStderr;
 
   // --- Generate GitHub Step Summary ---
   if (core && core.summary) {
@@ -98,12 +105,27 @@ module.exports = async ({ github, context, core }) => {
         rows.push([err.file, `L${err.line}`, `${severityIcon} ${err.message}`]);
       }
       core.summary.addTable(rows);
-    } else if (hasZeroIssues || isEmpty) {
+    } else if (isLikelySuccess) {
+      core.summary.addRaw('✅ No issues found.');
+    } else if (isInternalError) {
       core.summary.addRaw(
         '❌ **Internal Error**: `actionlint` failed but reported 0 issues. Check logs.'
       );
+      if (hasStderr) {
+        core.summary.addRaw('\n\n**Standard Error Output:**\n```\n' + stderr + '\n```');
+      }
+    } else if (isEmpty && hasStderr) {
+      core.summary.addRaw('❌ **Error**: `actionlint` produced no output but reported errors.\n\n');
+      core.summary.addRaw('**Standard Error Output:**\n```\n' + stderr + '\n```');
     } else {
-      core.summary.addRaw('✅ No issues found.');
+      // Fallback: show raw output if we can't determine the state
+      core.summary.addRaw('⚠️ **Unexpected state**: Could not parse actionlint output.\n\n');
+      if (output) {
+        core.summary.addRaw('**Standard Output:**\n```\n' + output + '\n```\n\n');
+      }
+      if (hasStderr) {
+        core.summary.addRaw('**Standard Error:**\n```\n' + stderr + '\n```');
+      }
     }
 
     await core.summary.write();
@@ -113,16 +135,14 @@ module.exports = async ({ github, context, core }) => {
   body += '### 🔗 Results\n';
   body += `> 📊 **View Full Report**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
 
-  if (errors.length === 0 && hasZeroIssues) {
+  if (isLikelySuccess) {
     body += '### ✅ Success\n\n';
     body += 'No linting issues were found.\n\n';
-  } else if (errors.length === 0 && isEmpty) {
-    // True empty output = unexpected failure
+  } else if (isInternalError) {
     body += '> [!CAUTION]\n';
     body +=
-      '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n';
-    // ... rest of the existing error reporting logic ...
-    if (stderr) {
+      '> `actionlint` exited with an error code, but no linting issues were found in stdout.\n\n';
+    if (hasStderr) {
       body += '### 🛑 Fatal / Infrastructure Error\n\n';
       body += '```\n';
       body += stderr;
@@ -132,13 +152,21 @@ module.exports = async ({ github, context, core }) => {
         '> This usually means an internal check (like `shellcheck` or `pyflakes`) failed or crashed without outputting to stdout or stderr.\n\n';
     }
     body += `Please check the [live workflow logs](${workflowRunUrl}) for the full execution trace.\n\n`;
-  } else if (errors.length === 0) {
+  } else if (errors.length === 0 && isEmpty && hasStderr) {
+    body += '> [!CAUTION]\n';
+    body += '> `actionlint` produced no output but reported errors in stderr.\n\n';
+    body += '### 🛑 Fatal / Infrastructure Error\n\n';
+    body += '```\n';
+    body += stderr;
+    body += '\n```\n\n';
+    body += `Please check the [live workflow logs](${workflowRunUrl}) for the full execution trace.\n\n`;
+  } else if (errors.length === 0 && !isEmpty) {
     // If we have output but it didn't match our regex, show raw output
     body += '### ⚠️ Raw actionlint Output\n\n';
     body += 'The tool produced output that could not be parsed into a table:\n\n';
     body += '```\n';
     body += output;
-    if (stderr) {
+    if (hasStderr) {
       body += '\n\n--- Standard Error ---\n';
       body += stderr;
     }
@@ -227,5 +255,14 @@ module.exports = async ({ github, context, core }) => {
       issue_number: context.issue.number,
       labels: ['workflow/lint-error'],
     });
+  }
+
+  // Set output to indicate if this is a real error that should fail the workflow
+  // Only fail if there are actual linting errors, not if actionlint just had a non-zero exit code
+  // but reported 0 issues (which can happen with some versions/configurations)
+  const shouldFail = errors.length > 0 || isInternalError || (isEmpty && hasStderr);
+  if (core) {
+    core.setOutput('has-errors', shouldFail ? 'true' : 'false');
+    core.setOutput('error-count', errors.length.toString());
   }
 };
