@@ -1,6 +1,6 @@
 ---
 name: Wiki.JS
-version: 2.2.2
+version: 3.0.0
 slug: wikijs
 image: ghcr.io/faserf/hassio-addons-wikijs-{arch}
 description: The most powerful and extensible open source Wiki software

@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 🚀 Run Trigger Script
         run: python3 .scripts/trigger_edge_updates.py
@@ -106,7 +106,7 @@ jobs:
       is_manual_bump: ${{ steps.detect.outputs.is_manual_bump }}
     steps:
       - name: ⤵️ Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
@@ -293,7 +293,7 @@ jobs:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 🕵️ Add-on Linter
         uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
@@ -334,7 +334,7 @@ jobs:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 

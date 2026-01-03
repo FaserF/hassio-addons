@@ -193,34 +193,6 @@ jobs:
                 }
             }
 
-                // Track Unsupported Addons (Label individually, don't count towards "All Supported")
-                if (rootDir === '.unsupported' && parts.length > 2) {
-                    const unsupAddon = parts[1];
-                    // Verify existence of config.yaml and not in blocklist
-                    if (!BLOCKLIST.includes(unsupAddon.toLowerCase()) && fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
-                        labelsToAdd.add(`addon/${unsupAddon}`);
-                        console.log(`  -> Added as unsupported addon: ${unsupAddon}`);
-                    }
-                }
-
-                // 3a. Detect Version Bumps in config.yaml
-                if (file.filename.endsWith('config.yaml') && file.patch) {
-                    // Check if version line was modified
-                    const versionChangePattern = /^\+\s*version:\s*["']?[\d.]+["']?/m;
-                    if (versionChangePattern.test(file.patch)) {
-                        hasVersionBump = true;
-                        // Determine which addon
-                        let addonName = rootDir;
-                        if (rootDir === '.unsupported' && parts.length > 2) {
-                            addonName = parts[1];
-                        }
-                        versionBumpAddons.push(addonName);
-                        console.log(`  -> Version bump detected in: ${addonName}`);
-                    }
-                }
-              }
-            }
-
             // Add version-bump label if detected
             if (hasVersionBump) {
                 labelsToAdd.add('version-bump');

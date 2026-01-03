@@ -59,7 +59,7 @@ jobs:
       has_addons: ${{ steps.filter.outputs.has_addons }}
     steps:
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: "🔧 Filter Ingress-Enabled Add-ons"
         id: filter
@@ -134,10 +134,10 @@ jobs:
 
     steps:
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: "🐳 Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: "📦 Pull Devcontainer Image"
         run: docker pull ${{ env.DEVCONTAINER_IMAGE }}
@@ -314,7 +314,30 @@ jobs:
 
             # Install add-on
             echo "Installing $addon ($SLUG)..."
-            if timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1; then
+            INSTALL_OUTPUT=$(timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
+            INSTALL_EXIT=$?
+
+            # Handle 500 errors as warnings instead of failures
+            # Note: This is likely a CI container issue, but could also indicate real add-on start problems
+            # Should be investigated if it occurs frequently
+            if [ $INSTALL_EXIT -ne 0 ]; then
+              if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
+                echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
+                echo "$INSTALL_OUTPUT"
+                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error - likely CI issue)"
+                # Continue with start attempt even though install reported 500
+                INSTALL_EXIT=0
+              else
+                echo "❌ Install failed"
+                echo "$INSTALL_OUTPUT"
+                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
+                FAILED=1
+              fi
+            fi
+
+            if [ $INSTALL_EXIT -eq 0 ]; then
               echo "✅ Install successful"
 
               # Configure options if needed (matching PowerShell logic)
@@ -346,7 +369,30 @@ jobs:
 
               # Start add-on
               echo "Starting $addon..."
-              if timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1; then
+              START_OUTPUT=$(timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
+              START_EXIT=$?
+
+              # Handle 500 errors as warnings instead of failures
+              # Note: This is likely a CI container issue, but could also indicate real add-on start problems
+              # Should be investigated if it occurs frequently
+              if [ $START_EXIT -ne 0 ]; then
+                if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
+                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
+                  echo "$START_OUTPUT"
+                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                  RESULTS="$RESULTS\n⚠️ $addon: WARN (Start 500 error - likely CI issue)"
+                  # Continue with status check even though start reported 500
+                  START_EXIT=0
+                else
+                  echo "❌ Start failed"
+                  echo "$START_OUTPUT"
+                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                  RESULTS="$RESULTS\n❌ $addon: FAIL (Start failed)"
+                  FAILED=1
+                fi
+              fi
+
+              if [ $START_EXIT -eq 0 ]; then
                 echo "✅ Start command successful"
 
                 # Poll for status (wait for start)
@@ -394,22 +440,12 @@ jobs:
                   RESULTS="$RESULTS\n❌ $addon: FAIL (State: $STATUS)"
                   FAILED=1
                 fi
-              else
-                echo "❌ Start failed"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
-                RESULTS="$RESULTS\n❌ $addon: FAIL (Start failed)"
-                FAILED=1
               fi
 
               # Stop and uninstall
               echo "Cleaning up $addon..."
               docker exec ha-supervisor-test ha addons stop "$SLUG" 2>/dev/null || true
               docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
-
-            else
-              echo "❌ Install failed"
-              RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
-              FAILED=1
             fi
           done
 

@@ -1,5 +1,5 @@
 name: "WhatsApp"
-version: "0.2.6"
+version: "0.3.0"
 slug: "whatsapp"
 image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
 description: "Home Assistant WhatsApp Backend (Baileys/Node.js)"
@@ -22,5 +22,4 @@ ports:
 ports_description:
   8099/tcp: WhatsApp API (for Integration)
 ingress: true
-ingress_port: 8099
 ingress_entry: /

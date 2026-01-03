@@ -17,4 +17,4 @@ schema:
   update_time_in_seconds: int
 slug: freenom-dns-updater
 url: https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater
-version: 1.7.1
+version: 2.0.0

@@ -15,4 +15,4 @@ schema:
   firmware_path: str
 slug: xqrepack
 url: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
-version: 1.8.1
+version: 2.0.0
