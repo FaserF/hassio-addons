@@ -31,16 +31,31 @@ HEADERS = {
 
 def is_unsupported_addon(package_name):
     """Check if this package is an unsupported addon."""
+    # Package name format: hassio-addons-{slug}-{arch} (e.g., hassio-addons-aegisbot-amd64)
+    # Extract slug from package name
+    slug = None
+    if package_name.startswith("hassio-addons-"):
+        # Remove prefix and arch suffix
+        slug_part = package_name.replace("hassio-addons-", "")
+        # Remove arch suffix (last part after last dash)
+        parts = slug_part.rsplit("-", 1)
+        if len(parts) == 2:
+            slug = parts[0]
+        else:
+            slug = slug_part
+    else:
+        # Old format or direct slug
+        slug = package_name.split("-")[0]
+    
+    if not slug:
+        return False
+    
     # 1. Check against filesystem structure (source of truth)
     unsupported_dir = ".unsupported"
     if os.path.exists(unsupported_dir):
         # Scan local .unsupported directory
-        if package_name in os.listdir(unsupported_dir):
+        if slug in os.listdir(unsupported_dir):
             return True
-
-    # 2. Check for .unsupported in path (if package_name implies path? No, package_name is just the name)
-    # But we can try to find where it is locally
-    # If the package_name exists in .unsupported/, we already caught it.
 
     return False
 
@@ -50,11 +65,11 @@ def get_packages(package_type="container"):
     all_packages = []
     page = 1
     per_page = 100
-    
+
     # Try org endpoint first
     base_url = f"https://api.github.com/orgs/{ORG_NAME}/packages"
     print(f"🔍 Fetching packages from: orgs/{ORG_NAME}")
-    
+
     while True:
         url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
         try:
@@ -83,19 +98,19 @@ def get_packages(package_type="container"):
             if page == 1:
                 print(f"❌ Failed to list packages: {res.status_code} {res.text}")
             break
-        
+
         page_packages = res.json()
         if not page_packages:
             break
-        
+
         all_packages.extend(page_packages)
-        
+
         # Check if there are more pages
         if len(page_packages) < per_page:
             break
-        
+
         page += 1
-    
+
     print(f"   Found {len(all_packages)} package(s) total")
     return all_packages
 
@@ -146,9 +161,30 @@ def is_invalid_package(name):
     # Delete packages with "null" name
     if name == "null" or name.lower() == "null":
         return True
-    # Delete packages with incorrect "hassio-addons-" prefix
-    if name.startswith("hassio-addons-"):
-        return True
+    
+    # Delete packages that don't follow the correct format: hassio-addons-{slug}-{arch}
+    # Valid format: hassio-addons-{slug}-{arch} (e.g., hassio-addons-aegisbot-amd64)
+    # Invalid formats to delete:
+    # - {slug}-{arch} without hassio-addons- prefix (old format, e.g., aegisbot-amd64)
+    # - Packages with unsupported architectures (armhf, armv7, i386) - we only support amd64 and aarch64
+    
+    # Check for unsupported architectures (regardless of format)
+    parts = name.split("-")
+    if len(parts) >= 2:
+        last_part = parts[-1].lower()
+        # Delete packages with unsupported architectures
+        if last_part in ["armhf", "armv7", "i386"]:
+            return True
+    
+    # Check for old format (without hassio-addons- prefix)
+    if not name.startswith("hassio-addons-"):
+        # Check if it ends with a supported architecture (old format: slug-arch)
+        if len(parts) >= 2:
+            last_part = parts[-1].lower()
+            # If it ends with a supported architecture, it's the old format and should be deleted
+            if last_part in ["amd64", "aarch64"]:
+                return True
+    
     return False
 
 
@@ -159,11 +195,11 @@ def main():
     print()
 
     packages = get_packages()
-    
+
     if not packages:
         print("⚠️ No packages found in registry")
         return
-    
+
     print(f"📦 Found {len(packages)} package(s) in registry")
     print()
 
@@ -194,7 +230,7 @@ def main():
 
         print(f"👉 {addon_type}: {name} (keep {keep_versions})...")
         versions = get_package_versions(name)
-        
+
         if not versions:
             print(f"   ℹ️ No versions found for {name}")
             continue
@@ -233,7 +269,7 @@ def main():
                 print(f"   🗑️ Deleting {tags} (ID: {v_id})")
                 if delete_version(name, v_id):
                     deleted_count += 1
-    
+
     print()
     print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
 

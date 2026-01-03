@@ -382,31 +382,40 @@ def update_image_tag(content, addon_path, is_dev):
         if not re.search(image_pattern, content, re.MULTILINE):
             print("ℹ️ No image tag found (already local build compliant)")
     else:
-        # ADD/RESTORE image tag for release versions
-        # Expected: image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
-        # Note: Github owner is FaserF, repo is hassio-addons.
-        # Naming convention verification:
-        # If user is FaserF, and repo is hassio-addons, images are likely ghcr.io/faserf/hassio-addons-{slug}-{arch}
-        # OR ghcr.io/faserf/{slug}-{arch} depending on HA Builder default.
-        # Given builder usage: --image "${{ steps.info.outputs.image }}"
-        # and docker-hub "ghcr.io/${{ github.repository_owner }}"
-        # The builder creates ghcr.io/faserf/{slug}-{arch} usually if not overridden.
-        # But wait, looking at repo structure, addons are directories.
-        # Let's trust the standard HA pattern: ghcr.io/{owner}/{slug}/{arch} OR ghcr.io/{owner}/{repo}-{slug}-{arch}
-        # I'll use a safe bet: ghcr.io/faserf/hassio-addons-{slug}-{arch} based on typical sub-addon patterns in monorepos.
-
-        # Check if already present and uncomment if needed
-        if "# image: local build only" in content:
-            image_line = f"image: ghcr.io/faserf/{slug.lower()}-{{arch}}"
-            content = content.replace("# image: local build only", image_line)
-            print(f"🔧 Restored image tag: {image_line}")
+        # ADD/RESTORE/UPDATE image tag for release versions
+        # New format: image: ghcr.io/faserf/{slug}-{arch}
+        # Old format (legacy): image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+        
+        correct_image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+        
+        # Check if image field exists
+        image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
+        
+        if image_match:
+            existing_image = image_match.group(1).strip().strip('"').strip("'")
+            # Check if it needs updating to correct format
+            if existing_image != correct_image_line.replace("image: ", ""):
+                # Update existing image field to correct format
+                content = re.sub(
+                    r"^image:\s*.+$",
+                    correct_image_line,
+                    content,
+                    flags=re.MULTILINE
+                )
+                print(f"🔧 Updated image tag from '{existing_image}' to '{correct_image_line.replace('image: ', '')}'")
+            else:
+                print(f"ℹ️ Image tag already correct: {existing_image}")
+        elif "# image: local build only" in content:
+            # Restore from commented out
+            content = content.replace("# image: local build only", correct_image_line)
+            print(f"🔧 Restored image tag: {correct_image_line}")
         elif not re.search(image_pattern, content, re.MULTILINE):
-            image_line = f"image: ghcr.io/faserf/{slug.lower()}-{{arch}}"
+            # Add new image field
             # Append after slug or version
             content = re.sub(
-                r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE
+                r"^(slug: .*)$", f"\\1\n{correct_image_line}", content, flags=re.MULTILINE
             )
-            print(f"🔧 Added image tag: {image_line}")
+            print(f"🔧 Added image tag: {correct_image_line}")
 
     return content
 

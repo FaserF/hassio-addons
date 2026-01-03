@@ -94,6 +94,7 @@ jobs:
       is_auto: ${{ steps.detect.outputs.is_auto }}
       version_type: ${{ steps.detect.outputs.version_type }}
       is_manual_bump: ${{ steps.detect.outputs.is_manual_bump }}
+      is_all: ${{ steps.detect.outputs.is_all }}
     steps:
       - name: ⤵️ Checkout code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -117,6 +118,7 @@ jobs:
           SHOULD_RELEASE="false"
           IS_AUTO="false"
           VERSION_TYPE="patch"
+          IS_ALL="false"
 
           # ----------------------------------------------------------------
           # MANUAL DISPATCH
@@ -130,6 +132,7 @@ jobs:
             echo "  INPUT_VERSION: '$INPUT_VERSION'"
 
             if [ "$INPUT_ADDON" == "all" ]; then
+              IS_ALL="true"
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
               SKIP_ADDONS="homeassistant-test-instance"
@@ -165,6 +168,8 @@ jobs:
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
               echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
+            else
+              IS_ALL="false"
             elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
               # Single addon specified
               ADDONS="$INPUT_ADDON"
@@ -336,6 +341,7 @@ jobs:
                VERSION_TYPE="patch" # Default for release(all)
                echo "📦 Found add-ons: $ADDONS"
              else
+               IS_ALL="false"
                # Original logic: Detect manual version bumps
                # Get list of changed files
                CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
@@ -376,6 +382,7 @@ jobs:
           echo "Is auto: $IS_AUTO"
           echo "Version type: $VERSION_TYPE"
           echo "Is manual bump: ${IS_MANUAL_BUMP:-false}"
+          echo "Is all: ${IS_ALL:-false}"
 
           # Output as compact JSON (single line) to avoid formatting issues
           {
@@ -384,6 +391,7 @@ jobs:
             echo "is_auto=$IS_AUTO"
             echo "version_type=$VERSION_TYPE"
             echo "is_manual_bump=${IS_MANUAL_BUMP:-false}"
+            echo "is_all=${IS_ALL:-false}"
           } >> "$GITHUB_OUTPUT"
 
   # ================================================================================
@@ -463,6 +471,26 @@ jobs:
           python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Fix Image Field Format (if needed)
+        run: |
+          # Ensure image field uses correct format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          CORRECT_IMAGE="ghcr.io/faserf/hassio-addons-${SLUG}-{arch}"
+          
+          if grep -q "^image:" "${{ matrix.addon }}/config.yaml"; then
+            CURRENT_IMAGE=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+            if [ "$CURRENT_IMAGE" != "$CORRECT_IMAGE" ]; then
+              sed -i "s|^image:.*|image: ${CORRECT_IMAGE}|g" "${{ matrix.addon }}/config.yaml"
+              echo "✅ Updated image field from '$CURRENT_IMAGE' to '$CORRECT_IMAGE'"
+            else
+              echo "ℹ️ Image field already correct: $CORRECT_IMAGE"
+            fi
+          else
+            # Add image field if missing
+            sed -i "/^slug:.*/a image: ${CORRECT_IMAGE}" "${{ matrix.addon }}/config.yaml"
+            echo "✅ Added image field: $CORRECT_IMAGE"
+          fi
 
       - name: ℹ️ Get Add-on Info
         id: info
@@ -545,11 +573,20 @@ jobs:
         run: |
           # Extract version from config.yaml
           VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-          IMAGE_NAME="${{ steps.info_build.outputs.image }}"
-
-          # Extract package name from image (remove ghcr.io/owner/ prefix and any arch suffix)
-          # Image format: ghcr.io/owner/package-{arch} or ghcr.io/owner/package
-          PACKAGE_NAME=$(echo "$IMAGE_NAME" | sed 's|ghcr.io/[^/]*/||' | sed 's/-amd64$//' | sed 's/-aarch64$//' | sed 's/-armhf$//' | sed 's/-armv7$//' | sed 's/-i386$//')
+          
+          # Get package name from config.yaml image field
+          # Format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          
+          if [ -z "$IMAGE_FROM_CONFIG" ]; then
+            # Fallback: use slug
+            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            PACKAGE_NAME="hassio-addons-${SLUG}"
+          else
+            # Extract package name: remove ghcr.io/faserf/ prefix
+            PACKAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||' | sed 's/-{arch}$//' | sed 's/-amd64$//' | sed 's/-aarch64$//' | sed 's/-armhf$//' | sed 's/-armv7$//' | sed 's/-i386$//')
+          fi
+          
           OWNER="${{ github.repository_owner }}"
 
           echo "🔍 Checking for existing image: $PACKAGE_NAME:$VERSION"
@@ -640,20 +677,18 @@ jobs:
           echo "🏗️ Building with args:"
           echo -e "$BUILDER_ARGS"
 
-          # Extract image name from config.yaml directly
-          # The builder expects only the package name (e.g., "aegisbot-{arch}" or "hassio-addons-aegisbot-{arch}")
-          # We need to remove the registry prefix and extract just the package part
+          # Extract image name from config.yaml
+          # Format should be: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          # Builder expects: hassio-addons-{slug}-{arch} (without registry prefix)
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
             # Fallback: use slug from config
             SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-            IMAGE_NAME="${SLUG}-{arch}"
+            IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
           else
-            # Remove ghcr.io/owner/ prefix if present
-            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/[^/]*/||')
-            # Remove hassio-addons- prefix (legacy format)
-            IMAGE_NAME=$(echo "$IMAGE_NAME" | sed 's|^hassio-addons-||')
+            # Remove ghcr.io/faserf/ prefix to get package name
+            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
           fi
 
           echo "📦 Using image name: $IMAGE_NAME"
@@ -732,3 +767,35 @@ jobs:
             echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}"
             echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # ================================================================================
+  # CLEANUP: Prune Docker Registry after "all" releases
+  # ================================================================================
+  cleanup-registry:
+    name: 🧹 Cleanup Docker Registry
+    needs: [detect, release]
+    if: |
+      always() &&
+      needs.detect.outputs.is_all == 'true' &&
+      (needs.release.result == 'success' || needs.release.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Dependencies
+        run: pip install requests pyyaml --quiet
+
+      - name: 🗑️ Prune Docker Registry
+        run: python3 .scripts/prune_registry.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}

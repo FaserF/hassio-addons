@@ -21,7 +21,7 @@ import sys
 import yaml
 
 # Image naming convention
-IMAGE_TEMPLATE = "ghcr.io/faserf/{slug}-{{arch}}"
+IMAGE_TEMPLATE = "ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
 
 
 def get_current_branch():
@@ -101,9 +101,9 @@ def add_image_field(config_path, slug, dry_run=False):
         image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
         if image_match:
             existing_image = image_match.group(1).strip().strip('"').strip("'")
-            # Check if it needs updating (old format with hassio-addons- prefix)
-            if "hassio-addons-" in existing_image or existing_image != correct_image_value:
-                # Update existing image field
+            # Check if it needs updating to correct format
+            if existing_image != correct_image_value:
+                # Update existing image field to correct format
                 new_content = re.sub(
                     r"^image:\s*.+$",
                     f"image: {correct_image_value}",
