@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - name: 🐍 Set up Python
@@ -194,8 +194,6 @@ jobs:
       - name: 🆙 Bump Test Script Version
         continue-on-error: true
         run: python3 .scripts/bump_script_version.py
-        env:
-          GITHUB_BASE_REF: ${{ github.base_ref }}
 
       # Build dynamic commit message
       - name: 📝 Build Commit Message
@@ -221,7 +219,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
           commit_message: ${{ steps.commit_msg.outputs.message }}
-          branch: ${{ github.head_ref || github.ref_name }}
+          branch: ${{ github.ref_name }}
           file_pattern: .
         env:
           # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN

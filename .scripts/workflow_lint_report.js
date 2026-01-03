@@ -36,14 +36,37 @@ module.exports = async ({ github, context, core }) => {
   const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
   // Robust parsing of actionlint output
-  // Format: "file:line:col: message [rule]"
+  // Format 1: "file:line:col: message [rule]"
+  // Format 2: "file:line:col: shellcheck reported issue in this script: SC####:severity:scriptLine:scriptCol: message"
   const errorRegex = /^([^:\n]+):(\d+):(\d+): (.*)$/gm;
+  const shellcheckRegex = /^([^:\n]+):(\d+):(\d+): shellcheck reported issue in this script: (SC\d+):(\w+):(\d+):(\d+): (.*)$/gm;
   const errors = [];
   const errorsByFile = {};
   let match;
 
+  // First, parse shellcheck format (more specific, needs to come first)
+  while ((match = shellcheckRegex.exec(output)) !== null) {
+    const [_, file, actionlintLine, actionlintCol, rule, severity, scriptLine, scriptCol, message] = match;
+    const error = {
+      file: file.trim().replace(/^\.\//, ''),
+      line: parseInt(actionlintLine), // Use actionlint's line number (where the script block is)
+      col: parseInt(actionlintCol),
+      message: `[${rule}] ${message.trim()}`,
+    };
+    errors.push(error);
+    if (!errorsByFile[error.file]) errorsByFile[error.file] = [];
+    errorsByFile[error.file].push(error);
+  }
+
+  // Then parse standard actionlint format (but skip if already captured by shellcheck)
+  // Reset regex lastIndex to search from beginning
+  errorRegex.lastIndex = 0;
   while ((match = errorRegex.exec(output)) !== null) {
     const [_, file, line, col, message] = match;
+    // Skip if this is a shellcheck line (already processed)
+    if (message.includes('shellcheck reported issue')) {
+      continue;
+    }
     const error = {
       file: file.trim().replace(/^\.\//, ''),
       line: parseInt(line),

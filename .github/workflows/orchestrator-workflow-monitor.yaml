@@ -41,6 +41,8 @@ permissions:
   pull-requests: write
   issues: write
   actions: read
+  # Note: Billing API access requires organization owner/admin permissions
+  # The default GITHUB_TOKEN may not have access to billing endpoints
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -168,7 +170,15 @@ jobs:
               core.setOutput("used", used);
 
             } catch (error) {
-              console.log("Could not fetch billing info:", error.message);
+              // Billing API requires organization owner/admin permissions
+              // This is expected if the GITHUB_TOKEN doesn't have billing access
+              if (error.message.includes('Resource not accessible by integration')) {
+                console.log("⚠️ Billing info unavailable: GITHUB_TOKEN lacks billing permissions.");
+                console.log("   This requires organization owner/admin access or a PAT with billing scope.");
+                console.log("   Continuing without billing check...");
+              } else {
+                console.log("Could not fetch billing info:", error.message);
+              }
               core.setOutput("status", "unknown");
               core.setOutput("message", "");
             }
