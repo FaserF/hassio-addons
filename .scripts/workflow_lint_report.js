@@ -39,14 +39,16 @@ module.exports = async ({ github, context, core }) => {
   // Format 1: "file:line:col: message [rule]"
   // Format 2: "file:line:col: shellcheck reported issue in this script: SC####:severity:scriptLine:scriptCol: message"
   const errorRegex = /^([^:\n]+):(\d+):(\d+): (.*)$/gm;
-  const shellcheckRegex = /^([^:\n]+):(\d+):(\d+): shellcheck reported issue in this script: (SC\d+):(\w+):(\d+):(\d+): (.*)$/gm;
+  const shellcheckRegex =
+    /^([^:\n]+):(\d+):(\d+): shellcheck reported issue in this script: (SC\d+):(\w+):(\d+):(\d+): (.*)$/gm;
   const errors = [];
   const errorsByFile = {};
   let match;
 
   // First, parse shellcheck format (more specific, needs to come first)
   while ((match = shellcheckRegex.exec(output)) !== null) {
-    const [_, file, actionlintLine, actionlintCol, rule, severity, scriptLine, scriptCol, message] = match;
+    const [_, file, actionlintLine, actionlintCol, rule, severity, scriptLine, scriptCol, message] =
+      match;
     const error = {
       file: file.trim().replace(/^\.\//, ''),
       line: parseInt(actionlintLine), // Use actionlint's line number (where the script block is)

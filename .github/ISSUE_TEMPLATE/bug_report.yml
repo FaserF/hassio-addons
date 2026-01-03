@@ -7,8 +7,8 @@ assignees:
   - FaserF
 body:
   - type: markdown
-  attributes:
-    value: 'This issue form is for reporting bugs only!
+    attributes:
+      value: 'This issue form is for reporting bugs only!
 
 
       If you have a feature or enhancement request, please use the feature
@@ -16,104 +16,104 @@ body:
       request template!
 
       '
-- type: textarea
-  validations:
-    required: true
-  attributes:
-    label: The problem
-    description: 'Describe the issue you are experiencing here, to communicate to
-      the maintainers. Tell us what you were trying to do and what happened.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: The problem
+      description: 'Describe the issue you are experiencing here, to communicate to
+        the maintainers. Tell us what you were trying to do and what happened.
 
-      Provide a clear and concise description of what the problem is.'
-- type: markdown
-  attributes:
-    value: '## Environment
+        Provide a clear and concise description of what the problem is.'
+  - type: markdown
+    attributes:
+      value: '## Environment
 
-      '
-- type: input
-  id: version
-  validations:
-    required: true
-  attributes:
-    label: What version of Home Assistant Core has the issue?
-    placeholder: core-
-    description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+        '
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: What version of Home Assistant Core has the issue?
+      placeholder: core-
+      description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
-      [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-      # yamllint disable-line rule:line-length
+        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        # yamllint disable-line rule:line-length
 
-      '
-- type: input
-  id: version_integration
-  validations:
-    required: true
-  attributes:
-    label: What version of the addon has the issue?
-    placeholder: null
-    description: 'The version of the addon you are currently using.
+        '
+  - type: input
+    id: version_integration
+    validations:
+      required: true
+    attributes:
+      label: What version of the addon has the issue?
+      placeholder: null
+      description: 'The version of the addon you are currently using.
 
-      '
-- type: dropdown
-  validations:
-    required: true
-  attributes:
-    label: What type of installation are you running?
-    description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+        '
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: What type of installation are you running?
+      description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
-      [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-      # yamllint disable-line rule:line-length
+        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        # yamllint disable-line rule:line-length
 
-      '
-    options:
-      - Home Assistant OS
-      - Home Assistant Container
-      - Home Assistant Supervised
-      - Home Assistant Core
-- type: dropdown
-  validations:
-    required: true
-  attributes:
-    label: Add-On causing the issue
-    description: 'The name of the Addon. For example: Apache2
+        '
+      options:
+        - Home Assistant OS
+        - Home Assistant Container
+        - Home Assistant Supervised
+        - Home Assistant Core
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: Add-On causing the issue
+      description: 'The name of the Addon. For example: Apache2
 
-      '
-    options:
-      - Other
-      - AegisBot
-      - ShieldDNS
-      - ShieldFile
-      - antigravity-server
-      - apache2
-      - apache2-minimal
-      - apache2-minimal-mariadb
-      - bash_script_executer
-      - homeassistant-test-instance
-      - matterbridge
-      - netboot-xyz
-      - openssl
-      - pterodactyl-panel
-      - pterodactyl-wings
-      - solumati
-      - switch_lan_play
-      - switch_lan_play_server
-      - tado_aa
-      - whatsapp
-      - wiki.js
-      - wiki.js3
-- type: markdown
-  attributes:
-    value: '# Details
+        '
+      options:
+        - Other
+        - AegisBot
+        - ShieldDNS
+        - ShieldFile
+        - antigravity-server
+        - apache2
+        - apache2-minimal
+        - apache2-minimal-mariadb
+        - bash_script_executer
+        - homeassistant-test-instance
+        - matterbridge
+        - netboot-xyz
+        - openssl
+        - pterodactyl-panel
+        - pterodactyl-wings
+        - solumati
+        - switch_lan_play
+        - switch_lan_play_server
+        - tado_aa
+        - whatsapp
+        - wiki.js
+        - wiki.js3
+  - type: markdown
+    attributes:
+      value: '# Details
 
-      '
-- type: textarea
-  attributes:
-    label: Log information
-    render: txt
-    description: Please go to the addon within your Homeassistant Instance -> Log
-      and copy the output here
-- type: textarea
-  attributes:
-    label: Additional information
-    description: 'If you have any additional information for us, use the field below.
+        '
+  - type: textarea
+    attributes:
+      label: Log information
+      render: txt
+      description: Please go to the addon within your Homeassistant Instance -> Log
+        and copy the output here
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: 'If you have any additional information for us, use the field below.
 
-      '
+        '

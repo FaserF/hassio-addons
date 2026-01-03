@@ -22,17 +22,40 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
-          python-version: '3.11'
+          python-version: '3.14'
+
+      - name: 📅 Calculate Years
+        id: years
+        run: |
+          CURRENT_YEAR=$(date +%Y)
+          PREVIOUS_YEAR=$((CURRENT_YEAR - 1))
+          echo "current_year=$CURRENT_YEAR" >> "$GITHUB_OUTPUT"
+          echo "previous_year=$PREVIOUS_YEAR" >> "$GITHUB_OUTPUT"
+          echo "branch_name=chore/update-year-${CURRENT_YEAR}" >> "$GITHUB_OUTPUT"
 
       - name: 📝 Update Year References
         id: update-year
         run: |
-          if python3 .scripts/update_year.py; then
+          python3 .scripts/update_year.py
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          # Handle exit codes:
+          # 0 = changes made
+          # 1 = no changes needed
+          # >=2 = error
+          if [ "$EXIT_CODE" -eq 0 ]; then
             echo "changes_made=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Changes were made"
+          elif [ "$EXIT_CODE" -eq 1 ]; then
+            echo "changes_made=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ No changes needed"
           else
             echo "changes_made=false" >> "$GITHUB_OUTPUT"
+            echo "❌ Script failed with exit code $EXIT_CODE"
+            exit "$EXIT_CODE"
           fi
 
       - name: 🔍 Check for changes
@@ -57,15 +80,11 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true'
         id: commit-changes
         run: |
-          CURRENT_YEAR=$(date +%Y)
-          PREVIOUS_YEAR=$((CURRENT_YEAR - 1))
-          BRANCH_NAME="chore/update-year-${CURRENT_YEAR}"
-
-          git checkout -b "$BRANCH_NAME"
+          git checkout -b "${{ steps.years.outputs.branch_name }}"
           git add -A
-          git commit -m "chore: Update year references from ${PREVIOUS_YEAR} to ${CURRENT_YEAR}"
+          git commit -m "chore: Update year references from ${{ steps.years.outputs.previous_year }} to ${{ steps.years.outputs.current_year }}"
 
-          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          echo "branch_name=${{ steps.years.outputs.branch_name }}" >> "$GITHUB_OUTPUT"
 
       - name: 🚀 Push changes
         if: steps.check-changes.outputs.has_changes == 'true'
@@ -81,8 +100,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
-            const CURRENT_YEAR = new Date().getFullYear();
-            const BRANCH_NAME = `chore/update-year-${CURRENT_YEAR}`;
+            const CURRENT_YEAR = parseInt('${{ steps.years.outputs.current_year }}');
+            const BRANCH_NAME = '${{ steps.years.outputs.branch_name }}';
 
             // Check if PR already exists for this branch
             const { data: prs } = await github.rest.pulls.list({
@@ -101,13 +120,13 @@ jobs:
             }
 
       - name: 📝 Create Pull Request
-        if: steps.check-changes.outputs.has_changes == 'true' && steps.check-pr.outputs.pr_exists == 'false'
+        if: steps.check-changes.outputs.has_changes == 'true' && (steps.check-pr.outputs.pr_exists != 'true')
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
-            const CURRENT_YEAR = new Date().getFullYear();
-            const PREVIOUS_YEAR = CURRENT_YEAR - 1;
-            const BRANCH_NAME = `chore/update-year-${CURRENT_YEAR}`;
+            const CURRENT_YEAR = parseInt('${{ steps.years.outputs.current_year }}');
+            const PREVIOUS_YEAR = parseInt('${{ steps.years.outputs.previous_year }}');
+            const BRANCH_NAME = '${{ steps.years.outputs.branch_name }}';
 
             const title = `chore: Update year references from ${PREVIOUS_YEAR} to ${CURRENT_YEAR}`;
             const body = [

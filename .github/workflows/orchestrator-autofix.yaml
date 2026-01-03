@@ -174,19 +174,9 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # Check if PAT is available
-      - name: 🔍 Check PAT availability
-        id: check_pat
-        run: |
-          if [ -n "${{ secrets.PAT }}" ]; then
-            echo "has_pat=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_pat=false" >> "$GITHUB_OUTPUT"
-          fi
-
       # 6. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
-        if: steps.check_pat.outputs.has_pat == 'true'
+        if: ${{ secrets.PAT != '' }}
         run: |
           find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
 

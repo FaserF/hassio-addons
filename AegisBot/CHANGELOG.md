@@ -17,4 +17,3 @@ All addons have been unified, updated, and many bugs have been fixed. Many addon
 This release represents a significant effort to standardize and improve all addons in the repository.
 
 ---
-

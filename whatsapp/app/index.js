@@ -90,7 +90,9 @@ async function publishMDNS(name, attempt = 0) {
     });
 
     service.on('up', () => {
-      console.log(`📢 Publishing mDNS service: ${serviceName} (_ha-whatsapp._tcp.local) on port ${PORT}`);
+      console.log(
+        `📢 Publishing mDNS service: ${serviceName} (_ha-whatsapp._tcp.local) on port ${PORT}`
+      );
     });
   } catch (e) {
     console.warn('mDNS advertisement failed to initialize:', e);
@@ -344,17 +346,19 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -362,8 +366,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}

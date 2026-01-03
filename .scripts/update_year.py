@@ -36,8 +36,8 @@ def update_license_file(license_path, old_year, new_year):
     content = re.sub(rf'(\d{{4}})–{old_year}', rf'\1–{new_year}', content)
     content = re.sub(rf'\(c\)\s*(\d{{4}})–{old_year}', rf'(c) \1–{new_year}', content, flags=re.IGNORECASE)
     content = re.sub(rf'Copyright\s+\(c\)\s*(\d{{4}})–{old_year}', rf'Copyright (c) \1–{new_year}', content, flags=re.IGNORECASE)
-    # Also handle single year references
-    content = re.sub(rf'\b{old_year}\b', str(new_year), content)
+    # Also handle single year references in copyright contexts only (e.g., "Copyright 2025", "© 2025", "(c) 2025")
+    content = re.sub(rf'(?:Copyright(?:\s+\(c\))?|©|\(c\)|\(C\))\s+{old_year}\b', lambda m: m.group(0).replace(str(old_year), str(new_year)), content, flags=re.IGNORECASE)
 
     if content != original_content:
         with open(license_path, 'w', encoding='utf-8') as f:
@@ -70,58 +70,73 @@ def update_readme_md(readme_path, old_year, new_year):
 
 
 def main():
-    """Main function to update all year references."""
-    old_year = get_previous_year()
-    new_year = get_current_year()
+    """Main function to update all year references.
+    
+    Returns:
+        int: Exit code
+            - 0: Changes were made
+            - 1: No changes needed
+            - 2: Error occurred
+    """
+    try:
+        old_year = get_previous_year()
+        new_year = get_current_year()
 
-    print(f"Updating year references from {old_year} to {new_year}...")
+        print(f"Updating year references from {old_year} to {new_year}...")
 
-    repo_root = Path(__file__).parent.parent
-    os.chdir(repo_root)
+        repo_root = Path(__file__).parent.parent
+        os.chdir(repo_root)
 
-    updated_files = []
+        updated_files = []
 
-    # Update main README.MD
-    main_readme = repo_root / "README.MD"
-    if update_readme_md(str(main_readme), old_year, new_year):
-        updated_files.append("README.MD")
-        print(f"[OK] Updated README.MD")
+        # Update main README.MD
+        main_readme = repo_root / "README.MD"
+        if update_readme_md(str(main_readme), old_year, new_year):
+            updated_files.append("README.MD")
+            print("[OK] Updated README.MD")
 
-    # Find and update all LICENSE.txt files
-    license_files = list(repo_root.rglob("LICENSE.txt"))
-    for license_file in license_files:
-        # Skip if in .git or other hidden directories
-        if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
-            continue
+        # Find and update all LICENSE.txt files
+        license_files = list(repo_root.rglob("LICENSE.txt"))
+        for license_file in license_files:
+            # Skip if in .git or other hidden directories
+            if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
+                continue
 
-        if update_license_file(str(license_file), old_year, new_year):
-            rel_path = license_file.relative_to(repo_root)
-            updated_files.append(str(rel_path))
-            print(f"[OK] Updated {rel_path}")
+            if update_license_file(str(license_file), old_year, new_year):
+                rel_path = license_file.relative_to(repo_root)
+                updated_files.append(str(rel_path))
+                print(f"[OK] Updated {rel_path}")
 
-    # Also check for LICENSE files without .txt extension
-    license_files_alt = list(repo_root.rglob("LICENSE"))
-    for license_file in license_files_alt:
-        if license_file.suffix:  # Skip if has extension
-            continue
-        # Skip if in .git or other hidden directories
-        if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
-            continue
+        # Also check for LICENSE files without .txt extension
+        license_files_alt = list(repo_root.rglob("LICENSE"))
+        for license_file in license_files_alt:
+            if license_file.suffix:  # Skip if has extension
+                continue
+            # Skip if in .git or other hidden directories
+            if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
+                continue
 
-        if update_license_file(str(license_file), old_year, new_year):
-            rel_path = license_file.relative_to(repo_root)
-            updated_files.append(str(rel_path))
-            print(f"[OK] Updated {rel_path}")
+            if update_license_file(str(license_file), old_year, new_year):
+                rel_path = license_file.relative_to(repo_root)
+                updated_files.append(str(rel_path))
+                print(f"[OK] Updated {rel_path}")
 
-    print(f"\n[SUCCESS] Updated {len(updated_files)} file(s)")
-    if updated_files:
-        print("Files updated:")
-        for f in updated_files:
-            print(f"  - {f}")
+        print(f"\n[SUCCESS] Updated {len(updated_files)} file(s)")
+        if updated_files:
+            print("Files updated:")
+            for f in updated_files:
+                print(f"  - {f}")
 
-    return len(updated_files) > 0
+        # Return exit code: 0 = changes made, 1 = no changes needed
+        return 0 if updated_files else 1
+
+    except Exception as e:
+        print(f"\n[ERROR] Script failed with exception: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 2
 
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    exit_code = main()
+    sys.exit(exit_code)

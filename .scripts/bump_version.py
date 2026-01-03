@@ -205,8 +205,6 @@ def categorize_commits(commits, repo_url):
         else:
             categories["🚀 Other"].append(entry)
 
-            categories["🚀 Other"].append(entry)
-
     return categories
 
 
