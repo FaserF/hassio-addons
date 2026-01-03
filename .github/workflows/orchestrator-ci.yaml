@@ -259,7 +259,7 @@ jobs:
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
-        uses: frenck/action-yamllint@be475b7c04356034c5754e7273c717247302611d # v1.5
+        uses: frenck/action-yamllint@34b4bbcaeabedcfefad6adea8c5bbc42af0e2d47 # v1.5
         with:
           args: "./${{ matrix.addon }}/*.yaml"
 
