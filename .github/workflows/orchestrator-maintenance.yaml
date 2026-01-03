@@ -41,7 +41,9 @@ jobs:
   # --------------------------------------------------------------------------------
   cleanup:
     name: 🧹 System Cleanup
-    if: github.event.inputs.task == 'cleanup' || github.event_name == 'schedule'
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.task == 'cleanup' || github.event.inputs.task == ''))
     runs-on: ubuntu-latest
     steps:
       - name: 🗑️ Delete Old Workflow Runs
@@ -54,6 +56,14 @@ jobs:
 
       - name: ⤵️ Check out code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Dependencies
+        run: pip install requests pyyaml --quiet
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py

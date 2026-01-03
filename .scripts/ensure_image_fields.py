@@ -88,14 +88,35 @@ def normalize_slug_for_image(slug):
 
 
 def add_image_field(config_path, slug, dry_run=False):
-    """Add image field to config.yaml if missing."""
+    """Add or update image field in config.yaml."""
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             content = f.read()
 
+        # Generate correct image name
+        normalized_slug = normalize_slug_for_image(slug)
+        correct_image_value = IMAGE_TEMPLATE.format(slug=normalized_slug)
+        
         # Check if image field already exists
-        if re.search(r"^image:\s*", content, re.MULTILINE):
-            return False, "Image field already exists"
+        image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
+        if image_match:
+            existing_image = image_match.group(1).strip().strip('"').strip("'")
+            # Check if it needs updating (old format with hassio-addons- prefix)
+            if "hassio-addons-" in existing_image or existing_image != correct_image_value:
+                # Update existing image field
+                new_content = re.sub(
+                    r"^image:\s*.+$",
+                    f"image: {correct_image_value}",
+                    content,
+                    flags=re.MULTILINE
+                )
+                if new_content != content:
+                    if not dry_run:
+                        with open(config_path, "w", encoding="utf-8") as f:
+                            f.write(new_content)
+                    return True, f"Updated from '{existing_image}' to '{correct_image_value}'"
+                return False, "Image field already correct"
+            return False, "Image field already correct"
 
         # Load YAML to find insertion point
         config = yaml.safe_load(content)
@@ -196,11 +217,14 @@ def main():
         slug = get_slug_from_config(config_path)
         success, message = add_image_field(config_path, slug, dry_run=args.dry_run)
 
-        if success and "already exists" not in message:
+        if success and "already correct" not in message:
             updated.append((addon_name, message))
-            action = "Would add" if args.dry_run else "✅ Added"
-            print(f"{action} image field to {addon_name}: {message}")
-        elif "already exists" in message:
+            if "Updated" in message:
+                action = "Would update" if args.dry_run else "✅ Updated"
+            else:
+                action = "Would add" if args.dry_run else "✅ Added"
+            print(f"{action} image field in {addon_name}: {message}")
+        elif "already correct" in message:
             skipped.append(addon_name)
         else:
             errors.append((addon_name, message))

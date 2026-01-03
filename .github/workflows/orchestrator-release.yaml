@@ -603,14 +603,14 @@ jobs:
         run: |
           # Read architectures from config.yaml
           ARCHS=$(grep -A 10 "^arch:" "${{ matrix.addon }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
-          
+
           # Default to amd64 and aarch64 if no arches found
           if [ -z "$ARCHS" ]; then
             ARCHS="amd64 aarch64"
           fi
-          
+
           echo "🔍 Detected architectures: $ARCHS"
-          
+
           # Build builder args based on supported architectures (only amd64 and aarch64)
           # Note: armhf, armv7, and i386 are not supported by this repo
           BUILDER_ARGS=""
@@ -627,18 +627,36 @@ jobs:
                 ;;
             esac
           done
-          
+
           # Remove trailing backslash and newline
           BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
-          
+
           # Ensure at least amd64 and aarch64 are built
           if [ -z "$BUILDER_ARGS" ]; then
             BUILDER_ARGS="--amd64 \\\\n            --aarch64"
             BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
           fi
-          
+
           echo "🏗️ Building with args:"
           echo -e "$BUILDER_ARGS"
+          
+          # Extract image name from config.yaml directly
+          # The builder expects only the package name (e.g., "aegisbot-{arch}" or "hassio-addons-aegisbot-{arch}")
+          # We need to remove the registry prefix and extract just the package part
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          
+          if [ -z "$IMAGE_FROM_CONFIG" ]; then
+            # Fallback: use slug from config
+            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            IMAGE_NAME="${SLUG}-{arch}"
+          else
+            # Remove ghcr.io/owner/ prefix if present
+            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/[^/]*/||')
+            # Remove hassio-addons- prefix (legacy format)
+            IMAGE_NAME=$(echo "$IMAGE_NAME" | sed 's|^hassio-addons-||')
+          fi
+          
+          echo "📦 Using image name: $IMAGE_NAME"
           
           # Use docker run directly to have full control over args
           docker run --rm --privileged \
@@ -647,7 +665,7 @@ jobs:
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             $(echo -e "$BUILDER_ARGS") \
             --target "/data/${{ matrix.addon }}" \
-            --image "${{ steps.info_build.outputs.image }}" \
+            --image "$IMAGE_NAME" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
             --no-cache

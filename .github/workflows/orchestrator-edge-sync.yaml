@@ -44,7 +44,7 @@ jobs:
           if [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
             CHANGED_FILES=$(git diff --name-only "${{ github.event.before }}" "${{ github.event.after }}" 2>/dev/null || echo "")
           fi
-          
+
           # Fallback: check commits in the push
           if [ -z "$CHANGED_FILES" ] && [ -n "${{ github.event.commits }}" ]; then
             # Get all changed files from all commits in this push
@@ -57,25 +57,25 @@ jobs:
               fi
             done
           fi
-          
+
           # Final fallback: check last commit
           if [ -z "$CHANGED_FILES" ]; then
             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           fi
-          
+
           if [ -z "$CHANGED_FILES" ]; then
             # If we can't determine changes, assume we should run
             echo "only_workflows=false" >> "$GITHUB_OUTPUT"
             echo "⚠️ Could not determine changed files, proceeding with sync"
             exit 0
           fi
-          
+
           # Remove duplicates and empty lines
           CHANGED_FILES=$(echo "$CHANGED_FILES" | sort -u | grep -v '^$')
-          
+
           echo "Changed files:"
           echo "$CHANGED_FILES"
-          
+
           # Check if only workflow files (and possibly docs) were changed
           ONLY_WORKFLOWS=true
           for file in $CHANGED_FILES; do
@@ -94,7 +94,7 @@ jobs:
               break
             fi
           done
-          
+
           if [ "$ONLY_WORKFLOWS" = "true" ]; then
             echo "ℹ️ Only workflow/documentation files changed, skipping edge sync"
             echo "only_workflows=true" >> "$GITHUB_OUTPUT"

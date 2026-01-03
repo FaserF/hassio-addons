@@ -124,7 +124,7 @@ def main():
 
     for pkg in packages:
         name = pkg["name"]
-        
+
         # Check if this is an invalid package that should be completely deleted
         if is_invalid_package(name):
             print(f"🗑️ Invalid package detected: {name} - deleting all versions...")
@@ -135,7 +135,7 @@ def main():
                 print(f"   🗑️ Deleting {tags} (ID: {v_id})")
                 delete_version(name, v_id)
             continue
-        
+
         is_unsupported = is_unsupported_addon(name)
         keep_versions = (
             KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
