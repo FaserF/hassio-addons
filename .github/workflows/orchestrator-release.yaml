@@ -244,18 +244,52 @@ jobs:
             # Get changed files
             CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' || echo "")
 
-            # Detect affected auto-release addons
-            # Use grep -F for fixed string matching (handles special chars like . in wiki.js)
-            CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
-            for addon in $CLEAN_AUTO_ADDONS; do
-              if echo "$CHANGED" | grep -Fq "${addon}/"; then
-                [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
-              fi
-              # Check .unsupported too
-              if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
-                [ -z "$ADDONS" ] && ADDONS=".unsupported/$addon" || ADDONS="$ADDONS,.unsupported/$addon"
-              fi
-            done
+            # Check if this is a base image update by checking PR title/description
+            IS_BASE_IMAGE_UPDATE="false"
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' || echo "")
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body' || echo "")
+            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images)"; then
+              IS_BASE_IMAGE_UPDATE="true"
+              echo "🔍 Base image update detected from PR title/description"
+            fi
+
+            # If base image update, release ALL affected addons (not just AUTO_RELEASE_ADDONS)
+            if [ "$IS_BASE_IMAGE_UPDATE" == "true" ]; then
+              echo "🔍 Base image update - releasing all affected addons"
+              # Find all addons with changed Dockerfile or build.yaml
+              for file in $CHANGED; do
+                # Extract addon directory from file path
+                if [[ "$file" =~ ^\.unsupported/([^/]+)/ ]]; then
+                  addon_dir=".unsupported/${BASH_REMATCH[1]}"
+                elif [[ "$file" =~ ^([^/]+)/ ]]; then
+                  addon_dir="${BASH_REMATCH[1]}"
+                else
+                  continue
+                fi
+                
+                # Check if Dockerfile or build.yaml in this addon was changed
+                if echo "$CHANGED" | grep -qE "^${addon_dir}/(Dockerfile|build\.yaml)$"; then
+                  # Skip if already added
+                  if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                    [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    echo "  ✅ Added $addon_dir (Dockerfile/build.yaml changed)"
+                  fi
+                fi
+              done
+            else
+              # Normal dependency update - only release addons in AUTO_RELEASE_ADDONS list
+              echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list"
+              CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
+              for addon in $CLEAN_AUTO_ADDONS; do
+                if echo "$CHANGED" | grep -Fq "${addon}/"; then
+                  [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
+                fi
+                # Check .unsupported too
+                if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
+                  [ -z "$ADDONS" ] && ADDONS=".unsupported/$addon" || ADDONS="$ADDONS,.unsupported/$addon"
+                fi
+              done
+            fi
 
             [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
           # ----------------------------------------------------------------
@@ -384,6 +418,7 @@ jobs:
         with:
           args: |
             --test \
+            --amd64 \
             --target /data/${{ matrix.addon }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
