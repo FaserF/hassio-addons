@@ -16,6 +16,13 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # Setup Filebrowser
 # We grab the binary from the official image
 # hadolint ignore=DL3018,DL4006
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="2.0.0"
+ENV ADDON_NAME="ShieldFile"
+ENV ADDON_SLUG="shieldfile"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN apk add --no-cache curl bash dos2unix openssl \
     && mkdir -p /data/database
 
