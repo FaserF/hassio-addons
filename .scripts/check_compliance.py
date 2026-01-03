@@ -24,7 +24,9 @@ def check_addon(addon_path):
                 # Check if image line isn't commented out
                 for line in cfg_content.splitlines():
                     if line.strip().startswith("image:") and "ghcr.io/" in line:
-                        errors.append("Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally.")
+                        errors.append(
+                            "Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally."
+                        )
                         break
 
     errors = []
