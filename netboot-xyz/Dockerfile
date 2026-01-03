@@ -12,6 +12,13 @@ ARG NETBOOTXYZ_SHA256="9b5a46830e60c51a36cbfff204d383f2d2f68969f12e24df0c74e76f2
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="2.0.0"
+ENV ADDON_NAME="Netboot.xyz"
+ENV ADDON_SLUG="netboot-xyz"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
