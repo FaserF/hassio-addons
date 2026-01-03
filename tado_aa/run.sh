@@ -18,7 +18,7 @@ export TADO_PASSWORD="${password}"
 export TADO_MIN_TEMP="${minTemp:-5}"
 export TADO_MAX_TEMP="${maxTemp:-25}"
 
-source ./venv/bin/activate
+source /venv/bin/activate
 
 echo "Starting Tado Auto Assist python script from adrianslabu/tado_aa"
 if [ "$log_level" != "minimal" ]; then

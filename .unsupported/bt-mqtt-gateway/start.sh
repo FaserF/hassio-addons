@@ -10,7 +10,7 @@ if ! [ -f "$config_path" ]; then
 	exit 1
 fi
 
-source ./venv/bin/activate
+source /application/venv/bin/activate
 
 cd /application || exit
 echo "Found config file at $config_path . Copying it now."
