@@ -55,7 +55,7 @@ jobs:
         run: |
           ADDONS=""
           SKIP_ADDONS="homeassistant-test-instance"
-          
+
           # Regular addons (top-level directories with config.yaml)
           for item in */; do
             item_name="${item%/}"
@@ -73,7 +73,7 @@ jobs:
               fi
             fi
           done
-          
+
           # Unsupported addons
           if [ -d ".unsupported" ]; then
             for item in .unsupported/*/; do
@@ -83,14 +83,14 @@ jobs:
               fi
             done
           fi
-          
+
           # Convert to JSON array
           if [ -n "$ADDONS" ]; then
             JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)"
           else
             JSON="[]"
           fi
-          
+
           echo "addons=$JSON" >> "$GITHUB_OUTPUT"
           echo "📦 Found add-ons: $ADDONS"
           echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
@@ -102,55 +102,55 @@ jobs:
           VERSION="${{ github.event.inputs.version || 'patch' }}"
           SKIP_VERIFY="${{ github.event.inputs.skip_verification || 'false' }}"
           CHANGELOG_ONLY="${{ github.event.inputs.changelog_only || 'true' }}"
-          
+
           ADDONS_JSON='${{ steps.find-addons.outputs.addons }}'
           ADDONS=$(echo "$ADDONS_JSON" | jq -r '.[]')
-          
+
           echo "🚀 Triggering releases for all add-ons..."
           echo "Version increment: $VERSION"
           echo "Skip verification: $SKIP_VERIFY"
           echo "Changelog only (no version bump): $CHANGELOG_ONLY"
-          
+
           SUCCESS=0
           FAILED=0
-          
+
           for addon in $ADDONS; do
             echo ""
             echo "👉 Triggering release for: $addon"
-            
+
             # Build workflow run command
             CMD_ARGS=(
               "gh" "workflow" "run" "orchestrator-release.yaml"
               "-f" "addon=$addon"
               "-f" "version=$VERSION"
             )
-            
+
             if [ "$SKIP_VERIFY" == "true" ]; then
               CMD_ARGS+=("-f" "skip_verification=true")
             fi
-            
+
             if [ "$CHANGELOG_ONLY" == "true" ]; then
               CMD_ARGS+=("-f" "changelog_only=true")
             fi
-            
+
             "${CMD_ARGS[@]}" || {
               echo "❌ Failed to trigger $addon"
               FAILED=$((FAILED + 1))
               continue
             }
-            
+
             SUCCESS=$((SUCCESS + 1))
             echo "✅ Successfully triggered $addon"
-            
+
             # Small delay to avoid rate limiting
             sleep 2
           done
-          
+
           echo ""
           echo "📊 Summary:"
           echo "  ✅ Successfully triggered: $SUCCESS"
           echo "  ❌ Failed: $FAILED"
-          
+
           if [ $FAILED -gt 0 ]; then
             exit 1
           fi
