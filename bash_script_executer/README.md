@@ -11,14 +11,6 @@
 
 ---
 
-> [!CAUTION]
-> **Experimental / Beta Status**
->
-> This add-on is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
----
-
 ## 📖 About
 
 Bash Script Executer for Homeassistant OS

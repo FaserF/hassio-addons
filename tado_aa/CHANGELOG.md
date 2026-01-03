@@ -4,7 +4,6 @@
 
 - Bump version to 1.7.2
 
-
 ## 1.7.1
 
 - Automatically updated addon-base to version v19.0.0

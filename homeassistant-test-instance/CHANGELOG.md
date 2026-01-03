@@ -4,7 +4,6 @@
 
 - Bump version to 0.1.10
 
-
 ## 0.1.9
 
 - Update Home Assistant to version 2026.1.0b2

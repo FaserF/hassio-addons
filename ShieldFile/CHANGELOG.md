@@ -4,7 +4,6 @@
 
 - Bump version to 1.0.15
 
-
 ## 1.0.14
 
 - Added support for multiple users via list format in configuration.
