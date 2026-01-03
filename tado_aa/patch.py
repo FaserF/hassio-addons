@@ -56,6 +56,8 @@ mapping = {
     "maxTemp = 25": 'maxTemp = int(os.getenv("TADO_MAX_TEMP", "25"))',
     "enableTempLimit = True": 'enableTempLimit = os.getenv("TADO_ENABLE_TEMP_LIMIT", "True").lower() == "true"',
     "saveLog = False": 'saveLog = os.getenv("TADO_SAVE_LOG", "False").lower() == "true"',
+    'url = t.device_verification_url()': 'url, user_code = t.device_verification_url()',
+    "print(f'{url}')": 'print(f"{url}?user_code={user_code}")',
 }
 
 if __name__ == "__main__":

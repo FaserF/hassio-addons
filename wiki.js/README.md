@@ -11,44 +11,33 @@
 
 ---
 
+## ⚠️ Version Information
+
+**This repository provides TWO Wiki.js addons:**
+
+- **Wiki.js (V2)** - Stable version, recommended for production use (this addon)
+- **Wiki.js V3 (Beta)** - Beta version with latest features, may be unstable ([see V3 addon](../wiki.js3/README.md))
+
+**For production environments, please use this stable Wiki.js V2 addon.**
+
+---
+
 ## 📖 About
 
 Wiki.js for Homeassistant OS
 
-The most powerful and extensible open source Wiki software.
-Make documentation a joy to write using Wiki.js's beautiful and intuitive interface!
+The most powerful and extensible open source Wiki software. Make documentation a joy to write using Wiki.js's beautiful and intuitive interface!
 
-## Installation
+## 📝 Documentation
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-Just click the link above or add my repo to the Home Assistant Add-ons repository:
-<https://github.com/FaserF/hassio-addons>
+## 🚀 Installation
 
-Please ensure that the MariaDB Addon is installed!
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-certfile: fullchain.pem
-keyfile: privkey.pem
-log_level: info
-ssl: true
-```
-
----
-
-## 📂 Folder Usage
-
-- `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
-- `/data`: Used for persistent storage of Wiki.js application files, local database, and configurations.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Wiki.js** add-on.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 

@@ -73,8 +73,66 @@ if bashio::config.true 'reset_database'; then
 	bashio::addon.option 'reset_database'
 fi
 
-#Create Config file
-#Create Config file
+# Ensure /config directory exists
+mkdir -p /config
+
+# Create Config file at the location Wiki.js expects
+CONFIG_FILE="/config/wikijs-config.yml"
+if [ ! -f "$CONFIG_FILE" ]; then
+	bashio::log.info "Configuration file not found. Creating $CONFIG_FILE..."
+	cat > "$CONFIG_FILE" <<EOF
+port: 3000
+db:
+  type: mariadb
+  host: ${host}
+  port: ${port}
+  user: ${username}
+  pass: ${password}
+  db: wiki
+ssl:
+  enabled: ${ssl}
+  port: 3443
+  provider: custom
+  format: pem
+  key: /ssl/${keyfile}
+  cert: /ssl/${certfile}
+pool:
+bindIP: 0.0.0.0
+logLevel: ${log_level}
+offline: false
+ha: false
+dataPath: ./data
+EOF
+	bashio::log.info "Configuration file created successfully."
+else
+	bashio::log.info "Configuration file already exists at $CONFIG_FILE. Updating with current settings..."
+	cat > "$CONFIG_FILE" <<EOF
+port: 3000
+db:
+  type: mariadb
+  host: ${host}
+  port: ${port}
+  user: ${username}
+  pass: ${password}
+  db: wiki
+ssl:
+  enabled: ${ssl}
+  port: 3443
+  provider: custom
+  format: pem
+  key: /ssl/${keyfile}
+  cert: /ssl/${certfile}
+pool:
+bindIP: 0.0.0.0
+logLevel: ${log_level}
+offline: false
+ha: false
+dataPath: ./data
+EOF
+	bashio::log.info "Configuration file updated successfully."
+fi
+
+# Also create config.yml in /wiki for backward compatibility
 cat >/wiki/config.yml <<EOF
 port: 3000
 db:

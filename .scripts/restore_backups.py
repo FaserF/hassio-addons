@@ -21,6 +21,7 @@ ADDONS = [
     "tado_aa",
     "whatsapp",
     "wiki.js",
+    "wiki.js3",
 ]
 
 for addon in ADDONS:

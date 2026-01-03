@@ -403,7 +403,7 @@ except Exception as e:
         }
 
         # Check dependency failure
-        if ($mysqlFailed -and ($addon.Name -match "wiki.js|pterodactyl-panel")) {
+        if ($mysqlFailed -and ($addon.Name -match "wiki\.js|wiki\.js3|pterodactyl-panel")) {
              Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "SKIP" -Message "Dependency (MariaDB) failed"
              continue
         }

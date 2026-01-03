@@ -17,46 +17,23 @@ Nintendo Switch LAN-Play Client for Homeassistant OS
 
 ![The Lan-Play Home Home Assistant Add-on](../_images/switch_lan_play/screenshot.png)
 
-To play with your CFW Nintendo Switch online, you can use this addon + a public
-or private Server. This addon can be used, to stop running the lan play client
-on a Desktop PC/Laptop.
+To play with your CFW Nintendo Switch online, you can use this addon + a public or private Server. This addon can be used, to stop running the lan play client on a Desktop PC/Laptop.
 
-This is just the Client Software and NOT the Server Software. To use a lan-play
-server with Homeassistant OS, please have a look at my other addon:
-<https://github.com/FaserF/hassio-addons/switch_lan_play_server>
+This is just the Client Software and NOT the Server Software. To use a lan-play server with Homeassistant OS, please have a look at my other addon: [switch_lan_play_server](https://github.com/FaserF/hassio-addons/switch_lan_play_server)
 
-This docker image will self-compile the latest lan-play software and run it
-based on your architecture. More information can be found here:
-<https://drive.google.com/file/d/1A_4o8HCAfDBFsePcGL3utG-LfzMUovcx/view>
+> [!NOTE]
+> The first installation can take up to 10 minutes because the docker image will self-compile the latest lan-play software based on your architecture.
 
-The first installation can take up to 10 minutes because of this! Depending on
-your hardware.
+## 📝 Documentation
 
-## Installation
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
+## 🚀 Installation
 
-Just click the link above or add my repo to the hassio addons repositorys:
-<https://github.com/FaserF/hassio-addons>
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-server: null
-```
-
----
-
-## 📂 Folder Usage
-
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Switch LAN Play Client** add-on.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 

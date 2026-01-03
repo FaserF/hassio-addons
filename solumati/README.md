@@ -41,39 +41,17 @@ privacy and control.
 - **📧 OAuth & SMTP**: Full support for external authentication and email
   notifications (configured via the Admin Panel).
 
+## 📝 Documentation
+
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+
 ## 🚀 Installation
 
 1. Add this repository to your **Home Assistant Add-on Store**.
 1. Install the **Solumati** add-on.
-1. Review the **Configuration** options below.
+1. Configure the options.
 1. Start the add-on.
 1. Click **"OPEN WEB UI"** to launch the interface.
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-app_base_url: ''
-dev_use_main_branch: false
-factory_reset: false
-github_token: ''
-log_level: info
-marketing_page_enabled: false
-test_mode: false
-```
-
----
-
-## 📂 Folder Usage
-
-- `/config`: Home Assistant configuration directory.
-- `/share`: Mapped for sharing files between the platform and other add-ons or the host.
-- `/data`: Used for persistent storage of the Solumati application data, including the local database and settings.
 
 ---
 

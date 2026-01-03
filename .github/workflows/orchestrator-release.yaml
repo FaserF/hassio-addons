@@ -57,6 +57,7 @@ env:
   AUTO_RELEASE_ADDONS: |
     homeassistant-test-instance
     wiki.js
+    wiki.js3
     matterbridge
     pterodactyl-wings
     AegisBot

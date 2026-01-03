@@ -19,6 +19,13 @@ Open Source Webserver without PHP and minimal extra modules.
 
 For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
+## 🚀 Installation
+
+1. Add this repository to Home Assistant.
+2. Install the **Apache2 Minimal** add-on.
+3. Place your website files in `document_root` (Default: `/share/htdocs`).
+4. Start the add-on.
+
 ---
 
 ## 👨‍💻 Credits & License

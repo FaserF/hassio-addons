@@ -17,39 +17,18 @@ pterodactyl Wings (Daemon) Gameserver for Homeassistant OS
 
 ![Ingress Support](../_images/pterodactyl/ingress.png)
 
-Pterodactyl® is a free, open-source game server management panel built with PHP,
-React, and Go. Designed with security in mind, Pterodactyl runs all game servers
-in isolated Docker containers while exposing a beautiful and intuitive UI to end
-users.
-Stop settling for less. Make game servers a first-class citizen on your platform.
+Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.
 
-## Installation
+## 📝 Documentation
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
-Just click the link above or add my repo to the hassio addons repositorys:
-<https://github.com/FaserF/hassio-addons>
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-The MariaDB Integration is needed before installing this one!
+## 🚀 Installation
 
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-config_file: null
-```
-
----
-
-## 📂 Folder Usage
-
-- `/share`: Mapped for sharing files between Wings and the Panel or other add-ons.
-- `/data`: Used for persistent storage of Wings' internal data and game server files.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **pterodactyl Wings** add-on.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 

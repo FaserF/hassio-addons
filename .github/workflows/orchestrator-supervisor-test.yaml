@@ -282,7 +282,7 @@ jobs:
             addon=$(echo "$addon" | xargs)  # trim whitespace
             if [ -z "$addon" ]; then continue; fi
 
-            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki.js|pterodactyl-panel"; then
+            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel"; then
                  echo "⏭️ $addon dependency failed - skipping"
                  RESULTS="$RESULTS\n⏭️ $addon: SKIP (Dependency failed)"
                  continue

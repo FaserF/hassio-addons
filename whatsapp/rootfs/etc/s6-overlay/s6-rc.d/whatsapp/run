@@ -2,9 +2,6 @@
 
 bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
-# Check if protection mode is disabled - this addon requires full system access
-bashio::require.unprotected
-
 export PORT=$(bashio::addon.port 8099)
 export MDNS_NAME=$(bashio::config 'mdns_name')
 

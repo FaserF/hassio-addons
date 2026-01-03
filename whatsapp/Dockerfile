@@ -77,5 +77,5 @@ LABEL \
     org.opencontainers.image.created="${BUILD_DATE}"
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8099/ || exit 1
+HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
+    CMD curl --fail http://127.0.0.1:8099/health || exit 1

@@ -265,6 +265,11 @@ app.post('/send_message', async (req, res) => {
   }
 });
 
+// GET /health - Simple health check endpoint for ingress readiness
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'whatsapp-addon' });
+});
+
 // --- Dashboard (Server-Side Rendered) ---
 app.get(/(.*)/, (req, res) => {
   if (
@@ -274,7 +279,8 @@ app.get(/(.*)/, (req, res) => {
     req.path === '/session/start' ||
     req.path === '/send_message' ||
     req.path === '/session' ||
-    req.path === '/logs'
+    req.path === '/logs' ||
+    req.path === '/health'
   ) {
     return res.status(404).send('Not Found');
   }

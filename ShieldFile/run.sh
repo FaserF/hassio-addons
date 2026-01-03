@@ -49,9 +49,6 @@ else
 		-addext "subjectAltName=DNS:shieldfile-addon,IP:127.0.0.1"
 fi
 
-# Check if protection mode is disabled - this addon requires full system access
-bashio::require.unprotected
-
 # Initialize DB if missing
 if [ ! -f "$DB_PATH" ]; then
 	bashio::log.info "📁 Initializing Database at ${DB_PATH}..."

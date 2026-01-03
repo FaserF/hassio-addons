@@ -5,10 +5,6 @@ set -e
 # shellcheck disable=SC1091
 
 
-
-# Check if protection mode is disabled - this addon requires full system access
-bashio::require.unprotected
-
 #VARIABLES
 server=$(bashio::config 'server')
 

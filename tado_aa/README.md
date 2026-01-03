@@ -13,45 +13,20 @@
 
 ## 📖 About
 
-<!-- markdownlint-disable MD013 -->
-
 Tado Auto-Assist for Geofencing and Open Window Detection for Home Assistant OS
 
-A Python script that automatically adjusts the temperature in your home based on
-your presence (arriving or leaving), using your settings from the Tado app. It
-also switches off the heating (activates Open Window Mode) in any room where a
-Tado TRV detects an open window.
+A Python script that automatically adjusts the temperature in your home based on your presence (arriving or leaving), using your settings from the Tado app. It also switches off the heating (activates Open Window Mode) in any room where a Tado TRV detects an open window.
 
-## Installation
+## 📝 Documentation
 
-The installation of this add-on is straightforward and similar to installing any
-other custom Home Assistant add-on.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-Just click the badge above to add this repository to your Home Assistant,
-or manually add the following URL to your add-on repositories:
-<https://github.com/FaserF/hassio-addons>
+## 🚀 Installation
 
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-log_level: info
-maxTemp: 25
-minTemp: 5
-password: ''
-username: ''
-```
-
----
-
-## 📂 Folder Usage
-
-- `/data`: Used internally by the add-on for persistent meta-data storage and session information.
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Tado Auto Assist** add-on.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 
