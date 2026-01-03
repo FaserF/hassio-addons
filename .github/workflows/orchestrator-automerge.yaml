@@ -190,9 +190,94 @@ jobs:
           echo "To cancel: Add 'no-merge' label to the PR"
           sleep 60
 
+      - name: 🔍 Verify PR is still up-to-date and CI is passing
+        id: verify-pr-status
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+          ORIGINAL_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "Verifying PR #$PR_NUMBER is still up-to-date and all CI checks are passing..."
+
+          # Get current HEAD SHA of the PR
+          CURRENT_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')
+          echo "Original SHA: $ORIGINAL_SHA"
+          echo "Current SHA:  $CURRENT_SHA"
+
+          # Check if PR HEAD has changed (new commits pushed)
+          if [ "$CURRENT_SHA" != "$ORIGINAL_SHA" ]; then
+            echo "❌ PR HEAD has changed! New commits detected."
+            echo "Original SHA: $ORIGINAL_SHA"
+            echo "Current SHA:  $CURRENT_SHA"
+            echo "Auto-merge blocked - new CI runs must complete first."
+            {
+              echo "still_valid=false"
+              echo "reason=new_commits"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "✅ PR HEAD is still the same"
+
+          # Check for running or failed CI workflows for this SHA
+          echo "Checking for running or failed CI workflows..."
+
+          # Get all workflow runs for this SHA (only Orchestrator CI)
+          WORKFLOW_RUNS_JSON=$(gh api "repos/${{ github.repository }}/actions/runs" \
+            --jq ".workflow_runs[] | select(.head_sha == \"$CURRENT_SHA\" and .name == \"Orchestrator CI\")" \
+            --paginate)
+
+          # Count running workflows
+          RUNNING_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.status == "in_progress" or .status == "queued") | .id' | grep -c . || echo "0")
+
+          # Count failed workflows
+          FAILED_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .id' | grep -c . || echo "0")
+
+          # Count successful workflows (for logging)
+          SUCCESS_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "success") | .id' | grep -c . || echo "0")
+
+          # Log details of each workflow run
+          echo "$WORKFLOW_RUNS_JSON" | jq -r '. | "Found workflow run: \(.name) (id: \(.id), status: \(.status), conclusion: \(.conclusion // "none"))"' || true
+
+          echo ""
+          echo "CI Status Summary:"
+          echo "  Running: $RUNNING_COUNT"
+          echo "  Failed:  $FAILED_COUNT"
+          echo "  Success: $SUCCESS_COUNT"
+
+          # Block auto-merge if there are running or failed workflows
+          if [ "$RUNNING_COUNT" -gt 0 ]; then
+            echo "❌ CI workflows are still running - auto-merge blocked"
+            {
+              echo "still_valid=false"
+              echo "reason=ci_running"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$FAILED_COUNT" -gt 0 ]; then
+            echo "❌ CI workflows have failed - auto-merge blocked"
+            {
+              echo "still_valid=false"
+              echo "reason=ci_failed"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "✅ PR is still up-to-date and all CI checks are passing"
+          {
+            echo "still_valid=true"
+            echo "reason=all_checks_passed"
+          } >> "$GITHUB_OUTPUT"
+
       - name: 🔍 Check for no-merge label
         id: check-label
-        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
+        if: >-
+          steps.find-pr.outputs.found == 'true' &&
+          steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
@@ -217,6 +302,7 @@ jobs:
           steps.find-pr.outputs.found == 'true' &&
           steps.check-author.outputs.allowed == 'true' &&
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -239,6 +325,7 @@ jobs:
           steps.find-pr.outputs.found == 'true' &&
           steps.check-author.outputs.allowed == 'true' &&
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true'
         uses: actions/github-script@v8
         with:

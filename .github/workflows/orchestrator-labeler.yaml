@@ -104,16 +104,41 @@ jobs:
             console.log(`Total changed files found: ${changedFiles.length}`);
             const changedAddons = new Set();
             const labelsToAdd = new Set();
+            const newAddons = new Set(); // Track new addons that don't exist in base branch
             let hasVersionBump = false;
             const versionBumpAddons = [];
 
             // 3. Map Changes to Add-ons
             console.log("=== Changed files analysis ===");
+            // Track potential new addons by directory
+            const potentialNewAddons = new Map(); // dir -> {hasConfig: bool, fileCount: number, allAdded: bool}
+
             for (const file of changedFiles) {
               const parts = file.filename.split('/');
               if (parts.length > 1) {
                 const rootDir = parts[0];
                 console.log(`File: ${file.filename} -> rootDir: ${rootDir}`);
+
+                // Initialize tracking for this directory
+                if (!potentialNewAddons.has(rootDir)) {
+                    potentialNewAddons.set(rootDir, {
+                        hasConfig: false,
+                        fileCount: 0,
+                        allAdded: true
+                    });
+                }
+                const tracking = potentialNewAddons.get(rootDir);
+                tracking.fileCount++;
+
+                // Check if file was added (not modified or deleted)
+                if (file.status !== 'added') {
+                    tracking.allAdded = false;
+                }
+
+                // Check if this is config.yaml
+                if (file.filename.endsWith('/config.yaml') || file.filename === `${rootDir}/config.yaml`) {
+                    tracking.hasConfig = true;
+                }
 
                 // Track Supported Addons (with blocklist check)
                 if (validAddons.includes(rootDir) && !BLOCKLIST.includes(rootDir.toLowerCase())) {
@@ -121,6 +146,52 @@ jobs:
                     labelsToAdd.add(`addon/${rootDir}`);
                     console.log(`  -> Added as supported addon: ${rootDir}`);
                 }
+
+                // Track Unsupported Addons (Label individually, don't count towards "All Supported")
+                if (rootDir === '.unsupported' && parts.length > 2) {
+                    const unsupAddon = parts[1];
+                    // Verify existence of config.yaml and not in blocklist
+                    if (!BLOCKLIST.includes(unsupAddon.toLowerCase()) && fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
+                        labelsToAdd.add(`addon/${unsupAddon}`);
+                        console.log(`  -> Added as unsupported addon: ${unsupAddon}`);
+                    }
+                }
+
+                // 3a. Detect Version Bumps in config.yaml
+                if (file.filename.endsWith('config.yaml') && file.patch) {
+                    // Check if version line was modified
+                    const versionChangePattern = /^\+\s*version:\s*["']?[\d.]+["']?/m;
+                    if (versionChangePattern.test(file.patch)) {
+                        hasVersionBump = true;
+                        // Determine which addon
+                        let addonName = rootDir;
+                        if (rootDir === '.unsupported' && parts.length > 2) {
+                            addonName = parts[1];
+                        }
+                        versionBumpAddons.push(addonName);
+                        console.log(`  -> Version bump detected in: ${addonName}`);
+                    }
+                }
+              }
+            }
+
+            // After processing all files, check for new addons
+            for (const [rootDir, tracking] of potentialNewAddons.entries()) {
+                // Check if this is a new addon (not in base branch, has config.yaml, valid name)
+                const isNewAddon = !baseAddons.includes(rootDir) &&
+                                   !BLOCKLIST.includes(rootDir.toLowerCase()) &&
+                                   rootDir !== '.unsupported' &&
+                                   validAddonPattern.test(rootDir) &&
+                                   tracking.hasConfig &&
+                                   fs.existsSync(path.join(rootDir, 'config.yaml'));
+
+                if (isNewAddon && !changedAddons.has(rootDir)) {
+                    changedAddons.add(rootDir);
+                    labelsToAdd.add(`addon/${rootDir}`);
+                    newAddons.add(rootDir);
+                    console.log(`  -> Detected NEW addon: ${rootDir} (${tracking.fileCount} files, not in base branch)`);
+                }
+            }
 
                 // Track Unsupported Addons (Label individually, don't count towards "All Supported")
                 if (rootDir === '.unsupported' && parts.length > 2) {
@@ -184,6 +255,12 @@ jobs:
                 console.log(`Added 'version-bump' label for: ${versionBumpAddons.join(', ')}`);
             }
 
+            // Add new-addon label if any new addons detected
+            if (newAddons.size > 0) {
+                newManagedLabels.add('new-addon');
+                console.log(`Added 'new-addon' label for: ${Array.from(newAddons).join(', ')}`);
+            }
+
             // 5. Fetch, Merge, and Set Labels
             // Fetch current labels to preserve manual ones (e.g., "help wanted")
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
@@ -195,11 +272,12 @@ jobs:
             console.log("Current Labels:", currentLabels.map(l => l.name));
 
             // Filter out existing "Managed" labels (stale ones)
-            // Managed = starts with "addon/" OR "All Add-ons" OR "Many Add-ons" OR "version-bump"
+            // Managed = starts with "addon/" OR "All Add-ons" OR "Many Add-ons" OR "version-bump" OR "new-addon"
             const preservedLabels = currentLabels.map(l => l.name).filter(name => {
                 if (name === "All Add-ons") return false;
                 if (name === "Many Add-ons") return false;
                 if (name === "version-bump") return false;
+                if (name === "new-addon") return false;
                 if (name.startsWith("addon/")) return false;
                 if (name.startsWith("size/")) return false;
                 return true;
