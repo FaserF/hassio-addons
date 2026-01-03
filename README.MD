@@ -58,8 +58,8 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     | 2023-03 |
 | **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     | 2023-03 |
 | **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     | 2023-05 |
-| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     | 2025-12 |
-| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     | 2025-12 |
+| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     | 2023-05 |
+| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     | 2023-05 |
 | **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     | 2025-12 |
 | **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     | 2023-05 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     | 2023-05 |
@@ -72,11 +72,11 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client           | ✅     | 2023-05 |
 | **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server           | ✅     | 2023-05 |
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     | 2023-05 |
-| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     | 2025-12 |
+| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     | 2023-05 |
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     | 2025-12 |
 | **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                          | ✅     | 2023-05 |
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                         | ⚠️     | 2026-01 |
-| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2025-12 |
+| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2023-05 |
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->

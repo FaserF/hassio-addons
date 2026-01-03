@@ -48,9 +48,9 @@ RUN chmod a+x /run.sh
 
 CMD [ "/run.sh" ]
 
-# Healthcheck
-HEALTHCHECK --interval=300s --timeout=3s \
-    CMD pgrep lan-play || exit 1
+# Healthcheck - check if lan-play process is running
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD pgrep -f "lan-play" >/dev/null || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="Switch LAN Play Client"

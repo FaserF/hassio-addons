@@ -1,6 +1,6 @@
 # tuya-convert BETA
 
-![Logo](logo.png)
+<img src="logo.png" alt="Logo" width="200">
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_tuya-convert)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -29,18 +29,7 @@
 </div>
 <!-- markdownlint-enable MD033 MD013 -->
 
-## ⚠️ Important Note
-
-> [!WARNING]
-> **Deprecated / Experimental**: This add-on is experimental. Tuya has patched
-> newer firmwares to prevent this OTA hack. Use at your own risk!
-> Please prefer using the standalone installation of `tuya-convert` on a
-> Raspberry Pi or Linux laptop for better success rates.
-
-**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs,
-switches, bulbs) from the cloud by flashing them with custom firmware like
-**Tasmota** or **ESPHome**—without soldering! This add-on brings the famous
-Tuya-Convert tool directly to your Home Assistant OS environment.
+**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs, switches, bulbs) from the cloud by flashing them with custom firmware like **Tasmota** or **ESPHome**—without soldering! This add-on brings the famous Tuya-Convert tool directly to your Home Assistant OS environment.
 
 ## ✨ Features
 
@@ -48,33 +37,16 @@ Tuya-Convert tool directly to your Home Assistant OS environment.
 - **🛠️ Tasmota & ESPurna**: Supports major custom firmwares out of the box.
 - **🏠 Home Assistant**: Integrated into your HA supervisor.
 
+## 📝 Documentation
+
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+
 ## 🚀 Installation
 
-1. Add this repository to your **Home Assistant Add-on Store**.
+1. Add this repository to your **Home Assistant Add-on Store** (unsupported branch).
 1. Install the **Tuya-Convert** add-on.
-1. Configure the `firmware` option.
+1. Configure the options.
 1. Start the add-on.
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-accept_eula: 'false'
-backup_path: /share/tuya-convert/
-firmware: tasmota.bin
-```
-
----
-
-## 📂 Folder Usage
-
-- `/share`: Used for `backup_path` (Default: `/share/tuya-convert/`). This allows you to easily retrieve backups of the original firmware from outside the add-on container.
-- `/data`: Used internally by the add-on for persistent storage.
 
 ---
 

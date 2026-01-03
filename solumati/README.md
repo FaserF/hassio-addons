@@ -1,6 +1,6 @@
 # Solumati
 
-![Logo](logo.png)
+<img src="logo.png" alt="Logo" width="200">
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_solumati)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -15,7 +15,7 @@
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
-  <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="300">
+  <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="200">
   <br>
   <strong>The Anti-Swipe Revolution</strong>
   <br>

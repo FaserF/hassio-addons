@@ -29,19 +29,23 @@ def remove_image_from_config(config_path: str) -> bool:
         with open(config_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Check if image field exists
+        # Check if image field exists (including commented out ones)
         if "image:" not in content:
             return False
 
         # Remove image line (handles both quoted and unquoted)
-        new_content = re.sub(r"^image:.*$\n?", "", content, flags=re.MULTILINE)
+        # Also handle commented out images
+        # Pattern matches: "image: ..." or "# image: ..." at start of line (with optional whitespace)
+        # First remove uncommented image lines
+        new_content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
+        # Then remove commented out image lines
+        new_content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE)
 
         if new_content != content:
             with open(config_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             return True
 
-        return False
         return False
     except (OSError, ValueError) as e:
         print(f"⚠️ Error processing {config_path}: {e}")

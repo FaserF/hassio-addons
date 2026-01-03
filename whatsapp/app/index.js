@@ -271,6 +271,7 @@ app.get('/health', (req, res) => {
 });
 
 // --- Dashboard (Server-Side Rendered) ---
+// Root endpoint (/) is handled by the catch-all below
 app.get(/(.*)/, (req, res) => {
   if (
     req.path.startsWith('/api') ||
@@ -414,6 +415,11 @@ app.get(/(.*)/, (req, res) => {
     `);
 });
 
+// Listen on all interfaces in the container (0.0.0.0)
+// This is safe because each addon runs in its own isolated Docker container
+// Ports are isolated by Docker's network namespace, so no conflicts between addons
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`WhatsApp API listening on 0.0.0.0:${PORT}`);
+  // Log that service is ready for health checks
+  console.log('✅ Service ready - Health check available at /health');
 });

@@ -53,7 +53,15 @@ jobs:
             PR_NUMBER=$(echo "$PR_DATA" | jq -r '.number')
             PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author')
           else
-            PR_AUTHOR="${{ github.event.workflow_run.actor.login }}"
+            # Even if workflow_run.pull_requests is available, fetch author from PR to ensure accuracy
+            # The actor might be a bot, but we need the actual PR author
+            echo "workflow_run.pull_requests found PR #$PR_NUMBER, fetching author from PR..."
+            PR_AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login' 2>/dev/null || echo "")
+
+            if [ -z "$PR_AUTHOR" ] || [ "$PR_AUTHOR" = "null" ]; then
+              echo "⚠️ Could not fetch PR author, falling back to actor"
+              PR_AUTHOR="${{ github.event.workflow_run.actor.login }}"
+            fi
           fi
 
           echo "Found PR #$PR_NUMBER by $PR_AUTHOR"
@@ -102,13 +110,27 @@ jobs:
           SUCCESS_COUNT=0
           FAILED_COUNT=0
           SKIPPED_COUNT=0
+          TOTAL_JOBS=0
 
+          # Jobs to exclude (notification/summary only, not verification)
+          EXCLUDE_PATTERNS="CI Start|CI Success|Report|Notification|Summary|Generate Config|Detect Changes"
+
+          echo "Analyzing jobs..."
           while IFS= read -r job; do
             name=$(echo "$job" | jq -r '.name')
             conclusion=$(echo "$job" | jq -r '.conclusion')
 
-            # Check for actual CI jobs (Lint, Build, Compliance) - NOT summary/notification jobs
-            if [[ "$name" == *"Lint"* ]] || [[ "$name" == *"Build"* ]] || [[ "$name" == *"Compliance"* ]]; then
+            # Skip excluded jobs (notification/summary only)
+            if echo "$name" | grep -qiE "$EXCLUDE_PATTERNS"; then
+              echo "⏭️ Excluded (notification/summary): $name"
+              continue
+            fi
+
+            # Check for actual CI/verification jobs (case-insensitive)
+            # Look for: Lint, Build, Compliance, Test, Validate, Check, Scan, Verify
+            name_upper=$(echo "$name" | tr '[:lower:]' '[:upper:]')
+            if echo "$name_upper" | grep -qE "(LINT|BUILD|COMPLIANCE|TEST|VALIDATE|CHECK|SCAN|VERIFY|TRIVY|HADOLINT|SHELLCHECK)"; then
+              ((TOTAL_JOBS++)) || true
               case "$conclusion" in
                 "skipped")
                   ((SKIPPED_COUNT++)) || true
@@ -126,11 +148,13 @@ jobs:
                   echo "❓ Unknown: $name ($conclusion)"
                   ;;
               esac
+            else
+              echo "ℹ️  Not a verification job: $name"
             fi
           done <<< "$JOBS"
 
           echo ""
-          echo "Summary: success=$SUCCESS_COUNT, failed=$FAILED_COUNT, skipped=$SKIPPED_COUNT"
+          echo "Summary: total=$TOTAL_JOBS, success=$SUCCESS_COUNT, failed=$FAILED_COUNT, skipped=$SKIPPED_COUNT"
 
           # Determine if auto-merge is allowed
           if [ "$FAILED_COUNT" -gt 0 ]; then
@@ -139,11 +163,17 @@ jobs:
               echo "ci_ran=false"
               echo "reason=failed"
             } >> "$GITHUB_OUTPUT"
-          elif [ "$SUCCESS_COUNT" -eq 0 ]; then
-            echo "⚠️ No actual CI jobs ran (docs-only or workflow-only changes)"
+          elif [ "$TOTAL_JOBS" -eq 0 ]; then
+            echo "⚠️ No verification jobs detected (docs-only or workflow-only changes)"
             {
               echo "ci_ran=false"
-              echo "reason=skipped"
+              echo "reason=no_jobs"
+            } >> "$GITHUB_OUTPUT"
+          elif [ "$SUCCESS_COUNT" -eq 0 ]; then
+            echo "⚠️ All verification jobs were skipped - auto-merge blocked"
+            {
+              echo "ci_ran=false"
+              echo "reason=all_skipped"
             } >> "$GITHUB_OUTPUT"
           else
             echo "✅ All CI verification jobs completed successfully"

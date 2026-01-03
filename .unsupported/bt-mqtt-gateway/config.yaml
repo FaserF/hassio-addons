@@ -7,7 +7,7 @@ host_network: true
 init: false
 map:
   - share
-name: bt-mqtt-gateway
+name: bt-mqtt-gateway (Unsupported)
 options:
   config_path: /share/bt-mqtt-gateway.yaml
   debug: false

@@ -16,7 +16,7 @@ if [ "$accept_eula" = "true" ]; then
 	echo "EULA was accepted - starting script"
 	touch ./scripts/eula_accepted
 	ls -l
-	./start_flash.sh
+	exec ./start_flash.sh
 else
 	echo "EULA wasnt accepted. Exiting. You can find the EULA here: https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/setup_checks.sh#L18"
 	exit

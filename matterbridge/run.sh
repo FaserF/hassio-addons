@@ -34,5 +34,4 @@ if [ "$log_level" = "debug" ]; then
 	params+=("-debug")
 fi
 
-exec /bin/matterbridge "${params[@]}" &
-exec tail -f /var/log/matterbridge.log
+exec /bin/matterbridge "${params[@]}"

@@ -76,6 +76,6 @@ LABEL \
     org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md" \
     org.opencontainers.image.created="${BUILD_DATE}"
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8099/health || exit 1
+# Healthcheck - reduced start-period since service starts quickly
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=2 \
+    CMD curl --fail -s http://127.0.0.1:8099/health || exit 1

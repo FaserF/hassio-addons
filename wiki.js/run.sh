@@ -161,5 +161,18 @@ EOF
 echo "CREATE DATABASE IF NOT EXISTS wiki;" |
 	mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}" --skip_ssl
 
-echo "Starting Wiki.JS"
-node server
+# Verify config file exists before starting
+if [ ! -f "$CONFIG_FILE" ]; then
+	bashio::log.error "Configuration file $CONFIG_FILE was not created! Cannot start Wiki.js."
+	exit 1
+fi
+
+bashio::log.info "Configuration file verified at $CONFIG_FILE"
+bashio::log.info "Starting Wiki.JS from /wiki directory..."
+
+# Set environment variable to tell Wiki.js where to find the config file
+export CONFIG_FILE="$CONFIG_FILE"
+
+# Change to wiki directory and start
+cd /wiki || exit 1
+exec node server
