@@ -32,4 +32,4 @@ schema:
   base_directory: str
   port: port
   log_level: list(debug|info|error|warning)
-image: ghcr.io/faserf/hassio-addons-ShieldFile-{arch}
+image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}

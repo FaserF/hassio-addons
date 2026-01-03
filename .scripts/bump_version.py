@@ -300,11 +300,11 @@ def update_image_tag(content, addon_path, is_dev):
 
         # Check if already present and uncomment if needed
         if "# image: local build only" in content:
-            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
             content = content.replace("# image: local build only", image_line)
             print(f"🔧 Restored image tag: {image_line}")
         elif not re.search(image_pattern, content, re.MULTILINE):
-            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
             # Append after slug or version
             content = re.sub(
                 r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE
