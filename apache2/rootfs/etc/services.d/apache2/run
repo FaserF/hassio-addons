@@ -4,7 +4,7 @@
 set -e
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 
 echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND

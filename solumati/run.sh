@@ -5,7 +5,7 @@
 set -e
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 # Get Addon Version
 
 # --- CONFIGURATION ---

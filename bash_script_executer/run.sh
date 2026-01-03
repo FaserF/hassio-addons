@@ -4,7 +4,7 @@
 set -euo pipefail
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 
 script_path=$(bashio::config 'script_path')
 script_argument1=$(bashio::config 'script_argument1')

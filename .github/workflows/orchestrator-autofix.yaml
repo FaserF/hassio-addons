@@ -176,6 +176,7 @@ jobs:
 
       # 6. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
+        if: ${{ secrets.PAT }}
         run: |
           find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
 

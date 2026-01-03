@@ -6,7 +6,7 @@
 set -e
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')

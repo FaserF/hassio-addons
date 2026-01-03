@@ -4,7 +4,7 @@
 set -e
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 
 website_name=$(bashio::config 'website_name')
 key_file=/ssl/key_openssl.pem

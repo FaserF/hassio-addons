@@ -8,7 +8,7 @@ set -e
 source /usr/lib/bashio/bashio.sh
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 # Get Addon Version
 
 # Define local paths

@@ -7,7 +7,7 @@ set -e
 source /usr/lib/bashio/bashio.sh
 # shellcheck disable=SC1091
 
-bashio::addon.print_banner
+
 # Get Addon Version
 
 # Manually load S6 environment to ensure Bashio has access to SUPERVISOR_TOKEN
