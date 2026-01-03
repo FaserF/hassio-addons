@@ -1,0 +1,16 @@
+configuration:
+  ssl:
+    name: "Enable SSL"
+    description: "Enables SSL."
+  certfile:
+    name: "Certificate File"
+    description: "Path to the SSL certificate file."
+  keyfile:
+    name: "Key File"
+    description: "Path to the private key file."
+  log_level:
+    name: "Log Level"
+    description: "Logging level."
+  reset_database:
+    name: "Reset Database"
+    description: "Resets the database. CAUTION!"

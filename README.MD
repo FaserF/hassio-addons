@@ -74,7 +74,8 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     | 2023-05 |
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     | 2025-12 |
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     | 2025-12 |
-| **[Wiki.js](wiki.js)**                                          | Wiki.js                                   | ✅     | 2023-05 |
+| **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                          | ✅     | 2023-05 |
+| **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                         | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2025-12 |
 
 <!-- markdownlint-enable MD060 -->
