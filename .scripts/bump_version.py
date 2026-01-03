@@ -314,7 +314,9 @@ def update_image_tag(content, addon_path, is_dev):
     return content
 
 
-def bump_version(addon_path, increment, changelog_message=None, set_dev=False, force_changelog=False):
+def bump_version(
+    addon_path, increment, changelog_message=None, set_dev=False, force_changelog=False
+):
     """Bump version with optional dev suffix."""
     config_path = os.path.join(addon_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -439,7 +441,9 @@ if __name__ == "__main__":
         "--dev", action="store_true", help="Set version to dev (e.g., 1.2.3-dev)"
     )
     parser.add_argument(
-        "--changelog", action="store_true", help="Force changelog generation (even for dev)"
+        "--changelog",
+        action="store_true",
+        help="Force changelog generation (even for dev)",
     )
 
     args = parser.parse_args()
