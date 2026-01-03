@@ -153,7 +153,7 @@ jobs:
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
               SKIP_ADDONS="homeassistant-test-instance"
-              
+
               # Regular addons (top-level directories with config.yaml)
               for item in */; do
                 item_name="${item%/}"
@@ -171,7 +171,7 @@ jobs:
                   fi
                 fi
               done
-              
+
               # Unsupported addons
               if [ -d ".unsupported" ]; then
                 for item in .unsupported/*/; do
@@ -181,7 +181,7 @@ jobs:
                   fi
                 done
               fi
-              
+
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
               echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
@@ -289,7 +289,7 @@ jobs:
              if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
                echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
                SKIP_ADDONS="homeassistant-test-instance"
-               
+
                # Regular addons (top-level directories with config.yaml)
                for item in */; do
                  item_name="${item%/}"
@@ -307,7 +307,7 @@ jobs:
                    fi
                  fi
                done
-               
+
                # Unsupported addons
                if [ -d ".unsupported" ]; then
                  for item in .unsupported/*/; do
@@ -317,7 +317,7 @@ jobs:
                    fi
                  done
                fi
-               
+
                SHOULD_RELEASE="true"
                VERSION_TYPE="patch" # Default for release(all)
                echo "📦 Found add-ons: $ADDONS"

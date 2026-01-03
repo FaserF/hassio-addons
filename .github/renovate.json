@@ -162,7 +162,8 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/requarks/wiki",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "docker",
+      "currentValueTemplate": "3"
     },
     {
       "customType": "regex",
@@ -256,7 +257,8 @@
       "ignoreTests": false,
       "allowedVersions": "/^3$/",
       "versioning": "docker",
-      "updateTypes": ["digest"]
+      "updateTypes": ["digest"],
+      "currentValueTemplate": "3"
     },
     {
       "description": "NGINX - auto-update Alpine package version",
