@@ -26,6 +26,7 @@ schema:
   keyfile: str
   log_level: list(error|warn|info|debug)?
   reset_database: bool?
+  reset_database_confirm: bool?
 ports:
   3000/tcp: 3000
   3443/tcp: 3443

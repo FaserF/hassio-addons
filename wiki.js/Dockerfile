@@ -15,8 +15,8 @@ WORKDIR /wiki
 COPY --from=wiki_release /wiki .
 # Extract and persist Wiki.js version for runtime banner
 RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown") && \
-    echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment
-RUN rm -f /wiki/config.sample.yml
+    echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \
+    rm -f /wiki/config.sample.yml
 
 COPY run.sh /
 RUN chmod a+x /run.sh \

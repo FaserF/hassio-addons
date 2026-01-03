@@ -63,103 +63,96 @@ if [ -z "$host" ]; then
 	username=$(bashio::services "mysql" "username")
 fi
 
-#Drop database based on config flag
+#Drop database based on config flag (with safeguards)
 if bashio::config.true 'reset_database'; then
-	bashio::log.warning 'Recreating database'
-	echo "DROP DATABASE IF EXISTS wiki;" |
-		mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}" --skip_ssl
+	if ! bashio::config.true 'reset_database_confirm'; then
+		bashio::log.error "Database reset requires both 'reset_database' and 'reset_database_confirm' to be enabled!"
+		bashio::log.error "This is a DESTRUCTIVE operation that will DELETE ALL DATA!"
+		bashio::log.error "Set 'reset_database_confirm: true' in your configuration to proceed."
+		exit 1
+	fi
 
-	#Remove reset_database option
+	bashio::log.warning "=========================================="
+	bashio::log.warning "WARNING: DESTRUCTIVE DATABASE OPERATION"
+	bashio::log.warning "=========================================="
+	bashio::log.warning "This will DROP the entire 'wiki' database!"
+	bashio::log.warning "All data will be permanently lost!"
+	bashio::log.warning "=========================================="
+
+	# Create timestamped backup before dropping
+	BACKUP_DIR="/config/backups"
+	mkdir -p "$BACKUP_DIR"
+	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+	BACKUP_FILE="$BACKUP_DIR/wiki_backup_${TIMESTAMP}.sql"
+
+	bashio::log.info "Creating backup before database reset..."
+	bashio::log.info "Backup location: $BACKUP_FILE"
+
+	# Create backup using mysqldump with MYSQL_PWD for security
+	export MYSQL_PWD="${password}"
+	if mysqldump -h "${host}" -P "${port}" -u "${username}" --skip-ssl wiki > "$BACKUP_FILE" 2>/dev/null; then
+		bashio::log.info "Backup created successfully: $BACKUP_FILE"
+	else
+		bashio::log.warning "Backup failed (database may not exist yet), continuing with reset..."
+	fi
+	unset MYSQL_PWD
+
+	bashio::log.warning 'Recreating database (dropping existing if present)...'
+	echo "DROP DATABASE IF EXISTS wiki;" |
+		MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" --skip_ssl
+
+	#Remove reset_database options
 	bashio::addon.option 'reset_database'
+	bashio::addon.option 'reset_database_confirm'
 fi
 
 # Ensure /config directory exists
 mkdir -p /config
 
+# Generate configuration content once
+CONFIG_CONTENT=$(cat <<EOF
+port: 3000
+db:
+  type: mariadb
+  host: ${host}
+  port: ${port}
+  user: ${username}
+  pass: ${password}
+  db: wiki
+ssl:
+  enabled: ${ssl}
+  port: 3443
+  provider: custom
+  format: pem
+  key: /ssl/${keyfile}
+  cert: /ssl/${certfile}
+pool:
+bindIP: 0.0.0.0
+logLevel: ${log_level}
+offline: false
+ha: false
+dataPath: ./data
+EOF
+)
+
 # Create Config file at the location Wiki.js expects
 CONFIG_FILE="/config/wikijs-config.yml"
 if [ ! -f "$CONFIG_FILE" ]; then
 	bashio::log.info "Configuration file not found. Creating $CONFIG_FILE..."
-	cat > "$CONFIG_FILE" <<EOF
-port: 3000
-db:
-  type: mariadb
-  host: ${host}
-  port: ${port}
-  user: ${username}
-  pass: ${password}
-  db: wiki
-ssl:
-  enabled: ${ssl}
-  port: 3443
-  provider: custom
-  format: pem
-  key: /ssl/${keyfile}
-  cert: /ssl/${certfile}
-pool:
-bindIP: 0.0.0.0
-logLevel: ${log_level}
-offline: false
-ha: false
-dataPath: ./data
-EOF
+	echo "$CONFIG_CONTENT" > "$CONFIG_FILE"
 	bashio::log.info "Configuration file created successfully."
 else
 	bashio::log.info "Configuration file already exists at $CONFIG_FILE. Updating with current settings..."
-	cat > "$CONFIG_FILE" <<EOF
-port: 3000
-db:
-  type: mariadb
-  host: ${host}
-  port: ${port}
-  user: ${username}
-  pass: ${password}
-  db: wiki
-ssl:
-  enabled: ${ssl}
-  port: 3443
-  provider: custom
-  format: pem
-  key: /ssl/${keyfile}
-  cert: /ssl/${certfile}
-pool:
-bindIP: 0.0.0.0
-logLevel: ${log_level}
-offline: false
-ha: false
-dataPath: ./data
-EOF
+	echo "$CONFIG_CONTENT" > "$CONFIG_FILE"
 	bashio::log.info "Configuration file updated successfully."
 fi
 
 # Also create config.yml in /wiki for backward compatibility
-cat >/wiki/config.yml <<EOF
-port: 3000
-db:
-  type: mariadb
-  host: ${host}
-  port: ${port}
-  user: ${username}
-  pass: ${password}
-  db: wiki
-ssl:
-  enabled: ${ssl}
-  port: 3443
-  provider: custom
-  format: pem
-  key: /ssl/${keyfile}
-  cert: /ssl/${certfile}
-pool:
-bindIP: 0.0.0.0
-logLevel: ${log_level}
-offline: false
-ha: false
-dataPath: ./data
-EOF
+echo "$CONFIG_CONTENT" > /wiki/config.yml
 
 # Create database if not exists
 echo "CREATE DATABASE IF NOT EXISTS wiki;" |
-	mariadb -h "${host}" -P "${port}" -u "${username}" -p"${password}" --skip_ssl
+	MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" --skip_ssl
 
 # Verify config file exists before starting
 if [ ! -f "$CONFIG_FILE" ]; then

@@ -13,4 +13,7 @@ configuration:
     description: "Path to the private key file."
   reset_database:
     name: "Reset Database"
-    description: "Resets the database on startup. CAUTION!"
+    description: "Resets the database. CAUTION! Requires 'reset_database_confirm' to be enabled as well."
+  reset_database_confirm:
+    name: "Confirm Database Reset"
+    description: "Additional confirmation for database reset. Must be enabled together with 'reset_database'."
