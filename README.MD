@@ -97,17 +97,23 @@ Tested on **amd64** architecture.
 
 ## 🪦 Unsupported Add-ons Info
 
-Add-ons marked with ❌ are located in the `.unsupported/` directory and **will not appear** in the Home Assistant Add-on Store.
+To install them, you must add this repository again but point to the `unsupported` branch:
 
-To install them manually as a **Local Add-on**:
+ 1. Click to add the unsupported repository:
+    [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
 
-1. Access your Home Assistant host via SSH or Samba.
-2. Navigate to the `/addons` directory (create it if it doesn't exist).
-3. Create a folder, e.g., `/addons/local`.
-4. Copy the entire add-on folder from `.unsupported/` to `/addons/local/`.
-5. In Home Assistant, go to **Settings > Add-ons > Add-on Store**.
-6. Click the **three dots** (top right) -> **Check for updates**.
-7. The add-on should appear in the "Local Add-ons" section.
+ 2. Or manually add:
+    ```text
+    https://github.com/FaserF/hassio-addons#unsupported
+    ```
+
+ > [!CAUTION]
+ > **UNSUPPORTED / LEGACY SOFTWARE**
+ >
+ > The `unsupported` branch contains add-ons that are **no longer maintained**, deprecated, or broken.
+ > They are provided "as-is" for archival purposes.
+ > Updates are rare, and functionality is not guaranteed.
+ > **These builds are performed locally on your device.**
 
 > [!WARNING]
 > Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
