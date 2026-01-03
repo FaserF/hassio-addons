@@ -15,6 +15,8 @@ ENV PYTHONUNBUFFERED=1
 # Install System Requirements including Node.js
 # hadolint ignore=DL3018,DL3017
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.0"
 ENV ADDON_NAME="AegisBot"
