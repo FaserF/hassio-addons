@@ -3,7 +3,6 @@ name: Orchestrator Release
 # Unified release workflow combining:
 # - Manual releases (workflow_dispatch)
 # - Auto-releases after Renovate PRs merge (pull_request.closed)
-# - Scheduled edge updates (schedule)
 # - Repository dispatch from other workflows
 
 on:
@@ -40,9 +39,6 @@ on:
 
   repository_dispatch:
     types: [dependency-update, base-image-update, auto-release]
-
-  schedule:
-    - cron: "0 5 1 * *" # Monthly Edge Updates
 
   push:
     branches:
@@ -81,22 +77,6 @@ env:
   BLOCK_LABELS: breaking-change major no-release needs-review
 
 jobs:
-  # ================================================================================
-  # SCHEDULE: Monthly Edge Updates
-  # ================================================================================
-  schedule-edge:
-    name: 🗓️ Monthly Edge Trigger
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⤵️ Check out code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-
-      - name: 🚀 Run Trigger Script
-        run: python3 .scripts/trigger_edge_updates.py
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
-
   # ================================================================================
   # DETECT: Determine which addons need release
   # ================================================================================
@@ -408,7 +388,7 @@ jobs:
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
-            --docker-args "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -509,7 +489,7 @@ jobs:
             --image "${{ steps.info_build.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
-            --docker-args "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --no-cache
 
       - name: 🔄 Bump to Dev Version
