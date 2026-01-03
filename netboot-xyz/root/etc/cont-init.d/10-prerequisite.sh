@@ -3,7 +3,10 @@
 # shellcheck shell=bash
 
 # Check if protection mode is disabled - this addon requires full system access
-bashio::require.unprotected
+if bashio::addon.protected; then
+    touch /run/ABORT_STARTUP
+    bashio::require.unprotected
+fi
 
 nginx_uid=abc
 declare nginx_port

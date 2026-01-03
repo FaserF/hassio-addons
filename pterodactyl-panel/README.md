@@ -63,6 +63,14 @@ ssl: true
 
 ---
 
+## 📂 Folder Usage
+
+- `/share`: Mapped for sharing files between the panel and other add-ons or the host.
+- `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
+- `/data`: Used for persistent storage of the panel's internal data, including the application code and local settings.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

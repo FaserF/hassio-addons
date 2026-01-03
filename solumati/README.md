@@ -69,6 +69,14 @@ test_mode: false
 
 ---
 
+## 📂 Folder Usage
+
+- `/config`: Home Assistant configuration directory.
+- `/share`: Mapped for sharing files between the platform and other add-ons or the host.
+- `/data`: Used for persistent storage of the Solumati application data, including the local database and settings.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

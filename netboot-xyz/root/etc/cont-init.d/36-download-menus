@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+if [ -f /run/ABORT_STARTUP ]; then exit 0; fi
 
 # create local logs dir
 mkdir -p \

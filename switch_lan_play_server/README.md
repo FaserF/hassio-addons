@@ -46,6 +46,12 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ---
 
+## 📂 Folder Usage
+
+- `/data`: Used internally by the add-on for persistent meta-data storage.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

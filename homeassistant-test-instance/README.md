@@ -23,19 +23,15 @@
 
 A standalone Home Assistant Core instance for testing purposes running as an add-on.
 
-## Installation
+## 📝 Documentation
+
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+
+## 🚀 Installation
 
 1. Install the add-on.
 2. Start the add-on.
 3. Access the new instance at `http://homeassistant.local:8124`.
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
 
 ---
 

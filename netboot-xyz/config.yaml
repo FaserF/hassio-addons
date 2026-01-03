@@ -22,7 +22,7 @@ panel_icon: mdi:download-network
 options:
   path: "/media/netboot/image"
   path_config: "/media/netboot/config"
-  dhcp_range: 192.168.178.200
+  dhcp_range: 192.168.1.200
 schema:
   path: str
   path_config: str

@@ -24,7 +24,7 @@ If you lose your session, you may need to re-scan the QR code. You can trigger
 a new scan by reinstalling the integration or (in future versions) calling a
 "Logout" service.
 
-## Persistence
+## 📂 Folder Usage
 
-Your session data is stored in `/data`. This directory is persistent across add-on
-updates and restarts, ensuring you don't have to scan the QR code frequently.
+- `/data`: Used for persistent session data (`auth_info_baileys`), API tokens (`api_token.txt`), and logs. This ensure you don't have to scan the QR code frequently.
+- `/config`: Home Assistant configuration directory (mapped but not used by the add-on directly).

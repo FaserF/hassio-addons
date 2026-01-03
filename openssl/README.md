@@ -13,52 +13,17 @@
 
 ## 📖 About
 
-OpenSSL - Self signed certificates for Homeassistant OS
+OpenSSL - Self signed certificates for Homeassistant OS. OpenSSL contains an open-source implementation of the SSL and TLS protocols.
 
-OpenSSL is a software library for applications that secure communications over
-computer networks against eavesdropping or need to identify the party at the
-other end. It is widely used by Internet servers, including the majority of
-HTTPS websites.
+## 📝 Documentation
 
-OpenSSL contains an open-source implementation of the SSL and TLS protocols.
-The core library, written in the C programming language, implements basic
-cryptographic functions and provides various utility functions. Wrappers
-allowing the use of the OpenSSL library in a variety of computer languages are
-available.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-The OpenSSL Software Foundation (OSF) represents the OpenSSL project in most
-legal capacities including contributor license agreements, managing donations,
-and so on. OpenSSL Software Services (OSS) also represents the OpenSSL project,
-for Support Contracts.
+## 🚀 Installation
 
-## Installation
-
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
-
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
-
-After starting the addon, a self signed certificate will be created and placed to:
-/ssl/key_openssl.pem
-/ssl/cert_openssl.pem
-
-These can then be used by other addons, for example my apache2 webserver addon.
-If the certificates are about to expire, just restart the addone once and new
-certificates will be created.
-WARNING: After restarting the addon, old certificates named as above will be
-deleted and overwritten!
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-website_name: null
-```
+1. Add this repository to Home Assistant.
+2. Install the **OpenSSL** add-on.
+3. Start the add-on. New certificates will be created automatically.
 
 ---
 

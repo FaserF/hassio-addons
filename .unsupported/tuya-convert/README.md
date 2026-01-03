@@ -71,6 +71,13 @@ firmware: tasmota.bin
 
 ---
 
+## 📂 Folder Usage
+
+- `/share`: Used for `backup_path` (Default: `/share/tuya-convert/`). This allows you to easily retrieve backups of the original firmware from outside the add-on container.
+- `/data`: Used internally by the add-on for persistent storage.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

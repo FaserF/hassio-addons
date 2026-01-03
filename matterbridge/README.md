@@ -13,37 +13,18 @@
 
 ## 📖 About
 
-Matterbridge for Homeassistant OS
+Matterbridge for Homeassistant OS. Letting people be where they want to be. Bridges between a growing number of protocols.
 
-A simple chat bridge
-Letting people be where they want to be.
-Bridges between a growing number of protocols.
+## 📝 Documentation
 
-## Installation
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
+## 🚀 Installation
 
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
-
-Put your website files to /share/htdocs
-Example File where your index.html should be: /share/htdocs/index.html
-
-If you want to integrate your website with a mariadb database. Please ensure
-that the MariaDB Addon is installed!
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-config_path: /share/matterbridge.toml
-log_level: info
-```
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **Matterbridge** add-on.
+1. Place your configuration file in `/share/matterbridge/matterbridge.toml`.
+1. Start the add-on.
 
 ---
 

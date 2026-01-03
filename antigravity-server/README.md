@@ -21,41 +21,19 @@
 
 ## 📖 About
 
-- **🖥️ Browser-Based Desktop**: Access a full XFCE4 desktop via NoVNC
-- **🔒 Ingress Support**: Secure access through the Home Assistant sidebar
-- **🛠️ Pre-installed Tools**:
-  - Google Chrome
-  - Git & LazyGit
-  - Node.js v22.x
-  - Python 3.13
-  - Docker-in-Docker support
-- **💾 Persistent Storage**: User settings and files are preserved
+Access a full XFCE4 desktop via NoVNC securely through the Home Assistant sidebar.
 
-## ⚠️ Requirements
+## 📝 Documentation
 
-> **Architecture**: This add-on only supports **amd64** systems.
-> ARM devices (Raspberry Pi, etc.) are not supported by the upstream project.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
 ## 🚀 Installation
 
 1. Add this repository to your **Home Assistant Add-on Store**.
 1. Install the **Antigravity-Server** add-on.
-1. Review the **Configuration** options below.
+1. Configure the options.
 1. Start the add-on.
 1. Click **"OPEN WEB UI"** to launch the desktop interface.
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-log_level: info
-vnc_password: ''
-```
 
 ---
 

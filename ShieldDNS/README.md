@@ -13,33 +13,18 @@
 
 ## 📖 About
 
-<!-- markdownlint-disable MD033 MD041 MD013 -->
-<!-- markdownlint-enable MD033 MD041 -->
+High-performance DoT proxy for AdGuard Home.
 
-mobile devices and forward them to your local AdGuard Home or other DNS
-servers. This secures your DNS queries even when you are on your local network
-(if your device enforces Private DNS) or if you expose this port securely.
+## 📝 Documentation
 
----
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-## ⚙️ Configuration
+## 🚀 Installation
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-certfile: fullchain.pem
-cloudflare_tunnel_token: ''
-doh_port: 3443
-dot_port: 8853
-enable_info_page: false
-fallback_dns: false
-fallback_dns_server: 1.1.1.1
-keyfile: privkey.pem
-log_level: info
-upstream_dns: 192.168.1.2
-```
+1. Add this repository to your **Home Assistant Add-on Store**.
+1. Install the **ShieldDNS** add-on.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 

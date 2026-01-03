@@ -6,6 +6,9 @@ set -e
 
 
 
+# Check if protection mode is disabled - this addon requires full system access
+bashio::require.unprotected
+
 #VARIABLES
 server=$(bashio::config 'server')
 

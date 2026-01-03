@@ -145,6 +145,17 @@ database:
 debug: true
 ```
 
+## 📂 Folder Usage
+
+This add-on uses the following folders:
+
+- `/data`: Used for persistent storage of the AegisBot application data, including:
+  - `database/`: SQLite database file.
+  - `plugins/`: Custom plugins for the bot.
+  - `uploads/`: Files uploaded through the bot.
+  - `.secret_key`: Automatically generated encryption key.
+- `/share`: Mapped for general use, but not used by the add-on by default.
+
 ## Support
 
 For issues and feature requests:

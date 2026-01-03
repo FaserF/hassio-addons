@@ -13,41 +13,18 @@
 
 ## 📖 About
 
-Bash Script Executer for Homeassistant OS
+Execute your own bash scripts inside this Homeassistant Addon environment. This docker image comes with: `busybox-extras`, `curl`, `grep`, `coreutils`, `sed`, `xmlstarlet`.
 
-This is a simple Docker Image to execute personal scripts. The reason I am
-needing this, is that the HA OS has limited features installed (for example
-no curl, sed etc) and this Addon fixes that issue.
+## 📝 Documentation
 
-You can run up to three different scripts with this addon.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-This docker image comes with: busybox-extras curl grep coreutils sed xmlstarlet
+## 🚀 Installation
 
-## Installation
-
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
-
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
-
-Put your scripts somewhere in the /share/ folder. Other folders are not visible
-to this addon.
-
-Example File where your script could be: /share/scripts/script.sh
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-script_path: /share/scripts/mycoolscript.sh
-script_path2: 'false'
-script_path3: 'false'
-```
+1. Add this repository to Home Assistant.
+2. Install the **Bash Script Executer** add-on.
+3. Configure the paths to your scripts.
+4. Start the add-on.
 
 ---
 

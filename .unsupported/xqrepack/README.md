@@ -61,6 +61,13 @@ firmware_path: /share/miwifi_firmware/
 
 ---
 
+## 📂 Folder Usage
+
+- `/share`: Used for `firmware_path`. This is where the add-on looks for the original firmware and where the modified firmware will be saved.
+- `/data`: Used internally by the add-on for persistent meta-data storage.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

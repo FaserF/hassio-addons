@@ -35,7 +35,9 @@ ENV SWITCH_LAN_PLAY_VERSION="v0.2.3"
 RUN apk add --no-cache \
     libpcap \
     libuv \
-    procps
+    procps \
+    libstdc++ \
+    libgcc
 
 # Copy binary from builder
 COPY --from=builder /switch-lan-play/build/src/lan-play /usr/local/bin/lan-play

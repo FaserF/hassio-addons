@@ -49,6 +49,12 @@ username: ''
 
 ---
 
+## 📂 Folder Usage
+
+- `/data`: Used internally by the add-on for persistent meta-data storage and session information.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

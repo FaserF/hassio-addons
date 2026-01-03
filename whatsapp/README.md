@@ -38,6 +38,10 @@ notifications directly from your smart home.
 - **💾 Persistent Session**: Stays logged in even after restarts.
 - **🐳 Docker Optimized**: Platinum Quality image (S6 Overlay, Alpine Base).
 
+## 📝 Documentation
+
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+
 ## 🛠️ Installation
 
 1. **Add Repository**: Add this repository to your Home Assistant Add-on Store.
@@ -45,18 +49,6 @@ notifications directly from your smart home.
 1. **Start**: Click **Start**. Wait a few seconds for the logs to show "API
    listening".
 1. **Watchdog**: Enable "Watchdog" to ensure high availability.
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-log_level: info
-```
 
 ---
 

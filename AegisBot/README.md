@@ -34,41 +34,17 @@ Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Feature
 - 🌍 **Full i18n**: Multi-language support (EN/DE)
 - 🚫 **Intelligent Filtering**: Auto-learning blacklist suggestions
 
-## Installation
+## 📝 Documentation
 
-See the [Documentation](DOCS.md) for detailed installation instructions.
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-## Quick Start
+## 🚀 Installation
 
 1. Add this repository to Home Assistant
 1. Install the AegisBot add-on
 1. Configure your Telegram Bot Token
 1. Start the add-on
 1. Access via Ingress
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-database:
-  type: sqlite
-debug: false
-demo_mode: false
-demo_mode_type: ephemeral
-developer_mode: false
-github_repo: FaserF/AegisBot
-github_token: ''
-log_level: info
-project_name: AegisBot
-reset_database: false
-secret_key: ''
-version: latest
-```
 
 ---
 

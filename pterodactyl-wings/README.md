@@ -46,6 +46,13 @@ config_file: null
 
 ---
 
+## 📂 Folder Usage
+
+- `/share`: Mapped for sharing files between Wings and the Panel or other add-ons.
+- `/data`: Used for persistent storage of Wings' internal data and game server files.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

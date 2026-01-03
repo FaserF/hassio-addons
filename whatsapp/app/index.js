@@ -65,27 +65,40 @@ let isConnected = false;
 
 // --- mDNS / Bonjour ---
 // Advertise service for Home Assistant Discovery
-try {
-  // Use dynamic import to avoid crashes if dependency is missing during dev/build
-  const { Bonjour } = await import('bonjour-service');
-  const instance = new Bonjour();
-  const serviceName = process.env.MDNS_NAME || 'WhatsApp Addon';
-  const service = instance.publish({
-    name: serviceName,
-    type: 'ha-whatsapp',
-    protocol: 'tcp',
-    port: PORT,
-  });
+async function publishMDNS(name, attempt = 0) {
+  try {
+    const { Bonjour } = await import('bonjour-service');
+    const instance = new Bonjour();
+    const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
 
-  service.on('error', (err) => {
-    console.warn(`⚠️ mDNS advertisement error for "${serviceName}":`, err.message);
-    addLog(`mDNS error: ${err.message}`, 'warning');
-  });
+    const service = instance.publish({
+      name: serviceName,
+      type: 'ha-whatsapp',
+      protocol: 'tcp',
+      port: PORT,
+    });
 
-  console.log(`📢 Publishing mDNS service: ${serviceName} (_ha-whatsapp._tcp.local) on port ${PORT}`);
-} catch (e) {
-  console.warn('mDNS advertisement failed to initialize:', e);
+    service.on('error', (err) => {
+      if (err.message.includes('already in use') && attempt < 10) {
+        console.warn(`⚠️ mDNS name "${serviceName}" in use, retrying with incremented name...`);
+        instance.destroy();
+        publishMDNS(name, attempt + 1);
+      } else {
+        console.warn(`⚠️ mDNS advertisement error for "${serviceName}":`, err.message);
+        addLog(`mDNS error: ${err.message}`, 'warning');
+      }
+    });
+
+    service.on('up', () => {
+      console.log(`📢 Publishing mDNS service: ${serviceName} (_ha-whatsapp._tcp.local) on port ${PORT}`);
+    });
+  } catch (e) {
+    console.warn('mDNS advertisement failed to initialize:', e);
+  }
 }
+
+const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Addon';
+publishMDNS(baseMDNSName);
 
 // --- Status & Logs ---
 let connectionLogs = [];

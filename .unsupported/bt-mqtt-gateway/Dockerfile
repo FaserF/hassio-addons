@@ -31,7 +31,7 @@ COPY logger.yaml /application/logger.yaml
 
 # PIP setup - install requirements only (no runtime execution during build)
 RUN python3 -m venv /application/venv && \
-    /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir setuptools -r /application/requirements.txt" && \
+    /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir setuptools pytz -r /application/requirements.txt" && \
     apk del build-dependencies wget
 
 # Copy start script and make it executable

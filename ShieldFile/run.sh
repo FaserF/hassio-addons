@@ -49,15 +49,20 @@ else
 		-addext "subjectAltName=DNS:shieldfile-addon,IP:127.0.0.1"
 fi
 
+# Check if protection mode is disabled - this addon requires full system access
+bashio::require.unprotected
+
 # Initialize DB if missing
 if [ ! -f "$DB_PATH" ]; then
 	bashio::log.info "📁 Initializing Database at ${DB_PATH}..."
 	filebrowser config init --database "$DB_PATH"
 
-	# Set Branding
-	filebrowser config set --branding.name "ShieldFile" --branding.disableExternal --database "$DB_PATH"
+	# Set Branding and Password Length
+	filebrowser config set --branding.name "ShieldFile" --branding.disableExternal --auth.minPasswordLength 8 --database "$DB_PATH"
 else
 	bashio::log.info "📁 Database found."
+	# Ensure password length is set even if DB already exists but was initialized with 12
+	filebrowser config set --auth.minPasswordLength 8 --database "$DB_PATH"
 fi
 
 # Add/Update Users

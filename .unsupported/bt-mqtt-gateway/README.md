@@ -50,6 +50,13 @@ debug: false
 
 ---
 
+## 📂 Folder Usage
+
+- `/share`: Used to store the configuration file `bt-mqtt-gateway.yaml`. This allows you to easily edit the configuration from outside the add-on container.
+- `/data`: Used internally by the add-on for persistent storage.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.
