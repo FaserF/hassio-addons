@@ -271,7 +271,7 @@ jobs:
 
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@0942ceda08dc8ae64e812bb7ea3371a0569fa041 # v2
+        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2
         with:
           path: "./${{ matrix.addon }}"
         continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
