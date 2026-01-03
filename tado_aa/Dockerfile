@@ -11,6 +11,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 # hadolint ignore=DL3003,DL3018
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="2.0.0"
+ENV ADDON_NAME="Tado Auto Assist"
+ENV ADDON_SLUG="tado_aa"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN apk add --no-cache curl
 
 # Download and patch tado_aa.py to use environment variables
