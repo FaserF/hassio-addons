@@ -150,7 +150,9 @@ jobs:
         continue-on-error: true
         run: |
           npm install -g prettier
-          prettier --write "**/*.{json,js,md,yaml}" --ignore-path .prettierignore
+          # Use prettier with explicit patterns to ensure all files are found
+          # The --write flag formats files in place
+          prettier --write "**/*.{json,js,md,yaml,yml}" --ignore-path .prettierignore --log-level=warn
           if git diff --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else

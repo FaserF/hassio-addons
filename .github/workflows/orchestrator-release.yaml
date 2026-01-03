@@ -71,6 +71,7 @@ env:
     antigravity-server
     whatsapp
     switch_lan_play
+    nginx
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge

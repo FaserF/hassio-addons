@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 300
+  SUPERVISOR_STARTUP_TIMEOUT: 100
   ADDON_INSTALL_TIMEOUT: 300
   ADDON_START_TIMEOUT: 600
 
@@ -310,12 +310,48 @@ jobs:
             # Refresh add-on store
             echo "Refreshing add-on store..."
             docker exec ha-supervisor-test ha addons reload || true
-            sleep 5
+            echo "Waiting for supervisor to scan add-ons..."
+            sleep 10
+
+            # Check supervisor logs for any validation errors
+            echo "Checking supervisor logs for errors..."
+            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -50 | grep -iE "(error|warn|$addon|$SLUG)" || echo "No relevant errors found in logs"
+
+            # Verify add-on is detected
+            echo "Checking if add-on is detected..."
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha addons --raw-json 2>&1 || echo "[]")
+            if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
+              echo "✅ Add-on detected: $SLUG"
+            else
+              echo "⚠️ Add-on not found in list, but continuing with install attempt..."
+              echo "Available add-ons:"
+              echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
+              echo ""
+              echo "Checking add-on directory structure..."
+              docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
+              echo ""
+              echo "Checking if add-on files exist in container..."
+              docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$addon/" 2>&1 || echo "Add-on directory not found"
+              echo ""
+              echo "Checking for validation errors in supervisor logs..."
+              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(validation|error|$addon|$SLUG)" || echo "No validation errors found"
+            fi
 
             # Install add-on
             echo "Installing $addon ($SLUG)..."
+            set +e  # Don't exit on error, we'll handle it
             INSTALL_OUTPUT=$(timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
+            set -e  # Re-enable exit on error
+
+            # Always show output for debugging
+            echo "Install command exit code: $INSTALL_EXIT"
+            if [ -n "$INSTALL_OUTPUT" ]; then
+              echo "Install output:"
+              echo "$INSTALL_OUTPUT"
+            else
+              echo "⚠️ No output from install command"
+            fi
 
             # Handle 500 errors as warnings instead of failures
             # Note: This is likely a CI container issue, but could also indicate real add-on start problems
@@ -323,15 +359,41 @@ jobs:
             if [ $INSTALL_EXIT -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
-                echo "$INSTALL_OUTPUT"
                 docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
-                RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error - likely CI issue)"
-                # Continue with start attempt even though install reported 500
-                INSTALL_EXIT=0
+
+                # Verify if add-on was actually installed despite the 500 error
+                echo "Verifying if add-on was actually installed..."
+                ADDON_INFO=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>&1 || echo "")
+                ADDON_INSTALLED=$(echo "$ADDON_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
+                ADDON_STATE=$(echo "$ADDON_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
+
+                # Check if add-on is installed by looking at the installed flag or state
+                if [ "$ADDON_INSTALLED" = "true" ] || [ "$ADDON_STATE" != "unknown" ]; then
+                  echo "✅ Add-on was installed despite 500 error (installed: $ADDON_INSTALLED, state: $ADDON_STATE), continuing..."
+                  INSTALL_EXIT=0
+                  RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error but installed - likely CI issue)"
+                elif [ "$ADDON_INSTALLED" = "false" ]; then
+                  echo "❌ Add-on was NOT installed despite 500 error (installed: false)"
+                  echo "Checking supervisor logs for validation errors..."
+                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                  RESULTS="$RESULTS\n❌ $addon: FAIL (Install 500 error and not installed)"
+                  FAILED=1
+                  INSTALL_EXIT=1
+                else
+                  # If we can't determine, be conservative and fail
+                  echo "⚠️ Could not determine install status, treating as failure"
+                  echo "Add-on info output: $ADDON_INFO"
+                  RESULTS="$RESULTS\n❌ $addon: FAIL (Install 500 error, status unclear)"
+                  FAILED=1
+                  INSTALL_EXIT=1
+                fi
               else
-                echo "❌ Install failed"
-                echo "$INSTALL_OUTPUT"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                echo "❌ Install failed with exit code $INSTALL_EXIT"
+                echo "Checking supervisor logs for more details..."
+                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                echo "Checking add-on info..."
+                docker exec ha-supervisor-test ha addons info "$SLUG" 2>&1 || echo "Could not get add-on info"
+                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || echo "Could not get add-on logs"
                 RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
                 FAILED=1
               fi
