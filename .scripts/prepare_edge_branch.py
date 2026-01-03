@@ -48,6 +48,95 @@ def remove_image_from_config(config_path: str) -> bool:
         return False
 
 
+
+def update_addon_name(config_path: str, suffix: str) -> bool:
+    """
+    Append suffix to the 'name' field in config.yaml.
+    """
+    if not os.path.exists(config_path):
+        return False
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        data = yaml.safe_load(content)
+        if not data or "name" not in data:
+            return False
+
+        current_name = data["name"]
+
+        # Avoid double suffixing
+        if current_name.endswith(suffix):
+            return False
+
+        new_name = f"{current_name}{suffix}"
+
+        # Use regex to replace to preserve comments/formatting
+        # Look for "name: Value"
+        pattern = re.compile(rf"^name:\s+{re.escape(current_name)}$", re.MULTILINE)
+
+        new_content = content
+        if pattern.search(content):
+            new_content = pattern.sub(f"name: {new_name}", content)
+
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            return True
+
+        return False
+
+    except Exception as e:
+        print(f"⚠️ Error updating name in {config_path}: {e}")
+        return False
+
+
+def remap_ports_in_config(config_path: str) -> bool:
+    """
+    Remap default ports in config.yaml for Edge/Dev builds.
+    Adds 10000 to the host port number to avoid conflicts with stable addons.
+    """
+    if not os.path.exists(config_path):
+        return False
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        data = yaml.safe_load(content)
+        if not data or "ports" not in data or not isinstance(data["ports"], dict):
+            return False
+
+        new_content = content
+        changes_made = False
+
+        ports_section = data["ports"]
+        for port_key, host_port in ports_section.items():
+            if host_port is None:
+                continue
+
+            original_port = int(host_port)
+            new_port = original_port + 10000
+
+            # Construct regex to find this specific line
+            pattern = re.compile(rf"^(\s+){re.escape(str(port_key))}:\s+{original_port}$", re.MULTILINE)
+
+            if pattern.search(new_content):
+                new_content = pattern.sub(rf"\g<1>{port_key}: {new_port}", new_content)
+                changes_made = True
+
+        if changes_made:
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            return True
+
+        return False
+
+    except Exception as e:
+        print(f"⚠️ Error remapping ports in {config_path}: {e}")
+        return False
+
+
 def add_edge_notice_to_readme(readme_path: str) -> bool:
     """Add edge branch notice to addon README."""
     if not os.path.exists(readme_path):
@@ -164,6 +253,14 @@ def main():
         if remove_image_from_config(config_path):
             print(f"   ✅ Removed image from {addon_dir}")
             images_removed += 1
+
+        if remap_ports_in_config(config_path):
+            print(f"   ✅ Remapped ports in {addon_dir}")
+
+        # Determine suffix based on directory
+        suffix = " (Unsupported)" if ".unsupported" in addon_dir else " (Edge)"
+        if update_addon_name(config_path, suffix):
+            print(f"   🏷️  Updated name in {addon_dir} with suffix '{suffix}'")
 
         if add_edge_notice_to_readme(readme_path):
             print(f"   📝 Added edge notice to {addon_dir}/README.md")

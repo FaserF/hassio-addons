@@ -19,4 +19,4 @@ services:
   - mqtt:want
 slug: bt-mqtt-gateway
 url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
-version: 1.7.1
+version: 1.7.2
