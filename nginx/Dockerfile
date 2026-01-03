@@ -7,6 +7,9 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose
 ARG NGINX_VERSION=""
 
+# Set shell with pipefail for Alpine (busybox/ash)
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003,DL3047
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
@@ -46,13 +49,11 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     mosquitto \
     mariadb-client \
     ffmpeg \
-    cmake make musl-dev gcc gettext-dev libintl libxml2 \
-    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/v0.1.5/musl-locales-v0.1.5.zip \
-    && echo "6b70dd2f6c347d448c2d6140fdb70429d17135e6713ea6c095df1b34e4010e6a  musl-locales-v0.1.5.zip" | sha256sum -c - \
-    && unzip musl-locales-v0.1.5.zip \
+    cmake make musl-dev gcc gettext-dev libintl libxml2 git \
+    && git clone --depth 1 --branch v0.1.5 https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-v0.1.5 \
     && cd musl-locales-v0.1.5 \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-    && cd .. && rm -r musl-locales-v0.1.5 && rm -f musl-locales-v0.1.5.zip \
+    && cd .. && rm -rf musl-locales-v0.1.5 \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging

@@ -100,13 +100,13 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		echo "Cannot find certificate key file $keyfile"
 		exit 1
 	fi
-	
+
 	# HTTP server block with redirect to HTTPS
 	cat > /etc/nginx/sites-enabled/default.conf <<EOF
 server {
     listen 80;
     server_name ${website_name};
-    
+
     # Redirect all HTTP to HTTPS
     return 301 https://\$host\$request_uri;
 }
@@ -117,18 +117,18 @@ EOF
 server {
     listen 443 ssl http2;
     server_name ${website_name};
-    
+
     root ${webrootdocker};
     index index.html index.htm index.php;
-    
+
     ssl_certificate /ssl/${certfile};
     ssl_certificate_key /ssl/${keyfile};
-    
+
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
-    
+
     # PHP-FPM configuration
     location ~ \.php$ {
         fastcgi_pass 127.0.0.1:9000;
@@ -136,12 +136,12 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
-    
+
     # Static files
     location / {
         try_files \$uri \$uri/ =404;
     }
-    
+
     # Logging
     access_log /dev/stdout;
     error_log /dev/stderr;
@@ -154,10 +154,10 @@ else
 server {
     listen 80;
     server_name ${website_name};
-    
+
     root ${webrootdocker};
     index index.html index.htm index.php;
-    
+
     # PHP-FPM configuration
     location ~ \.php$ {
         fastcgi_pass 127.0.0.1:9000;
@@ -165,12 +165,12 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
-    
+
     # Static files
     location / {
         try_files \$uri \$uri/ =404;
     }
-    
+
     # Logging
     access_log /dev/stdout;
     error_log /dev/stderr;
