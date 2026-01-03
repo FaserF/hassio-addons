@@ -4,7 +4,6 @@ permissions:
   contents: write
   pull-requests: write
   actions: write
-  workflows: write
 
 on:
   push:
@@ -211,6 +210,12 @@ jobs:
           else
             echo "message=style: auto-fix ($tools)" >> "$GITHUB_OUTPUT"
           fi
+
+      # Exclude workflow files from auto-commit (GitHub Apps require special permission to modify workflows)
+      - name: 🚫 Unstage Workflow Files
+        run: |
+          git reset HEAD .github/workflows/*.yaml 2>/dev/null || true
+          git restore --staged .github/workflows/*.yaml 2>/dev/null || true
 
       # Commit back (using PAT to trigger subsequent workflows)
       - name: 💾 Commit Changes
