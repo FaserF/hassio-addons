@@ -13,6 +13,20 @@ def check_addon(addon_path):
     icon_path = os.path.join(addon_path, "icon.png")
     logo_path = os.path.join(addon_path, "logo.png")
 
+    # Check 7: Unsupported Addons (Must NOT have image tag pointing to GitHub)
+    if ".unsupported" in addon_path:
+        # Simple string check in config.yaml
+        config_path = os.path.join(addon_path, "config.yaml")
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                cfg_content = f.read()
+            if "ghcr.io/" in cfg_content and "image:" in cfg_content:
+                # Check if image line isn't commented out
+                for line in cfg_content.splitlines():
+                    if line.strip().startswith("image:") and "ghcr.io/" in line:
+                        errors.append("Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally.")
+                        break
+
     errors = []
     warnings = []
 

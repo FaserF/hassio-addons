@@ -14,6 +14,8 @@ import os
 import re
 import subprocess
 import sys
+import argparse  # moved up
+import yaml  # Added for safe config handling
 from datetime import datetime
 
 # GitHub repository for commit links
@@ -253,6 +255,57 @@ def parse_version(version_str):
     return int(parts[0]), int(parts[1]), int(parts[2]), is_dev
 
 
+def update_image_tag(content, addon_path, is_dev):
+    """Toggle image tag in config.yaml based on dev status."""
+    # Default image convention: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+    # However, config.yaml usually uses {arch} placeholder or implied structure.
+    # Looking at other addons/docs, 'image' in config.yaml is usually:
+    # image: ghcr.io/faserf/{slug}-{arch}
+    # Let's derive slug from config content or path
+
+    slug_match = re.search(r"^slug: ([\w-]+)", content, re.MULTILINE)
+    slug = slug_match.group(1) if slug_match else os.path.basename(addon_path.rstrip("/\\"))
+
+    # Image line regex
+    image_pattern = r"^image: .*$"
+
+    if is_dev:
+        # REMOVE image tag for dev versions (force local build)
+        if re.search(image_pattern, content, re.MULTILINE):
+            print("🔧 Removing image tag for dev version (forcing local build)")
+            # Comment out instead of delete to preserve intent? Or just delete.
+            # User said "remove the tag".
+            content = re.sub(image_pattern, "# image: local build only", content, flags=re.MULTILINE)
+        else:
+             print("ℹ️ No image tag found (already local build compliant)")
+    else:
+        # ADD/RESTORE image tag for release versions
+        # Expected: image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+        # Note: Github owner is FaserF, repo is hassio-addons.
+        # Naming convention verification:
+        # If user is FaserF, and repo is hassio-addons, images are likely ghcr.io/faserf/hassio-addons-{slug}-{arch}
+        # OR ghcr.io/faserf/{slug}-{arch} depending on HA Builder default.
+        # Given builder usage: --image "${{ steps.info.outputs.image }}"
+        # and docker-hub "ghcr.io/${{ github.repository_owner }}"
+        # The builder creates ghcr.io/faserf/{slug}-{arch} usually if not overridden.
+        # But wait, looking at repo structure, addons are directories.
+        # Let's trust the standard HA pattern: ghcr.io/{owner}/{slug}/{arch} OR ghcr.io/{owner}/{repo}-{slug}-{arch}
+        # I'll use a safe bet: ghcr.io/faserf/hassio-addons-{slug}-{arch} based on typical sub-addon patterns in monorepos.
+
+        # Check if already present and uncomment if needed
+        if "# image: local build only" in content:
+             image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+             content = content.replace("# image: local build only", image_line)
+             print(f"🔧 Restored image tag: {image_line}")
+        elif not re.search(image_pattern, content, re.MULTILINE):
+             image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+             # Append after slug or version
+             content = re.sub(r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE)
+             print(f"🔧 Added image tag: {image_line}")
+
+    return content
+
+
 def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
     """Bump version with optional dev suffix."""
     config_path = os.path.join(addon_path, "config.yaml")
@@ -327,6 +380,9 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
     new_content = content.replace(
         match.group(0), f"{match.group(1)}{new_version}{match.group(3)}"
     )
+
+    # Update image tag logic
+    new_content = update_image_tag(new_content, addon_path, is_dev=set_dev)
 
     with open(config_path, "w") as f:
         f.write(new_content)

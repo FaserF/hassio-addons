@@ -196,13 +196,13 @@ jobs:
           # Enable strict auto-merge.
           # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
           # The PR will only merge once ALL required status checks (CI) have passed.
-          # Using [skip ci] since PR was already fully tested - no need to re-run on master.
+          # Using [skip-tests] since PR was already fully tested - no need to re-run on master.
           PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title')
           gh pr merge --auto --squash "$PR_NUMBER" \
-            --subject "${PR_TITLE} (#${PR_NUMBER}) [skip ci]" \
+            --subject "${PR_TITLE} (#${PR_NUMBER}) [skip-tests]" \
             --body "Auto-merged after successful CI verification.
 
-            [skip ci] - This PR passed all CI checks before merge."
+            [skip-tests] - This PR passed all CI checks before merge."
 
       - name: 📢 Post Merge Success Comment
         if: >-

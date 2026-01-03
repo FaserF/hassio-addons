@@ -56,6 +56,8 @@ env:
     solumati
     netboot-xyz
     antigravity-server
+    whatsapp
+    switch_lan_play
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge
@@ -340,7 +342,7 @@ jobs:
       - name: 🚀 Commit Version Bump
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
-          commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip ci]"
+          commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip-tests]"
           file_pattern: "${{ matrix.addon }}/*"
 
       - name: 🏗️ Build & Push Add-on
@@ -367,7 +369,7 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
-          commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip ci]"
+          commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip-tests]"
           file_pattern: "${{ matrix.addon }}/*"
 
       - name: 📢 Release Summary
