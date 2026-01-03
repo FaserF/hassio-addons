@@ -17,6 +17,13 @@ ENV COREDNS_VERSION="1.13.2"
 ENV CLOUDFLARED_VERSION="2025.11.1"
 
 # Setup CoreDNS and Cloudflared
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="2.0.0"
+ENV ADDON_NAME="ShieldDNS"
+ENV ADDON_SLUG="shielddns"
+ENV ADDON_UNSUPPORTED="false"
+
 COPY --from=coredns /coredns /usr/bin/coredns
 COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
