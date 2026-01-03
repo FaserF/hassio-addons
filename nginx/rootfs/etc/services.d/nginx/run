@@ -1,0 +1,52 @@
+#!/usr/bin/with-contenv bashio
+
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+
+# Start PHP-FPM in background
+# Check if php-fpm84 exists, otherwise try php-fpm
+if command -v php-fpm84 >/dev/null 2>&1; then
+    php-fpm84 -D
+elif command -v php-fpm >/dev/null 2>&1; then
+    php-fpm -D
+else
+    bashio::log.warning "PHP-FPM not found, PHP support may not work"
+fi
+
+# Get local IP
+# We can use the Supervisor API to get the Host IP
+host_ip=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq -r '.data.interfaces[] | select(.primary) | .ipv4.address[]' | head -n 1 | cut -d'/' -f1)
+
+# Fallback if Host IP is empty
+if [ -z "$host_ip" ]; then
+    host_ip="homeassistant.local"
+fi
+
+# Determine protocol and port
+ssl=$(bashio::config 'ssl')
+protocol="http"
+port="80"
+if [ "$ssl" = "true" ]; then
+    protocol="https"
+    port="443"
+fi
+
+# Get External Port from Supervisor
+external_port=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info | jq -r ".data.network.\"${port}/tcp\"")
+
+bashio::log.info "---------------------------------------------------"
+bashio::log.info "NGINX is starting..."
+bashio::log.info ""
+if [ "$external_port" != "null" ] && [ -n "$external_port" ]; then
+    bashio::log.info "You can access the website in your local network at:"
+    bashio::log.info "  ${protocol}://${host_ip}:${external_port}"
+else
+    bashio::log.warning "Could not determine external port mapping."
+    bashio::log.warning "Please check your port configuration in Home Assistant."
+    bashio::log.info "Internal container connection: ${protocol}://$(hostname -i):${port}"
+fi
+bashio::log.info ""
+bashio::log.info "---------------------------------------------------"
+
+exec nginx -g "daemon off;"

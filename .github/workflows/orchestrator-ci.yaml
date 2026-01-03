@@ -599,8 +599,12 @@ jobs:
 
             console.log(`Found ${allJobs.length} total jobs in workflow run`);
 
-            // Get jobs that failed directly
-            const failedJobs = allJobs.filter(j => j.conclusion === 'failure');
+            // Get jobs that failed directly (failure, cancelled, timed_out)
+            const failedJobs = allJobs.filter(j =>
+                j.conclusion === 'failure' ||
+                j.conclusion === 'cancelled' ||
+                j.conclusion === 'timed_out'
+            );
 
             // ALSO get jobs that succeeded but have failed steps (continue-on-error)
             const jobsWithHiddenFailures = allJobs.filter(j =>
@@ -611,15 +615,26 @@ jobs:
 
             // Combine both for reporting
             const allProblematicJobs = [...failedJobs, ...jobsWithHiddenFailures];
-            console.log(`Found ${allProblematicJobs.length} problematic jobs`);
+            console.log(`Found ${allProblematicJobs.length} problematic jobs (${failedJobs.length} failed, ${jobsWithHiddenFailures.length} with hidden failures)`);
             if (allProblematicJobs.length === 0) return;
 
             // Filter out Compliance-only failures (handled by Platinum Report)
+            // Only filter if ALL failed steps are Compliance-related
             const nonComplianceJobs = allProblematicJobs.filter(job => {
-                const failedStep = job.steps.find(s => s.conclusion === 'failure');
-                const stepName = failedStep ? failedStep.name : "";
-                return !stepName.includes("Compliance");
+                const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure') : [];
+                if (failedSteps.length === 0) {
+                    // Job failed but no step info - include it
+                    return true;
+                }
+                // Check if ALL failed steps are Compliance-related
+                const allCompliance = failedSteps.every(step =>
+                    step.name && step.name.includes("Compliance")
+                );
+                // Include job if NOT all failures are Compliance (i.e., has non-Compliance failures)
+                return !allCompliance;
             });
+
+            console.log(`After filtering Compliance-only: ${nonComplianceJobs.length} jobs with non-Compliance failures`);
 
             // If all failures are Compliance-related, skip this report (Platinum Report handles it)
             if (nonComplianceJobs.length === 0) {
@@ -645,29 +660,50 @@ jobs:
                 const match = job.name.match(/\((.*?)(?: -.*)?\)/);
                 if (match) affectedAddons.add(match[1]);
 
-                const failedStep = job.steps.find(s => s.conclusion === 'failure');
-                const stepName = failedStep ? failedStep.name : "Unknown Step";
+                // Get ALL failed steps (not just the first one)
+                const failedSteps = job.steps ? job.steps.filter(s =>
+                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+                ) : [];
 
-                // Make job name clickable - link to job logs
-                const jobLink = `[${job.name}](${job.html_url})`;
-                report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+                // Filter out Compliance steps for display
+                const nonComplianceSteps = failedSteps.filter(step =>
+                    !step.name || !step.name.includes("Compliance")
+                );
 
-                // Categorize Failure (excluding Compliance)
-                if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
-                if (stepName.includes("Build") || job.name.includes("Build")) failureTypes.add("Docker Build");
-                if (stepName.includes("Trivy")) failureTypes.add("Security Scan");
-                if (stepName.includes("ShellCheck")) failureTypes.add("ShellCheck");
-                if (stepName.includes("Hadolint")) failureTypes.add("Hadolint");
+                // If job failed but no step info, or all steps are Compliance (shouldn't happen after filter, but safety check)
+                if (nonComplianceSteps.length === 0) {
+                    const stepName = failedSteps.length > 0 ? failedSteps[0].name :
+                                    (job.conclusion === 'cancelled' ? 'Job Cancelled' :
+                                     job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown Step');
+                    const jobLink = `[${job.name}](${job.html_url})`;
+                    report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+                } else {
+                    // Show all non-Compliance failed steps
+                    const jobLink = `[${job.name}](${job.html_url})`;
+                    for (const failedStep of nonComplianceSteps) {
+                        const stepName = failedStep.name || "Unknown Step";
+                        report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
 
-                // Map failed step/job to verification script test name
-                if (stepName.includes("ShellCheck")) specificTests.add("ShellCheck");
-                else if (stepName.includes("Hadolint")) specificTests.add("Hadolint");
-                else if (stepName.includes("MarkdownLint")) specificTests.add("MarkdownLint");
-                else if (stepName.includes("YAMLLint")) specificTests.add("YamlLint");
-                else if (stepName.includes("Prettier")) specificTests.add("Prettier");
-                else if (stepName.includes("Add-on Linter")) specificTests.add("AddonLinter");
-                else if (stepName.includes("Trivy")) specificTests.add("Trivy");
-                else if (job.name.includes("Build")) specificTests.add("DockerBuild");
+                        // Categorize Failure (excluding Compliance)
+                        if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
+                        if (stepName.includes("Build") || job.name.includes("Build")) failureTypes.add("Docker Build");
+                        if (stepName.includes("Trivy")) failureTypes.add("Security Scan");
+                        if (stepName.includes("ShellCheck")) failureTypes.add("ShellCheck");
+                        if (stepName.includes("Hadolint")) failureTypes.add("Hadolint");
+                        if (stepName.includes("Supervisor") || stepName.includes("Test")) failureTypes.add("Supervisor Test");
+
+                        // Map failed step/job to verification script test name
+                        if (stepName.includes("ShellCheck")) specificTests.add("ShellCheck");
+                        else if (stepName.includes("Hadolint")) specificTests.add("Hadolint");
+                        else if (stepName.includes("MarkdownLint")) specificTests.add("MarkdownLint");
+                        else if (stepName.includes("YAMLLint")) specificTests.add("YamlLint");
+                        else if (stepName.includes("Prettier")) specificTests.add("Prettier");
+                        else if (stepName.includes("Add-on Linter")) specificTests.add("AddonLinter");
+                        else if (stepName.includes("Trivy")) specificTests.add("Trivy");
+                        else if (job.name.includes("Build")) specificTests.add("DockerBuild");
+                        else if (stepName.includes("Supervisor") || stepName.includes("Test")) specificTests.add("SupervisorTest");
+                    }
+                }
             }
             report += "\n";
 
@@ -679,26 +715,49 @@ jobs:
             const lintFailures = [];
             const buildFailures = [];
             const securityFailures = [];
+            const supervisorFailures = [];
             const otherFailures = [];
 
             for (const job of nonComplianceJobs) {
-                const failedStep = job.steps.find(s => s.conclusion === 'failure');
-                const stepName = failedStep ? failedStep.name : "Unknown";
+                // Get ALL failed steps
+                const failedSteps = job.steps ? job.steps.filter(s =>
+                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+                ) : [];
+
+                // Filter out Compliance steps
+                const nonComplianceSteps = failedSteps.filter(step =>
+                    !step.name || !step.name.includes("Compliance")
+                );
+
                 const addonMatch = job.name.match(/\((.*?)(?: -.*)?\)/);
                 const addon = addonMatch ? addonMatch[1] : "unknown";
 
-                const entry = { addon, stepName, jobName: job.name, url: job.html_url };
-
-                if (stepName.includes("ShellCheck") || stepName.includes("Hadolint") ||
-                    stepName.includes("Lint") || stepName.includes("Prettier") ||
-                    stepName.includes("YAML") || stepName.includes("Markdown")) {
-                    lintFailures.push(entry);
-                } else if (stepName.includes("Build") || job.name.includes("Build")) {
-                    buildFailures.push(entry);
-                } else if (stepName.includes("Trivy") || stepName.includes("Security")) {
-                    securityFailures.push(entry);
-                } else {
+                // If no step info, use job conclusion
+                if (nonComplianceSteps.length === 0) {
+                    const stepName = job.conclusion === 'cancelled' ? 'Job Cancelled' :
+                                    job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown';
+                    const entry = { addon, stepName, jobName: job.name, url: job.html_url };
                     otherFailures.push(entry);
+                } else {
+                    // Process each failed step
+                    for (const failedStep of nonComplianceSteps) {
+                        const stepName = failedStep.name || "Unknown";
+                        const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+
+                        if (stepName.includes("ShellCheck") || stepName.includes("Hadolint") ||
+                            stepName.includes("Lint") || stepName.includes("Prettier") ||
+                            stepName.includes("YAML") || stepName.includes("Markdown")) {
+                            lintFailures.push(entry);
+                        } else if (stepName.includes("Build") || job.name.includes("Build")) {
+                            buildFailures.push(entry);
+                        } else if (stepName.includes("Trivy") || stepName.includes("Security")) {
+                            securityFailures.push(entry);
+                        } else if (stepName.includes("Supervisor") || stepName.includes("Test") || job.name.includes("Supervisor")) {
+                            supervisorFailures.push(entry);
+                        } else {
+                            otherFailures.push(entry);
+                        }
+                    }
                 }
             }
 
@@ -756,6 +815,25 @@ jobs:
                 }
             }
 
+            if (supervisorFailures.length > 0) {
+                report += "\nsupervisor_failures:\n";
+                report += "  # Supervisor integration test failures - check addon installation/startup\n";
+                report += "  # Common issues: Addon not detected, installation failed, startup timeout\n";
+                for (const f of supervisorFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    files_to_check:\n`;
+                    report += `      - "${f.addon}/config.yaml"  # Check ingress, ports, schema\n`;
+                    report += `      - "${f.addon}/Dockerfile"  # Check healthcheck, base image\n`;
+                    report += `      - "${f.addon}/rootfs/etc/services.d/*/run"  # Check service scripts\n`;
+                    report += `    common_fixes:\n`;
+                    report += `      - "Verify ingress: true in config.yaml"\n`;
+                    report += `      - "Check that service scripts use correct shebang (#!/usr/bin/with-contenv bashio)"\n`;
+                    report += `      - "Ensure HEALTHCHECK is present in Dockerfile"\n`;
+                    report += `      - "Verify addon slug matches directory name"\n`;
+                }
+            }
+
             if (otherFailures.length > 0) {
                 report += "\nother_failures:\n";
                 report += "  # These require manual investigation\n";
@@ -780,6 +858,9 @@ jobs:
             }
             if (securityFailures.length > 0) {
                 report += "  - Security vulnerabilities (require package updates or upstream fixes)\n";
+            }
+            if (supervisorFailures.length > 0) {
+                report += "  - Supervisor test failures (require addon configuration fixes, check logs)\n";
             }
             report += "  - Missing logo.png/icon.png (need to generate or provide images)\n";
             report += "  - Translation files (need manual creation in translations/en.yaml)\n";
