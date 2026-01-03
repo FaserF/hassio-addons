@@ -56,7 +56,7 @@ jobs:
               # Skip .unsupported directory entry
               if [[ "$ADDON_DIR" != "." ]] && [[ ! "$ADDON_DIR" =~ ^\. ]]; then
                 echo "Processing $ADDON_DIR..."
-                python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev 2>/dev/null || echo "Skipping $ADDON_DIR"
+                python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $ADDON_DIR"
               fi
             fi
           done

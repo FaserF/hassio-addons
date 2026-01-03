@@ -306,7 +306,7 @@ def update_image_tag(content, addon_path, is_dev):
     return content
 
 
-def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
+def bump_version(addon_path, increment, changelog_message=None, set_dev=False, force_changelog=False):
     """Bump version with optional dev suffix."""
     config_path = os.path.join(addon_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -387,8 +387,8 @@ def bump_version(addon_path, increment, changelog_message=None, set_dev=False):
     with open(config_path, "w") as f:
         f.write(new_content)
 
-    # Only generate changelog for releases, not dev bumps
-    if not set_dev:
+    # Only generate changelog for releases, not dev bumps (unless forced)
+    if not set_dev or force_changelog:
         print("📝 Generating changelog from git history...")
         new_entry = generate_changelog_entry(new_version, addon_path, changelog_message)
 
@@ -430,7 +430,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dev", action="store_true", help="Set version to dev (e.g., 1.2.3-dev)"
     )
+    parser.add_argument(
+        "--changelog", action="store_true", help="Force changelog generation (even for dev)"
+    )
 
     args = parser.parse_args()
 
-    bump_version(args.addon, args.increment, args.message, args.dev)
+    # Pass args object or specific flag if we refactored bump_version signature
+    # But bump_version signature is: bump_version(addon_path, increment, changelog_message=None, set_dev=False)
+    # I need to patch the function signature or the conditional inside.
+    # To avoid changing signature heavily, I'll pass it implicitly or wrap it?
+    # Actually, simpler: modify bump_version to accept an `options` dict or just add the arg.
+    # Or just use the global args? No, bad practice.
+    # Let's clean up the replacement to modify the signature as well.
+    bump_version(args.addon, args.increment, args.message, args.dev, args.changelog)
