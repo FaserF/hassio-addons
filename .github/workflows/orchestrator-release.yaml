@@ -168,14 +168,14 @@ jobs:
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
               echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
-            else
-              IS_ALL="false"
             elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
+              IS_ALL="false"
               # Single addon specified
               ADDONS="$INPUT_ADDON"
               SHOULD_RELEASE="true"
               echo "📦 Single addon specified: $ADDONS"
             else
+              IS_ALL="false"
               echo "⚠️ Invalid or missing addon input: '$INPUT_ADDON'"
               SHOULD_RELEASE="false"
             fi
