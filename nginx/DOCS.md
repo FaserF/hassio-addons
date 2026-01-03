@@ -21,6 +21,7 @@ By default, HTTPS is mapped to external port **8324** instead of the standard po
    - Private key file: `/ssl/privkey.pem` (default, or specify custom filename)
 
 2. **Update the configuration**:
+
    ```yaml
    ssl: true
    certfile: fullchain.pem
@@ -30,6 +31,7 @@ By default, HTTPS is mapped to external port **8324** instead of the standard po
 3. **Restart the add-on** to apply the changes.
 
 **Important Notes:**
+
 - The add-on will **fail to start** if `ssl: true` is set but the certificate files are missing.
 - Ensure certificates are in place **before** enabling SSL.
 - The `certfile` and `keyfile` options are only used when `ssl: true`.

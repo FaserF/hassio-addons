@@ -33,6 +33,7 @@ To enable SSL/HTTPS:
    - Private key file: `/ssl/privkey.pem` (or your custom filename)
 
 2. **Update the configuration** to enable SSL:
+
    ```yaml
    ssl: true
    certfile: fullchain.pem

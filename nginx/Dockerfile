@@ -50,10 +50,10 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     mariadb-client \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 git \
-    && git clone --depth 1 --branch v0.1.5 https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-v0.1.5 \
-    && cd musl-locales-v0.1.5 \
+    && git clone --depth 1 --branch v0.1.4 https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-v0.1.4 \
+    && cd musl-locales-v0.1.4 \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-    && cd .. && rm -rf musl-locales-v0.1.5 \
+    && cd .. && rm -rf musl-locales-v0.1.4 \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
