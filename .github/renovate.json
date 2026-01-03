@@ -1,29 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "rebaseWhen": "conflicted",
   "prConcurrentLimit": 5,
   "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "no-stale"
-  ],
+  "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "commitMessageSuffix": " [skip-tests]",
-  "allowedPostUpgradeCommands": [
-    "^curl",
-    "^sed",
-    "^bash"
-  ],
+  "allowedCommands": ["^curl", "^sed", "^bash"],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$",
-        "(^|/)build.yaml$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/", "/(^|/)build.yaml$/"],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -33,9 +21,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG NODE_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+",
         "ENV NODE_VERSION v?(?<currentValue>.+?)\\s+"
@@ -45,20 +31,14 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
-      "matchStrings": [
-        "ENV YARN_VERSION (?<currentValue>.+?)\\s+"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ENV YARN_VERSION (?<currentValue>.+?)\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "yarnpkg/yarn"
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "matterbridge/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/matterbridge/Dockerfile$/"],
       "matchStrings": [
         "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -67,20 +47,14 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "pterodactyl-wings/Dockerfile$"
-      ],
-      "matchStrings": [
-        "ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"
-      ],
+      "managerFilePatterns": ["/pterodactyl-wings/Dockerfile$/"],
+      "matchStrings": ["ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "pterodactyl/wings"
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -89,9 +63,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -100,9 +72,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -111,9 +81,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -122,9 +90,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)Dockerfile$"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -134,9 +100,7 @@
     {
       "customType": "regex",
       "description": "Track xqrepack git commit for script pinning",
-      "fileMatch": [
-        ".unsupported/xqrepack/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/.unsupported/xqrepack/Dockerfile$/"],
       "matchStrings": [
         "ARG XQREPACK_COMMIT=[\"']?(?<currentDigest>[a-f0-9]+)[\"']?"
       ],
@@ -147,12 +111,8 @@
     {
       "customType": "regex",
       "description": "Track bt-mqtt-gateway version (commit hash)",
-      "fileMatch": [
-        ".unsupported/bt-mqtt-gateway/Dockerfile$"
-      ],
-      "matchStrings": [
-        "ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"
-      ],
+      "managerFilePatterns": ["/.unsupported/bt-mqtt-gateway/Dockerfile$/"],
+      "matchStrings": ["ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"],
       "datasourceTemplate": "git-refs",
       "depNameTemplate": "https://github.com/zewelor/bt-mqtt-gateway",
       "currentValueTemplate": "master"
@@ -160,12 +120,8 @@
     {
       "customType": "regex",
       "description": "Track Pterodactyl Panel release branch",
-      "fileMatch": [
-        "pterodactyl-panel/Dockerfile$"
-      ],
-      "matchStrings": [
-        "--branch release/v(?<currentValue>[\\d.]+)"
-      ],
+      "managerFilePatterns": ["/pterodactyl-panel/Dockerfile$/"],
+      "matchStrings": ["--branch release/v(?<currentValue>[\\d.]+)"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "pterodactyl/panel",
       "extractVersionTemplate": "^v(?<version>.*)$"
@@ -173,12 +129,8 @@
     {
       "customType": "regex",
       "description": "Track tuya-convert git commit",
-      "fileMatch": [
-        ".unsupported/tuya-convert/Dockerfile$"
-      ],
-      "matchStrings": [
-        "git checkout (?<currentDigest>[a-f0-9]+)"
-      ],
+      "managerFilePatterns": ["/.unsupported/tuya-convert/Dockerfile$/"],
+      "matchStrings": ["git checkout (?<currentDigest>[a-f0-9]+)"],
       "datasourceTemplate": "git-refs",
       "depNameTemplate": "https://github.com/ct-Open-Source/tuya-convert",
       "currentValueTemplate": "master"
@@ -186,9 +138,7 @@
     {
       "customType": "regex",
       "description": "Track Home Assistant version for test instance",
-      "fileMatch": [
-        "homeassistant-test-instance/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/homeassistant-test-instance/Dockerfile$/"],
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)"
       ],
@@ -196,9 +146,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "antigravity-server/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/antigravity-server/Dockerfile$/"],
       "matchStrings": [
         "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -208,9 +156,7 @@
     {
       "customType": "regex",
       "description": "Track Wiki.js V3 Docker image digest",
-      "fileMatch": [
-        "wiki.js3/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/wiki.js3/Dockerfile$/"],
       "matchStrings": [
         "FROM ghcr\\.io/requarks/wiki:(?<currentValue>3)@sha256:(?<currentDigest>[a-f0-9]+)"
       ],
@@ -221,9 +167,7 @@
     {
       "customType": "regex",
       "description": "Track NGINX Alpine package version",
-      "fileMatch": [
-        "nginx/Dockerfile$"
-      ],
+      "managerFilePatterns": ["/nginx/Dockerfile$/"],
       "matchStrings": [
         "# renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
       ],
@@ -234,17 +178,13 @@
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on base images",
-      "matchDatasources": [
-        "docker"
-      ],
+      "matchDatasources": ["docker"],
       "matchDepNames": [
         "ghcr.io/hassio-addons/base",
         "ghcr.io/hassio-addons/debian-base",
@@ -255,10 +195,7 @@
     },
     {
       "groupName": "Development Tools",
-      "matchDepNames": [
-        "nodejs/node",
-        "yarnpkg/yarn"
-      ],
+      "matchDepNames": ["nodejs/node", "yarnpkg/yarn"],
       "automerge": true
     },
     {
@@ -277,60 +214,44 @@
     },
     {
       "description": "Netboot.xyz - auto-update checksums",
-      "matchDepNames": [
-        "netbootxyz/webapp"
-      ],
+      "matchDepNames": ["netbootxyz/webapp"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "netboot-xyz/Dockerfile"
-        ],
+        "fileFilters": ["netboot-xyz/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Pterodactyl Wings - auto-update checksums via postUpgradeTasks",
-      "matchDepNames": [
-        "pterodactyl/wings"
-      ],
+      "matchDepNames": ["pterodactyl/wings"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "pterodactyl-wings/Dockerfile"
-        ],
+        "fileFilters": ["pterodactyl-wings/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
-      "matchDepNames": [
-        "42wim/matterbridge"
-      ],
+      "matchDepNames": ["42wim/matterbridge"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "matterbridge/Dockerfile"
-        ],
+        "fileFilters": ["matterbridge/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Wiki.js V3 - auto-update Docker image digest",
-      "matchDepNames": [
-        "ghcr.io/requarks/wiki"
-      ],
-      "matchPaths": [
-        "wiki.js3/Dockerfile"
-      ],
+      "matchDepNames": ["ghcr.io/requarks/wiki"],
+      "matchFileNames": ["wiki.js3/Dockerfile"],
       "automerge": true,
       "ignoreTests": false,
       "allowedVersions": "/^3$/",
@@ -339,30 +260,20 @@
     },
     {
       "description": "NGINX - auto-update Alpine package version",
-      "matchDepNames": [
-        "alpine_3_21/nginx"
-      ],
-      "matchPaths": [
-        "nginx/Dockerfile"
-      ],
+      "matchDepNames": ["alpine_3_21/nginx"],
+      "matchFileNames": ["nginx/Dockerfile"],
       "automerge": true,
       "ignoreTests": false
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
-      "addLabels": [
-        "python"
-      ],
+      "matchManagers": ["pip_requirements"],
+      "addLabels": ["python"],
       "rangeStrategy": "pin",
       "automerge": true
     },
     {
       "description": "Allow pre-releases for Antigravity-Server",
-      "matchDepNames": [
-        "Eidolf/Docker-AntiGravity"
-      ],
+      "matchDepNames": ["Eidolf/Docker-AntiGravity"],
       "ignoreUnstable": false
     }
   ]
