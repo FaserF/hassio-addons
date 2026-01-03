@@ -17,3 +17,15 @@ All Add-ons have been unified, updated, and many bugs have been fixed. Many Add-
 This release represents a significant effort to standardize and improve all Add-ons in the repository.
 
 ---
+
+### 📦 Dependencies
+- 📝 release(apache2-minimal): update changelog [skip-tests] ([`476e2f5`](https://github.com/FaserF/hassio-addons/commit/476e2f5ff7c65d67eb19d251f2d3fa778cc15f2f))
+
+### 🎉 Major Release - Unified Addon Update
+- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the Add-ons. (Manual)
+- **Unsupported Branch**: A new `unsupported` branch has been created for Add-ons that no longer receive direct manual support. These Add-ons are still maintained but may have limited support compared to the main Add-ons. (Manual)
+- **Edge Branch (Beta)**: A new `edge` branch is now available for those who want to test the latest features and improvements before they are released to the stable channel. (Manual)
+
+### 📌 Release Note
+- Manual release via Orchestrator
+
