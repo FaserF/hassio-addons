@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 300
+  SUPERVISOR_STARTUP_TIMEOUT: 100
   ADDON_INSTALL_TIMEOUT: 300
   ADDON_START_TIMEOUT: 600
 
@@ -329,12 +329,29 @@ jobs:
               echo ""
               echo "Checking add-on directory structure..."
               docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
+              echo ""
+              echo "Checking if add-on files exist in container..."
+              docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$addon/" 2>&1 || echo "Add-on directory not found"
+              echo ""
+              echo "Checking for validation errors in supervisor logs..."
+              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(validation|error|$addon|$SLUG)" || echo "No validation errors found"
             fi
 
             # Install add-on
             echo "Installing $addon ($SLUG)..."
+            set +e  # Don't exit on error, we'll handle it
             INSTALL_OUTPUT=$(timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
+            set -e  # Re-enable exit on error
+
+            # Always show output for debugging
+            echo "Install command exit code: $INSTALL_EXIT"
+            if [ -n "$INSTALL_OUTPUT" ]; then
+              echo "Install output:"
+              echo "$INSTALL_OUTPUT"
+            else
+              echo "⚠️ No output from install command"
+            fi
 
             # Handle 500 errors as warnings instead of failures
             # Note: This is likely a CI container issue, but could also indicate real add-on start problems
@@ -342,15 +359,17 @@ jobs:
             if [ $INSTALL_EXIT -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
-                echo "$INSTALL_OUTPUT"
                 docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
                 RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error - likely CI issue)"
                 # Continue with start attempt even though install reported 500
                 INSTALL_EXIT=0
               else
-                echo "❌ Install failed"
-                echo "$INSTALL_OUTPUT"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                echo "❌ Install failed with exit code $INSTALL_EXIT"
+                echo "Checking supervisor logs for more details..."
+                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install)" || echo "No relevant errors in supervisor logs"
+                echo "Checking add-on info..."
+                docker exec ha-supervisor-test ha addons info "$SLUG" 2>&1 || echo "Could not get add-on info"
+                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || echo "Could not get add-on logs"
                 RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
                 FAILED=1
               fi
