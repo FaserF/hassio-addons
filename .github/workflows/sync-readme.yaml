@@ -92,7 +92,7 @@ jobs:
               # Get first commit date
               try:
                   result = subprocess.run(
-                      ["git", "log", "--format=%cs", "--", addon["path"]],
+                      ["git", "log", "--follow", "--format=%cs", "--", str(addon["config"])],
                       capture_output=True, text=True, check=True
                   )
                   dates = result.stdout.strip().split("\n")
