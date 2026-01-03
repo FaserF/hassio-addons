@@ -44,6 +44,7 @@ body:
         - homeassistant-test-instance
         - matterbridge
         - netboot-xyz
+        - nginx
         - openssl
         - pterodactyl-panel
         - pterodactyl-wings
