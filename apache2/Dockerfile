@@ -6,6 +6,13 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Create directory for apache2 to store PID file
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003,DL3047
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="3.0.0"
+ENV ADDON_NAME="Apache2"
+ENV ADDON_SLUG="apache2"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
     # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
