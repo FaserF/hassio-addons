@@ -29,7 +29,7 @@ jobs:
       pull-requests: write
     steps:
       - name: 📝 Post CI Starting Comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -76,7 +76,7 @@ jobs:
       filters: ${{ steps.generator.outputs.filters }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 🐍 Generate Dynamic Filters
         id: generator
@@ -132,13 +132,13 @@ jobs:
       force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
       - name: 📂 Run Paths Filter
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: ${{ needs.generate-config.outputs.filters }}
 
@@ -231,7 +231,7 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
@@ -243,7 +243,7 @@ jobs:
 
       # 2. Hadolint
       - name: 🐳 Hadolint
-        uses: brpaz/hadolint-action@v1.5.0
+        uses: brpaz/hadolint-action@c27bd9edc1e95eed30474db8f295ff5807ebca14 # v1.5.0
         with:
           dockerfile: "./${{ matrix.addon }}/Dockerfile"
 
@@ -253,13 +253,13 @@ jobs:
       # so we don't block PRs for style violations. Failures still appear in logs.
       - name: 📝 MarkdownLint
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
-        uses: actionshub/markdownlint@v3.1.4
+        uses: actionshub/markdownlint@6c82ff529253530dfbf75c37570876c52692835f # v3.1.4
         with:
           args: "${{ matrix.addon }}/*.md"
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
-        uses: frenck/action-yamllint@v1.5
+        uses: frenck/action-yamllint@be475b7c04356034c5754e7273c717247302611d # v1.5
         with:
           args: "./${{ matrix.addon }}/*.yaml"
 
@@ -271,14 +271,14 @@ jobs:
 
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@v2
+        uses: frenck/action-addon-linter@0942ceda08dc8ae64e812bb7ea3371a0569fa041 # v2
         with:
           path: "./${{ matrix.addon }}"
         continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
       - name: 🐍 Set up Python (cached)
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: '3.14'
           cache: 'pip'
@@ -309,7 +309,7 @@ jobs:
 
       - name: 📤 Upload Compliance Report
         if: steps.compliance.outputs.status == 'failure'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: compliance-${{ github.run_id }}-${{ matrix.addon }}
           path: compliance_report.txt
@@ -353,13 +353,13 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: 💾 Cache Docker layers
-        uses: actions/cache@v5
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
@@ -409,7 +409,7 @@ jobs:
       actions: read
     steps:
       - name: 📥 Download Compliance Artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         continue-on-error: true
         with:
           pattern: compliance-*
@@ -417,7 +417,7 @@ jobs:
           path: reports
 
       - name: 📝 Post Platinum Compliance Report
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         continue-on-error: true
         with:
           script: |
@@ -578,7 +578,7 @@ jobs:
             }
 
       - name: 📝 Post General CI Failure Report
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             // Paginate to get ALL jobs (default limit is 30)
@@ -921,10 +921,10 @@ jobs:
       issues: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 📝 Post Success Comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         continue-on-error: true
         with:
           script: |

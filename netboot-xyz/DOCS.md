@@ -16,11 +16,11 @@ path_config: /media/netboot/config
 
 ### Network Ports
 
-| Port | Protocol | Required | Description |
-|------|----------|----------|-------------|
-| 85 | TCP | ✅ Yes | NGINX server for hosting boot assets. **Must stay at port 85 for PXE boot!** |
-| 69 | UDP | ✅ Yes | TFTP server. **Must stay at port 69 for PXE boot!** |
-| 3000 | TCP | ❌ No | Web configuration interface (uses Ingress, can be changed) |
+| Port | Protocol | Required | Description                                                                  |
+| ---- | -------- | -------- | ---------------------------------------------------------------------------- |
+| 85   | TCP      | ✅ Yes   | NGINX server for hosting boot assets. **Must stay at port 85 for PXE boot!** |
+| 69   | UDP      | ✅ Yes   | TFTP server. **Must stay at port 69 for PXE boot!**                          |
+| 3000 | TCP      | ❌ No    | Web configuration interface (uses Ingress, can be changed)                   |
 
 > ⚠️ **Warning**: Changing ports 85 or 69 will break PXE boot functionality. Only the web UI port (3000) can be safely modified.
 

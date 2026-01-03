@@ -20,4 +20,4 @@ schema:
   firmware: str
 slug: tuya-convert
 url: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
-version: 0.1.8
+version: 0.2.0

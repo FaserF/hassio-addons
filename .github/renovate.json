@@ -204,6 +204,32 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "Eidolf/Docker-AntiGravity"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Wiki.js V3 Docker image digest",
+      "fileMatch": [
+        "wiki.js3/Dockerfile$"
+      ],
+      "matchStrings": [
+        "FROM ghcr\\.io/requarks/wiki:3@sha256:(?<currentDigest>[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/requarks/wiki",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Track NGINX Alpine package version",
+      "fileMatch": [
+        "nginx/Dockerfile$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
+      ],
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "alpine_3_21/nginx",
+      "versioningTemplate": "loose"
     }
   ],
   "packageRules": [
@@ -241,6 +267,7 @@
         "42wim/matterbridge",
         "netbootxyz/webapp",
         "Requarks/wiki",
+        "ghcr.io/requarks/wiki",
         "FaserF/AegisBot",
         "FaserF/Solumati",
         "spacemeowx2/switch-lan-play",
@@ -295,6 +322,28 @@
         ],
         "executionMode": "branch"
       }
+    },
+    {
+      "description": "Wiki.js V3 - auto-update Docker image digest",
+      "matchDepNames": [
+        "ghcr.io/requarks/wiki"
+      ],
+      "matchPaths": [
+        "wiki.js3/Dockerfile"
+      ],
+      "automerge": true,
+      "ignoreTests": false
+    },
+    {
+      "description": "NGINX - auto-update Alpine package version",
+      "matchDepNames": [
+        "alpine_3_21/nginx"
+      ],
+      "matchPaths": [
+        "nginx/Dockerfile"
+      ],
+      "automerge": true,
+      "ignoreTests": false
     },
     {
       "matchManagers": [
