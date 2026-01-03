@@ -16,4 +16,4 @@ fdu update "$config_file"
 
 echo "Starting FDU every $update_time_in_seconds with the config file $config_file"
 
-fdu process -c -i -r -t "$update_time_in_seconds" "$config_file"
+exec fdu process -c -i -r -t "$update_time_in_seconds" "$config_file"

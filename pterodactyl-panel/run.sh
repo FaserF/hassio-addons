@@ -115,8 +115,6 @@ fi
 echo "[start] Starting nginx and php"
 /usr/sbin/php-fpm84 --nodaemonize -c /etc/php84 &
 php_service_pid=$!
-/usr/sbin/nginx -g "daemon off;" &
-nginx_service_pid=$!
 
 # ...
 
@@ -127,5 +125,6 @@ echo " " >/var/log/nginx/pterodactyl.app-error.log
 echo " " >/var/www/html/storage/logs/laravel-"$(date +%F)".log
 
 php84 /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
-tail -f /var/log/nginx/pterodactyl.app-error.log &
-tail -f /var/www/html/storage/logs/laravel-"$(date +%F)".log
+
+# Start nginx in foreground (it's configured with "daemon off")
+exec /usr/sbin/nginx -g "daemon off;"

@@ -366,14 +366,19 @@ def update_image_tag(content, addon_path, is_dev):
 
     if is_dev:
         # REMOVE image tag for dev versions (force local build)
+        # For edge branch, we want to completely remove the image tag, not comment it
         if re.search(image_pattern, content, re.MULTILINE):
             print("🔧 Removing image tag for dev version (forcing local build)")
-            # Comment out instead of delete to preserve intent? Or just delete.
-            # User said "remove the tag".
+            # Remove the image line completely (not just comment it)
             content = re.sub(
-                image_pattern, "# image: local build only", content, flags=re.MULTILINE
+                r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE
             )
-        else:
+        # Also remove any commented out image lines that might exist
+        content = re.sub(
+            r"^(\s*)#\s*image:.*$\n?", "", content, flags=re.MULTILINE
+        )
+        # Check if we actually removed something
+        if not re.search(image_pattern, content, re.MULTILINE):
             print("ℹ️ No image tag found (already local build compliant)")
     else:
         # ADD/RESTORE image tag for release versions

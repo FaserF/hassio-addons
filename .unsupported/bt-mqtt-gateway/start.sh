@@ -21,11 +21,8 @@ echo "If there are any bugs occurring below this line, please report it to the b
 
 if [ "$DEBUG" = 'true' ]; then
 	echo "Start bt-mqtt gateway in debug mode"
-	python3 ./gateway.py -d
-	status=$?
-	echo "Gateway died..."
-	exit $status
+	exec python3 ./gateway.py -d
 else
 	echo "Starting bt-mqtt-gateway in normal mode"
-	python3 ./gateway.py
+	exec python3 ./gateway.py
 fi
