@@ -477,7 +477,7 @@ jobs:
           # Ensure image field uses correct format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
           SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
           CORRECT_IMAGE="ghcr.io/faserf/hassio-addons-${SLUG}-{arch}"
-          
+
           if grep -q "^image:" "${{ matrix.addon }}/config.yaml"; then
             CURRENT_IMAGE=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
             if [ "$CURRENT_IMAGE" != "$CORRECT_IMAGE" ]; then
@@ -533,10 +533,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Stash any local changes first
+          git stash || echo "No changes to stash"
           # Fetch latest changes
           git fetch origin master
-          # Try to rebase, if that fails try merge
-          git rebase origin/master || git merge origin/master --no-edit || echo "Pull/rebase failed, continuing..."
+          # Reset to match remote exactly
+          git reset --hard origin/master
+          # Restore stashed changes if any
+          git stash pop || echo "No stashed changes"
+          # Pull any new changes
+          git pull origin master --no-rebase || echo "Already up to date"
 
       - name: 🚀 Commit Changes
         id: commit_changes
@@ -552,9 +558,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Pull latest changes
+          # Stash any local changes
+          git stash || echo "No changes to stash"
+          # Fetch and reset to remote
           git fetch origin master
-          git rebase origin/master || git merge origin/master --no-edit
+          git reset --hard origin/master
+          # Restore stashed changes
+          git stash pop || echo "No stashed changes"
+          git pull origin master --no-rebase || echo "Already up to date"
           # Check if there are changes to commit
           if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
             git add "${{ matrix.addon }}/*"
@@ -573,11 +584,11 @@ jobs:
         run: |
           # Extract version from config.yaml
           VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-          
+
           # Get package name from config.yaml image field
           # Format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-          
+
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
             # Fallback: use slug
             SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
@@ -586,7 +597,7 @@ jobs:
             # Extract package name: remove ghcr.io/faserf/ prefix
             PACKAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||' | sed 's/-{arch}$//' | sed 's/-amd64$//' | sed 's/-aarch64$//' | sed 's/-armhf$//' | sed 's/-armv7$//' | sed 's/-i386$//')
           fi
-          
+
           OWNER="${{ github.repository_owner }}"
 
           echo "🔍 Checking for existing image: $PACKAGE_NAME:$VERSION"
@@ -723,10 +734,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Fetch latest changes
+          # Stash any local changes
+          git stash || echo "No changes to stash"
+          # Fetch and reset to remote
           git fetch origin master
-          # Try to rebase, if that fails try merge
-          git rebase origin/master || git merge origin/master --no-edit || echo "Pull/rebase failed, continuing..."
+          git reset --hard origin/master
+          # Restore stashed changes
+          git stash pop || echo "No stashed changes"
+          git pull origin master --no-rebase || echo "Already up to date"
 
       - name: 🚀 Commit Dev Version
         id: commit_dev
@@ -747,9 +762,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Pull latest changes
+          # Stash any local changes
+          git stash || echo "No changes to stash"
+          # Fetch and reset to remote
           git fetch origin master
-          git rebase origin/master || git merge origin/master --no-edit
+          git reset --hard origin/master
+          # Restore stashed changes
+          git stash pop || echo "No stashed changes"
+          git pull origin master --no-rebase || echo "Already up to date"
           # Check if there are changes to commit
           if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
             git add "${{ matrix.addon }}/*"
