@@ -387,8 +387,7 @@ jobs:
             --target /data/${{ matrix.addon }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon \
-            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            --addon
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -489,7 +488,6 @@ jobs:
             --image "${{ steps.info_build.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
-            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --no-cache
 
       - name: 🔄 Bump to Dev Version
