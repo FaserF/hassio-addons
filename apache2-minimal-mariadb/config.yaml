@@ -20,7 +20,7 @@ options:
   php_ini: default
   default_conf: default
   default_ssl_conf: default
-  website_name: null
+  website_name: "web.local"
   ssl: true
   certfile: fullchain.pem
   keyfile: privkey.pem

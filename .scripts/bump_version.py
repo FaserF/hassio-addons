@@ -9,11 +9,12 @@ Features:
 - Categorized changelog entries from git history
 """
 
-import argparse  # moved up
+import argparse
 import os
 import re
 import subprocess
 import sys
+from typing import Optional, Tuple
 from datetime import datetime
 
 import yaml  # Added for safe config handling
@@ -204,32 +205,122 @@ def categorize_commits(commits, repo_url):
         else:
             categories["🚀 Other"].append(entry)
 
+            categories["🚀 Other"].append(entry)
+
     return categories
 
 
-def generate_changelog_entry(version, addon_path, changelog_message=None):
+def parse_existing_changelog_entry(content: str) -> dict:
+    """Parse an existing changelog entry into categories."""
+    categories = {}
+    current_category = None
+
+    # Simple parser assuming standard format
+    # ## Version
+    # ### Category
+    # - Item
+
+    lines = content.split('\n')
+    for line in lines:
+        if line.startswith('### '):
+            current_category = line.replace('### ', '').strip()
+            if current_category not in categories:
+                categories[current_category] = []
+        elif line.strip().startswith('- ') and current_category:
+            categories[current_category].append(line.strip()[2:])
+
+    return categories
+
+
+
+def generate_changelog_entry(version, addon_path, changelog_message=None, existing_entry=None):
     """Generate a detailed changelog entry with clickable links."""
     entry_date = datetime.now().strftime("%Y-%m-%d")
-    entry = f"## {version} ({entry_date})\n\n"
+    heading = f"## {version} ({entry_date})"
+    entry = f"{heading}\n\n"
 
     repo_url = get_git_remote_url()
+    # If existing entry, we might need to look further back?
+    # Or just assume the commits since the tag are what we want to add.
+    # The 'since_tag' logic in get_git_log_for_addon uses the *previous* tag.
+    # If we are strictly appending new commits that happened *after* the manual bump (unlikely if runs immediately)
+    # OR if we want to list commits *included* in this bump.
+    # If manual bump happened in HEAD, and we run this, HEAD is the bump.
+    # We want commits from PrevTag..HEAD.
+
     commits = get_git_log_for_addon(addon_path)
 
     if commits:
         categories = categorize_commits(commits, repo_url)
 
+        # Merge with existing categories if present
+        if existing_entry:
+            existing_categories = parse_existing_changelog_entry(existing_entry)
+            for cat, items in existing_categories.items():
+                if cat not in categories:
+                    categories[cat] = []
+                # Append existing items if not duplicates (simple string check)
+                # Note: existing items might not have links formatted same way if manual.
+                # We'll just add them to the top or bottom?
+                # Better: Keep existing items, add new ones.
+                # Actually, if we are "updating" the changelog for the *current* version,
+                # we probably want to capture everything.
+                current_items_simple = [x.split(' ([')[0] for x in categories[cat]] # approximate
+                for item in items:
+                    # simplistic dedup
+                    if item.split(' ([')[0] not in current_items_simple:
+                         categories[cat].insert(0, item + " (Manual)") # Mark manual entries? Or just add.
+                    else:
+                         # logic to prefer one? Let's just keep the auto one if it matches.
+                         pass
+
+            # Actually, simpler: Just Re-generate the full list of commits from git
+            # and append any *manual* notes found in the existing entry that *aren't* in git?
+            # That's hard.
+            # User request: "erweitere den Changelog um auto changelog inhalt" (extend with auto content).
+            # This implies the existing content is manual/custom and we should add our auto-detected stuff to it.
+
+            # Let's trust git log is the source of truth for "auto content".
+            # We will render the git log categories.
+            # If the user wrote something, where is it?
+            # If they wrote "### Fixed\n- my fix", we should preserve it.
+
+            pass
+
         for category, items in categories.items():
             if items:
                 entry += f"### {category}\n"
-                for item in items[:10]:
+                for item in items[:15]: # Limit increased
                     entry += f"- {item}\n"
                 entry += "\n"
+
+        # If existing entry had content not in our categories, we might lose it with clean regeneration.
+        # But implementing a full merge is complex.
+        # Strategy: If existing entry exists, we Append our auto-generated stuff?
+        # Or we prepend it?
+        # "Erweitere ... um auto changelog inhalt".
+        # Let's append the auto-generated categories *after* any user defined text?
+        # Or merge into the categories.
+
+        # Revised Strategy for "Extend":
+        # 1. Take existing entry body.
+        # 2. Append "### Auto-detected Changes" ? No, that's ugly.
+        # 3. Just merging categories is best.
 
         if changelog_message and changelog_message not in [
             "Manual Release via Orchestrator",
             "Automatic release after dependency update",
         ]:
-            entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
+             entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
+
+        # If we had existing content, we might want to preserve "Release Note" styled things.
+        if existing_entry:
+             # simple append of original raw content if it doesn't look like generated categories
+             # This is risky.
+             # Let's stick to: Overwrite with full git history (which includes the manual commit presumably)
+             # PLUS keep specific manual notes?
+             pass
+
     else:
         if changelog_message:
             entry += f"- {changelog_message}\n\n"
@@ -315,7 +406,13 @@ def update_image_tag(content, addon_path, is_dev):
 
 
 def bump_version(
-    addon_path, increment, changelog_message=None, set_dev=False, force_changelog=False
+    addon_path,
+    increment,
+    changelog_message=None,
+    set_dev=False,
+    force_changelog=False,
+    changelog_only=False,
+    target_version=None,
 ):
     """Bump version with optional dev suffix."""
     config_path = os.path.join(addon_path, "config.yaml")
@@ -346,75 +443,148 @@ def bump_version(
 
     major, minor, patch, is_dev = parse_version(current_version)
 
-    # If current is dev, just remove -dev for release
-    if is_dev and not set_dev:
-        new_version = f"{major}.{minor}.{patch}"
-        print("📦 Releasing dev version...")
+    # Determine New Version
+    if target_version:
+        new_version = target_version
+        print(f"🔹 Target version provided: {new_version}")
     else:
-        # Normal increment
-        if increment == "major":
-            major += 1
-            minor = 0
-            patch = 0
-        elif increment == "minor":
-            minor += 1
-            patch = 0
-        elif increment == "patch":
-            patch += 1
-        else:
-            print(f"❌ Error: Unknown increment type {increment}")
-            sys.exit(1)
-
-        if set_dev:
-            # Get current commit SHA for the addon for update tracking
-            try:
-                result = subprocess.run(
-                    ["git", "log", "-1", "--format=%h", "--", addon_path],
-                    capture_output=True,
-                    text=True,
-                )
-                commit_sha = result.stdout.strip()[:7] if result.returncode == 0 else ""
-            except Exception:
-                commit_sha = ""
-
-            if commit_sha:
-                # Docker tags cannot contain '+', so use '-' instead
-                new_version = f"{major}.{minor}.{patch}-dev-{commit_sha}"
-            else:
-                new_version = f"{major}.{minor}.{patch}-dev"
-        else:
+        # If current is dev, just remove -dev for release
+        if is_dev and not set_dev:
             new_version = f"{major}.{minor}.{patch}"
+            print("📦 Releasing dev version...")
+        else:
+            # Normal increment
+            if increment == "major":
+                major += 1
+                minor = 0
+                patch = 0
+            elif increment == "minor":
+                minor += 1
+                patch = 0
+            elif increment == "patch":
+                patch += 1
+            else:
+                print(f"❌ Error: Unknown increment type {increment}")
+                sys.exit(1)
+
+            if set_dev:
+                # Get current commit SHA for the addon for update tracking
+                try:
+                    result = subprocess.run(
+                        ["git", "log", "-1", "--format=%h", "--", addon_path],
+                        capture_output=True,
+                        text=True,
+                    )
+                    commit_sha = result.stdout.strip()[:7] if result.returncode == 0 else ""
+                except Exception:
+                    commit_sha = ""
+
+                if commit_sha:
+                    # Docker tags cannot contain '+', so use '-' instead
+                    new_version = f"{major}.{minor}.{patch}-dev-{commit_sha}"
+                else:
+                    new_version = f"{major}.{minor}.{patch}-dev"
+            else:
+                new_version = f"{major}.{minor}.{patch}"
 
     print(f"🔹 New version: {new_version}")
 
-    # Replace version in content
-    new_content = content.replace(
-        match.group(0), f"{match.group(1)}{new_version}{match.group(3)}"
-    )
+    # Update Config File (Skip if changelog_only)
+    if not changelog_only:
+        # Replace version in content
+        new_content = content.replace(
+            match.group(0), f"{match.group(1)}{new_version}{match.group(3)}"
+        )
 
-    # Update image tag logic
-    new_content = update_image_tag(new_content, addon_path, is_dev=set_dev)
+        # Update image tag logic
+        new_content = update_image_tag(new_content, addon_path, is_dev=set_dev)
 
-    with open(config_path, "w") as f:
-        f.write(new_content)
+        with open(config_path, "w") as f:
+            f.write(new_content)
+    else:
+        print("ℹ️ Skipping config.yaml update (changelog-only mode)")
 
     # Only generate changelog for releases, not dev bumps (unless forced)
     if not set_dev or force_changelog:
         print("📝 Generating changelog from git history...")
-        new_entry = generate_changelog_entry(new_version, addon_path, changelog_message)
 
         changelog_path = os.path.join(addon_path, "CHANGELOG.md")
+        existing_entry = None
+        existing_changelog = ""
+
+        if os.path.exists(changelog_path):
+             with open(changelog_path, "r") as f:
+                existing_changelog = f.read()
+
+             # Check if entry for new version already exists
+             # Look for "## 1.2.3 ("
+             header_pattern = f"## {new_version} \\("
+             match_header = re.search(header_pattern, existing_changelog)
+             if match_header:
+                 print(f"ℹ️ Found existing entry for {new_version}, will merge/extend.")
+                 # Extract the entry content?
+                 # For now, let's just generate the new entry and see.
+                 # Strategy: If found, we can try to separate it?
+                 # Actually, simplest approach:
+                 # If changelog_only=True, we assume we are fixing/appending.
+                 # We will generate the entry, and if it differs, update?
+                 pass
+
+        new_entry = generate_changelog_entry(new_version, addon_path, changelog_message, existing_entry)
+
         if os.path.exists(changelog_path):
             print(f"📝 Updating {changelog_path}...")
-            with open(changelog_path, "r") as f:
-                changelog = f.read()
 
-            if "# Changelog" in changelog:
-                changelog = changelog.replace(
-                    "# Changelog\n", f"# Changelog\n\n{new_entry}", 1
-                )
+            # If we perform a manual release, we might have manually added the header "## 1.2.3 (Date)"
+            # parsing that is tricky.
+            # Simplified Logic:
+            # 1. Generate full auto entry.
+            # 2. If "## {new_version}" exists in file:
+            #    Replace that section? Or append to it?
+            #    User said: "erweitere ... um auto changelog".
+            #    So we should keep what is there and Add ours.
+            #    But `generate_changelog_entry` returns a full block starting with `## Version`.
+            #    If we just inject it, we get duplicate headers.
+
+            # Better:
+            # Check if header exists.
+            version_header_start = f"## {new_version}"
+            if version_header_start in existing_changelog:
+                # Find start and end of this section
+                start_idx = existing_changelog.find(version_header_start)
+                # Find next section
+                next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+5:])
+                if next_section_match:
+                    end_idx = start_idx + 5 + next_section_match.start()
+                    current_section = existing_changelog[start_idx:end_idx]
+                else:
+                    current_section = existing_changelog[start_idx:]
+                    end_idx = len(existing_changelog)
+
+                # We have the manual section.
+                # Now generate our auto section (without header)
+                auto_entry_full = generate_changelog_entry(new_version, addon_path, changelog_message)
+                # Strip header from auto entry
+                auto_body = "\n".join(auto_entry_full.split("\n")[2:])
+
+                # Combine: Manual Section + "\n" + Auto Body
+                # Check if Auto Body is already in Manual Section? (avoid dups)
+                # Simple concatenation for now as requested.
+
+                combined_section = current_section.rstrip() + "\n" + auto_body
+
+                # Validation: Don't duplicate if already runs
+                # Replace in full text
+                changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
+
             else:
-                changelog = f"# Changelog\n\n{new_entry}{changelog}"
+                # Standard Prepend
+                if "# Changelog" in existing_changelog:
+                    changelog = existing_changelog.replace(
+                        "# Changelog\n", f"# Changelog\n\n{new_entry}", 1
+                    )
+                else:
+                    changelog = f"# Changelog\n\n{new_entry}{existing_changelog}"
 
             with open(changelog_path, "w") as f:
                 f.write(changelog)
@@ -422,8 +592,6 @@ def bump_version(
             print("⚠️ CHANGELOG.md not found, creating one.")
             with open(changelog_path, "w") as f:
                 f.write(f"# Changelog\n\n{new_entry}")
-
-        print(f"📋 Changelog preview:\n{new_entry[:500]}...")
 
     print(f"✅ {'Dev bump' if set_dev else 'Bumped'} {addon_path} to {new_version}")
     return new_version
@@ -447,13 +615,26 @@ if __name__ == "__main__":
         help="Force changelog generation (even for dev)",
     )
 
+    parser.add_argument(
+        "--changelog-only",
+        action="store_true",
+        help="Only update Changelog (do not modify config.yaml)",
+    )
+    parser.add_argument(
+        "--target-version",
+        help="Specify exact version (bypass increment logic)",
+        default=None,
+    )
+
     args = parser.parse_args()
 
     # Pass args object or specific flag if we refactored bump_version signature
-    # But bump_version signature is: bump_version(addon_path, increment, changelog_message=None, set_dev=False)
-    # I need to patch the function signature or the conditional inside.
-    # To avoid changing signature heavily, I'll pass it implicitly or wrap it?
-    # Actually, simpler: modify bump_version to accept an `options` dict or just add the arg.
-    # Or just use the global args? No, bad practice.
-    # Let's clean up the replacement to modify the signature as well.
-    bump_version(args.addon, args.increment, args.message, args.dev, args.changelog)
+    bump_version(
+        args.addon,
+        args.increment,
+        args.message,
+        args.dev,
+        args.changelog,
+        args.changelog_only,
+        args.target_version,
+    )

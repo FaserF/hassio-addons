@@ -5,11 +5,14 @@
 # Enable strict mode
 set -e
 # shellcheck disable=SC1091
-source /usr/lib/bashio/banner.sh
+
 bashio::addon.print_banner
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
+if [ -z "$website_name" ] || [ "$website_name" = "null" ]; then
+    website_name="web.local"
+fi
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 DocumentRoot=$(bashio::config 'document_root')
@@ -183,6 +186,40 @@ mkdir -p /usr/lib/php84/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"
+
+# Get local IP
+# We can use the Supervisor API to get the Host IP
+host_ip=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq -r '.data.interfaces[] | select(.primary) | .ipv4.address[]' | head -n 1 | cut -d'/' -f1)
+
+# Fallback if Host IP is empty
+if [ -z "$host_ip" ]; then
+    host_ip="homeassistant.local"
+fi
+
+# Determine protocol and port
+protocol="http"
+port="80"
+if [ "$ssl" = "true" ]; then
+    protocol="https"
+    port="443"
+fi
+
+# Get External Port from Supervisor
+external_port=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info | jq -r ".data.network.\"${port}/tcp\"")
+
+bashio::log.info "---------------------------------------------------"
+bashio::log.info "Apache2 is starting..."
+bashio::log.info ""
+if [ "$external_port" != "null" ] && [ -n "$external_port" ]; then
+    bashio::log.info "You can access the website in your local network at:"
+    bashio::log.info "  ${protocol}://${host_ip}:${external_port}"
+else
+    bashio::log.warning "Could not determine external port mapping."
+    bashio::log.warning "Please check your port configuration in Home Assistant."
+    bashio::log.info "Internal container connection: ${protocol}://$(hostname -i):${port}"
+fi
+bashio::log.info ""
+bashio::log.info "---------------------------------------------------"
 
 echo "Starting Apache2..."
 exec /usr/sbin/httpd -D FOREGROUND

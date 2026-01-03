@@ -5,11 +5,14 @@
 # Enable strict mode
 set -euo pipefail
 # shellcheck disable=SC1091
-source /usr/lib/bashio/banner.sh
+
 bashio::addon.print_banner
 
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
+if [ -z "$website_name" ] || [ "$website_name" = "null" ]; then
+    website_name="web.local"
+fi
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 document_root=$(bashio::config 'document_root')

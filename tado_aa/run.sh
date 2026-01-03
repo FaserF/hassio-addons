@@ -4,7 +4,7 @@
 
 # Enable strict mode
 set -euo pipefail
-source /usr/lib/bashio/banner.sh
+
 bashio::addon.print_banner
 
 username=$(bashio::config 'username')

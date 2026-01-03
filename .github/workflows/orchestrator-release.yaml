@@ -39,6 +39,13 @@ on:
   schedule:
     - cron: "0 5 1 * *" # Monthly Edge Updates
 
+  push:
+    branches:
+      - master
+    paths:
+      - "**/config.yaml"
+
+
 permissions:
   contents: write
   packages: write
@@ -94,6 +101,7 @@ jobs:
       should_release: ${{ steps.detect.outputs.should_release }}
       is_auto: ${{ steps.detect.outputs.is_auto }}
       version_type: ${{ steps.detect.outputs.version_type }}
+      is_manual_bump: ${{ steps.detect.outputs.is_manual_bump }}
     steps:
       - name: ⤵️ Checkout code
         uses: actions/checkout@v6
@@ -213,6 +221,39 @@ jobs:
             done
 
             [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
+          # ----------------------------------------------------------------
+          # PUSH TO MASTER (Manual Version Bump Detection)
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "push" ]; then
+             IS_AUTO="false"
+
+             # Get list of changed files
+             CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+             for file in $CHANGED_FILES; do
+               if [[ "$file" == *"/config.yaml" ]]; then
+                 addon_dir=$(dirname "$file")
+                 addon_name=$(basename "$addon_dir")
+
+                 # Check if version changed
+                 # We need to install yq or use python to check versions reliably, or simple grep
+                 # Let's use python one-liner since we have python environment
+
+                 # Get old version
+                 OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                 # Get new version
+                 NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                 if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                    echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
+                    [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                    SHOULD_RELEASE="true"
+                    IS_MANUAL_BUMP="true"
+                    VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                 fi
+               fi
+             done
+
           fi
 
           # Convert to JSON array
@@ -226,12 +267,14 @@ jobs:
           echo "Should release: $SHOULD_RELEASE"
           echo "Is auto: $IS_AUTO"
           echo "Version type: $VERSION_TYPE"
+          echo "Is manual bump: ${IS_MANUAL_BUMP:-false}"
 
           {
             echo "addons=$JSON"
             echo "should_release=$SHOULD_RELEASE"
             echo "is_auto=$IS_AUTO"
             echo "version_type=$VERSION_TYPE"
+            echo "is_manual_bump=${IS_MANUAL_BUMP:-false}"
           } >> "$GITHUB_OUTPUT"
 
   # ================================================================================
@@ -328,6 +371,7 @@ jobs:
         run: |
           VERSION_TYPE="${{ needs.detect.outputs.version_type }}"
           IS_AUTO="${{ needs.detect.outputs.is_auto }}"
+          IS_MANUAL_BUMP="${{ needs.detect.outputs.is_manual_bump }}"
 
           if [ "$IS_AUTO" == "true" ]; then
             MSG="Automatic release after dependency update"
@@ -335,7 +379,12 @@ jobs:
             MSG="Manual release via Orchestrator"
           fi
 
-          python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
+          if [ "$IS_MANUAL_BUMP" == "true" ]; then
+             echo "ℹ️ Manual bump detected. Updating Changelog only."
+             python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$VERSION_TYPE" --changelog-only --message "$MSG"
+          else
+             python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
