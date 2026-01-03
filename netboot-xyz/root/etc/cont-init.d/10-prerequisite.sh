@@ -8,7 +8,7 @@ dhcp_range=$(bashio::config 'dhcp_range')
 path=$(bashio::config 'path')
 path_config=$(bashio::config 'path_config')
 
-#echo "Port: $nginx_port"
+echo "Port: $nginx_port"
 
 echo "Creating user $nginx_uid and setting permissions..."
 

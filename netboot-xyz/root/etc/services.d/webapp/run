@@ -9,5 +9,9 @@ addon_version=$(bashio::addon.version)
 
 # Run App
 cd /app
+export WEB_APP_PORT=$(bashio::addon.port 3000)
+if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
+    export SUBFOLDER=$(bashio::addon.ingress_entry)
+fi
 exec \
 /usr/bin/node app.js
