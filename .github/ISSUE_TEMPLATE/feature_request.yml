@@ -32,15 +32,15 @@ body:
         The name of the Addon you are wishing a new feature.
         For example: Apache2
       options:
+        - Other
         - AegisBot
         - ShieldDNS
         - ShieldFile
+        - antigravity-server
         - apache2
         - apache2-minimal
         - apache2-minimal-mariadb
         - bash_script_executer
-        - bt-mqtt-gateway
-        - freenom-dns-updater
         - homeassistant-test-instance
         - matterbridge
         - netboot-xyz
@@ -51,11 +51,9 @@ body:
         - switch_lan_play
         - switch_lan_play_server
         - tado_aa
-        - tuya-convert
         - whatsapp
         - wiki.js
-        - xqrepack
-        - Other
+        - wiki.js3
   - type: markdown
     attributes:
       value: |

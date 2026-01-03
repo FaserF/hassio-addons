@@ -557,30 +557,41 @@ def bump_version(
             if version_header_start in existing_changelog:
                 # Find start and end of this section
                 start_idx = existing_changelog.find(version_header_start)
-                # Find next section
-                next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+5:])
+                # Find next section (look for next version header or end of file)
+                next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+len(version_header_start):])
                 if next_section_match:
-                    end_idx = start_idx + 5 + next_section_match.start()
+                    end_idx = start_idx + len(version_header_start) + next_section_match.start()
                     current_section = existing_changelog[start_idx:end_idx]
                 else:
                     current_section = existing_changelog[start_idx:]
                     end_idx = len(existing_changelog)
 
-                # We have the manual section.
-                # Now generate our auto section (without header)
-                auto_entry_full = generate_changelog_entry(new_version, addon_path, changelog_message)
-                # Strip header from auto entry
-                auto_body = "\n".join(auto_entry_full.split("\n")[2:])
+                # We have the manual section - preserve it completely
+                # Check if auto-generated content already exists in this section
+                has_auto_content = "### ✨ Features" in current_section or "### 🐛 Bug Fixes" in current_section or "### 📦 Dependencies" in current_section
 
-                # Combine: Manual Section + "\n" + Auto Body
-                # Check if Auto Body is already in Manual Section? (avoid dups)
-                # Simple concatenation for now as requested.
+                if has_auto_content:
+                    # Auto content already exists, don't duplicate
+                    print(f"ℹ️ Auto-generated content already exists in version {new_version} entry, skipping auto-generation")
+                    changelog = existing_changelog
+                else:
+                    # Generate auto section (without header) and append to manual section
+                    auto_entry_full = generate_changelog_entry(new_version, addon_path, changelog_message)
+                    # Strip header from auto entry (first 2 lines: "## version (date)" and blank line)
+                    auto_lines = auto_entry_full.split("\n")
+                    if len(auto_lines) > 2 and auto_lines[0].startswith("##"):
+                        auto_body = "\n".join(auto_lines[2:])  # Skip header and blank line
+                    else:
+                        auto_body = "\n".join(auto_lines)
 
-                combined_section = current_section.rstrip() + "\n" + auto_body
-
-                # Validation: Don't duplicate if already runs
-                # Replace in full text
-                changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
+                    # Combine: Manual Section + separator + Auto Body
+                    # Only add if auto_body has meaningful content
+                    if auto_body.strip() and len(auto_body.strip()) > 10:
+                        combined_section = current_section.rstrip() + "\n\n" + auto_body
+                        changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
+                    else:
+                        # No meaningful auto content, keep manual section as is
+                        changelog = existing_changelog
 
             else:
                 # Standard Prepend
