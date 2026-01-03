@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       addon:
-        description: "Add-on slug (folder name, or 'detect' for auto)"
+        description: "Add-on slug (folder name), 'all' for all add-ons, or 'detect' for auto"
         required: true
         type: string
       version:
@@ -24,6 +24,11 @@ on:
           - major
       skip_verification:
         description: "Skip lint/build verification"
+        required: false
+        default: false
+        type: boolean
+      changelog_only:
+        description: "Only update changelog, don't bump version (versions already correct)"
         required: false
         default: false
         type: boolean
@@ -134,7 +139,31 @@ jobs:
             IS_AUTO="false"
             VERSION_TYPE="${INPUT_VERSION:-patch}"
 
-            if [ "$INPUT_ADDON" != "detect" ]; then
+            if [ "$INPUT_ADDON" == "all" ]; then
+              # Find all add-ons (matching Python script logic)
+              echo "🔍 Finding all add-ons..."
+              # Regular addons (top-level directories with config.yaml)
+              for item in */; do
+                item_name="${item%/}"
+                if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
+                  # Skip test add-ons
+                  if [ "$item_name" != "homeassistant-test-instance" ]; then
+                    [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                  fi
+                fi
+              done
+              # Unsupported addons
+              if [ -d ".unsupported" ]; then
+                for item in .unsupported/*/; do
+                  if [ -f "${item}config.yaml" ]; then
+                    item_name=".unsupported/$(basename "$item")"
+                    [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                  fi
+                done
+              fi
+              SHOULD_RELEASE="true"
+              echo "📦 Found add-ons: $ADDONS"
+            elif [ "$INPUT_ADDON" != "detect" ]; then
               ADDONS="$INPUT_ADDON"
               SHOULD_RELEASE="true"
             fi
@@ -373,6 +402,7 @@ jobs:
           VERSION_TYPE="${{ needs.detect.outputs.version_type }}"
           IS_AUTO="${{ needs.detect.outputs.is_auto }}"
           IS_MANUAL_BUMP="${{ needs.detect.outputs.is_manual_bump }}"
+          CHANGELOG_ONLY="${{ github.event.inputs.changelog_only || 'false' }}"
 
           if [ "$IS_AUTO" == "true" ]; then
             MSG="Automatic release after dependency update"
@@ -380,19 +410,22 @@ jobs:
             MSG="Manual release via Orchestrator"
           fi
 
-          if [ "$IS_MANUAL_BUMP" == "true" ]; then
-             echo "ℹ️ Manual bump detected. Updating Changelog only."
-             python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$VERSION_TYPE" --changelog-only --message "$MSG"
+          if [ "$IS_MANUAL_BUMP" == "true" ] || [ "$CHANGELOG_ONLY" == "true" ]; then
+             echo "ℹ️ Changelog-only mode: Updating Changelog without version bump."
+             # Get current version from config.yaml
+             CURRENT_VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+             python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$CURRENT_VERSION" --changelog-only --message "$MSG"
           else
              python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🚀 Commit Version Bump
+      - name: 🚀 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
-          commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip-tests]"
+          commit_message: |
+            ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
           file_pattern: "${{ matrix.addon }}/*"
 
       - name: ℹ️ Get Add-on Info (Post-Bump)
@@ -415,14 +448,18 @@ jobs:
             --no-cache
 
       - name: 🔄 Bump to Dev Version
-        if: success()
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
         run: |
           python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Dev Version
-        if: success()
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip-tests]"

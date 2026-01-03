@@ -555,6 +555,14 @@ def bump_version(
                     current_section = existing_changelog[start_idx:]
                     end_idx = len(existing_changelog)
 
+                # Always extend existing entry, never overwrite
+                # Strip header from auto entry (first 2 lines: "## version (date)" and blank line)
+                auto_lines = new_entry.split("\n")
+                if len(auto_lines) > 2 and auto_lines[0].startswith("##"):
+                    auto_body = "\n".join(auto_lines[2:])  # Skip header and blank line
+                else:
+                    auto_body = "\n".join(auto_lines)
+
                 # Check if auto-generated content already exists in this section
                 # Check for all category headers used by categorize_commits
                 ALL_CATEGORY_MARKERS = [
@@ -570,27 +578,71 @@ def bump_version(
                 ]
                 has_auto_content = any(marker in current_section for marker in ALL_CATEGORY_MARKERS)
 
-                if has_auto_content:
-                    # Auto content already exists, don't duplicate
-                    print(f"ℹ️ Auto-generated content already exists in version {new_version} entry, skipping auto-generation")
-                    changelog = existing_changelog
+                if has_auto_content and auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
+                    # Auto content already exists, but we want to merge/extend it
+                    # Parse existing categories and merge with new ones
+                    print(f"ℹ️ Auto-generated content already exists for version {new_version}, merging with new content...")
+                    
+                    # Extract existing categories from current_section
+                    existing_categories = parse_existing_changelog_entry(current_section)
+                    
+                    # Parse new auto-generated categories from auto_body
+                    new_categories = parse_existing_changelog_entry(auto_body)
+                    
+                    # Merge categories: keep existing items, add new ones (avoid duplicates)
+                    merged_categories = {}
+                    all_category_names = set(list(existing_categories.keys()) + list(new_categories.keys()))
+                    
+                    for cat_name in all_category_names:
+                        merged_items = []
+                        # Add existing items first
+                        if cat_name in existing_categories:
+                            merged_items.extend(existing_categories[cat_name])
+                        # Add new items that don't already exist (simple deduplication by content)
+                        if cat_name in new_categories:
+                            existing_texts = {item.split(' ([')[0].strip() for item in merged_items}
+                            for new_item in new_categories[cat_name]:
+                                new_text = new_item.split(' ([')[0].strip()
+                                if new_text not in existing_texts:
+                                    merged_items.append(new_item)
+                        if merged_items:
+                            merged_categories[cat_name] = merged_items
+                    
+                    # Rebuild the section with merged content
+                    # Keep the original header and any manual content before categories
+                    section_lines = current_section.split("\n")
+                    header_end_idx = 0
+                    for i, line in enumerate(section_lines):
+                        if any(line.strip().startswith(f"### {marker.split('### ')[1]}") for marker in ALL_CATEGORY_MARKERS):
+                            header_end_idx = i
+                            break
+                    if header_end_idx == 0:
+                        header_end_idx = len(section_lines)
+                    
+                    # Rebuild section: header + merged categories
+                    merged_section = "\n".join(section_lines[:header_end_idx]).rstrip()
+                    if merged_section and not merged_section.endswith("\n"):
+                        merged_section += "\n\n"
+                    
+                    # Add merged categories
+                    for category, items in sorted(merged_categories.items()):
+                        if items:
+                            merged_section += f"### {category}\n"
+                            for item in items[:15]:  # Limit items
+                                merged_section += f"- {item}\n"
+                            merged_section += "\n"
+                    
+                    combined_section = merged_section.rstrip() + "\n"
+                    changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
+                elif auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
+                    # No existing auto content, append new auto content
+                    print(f"ℹ️ Extending existing entry for version {new_version} with auto-generated content...")
+                    combined_section = current_section.rstrip() + "\n\n" + auto_body
+                    changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
                 else:
-                    # Reuse new_entry that was already generated with existing_entry
-                    # Strip header from auto entry (first 2 lines: "## version (date)" and blank line)
-                    auto_lines = new_entry.split("\n")
-                    if len(auto_lines) > 2 and auto_lines[0].startswith("##"):
-                        auto_body = "\n".join(auto_lines[2:])  # Skip header and blank line
-                    else:
-                        auto_body = "\n".join(auto_lines)
-
-                    # Combine: Manual Section + separator + Auto Body
-                    # Only add if auto_body has meaningful content
-                    if auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
-                        combined_section = current_section.rstrip() + "\n\n" + auto_body
-                        changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
-                    else:
-                        # No meaningful auto content, keep manual section as is
-                        changelog = existing_changelog
+                    # No meaningful auto content, keep existing section as is
+                    print(f"ℹ️ No new auto-generated content to add for version {new_version}, keeping existing entry")
+                    changelog = existing_changelog
 
             else:
                 # Standard Prepend
