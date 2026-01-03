@@ -140,6 +140,10 @@ jobs:
             IS_AUTO="false"
             VERSION_TYPE="${INPUT_VERSION:-patch}"
 
+            echo "🔍 Manual dispatch detected"
+            echo "  INPUT_ADDON: '$INPUT_ADDON'"
+            echo "  INPUT_VERSION: '$INPUT_VERSION'"
+
             if [ "$INPUT_ADDON" == "all" ]; then
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
@@ -164,9 +168,14 @@ jobs:
               fi
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
-            elif [ "$INPUT_ADDON" != "detect" ]; then
+            elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
+              # Single addon specified
               ADDONS="$INPUT_ADDON"
               SHOULD_RELEASE="true"
+              echo "📦 Single addon specified: $ADDONS"
+            else
+              echo "⚠️ Invalid or missing addon input: '$INPUT_ADDON'"
+              SHOULD_RELEASE="false"
             fi
 
           # ----------------------------------------------------------------
@@ -287,9 +296,9 @@ jobs:
 
           fi
 
-          # Convert to JSON array
+          # Convert to JSON array (compact format for GitHub Actions output)
           if [ -n "$ADDONS" ]; then
-            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)"
+            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s -c .)"
           else
             JSON="[]"
           fi
@@ -300,6 +309,7 @@ jobs:
           echo "Version type: $VERSION_TYPE"
           echo "Is manual bump: ${IS_MANUAL_BUMP:-false}"
 
+          # Output as compact JSON (single line) to avoid formatting issues
           {
             echo "addons=$JSON"
             echo "should_release=$SHOULD_RELEASE"
