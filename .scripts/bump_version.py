@@ -512,11 +512,10 @@ def bump_version(
 
     # Only generate changelog for releases, not dev bumps (unless forced)
     if not set_dev or force_changelog:
-        print("📝 Generating changelog from git history...")
-
         changelog_path = os.path.join(addon_path, "CHANGELOG.md")
         existing_entry = None
         existing_changelog = ""
+        skip_auto_generation = False
 
         if os.path.exists(changelog_path):
              with open(changelog_path, "r") as f:
@@ -525,7 +524,7 @@ def bump_version(
              # Check if entry for new version already exists and extract it
              version_header_start = f"## {new_version}"
              if version_header_start in existing_changelog:
-                 print(f"ℹ️ Found existing entry for {new_version}, will merge/extend.")
+                 print(f"ℹ️ Found existing entry for {new_version}.")
                  # Find start and end of this section
                  start_idx = existing_changelog.find(version_header_start)
                  # Find next section (look for next version header or end of file)
@@ -535,10 +534,35 @@ def bump_version(
                      existing_entry = existing_changelog[start_idx:end_idx]
                  else:
                      existing_entry = existing_changelog[start_idx:]
+                 
+                 # Check if existing entry already has auto-generated content
+                 # Check for all category headers used by categorize_commits
+                 ALL_CATEGORY_MARKERS = [
+                     "### ✨ Features",
+                     "### 🐛 Bug Fixes",
+                     "### 📦 Dependencies",
+                     "### 🔧 Configuration",
+                     "### 📝 Documentation",
+                     "### 🎨 Style",
+                     "### ♻️ Refactor",
+                     "### 🔒 Security",
+                     "### 🚀 Other",
+                 ]
+                 has_auto_content = any(marker in existing_entry for marker in ALL_CATEGORY_MARKERS)
+                 
+                 if has_auto_content:
+                     print(f"ℹ️ Auto-generated changelog already exists for version {new_version}, skipping auto-generation.")
+                     skip_auto_generation = True
 
-        new_entry = generate_changelog_entry(new_version, addon_path, changelog_message, existing_entry)
+        if not skip_auto_generation:
+            print("📝 Generating changelog from git history...")
+            new_entry = generate_changelog_entry(new_version, addon_path, changelog_message, existing_entry)
+        else:
+            # Skip generation - existing changelog will be preserved
+            new_entry = None
+            print(f"✅ Preserving existing changelog entry for version {new_version}")
 
-        if os.path.exists(changelog_path):
+        if new_entry is not None and os.path.exists(changelog_path):
             print(f"📝 Updating {changelog_path}...")
 
             # Check if entry for new version already exists in the file
@@ -655,10 +679,15 @@ def bump_version(
 
             with open(changelog_path, "w") as f:
                 f.write(changelog)
-        else:
+        elif not skip_auto_generation:
+            # Only create new changelog if we're not skipping auto-generation
             print("⚠️ CHANGELOG.md not found, creating one.")
             with open(changelog_path, "w") as f:
                 f.write(f"# Changelog\n\n{new_entry}")
+        else:
+            # skip_auto_generation is True but CHANGELOG.md doesn't exist - this shouldn't happen
+            # but if it does, we skip creation to preserve user intent
+            print(f"ℹ️ Skipping changelog creation (auto-generation skipped for version {new_version})")
 
     print(f"✅ {'Dev bump' if set_dev else 'Bumped'} {addon_path} to {new_version}")
     return new_version

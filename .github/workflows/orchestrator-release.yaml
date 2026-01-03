@@ -266,7 +266,7 @@ jobs:
                 else
                   continue
                 fi
-                
+
                 # Check if Dockerfile or build.yaml in this addon was changed
                 if echo "$CHANGED" | grep -qE "^${addon_dir}/(Dockerfile|build\.yaml)$"; then
                   # Skip if already added
@@ -437,6 +437,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
@@ -500,18 +501,103 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🔄 Pull latest changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Fetch latest changes
+          git fetch origin master
+          # Try to rebase, if that fails try merge
+          git rebase origin/master || git merge origin/master --no-edit || echo "Pull/rebase failed, continuing..."
+
       - name: 🚀 Commit Changes
+        id: commit_changes
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: |
             ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
           file_pattern: "${{ matrix.addon }}/*"
+          skip_fetch: true
+
+      - name: 🔄 Retry Commit with Pull (if failed)
+        if: steps.commit_changes.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Pull latest changes
+          git fetch origin master
+          git rebase origin/master || git merge origin/master --no-edit
+          # Check if there are changes to commit
+          if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
+            git add "${{ matrix.addon }}/*"
+            git commit -m "${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
+            git push origin master || echo "Push failed"
+          fi
 
       - name: ℹ️ Get Add-on Info (Post-Bump)
         id: info_build
         uses: home-assistant/actions/helpers/info@master
         with:
           path: "./${{ matrix.addon }}"
+
+      - name: 🗑️ Delete existing image version (if exists)
+        continue-on-error: true
+        run: |
+          # Extract version from config.yaml
+          VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          IMAGE_NAME="${{ steps.info_build.outputs.image }}"
+          
+          # Extract package name from image (remove ghcr.io/owner/ prefix and any arch suffix)
+          # Image format: ghcr.io/owner/package-{arch} or ghcr.io/owner/package
+          PACKAGE_NAME=$(echo "$IMAGE_NAME" | sed 's|ghcr.io/[^/]*/||' | sed 's/-amd64$//' | sed 's/-aarch64$//' | sed 's/-armhf$//' | sed 's/-armv7$//' | sed 's/-i386$//')
+          OWNER="${{ github.repository_owner }}"
+          
+          echo "🔍 Checking for existing image: $PACKAGE_NAME:$VERSION"
+          
+          # Get GitHub API token
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          
+          # Function to delete version from a package
+          delete_version() {
+            local pkg_name=$1
+            local version=$2
+            local base_url=$3
+            
+            RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github.v3+json" "$base_url")
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            VERSIONS_JSON=$(echo "$RESPONSE" | sed '$d')
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              # Find version ID for the specific version tag
+              VERSION_ID=$(echo "$VERSIONS_JSON" | jq -r ".[] | select(.metadata.container.tags[]? == \"$version\") | .id" | head -n1)
+              
+              if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "null" ]; then
+                echo "🗑️ Found existing version $version (ID: $VERSION_ID) for $pkg_name, deleting..."
+                DELETE_URL="${base_url}/${VERSION_ID}"
+                DELETE_RESPONSE=$(curl -s -w "\n%{http_code}" -X DELETE -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github.v3+json" "$DELETE_URL")
+                DELETE_CODE=$(echo "$DELETE_RESPONSE" | tail -n1)
+                
+                if [ "$DELETE_CODE" = "204" ]; then
+                  echo "✅ Successfully deleted existing version $version for $pkg_name"
+                  return 0
+                else
+                  echo "⚠️ Failed to delete version (HTTP $DELETE_CODE)"
+                  return 1
+                fi
+              fi
+            fi
+            return 1
+          }
+          
+          # Try org endpoint first, then user endpoint
+          ORG_URL="https://api.github.com/orgs/${OWNER}/packages/container/${PACKAGE_NAME}/versions"
+          USER_URL="https://api.github.com/users/${OWNER}/packages/container/${PACKAGE_NAME}/versions"
+          
+          if ! delete_version "$PACKAGE_NAME" "$VERSION" "$ORG_URL"; then
+            if ! delete_version "$PACKAGE_NAME" "$VERSION" "$USER_URL"; then
+              echo "ℹ️ No existing version $VERSION found for $PACKAGE_NAME, proceeding with build"
+            fi
+          fi
 
       - name: 🏗️ Build & Push Add-on
         uses: home-assistant/builder@2025.11.0
@@ -534,7 +620,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🔄 Pull latest changes (before dev commit)
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Fetch latest changes
+          git fetch origin master
+          # Try to rebase, if that fails try merge
+          git rebase origin/master || git merge origin/master --no-edit || echo "Pull/rebase failed, continuing..."
+
       - name: 🚀 Commit Dev Version
+        id: commit_dev
         if: |
           success() &&
           github.event.inputs.changelog_only != 'true'
@@ -542,6 +641,25 @@ jobs:
         with:
           commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip-tests]"
           file_pattern: "${{ matrix.addon }}/*"
+          skip_fetch: true
+
+      - name: 🔄 Retry Dev Commit with Pull (if failed)
+        if: |
+          steps.commit_dev.outcome == 'failure' &&
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Pull latest changes
+          git fetch origin master
+          git rebase origin/master || git merge origin/master --no-edit
+          # Check if there are changes to commit
+          if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
+            git add "${{ matrix.addon }}/*"
+            git commit -m "chore(${{ matrix.addon }}): bump to dev version [skip-tests]" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
+            git push origin master || echo "Push failed"
+          fi
 
       - name: 📢 Release Summary
         run: |
