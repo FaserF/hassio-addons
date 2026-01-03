@@ -345,6 +345,12 @@ jobs:
           commit_message: "🚀 release(${{ matrix.addon }}): version bump [skip-tests]"
           file_pattern: "${{ matrix.addon }}/*"
 
+      - name: ℹ️ Get Add-on Info (Post-Bump)
+        id: info_build
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
       - name: 🏗️ Build & Push Add-on
         uses: home-assistant/builder@2025.11.0
         with:
@@ -352,7 +358,7 @@ jobs:
             --aarch64 \
             --amd64 \
             --target /data/${{ matrix.addon }} \
-            --image "${{ steps.info.outputs.image }}" \
+            --image "${{ steps.info_build.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon \
             --docker-args "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
