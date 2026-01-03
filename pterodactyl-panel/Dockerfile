@@ -68,6 +68,7 @@ RUN apk add --no-cache \
 # All build requirements get scrapped as to maintain a small image
 FROM base as production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
+ENV PTERODACTYL_VERSION="v1.11.11"
 
 WORKDIR /var/www/html
 

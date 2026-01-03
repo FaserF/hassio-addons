@@ -7,12 +7,15 @@ FROM ghcr.io/requarks/wiki:2@sha256:f7e92a711280e75d88e5c0892af15ccbf53d64b7963e
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
-# Install Node.js and Yarn via APK
+# Install Node.js, Yarn and MariaDB client via APK
 # hadolint ignore=DL3018
-RUN apk add --no-cache nodejs npm yarn wget dos2unix
+RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
+# Extract and persist Wiki.js version for runtime banner
+RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown") && \
+    echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment
 RUN rm -f /wiki/config.sample.yml
 
 COPY run.sh /

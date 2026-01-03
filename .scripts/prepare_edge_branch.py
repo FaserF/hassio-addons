@@ -51,6 +51,7 @@ def remove_image_from_config(config_path: str) -> bool:
 def update_addon_name(config_path: str, suffix: str) -> bool:
     """
     Append suffix to the 'name' field in config.yaml.
+    Handles both quoted and unquoted name values.
     """
     if not os.path.exists(config_path):
         return False
@@ -71,14 +72,34 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
 
         new_name = f"{current_name}{suffix}"
 
-        # Use regex to replace to preserve comments/formatting
-        # Look for "name: Value"
-        pattern = re.compile(rf"^name:\s+{re.escape(current_name)}$", re.MULTILINE)
+        # Try multiple patterns to handle different quote styles
+        # Pattern 1: name: "Value" (double quotes)
+        pattern_dq = re.compile(
+            rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE
+        )
+        # Pattern 2: name: 'Value' (single quotes)
+        pattern_sq = re.compile(
+            rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
+        )
+        # Pattern 3: name: Value (no quotes)
+        pattern_nq = re.compile(
+            rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE
+        )
 
         new_content = content
-        if pattern.search(content):
-            new_content = pattern.sub(f"name: {new_name}", content)
+        updated = False
 
+        if pattern_dq.search(content):
+            new_content = pattern_dq.sub(f'name: "{new_name}"', content)
+            updated = True
+        elif pattern_sq.search(content):
+            new_content = pattern_sq.sub(f"name: '{new_name}'", content)
+            updated = True
+        elif pattern_nq.search(content):
+            new_content = pattern_nq.sub(f"name: {new_name}", content)
+            updated = True
+
+        if updated:
             with open(config_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             return True

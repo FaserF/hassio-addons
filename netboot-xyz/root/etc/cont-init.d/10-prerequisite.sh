@@ -1,14 +1,29 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
+
+# Check if protection mode is disabled - this addon requires full system access
+bashio::require.unprotected
+
 nginx_uid=abc
 declare nginx_port
+declare tftp_port
 nginx_port=$(bashio::addon.port 85)
+tftp_port=$(bashio::addon.port "69/udp")
 dhcp_range=$(bashio::config 'dhcp_range')
 path=$(bashio::config 'path')
 path_config=$(bashio::config 'path_config')
 
-echo "Port: $nginx_port"
+# Validate critical ports for PXE boot
+if bashio::var.has_value "${nginx_port}" && [ "${nginx_port}" != "85" ]; then
+	bashio::log.warning "NGINX port changed from 85 to ${nginx_port}!"
+	bashio::log.warning "PXE boot clients expect assets on port 85. This may cause boot failures!"
+fi
+
+if bashio::var.has_value "${tftp_port}" && [ "${tftp_port}" != "69" ]; then
+	bashio::log.warning "TFTP port changed from 69 to ${tftp_port}!"
+	bashio::log.warning "PXE boot requires TFTP on port 69. Network boot will NOT work!"
+fi
 
 echo "Creating user $nginx_uid and setting permissions..."
 
@@ -20,6 +35,7 @@ adduser "$nginx_uid" nginx
 
 echo "Generating nginx config..."
 if bashio::var.has_value "${nginx_port}"; then
+	bashio::log.info "Using NGINX port: ${nginx_port}"
 	echo "server {" >/defaults/default
 	echo "	listen ${nginx_port};" >>/defaults/default
 	echo "	location / {" >>/defaults/default
@@ -28,7 +44,7 @@ if bashio::var.has_value "${nginx_port}"; then
 	echo "	}" >>/defaults/default
 	echo "}" >>/defaults/default
 else
-	echo "Nginx port was not set! Setting 85 as default!"
+	bashio::log.info "NGINX port not mapped externally, using default port 85"
 	echo "server {" >/defaults/default
 	echo "	listen 85;" >>/defaults/default
 	echo "	location / {" >>/defaults/default

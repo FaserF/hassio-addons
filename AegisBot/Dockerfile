@@ -37,6 +37,7 @@ RUN \
 # CR-Skip-TarballIntegrity: Dynamic tarball from GitHub API, checksum not applicable
 
 ARG AEGISBOT_VERSION="latest"
+ENV AEGISBOT_VERSION=${AEGISBOT_VERSION}
 
 WORKDIR /tmp/build
 # hadolint ignore=DL3003,DL3018

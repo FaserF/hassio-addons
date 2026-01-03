@@ -7,10 +7,22 @@ bashio::addon.print_banner() {
 	local addon_version
 	addon_version=$(bashio::addon.version)
 
+	# Load Wiki.js version from environment file
+	if [ -f /etc/environment ]; then
+		# shellcheck disable=SC1091
+		source /etc/environment 2>/dev/null || true
+	fi
+
 	bashio::log.blue " \n"
 	bashio::log.blue "-----------------------------------------------------------"
 	bashio::log.blue " 📦 FaserF's Addon Repository"
 	bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
+	bashio::log.blue "-----------------------------------------------------------"
+
+	# Software version
+	if [ -n "${WIKIJS_VERSION:-}" ]; then
+		bashio::log.info "🔧 Wiki.js Version: ${WIKIJS_VERSION}"
+	fi
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks

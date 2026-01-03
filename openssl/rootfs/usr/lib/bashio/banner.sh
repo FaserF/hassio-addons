@@ -11,6 +11,14 @@ bashio::addon.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------"
 	bashio::log.blue " 📦 FaserF's Addon Repository"
 	bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
+	bashio::log.blue "-----------------------------------------------------------"
+
+	# Software version
+	local openssl_ver
+	openssl_ver=$(openssl version 2>/dev/null || echo "")
+	if [ -n "$openssl_ver" ]; then
+		bashio::log.info "🔧 $openssl_ver"
+	fi
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks

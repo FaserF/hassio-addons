@@ -16,6 +16,7 @@ RUN apk -U --no-cache add \
 WORKDIR /switch-lan-play
 # renovate: datasource=github-tags depName=spacemeowx2/switch-lan-play
 ARG SWITCH_LAN_PLAY_VERSION="v0.2.3"
+ENV SWITCH_LAN_PLAY_VERSION=${SWITCH_LAN_PLAY_VERSION}
 RUN git clone --branch "${SWITCH_LAN_PLAY_VERSION}" --single-branch --depth 1 https://github.com/spacemeowx2/switch-lan-play.git .
 
 WORKDIR /switch-lan-play/server

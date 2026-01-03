@@ -9,7 +9,8 @@ addon_version=$(bashio::addon.version)
 
 # Run App
 cd /app
-export WEB_APP_PORT=$(bashio::addon.port 3000)
+# Use the ingress port (3000) - this addon uses ingress for the web interface
+export WEB_APP_PORT=$(bashio::addon.ingress_port)
 if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
     export SUBFOLDER=$(bashio::addon.ingress_entry)
 fi

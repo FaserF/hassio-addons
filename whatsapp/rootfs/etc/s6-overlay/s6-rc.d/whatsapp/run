@@ -2,5 +2,8 @@
 
 bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
+export PORT=$(bashio::addon.port 8099)
+export MDNS_NAME=$(bashio::config 'mdns_name')
+
 cd /opt/whatsapp
 exec npm start

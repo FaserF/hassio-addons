@@ -11,6 +11,20 @@ bashio::addon.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------"
 	bashio::log.blue " 📦 FaserF's Addon Repository"
 	bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
+	bashio::log.blue "-----------------------------------------------------------"
+
+	# Software version
+	local apache_ver
+	local php_ver
+	apache_ver=$(httpd -v 2>/dev/null | head -n1 | cut -d' ' -f3 | cut -d'/' -f2)
+	php_ver=$(php -v 2>/dev/null | head -n1 | cut -d' ' -f2)
+
+	if [ -n "$apache_ver" ]; then
+		bashio::log.info "🔧 Apache Version: ${apache_ver}"
+	fi
+	if [ -n "$php_ver" ]; then
+		bashio::log.info "🔧 PHP Version: ${php_ver}"
+	fi
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks

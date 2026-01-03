@@ -2,10 +2,15 @@ ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2025.12.5
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
+ENV HA_VERSION="2025.12.5"
 EXPOSE 8123
 
+# Copy and setup the run script
+COPY run.sh /run.sh
+RUN chmod a+x /run.sh
+
 # Persist data in the add-on data directory
-CMD [ "hass", "-c", "/data" ]
+CMD [ "/run.sh" ]
 
 
 # Health check

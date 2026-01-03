@@ -63,18 +63,62 @@ fi
 # Add/Update Users
 bashio::log.info "👤 Syncing users..."
 
-for user in $(bashio::config 'users|keys'); do
-	USERNAME=$(bashio::config "users[${user}].username")
-	PASSWORD=$(bashio::config "users[${user}].password")
+user_count=0
 
-	# Try add (fails if exists), then update
-	if filebrowser users add "$USERNAME" "$PASSWORD" --perm.admin --database "$DB_PATH" 2>/dev/null; then
-		bashio::log.info "  Created user: $USERNAME"
+# Check if users configuration exists and has entries
+if bashio::config.has_value 'users'; then
+	for user in $(bashio::config 'users|keys'); do
+		USERNAME=$(bashio::config "users[${user}].username")
+		PASSWORD=$(bashio::config "users[${user}].password")
+
+		# Validate username and password
+		if [ -z "$USERNAME" ]; then
+			bashio::log.warning "  Skipping user entry ${user}: username is empty"
+			continue
+		fi
+
+		if [ -z "$PASSWORD" ]; then
+			bashio::log.warning "  Skipping user '${USERNAME}': password is empty"
+			continue
+		fi
+
+		# Check if user already exists
+		if filebrowser users find "$USERNAME" --database "$DB_PATH" &>/dev/null; then
+			# User exists - update password
+			if filebrowser users update "$USERNAME" --password "$PASSWORD" --perm.admin --database "$DB_PATH" 2>/dev/null; then
+				bashio::log.info "  Updated user: $USERNAME"
+			else
+				bashio::log.error "  Failed to update user: $USERNAME"
+			fi
+		else
+			# User does not exist - create new
+			if filebrowser users add "$USERNAME" "$PASSWORD" --perm.admin --database "$DB_PATH" 2>/dev/null; then
+				bashio::log.info "  Created user: $USERNAME"
+			else
+				bashio::log.error "  Failed to create user: $USERNAME"
+			fi
+		fi
+		user_count=$((user_count + 1))
+	done
+fi
+
+# If no users were configured/created, create a default admin user
+if [ "$user_count" -eq 0 ]; then
+	bashio::log.warning "No users configured in addon settings!"
+
+	# Check if default admin already exists in database
+	if filebrowser users find "admin" --database "$DB_PATH" &>/dev/null; then
+		bashio::log.info "  Default 'admin' user already exists in database."
 	else
-		filebrowser users update "$USERNAME" --password "$PASSWORD" --perm.admin --database "$DB_PATH"
-		bashio::log.info "  Updated user: $USERNAME"
+		bashio::log.warning "  Creating default user: admin / changeme"
+		bashio::log.warning "  ⚠️  PLEASE CHANGE THE DEFAULT PASSWORD!"
+		if filebrowser users add "admin" "changeme" --perm.admin --database "$DB_PATH" 2>/dev/null; then
+			bashio::log.info "  Default admin user created successfully."
+		else
+			bashio::log.error "  Failed to create default admin user!"
+		fi
 	fi
-done
+fi
 
 # Start
 bashio::log.info "🚀 ShieldFile listening on port ${PORT} (Root: ${BASE_DIR})"

@@ -13,8 +13,10 @@ map:
 panel_icon: mdi:whatsapp
 options:
   log_level: info
+  mdns_name: "WhatsApp Addon"
 schema:
   log_level: str
+  mdns_name: str
 ports:
   8099/tcp: 8099
 ports_description:

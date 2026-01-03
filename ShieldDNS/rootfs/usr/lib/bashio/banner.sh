@@ -11,6 +11,15 @@ bashio::addon.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------"
 	bashio::log.blue " 📦 FaserF's Addon Repository"
 	bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
+	bashio::log.blue "-----------------------------------------------------------"
+
+	# Software versions
+	if [ -n "${COREDNS_VERSION:-}" ]; then
+		bashio::log.info "🔧 CoreDNS Version: ${COREDNS_VERSION}"
+	fi
+	if [ -n "${CLOUDFLARED_VERSION:-}" ]; then
+		bashio::log.info "🔧 Cloudflared Version: ${CLOUDFLARED_VERSION}"
+	fi
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks

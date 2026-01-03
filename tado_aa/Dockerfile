@@ -28,8 +28,9 @@ RUN python3 -m venv venv
 
 # Install python-tado via pip
 # hadolint ignore=DL3042,SC1091
+ENV TADO_VERSION="0.19.2"
 RUN source ./venv/bin/activate && \
-    pip install --no-cache-dir python-tado==0.19.2
+    pip install --no-cache-dir python-tado==${TADO_VERSION}
 
 # Copy data for add-on
 COPY run.sh /

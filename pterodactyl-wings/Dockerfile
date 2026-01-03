@@ -10,6 +10,7 @@ RUN apk add --no-cache ca-certificates curl tini tzdata && \
 # Download wings binary with multi-arch support
 # Pin to specific version for reproducible builds
 ARG WINGS_VERSION=v1.11.13
+ENV WINGS_VERSION=${WINGS_VERSION}
 ARG TARGETARCH
 # SHA256 checksums for version 1.11.13 (from official release notes)
 ARG WINGS_SHA256_AMD64=aca5fa45ddf1c10f092c16dd758b920d8a3fa9f91c37aacc62745e72958bf71a

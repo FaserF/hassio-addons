@@ -31,14 +31,10 @@ if [ "$ssl" = "true" ]; then
 fi
 
 # Require mariadb service to be available
-#if ! bashio::services.available "mysql"; then
-#    bashio::log.error \
-#        "This add-on requires the MariaDB core add-on 2.0 or newer!"
-#    bashio::exit.nok \
-#        "Make sure the MariaDB add-on is installed and running"
-#fi
-
-echo "This add-on requires the MariaDB core add-on 2.0 or newer!"
+if ! bashio::services.available "mysql"; then
+	bashio::log.error "This add-on requires the MariaDB core add-on 2.0 or newer!"
+	bashio::exit.nok "Make sure the MariaDB add-on is installed and running"
+fi
 
 host=$(bashio::services "mysql" "host")
 password=$(bashio::services "mysql" "password")
@@ -46,7 +42,7 @@ port=$(bashio::services "mysql" "port")
 username=$(bashio::services "mysql" "username")
 
 if [ -z "$host" ]; then
-	bashio::log.warning "MariaDB not found. Waiting..."
+	bashio::log.warning "MariaDB connection details not found. Waiting..."
 	# Retry for up to 5 minutes (30 * 10s)
 	for i in {1..30}; do
 		sleep 10

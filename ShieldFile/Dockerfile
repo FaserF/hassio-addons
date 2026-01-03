@@ -7,6 +7,9 @@ FROM filebrowser/filebrowser:v2.53.1 AS filebrowser
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
+# Software version (from image tag above)
+ENV FILEBROWSER_VERSION="v2.53.1"
+
 # Install necessary tools
 # 'curl' and 'bash' for installing filebrowser (kept for compatibility if needed, but binary is copied)
 # 'dos2unix' to fix potential Windows line ending issues in scripts

@@ -27,6 +27,8 @@ RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
+# Version pinned to commit c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 = v0.2.3
+ENV SWITCH_LAN_PLAY_VERSION="v0.2.3"
 
 # Install runtime dependencies (procps for pgrep)
 # hadolint ignore=DL3018

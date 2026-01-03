@@ -15,7 +15,7 @@ import crypto from 'crypto';
 const app = express();
 app.use(express.json());
 
-const PORT = 8099;
+const PORT = process.env.PORT || 8099;
 // Adapt path for local Windows testing vs Docker
 const IS_WIN = process.platform === 'win32';
 const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
@@ -69,15 +69,22 @@ try {
   // Use dynamic import to avoid crashes if dependency is missing during dev/build
   const { Bonjour } = await import('bonjour-service');
   const instance = new Bonjour();
-  instance.publish({
-    name: 'WhatsApp Addon',
+  const serviceName = process.env.MDNS_NAME || 'WhatsApp Addon';
+  const service = instance.publish({
+    name: serviceName,
     type: 'ha-whatsapp',
     protocol: 'tcp',
     port: PORT,
   });
-  console.log(`📢 Publishing mDNS service: _ha-whatsapp._tcp.local on port ${PORT}`);
+
+  service.on('error', (err) => {
+    console.warn(`⚠️ mDNS advertisement error for "${serviceName}":`, err.message);
+    addLog(`mDNS error: ${err.message}`, 'warning');
+  });
+
+  console.log(`📢 Publishing mDNS service: ${serviceName} (_ha-whatsapp._tcp.local) on port ${PORT}`);
 } catch (e) {
-  console.warn('mDNS advertisement failed:', e);
+  console.warn('mDNS advertisement failed to initialize:', e);
 }
 
 // --- Status & Logs ---
@@ -317,19 +324,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -337,8 +342,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

@@ -64,9 +64,10 @@ execute_script() {
 	local num="$5"
 
 	local args=()
-	[ "$arg1" != "false" ] && args+=("$arg1")
-	[ "$arg2" != "false" ] && args+=("$arg2")
-	[ "$arg3" != "false" ] && args+=("$arg3")
+	# Only add argument if it's not empty, 'false', or 'null'
+	[[ -n "$arg1" && "$arg1" != "false" && "$arg1" != "null" ]] && args+=("$arg1")
+	[[ -n "$arg2" && "$arg2" != "false" && "$arg2" != "null" ]] && args+=("$arg2")
+	[[ -n "$arg3" && "$arg3" != "false" && "$arg3" != "null" ]] && args+=("$arg3")
 
 	bashio::log.info "Executing script #$num: $path with ${#args[@]} arguments..."
 	bashio::log.info "-----------------------------------------------------------"

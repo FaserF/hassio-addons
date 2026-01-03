@@ -11,6 +11,12 @@ bashio::addon.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------"
 	bashio::log.blue " 📦 FaserF's Addon Repository"
 	bashio::log.blue " 🔗 GitHub: https://github.com/FaserF/hassio-addons"
+	bashio::log.blue "-----------------------------------------------------------"
+
+	# Software version
+	if [ -n "${MATTERBRIDGE_VERSION:-}" ]; then
+		bashio::log.info "🔧 Matterbridge Version: ${MATTERBRIDGE_VERSION}"
+	fi
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks

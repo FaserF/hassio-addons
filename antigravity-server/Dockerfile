@@ -5,6 +5,7 @@ FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=Eidolf/Docker-AntiGravity versioning=loose
 ARG ANTIGRAVITY_VERSION="2025.12.0-nightly.20251226.1451"
+ENV ANTIGRAVITY_VERSION=${ANTIGRAVITY_VERSION}
 ARG LAZYGIT_VERSION=0.40.2
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
