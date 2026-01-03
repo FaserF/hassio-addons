@@ -333,8 +333,9 @@
       ],
       "automerge": true,
       "ignoreTests": false,
-      "allowedVersions": "/^3/",
-      "versioning": "docker"
+      "allowedVersions": "/^3$/",
+      "versioning": "docker",
+      "updateTypes": ["digest"]
     },
     {
       "description": "NGINX - auto-update Alpine package version",
