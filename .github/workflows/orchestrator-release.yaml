@@ -789,15 +789,97 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ================================================================================
+  # MONITOR: Check for failure threshold (3 failures) and cancel remaining jobs
+  # ================================================================================
+  monitor-failures:
+    name: ⚠️ Monitor Release Failures
+    needs: [detect]
+    if: |
+      needs.detect.outputs.is_all == 'true' &&
+      needs.detect.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: 🔍 Monitor and Cancel on Threshold
+        run: |
+          echo "Starting failure monitor for 'all' release..."
+          echo "Will cancel remaining jobs if 3 failures are detected."
+          echo ""
+          
+          MAX_FAILURES=3
+          CHECK_INTERVAL=30  # Check every 30 seconds
+          MAX_WAIT_TIME=3600  # Maximum wait time: 1 hour
+          ELAPSED=0
+          
+          while [ $ELAPSED -lt $MAX_WAIT_TIME ]; do
+            # Get all release jobs for this workflow run
+            JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "[]")
+            
+            # Count failed jobs
+            FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+            TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
+            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
+            
+            echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $RUNNING_COUNT running, $TOTAL_COUNT total"
+            
+            # Check if threshold reached
+            if [ "$FAILED_COUNT" -ge "$MAX_FAILURES" ]; then
+              echo ""
+              echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
+              echo "⚠️  WARNING: Too many addons have failed. Cancelling remaining release jobs..."
+              
+              # Get all release jobs that are still queued or in_progress
+              RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .id')
+              
+              if [ -z "$RUNNING_JOBS" ] || [ "$RUNNING_JOBS" = "" ]; then
+                echo "ℹ️  No remaining jobs to cancel"
+              else
+                CANCELLED_COUNT=0
+                while IFS= read -r JOB_ID; do
+                  if [ -n "$JOB_ID" ] && [ "$JOB_ID" != "null" ]; then
+                    echo "Cancelling job ID: $JOB_ID"
+                    gh api "repos/${{ github.repository }}/actions/jobs/$JOB_ID" -X POST -f state=cancelled 2>/dev/null || echo "  (Job $JOB_ID may have already completed)"
+                    ((CANCELLED_COUNT++)) || true
+                  fi
+                done <<< "$RUNNING_JOBS"
+                
+                echo "✅ Cancelled $CANCELLED_COUNT remaining release job(s)"
+              fi
+              
+              echo ""
+              echo "⚠️  WARNING: Too many addons failed ($FAILED_COUNT/$MAX_FAILURES threshold). Remaining releases have been cancelled."
+              exit 0
+            fi
+            
+            # If no more running jobs, exit
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              echo ""
+              echo "✅ All release jobs completed. Final status: $FAILED_COUNT failed out of $TOTAL_COUNT total"
+              exit 0
+            fi
+            
+            # Wait before next check
+            sleep $CHECK_INTERVAL
+            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+          done
+          
+          echo ""
+          echo "⏱️  Monitor timeout reached. Jobs may still be running."
+        env:
+          GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+  # ================================================================================
   # CLEANUP: Prune Docker Registry after "all" releases
   # ================================================================================
   cleanup-registry:
     name: 🧹 Cleanup Docker Registry
-    needs: [detect, release]
+    needs: [detect, release, monitor-failures]
     if: |
       always() &&
       needs.detect.outputs.is_all == 'true' &&
-      (needs.release.result == 'success' || needs.release.result == 'failure')
+      (needs.release.result == 'success' || needs.release.result == 'failure' || needs.release.result == 'cancelled')
     runs-on: ubuntu-latest
     permissions:
       contents: read
