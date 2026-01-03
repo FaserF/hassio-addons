@@ -35,17 +35,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 🌿 Create or update edge branch
+      - name: 🌿 Reset edge branch to master
         run: |
-          # Check if edge branch exists
-          if git ls-remote --heads origin edge | grep -q edge; then
-            echo "Edge branch exists, updating..."
-            git checkout edge
-            git merge master --no-edit -m "Sync edge with master [skip ci]"
-          else
-            echo "Creating edge branch..."
-            git checkout -b edge
-          fi
+          echo "Resetting edge branch to match master..."
+          git checkout -B edge master
 
       - name: 📝 Prepare edge for local builds
         run: |
@@ -72,4 +65,4 @@ jobs:
         run: |
           git add -A
           git diff --staged --quiet || git commit -m "chore: prepare edge branch for local builds [skip ci]"
-          git push origin edge --force-with-lease
+          git push origin edge --force
