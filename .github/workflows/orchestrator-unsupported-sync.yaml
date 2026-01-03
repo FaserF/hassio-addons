@@ -1,0 +1,102 @@
+name: Orchestrator Unsupported Sync
+
+# This workflow keeps the 'unsupported' branch populated with ONLY unsupported addons
+# moving them to the root level.
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-unsupported:
+    name: 💀 Sync Unsupported Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Checkout master
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 💀 Reset unsupported branch to master
+        run: |
+          echo "Resetting unsupported branch..."
+          git checkout -B unsupported master
+
+      - name: 🧹 Clean and Rearrange
+        run: |
+          echo "Removing supported addons..."
+          # Delete everything that isn't .unsupported, .github, .scripts, or repository.json/files
+          # Easier strategy: Move .unsupported contents to temp, clear, restore.
+
+          mkdir ../temp_unsupported
+          cp -r .unsupported/* ../temp_unsupported/ || echo "No unsupported addons found"
+
+          # Remove all directories in current root except .github and .scripts and .git
+          find . -maxdepth 1 -type d \
+            -not -name "." \
+            -not -name ".git" \
+            -not -name ".github" \
+            -not -name ".scripts" \
+            -exec rm -rf {} +
+
+          # Remove all files in root except needed (keep licenses etc? maybe just clean all)
+          # We need repository.json if we want to patch it.
+          # But actually we can just overwrite it.
+          # Keep .gitignore?
+          find . -maxdepth 1 -type f -not -name ".gitignore" -delete
+
+          echo "Restoring unsupported addons to root..."
+          cp -r ../temp_unsupported/* .
+          rm -rf ../temp_unsupported
+
+      - name: 📝 Prepare Unsupported Branch
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/prepare_unsupported_branch.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Bump Versions (Dev)
+        run: |
+          # Bump all found addons to dev (reusing bump_version logic)
+          # Note: bump_version might struggle with history if git didn't track moves (cp used above).
+          # But since we Force Push, we don't strictly care about "history consistency" for the user,
+          # only that the version is unique.
+          # bump_version uses git log. If files are new (cp), git log is empty?
+          # Actually, we haven't committed the moves yet.
+          # So git log on these files (currently untracked/modified) returns nothing?
+          # Force add them first to establish tracking?
+          # Or just rely on bump_version finding *some* history or falling back?
+          # If bump_version fails to find history, it might fail?
+          # Let's check bump_version... it runs `git log ... -- path`.
+
+          # To fix this, let's commit the "Move" first so git tracks it (if similar content).
+          git add -A
+          git commit -m "chore: rearrange unsupported addons [skip ci]" || echo "Nothing to commit"
+
+          # Now bump
+          for config in */config.yaml; do
+            if [ -f "$config" ]; then
+              ADDON_DIR=$(dirname "$config")
+              echo "Processing $ADDON_DIR..."
+              python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $ADDON_DIR"
+            fi
+          done
+
+      - name: 🚀 Push unsupported branch
+        run: |
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: update unsupported addons [skip ci]"
+          git push origin unsupported --force
