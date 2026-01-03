@@ -216,21 +216,9 @@ jobs:
             const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
             if (isNaN(prNumber)) return;
 
-            const generateMessage = require('./.scripts/generate_ci_success_message.js');
-
-            const autoMergeNote = "\n\n## 🚀 Auto-Merge Enabled\n\n**Auto-merge has been enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied.";
-            const previousErrorsNote = "";
-
-            const body = generateMessage({
-                skipped: false,
-                buildStatus: "✅ Successful",
-                autoMergeNote: autoMergeNote,
-                previousErrorsNote: previousErrorsNote
-            });
-
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              body: body
+              body: "🚀 **Auto-merge enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied."
             });
