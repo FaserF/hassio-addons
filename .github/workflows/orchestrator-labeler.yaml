@@ -162,14 +162,38 @@ jobs:
                     // Check if version line was modified
                     const versionChangePattern = /^\+\s*version:\s*["']?[\d.]+["']?/m;
                     if (versionChangePattern.test(file.patch)) {
-                        hasVersionBump = true;
                         // Determine which addon
                         let addonName = rootDir;
                         if (rootDir === '.unsupported' && parts.length > 2) {
                             addonName = parts[1];
                         }
-                        versionBumpAddons.push(addonName);
-                        console.log(`  -> Version bump detected in: ${addonName}`);
+                        
+                        // Only consider it a version bump if the addon already exists in base branch
+                        // New addons shouldn't get version-bump label (they have initial version, not a bump)
+                        let isNewAddon = false;
+                        
+                        if (rootDir === '.unsupported' && parts.length > 2) {
+                            // For unsupported addons, check if the addon exists in base branch
+                            try {
+                                execSync(`git cat-file -e origin/${baseRef}:.unsupported/${addonName}/config.yaml`, { stdio: 'pipe' });
+                                // File exists in base branch, so it's not new
+                                isNewAddon = false;
+                            } catch {
+                                // File doesn't exist in base branch, so it's a new addon
+                                isNewAddon = true;
+                            }
+                        } else {
+                            // For supported addons, check if addon exists in baseAddons
+                            isNewAddon = !baseAddons.includes(rootDir);
+                        }
+                        
+                        if (!isNewAddon) {
+                            hasVersionBump = true;
+                            versionBumpAddons.push(addonName);
+                            console.log(`  -> Version bump detected in: ${addonName}`);
+                        } else {
+                            console.log(`  -> Version line added in new addon ${addonName}, skipping version-bump label`);
+                        }
                     }
                 }
               }

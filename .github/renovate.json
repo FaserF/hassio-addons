@@ -212,7 +212,7 @@
         "wiki.js3/Dockerfile$"
       ],
       "matchStrings": [
-        "FROM ghcr\\.io/requarks/wiki:3@sha256:(?<currentDigest>[a-f0-9]+)"
+        "FROM ghcr\\.io/requarks/wiki:(?<currentValue>3)@sha256:(?<currentDigest>[a-f0-9]+)"
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/requarks/wiki",
@@ -332,7 +332,9 @@
         "wiki.js3/Dockerfile"
       ],
       "automerge": true,
-      "ignoreTests": false
+      "ignoreTests": false,
+      "allowedVersions": "/^3/",
+      "versioning": "docker"
     },
     {
       "description": "NGINX - auto-update Alpine package version",
