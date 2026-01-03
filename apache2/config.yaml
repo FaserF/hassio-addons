@@ -1,13 +1,13 @@
 ---
 name: Apache2
-version: 2.15.1
+version: 2.15.2-dev+306affa
 slug: apache2
 description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/apache2-{arch}
+# image: local build only
 # webui: http://[HOST]:[PORT:80]
 map:
   - ssl:rw
