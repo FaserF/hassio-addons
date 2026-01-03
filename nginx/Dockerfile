@@ -47,12 +47,13 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     mariadb-client \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 \
-    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
-    && unzip musl-locales-master.zip \
-    && cd musl-locales-master \
+    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/v0.1.5/musl-locales-v0.1.5.zip \
+    && echo "6b70dd2f6c347d448c2d6140fdb70429d17135e6713ea6c095df1b34e4010e6a  musl-locales-v0.1.5.zip" | sha256sum -c - \
+    && unzip musl-locales-v0.1.5.zip \
+    && cd musl-locales-v0.1.5 \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-    && cd .. && rm -r musl-locales-master \
-    && apk del --no-cache cmake make gcc gettext-dev libintl
+    && cd .. && rm -r musl-locales-v0.1.5 && rm -f musl-locales-v0.1.5.zip \
+    && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
@@ -76,4 +77,4 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/nginx"
 LABEL org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/nginx"
 LABEL org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/nginx/README.md"
-LABEL org.opencontainers.image.created="${BUILD_DATE}"
+# Note: org.opencontainers.image.created should be set via --label during docker build

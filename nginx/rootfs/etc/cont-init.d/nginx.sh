@@ -58,12 +58,17 @@ fi
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} \;
+	find "$DocumentRoot" -type d -exec chmod 755 {} \;
 	if [ -n "$username" ] && [ -n "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
 		if ! id "$username" &>/dev/null; then
 			adduser -S "$username" -G www-data
 		fi
-		echo "$username:$password" | chpasswd
+		# Securely set password using stdin to avoid exposure in process list
+		chpasswd <<EOF
+${username}:${password}
+EOF
+		# Clear password variable immediately after use
+		unset password
 		chown -R "$username":www-data "$webrootdocker"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
@@ -244,12 +249,25 @@ fi
 mkdir -p /usr/lib/php84/modules/opcache
 
 # Configure PHP-FPM
-if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
-	mkdir -p /etc/php84/php-fpm.d
-fi
+mkdir -p /etc/php84/php-fpm.d
 
 # Ensure PHP-FPM listens on TCP socket (needed for nginx)
-sed -i 's/listen = .*/listen = 127.0.0.1:9000/' /etc/php84/php-fpm.d/www.conf 2>/dev/null || echo "listen = 127.0.0.1:9000" >> /etc/php84/php-fpm.d/www.conf
+if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
+	# Create minimal www.conf if it doesn't exist
+	cat > /etc/php84/php-fpm.d/www.conf <<'PHPFPM_EOF'
+[www]
+listen = 127.0.0.1:9000
+PHPFPM_EOF
+else
+	# File exists - check if listen directive is present
+	if grep -q "^listen\s*=" /etc/php84/php-fpm.d/www.conf; then
+		# Replace existing listen directive
+		sed -i 's/^listen\s*=.*/listen = 127.0.0.1:9000/' /etc/php84/php-fpm.d/www.conf
+	else
+		# Append listen directive if not present
+		echo "listen = 127.0.0.1:9000" >> /etc/php84/php-fpm.d/www.conf
+	fi
+fi
 
 # Ensure fastcgi_params exists (should be in nginx package, but verify)
 if [ ! -f /etc/nginx/fastcgi_params ]; then

@@ -16,7 +16,7 @@ fi
 
 # Get local IP
 # We can use the Supervisor API to get the Host IP
-host_ip=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq -r '.data.interfaces[] | select(.primary) | .ipv4.address[]' | head -n 1 | cut -d'/' -f1)
+host_ip=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq -r '.data.interfaces[] | select(.primary) | .ipv4.address[]' | head -n 1 | cut -d'/' -f1)
 
 # Fallback if Host IP is empty
 if [ -z "$host_ip" ]; then
@@ -33,7 +33,7 @@ if [ "$ssl" = "true" ]; then
 fi
 
 # Get External Port from Supervisor
-external_port=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info | jq -r ".data.network.\"${port}/tcp\"")
+external_port=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info | jq -r ".data.network.\"${port}/tcp\"")
 
 bashio::log.info "---------------------------------------------------"
 bashio::log.info "NGINX is starting..."
@@ -49,5 +49,4 @@ fi
 bashio::log.info ""
 bashio::log.info "---------------------------------------------------"
 
-echo "Starting NGINX..."
 exec nginx -g "daemon off;"
