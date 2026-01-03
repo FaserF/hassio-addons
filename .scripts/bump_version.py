@@ -9,14 +9,14 @@ Features:
 - Categorized changelog entries from git history
 """
 
-import argparse
+import argparse  # moved up
 import os
 import re
 import subprocess
 import sys
-import argparse  # moved up
-import yaml  # Added for safe config handling
 from datetime import datetime
+
+import yaml  # Added for safe config handling
 
 # GitHub repository for commit links
 GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
@@ -264,7 +264,11 @@ def update_image_tag(content, addon_path, is_dev):
     # Let's derive slug from config content or path
 
     slug_match = re.search(r"^slug: ([\w-]+)", content, re.MULTILINE)
-    slug = slug_match.group(1) if slug_match else os.path.basename(addon_path.rstrip("/\\"))
+    slug = (
+        slug_match.group(1)
+        if slug_match
+        else os.path.basename(addon_path.rstrip("/\\"))
+    )
 
     # Image line regex
     image_pattern = r"^image: .*$"
@@ -275,9 +279,11 @@ def update_image_tag(content, addon_path, is_dev):
             print("🔧 Removing image tag for dev version (forcing local build)")
             # Comment out instead of delete to preserve intent? Or just delete.
             # User said "remove the tag".
-            content = re.sub(image_pattern, "# image: local build only", content, flags=re.MULTILINE)
+            content = re.sub(
+                image_pattern, "# image: local build only", content, flags=re.MULTILINE
+            )
         else:
-             print("ℹ️ No image tag found (already local build compliant)")
+            print("ℹ️ No image tag found (already local build compliant)")
     else:
         # ADD/RESTORE image tag for release versions
         # Expected: image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
@@ -294,14 +300,16 @@ def update_image_tag(content, addon_path, is_dev):
 
         # Check if already present and uncomment if needed
         if "# image: local build only" in content:
-             image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
-             content = content.replace("# image: local build only", image_line)
-             print(f"🔧 Restored image tag: {image_line}")
+            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+            content = content.replace("# image: local build only", image_line)
+            print(f"🔧 Restored image tag: {image_line}")
         elif not re.search(image_pattern, content, re.MULTILINE):
-             image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
-             # Append after slug or version
-             content = re.sub(r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE)
-             print(f"🔧 Added image tag: {image_line}")
+            image_line = f"image: ghcr.io/faserf/hassio-addons-{slug}-{{arch}}"
+            # Append after slug or version
+            content = re.sub(
+                r"^(slug: .*)$", f"\\1\n{image_line}", content, flags=re.MULTILINE
+            )
+            print(f"🔧 Added image tag: {image_line}")
 
     return content
 

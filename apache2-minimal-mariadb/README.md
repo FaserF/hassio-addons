@@ -11,6 +11,14 @@
 
 ---
 
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
 ## 📖 About
 
 Have a look at the README for Apache2 full Addon for more information.

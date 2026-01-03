@@ -1,4 +1,5 @@
 # Changelog
+
 ## 0.1.9
 
 - Update Home Assistant to version 2026.1.0b2
@@ -14,7 +15,6 @@
 ## 0.1.6
 
 - Update Home Assistant to version 2026.1.0b1
-
 
 ## 0.1.5
 
