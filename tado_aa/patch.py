@@ -51,14 +51,11 @@ def validate_python_syntax(content: str) -> bool:
 mapping = {
     'TOKEN_FILE = "refresh_token"': 'TOKEN_FILE = "/data/refresh_token"',
     "checkingInterval = 10.0": 'checkingInterval = float(os.getenv("TADO_CHECK_INTERVAL", "10.0"))',
-    "errorRetryingInterval = 30.0": 'errorRetryingInterval = float(os.getenv("TADO_RETRY_INTERVAL", "30.0"))',
+    "errorRetringInterval = 30.0": 'errorRetringInterval = float(os.getenv("TADO_RETRY_INTERVAL", "30.0"))',
     "minTemp = 5": 'minTemp = int(os.getenv("TADO_MIN_TEMP", "5"))',
     "maxTemp = 25": 'maxTemp = int(os.getenv("TADO_MAX_TEMP", "25"))',
     "enableTempLimit = True": 'enableTempLimit = os.getenv("TADO_ENABLE_TEMP_LIMIT", "True").lower() == "true"',
     "saveLog = False": 'saveLog = os.getenv("TADO_SAVE_LOG", "False").lower() == "true"',
-    # Original line is at 8 spaces inside login() try block
-    # Define init_tado at same level, then call it
-    "        t = Tado(token_file_path=TOKEN_FILE)": '        t = Tado(os.getenv("TADO_USERNAME"), os.getenv("TADO_PASSWORD"), token_file_path=TOKEN_FILE) if os.getenv("TADO_USERNAME") and os.getenv("TADO_PASSWORD") else Tado(token_file_path=TOKEN_FILE)',
 }
 
 if __name__ == "__main__":
