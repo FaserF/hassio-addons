@@ -29,6 +29,11 @@ configuration:
     description: >-
       ⚠️ WARNING: This will DELETE ALL DATA including users, moderation logs,
       and blacklist entries! This action cannot be undone.
+      Requires 'reset_database_confirm' to be enabled as well.
+  reset_database_confirm:
+    name: Confirm Database Reset
+    description: >-
+      Additional confirmation for database reset. Must be enabled together with 'reset_database'.
 
   log_level:
     name: Log Level

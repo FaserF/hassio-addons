@@ -22,24 +22,59 @@ port=$(bashio::services "mysql" "port")
 username=$(bashio::services "mysql" "username")
 
 if bashio::config.true 'reset_database'; then
-	bashio::log.warning 'Recreating database'
+	if ! bashio::config.true 'reset_database_confirm'; then
+		bashio::log.error "Database reset requires both 'reset_database' and 'reset_database_confirm' to be enabled!"
+		bashio::log.error "This is a DESTRUCTIVE operation that will DELETE ALL DATA!"
+		bashio::log.error "Set 'reset_database_confirm: true' in your configuration to proceed."
+		exit 1
+	fi
+
+	bashio::log.warning "=========================================="
+	bashio::log.warning "WARNING: DESTRUCTIVE DATABASE OPERATION"
+	bashio::log.warning "=========================================="
+	bashio::log.warning "This will DROP the entire '${db}' database!"
+	bashio::log.warning "All data will be permanently lost!"
+	bashio::log.warning "=========================================="
+
+	# Create timestamped backup before dropping
+	BACKUP_DIR="/share/pterodactyl/backups"
+	mkdir -p "$BACKUP_DIR"
+	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+	BACKUP_FILE="$BACKUP_DIR/${db}_backup_${TIMESTAMP}.sql"
+
+	bashio::log.info "Creating backup before database reset..."
+	bashio::log.info "Backup location: $BACKUP_FILE"
+
+	# Create backup using mysqldump with MYSQL_PWD for security
+	export MYSQL_PWD="${password}"
+	if mysqldump -h "${host}" -P "${port}" -u "${username}" --skip-ssl "${db}" > "$BACKUP_FILE" 2>/dev/null; then
+		bashio::log.info "Backup created successfully: $BACKUP_FILE"
+	else
+		bashio::log.warning "Backup failed (database may not exist yet), continuing with reset..."
+	fi
+	unset MYSQL_PWD
+
+	bashio::log.warning 'Recreating database (dropping existing if present)...'
 	echo "DROP DATABASE IF EXISTS ${db};" |
-		mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}" || {
+		MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
 		bashio::log.error "Failed to drop database ${db}"
 		exit 1
 	}
+
+	#Remove reset_database options
 	bashio::addon.option 'reset_database'
+	bashio::addon.option 'reset_database_confirm'
 fi
 
 echo "preparing database ${db}"
 
 echo "CREATE DATABASE IF NOT EXISTS ${db};" |
-	mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}" || {
+	MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
 	bashio::log.error "Failed to create database ${db}"
 	exit 1
 }
 echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' WITH GRANT OPTION;" |
-	mysql -h "${host}" -P "${port}" -u "${username}" -p"${password}" || {
+	MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
 	bashio::log.error "Failed to grant privileges on database ${db}"
 	exit 1
 }

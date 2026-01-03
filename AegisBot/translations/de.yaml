@@ -29,6 +29,11 @@ configuration:
     description: >-
       ⚠️ WARNUNG: Dies löscht ALLE DATEN inklusive Benutzer, Moderations-Logs
       und Blacklist-Einträge! Diese Aktion kann nicht rückgängig gemacht werden.
+      Erfordert zusätzlich 'reset_database_confirm'.
+  reset_database_confirm:
+    name: Datenbank-Reset bestätigen
+    description: >-
+      Zusätzliche Bestätigung für den Datenbank-Reset. Muss zusammen mit 'reset_database' aktiviert werden.
 
   log_level:
     name: Log-Level

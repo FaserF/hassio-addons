@@ -13,4 +13,7 @@ configuration:
     description: "Pfad zur privaten Schlüsseldatei."
   reset_database:
     name: "Datenbank zurücksetzen"
-    description: "Setzt die Datenbank beim Start zurück. VORSICHT!"
+    description: "Setzt die Datenbank zurück. VORSICHT! Erfordert zusätzlich 'reset_database_confirm'."
+  reset_database_confirm:
+    name: "Datenbank-Reset bestätigen"
+    description: "Zusätzliche Bestätigung für den Datenbank-Reset. Muss zusammen mit 'reset_database' aktiviert werden."

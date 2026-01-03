@@ -1,10 +1,10 @@
 ---
-name: Wiki.JS
-version: 2.2.2
-slug: wikijs
-image: ghcr.io/faserf/hassio-addons-wikijs-{arch}
-description: The most powerful and extensible open source Wiki software
-url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
+name: Wiki.JS V3 (Beta)
+version: 3.0.0
+slug: wikijs3
+image: ghcr.io/faserf/hassio-addons-wikijs3-{arch}
+description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
+url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
   # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
   - amd64

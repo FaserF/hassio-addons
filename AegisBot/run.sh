@@ -17,6 +17,13 @@ bashio::log.info "Starting AegisBot Add-on initialization..."
 
 # --- FACTORY RESET CHECK (DANGEROUS!) ---
 if bashio::config.true 'reset_database'; then
+	if ! bashio::config.true 'reset_database_confirm'; then
+		bashio::log.error "Database reset requires both 'reset_database' and 'reset_database_confirm' to be enabled!"
+		bashio::log.error "This is a DESTRUCTIVE operation that will DELETE ALL DATA!"
+		bashio::log.error "Set 'reset_database_confirm: true' in your configuration to proceed."
+		exit 1
+	fi
+
 	bashio::log.warning "=================================================="
 	bashio::log.warning "   ⚠️  DATABASE RESET ENABLED  ⚠️"
 	bashio::log.warning "=================================================="
@@ -27,6 +34,25 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.warning "  - All blacklist entries"
 	bashio::log.warning "  - All uploaded files"
 	bashio::log.warning "=================================================="
+
+	# Create timestamped backup before deleting
+	BACKUP_DIR="/data/aegisbot_backups"
+	mkdir -p "$BACKUP_DIR"
+	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+	BACKUP_FILE="$BACKUP_DIR/aegisbot_backup_${TIMESTAMP}.tar.gz"
+
+	if [ -d "$DATA_DIR" ]; then
+		bashio::log.info "Creating backup before data reset..."
+		bashio::log.info "Backup location: $BACKUP_FILE"
+
+		if tar -czf "$BACKUP_FILE" -C "$(dirname "$DATA_DIR")" "$(basename "$DATA_DIR")" 2>/dev/null; then
+			bashio::log.info "Backup created successfully: $BACKUP_FILE"
+		else
+			bashio::log.warning "Backup failed, continuing with reset..."
+		fi
+	else
+		bashio::log.info "No existing data directory found, skipping backup..."
+	fi
 
 	# Wait 5 seconds to give user time to cancel
 	bashio::log.warning "Starting reset in 5 seconds... (Stop add-on NOW to abort)"
@@ -46,9 +72,13 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "All data has been deleted."
 	bashio::log.info "The add-on will now restart with a fresh database."
 	bashio::log.info ""
-	bashio::log.warning "IMPORTANT: Disable 'reset_database' in the add-on settings!"
+	bashio::log.warning "IMPORTANT: Disable 'reset_database' and 'reset_database_confirm' in the add-on settings!"
 	bashio::log.warning "Otherwise, the database will be wiped again on next restart."
 	bashio::log.info "=================================================="
+
+	#Remove reset_database options
+	bashio::addon.option 'reset_database'
+	bashio::addon.option 'reset_database_confirm'
 fi
 
 # --- CREATE DATA DIRECTORIES ---

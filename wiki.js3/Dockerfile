@@ -1,7 +1,8 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
 # renovate: datasource=docker depName=ghcr.io/requarks/wiki
-FROM ghcr.io/requarks/wiki:2@sha256:f7e92a711280e75d88e5c0892af15ccbf53d64b7963e3da9911cbb053d79698d AS wiki_release
+# Note: This uses Wiki.js V3 Beta/Alpha - update digest when new versions are released
+FROM ghcr.io/requarks/wiki:3@sha256:6335f9dd790f1c973ffd48e0c45ae201739e98f8d332b495a6cc159d3cdcfaa6 AS wiki_release
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -29,12 +30,12 @@ CMD [ "/run.sh" ]
 
 # Labels
 LABEL \
-    org.opencontainers.image.title="Wiki.JS" \
-    org.opencontainers.image.description="The most powerful and extensible open source Wiki software" \
+    org.opencontainers.image.title="Wiki.JS V3 (Beta)" \
+    org.opencontainers.image.description="The most powerful and extensible open source Wiki software (Version 3 - Beta)" \
     org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/wiki.js" \
-    org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/wiki.js" \
-    org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/wiki.js/README.md" \
+    org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/wiki.js3" \
+    org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/wiki.js3" \
+    org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/wiki.js3/README.md" \
     org.opencontainers.image.created="${BUILD_DATE}"
