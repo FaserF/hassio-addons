@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "1.3.17-dev+14f1fcc"
+version: "1.3.17"
 slug: "shielddns"
 description: "High-performance DoT proxy for AdGuard Home"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
@@ -44,4 +44,4 @@ schema:
 #   # Removing this section avoids the "Network" configuration tab in HA, which is misleading here.
 #   # 853/tcp: 853
 #   # 443/tcp: 3443
-# image: local build only
+image: ghcr.io/faserf/hassio-addons-ShieldDNS-{arch}

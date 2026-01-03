@@ -1,12 +1,12 @@
 ---
 name: Switch LAN Play Client
-version: 1.8.2-dev+306affa
+version: 1.8.2
 slug: switch-lan-play
 description: Nintendo Switch Lan Play -Client
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play
 arch:
   - amd64
-# image: local build only
+image: ghcr.io/faserf/hassio-addons-switch-lan-play-{arch}
 init: false
 panel_icon: mdi:local-area-network
 host_network: true

@@ -1,12 +1,12 @@
 ---
 name: Antigravity-Server
-version: "0.1.1-dev+306affa"
+version: "0.1.1"
 slug: antigravity-server
 description: Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
 url: https://github.com/FaserF/hassio-addons/tree/master/antigravity-server
 arch:
   - amd64
-# image: local build only
+image: ghcr.io/faserf/hassio-addons-antigravity-server-{arch}
 init: false
 ingress: true
 ingress_port: 6080

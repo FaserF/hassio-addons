@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.2 (2026-01-03)
+
+- Bump version to 2.2.2
+
+
 ## 2.2.1
 
 - Automatically updated addon-base to version v19.0.0

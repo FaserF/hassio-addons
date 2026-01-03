@@ -1,13 +1,13 @@
 ---
 name: Apache2 Minimal with MariaDB Client
-version: 2.15.2-dev+14f1fcc
+version: 2.15.2
 slug: apache2-minimal-mariadb
 description: Open Source Webserver with MariaDB Client and some PHP Modules.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
 arch:
   - aarch64
   - amd64
-# image: local build only
+image: ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}
 map:
   - ssl:rw
   - media:rw
