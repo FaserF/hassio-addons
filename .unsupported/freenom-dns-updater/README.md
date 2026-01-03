@@ -1,6 +1,6 @@
 # Freenom-dns-updater
 
-![Logo](logo.png)
+<img src="logo.png" alt="Logo" width="200">
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_freenom-dns-updater)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -15,39 +15,19 @@
 
 Freenom DNS Updater for Homeassistant OS
 
-Freenom is a (free) Registrar provider. This is a docker image based on
-@maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
+Freenom is a (free) Registrar provider. This is a docker image based on @maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
 
-The full feature list can be found there.
+## 📝 Documentation
 
-## Installation
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
+## 🚀 Installation
 
-Just click the link above or add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
-
-Put your config file somewhere at /share
-
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-config_file: null
-update_time_in_seconds: 86400
-```
-
----
-
-## 📂 Folder Usage
-
-- `/share`: Used to store the Freenom configuration file. This allows you to easily edit the configuration from outside the add-on container.
-- `/data`: Used internally by the add-on for persistent storage.
+1. Add this repository to your **Home Assistant Add-on Store** (unsupported branch).
+1. Install the **Freenom-dns-updater** add-on.
+1. Put your config file somewhere at `/share`.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 

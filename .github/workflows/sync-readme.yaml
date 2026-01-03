@@ -90,13 +90,44 @@ jobs:
               status = get_status(version, addon["unsupported"])
 
               # Get first commit date
+              # For unsupported addons, try to find the original creation date
+              # by checking the original path before it was moved to .unsupported
               try:
-                  result = subprocess.run(
-                      ["git", "log", "--follow", "--format=%cs", "--", str(addon["config"])],
-                      capture_output=True, text=True, check=True
-                  )
-                  dates = result.stdout.strip().split("\n")
-                  since = dates[-1][:7] if dates and dates[-1] else "—"
+                  config_path = str(addon["config"])
+
+                  # If unsupported, try original path first
+                  if addon["unsupported"]:
+                      # Extract addon name from path (e.g., ".unsupported/bt-mqtt-gateway" -> "bt-mqtt-gateway")
+                      addon_name = Path(addon["config"]).parent.name
+                      original_config = repo_root / addon_name / "config.yaml"
+
+                      # Try to get date from original location
+                      try:
+                          result = subprocess.run(
+                              ["git", "log", "--follow", "--format=%cs", "--", str(original_config)],
+                              capture_output=True, text=True, check=True
+                          )
+                          dates = result.stdout.strip().split("\n")
+                          if dates and dates[-1]:
+                              since = dates[-1][:7]
+                          else:
+                              raise Exception("No dates found")
+                      except:
+                          # Fallback to current location if original path doesn't exist in history
+                          result = subprocess.run(
+                              ["git", "log", "--follow", "--format=%cs", "--", config_path],
+                              capture_output=True, text=True, check=True
+                          )
+                          dates = result.stdout.strip().split("\n")
+                          since = dates[-1][:7] if dates and dates[-1] else "—"
+                  else:
+                      # Regular addon - use current path
+                      result = subprocess.run(
+                          ["git", "log", "--follow", "--format=%cs", "--", config_path],
+                          capture_output=True, text=True, check=True
+                      )
+                      dates = result.stdout.strip().split("\n")
+                      since = dates[-1][:7] if dates and dates[-1] else "—"
               except:
                   since = "—"
 

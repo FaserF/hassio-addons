@@ -1,6 +1,6 @@
 # bt-mqtt-gateway
 
-![Logo](logo.png)
+<img src="logo.png" alt="Logo" width="200">
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_bt-mqtt-gateway)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -23,37 +23,19 @@
 > * **Theengs Gateway**: Ideal for Raspberry Pi or existing Linux hosts.
 > * **ESPHome Bluetooth Proxy**: Good for Home Assistant native integration (note: may not publish raw MQTT as freely as the others).
 
-This can be used, to improve the reliability of bluetooth thermostats. See
-<https://github.com/home-assistant/core/issues/28601> for more information.
+This can be used, to improve the reliability of bluetooth thermostats.
 
-## Installation
+## 📝 Documentation
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other custom Home Assistant add-on.
-Just add my repo to the hassio addons repositorys: <https://github.com/FaserF/hassio-addons>
+For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
 
-Put your config file to /share/bt-mqtt-gateway.yaml
-Please make sure that a MQTT Addon is being installed already.
+## 🚀 Installation
 
----
-
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-config_path: /share/bt-mqtt-gateway.yaml
-debug: false
-```
-
----
-
-## 📂 Folder Usage
-
-- `/share`: Used to store the configuration file `bt-mqtt-gateway.yaml`. This allows you to easily edit the configuration from outside the add-on container.
-- `/data`: Used internally by the add-on for persistent storage.
+1. Add this repository to your **Home Assistant Add-on Store** (unsupported branch).
+1. Install the **bt-mqtt-gateway** add-on.
+1. Put your config file to `/share/bt-mqtt-gateway.yaml`.
+1. Configure the options.
+1. Start the add-on.
 
 ---
 
