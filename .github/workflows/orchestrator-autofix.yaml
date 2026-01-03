@@ -214,11 +214,22 @@ jobs:
       # Exclude workflow files from auto-commit (GitHub Apps require special permission to modify workflows)
       - name: 🚫 Unstage Workflow Files
         run: |
+          # Remove workflow files from staging area (keeps formatted changes in working directory)
           git reset HEAD .github/workflows/*.yaml 2>/dev/null || true
           git restore --staged .github/workflows/*.yaml 2>/dev/null || true
+          # Verify they are not staged
+          if git diff --cached --name-only | grep -q "\.github/workflows/"; then
+            echo "Warning: Some workflow files are still staged, removing them..."
+            git diff --cached --name-only | grep "\.github/workflows/" | xargs -r git reset HEAD || true
+          fi
+          echo "Workflow files removed from staging area"
 
       # Commit back (using PAT to trigger subsequent workflows)
+      # git-auto-commit-action will add all changed files matching file_pattern
+      # We need to ensure workflow files are not in the commit
       - name: 💾 Commit Changes
+        id: commit_changes
+        continue-on-error: true
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: ${{ steps.commit_msg.outputs.message }}
@@ -227,3 +238,25 @@ jobs:
         env:
           # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      # If commit failed due to workflow files, remove them and commit again
+      - name: 🔄 Retry Commit Without Workflow Files
+        if: steps.commit_changes.outcome == 'failure'
+        run: |
+          # Reset the last commit if it contains workflow files
+          LAST_COMMIT=$(git rev-parse HEAD)
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "\.github/workflows/"; then
+            echo "Last commit contains workflow files, amending it..."
+            git reset --soft HEAD~1
+            git reset HEAD .github/workflows/*.yaml
+            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
+            git push origin ${{ github.ref_name }} --force-with-lease || echo "Nothing to push"
+          elif git diff --cached --name-only | grep -q "\.github/workflows/"; then
+            echo "Removing workflow files from staging and committing other changes..."
+            git reset HEAD .github/workflows/*.yaml
+            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
+            git push origin ${{ github.ref_name }} || echo "Nothing to push"
+          else
+            echo "Commit failed for other reasons, exiting..."
+            exit 1
+          fi
