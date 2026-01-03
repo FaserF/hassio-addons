@@ -2,11 +2,11 @@ name: Report an issue
 description: Report an issue with one of FaserF's Custom Addon's
 title: '[Bug]: '
 labels:
-- bug
+  - bug
 assignees:
-- FaserF
+  - FaserF
 body:
-- type: markdown
+  - type: markdown
   attributes:
     value: 'This issue form is for reporting bugs only!
 
@@ -65,10 +65,10 @@ body:
 
       '
     options:
-    - Home Assistant OS
-    - Home Assistant Container
-    - Home Assistant Supervised
-    - Home Assistant Core
+      - Home Assistant OS
+      - Home Assistant Container
+      - Home Assistant Supervised
+      - Home Assistant Core
 - type: dropdown
   validations:
     required: true
@@ -78,28 +78,28 @@ body:
 
       '
     options:
-    - Other
-    - AegisBot
-    - ShieldDNS
-    - ShieldFile
-    - antigravity-server
-    - apache2
-    - apache2-minimal
-    - apache2-minimal-mariadb
-    - bash_script_executer
-    - homeassistant-test-instance
-    - matterbridge
-    - netboot-xyz
-    - openssl
-    - pterodactyl-panel
-    - pterodactyl-wings
-    - solumati
-    - switch_lan_play
-    - switch_lan_play_server
-    - tado_aa
-    - whatsapp
-    - wiki.js
-    - wiki.js3
+      - Other
+      - AegisBot
+      - ShieldDNS
+      - ShieldFile
+      - antigravity-server
+      - apache2
+      - apache2-minimal
+      - apache2-minimal-mariadb
+      - bash_script_executer
+      - homeassistant-test-instance
+      - matterbridge
+      - netboot-xyz
+      - openssl
+      - pterodactyl-panel
+      - pterodactyl-wings
+      - solumati
+      - switch_lan_play
+      - switch_lan_play_server
+      - tado_aa
+      - whatsapp
+      - wiki.js
+      - wiki.js3
 - type: markdown
   attributes:
     value: '# Details
