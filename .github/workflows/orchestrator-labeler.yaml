@@ -167,11 +167,11 @@ jobs:
                         if (rootDir === '.unsupported' && parts.length > 2) {
                             addonName = parts[1];
                         }
-                        
+
                         // Only consider it a version bump if the addon already exists in base branch
                         // New addons shouldn't get version-bump label (they have initial version, not a bump)
                         let isNewAddon = false;
-                        
+
                         if (rootDir === '.unsupported' && parts.length > 2) {
                             // For unsupported addons, check if the addon exists in base branch
                             try {
@@ -186,7 +186,7 @@ jobs:
                             // For supported addons, check if addon exists in baseAddons
                             isNewAddon = !baseAddons.includes(rootDir);
                         }
-                        
+
                         if (!isNewAddon) {
                             hasVersionBump = true;
                             versionBumpAddons.push(addonName);
