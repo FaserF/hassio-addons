@@ -3,11 +3,14 @@
 Prepare the unsupported branch.
 1. Updates repository.json to be "Unsupported".
 2. Adds warning headers to READMEs.
-3. Cleans config keys if needed (handled mostly by bump_version or prepare_edge).
+3. Updates addon names to include "(Unsupported)" suffix.
+4. Cleans config keys if needed (handled mostly by bump_version or prepare_edge).
 """
 import json
 import os
 import re
+
+import yaml
 
 
 def update_repository_json():
@@ -71,6 +74,69 @@ def add_unsupported_notice(readme_path):
         print(f"❌ Failed to update {readme_path}: {e}")
 
 
+def update_addon_name(config_path: str, suffix: str) -> bool:
+    """
+    Append suffix to the 'name' field in config.yaml.
+    Handles both quoted and unquoted name values.
+    """
+    if not os.path.exists(config_path):
+        return False
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        data = yaml.safe_load(content)
+        if not data or "name" not in data:
+            return False
+
+        current_name = data["name"]
+
+        # Avoid double suffixing
+        if current_name.endswith(suffix):
+            return False
+
+        new_name = f"{current_name}{suffix}"
+
+        # Try multiple patterns to handle different quote styles
+        # Pattern 1: name: "Value" (double quotes)
+        pattern_dq = re.compile(
+            rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE
+        )
+        # Pattern 2: name: 'Value' (single quotes)
+        pattern_sq = re.compile(
+            rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
+        )
+        # Pattern 3: name: Value (no quotes)
+        pattern_nq = re.compile(
+            rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE
+        )
+
+        new_content = content
+        updated = False
+
+        if pattern_dq.search(content):
+            new_content = pattern_dq.sub(f'name: "{new_name}"', content)
+            updated = True
+        elif pattern_sq.search(content):
+            new_content = pattern_sq.sub(f"name: '{new_name}'", content)
+            updated = True
+        elif pattern_nq.search(content):
+            new_content = pattern_nq.sub(f"name: {new_name}", content)
+            updated = True
+
+        if updated:
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            return True
+
+        return False
+
+    except Exception as e:
+        print(f"⚠️ Error updating name in {config_path}: {e}")
+        return False
+
+
 def remove_image_key(config_path):
     # Sanity check to ensure local build
     if not os.path.exists(config_path):
@@ -97,9 +163,13 @@ def main():
     # Iterate all subdirectories that look like addons
     for entry in os.listdir("."):
         if os.path.isdir(entry) and not entry.startswith("."):
-            if os.path.exists(os.path.join(entry, "config.yaml")):
+            config_path = os.path.join(entry, "config.yaml")
+            if os.path.exists(config_path):
                 add_unsupported_notice(os.path.join(entry, "README.md"))
-                remove_image_key(os.path.join(entry, "config.yaml"))
+                remove_image_key(config_path)
+                # Update addon name to include "(Unsupported)" suffix
+                if update_addon_name(config_path, " (Unsupported)"):
+                    print(f"🏷️  Updated name in {entry} with suffix '(Unsupported)'")
 
     # Update main README
     if os.path.exists("README.md"):

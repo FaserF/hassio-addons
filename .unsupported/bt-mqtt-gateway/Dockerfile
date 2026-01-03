@@ -18,7 +18,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
-    apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev && \
+    apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev python3-dev && \
     apk add --no-cache --update wget && \
     wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
     echo "${BT_MQTT_SHA256}  ${BT_MQTT_VERSION}.tar.gz" | sha256sum -c - && \
@@ -29,9 +29,11 @@ RUN mkdir /application && \
 
 COPY logger.yaml /application/logger.yaml
 
-# PIP setup - install requirements only (no runtime execution during build)
+# PIP setup - install requirements and common optional dependencies
+# Install optional dependencies before removing build-dependencies (needed for pyserial compilation)
 RUN python3 -m venv /application/venv && \
     /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir setuptools pytz -r /application/requirements.txt" && \
+    /bin/sh -c ". /application/venv/bin/activate && pip install --no-cache-dir python-eq3bt==0.1.12 pyserial" && \
     apk del build-dependencies wget
 
 # Copy start script and make it executable

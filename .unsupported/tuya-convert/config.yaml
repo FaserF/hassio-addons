@@ -7,7 +7,7 @@ host_network: true
 init: false
 map:
   - share:rw
-name: tuya-convert BETA
+name: tuya-convert BETA (Unsupported)
 options:
   accept_eula: "false"
   backup_path: /share/tuya-convert/

@@ -7,7 +7,7 @@ description: Freenom Registrar Domain Management - update dns records, Manage (a
 init: false
 map:
   - share:rw
-name: Freenom-dns-updater
+name: Freenom-dns-updater (Unsupported)
 options:
   config_file: null
   update_time_in_seconds: 86400
