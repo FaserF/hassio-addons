@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - ".unsupported/**"
   workflow_dispatch:
     inputs:
       force_sync:
@@ -40,6 +42,13 @@ jobs:
           echo "Resetting edge branch to match master..."
           git checkout -B edge master
 
+      - name: 🗑️ Remove Unsupported Addons
+        run: |
+          echo "Removing .unsupported directory from edge branch..."
+          rm -rf .unsupported
+          git add .unsupported
+          git commit -m "chore: remove unsupported addons from edge [skip ci]" || echo "No unsupported addons to remove"
+
       - name: 📝 Prepare edge for local builds
         run: |
           pip install pyyaml --quiet
@@ -53,7 +62,7 @@ jobs:
           for config in */config.yaml; do
             if [ -f "$config" ]; then
               ADDON_DIR=$(dirname "$config")
-              # Skip .unsupported directory entry
+              # Skip .unsupported directory entry if it somehow exists
               if [[ "$ADDON_DIR" != "." ]] && [[ ! "$ADDON_DIR" =~ ^\. ]]; then
                 echo "Processing $ADDON_DIR..."
                 python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $ADDON_DIR"
