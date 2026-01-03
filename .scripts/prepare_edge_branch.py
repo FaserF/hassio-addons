@@ -48,7 +48,6 @@ def remove_image_from_config(config_path: str) -> bool:
         return False
 
 
-
 def update_addon_name(config_path: str, suffix: str) -> bool:
     """
     Append suffix to the 'name' field in config.yaml.
@@ -119,7 +118,9 @@ def remap_ports_in_config(config_path: str) -> bool:
             new_port = original_port + 10000
 
             # Construct regex to find this specific line
-            pattern = re.compile(rf"^(\s+){re.escape(str(port_key))}:\s+{original_port}$", re.MULTILINE)
+            pattern = re.compile(
+                rf"^(\s+){re.escape(str(port_key))}:\s+{original_port}$", re.MULTILINE
+            )
 
             if pattern.search(new_content):
                 new_content = pattern.sub(rf"\g<1>{port_key}: {new_port}", new_content)
