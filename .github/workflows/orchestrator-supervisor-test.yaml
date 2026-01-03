@@ -59,7 +59,7 @@ jobs:
       has_addons: ${{ steps.filter.outputs.has_addons }}
     steps:
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: "🔧 Filter Ingress-Enabled Add-ons"
         id: filter
@@ -134,10 +134,10 @@ jobs:
 
     steps:
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: "🐳 Set up Docker Buildx"
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: "📦 Pull Devcontainer Image"
         run: docker pull ${{ env.DEVCONTAINER_IMAGE }}
@@ -316,7 +316,7 @@ jobs:
             echo "Installing $addon ($SLUG)..."
             INSTALL_OUTPUT=$(timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
-            
+
             # Handle 500 errors as warnings instead of failures
             # Note: This is likely a CI container issue, but could also indicate real add-on start problems
             # Should be investigated if it occurs frequently
@@ -336,7 +336,7 @@ jobs:
                 FAILED=1
               fi
             fi
-            
+
             if [ $INSTALL_EXIT -eq 0 ]; then
               echo "✅ Install successful"
 
@@ -371,7 +371,7 @@ jobs:
               echo "Starting $addon..."
               START_OUTPUT=$(timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
               START_EXIT=$?
-              
+
               # Handle 500 errors as warnings instead of failures
               # Note: This is likely a CI container issue, but could also indicate real add-on start problems
               # Should be investigated if it occurs frequently
@@ -391,7 +391,7 @@ jobs:
                   FAILED=1
                 fi
               fi
-              
+
               if [ $START_EXIT -eq 0 ]; then
                 echo "✅ Start command successful"
 

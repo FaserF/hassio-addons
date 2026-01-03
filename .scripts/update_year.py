@@ -130,8 +130,21 @@ def main():
         # Return exit code: 0 = changes made, 1 = no changes needed
         return 0 if updated_files else 1
 
+    except (FileNotFoundError, PermissionError, OSError) as e:
+        # Handle file system errors specifically
+        print(f"\n[ERROR] File system error: {type(e).__name__}: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 2
+    except (ValueError, TypeError) as e:
+        # Handle data/type errors specifically
+        print(f"\n[ERROR] Data error: {type(e).__name__}: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 2
     except Exception as e:
-        print(f"\n[ERROR] Script failed with exception: {e}", file=sys.stderr)
+        # Catch-all for any other unexpected errors
+        print(f"\n[ERROR] Unexpected error ({type(e).__name__}): {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         return 2

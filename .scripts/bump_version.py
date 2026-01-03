@@ -34,6 +34,9 @@ DEPENDENCY_URLS = {
     "netbootxyz/webapp": "https://github.com/netbootxyz/webapp/releases/tag",
 }
 
+# Minimum length for meaningful auto-generated changelog content
+MIN_AUTO_CONTENT_LENGTH = 10
+
 
 def get_git_remote_url():
     """Get the GitHub repo URL from git remote."""
@@ -519,38 +522,26 @@ def bump_version(
              with open(changelog_path, "r") as f:
                 existing_changelog = f.read()
 
-             # Check if entry for new version already exists
-             # Look for "## 1.2.3 ("
-             header_pattern = f"## {new_version} \\("
-             match_header = re.search(header_pattern, existing_changelog)
-             if match_header:
+             # Check if entry for new version already exists and extract it
+             version_header_start = f"## {new_version}"
+             if version_header_start in existing_changelog:
                  print(f"ℹ️ Found existing entry for {new_version}, will merge/extend.")
-                 # Extract the entry content?
-                 # For now, let's just generate the new entry and see.
-                 # Strategy: If found, we can try to separate it?
-                 # Actually, simplest approach:
-                 # If changelog_only=True, we assume we are fixing/appending.
-                 # We will generate the entry, and if it differs, update?
-                 pass
+                 # Find start and end of this section
+                 start_idx = existing_changelog.find(version_header_start)
+                 # Find next section (look for next version header or end of file)
+                 next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+len(version_header_start):])
+                 if next_section_match:
+                     end_idx = start_idx + len(version_header_start) + next_section_match.start()
+                     existing_entry = existing_changelog[start_idx:end_idx]
+                 else:
+                     existing_entry = existing_changelog[start_idx:]
 
         new_entry = generate_changelog_entry(new_version, addon_path, changelog_message, existing_entry)
 
         if os.path.exists(changelog_path):
             print(f"📝 Updating {changelog_path}...")
 
-            # If we perform a manual release, we might have manually added the header "## 1.2.3 (Date)"
-            # parsing that is tricky.
-            # Simplified Logic:
-            # 1. Generate full auto entry.
-            # 2. If "## {new_version}" exists in file:
-            #    Replace that section? Or append to it?
-            #    User said: "erweitere ... um auto changelog".
-            #    So we should keep what is there and Add ours.
-            #    But `generate_changelog_entry` returns a full block starting with `## Version`.
-            #    If we just inject it, we get duplicate headers.
-
-            # Better:
-            # Check if header exists.
+            # Check if entry for new version already exists in the file
             version_header_start = f"## {new_version}"
             if version_header_start in existing_changelog:
                 # Find start and end of this section
@@ -564,19 +555,29 @@ def bump_version(
                     current_section = existing_changelog[start_idx:]
                     end_idx = len(existing_changelog)
 
-                # We have the manual section - preserve it completely
                 # Check if auto-generated content already exists in this section
-                has_auto_content = "### ✨ Features" in current_section or "### 🐛 Bug Fixes" in current_section or "### 📦 Dependencies" in current_section
+                # Check for all category headers used by categorize_commits
+                ALL_CATEGORY_MARKERS = [
+                    "### ✨ Features",
+                    "### 🐛 Bug Fixes",
+                    "### 📦 Dependencies",
+                    "### 🔧 Configuration",
+                    "### 📝 Documentation",
+                    "### 🎨 Style",
+                    "### ♻️ Refactor",
+                    "### 🔒 Security",
+                    "### 🚀 Other",
+                ]
+                has_auto_content = any(marker in current_section for marker in ALL_CATEGORY_MARKERS)
 
                 if has_auto_content:
                     # Auto content already exists, don't duplicate
                     print(f"ℹ️ Auto-generated content already exists in version {new_version} entry, skipping auto-generation")
                     changelog = existing_changelog
                 else:
-                    # Generate auto section (without header) and append to manual section
-                    auto_entry_full = generate_changelog_entry(new_version, addon_path, changelog_message)
+                    # Reuse new_entry that was already generated with existing_entry
                     # Strip header from auto entry (first 2 lines: "## version (date)" and blank line)
-                    auto_lines = auto_entry_full.split("\n")
+                    auto_lines = new_entry.split("\n")
                     if len(auto_lines) > 2 and auto_lines[0].startswith("##"):
                         auto_body = "\n".join(auto_lines[2:])  # Skip header and blank line
                     else:
@@ -584,7 +585,7 @@ def bump_version(
 
                     # Combine: Manual Section + separator + Auto Body
                     # Only add if auto_body has meaningful content
-                    if auto_body.strip() and len(auto_body.strip()) > 10:
+                    if auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
                         combined_section = current_section.rstrip() + "\n\n" + auto_body
                         changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
                     else:

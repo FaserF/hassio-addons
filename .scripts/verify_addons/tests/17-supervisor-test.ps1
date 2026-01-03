@@ -195,11 +195,11 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         # Special setup for netboot-xyz
         if ($safeName -eq "local_netboot-xyz" -or $addon.Name -eq "netboot-xyz") {
-             $nbImage = Join-Path $mediaDir "netboot/image"
-             $nbConfig = Join-Path $mediaDir "netboot/config"
-             New-Item -ItemType Directory -Path $nbImage -Force | Out-Null
-             New-Item -ItemType Directory -Path $nbConfig -Force | Out-Null
-             Write-Host "      Created netboot media directories for $safeName" -ForegroundColor DarkGray
+            $nbImage = Join-Path $mediaDir "netboot/image"
+            $nbConfig = Join-Path $mediaDir "netboot/config"
+            New-Item -ItemType Directory -Path $nbImage -Force | Out-Null
+            New-Item -ItemType Directory -Path $nbConfig -Force | Out-Null
+            Write-Host "      Created netboot media directories for $safeName" -ForegroundColor DarkGray
         }
     }
 
@@ -283,7 +283,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         # Read from host file since container might be dead/exited
         if (Test-Path $logFileHost) {
             $intLogs = Get-Content $logFileHost -Tail 50
-        } else {
+        }
+        else {
             $intLogs = "No log file found at $logFileHost"
         }
 
@@ -317,24 +318,24 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
         $inst = docker exec $containerName ha addons install core_mariadb 2>&1
         if ($LASTEXITCODE -eq 0) {
-             # Configure MariaDB (Password is required)
-             Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
+            # Configure MariaDB (Password is required)
+            Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
 
-             # Use Python API to set options reliably (avoiding CLI quoting issues)
-             $mariaDbOpts = @{
-                 databases = @("homeassistant")
-                 logins = @(
-                     @{ username = "homeassistant"; password = "generated_m7R2x" }
-                 )
-                 rights = @(
-                     @{ username = "homeassistant"; database = "homeassistant" }
-                 )
-             } | ConvertTo-Json -Depth 5 -Compress
+            # Use Python API to set options reliably (avoiding CLI quoting issues)
+            $mariaDbOpts = @{
+                databases = @("homeassistant")
+                logins    = @(
+                    @{ username = "homeassistant"; password = "generated_m7R2x" }
+                )
+                rights    = @(
+                    @{ username = "homeassistant"; database = "homeassistant" }
+                )
+            } | ConvertTo-Json -Depth 5 -Compress
 
-             # Escape for Python string
-             $mariaDbOptsStr = $mariaDbOpts.Replace('"', '\"')
+            # Escape for Python string
+            $mariaDbOptsStr = $mariaDbOpts.Replace('"', '\"')
 
-             $pyScript = @"
+            $pyScript = @"
 import os, sys, json, urllib.request, urllib.error
 token = os.environ.get("SUPERVISOR_TOKEN")
 url = "http://supervisor/addons/core_mariadb/options"
@@ -349,41 +350,43 @@ except Exception as e:
     print(e)
     sys.exit(1)
 "@
-             $tmpPyFile = Join-Path $env:TEMP "set_options_mariadb.py"
-             [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
-             docker cp $tmpPyFile "${containerName}:/tmp/set_options_mariadb.py" 2>$null | Out-Null
-             docker exec $containerName python3 /tmp/set_options_mariadb.py 2>&1 | Out-Null
-             Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
+            $tmpPyFile = Join-Path $env:TEMP "set_options_mariadb.py"
+            [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
+            docker cp $tmpPyFile "${containerName}:/tmp/set_options_mariadb.py" 2>$null | Out-Null
+            docker exec $containerName python3 /tmp/set_options_mariadb.py 2>&1 | Out-Null
+            Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
 
-             $start = docker exec $containerName ha addons start core_mariadb 2>&1
-             if ($LASTEXITCODE -ne 0) {
-                 Write-Warning "Failed to start MariaDB: $start"
-                 $mysqlFailed = $true
-             } else {
-                 Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
-                 $mariadbReady = $false
-                 $maxWait = 60
-                 $mariadbWaitStart = Get-Date
-                 while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
-                     $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
-                     if ($statusJson) {
-                         $status = $statusJson | ConvertFrom-Json
-                         if ($status.data.state -eq "started") {
-                             Write-Host "    ✅ MariaDB is ready." -ForegroundColor Green
-                             $mariadbReady = $true
-                             break
-                         }
-                     }
-                     Start-Sleep -Seconds 5
-                 }
-                 if (-not $mariadbReady) {
-                     Write-Warning "MariaDB failed to reach 'started' state within ${maxWait}s"
-                     $mysqlFailed = $true
-                 }
-             }
-        } else {
-             Write-Warning "Failed to install MariaDB: $inst"
-             $mysqlFailed = $true
+            $start = docker exec $containerName ha addons start core_mariadb 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Failed to start MariaDB: $start"
+                $mysqlFailed = $true
+            }
+            else {
+                Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
+                $mariadbReady = $false
+                $maxWait = 60
+                $mariadbWaitStart = Get-Date
+                while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
+                    $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
+                    if ($statusJson) {
+                        $status = $statusJson | ConvertFrom-Json
+                        if ($status.data.state -eq "started") {
+                            Write-Host "    ✅ MariaDB is ready." -ForegroundColor Green
+                            $mariadbReady = $true
+                            break
+                        }
+                    }
+                    Start-Sleep -Seconds 5
+                }
+                if (-not $mariadbReady) {
+                    Write-Warning "MariaDB failed to reach 'started' state within ${maxWait}s"
+                    $mysqlFailed = $true
+                }
+            }
+        }
+        else {
+            Write-Warning "Failed to install MariaDB: $inst"
+            $mysqlFailed = $true
         }
     }
 
@@ -404,8 +407,8 @@ except Exception as e:
 
         # Check dependency failure
         if ($mysqlFailed -and ($addon.Name -match "wiki\.js|wiki\.js3|pterodactyl-panel")) {
-             Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "SKIP" -Message "Dependency (MariaDB) failed"
-             continue
+            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "SKIP" -Message "Dependency (MariaDB) failed"
+            continue
         }
 
         # Check skip list
@@ -446,9 +449,9 @@ except Exception as e:
                     docker exec $containerName ha store refresh 2>&1 | Out-Null
                     $storeRefreshed = $true
 
-                     # Debug: list addons
+                    # Debug: list addons
                     if ($PSBoundParameters['Debug']) {
-                         docker exec $containerName ha addons 2>&1 | Out-Host
+                        docker exec $containerName ha addons 2>&1 | Out-Host
                     }
                 }
 
@@ -473,12 +476,12 @@ except Exception as e:
                     if ($installOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
                         $testPassed = $true
                         $testMessage = "WARN: Install returned 500 error (likely CI container issue, but verify add-on): $installOutput"
-                        
+
                         # Try to fetch logs for investigation
                         $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
                         if ($logs) {
-                             $logStr = $logs -join "`n"
-                             $testMessage += ". Logs: $logStr"
+                            $logStr = $logs -join "`n"
+                            $testMessage += ". Logs: $logStr"
                         }
                         Write-Host "    ⚠️ Install returned 500 (treating as WARN)" -ForegroundColor Yellow
                     }
@@ -490,8 +493,8 @@ except Exception as e:
                         if ($installOutput -match "500") {
                             $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
                             if ($logs) {
-                                 $logStr = $logs -join "`n"
-                                 $testMessage += ". Logs: $logStr"
+                                $logStr = $logs -join "`n"
+                                $testMessage += ". Logs: $logStr"
                             }
                         }
                     }
@@ -503,45 +506,31 @@ except Exception as e:
                     # TODO: Enable this flag when 500 errors are resolved
                     $shouldRunRuntimeTests = $false
 
-                    if (-not $shouldRunRuntimeTests) {
-                        Write-Host "    > Skipping Start/Config phase (Install Only Mode)" -ForegroundColor Yellow
-                        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Install Only)"
-                    }
-                    else {
-
-                    # Configure add-on if needed
+                    # Configure apache2 addons immediately after installation to prevent SSL certificate errors
+                    # This must happen even in Install Only Mode to prevent addon from failing on auto-start
                     $configFile = Join-Path $addon.FullName "config.yaml"
                     if (Test-Path $configFile) {
                         $configContent = Get-Content $configFile -Raw
-                        $opts = $null
 
                         if ($addon.Name -match "apache2") {
-                             # Handle all apache2 variants
-                             $opts = '{"website_name": "example.com", "default_conf": "default", "default_ssl_conf": "default", "php_ini": "default"}'
-                        } elseif ($addon.Name -match "^pterodactyl-wings$") {
-                             $opts = '{"config_file": "config.yml"}'
-                        } elseif ($addon.Name -eq "bash_script_executer") {
-                             $opts = '{"script_path": "/share/test.sh"}'
-                        } elseif ($addon.Name -eq "netboot-xyz") {
-                             $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
-                        } elseif ($addon.Name -eq "antigravity-server") {
-                             $opts = '{"vnc_password": "Ab1Cd2Ef", "log_level": "info"}'
-                        } elseif ($addon.Name -eq "aegisbot") {
-                             $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "generated_K3y9P", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
-                        } elseif ($addon.Name -eq "solumati") {
-                             $opts = '{"log_level": "info", "test_mode": true}'
-                        } elseif ($configContent -match "website_name") {
-                             # Fallback generic detection
-                             $opts = '{"website_name": "example.com"}'
-                        }
+                            # Handle all apache2 variants - configure SSL to false immediately after installation
+                            # This prevents the addon from failing when it tries to start with default SSL enabled
+                            Write-Host "    > Configuring apache2 addon (disabling SSL for test environment)..." -ForegroundColor Gray
 
-                        if ($opts) {
-                            Write-Host "    > Configuring options (using ha addons options via strict file pass)..." -ForegroundColor Gray
-
-                            # Debug: Show what we are sending
-                            if ($PSBoundParameters['Debug']) {
-                                Write-Host "      DEBUG: Sending Config: $opts" -ForegroundColor DarkGray
+                            # Build options based on what the addon supports
+                            $baseOpts = @{
+                                website_name     = "example.com"
+                                default_conf     = "default"
+                                default_ssl_conf = "default"
+                                ssl              = $false
                             }
+
+                            # Only include php_ini if the addon supports it
+                            if ($configContent -match "php_ini") {
+                                $baseOpts["php_ini"] = "default"
+                            }
+
+                            $opts = ($baseOpts | ConvertTo-Json -Compress)
 
                             # Create text file with options locally
                             $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
@@ -595,19 +584,123 @@ except Exception as e:
                             if ($pyOut -notmatch "200") {
                                 Write-Warning "Failed to set options via Python API."
                                 Write-Warning "Output: $pyOut"
-                            } else {
+                            }
+                            else {
                                 if ($PSBoundParameters['Debug']) {
                                     Write-Host "      DEBUG: Python API Config Set Success" -ForegroundColor DarkGray
                                 }
                             }
 
                             Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
+                        }
+                    }
 
+                    if (-not $shouldRunRuntimeTests) {
+                        Write-Host "    > Skipping Start/Config phase (Install Only Mode)" -ForegroundColor Yellow
+                        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Install Only)"
+                    }
+                    else {
+
+                        # Configure add-on if needed (for non-apache2 addons)
+                        if (Test-Path $configFile) {
+                            $configContent = Get-Content $configFile -Raw
+                            $opts = $null
+
+                            if ($addon.Name -match "apache2") {
+                                # Already configured above, skip
+                                $opts = $null
+                                $opts = '{"config_file": "config.yml"}'
+                            }
+                            elseif ($addon.Name -eq "bash_script_executer") {
+                                $opts = '{"script_path": "/share/test.sh"}'
+                            }
+                            elseif ($addon.Name -eq "netboot-xyz") {
+                                $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
+                            }
+                            elseif ($addon.Name -eq "antigravity-server") {
+                                $opts = '{"vnc_password": "Ab1Cd2Ef", "log_level": "info"}'
+                            }
+                            elseif ($addon.Name -eq "aegisbot") {
+                                $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "generated_K3y9P", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
+                            }
+                            elseif ($addon.Name -eq "solumati") {
+                                $opts = '{"log_level": "info", "test_mode": true}'
+                            }
+                            elseif ($configContent -match "website_name") {
+                                # Fallback generic detection
+                                $opts = '{"website_name": "example.com"}'
                             }
 
-                            Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
+                            if ($opts) {
+                                Write-Host "    > Configuring options (using ha addons options via strict file pass)..." -ForegroundColor Gray
 
+                                # Debug: Show what we are sending
+                                if ($PSBoundParameters['Debug']) {
+                                    Write-Host "      DEBUG: Sending Config: $opts" -ForegroundColor DarkGray
+                                }
 
+                                # Create text file with options locally
+                                $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
+                                $opts | Out-File -FilePath $tmpOptsFile -Encoding utf8 -Force
+                                docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
+                                Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
+
+                                # Create Python script to set options (Bypasses shell/curl issues)
+                                $pyScript = @"
+import os, sys, json, urllib.request, urllib.error
+
+slug = "$slug"
+token = os.environ.get("SUPERVISOR_TOKEN")
+
+if not token:
+    print("Error: No SUPERVISOR_TOKEN found in environment")
+    sys.exit(1)
+
+try:
+    with open("/tmp/options.json", "r") as f:
+        data = json.load(f)
+except Exception as e:
+    print(f"Error reading options: {e}")
+    sys.exit(1)
+
+url = f"http://supervisor/addons/{slug}/options"
+req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
+req.add_header("Authorization", f"Bearer {token}")
+req.add_header("Content-Type", "application/json")
+
+try:
+    with urllib.request.urlopen(req) as response:
+        print(response.getcode())
+        print(response.read().decode("utf-8"))
+except urllib.error.HTTPError as e:
+    print(e.code)
+    print(e.read().decode("utf-8"))
+    sys.exit(1)
+except Exception as e:
+    print(f"Exception: {e}")
+    sys.exit(1)
+"@
+                                $tmpPyFile = Join-Path $env:TEMP "set_options_$($addon.Name).py"
+                                [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
+                                docker cp $tmpPyFile "${containerName}:/tmp/set_options.py" 2>$null | Out-Null
+
+                                # Execute Python script
+                                $pyOut = docker exec $containerName python3 /tmp/set_options.py 2>&1
+
+                                # Check output for success (200)
+                                if ($pyOut -notmatch "200") {
+                                    Write-Warning "Failed to set options via Python API."
+                                    Write-Warning "Output: $pyOut"
+                                }
+                                else {
+                                    if ($PSBoundParameters['Debug']) {
+                                        Write-Host "      DEBUG: Python API Config Set Success" -ForegroundColor DarkGray
+                                    }
+                                }
+
+                                Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
+
+                            }
 
                         }
                     }
@@ -637,19 +730,19 @@ except Exception as e:
                                 # Add logs for investigation
                                 $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
                                 if ($logs) {
-                                     $logStr = $logs -join "`n"
-                                     $testMessage += ". Logs: $logStr"
+                                    $logStr = $logs -join "`n"
+                                    $testMessage += ". Logs: $logStr"
                                 }
                                 Write-Host "    ⚠️ Start returned 500 (treating as WARN)" -ForegroundColor Yellow
                             }
                             else {
                                 $testPassed = $false
                                 $testMessage = "Start failed: $startOutput"
-                                 # Add logs for start failures
+                                # Add logs for start failures
                                 $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
                                 if ($logs) {
-                                     $logStr = $logs -join "`n"
-                                     $testMessage += ". Logs: $logStr"
+                                    $logStr = $logs -join "`n"
+                                    $testMessage += ". Logs: $logStr"
                                 }
                                 Write-Host "    ❌ Start command failed" -ForegroundColor Red
                             }
@@ -666,7 +759,7 @@ except Exception as e:
                         $state = "unknown"
                         $infoJson = ""
 
-                        for ($i = 0; $i -lt $pollingTimeout; $i+=5) {
+                        for ($i = 0; $i -lt $pollingTimeout; $i += 5) {
                             # Use docker ps to check if container is running (bypassing potentially hanging ha CLI)
                             # The container name format is usually addon_slug
                             $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
@@ -682,17 +775,18 @@ except Exception as e:
 
                         if ($started) {
                             # Verify running state again
-                             $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
-                             if ($runningContainers -match "addon_$slug") {
-                                 $state = "started"
-                                 # Populate $info for ingress check
-                                 $infoJson = docker exec $containerName ha addons info $slug --raw-json 2>$null
-                                 if ($infoJson) {
-                                     $info = $infoJson | ConvertFrom-Json
-                                 }
-                             } else {
-                                 $state = "stopped"
-                             }
+                            $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
+                            if ($runningContainers -match "addon_$slug") {
+                                $state = "started"
+                                # Populate $info for ingress check
+                                $infoJson = docker exec $containerName ha addons info $slug --raw-json 2>$null
+                                if ($infoJson) {
+                                    $info = $infoJson | ConvertFrom-Json
+                                }
+                            }
+                            else {
+                                $state = "stopped"
+                            }
 
 
                             if ($state -eq "started") {
@@ -744,7 +838,8 @@ except Exception as e:
                                 Write-Host "    > Supervisor Logs (Last 50):" -ForegroundColor Cyan
                                 if (Test-Path $logFileHost) {
                                     Get-Content $logFileHost -Tail 50
-                                } else {
+                                }
+                                else {
                                     Write-Host "No log file found at $logFileHost" -ForegroundColor Yellow
                                 }
 
@@ -762,40 +857,40 @@ except Exception as e:
                         $testPassed = $false
                         $testMessage = "Start timed out after ${addonStartTimeout}s"
                     }
-                    }
                 }
-            }
-            else {
-                Remove-Job $installJob -Force
-                $testPassed = $false
-                $testMessage = "Install timed out after ${addonInstallTimeout}s"
-            }
-        }
-        catch {
-            $testPassed = $false
-            $testMessage = "Exception: $_"
-        }
-        finally {
-            # Cleanup this add-on
-            Write-Host "    > Cleaning up $($addon.Name)..." -ForegroundColor Gray
-            docker exec $containerName ha addons stop $slug 2>$null | Out-Null
-            docker exec $containerName ha addons uninstall $slug 2>$null | Out-Null
-        }
-
-        # Report result
-        if ($testPassed) {
-            if ($testMessage -match "WARN") {
-                Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "WARN" -Message $testMessage
-            }
-            else {
-                Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message $testMessage
             }
         }
         else {
-            $anyFailure = $true
-            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message $testMessage
+            Remove-Job $installJob -Force
+            $testPassed = $false
+            $testMessage = "Install timed out after ${addonInstallTimeout}s"
         }
     }
+    catch {
+        $testPassed = $false
+        $testMessage = "Exception: $_"
+    }
+    finally {
+        # Cleanup this add-on
+        Write-Host "    > Cleaning up $($addon.Name)..." -ForegroundColor Gray
+        docker exec $containerName ha addons stop $slug 2>$null | Out-Null
+        docker exec $containerName ha addons uninstall $slug 2>$null | Out-Null
+    }
+
+    # Report result
+    if ($testPassed) {
+        if ($testMessage -match "WARN") {
+            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "WARN" -Message $testMessage
+        }
+        else {
+            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message $testMessage
+        }
+    }
+    else {
+        $anyFailure = $true
+        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message $testMessage
+    }
+}
 }
 catch {
     Add-Result -Addon "System" -Check "SupervisorTest" -Status "FAIL" -Message "Unexpected error: $($_.Exception.Message)"
@@ -818,4 +913,5 @@ finally {
         docker run --rm -v "${dataDirUnix}:/data" busybox sh -c "rm -rf /data/*" 2>$null | Out-Null
         Remove-Item $dataDir -Recurse -Force -ErrorAction SilentlyContinue
     }
+}
 }

@@ -174,12 +174,17 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 6. Clean Excessive Blank Lines
+      # 6. Remove Trailing Spaces
+      - name: 🧹 Remove Trailing Spaces
+        run: |
+          find .github/workflows -name "*.yaml" -type f -exec sed -i 's/[[:space:]]*$//' {} +
+
+      # 7. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
         run: |
           find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
 
-      # 7. Bump Test Script Version
+      # 8. Bump Test Script Version
       - name: 🆙 Bump Test Script Version
         continue-on-error: true
         run: python3 .scripts/bump_script_version.py
