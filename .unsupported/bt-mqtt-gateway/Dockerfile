@@ -16,6 +16,13 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="3.0.0"
+ENV ADDON_NAME="bt-mqtt-gateway (Unsupported)"
+ENV ADDON_SLUG="bt-mqtt-gateway"
+ENV ADDON_UNSUPPORTED="true"
+
 RUN mkdir /application && \
     apk add --no-cache tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
     apk add --no-cache --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev python3-dev && \
