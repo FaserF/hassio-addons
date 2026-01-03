@@ -310,7 +310,26 @@ jobs:
             # Refresh add-on store
             echo "Refreshing add-on store..."
             docker exec ha-supervisor-test ha addons reload || true
-            sleep 5
+            echo "Waiting for supervisor to scan add-ons..."
+            sleep 10
+
+            # Check supervisor logs for any validation errors
+            echo "Checking supervisor logs for errors..."
+            docker exec ha-supervisor-test ha supervisor logs --tail 50 2>&1 | grep -iE "(error|warn|$addon|$SLUG)" || echo "No relevant errors found in logs"
+
+            # Verify add-on is detected
+            echo "Checking if add-on is detected..."
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha addons --raw-json 2>&1 || echo "[]")
+            if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
+              echo "✅ Add-on detected: $SLUG"
+            else
+              echo "⚠️ Add-on not found in list, but continuing with install attempt..."
+              echo "Available add-ons:"
+              echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
+              echo ""
+              echo "Checking add-on directory structure..."
+              docker exec ha-supervisor-test ls -la /mnt/data/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
+            fi
 
             # Install add-on
             echo "Installing $addon ($SLUG)..."
