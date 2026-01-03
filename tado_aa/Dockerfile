@@ -12,7 +12,19 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3003,DL3018
 RUN apk add --no-cache \
-    curl
+    curl \
+    jq \
+    && curl -J -L -o /tmp/bashio.tar.gz \
+        "https://github.com/hassio-addons/bashio/archive/v0.16.3.tar.gz" \
+    && mkdir /tmp/bashio \
+    && tar zxvf \
+        /tmp/bashio.tar.gz \
+        --strip 1 -C /tmp/bashio \
+    && mv /tmp/bashio/lib /usr/lib/bashio \
+    && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
+    && rm -f -r \
+        /tmp/bashio \
+        /tmp/bashio.tar.gz
 
 # Download and patch tado_aa.py to use environment variables
 # Latest commit from adrianslabu/tado_aa (archived repo)
