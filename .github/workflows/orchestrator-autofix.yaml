@@ -3,7 +3,7 @@ name: Orchestrator Auto-Fix
 permissions:
   contents: write
   pull-requests: write
-  workflows: write
+  actions: write
 
 on:
   push:
