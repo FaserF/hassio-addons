@@ -259,7 +259,7 @@ jobs:
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
-        uses: frenck/action-yamllint@be475b7c04356034c5754e7273c717247302611d # v1.5
+        uses: frenck/action-yamllint@34b4bbcaeabedcfefad6adea8c5bbc42af0e2d47 # v1.5
         with:
           args: "./${{ matrix.addon }}/*.yaml"
 
@@ -271,7 +271,7 @@ jobs:
 
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@0942ceda08dc8ae64e812bb7ea3371a0569fa041 # v2
+        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2
         with:
           path: "./${{ matrix.addon }}"
         continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
