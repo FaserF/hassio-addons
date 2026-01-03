@@ -84,13 +84,14 @@ jobs:
             done
           fi
 
-          # Convert to JSON array
+          # Convert to JSON array (compact format for GitHub Actions output)
           if [ -n "$ADDONS" ]; then
-            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s .)"
+            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s -c .)"
           else
             JSON="[]"
           fi
 
+          # Output as compact JSON (single line) to avoid formatting issues
           echo "addons=$JSON" >> "$GITHUB_OUTPUT"
           echo "📦 Found add-ons: $ADDONS"
           echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
