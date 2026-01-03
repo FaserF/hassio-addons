@@ -511,8 +511,12 @@ except Exception as e:
                     $configFile = Join-Path $addon.FullName "config.yaml"
                     if (Test-Path $configFile) {
                         $configContent = Get-Content $configFile -Raw
-
+                        
                         if ($addon.Name -match "apache2") {
+                            # Stop addon if it auto-started during installation (to prevent SSL errors)
+                            Write-Host "    > Stopping addon (if running) to configure SSL settings..." -ForegroundColor Gray
+                            docker exec $containerName ha addons stop $slug 2>&1 | Out-Null
+                            
                             # Handle all apache2 variants - configure SSL to false immediately after installation
                             # This prevents the addon from failing when it tries to start with default SSL enabled
                             Write-Host "    > Configuring apache2 addon (disabling SSL for test environment)..." -ForegroundColor Gray
@@ -609,6 +613,8 @@ except Exception as e:
                             if ($addon.Name -match "apache2") {
                                 # Already configured above, skip
                                 $opts = $null
+                            }
+                            elseif ($addon.Name -match "^pterodactyl-wings$") {
                                 $opts = '{"config_file": "config.yml"}'
                             }
                             elseif ($addon.Name -eq "bash_script_executer") {
