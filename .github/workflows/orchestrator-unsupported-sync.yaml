@@ -56,11 +56,13 @@ jobs:
             -not -name ".scripts" \
             -exec rm -rf {} +
 
-          # Remove all files in root except needed (keep licenses etc? maybe just clean all)
-          # We need repository.json if we want to patch it.
-          # But actually we can just overwrite it.
-          # Keep .gitignore?
-          find . -maxdepth 1 -type f -not -name ".gitignore" -delete
+          # Remove all files in root except needed
+          find . -maxdepth 1 -type f \
+            -not -name ".gitignore" \
+            -not -name "repository.json" \
+            -not -name "LICENSE" \
+            -not -name "README.md" \
+            -delete
 
           echo "Restoring unsupported addons to root..."
           cp -r ../temp_unsupported/* .
