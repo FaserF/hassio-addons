@@ -9,6 +9,7 @@ import json
 import os
 import re
 
+
 def update_repository_json():
     repo_path = "repository.json"
     if not os.path.exists(repo_path):
@@ -34,6 +35,7 @@ def update_repository_json():
         print("✅ Updated repository.json for Unsupported branch")
     except Exception as e:
         print(f"❌ Failed to update repository.json: {e}")
+
 
 def add_unsupported_notice(readme_path):
     if not os.path.exists(readme_path):
@@ -68,6 +70,7 @@ def add_unsupported_notice(readme_path):
     except Exception as e:
         print(f"❌ Failed to update {readme_path}: {e}")
 
+
 def remove_image_key(config_path):
     # Sanity check to ensure local build
     if not os.path.exists(config_path):
@@ -85,6 +88,7 @@ def remove_image_key(config_path):
             print(f"🔧 Removed image key from {config_path}")
     except Exception as e:
         print(f"❌ Failed to clean {config_path}: {e}")
+
 
 def main():
     print("💀 Preparing Unsupported Branch...")
@@ -104,6 +108,7 @@ def main():
         # It should probably list ONLY the unsupported addons.
         # For now, let's just prepend a huge warning.
         add_unsupported_notice("README.md")
+
 
 if __name__ == "__main__":
     main()
