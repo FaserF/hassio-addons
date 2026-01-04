@@ -18,5 +18,6 @@ schema:
 services:
   - mqtt:want
 slug: bt-mqtt-gateway
+image: ghcr.io/faserf/hassio-addons-bt-mqtt-gateway-{arch}
 url: https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway
 version: 3.0.0
