@@ -4,7 +4,9 @@ import sys
 import yaml
 
 
-def check_addon(addon_path):
+    errors = []
+    warnings = []
+
     dockerfile_path = os.path.join(addon_path, "Dockerfile")
     build_yaml_path = os.path.join(addon_path, "build.yaml")
 
@@ -28,9 +30,6 @@ def check_addon(addon_path):
                             "Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally."
                         )
                         break
-
-    errors = []
-    warnings = []
 
     if not os.path.exists(dockerfile_path):
         errors.append("Dockerfile missing")
@@ -140,7 +139,7 @@ def main():
 
     args = sys.argv[1:]
     # Remove script name if passed as first arg in some invocations (safety check)
-    if args and args[0] == "check_compliance.py":
+    if args and os.path.basename(args[0]) == "check_compliance.py":
         args = args[1:]
 
     for addon in args:
