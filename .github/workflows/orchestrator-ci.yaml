@@ -536,8 +536,9 @@ jobs:
                    issue_number: context.issue.number,
                 });
 
-                const signature = "## 🛡️ Platinum Compliance Issues";
-                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                // Match current OR legacy signatures
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
 
                 for (const comment of previousComments) {
                     try {
@@ -600,8 +601,8 @@ jobs:
                    repo: context.repo.repo,
                    issue_number: context.issue.number,
                 });
-                const signature = "## 🛡️ Platinum Compliance Issues";
-                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
                 for (const comment of previousComments) {
                     try {
                         await github.graphql(`
