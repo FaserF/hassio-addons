@@ -811,7 +811,7 @@ jobs:
               git pull origin master --no-rebase || echo "Already up to date"
             }
             git commit -m "${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
-            git push origin master || echo "Push failed"
+            git push origin master
           fi
 
       - name: ℹ️ Get Add-on Info (Post-Bump)
@@ -1076,7 +1076,7 @@ jobs:
               git pull origin master --no-rebase || echo "Already up to date"
             }
             git commit -m "chore(${{ matrix.addon }}): bump to dev version [skip-tests]" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
-            git push origin master || echo "Push failed"
+            git push origin master
           fi
 
       - name: 📢 Release Summary
