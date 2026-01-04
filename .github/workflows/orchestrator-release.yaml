@@ -504,7 +504,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 1
+      # Allow parallel builds to save runner minutes
+      # Increased from 1 to 3 for better resource utilization
+      max-parallel: 3
       matrix:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
@@ -563,6 +565,23 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: 💾 Cache Docker layers (optimized for shared base image)
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+        with:
+          path: /tmp/.buildx-cache-${{ matrix.addon }}
+          # Primary key: addon-specific for precise cache hits
+          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          restore-keys: |
+            # Try addon-specific cache first
+            ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            # Fallback to shared base image cache (all addons share base:19.0.0)
+            ${{ runner.os }}-buildx-base-image-19.0.0-
+            # Last resort: any buildx cache
+            ${{ runner.os }}-buildx-
 
       - name: 📝 Bump Version & Changelog
         run: |
@@ -765,17 +784,18 @@ jobs:
 
           # Use docker run directly to have full control over args
           # Mount Docker config so builder can access GHCR credentials
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
           docker run --rm --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
             -v "$(pwd)":/data \
+            -v /tmp/.buildx-cache-${{ matrix.addon }}:/cache:rw \
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             $(echo -e "$BUILDER_ARGS") \
             --target "/data/${{ matrix.addon }}" \
             --image "$IMAGE_NAME" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon \
-            --no-cache
+            --addon
 
       - name: 🔄 Bump to Dev Version
         if: |

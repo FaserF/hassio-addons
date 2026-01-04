@@ -62,30 +62,30 @@ def get_addon_dropdown_value(addon_dirname):
     # First try direct mapping
     if addon_dirname in ADDON_NAME_MAPPING:
         return ADDON_NAME_MAPPING[addon_dirname]
-    
+
     # Fallback: try case-insensitive match
     for key, value in ADDON_NAME_MAPPING.items():
         if key.lower() == addon_dirname.lower():
             return value
-    
+
     # If no match, use directory name as fallback (as requested)
     return addon_dirname
 
 
 def generate_bug_report_url(addon_dirname, addon_version):
     """Generate GitHub issue URL with pre-filled values.
-    
+
     IMPORTANT: GitHub Issue Forms only support pre-filling input and textarea fields
     via URL parameters. Dropdown fields CANNOT be pre-filled via URL.
-    
+
     For dropdowns, we set default values in the template itself:
     - installation_type: default is "Home Assistant OS" (index 0)
     - addon_name: Cannot be set dynamically (would need template per addon)
-    
+
     Supported fields (via URL):
     - version_integration (input) - Addon version (can be pre-filled)
     - log_information (textarea) - Log placeholder text (can be pre-filled)
-    
+
     Fields NOT pre-filled (not meaningful to pre-fill):
     - version (input) - Home Assistant Core version (user-specific, leave empty)
     """
@@ -101,7 +101,7 @@ def generate_bug_report_url(addon_dirname, addon_version):
         # installation_type has default="Home Assistant OS" in template
         # addon_name must be selected manually by user
     }
-    
+
     # Build URL with proper encoding
     url = f"{REPO_URL}/issues/new"
     query_string = urllib.parse.urlencode(params, doseq=False)
@@ -111,13 +111,13 @@ def generate_bug_report_url(addon_dirname, addon_version):
 def generate_feature_request_url(addon_dirname):
     """Generate GitHub feature request URL with pre-filled values."""
     addon_name_value = get_addon_dropdown_value(addon_dirname)
-    
+
     # Build query parameters - GitHub YAML forms use direct id=value syntax
     params = {
         "template": "feature_request.yml",
         "addon_name": addon_name_value,
     }
-    
+
     # Build URL
     url = f"{REPO_URL}/issues/new"
     query_string = urllib.parse.urlencode(params)
@@ -131,28 +131,28 @@ def remove_all_issue_sections(content):
     # Updated to match any URL parameters (more flexible)
     issue_link_pattern = r"(?s)\*\*\[(?:Report a Bug|Request a Feature)\]\(https://github\.com/[^)]+issues/new[^)]+\)\*\*\s*\n\s*> \[!NOTE\].*?automatically included.*?\.\s*\n"
     cleaned = re.sub(issue_link_pattern, "", content, flags=re.IGNORECASE | re.MULTILINE)
-    
+
     # Also remove links that might not have the NOTE block (more aggressive cleanup)
     issue_link_simple_pattern = r"\*\*\[(?:Report a Bug|Request a Feature)\]\(https://github\.com/[^)]+issues/new[^)]+\)\*\*"
     cleaned = re.sub(issue_link_simple_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
-    
+
     # Also remove orphaned introductory text before links (repeat until no more matches)
     # Remove all lines containing these texts that are NOT in a section (no ## header before them)
     lines = cleaned.split('\n')
     filtered_lines = []
     in_section = False
-    
+
     i = 0
     while i < len(lines):
         line = lines[i]
-        
+
         # Check if we're entering a section
         if re.match(r"^##\s+", line):
             in_section = True
             filtered_lines.append(line)
             i += 1
             continue
-        
+
         # Check if line matches orphaned text patterns
         is_orphaned = False
         if re.search(r"If you encounter any issues with this add-on, please report them using the link below\.", line, re.IGNORECASE):
@@ -161,36 +161,36 @@ def remove_all_issue_sections(content):
         elif re.search(r"If you have an idea for a new feature or improvement, please use the link below to submit a feature request\.", line, re.IGNORECASE):
             if not in_section:
                 is_orphaned = True
-        
+
         if is_orphaned:
             # Skip this line and any following empty lines
             i += 1
             while i < len(lines) and lines[i].strip() == "":
                 i += 1
             continue  # Skip this line
-        
+
         # Reset section flag when we hit a separator (but keep the separator)
         if line.strip() == "---":
             in_section = False
-        
+
         filtered_lines.append(line)
         i += 1
-    
+
     cleaned = '\n'.join(filtered_lines)
-    
+
     # Remove bug report sections (with headers) - match from header to next section
     # This pattern should match the entire section including the URL with any parameters
     bug_report_pattern = r"(?s)(---\s*\n\s*)?##\s+.*?[🐛]?\s*[Rr]eport\s+[Aa]\s+[Bb]ug.*?(?=\n---\s*\n\s*##|##\s+[💡]|##\s+[👨‍💻]|$)"
     # Try multiple times to ensure all sections are removed
     while re.search(bug_report_pattern, cleaned, flags=re.IGNORECASE | re.MULTILINE):
         cleaned = re.sub(bug_report_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
-    
+
     # Remove feature request sections (with headers) - match from header to next section
     feature_request_pattern = r"(?s)(---\s*\n\s*)?##\s+.*?[💡]?\s*[Ff]eature\s+[Rr]equest.*?(?=\n---\s*\n\s*##|##\s+[👨‍💻]|$)"
     # Try multiple times to ensure all sections are removed
     while re.search(feature_request_pattern, cleaned, flags=re.IGNORECASE | re.MULTILINE):
         cleaned = re.sub(feature_request_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
-    
+
     # Remove any remaining orphaned content blocks (introductory text)
     orphan_patterns = [
         r"(?s)(If you encounter any issues with this add-on, please report them using the link below\..*?automatically included in your bug report\.)\s*",
@@ -198,13 +198,13 @@ def remove_all_issue_sections(content):
     ]
     for pattern in orphan_patterns:
         cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
-    
+
     # Clean up multiple consecutive separators and excessive newlines
     cleaned = re.sub(r"---\s*\n\s*---\s*\n", "---\n\n", cleaned)
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
     cleaned = re.sub(r"^\n+", "", cleaned)  # Remove leading newlines
     cleaned = re.sub(r"\n+$", "\n", cleaned)  # Normalize trailing newlines
-    
+
     return cleaned
 
 
@@ -231,11 +231,11 @@ If you have an idea for a new feature or improvement, please use the link below 
 ---
 
 """
-    
+
     # Try to find a good insertion point - before "Credits & License" or at the end
     credits_pattern = r"(##\s+.*[Cc]redits.*[Ll]icense|##\s+.*👨‍💻.*[Cc]redits)"
     match = re.search(credits_pattern, content, re.IGNORECASE)
-    
+
     if match:
         # Insert before Credits section
         insert_pos = match.start()
@@ -285,7 +285,7 @@ def process_addon(addon_path, dry_run=False):
 
     # Remove all existing issue sections (handles duplicates)
     cleaned_content = remove_all_issue_sections(content)
-    
+
     # Add new issue sections
     new_content = add_issue_sections(cleaned_content, bug_report_url, feature_request_url)
 
@@ -337,7 +337,7 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-    
+
     parser = argparse.ArgumentParser(
         description="Add bug report section with pre-filled GitHub issue link to all addon README files"
     )
@@ -364,10 +364,10 @@ if __name__ == "__main__":
     else:
         found_addons = find_addons(base_path)
         print(f"Found {len(found_addons)} add-ons.\n")
-        
+
         updated_count = 0
         for addon in found_addons:
             if process_addon(addon, dry_run=args.dry_run):
                 updated_count += 1
-        
+
         print(f"\n{'Would update' if args.dry_run else 'Updated'} {updated_count} addon(s).")

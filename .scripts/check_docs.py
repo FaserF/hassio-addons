@@ -77,7 +77,7 @@ def check_readme(addon_path, fix=False):
         (r"\[Documentation\]\(\./DOCS\.md\)", "./DOCS.md"),
         (r"\[Documentation\]\(\.\./DOCS\.md\)", "../DOCS.md"),
     ]
-    
+
     for pattern, link_text in docs_link_patterns:
         if re.search(pattern, content):
             errors.append(f"Documentation link is relative ({link_text}) instead of absolute GitHub link.")

@@ -358,13 +358,18 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
-      - name: 💾 Cache Docker layers
+      - name: 💾 Cache Docker layers (optimized for shared base image)
         uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
         with:
           path: /tmp/.buildx-cache
+          # Primary key: addon-specific for precise cache hits
           key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
           restore-keys: |
+            # Try addon-specific cache first
             ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            # Fallback to shared base image cache (all addons share base:19.0.0)
+            ${{ runner.os }}-buildx-base-image-19.0.0-
+            # Last resort: any buildx cache
             ${{ runner.os }}-buildx-
 
       - name: ℹ️ Get Add-on Info
@@ -383,7 +388,7 @@ jobs:
           docker run --rm --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$(pwd)":/data \
-            -v /tmp/.buildx-cache:/cache \
+            -v /tmp/.buildx-cache:/cache:rw \
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             --test \
             --amd64 \

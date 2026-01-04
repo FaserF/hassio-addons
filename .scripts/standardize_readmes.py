@@ -75,7 +75,7 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
                 # Fallback: derive from slug
                 addon_dirname = os.path.basename(addon_path)
                 package_name = f"hassio-addons-{addon_dirname}"
-    
+
     # Generate Docker image badge - shows version from config.yaml and links to GHCR packages
     if package_name and version:
         # Link to GHCR package page
@@ -84,7 +84,7 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
     else:
         # Fallback badge
         docker_badge = f"[![Docker Image](https://img.shields.io/badge/docker-available-blue.svg?logo=docker&style=flat-square)](https://github.com/{MAINTAINER}/hassio-addons/pkgs/container)"
-    
+
     return f"""[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon={addon_slug})
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 {docker_badge}
