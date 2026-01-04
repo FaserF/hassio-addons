@@ -69,6 +69,7 @@ env:
     whatsapp
     switch_lan_play
     nginx
+    wordpress
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge
@@ -624,9 +625,9 @@ jobs:
 
           # Store local changes for this addon
           ADDON_FILES="${{ matrix.addon }}/*"
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }}..."
-            git stash push -m "temp-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "temp-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -643,8 +644,8 @@ jobs:
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Merge conflict detected, resolving..."
                 # If there's a conflict, resolve by taking our version (the addon files)
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 # Clean up the stash
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
@@ -657,7 +658,7 @@ jobs:
           git reset --hard origin/master
 
           # Reapply changes one more time if needed
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }}"
           fi
 
@@ -676,16 +677,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="${{ matrix.addon }}"
+          ADDON_FILES="${{ matrix.addon }}/*"
 
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
 
           # Store local changes
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for retry..."
-            git stash push -m "retry-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "retry-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and reset to latest master
@@ -698,16 +699,16 @@ jobs:
             if [ -n "$STASH_ENTRY" ]; then
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Conflict on retry, using our version..."
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
             fi
           fi
 
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
-            git add $ADDON_FILES
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
             # Use rebase strategy to avoid merge commits
             git pull --rebase origin master || {
               echo "⚠️ Rebase failed, trying merge..."
@@ -795,6 +796,7 @@ jobs:
       - name: 🏗️ Build & Push Add-on
         run: |
           # Read architectures from config.yaml
+          # shellcheck disable=SC2001,SC2046
           ARCHS=$(grep -A 10 "^arch:" "${{ matrix.addon }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
 
           # Default to amd64 and aarch64 if no arches found
@@ -844,6 +846,7 @@ jobs:
             IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
           else
             # Remove ghcr.io/faserf/ prefix to get package name
+            # shellcheck disable=SC2001
             IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
           fi
 
@@ -852,6 +855,9 @@ jobs:
           # Use docker run directly to have full control over args
           # Mount Docker config so builder can access GHCR credentials
           # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # shellcheck disable=SC2046,SC2001
           docker run --rm --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
@@ -883,9 +889,9 @@ jobs:
 
           # Store local changes for this addon
           ADDON_FILES="${{ matrix.addon }}/*"
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
-            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -899,8 +905,8 @@ jobs:
             if [ -n "$STASH_ENTRY" ]; then
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Merge conflict detected, resolving..."
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
             fi
@@ -912,7 +918,7 @@ jobs:
           git reset --hard origin/master
 
           # Reapply changes one more time if needed
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }} (dev version)"
           fi
 
@@ -943,9 +949,9 @@ jobs:
           git rebase --abort 2>/dev/null || true
 
           # Store local changes
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for retry (dev version)..."
-            git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and reset to latest master
@@ -958,16 +964,16 @@ jobs:
             if [ -n "$STASH_ENTRY" ]; then
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Conflict on retry, using our version..."
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
             fi
           fi
 
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
-            git add $ADDON_FILES
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
             # Use rebase strategy to avoid merge commits
             git pull --rebase origin master || {
               echo "⚠️ Rebase failed, trying merge..."

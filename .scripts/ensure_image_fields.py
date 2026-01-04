@@ -72,9 +72,7 @@ def get_slug_from_config(config_path):
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
-            return config.get("slug") or os.path.basename(
-                os.path.dirname(config_path)
-            )
+            return config.get("slug") or os.path.basename(os.path.dirname(config_path))
     except Exception as e:
         print(f"⚠️  Error reading {config_path}: {e}")
         return os.path.basename(os.path.dirname(config_path))
@@ -108,13 +106,16 @@ def add_image_field(config_path, slug, dry_run=False):
                     r"^image:\s*.+$",
                     f"image: {correct_image_value}",
                     content,
-                    flags=re.MULTILINE
+                    flags=re.MULTILINE,
                 )
                 if new_content != content:
                     if not dry_run:
                         with open(config_path, "w", encoding="utf-8") as f:
                             f.write(new_content)
-                    return True, f"Updated from '{existing_image}' to '{correct_image_value}'"
+                    return (
+                        True,
+                        f"Updated from '{existing_image}' to '{correct_image_value}'",
+                    )
                 return False, "Image field already correct"
             return False, "Image field already correct"
 

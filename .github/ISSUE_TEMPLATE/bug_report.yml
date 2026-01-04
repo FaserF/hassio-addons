@@ -104,6 +104,7 @@ body:
         - whatsapp
         - wiki.js
         - wiki.js3
+        - wordpress
   - type: markdown
     attributes:
       value: '# Details

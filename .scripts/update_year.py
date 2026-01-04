@@ -8,8 +8,8 @@ This script is designed to be run annually on January 1st.
 import os
 import re
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def get_current_year():
@@ -27,20 +27,35 @@ def update_license_file(license_path, old_year, new_year):
     if not os.path.exists(license_path):
         return False
 
-    with open(license_path, 'r', encoding='utf-8') as f:
+    with open(license_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     original_content = content
 
     # Update copyright years: 2019–2025 -> 2019–2026, or any year range ending with old_year
-    content = re.sub(rf'(\d{{4}})–{old_year}', rf'\1–{new_year}', content)
-    content = re.sub(rf'\(c\)\s*(\d{{4}})–{old_year}', rf'(c) \1–{new_year}', content, flags=re.IGNORECASE)
-    content = re.sub(rf'Copyright\s+\(c\)\s*(\d{{4}})–{old_year}', rf'Copyright (c) \1–{new_year}', content, flags=re.IGNORECASE)
+    content = re.sub(rf"(\d{{4}})–{old_year}", rf"\1–{new_year}", content)
+    content = re.sub(
+        rf"\(c\)\s*(\d{{4}})–{old_year}",
+        rf"(c) \1–{new_year}",
+        content,
+        flags=re.IGNORECASE,
+    )
+    content = re.sub(
+        rf"Copyright\s+\(c\)\s*(\d{{4}})–{old_year}",
+        rf"Copyright (c) \1–{new_year}",
+        content,
+        flags=re.IGNORECASE,
+    )
     # Also handle single year references in copyright contexts only (e.g., "Copyright 2025", "© 2025", "(c) 2025")
-    content = re.sub(rf'(?:Copyright(?:\s+\(c\))?|©|\(c\)|\(C\))\s+{old_year}\b', lambda m: m.group(0).replace(str(old_year), str(new_year)), content, flags=re.IGNORECASE)
+    content = re.sub(
+        rf"(?:Copyright(?:\s+\(c\))?|©|\(c\)|\(C\))\s+{old_year}\b",
+        lambda m: m.group(0).replace(str(old_year), str(new_year)),
+        content,
+        flags=re.IGNORECASE,
+    )
 
     if content != original_content:
-        with open(license_path, 'w', encoding='utf-8') as f:
+        with open(license_path, "w", encoding="utf-8") as f:
             f.write(content)
         return True
     return False
@@ -51,19 +66,24 @@ def update_readme_md(readme_path, old_year, new_year):
     if not os.path.exists(readme_path):
         return False
 
-    with open(readme_path, 'r', encoding='utf-8') as f:
+    with open(readme_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     original_content = content
 
     # Update date format "YYYY-MM" in table (e.g., "2025-12" -> "2026-01")
     # Only update if it's the last month of the old year
-    content = re.sub(rf'{old_year}-12', f'{new_year}-01', content)
+    content = re.sub(rf"{old_year}-12", f"{new_year}-01", content)
     # Update any standalone year references in copyright notices
-    content = re.sub(rf'Copyright.*{old_year}', lambda m: m.group(0).replace(str(old_year), str(new_year)), content, flags=re.IGNORECASE)
+    content = re.sub(
+        rf"Copyright.*{old_year}",
+        lambda m: m.group(0).replace(str(old_year), str(new_year)),
+        content,
+        flags=re.IGNORECASE,
+    )
 
     if content != original_content:
-        with open(readme_path, 'w', encoding='utf-8') as f:
+        with open(readme_path, "w", encoding="utf-8") as f:
             f.write(content)
         return True
     return False
@@ -99,7 +119,10 @@ def main():
         license_files = list(repo_root.rglob("LICENSE.txt"))
         for license_file in license_files:
             # Skip if in .git or other hidden directories
-            if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
+            if any(
+                part.startswith(".") and part != ".unsupported"
+                for part in license_file.parts
+            ):
                 continue
 
             if update_license_file(str(license_file), old_year, new_year):
@@ -113,7 +136,10 @@ def main():
             if license_file.suffix:  # Skip if has extension
                 continue
             # Skip if in .git or other hidden directories
-            if any(part.startswith('.') and part != '.unsupported' for part in license_file.parts):
+            if any(
+                part.startswith(".") and part != ".unsupported"
+                for part in license_file.parts
+            ):
                 continue
 
             if update_license_file(str(license_file), old_year, new_year):
@@ -134,18 +160,21 @@ def main():
         # Handle file system errors specifically
         print(f"\n[ERROR] File system error: {type(e).__name__}: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 2
     except (ValueError, TypeError) as e:
         # Handle data/type errors specifically
         print(f"\n[ERROR] Data error: {type(e).__name__}: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 2
     except Exception as e:
         # Catch-all for any other unexpected errors
         print(f"\n[ERROR] Unexpected error ({type(e).__name__}): {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 2
 

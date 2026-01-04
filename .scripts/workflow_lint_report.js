@@ -31,7 +31,9 @@ module.exports = async ({ github, context, core }) => {
   let body = signature + '\n';
   body += '## 🔧 Workflow Lint Errors\n\n';
 
-  const output = (process.env.ACTIONLINT_OUTPUT || '').trim();
+  // Strip ANSI color codes from output to ensure regex matching works
+  // eslint-disable-next-line no-control-regex
+  const output = (process.env.ACTIONLINT_OUTPUT || '').trim().replace(/\x1b\[[0-9;]*m/g, '');
   const stderr = (process.env.ACTIONLINT_STDERR || '').trim();
   const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
@@ -87,7 +89,7 @@ module.exports = async ({ github, context, core }) => {
   // Determine if this is a real error or just a successful run with exit code != 0
   // If actionlint reports "Found 0 issues" and there's no stderr, it likely succeeded
   // even if exit code was non-zero (can happen with some actionlint versions/configs)
-  const isLikelySuccess = hasZeroIssues && !hasStderr && errors.length === 0;
+  const isLikelySuccess = (hasZeroIssues || (isEmpty && !hasStderr)) && errors.length === 0;
   const isInternalError = !isLikelySuccess && errors.length === 0 && (hasZeroIssues || isEmpty) && hasStderr;
 
   // --- Generate GitHub Step Summary ---
@@ -210,28 +212,30 @@ module.exports = async ({ github, context, core }) => {
     }
     body += '</details>\n\n';
   }
-  body += '<details open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n';
-  body += '> **Instructions for AI**: Fix all workflow lint errors below.\n\n';
-  body += '```yaml\n';
-  body += '# Workflow Lint Errors for AI Processing\n';
-  body += 'error_source: actionlint\n';
-  body += 'files_to_fix: .github/workflows/*.yaml\n\n';
-  body += 'common_fixes:\n';
-  body += '  syntax_errors:\n';
-  body += '    - Check YAML indentation (2 spaces)\n';
-  body += '    - Ensure proper quoting of strings with special chars\n';
-  body += '  action_errors:\n';
-  body += '    - Verify action versions exist (e.g., actions/checkout@v4)\n';
-  body += '    - Update deprecated actions to latest versions\n';
-  body += '  expression_errors:\n';
-  body += '    - Check ${{ }} syntax and available contexts\n';
-  body += '    - Use toJSON() for complex objects\n';
-  body += '  shell_errors:\n';
-  body += '    - Set shell: bash explicitly for scripts\n';
-  body += '    - Use proper exit codes\n';
-  body += '\nvalidation_command: actionlint .github/workflows/\n';
-  body += '```\n';
-  body += '\n</details>\n\n';
+  if (!isLikelySuccess) {
+    body += '<details open>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n';
+    body += '> **Instructions for AI**: Fix all workflow lint errors below.\n\n';
+    body += '```yaml\n';
+    body += '# Workflow Lint Errors for AI Processing\n';
+    body += 'error_source: actionlint\n';
+    body += 'files_to_fix: .github/workflows/*.yaml\n\n';
+    body += 'common_fixes:\n';
+    body += '  syntax_errors:\n';
+    body += '    - Check YAML indentation (2 spaces)\n';
+    body += '    - Ensure proper quoting of strings with special chars\n';
+    body += '  action_errors:\n';
+    body += '    - Verify action versions exist (e.g., actions/checkout@v4)\n';
+    body += '    - Update deprecated actions to latest versions\n';
+    body += '  expression_errors:\n';
+    body += '    - Check ${{ }} syntax and available contexts\n';
+    body += '    - Use toJSON() for complex objects\n';
+    body += '  shell_errors:\n';
+    body += '    - Set shell: bash explicitly for scripts\n';
+    body += '    - Use proper exit codes\n';
+    body += '\nvalidation_command: actionlint .github/workflows/\n';
+    body += '```\n';
+    body += '\n</details>\n\n';
+  }
   body += '📚 [actionlint documentation](https://github.com/rhysd/actionlint)\n';
 
   await github.rest.issues.createComment({
@@ -241,20 +245,22 @@ module.exports = async ({ github, context, core }) => {
     body: body,
   });
 
-  // Add label
-  const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: context.issue.number,
-  });
-
-  if (!currentLabels.some((l) => l.name === 'workflow/lint-error')) {
-    await github.rest.issues.addLabels({
+  // Add label only if there are issues
+  if (!isLikelySuccess) {
+    const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
       owner: context.repo.owner,
       repo: context.repo.repo,
       issue_number: context.issue.number,
-      labels: ['workflow/lint-error'],
     });
+
+    if (!currentLabels.some((l) => l.name === 'workflow/lint-error')) {
+      await github.rest.issues.addLabels({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        labels: ['workflow/lint-error'],
+      });
+    }
   }
 
   // Set output to indicate if this is a real error that should fail the workflow

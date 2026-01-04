@@ -80,7 +80,9 @@ def check_readme(addon_path, fix=False):
 
     for pattern, link_text in docs_link_patterns:
         if re.search(pattern, content):
-            errors.append(f"Documentation link is relative ({link_text}) instead of absolute GitHub link.")
+            errors.append(
+                f"Documentation link is relative ({link_text}) instead of absolute GitHub link."
+            )
             if fix:
                 print(f"🔧 Fixing Documentation link for {addon_path}")
                 # Check if DOCS.md exists
@@ -93,9 +95,7 @@ def check_readme(addon_path, fix=False):
                     github_link = f"{REPO_URL}/blob/{REPO_BRANCH}/{rel_path}/DOCS.md"
                     # Replace relative link with absolute link
                     content = re.sub(
-                        pattern,
-                        f"[Documentation]({github_link})",
-                        content
+                        pattern, f"[Documentation]({github_link})", content
                     )
                     with open(readme_path, "w", encoding="utf-8") as f:
                         f.write(content)

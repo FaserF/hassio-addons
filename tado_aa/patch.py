@@ -33,8 +33,8 @@ def replace_in_file(filepath, mapping):
                 )
             # Replace first occurrence only
             # Handle multiline replacements by normalizing line endings
-            normalized_original = original.replace('\n', '\n')
-            normalized_replacement = replacement.replace('\n', '\n')
+            normalized_original = original.replace("\r\n", "\n").replace("\r", "\n")
+            normalized_replacement = replacement.replace("\r\n", "\n").replace("\r", "\n")
             content = content.replace(normalized_original, normalized_replacement, 1)
             replaced.append(original)
 

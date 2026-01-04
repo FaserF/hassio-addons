@@ -1,0 +1,27 @@
+configuration:
+  database_host:
+    name: Datenbank Host
+    description: Hostname deiner MariaDB/MySQL Datenbank.
+  database_name:
+    name: Datenbank Name
+    description: Name der zu verwendenden Datenbank.
+  database_user:
+    name: Datenbank Benutzer
+    description: Benutzername für die Datenbank.
+  database_password:
+    name: Datenbank Passwort
+    description: Passwort für die Datenbank.
+  wordpress_title:
+    name: Seitentitel
+    description: Titel deiner WordPress-Seite.
+  wordpress_admin_user:
+    name: Admin Benutzer
+    description: Benutzername für das generische Admin-Konto.
+  wordpress_admin_password:
+    name: Admin Passwort
+    description: Passwort für das generische Admin-Konto.
+  wordpress_admin_email:
+    name: Admin E-Mail
+    description: E-Mail-Adresse für das generische Admin-Konto.
+network:
+  80/tcp: Webinterface
