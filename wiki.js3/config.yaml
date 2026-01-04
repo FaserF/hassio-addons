@@ -1,8 +1,7 @@
 ---
-name: Wiki.JS V3 (Beta)
-version: 4.0.0
+name: Wiki.JS V3 (Beta) (Edge)
+version: 4.0.1-dev-4fc7754
 slug: wikijs3
-image: ghcr.io/faserf/hassio-addons-wikijs3-{arch}
 description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
@@ -28,8 +27,8 @@ schema:
   reset_database: bool?
   reset_database_confirm: bool?
 ports:
-  3000/tcp: 3000
-  3443/tcp: 3443
+  3000/tcp: 13000
+  3443/tcp: 13443
 ports_description:
   3000/tcp: HTTP Entrance port
   3443/tcp: HTTPS/SSL Entrance port

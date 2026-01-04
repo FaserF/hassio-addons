@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.0.1-dev-4df2838 (2026-01-04)
+
+### 🐛 Bug Fixes
+- rename README.MD to README.md and prevent run.sh startup crashes ([`4fc77546`](https://github.com/FaserF/hassio-addons/commit/4fc775469d5aec6dd85ac55e71ffff56388b7228))
+- resolve multiple values for token_file_path and fix retry interval typo ([`53128e76`](https://github.com/FaserF/hassio-addons/commit/53128e76166ccb609ca5558a933244de37c5cfbc))
+
+### 📦 Dependencies
+- 📝 release(tado_aa): update changelog [skip-tests] ([`1601e958`](https://github.com/FaserF/hassio-addons/commit/1601e958695184423d7bbf85db62a0f6b0446cfe))
+- 📝 release(tado_aa): update changelog [skip-tests] ([`04fe4a40`](https://github.com/FaserF/hassio-addons/commit/04fe4a404dd3ba7728e9a80850bd64b1f7675df9))
+- Bump all addon versions ([`7a5426ba`](https://github.com/FaserF/hassio-addons/commit/7a5426bac78e1dbbbf0de477757cbe4562594434))
+
+### 📝 Documentation
+- improved READMEs ([`083b3025`](https://github.com/FaserF/hassio-addons/commit/083b30254f65656f616671ec8aa6649cbe085b8e))
+
+### 🚀 Other
+- New Addon: Wordpress (#539) [skip-tests] ([`4df28386`](https://github.com/FaserF/hassio-addons/commit/4df2838673a3b689f6feda37a8232a2665a410b7))
+- ci fixes ([`cf220dc5`](https://github.com/FaserF/hassio-addons/commit/cf220dc5ea8a883cef79c8b09901bd366c5878e3))
+- fix ci ([`372c4c2c`](https://github.com/FaserF/hassio-addons/commit/372c4c2c8221b70515414846fe578261f63a23ac))
+- small fix ([`4de506d9`](https://github.com/FaserF/hassio-addons/commit/4de506d97842d06151ae7fbb437d62669a70eb48))
+- Small fix [skip-ci] ([`5d5dafdb`](https://github.com/FaserF/hassio-addons/commit/5d5dafdb9fbd76b182107a1cf0085c2d49d3ca15))
+- more CI fixes about version pinning ([`7c611f51`](https://github.com/FaserF/hassio-addons/commit/7c611f519f4b080e59068053c92a4c0d5e6a6f5b))
+- more CI fixes ([`e6e6a6ae`](https://github.com/FaserF/hassio-addons/commit/e6e6a6ae0f66f70f3b1940233b27df356d3a9ea2))
+- small fixes ([`aa24d6e1`](https://github.com/FaserF/hassio-addons/commit/aa24d6e11af9ce4c631505f4dfa490330a48598c))
+- Watchdog fixes ([`defec20c`](https://github.com/FaserF/hassio-addons/commit/defec20cc30e2499935f8946abd6d0dd8a4928e0))
+- Docs improvements ([`9ba3343c`](https://github.com/FaserF/hassio-addons/commit/9ba3343c174fc850b55a9d73117eb57476b9d5cb))
+- small addon fixes ([`f3f3e0f5`](https://github.com/FaserF/hassio-addons/commit/f3f3e0f56b1c3fb6e8a44e396592b6177dd9c769))
+- fix Addon startup ([`7a83fd1c`](https://github.com/FaserF/hassio-addons/commit/7a83fd1cf7e004cd117e2372f51880fde076f4dc))
+- fixed addon startup issues ([`29ed9ca8`](https://github.com/FaserF/hassio-addons/commit/29ed9ca8cc9312be4fe346d2674cb333c0a59859))
+- fix banner printing ([`de18e9e2`](https://github.com/FaserF/hassio-addons/commit/de18e9e2fec69ebd2a73139670d5bc6f858b8e75))
+
+
 ## 2.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉

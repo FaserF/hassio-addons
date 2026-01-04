@@ -1,13 +1,12 @@
 ---
-name: Wordpress
-version: 0.0.1
+name: Wordpress (Edge)
+version: 0.0.2-dev-4df2838
 slug: wordpress
 description: "The most popular publication platform on the Web."
 url: "https://github.com/FaserF/hassio-addons/tree/master/wordpress"
 arch:
   - aarch64
   - amd64
-image: "ghcr.io/faserf/hassio-addons-wordpress-{arch}"
 services:
   - mysql:need
 panel_icon: mdi:wordpress
@@ -34,6 +33,6 @@ schema:
   wordpress_admin_password: str
   wordpress_admin_email: email
 ports:
-  80/tcp: 8099
+  80/tcp: 18099
 ports_description:
   80/tcp: Web Interface

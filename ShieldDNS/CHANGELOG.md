@@ -1,5 +1,40 @@
 # Changelog
 
+## 2.0.1-dev-4fc7754 (2026-01-04)
+
+### 🐛 Bug Fixes
+- rename README.MD to README.md and prevent run.sh startup crashes ([`4fc77546`](https://github.com/FaserF/hassio-addons/commit/4fc775469d5aec6dd85ac55e71ffff56388b7228))
+- ensure docker image tags are lowercase to comply with registry standards ([`bfc1a33a`](https://github.com/FaserF/hassio-addons/commit/bfc1a33a0fec75c71b810b45e624817b4b6cc5b9))
+
+### 📦 Dependencies
+- 📝 release(ShieldDNS): update changelog [skip-tests] ([`7196711c`](https://github.com/FaserF/hassio-addons/commit/7196711cc609b8c3fc9c1ee145ce5e338c2ed136))
+- 📝 release(ShieldDNS): update changelog [skip-tests] ([`e09819a6`](https://github.com/FaserF/hassio-addons/commit/e09819a61b4281994b2f621a259a1a40f2e023cd))
+- 📝 release(ShieldDNS): update changelog [skip-tests] ([`50a51d8c`](https://github.com/FaserF/hassio-addons/commit/50a51d8c7a1b3d62ce11fb6052f74b96a41c85ce))
+- 📝 release(ShieldDNS): update changelog [skip-tests] ([`1f47fa00`](https://github.com/FaserF/hassio-addons/commit/1f47fa00b1df177be9334c00f3bed0add0880fef))
+- 📝 release(ShieldDNS): update changelog [skip-tests] ([`43fe3854`](https://github.com/FaserF/hassio-addons/commit/43fe3854545b7449efa8489d8b8ba126bad165ee))
+- Bump all addon versions ([`7a5426ba`](https://github.com/FaserF/hassio-addons/commit/7a5426bac78e1dbbbf0de477757cbe4562594434))
+- bump all addons to dev version [skip-tests] ([`212568b0`](https://github.com/FaserF/hassio-addons/commit/212568b0343b757b6cd3ab18513949aa41f5d511))
+
+### 🔧 Configuration
+- revert master branch to stable versions (removed -dev suffixes) ([`4f35d8ad`](https://github.com/FaserF/hassio-addons/commit/4f35d8ad59ba6f04a4360ace09024eb7bbb459cd))
+
+### 📝 Documentation
+- improved READMEs ([`083b3025`](https://github.com/FaserF/hassio-addons/commit/083b30254f65656f616671ec8aa6649cbe085b8e))
+
+### 🎨 Style
+- auto-fix (prettier,markdownlint) ([`073bc2d2`](https://github.com/FaserF/hassio-addons/commit/073bc2d241297edab9de99d8f4a4e194d0235297))
+- auto-fix (black,isort,prettier,markdownlint) ([`17a41a4c`](https://github.com/FaserF/hassio-addons/commit/17a41a4ce0f7715a8d615267081aeed2e35db028))
+
+### 🚀 Other
+- small fix ([`4de506d9`](https://github.com/FaserF/hassio-addons/commit/4de506d97842d06151ae7fbb437d62669a70eb48))
+- more CI fixes ([`032a62cd`](https://github.com/FaserF/hassio-addons/commit/032a62cdaa45ecd61b19ea51897230c4179f3e9f))
+- Docs improvements ([`9ba3343c`](https://github.com/FaserF/hassio-addons/commit/9ba3343c174fc850b55a9d73117eb57476b9d5cb))
+- fix Addon startup ([`7a83fd1c`](https://github.com/FaserF/hassio-addons/commit/7a83fd1cf7e004cd117e2372f51880fde076f4dc))
+- fixed addon startup issues ([`29ed9ca8`](https://github.com/FaserF/hassio-addons/commit/29ed9ca8cc9312be4fe346d2674cb333c0a59859))
+- fix banner printing ([`de18e9e2`](https://github.com/FaserF/hassio-addons/commit/de18e9e2fec69ebd2a73139670d5bc6f858b8e75))
+- Fixes for Addon start issues ([`c34d7b58`](https://github.com/FaserF/hassio-addons/commit/c34d7b585d4d6f377d7d44803833e0d612b59120))
+
+
 ## 2.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉

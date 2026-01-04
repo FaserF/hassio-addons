@@ -1,13 +1,12 @@
 ---
-name: Netboot.xyz
-version: 2.0.0
+name: Netboot.xyz (Edge)
+version: 2.0.1-dev-083b302
 slug: netboot-xyz
 description: PXE-Server to deploy a OS inside your local network
 url: https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-netboot-xyz-{arch}
 host_network: true
 # webui: http://[HOST]:[PORT:3000]
 ingress: true
@@ -30,7 +29,7 @@ schema:
 ports:
   "85": 85
   "3000": 3000
-  69/udp: 69
+  69/udp: 10069
 ports_description:
   "85": "NGINX server for hosting boot assets - REQUIRED for PXE boot!"
   "3000": "Web configuration interface (uses Ingress, can be changed)"
