@@ -19,6 +19,7 @@ This release represents a significant effort to standardize and improve all addo
 ---
 
 ### 📦 Dependencies
+
 - 📝 release(apache2-minimal): update changelog [skip-tests] ([`476e2f5`](https://github.com/FaserF/hassio-addons/commit/476e2f5ff7c65d67eb19d251f2d3fa778cc15f2f))
 
 ### 🎉 Major Release - Unified Addon Update (Continued)

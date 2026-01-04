@@ -37,8 +37,6 @@ on your Home Assistant instance.
 1. Check the logs of the "Wordpress" add-on to see if everything went well.
 1. Click the "OPEN WEB UI" button to access your Wordpress site.
 
-
-
 ### Option: `database_host`
 
 The hostname of your MariaDB/MySQL database.
