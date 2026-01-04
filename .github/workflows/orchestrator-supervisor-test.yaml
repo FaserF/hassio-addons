@@ -78,7 +78,8 @@ jobs:
               addon_dir=$(dirname "$config_file")
               addon_name=$(basename "$addon_dir")
               # Skip .unsupported addons - they are built locally from unsupported branch
-              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ] && [[ "$addon_dir" != ./.unsupported/* ]]; then
+              # Skip CI-excluded addons (heavy/long-running, only test on release)
+              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ] && [ "$addon_name" != "sap-abap-cloud-dev" ] && [[ "$addon_dir" != ./.unsupported/* ]]; then
                 ADDONS="${ADDONS}${addon_name}"$'\n'
               fi
             done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -exec grep -l "^ingress: true" {} +)
