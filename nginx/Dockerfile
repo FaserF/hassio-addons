@@ -11,7 +11,7 @@ ARG NGINX_VERSION=""
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # Create directory for nginx to store PID file and install dependencies
-# hadolint ignore=DL3018,DL3003,DL3047
+# hadolint ignore=DL3018,DL3047
 
 
 
@@ -21,6 +21,7 @@ ENV ADDON_NAME="NGINX"
 ENV ADDON_SLUG="nginx"
 ENV ADDON_UNSUPPORTED="false"
 
+WORKDIR /tmp
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     && apk --no-cache add \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
@@ -67,10 +68,11 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
+# shellcheck disable=SC2015
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
     && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
-    && addgroup -S www-data || true \
-    && adduser -S -G www-data www-data || true
+    && (addgroup -S www-data || true) \
+    && (adduser -S -G www-data www-data || true)
 
 # Copy data for add-on
 COPY rootfs /

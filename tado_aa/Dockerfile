@@ -36,9 +36,9 @@ RUN python3 /patch.py && rm /patch.py
 RUN python3 -m venv venv
 
 # Install python-tado via pip
-# hadolint ignore=DL3042,SC1091
+# hadolint ignore=DL3042
 ENV TADO_VERSION="0.19.2"
-# shellcheck source=/dev/null
+# shellcheck source=/dev/null disable=SC1091
 RUN source ./venv/bin/activate && \
     pip install --no-cache-dir python-tado==${TADO_VERSION}
 

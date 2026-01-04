@@ -30,7 +30,6 @@ ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk upgrade --no-cache && \
     apk add --no-cache \
     musl \
     nginx \

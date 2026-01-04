@@ -17,6 +17,8 @@ ENV ADDON_NAME="Apache2"
 ENV ADDON_SLUG="apache2"
 ENV ADDON_UNSUPPORTED="false"
 
+WORKDIR /tmp
+# hadolint ignore=DL3018
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
     # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
@@ -63,7 +65,7 @@ RUN mkdir /run/apache2 \
     mariadb-client \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 \
-    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
+    && wget --progress=dot:giga https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
