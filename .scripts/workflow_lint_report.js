@@ -31,7 +31,9 @@ module.exports = async ({ github, context, core }) => {
   let body = signature + '\n';
   body += '## 🔧 Workflow Lint Errors\n\n';
 
-  const output = (process.env.ACTIONLINT_OUTPUT || '').trim();
+  // Strip ANSI color codes from output to ensure regex matching works
+  // eslint-disable-next-line no-control-regex
+  const output = (process.env.ACTIONLINT_OUTPUT || '').trim().replace(/\x1b\[[0-9;]*m/g, '');
   const stderr = (process.env.ACTIONLINT_STDERR || '').trim();
   const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
