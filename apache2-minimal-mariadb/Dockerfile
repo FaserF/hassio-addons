@@ -44,8 +44,8 @@ RUN mkdir /run/apache2 \
     mariadb-client \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf \
-    && addgroup -S www-data || true \
-    && adduser -S -G www-data www-data || true
+    && (addgroup -S www-data || true) \
+    && (adduser -S -G www-data www-data || true)
 
 # Copy data for add-on
 # Health check
