@@ -713,6 +713,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🔍 Debug Git Status (Post-Bump)
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la "${{ matrix.addon }}"
+          git status
+          git diff
+          grep "version:" "${{ matrix.addon }}/config.yaml"
+
       - name: 🔄 Pull latest changes
         run: |
           git config user.name "github-actions[bot]"
