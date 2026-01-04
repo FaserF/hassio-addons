@@ -5,7 +5,6 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for apache2 to store PID file and install dependencies
-# hadolint ignore=DL3018
 
 
 
@@ -23,9 +22,9 @@ ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"
 
-# hadolint ignore=DL3018
 # shellcheck disable=SC2015
 RUN mkdir /run/apache2 \
+    # hadolint ignore=DL3018
     && apk --no-cache add \
     apache2 \
     curl \
