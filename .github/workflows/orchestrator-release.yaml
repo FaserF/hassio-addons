@@ -667,7 +667,7 @@ jobs:
         with:
           commit_message: |
             ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
-          file_pattern: "${{ matrix.addon }}/*"
+          file_pattern: "${{ matrix.addon }}"
           skip_fetch: true
 
       - name: 🔄 Retry Commit with Pull (if failed)
@@ -676,7 +676,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="${{ matrix.addon }}/*"
+          ADDON_FILES="${{ matrix.addon }}"
 
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
