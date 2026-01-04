@@ -96,13 +96,13 @@ jobs:
           # shellcheck disable=SC2086
           for addon in $ADDONS; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
-            
+
             # Skip .unsupported addons - they are built locally from unsupported branch
             if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -f "./.unsupported/$addon/config.yaml" ]; then
               echo "⏭️ $addon is unsupported - skipping (built locally from unsupported branch)"
               continue
             fi
-            
+
             config_file=""
 
             if [ -f "./$addon/config.yaml" ]; then
@@ -175,13 +175,13 @@ jobs:
           IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
           for addon in "${ADDON_ARRAY[@]}"; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
-            
+
             # Skip .unsupported addons - they should not be tested here
             if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -d "./.unsupported/$addon" ]; then
               echo "⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
               continue
             fi
-            
+
             if [ -d "./$addon" ]; then
               echo "Copying $addon to local addons..."
               cp -r "./$addon" "/tmp/ha-data/addons/local/"

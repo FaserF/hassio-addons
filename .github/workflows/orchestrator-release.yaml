@@ -271,7 +271,7 @@ jobs:
                   echo "  ⏭️ Skipping .unsupported addon: $file"
                   continue
                 fi
-                
+
                 # Extract addon directory from file path (only regular addons)
                 if [[ "$file" =~ ^([^/]+)/ ]]; then
                   addon_dir="${BASH_REMATCH[1]}"
@@ -356,7 +356,7 @@ jobs:
                    echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
                    continue
                  fi
-                 
+
                  if [[ "$file" == *"/config.yaml" ]]; then
                    addon_dir=$(dirname "$file")
                    addon_name=$(basename "$addon_dir")
@@ -621,18 +621,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Store local changes for this addon
           ADDON_FILES="${{ matrix.addon }}/*"
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }}..."
             git stash push -m "temp-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
           fi
-          
+
           # Fetch and update to latest master
           git fetch origin master
           git reset --hard origin/master
-          
+
           # Restore and reapply local changes
           if git stash list | grep -q "temp-stash-${{ matrix.addon }}"; then
             echo "🔄 Restoring local changes for ${{ matrix.addon }}..."
@@ -650,12 +650,12 @@ jobs:
               }
             fi
           fi
-          
+
           # Ensure we're on the latest master (handle any merge state)
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
           git reset --hard origin/master
-          
+
           # Reapply changes one more time if needed
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }}"
@@ -675,23 +675,23 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           ADDON_FILES="${{ matrix.addon }}/*"
-          
+
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
-          
+
           # Store local changes
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "📦 Stashing local changes for retry..."
             git stash push -m "retry-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
           fi
-          
+
           # Fetch and reset to latest master
           git fetch origin master
           git reset --hard origin/master
-          
+
           # Restore changes
           if git stash list | grep -q "retry-stash-${{ matrix.addon }}"; then
             STASH_ENTRY=$(git stash list | grep "retry-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
@@ -704,7 +704,7 @@ jobs:
               }
             fi
           fi
-          
+
           # Check if there are changes to commit
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             git add $ADDON_FILES
@@ -880,18 +880,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Store local changes for this addon
           ADDON_FILES="${{ matrix.addon }}/*"
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
             git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
           fi
-          
+
           # Fetch and update to latest master
           git fetch origin master
           git reset --hard origin/master
-          
+
           # Restore and reapply local changes
           if git stash list | grep -q "temp-stash-dev-${{ matrix.addon }}"; then
             echo "🔄 Restoring local changes for ${{ matrix.addon }} (dev version)..."
@@ -905,12 +905,12 @@ jobs:
               }
             fi
           fi
-          
+
           # Ensure we're on the latest master (handle any merge state)
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
           git reset --hard origin/master
-          
+
           # Reapply changes one more time if needed
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }} (dev version)"
@@ -935,23 +935,23 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           ADDON_FILES="${{ matrix.addon }}/*"
-          
+
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
-          
+
           # Store local changes
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "📦 Stashing local changes for retry (dev version)..."
             git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
           fi
-          
+
           # Fetch and reset to latest master
           git fetch origin master
           git reset --hard origin/master
-          
+
           # Restore changes
           if git stash list | grep -q "retry-stash-dev-${{ matrix.addon }}"; then
             STASH_ENTRY=$(git stash list | grep "retry-stash-dev-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
@@ -964,7 +964,7 @@ jobs:
               }
             fi
           fi
-          
+
           # Check if there are changes to commit
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             git add $ADDON_FILES

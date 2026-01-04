@@ -55,10 +55,10 @@ def is_unsupported_addon(package_name):
     else:
         # Old format or direct slug
         slug = package_name.split("-")[0]
-    
+
     if not slug:
         return False
-    
+
     # 1. Check against filesystem structure (source of truth)
     unsupported_dir = ".unsupported"
     if os.path.exists(unsupported_dir):
@@ -72,7 +72,7 @@ def is_unsupported_addon(package_name):
 def get_packages_via_graphql():
     """Alternative: Use GraphQL API to list packages (workaround for REST API 400 error)."""
     import json
-    
+
     query = """
     query($org: String!, $packageType: PackageType!, $first: Int!, $after: String) {
       organization(login: $org) {
@@ -89,13 +89,13 @@ def get_packages_via_graphql():
       }
     }
     """
-    
+
     all_packages = []
     cursor = None
     has_next_page = True
-    
+
     print(f"🔍 Fetching packages via GraphQL API from: {ORG_NAME}")
-    
+
     while has_next_page:
         variables = {
             "org": ORG_NAME,
@@ -103,51 +103,51 @@ def get_packages_via_graphql():
             "first": 100,
             "after": cursor
         }
-        
-            try:
+
+        try:
             res = requests.post(
                 "https://api.github.com/graphql",
                 headers=GRAPHQL_HEADERS,
                 json={"query": query, "variables": variables}
             )
-            
+
             if res.status_code != 200:
                 print(f"❌ GraphQL request failed: {res.status_code} {res.text}")
                 break
-                
+
             data = res.json()
-            
+
             if "errors" in data:
                 print(f"❌ GraphQL errors: {data['errors']}")
                 break
-            
+
             if "data" not in data or "organization" not in data["data"]:
                 print(f"❌ Unexpected GraphQL response structure")
                 break
-            
+
             org_data = data["data"]["organization"]
             if org_data is None:
                 print(f"⚠️ Organization '{ORG_NAME}' not found or not accessible")
                 break
-            
+
             packages = org_data.get("packages", {})
             nodes = packages.get("nodes", [])
             page_info = packages.get("pageInfo", {})
-            
+
             # Convert GraphQL format to REST API format for compatibility
             for node in nodes:
                 all_packages.append({"name": node["name"], "id": node["id"]})
-            
+
             has_next_page = page_info.get("hasNextPage", False)
             cursor = page_info.get("endCursor")
-            
+
         except requests.RequestException as e:
             print(f"❌ GraphQL API Request Failed: {e}")
             break
         except (KeyError, ValueError) as e:
             print(f"❌ Failed to parse GraphQL response: {e}")
             break
-    
+
     print(f"   Found {len(all_packages)} package(s) via GraphQL")
     return all_packages
 
@@ -195,7 +195,7 @@ def get_packages(package_type="container"):
             error_text = res.text
             print(f"⚠️ Bad Request (400) - Known GitHub API issue with container packages")
             print(f"   Trying GraphQL API as workaround...")
-            
+
             # Try GraphQL API as workaround
             graphql_packages = get_packages_via_graphql()
             if graphql_packages:
@@ -269,7 +269,7 @@ def delete_version(package_name, version_id, package_type="container"):
     if DRY_RUN:
         print(f"   [DRY RUN] Would delete version {version_id} for {package_name}")
         return True
-    
+
     url = f"https://api.github.com/orgs/{ORG_NAME}/packages/{package_type}/{package_name}/versions/{version_id}"
     res = requests.delete(url, headers=HEADERS, timeout=10)
     if res.status_code == 204:
@@ -292,13 +292,13 @@ def is_invalid_package(name):
     # Delete packages with "null" name
     if name == "null" or name.lower() == "null":
         return True
-    
+
     # Delete packages that don't follow the correct format: hassio-addons-{slug}-{arch}
     # Valid format: hassio-addons-{slug}-{arch} (e.g., hassio-addons-aegisbot-amd64)
     # Invalid formats to delete:
     # - {slug}-{arch} without hassio-addons- prefix (old format, e.g., aegisbot-amd64)
     # - Packages with unsupported architectures (armhf, armv7, i386) - we only support amd64 and aarch64
-    
+
     # Check for unsupported architectures (regardless of format)
     parts = name.split("-")
     if len(parts) >= 2:
@@ -306,7 +306,7 @@ def is_invalid_package(name):
         # Delete packages with unsupported architectures
         if last_part in ["armhf", "armv7", "i386"]:
             return True
-    
+
     # Check for old format (without hassio-addons- prefix)
     if not name.startswith("hassio-addons-"):
         # Check if it ends with a supported architecture (old format: slug-arch)
@@ -315,7 +315,7 @@ def is_invalid_package(name):
             # If it ends with a supported architecture, it's the old format and should be deleted
             if last_part in ["amd64", "aarch64"]:
                 return True
-    
+
     return False
 
 
