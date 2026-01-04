@@ -61,6 +61,12 @@ if [ -d "$document_root" ]; then
 		chown -R "$username":www-data "$webrootdocker"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
+		if ! grep -q "^www-data:" /etc/group; then
+			addgroup -S www-data
+		fi
+		if ! id www-data &>/dev/null; then
+			adduser -S -G www-data www-data
+		fi
 		chown -R www-data:www-data "$webrootdocker"
 	fi
 fi

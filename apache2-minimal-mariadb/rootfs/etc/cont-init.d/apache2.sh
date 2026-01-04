@@ -61,6 +61,12 @@ if [ -d "$DocumentRoot" ]; then
 		find "$DocumentRoot" -type f -exec chown "$username":www-data {} \;
 	else
 		echo "No username and/or password was provided. Skipping account set up."
+		if ! grep -q "^www-data:" /etc/group; then
+			addgroup -S www-data
+		fi
+		if ! id www-data &>/dev/null; then
+			adduser -S -G www-data www-data
+		fi
 		find "$DocumentRoot" -type d -exec chown www-data:www-data {} \;
 		find "$DocumentRoot" -type f -exec chown www-data:www-data {} \;
 	fi
