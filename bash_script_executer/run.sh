@@ -126,6 +126,8 @@ fi
 
 
 
+
+
 # Enable strict mode
 set -euo pipefail
 # shellcheck disable=SC1091
