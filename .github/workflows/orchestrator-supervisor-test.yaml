@@ -185,6 +185,16 @@ jobs:
             if [ -d "./$addon" ]; then
               echo "Copying $addon to local addons..."
               cp -r "./$addon" "/tmp/ha-data/addons/local/"
+
+              # Strip 'image' key to force local build
+              # The CI passes the folder to Supervisor, but if 'image' exists in config,
+              # Supervisor tries to pull it from GHCR (which fails for new/local versions).
+              # Removing it forces Supervisor to build from local Dockerfile.
+              DEST_DIR="/tmp/ha-data/addons/local/$(basename "$addon")"
+              if [ -f "$DEST_DIR/config.yaml" ]; then
+                echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
+                sed -i '/^\s*image:/d' "$DEST_DIR/config.yaml"
+              fi
             else
               echo "Warning: Add-on $addon not found"
             fi
