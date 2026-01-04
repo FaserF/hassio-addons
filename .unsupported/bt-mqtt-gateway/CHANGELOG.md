@@ -20,6 +20,8 @@ This release represents a significant effort to standardize and improve all addo
 
 - Manual release via Orchestrator
 
+- Manual release via Orchestrator
+
 
 ## 1.7.1
 
