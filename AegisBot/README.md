@@ -19,7 +19,7 @@ If you have an idea for a new feature or improvement, please use the link below 
 
 If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.2.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.2.1&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
 > [!NOTE]
 > Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.

@@ -1,6 +1,6 @@
 ---
 name: AegisBot
-version: "0.2.0"
+version: "0.2.1"
 slug: aegisbot
 image: ghcr.io/faserf/hassio-addons-aegisbot-{arch}
 description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features

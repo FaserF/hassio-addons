@@ -18,7 +18,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+""*" ]]; then
+    if [[ "$VERSION" == *"+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
