@@ -1,0 +1,25 @@
+name: "WhatsApp"
+version: "0.3.0"
+slug: "whatsapp"
+image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
+description: "Home Assistant WhatsApp Backend (Baileys/Node.js)"
+url: "https://github.com/FaserF/ha-whatsapp"
+arch:
+  - aarch64
+  - amd64
+init: false
+map:
+  - homeassistant_config:rw
+panel_icon: mdi:whatsapp
+options:
+  log_level: info
+  mdns_name: "WhatsApp Addon"
+schema:
+  log_level: str
+  mdns_name: str
+ports:
+  8066/tcp: 8066
+ports_description:
+  8066/tcp: WhatsApp API (for Integration)
+ingress: true
+ingress_entry: /

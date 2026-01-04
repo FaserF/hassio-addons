@@ -1,0 +1,282 @@
+name: Orchestrator Workflow Monitor
+
+on:
+  # Trigger when any workflow completes
+  workflow_run:
+    workflows:
+      - "Orchestrator Auto-Fix"
+      - "Orchestrator Auto-Merge"
+      - "Orchestrator CI"
+      - "Cleanup PR Artifacts"
+      - "Orchestrator Docs & Standards"
+      - "Orchestrator Governance"
+      - "Orchestrator New Add-on Intake"
+      - "Orchestrator Labeler"
+      - "Orchestrator Maintenance"
+      - "Orchestrator Release"
+      - "Orchestrator Updates"
+    types:
+      - completed
+  # Trigger on PR changes to workflow files (for linting)
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+  # Allow manual trigger with optional quota override
+  workflow_dispatch:
+    inputs:
+      monthly_quota:
+        description: 'Monthly Runner Minutes Quota (Override)'
+        required: false
+        default: ''
+
+concurrency:
+  group: workflow-monitor-${{ github.event.workflow_run.id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  actions: read
+  # Note: Billing API access requires organization owner/admin permissions
+  # The default GITHUB_TOKEN may not have access to billing endpoints
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # LINT: Validate Workflow Files with actionlint
+  # --------------------------------------------------------------------------------
+  lint-workflows:
+    name: 🔍 Lint Workflow Files
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: 🧹 Run actionlint
+        id: actionlint
+        uses: raven-actions/actionlint@963d4779ef039e217e5d0e6fd73ce9ab7764e493 # v2
+        with:
+          matcher: true
+          fail-on-error: false
+
+      - name: 📝 Post Lint Report on Failure
+        id: lint-report
+        if: steps.actionlint.outputs.exit-code != '0'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          ACTIONLINT_OUTPUT: "${{ steps.actionlint.outputs.stdout }}"
+          ACTIONLINT_STDERR: "${{ steps.actionlint.outputs.stderr }}"
+        with:
+          script: |
+            const script = require('./.scripts/workflow_lint_report.js')
+            await script({github, context, core})
+
+      - name: ❌ Fail on Lint Errors
+        if: |
+          steps.actionlint.outputs.exit-code != '0' &&
+          steps.lint-report.outputs.has-errors == 'true'
+        run: exit 1
+
+  # --------------------------------------------------------------------------------
+  # CHECK: GitHub Actions Runner Minutes
+  # --------------------------------------------------------------------------------
+  check-runner-minutes:
+    name: ⏱️ Check Runner Minutes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📊 Check GitHub Actions Billing
+        id: billing
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            try {
+              // Try organization billing first
+              let response;
+              try {
+                response = await github.rest.billing.getGithubActionsBillingOrg({
+                  org: context.repo.owner
+                });
+              } catch (orgError) {
+                // Fall back to user billing
+                response = await github.rest.billing.getGithubActionsBillingUser({
+                  username: context.repo.owner
+                });
+              }
+
+              const used = response.data.total_minutes_used || 0;
+
+              // Determine quota
+              let quota = 2000; // Default fallback (Free/Public)
+
+              // 1. Check for manual override input
+              const manualQuota = context.payload.inputs ? context.payload.inputs.monthly_quota : null;
+              if (manualQuota && !isNaN(parseInt(manualQuota))) {
+                  quota = parseInt(manualQuota);
+                  console.log(`Using manual quota override: ${quota}`);
+              }
+              // 2. Check API included_minutes
+              else if (response.data.included_minutes) {
+                  quota = response.data.included_minutes;
+              }
+              // 3. Infer from Plan/Account Type (if API didn't return included_minutes)
+              else {
+                  // Not all endpoints return plan info directly in the same structure,
+                  // but we try to make a best guess if included_minutes is missing.
+                  // For User accounts, it's usually 2000 (Free) or 3000 (Pro).
+                  // For Orgs, it varies (Free=2000, Team=3000, Enterprise=50000).
+
+                  // Note: The billing API response structure varies by endpoint (User vs Org).
+                  // We'll stick to the safe default of 2000 unless we can verify Pro/Team/Enterprise.
+                  // Since we can't reliably see 'plan' object in all responses here without more calls,
+                  // we rely on included_minutes or the default.
+                  // However, per user request, we set specific defaults if we could detect it.
+                  // Assuming standard GitHub plans:
+                  // Free: 2000
+                  // Pro/Team: 3000
+                  // Enterprise: 50000
+
+                  // If we had plan info:
+                  // if (plan === 'pro' || plan === 'team') quota = 3000;
+                  // if (plan === 'enterprise') quota = 50000;
+
+                  console.log("Using default/detected quota: " + quota);
+              }
+              const remaining = quota - used;
+              const percentage = Math.round((remaining / quota) * 100);
+
+              console.log(`Minutes Used: ${used}/${quota}`);
+              console.log(`Remaining: ${remaining} (${percentage}%)`);
+
+              let status = "ok";
+              let message = "";
+
+              if (remaining <= 0) {
+                status = "exhausted";
+                message = `🛑 **CRITICAL**: All GitHub Actions minutes exhausted! (${used}/${quota} used)`;
+              } else if (remaining < 100) {
+                status = "critical";
+                message = `🛑 **CRITICAL**: Only ${remaining} of ${quota} minutes remaining (${percentage}%)!`;
+              } else if (remaining < 500) {
+                status = "warning";
+                message = `⚠️ **WARNING**: Only ${remaining} of ${quota} minutes remaining (${percentage}%).`;
+              }
+
+              core.setOutput("status", status);
+              core.setOutput("message", message);
+              core.setOutput("remaining", remaining);
+              core.setOutput("quota", quota);
+              core.setOutput("used", used);
+
+            } catch (error) {
+              // Billing API requires organization owner/admin permissions
+              // This is expected if the GITHUB_TOKEN doesn't have billing access
+              if (error.message.includes('Resource not accessible by integration')) {
+                console.log("⚠️ Billing info unavailable: GITHUB_TOKEN lacks billing permissions.");
+                console.log("   This requires organization owner/admin access or a PAT with billing scope.");
+                console.log("   Continuing without billing check...");
+              } else {
+                console.log("Could not fetch billing info:", error.message);
+              }
+              core.setOutput("status", "unknown");
+              core.setOutput("message", "");
+            }
+
+      - name: 📝 Post Minutes Warning
+        if: steps.billing.outputs.status == 'warning' || steps.billing.outputs.status == 'critical' || steps.billing.outputs.status == 'exhausted'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          BILLING_MESSAGE: ${{ steps.billing.outputs.message }}
+          BILLING_STATUS: ${{ steps.billing.outputs.status }}
+        with:
+          script: |
+            const message = process.env.BILLING_MESSAGE;
+            const status = process.env.BILLING_STATUS;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const signature = "<!-- runner-minutes-warning -->";
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            // Minimize old warnings
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
+            let body = signature + "\n";
+            body += "## ⏱️ GitHub Actions Minutes Warning\n\n";
+            body += message + "\n\n";
+
+            if (status === 'exhausted') {
+              body += "> [!CAUTION]\n";
+              body += "> Further workflow runs will fail until minutes reset next month.\n";
+              body += "> Contact an administrator to increase the limit.\n";
+            } else if (status === 'critical') {
+              body += "> [!WARNING]\n";
+              body += "> Minutes will be exhausted soon if usage continues.\n";
+              body += "> Consider optimizing workflows or running less frequently.\n";
+            } else {
+              body += "> [!IMPORTANT]\n";
+              body += "> Monitor usage to avoid interruptions.\n";
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            // Add label
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            if (!currentLabels.some(l => l.name === 'infra/low-minutes')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['infra/low-minutes']
+              });
+            }
+
+  # --------------------------------------------------------------------------------
+  # ANALYZE: Workflow Infrastructure Failures
+  # --------------------------------------------------------------------------------
+  analyze-workflow-failures:
+    name: 🔬 Analyze Workflow Failures
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: 📝 Analyze and Report Infrastructure Errors
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const script = require('./.scripts/workflow_monitor.js')
+            await script({github, context, core})

@@ -1,0 +1,129 @@
+name: Orchestrator New Add-on Intake
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "**/config.yaml"
+      - "**/config.json"
+  push:
+    branches:
+      - master
+    paths:
+      - "**/config.yaml"
+      - "**/config.json"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  intake:
+    name: 🆕 New Add-on Intake
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: 🔍 Detect New Add-ons
+        id: new-addons
+        run: |
+          # Use python script
+          OUTPUT="$(python3 .scripts/intake.py)"
+          echo "$OUTPUT"
+          # Check if new add-ons found (string representation of list in last line)
+          if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
+              echo "found=true" >> "$GITHUB_OUTPUT"
+              # Extract list logic simplified: just pass to next steps implicitly via re-running or file?
+              # For now, let's rely on detection script being idempotent.
+          else
+              echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ✅ Compliance Check & Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        id: compliance
+        run: |
+          # Run compliance on detected new add-ons
+          NEW_ADDONS="$(python3 .scripts/intake.py --list)"
+          if [ -n "$NEW_ADDONS" ]; then
+            # Iterate over new addons and run compliance
+            # shellcheck disable=SC2046
+            for addon in $NEW_ADDONS; do
+              echo "Checking $addon..."
+              python3 .scripts/check_compliance.py "$addon" >> compliance.log 2>&1 || true
+            done
+          fi
+
+          {
+            echo "CONTENT<<EOF"
+            cat compliance.log
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+          if grep -q "❌" compliance.log; then
+             echo "status=failure" >> "$GITHUB_OUTPUT"
+          else
+             echo "status=success" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 💬 Post Comment
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const output = process.env.CONTENT;
+            const signature = "<!-- addon-intake-report -->";
+
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("### 🛡️ Add-on Compliance Check")));
+
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${signature}\n### 🛡️ Add-on Compliance Check\n\n${output}`
+            })
+
+      - name: 🛑 Fail if Non-Compliant
+        if: steps.compliance.outputs.status == 'failure'
+        run: exit 1
+
+      - name: 📝 Auto-Remediate (Add to README & Templates)
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          python3 .scripts/intake.py --fix
+          python3 .scripts/sync_templates.py
+
+      - name: 💾 Commit Changes
+        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
+        with:
+          commit_message: "chore: register new add-on [skip ci]"

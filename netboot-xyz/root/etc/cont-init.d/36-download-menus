@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+if [ -f /run/ABORT_STARTUP ]; then exit 0; fi
 
 # create local logs dir
 mkdir -p \
@@ -31,6 +32,9 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   curl -o \
     /config/menus/remote/netboot.xyz.kpxe -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.kpxe"
+  curl -o \
+    /config/menus/remote/netboot.xyz-arm64.efi -sL \
+    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi"
   # layer and cleanup
   echo -n ${MENU_VERSION} > /config/menuversion.txt
   cp /config/menus/remote/* /config/menus

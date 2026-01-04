@@ -1,48 +1,31 @@
 # Changelog
-## 0.5.3
-- automatically update addon-base to version v16.2.1
 
-## 0.5.2
-- automatically update addon-base to version v16.1.3
+## 0.10.0 (2026-01-03)
 
-## 0.5.0
-- update addon-base to version v16.0.1
-- update PHP & PHP modules to 8.2
-- improved debugging
-- fixed error while installing the addon
+🎉 **Happy New Year 2026!** 🎉
 
-## 0.4.1
-- link fixes
+### 🎉 Major Release - Unified Addon Update
 
-## 0.4.0
-- automatically update addon-base to version v16.0.0
+All addons have been unified, updated, and many bugs have been fixed. Many addons have been partially or completely rewritten to improve stability, performance, and maintainability.
 
-## 0.3.9
-- bump hassio-addon-base to version v15.0.5
+#### Important Information
 
-## 0.3.8
-- automatically update hassio-addon-base to version v14.3.2
+- **Edge Branch (Beta)**: A new `edge` branch is now available for those who want to test the latest features and improvements before they are released to the stable channel.
+- **Unsupported Branch**: A new `unsupported` branch has been created for addons that no longer receive direct manual support. These addons are still maintained but may have limited support compared to the main addons.
+- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the addons.
 
-## 0.3.7
-- automatically update hassio-addon-base to version v14.3.1
+This release represents a significant effort to standardize and improve all addons in the repository.
 
-## 0.3.6
-- automatically update hassio-addon-base to version v14.2.2
+---
 
-## 0.3.5
-- automatically update hassio-addon-base to version v14.1.3
+### 📦 Dependencies
+- 📝 release(apache2-minimal): update changelog [skip-tests] ([`bb9feed`](https://github.com/FaserF/hassio-addons/commit/bb9feed1d85cbb4f602c85fed4846f536129ec69))
 
-## 0.3.4
-- automatically update hassio-addon-base to version v14.0.8
+### 🎉 Major Release - Unified Addon Update
+- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the addons. (Manual)
+- **Unsupported Branch**: A new `unsupported` branch has been created for addons that no longer receive direct manual support. These addons are still maintained but may have limited support compared to the main addons. (Manual)
+- **Edge Branch (Beta)**: A new `edge` branch is now available for those who want to test the latest features and improvements before they are released to the stable channel. (Manual)
 
-## 0.3.3
-- automatically update hassio-addon-base to version v14.0.8
+### 📌 Release Note
+- Manual release via Orchestrator
 
-## 0.3.2
-- automatically update hassio-addon-base to the latest version
-
-## 0.2.0
-- automatically update hassio-addon-base to the latest version
-
-## 0.1.0
-- Beta Testing Release

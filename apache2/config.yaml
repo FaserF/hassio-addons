@@ -1,18 +1,14 @@
 ---
 name: Apache2
-version: 2.9.0
+version: 3.0.0
 slug: apache2
-description: OpenSource Webserver with PHP and MariaDB
+description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
-startup: application
-boot: auto
-webui: http://[HOST]:[PORT:80]
+image: ghcr.io/faserf/hassio-addons-apache2-{arch}
+# webui: http://[HOST]:[PORT:80]
 map:
   - ssl:rw
   - media:rw
@@ -25,7 +21,7 @@ options:
   php_ini: default
   default_conf: default
   default_ssl_conf: default
-  website_name: null
+  website_name: "web.local"
   ssl: true
   certfile: fullchain.pem
   keyfile: privkey.pem

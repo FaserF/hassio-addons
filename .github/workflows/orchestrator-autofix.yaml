@@ -1,0 +1,261 @@
+name: Orchestrator Auto-Fix
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    if: >-
+      !contains((github.event.head_commit.message || ''), 'style: auto-fix') &&
+      !contains((github.event.head_commit.message || ''), '[skip-tests]') &&
+      github.actor != 'git-auto-commit-action' &&
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'coderabbitai[bot]'
+    name: 🔧 Auto-Fix & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        # zizmor: ignore[artipacked]
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Deps
+        run: pip install pyyaml
+
+      - name: 🏷️ Auto-Generate OCI Labels
+        continue-on-error: true
+        run: python3 .scripts/fix_oci_labels.py
+
+      - name: ⚠️ Update Unsupported Status
+        continue-on-error: true
+        run: python3 .scripts/update_unsupported_status.py
+
+      - name: 🏷️ Update README Beta Status
+        continue-on-error: true
+        run: python3 .scripts/update_readme_status.py
+
+      - name: 🛡️ Enforce 64-bit Architectures
+        id: enforce_arch
+        run: python3 .scripts/enforce_architectures.py
+
+      # COMMENTED OUT: This step requires pull_request trigger which was removed.
+      # Keep for future reference if PR autofix is re-enabled.
+      # - name: 💬 Comment on PR (32-bit Removal)
+      #   if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
+      #   uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      #   with:
+      #     script: |
+      #       const signature = "<!-- autofix-32bit-notice -->";
+      #
+      #       const { data: comments } = await github.rest.issues.listComments({
+      #          owner: context.repo.owner,
+      #          repo: context.repo.repo,
+      #          issue_number: context.issue.number,
+      #       });
+      #
+      #       const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("**Notice:** 32-bit architectures")));
+      #
+      #       for (const comment of previousComments) {
+      #           try {
+      #               await github.graphql(`
+      #                   mutation($subjectId: ID!) {
+      #                       minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+      #                           minimizedComment { isMinimized }
+      #                       }
+      #                   }
+      #               `, { subjectId: comment.node_id });
+      #           } catch (error) {
+      #               console.error(`Failed to minimize comment ${comment.id}:`, error);
+      #           }
+      #       }
+      #
+      #       await github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: signature + '\n⚠️ **Notice:** 32-bit architectures (armhf, armv7, i386) have been automatically removed from this PR. These architectures are no longer supported by Home Assistant or this repository.'
+      #       })
+
+      - name: 🏁 Renormalize Line Endings
+        run: git add --renormalize .
+
+      # 1. Shell Scripts (Format)
+      - name: 🐚 Setup shfmt
+        uses: mfinelli/setup-shfmt@a25fda4c1fe115aec0f85e04126610841bc3141d # v4.0.1
+        with:
+          shfmt-version: "3.7.0"
+
+      - name: 🐚 Run shfmt
+        id: shfmt
+        run: |
+          shfmt -l -w .
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 2. Python (Format & Sort Imports)
+      # We format the internal scripts and any add-on python files
+      - name: 🐍 Run Black (Formatter)
+        id: black
+        continue-on-error: true
+        run: |
+          pip install black
+          black --verbose .
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🐍 Run Isort (Import Sorter)
+        id: isort
+        run: |
+          pip install isort
+          isort --profile black .
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 3. Node.js Tools (Prettier, Markdownlint)
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: "24"
+
+      - name: 💅 Run Prettier
+        id: prettier
+        continue-on-error: true
+        run: |
+          npm install -g prettier
+          # Use prettier with explicit patterns to ensure all files are found
+          # The --write flag formats files in place
+          prettier --write "**/*.{json,js,md,yaml,yml}" --ignore-path .prettierignore --log-level=warn
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 4. Standardize (READMEs, Beta Labels, Configs)
+      - name: 📄 Standardize READMEs
+        run: python3 .scripts/standardize_readmes.py
+
+      # 5. Markdown Fixes (markdownlint)
+      - name: 📝 Fix Markdown
+        id: markdownlint
+        continue-on-error: true
+        run: |
+          npm install -g markdownlint-cli
+          markdownlint --fix "**/*.md" || true
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 6. Remove Trailing Spaces
+      - name: 🧹 Remove Trailing Spaces
+        run: |
+          find .github/workflows -name "*.yaml" -type f -exec sed -i 's/[[:space:]]*$//' {} +
+
+      # 7. Clean Excessive Blank Lines
+      - name: 🧹 Clean Excessive Blank Lines
+        run: |
+          find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
+
+      # 8. Bump Test Script Version
+      - name: 🆙 Bump Test Script Version
+        continue-on-error: true
+        run: python3 .scripts/bump_script_version.py
+
+      # Build dynamic commit message
+      - name: 📝 Build Commit Message
+        id: commit_msg
+        run: |
+          tools=""
+          if [[ "${{ steps.shfmt.outputs.changed }}" == "true" ]]; then tools="$tools shfmt"; fi
+          if [[ "${{ steps.black.outputs.changed }}" == "true" ]]; then tools="$tools black"; fi
+          if [[ "${{ steps.isort.outputs.changed }}" == "true" ]]; then tools="$tools isort"; fi
+          if [[ "${{ steps.prettier.outputs.changed }}" == "true" ]]; then tools="$tools prettier"; fi
+          if [[ "${{ steps.markdownlint.outputs.changed }}" == "true" ]]; then tools="$tools markdownlint"; fi
+
+          tools=$(echo "$tools" | xargs | tr ' ' ', ')
+
+          if [[ -z "$tools" ]]; then
+            echo "message=style: auto-fix" >> "$GITHUB_OUTPUT"
+          else
+            echo "message=style: auto-fix ($tools)" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Exclude workflow files from auto-commit (GitHub Apps require special permission to modify workflows)
+      - name: 🚫 Unstage Workflow Files
+        run: |
+          # Remove workflow files from staging area (keeps formatted changes in working directory)
+          git reset HEAD .github/workflows/*.yaml 2>/dev/null || true
+          git restore --staged .github/workflows/*.yaml 2>/dev/null || true
+          # Verify they are not staged
+          if git diff --cached --name-only | grep -q "\.github/workflows/"; then
+            echo "Warning: Some workflow files are still staged, removing them..."
+            git diff --cached --name-only | grep "\.github/workflows/" | xargs -r git reset HEAD || true
+          fi
+          echo "Workflow files removed from staging area"
+
+      # Commit back (using PAT to trigger subsequent workflows)
+      # git-auto-commit-action will add all changed files matching file_pattern
+      # We need to ensure workflow files are not in the commit
+      - name: 💾 Commit Changes
+        id: commit_changes
+        continue-on-error: true
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
+        with:
+          commit_message: ${{ steps.commit_msg.outputs.message }}
+          branch: ${{ github.ref_name }}
+          file_pattern: .
+        env:
+          # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      # If commit failed due to workflow files, remove them and commit again
+      - name: 🔄 Retry Commit Without Workflow Files
+        if: steps.commit_changes.outcome == 'failure'
+        run: |
+          # Reset the last commit if it contains workflow files
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "\.github/workflows/"; then
+            echo "Last commit contains workflow files, amending it..."
+            git reset --soft HEAD~1
+            git reset HEAD .github/workflows/*.yaml
+            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
+            git push origin ${{ github.ref_name }} --force-with-lease || echo "Nothing to push"
+          elif git diff --cached --name-only | grep -q "\.github/workflows/"; then
+            echo "Removing workflow files from staging and committing other changes..."
+            git reset HEAD .github/workflows/*.yaml
+            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
+            git push origin ${{ github.ref_name }} || echo "Nothing to push"
+          else
+            echo "Commit failed for other reasons, exiting..."
+            exit 1
+          fi

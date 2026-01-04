@@ -1,3 +1,4 @@
+---
 name: Feature request
 description: Suggest an idea for this project for one of FaserF's Custom Addon's
 title: "[Feature Request]: "
@@ -23,31 +24,39 @@ body:
       value: |
         ## Environment
   - type: dropdown
+    id: addon_name
     validations:
       required: true
     attributes:
       label: For which Add-On
       description: >
-        The name of the Addon you are wishing a new feature. For example: Apache2
+        The name of the Addon you are wishing a new feature.
+        For example: Apache2
       options:
-        - Apache2
-        - Apache2-Minimal-MariaDB
-        - Apache2-Minimal
-        - Assistant Relay
-        - Bash_Script_Executer
-        - BT-MQTT-Gateway
-        - Freenom-DNS-Updater
-        - Matterbridge
-        - Netboot-XYZ
-        - OpenSSL
+        - Other
+        - AegisBot
+        - ShieldDNS
+        - ShieldFile
+        - antigravity-server
+        - apache2
+        - apache2-minimal
+        - apache2-minimal-mariadb
+        - bash_script_executer
+        - homeassistant-test-instance
+        - matterbridge
+        - netboot-xyz
+        - nginx
+        - openssl
         - pterodactyl-panel
         - pterodactyl-wings
-        - Switch_LAN_Play
-        - Switch_LAN_Play_Server
-        - Tuya-Convert
-        - Wiki.JS
-        - xqrepack
-        - Other
+        - solumati
+        - switch_lan_play
+        - switch_lan_play_server
+        - tado_aa
+        - whatsapp
+        - wiki.js
+        - wiki.js3
+        - wordpress
   - type: markdown
     attributes:
       value: |
@@ -57,7 +66,8 @@ body:
       label: Is your feature request related to a problem?
       render: txt
       description: >-
-        A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+        A clear and concise description of what the problem is.
+        Ex. I'm always frustrated when [...]
   - type: textarea
     attributes:
       label: Additional information

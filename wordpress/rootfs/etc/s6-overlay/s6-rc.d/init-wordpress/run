@@ -1,0 +1,88 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Initialize Wordpress..."
+
+# Check validation
+if ! bashio::config.has_value 'database_host'; then
+    bashio::exit.nok "A 'database_host' is required!"
+fi
+
+if ! bashio::config.has_value 'database_password'; then
+    bashio::exit.nok "A 'database_password' is required!"
+fi
+
+if ! bashio::config.has_value 'database_name'; then
+    bashio::exit.nok "A 'database_name' is required!"
+fi
+
+if ! bashio::config.has_value 'database_user'; then
+    bashio::exit.nok "A 'database_user' is required!"
+fi
+
+if bashio::config.equals 'wordpress_admin_password' 'changeme'; then
+    bashio::exit.nok "You are using the insecure default admin password 'changeme'. Please change it!"
+fi
+
+# Check if Wordpress is installed
+if [ ! -d /var/www/wordpress/wp-admin ]; then
+    bashio::log.info "Installing Wordpress..."
+    if [ ! -d /usr/src/wordpress ]; then
+        bashio::exit.nok "Source directory /usr/src/wordpress not found!"
+    fi
+    cp -r /usr/src/wordpress/. /var/www/wordpress || bashio::exit.nok "Failed to copy Wordpress files!"
+    bashio::log.info "Wordpress installed!"
+fi
+
+# Configuration
+if [ ! -f /var/www/wordpress/wp-config.php ]; then
+    bashio::log.info "Creating configuration..."
+    mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to create wp-config.php!"
+
+    # Database
+    db_host=$(bashio::config 'database_host')
+    db_name=$(bashio::config 'database_name')
+    db_user=$(bashio::config 'database_user')
+    db_pass=$(bashio::config 'database_password')
+
+    # Escape special characters for sed
+    # We escape backslashes first, then the delimiter (|) and ampersands
+    db_host_escaped=$(echo "${db_host}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_name_escaped=$(echo "${db_name}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_user_escaped=$(echo "${db_user}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_pass_escaped=$(echo "${db_pass}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+
+    sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|password_here|${db_pass_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|localhost|${db_host_escaped}|" /var/www/wordpress/wp-config.php
+
+    # Salt
+    bashio::log.info "Generating salts..."
+    if ! curl -s https://api.wordpress.org/secret-key/1.1/salt/ > /tmp/wp-salts; then
+         bashio::log.warning "Failed to fetch unique keys and salts from WordPress.org! Using defaults (potentially insecure)."
+         rm -f /tmp/wp-salts
+    else
+        # Validate salt content
+        if [ ! -s /tmp/wp-salts ] || ! grep -q "define('AUTH_KEY'" /tmp/wp-salts; then
+            bashio::log.warning "Downloaded salt file is empty or invalid! Using defaults (potentially insecure)."
+            rm -f /tmp/wp-salts
+        else
+            # Request successful and valid: Replace placeholder salts
+            # Delete the default salt definitions and append new ones.
+            sed -i "/define('AUTH_KEY'/,/define('NONCE_SALT'/d" /var/www/wordpress/wp-config.php
+            cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
+            rm -f /tmp/wp-salts
+            bashio::log.info "Authentication keys and salts successfully updated."
+        fi
+    fi
+fi
+
+# Permissions
+bashio::log.info "Fixing permissions..."
+chown -R nginx:nginx /var/www/wordpress || bashio::exit.nok "Failed to set ownership for /var/www/wordpress"
+find /var/www/wordpress -type d -exec chmod 755 {} \; || bashio::exit.nok "Failed to set directory permissions"
+find /var/www/wordpress -type f -exec chmod 644 {} \; || bashio::exit.nok "Failed to set file permissions"
+chmod 640 /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to set permissions for wp-config.php"
+
+bashio::log.info "Wordpress initialized!"

@@ -1,0 +1,341 @@
+name: Orchestrator Auto-Merge
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_run:
+    workflows: ["Orchestrator CI"]
+    types:
+      - completed
+
+jobs:
+  enable-auto-merge:
+    name: 🤖 Enable Auto-Merge
+    runs-on: ubuntu-latest
+    # Only run if CI succeeded and not from a fork
+    # Actor check and PR detection moved to steps for better reliability
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.fork == false &&
+      github.event.workflow_run.head_branch != 'master'
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Find PR for this commit
+        id: find-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
+          echo "Looking for PR with head SHA: $HEAD_SHA"
+
+          # Try workflow_run.pull_requests first (fastest if available)
+          PR_NUMBER="${{ github.event.workflow_run.pull_requests[0].number }}"
+
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "workflow_run.pull_requests is empty, querying API..."
+
+            # Fetch PR via GitHub API using commit SHA
+            PR_DATA=$(gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/pulls" \
+              --jq '.[0] | {number: .number, author: .user.login}' 2>/dev/null || echo "")
+
+            if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
+              echo "No PR found for commit $HEAD_SHA"
+              echo "found=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            PR_NUMBER=$(echo "$PR_DATA" | jq -r '.number')
+            PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author')
+          else
+            # Even if workflow_run.pull_requests is available, fetch author from PR to ensure accuracy
+            # The actor might be a bot, but we need the actual PR author
+            echo "workflow_run.pull_requests found PR #$PR_NUMBER, fetching author from PR..."
+            PR_AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login' 2>/dev/null || echo "")
+
+            if [ -z "$PR_AUTHOR" ] || [ "$PR_AUTHOR" = "null" ]; then
+              echo "⚠️ Could not fetch PR author, falling back to actor"
+              PR_AUTHOR="${{ github.event.workflow_run.actor.login }}"
+            fi
+          fi
+
+          echo "Found PR #$PR_NUMBER by $PR_AUTHOR"
+          {
+            echo "pr_number=$PR_NUMBER"
+            echo "pr_author=$PR_AUTHOR"
+            echo "found=true"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 🚫 Skip if no PR found
+        if: steps.find-pr.outputs.found != 'true'
+        run: |
+          echo "No PR associated with this workflow run. Skipping auto-merge."
+          exit 0
+
+      - name: 👤 Check if author is allowed
+        id: check-author
+        if: steps.find-pr.outputs.found == 'true'
+        run: |
+          AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
+          ALLOWED_AUTHORS="dependabot[bot] renovate[bot] github-actions[bot] FaserF"
+
+          echo "Checking if '$AUTHOR' is in allowed list..."
+
+          if echo "$ALLOWED_AUTHORS" | grep -Fqw "$AUTHOR"; then
+            echo "✅ Author '$AUTHOR' is allowed for auto-merge"
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "⏭️ Author '$AUTHOR' is not in auto-merge list. Skipping."
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🔬 Check if CI jobs actually ran and succeeded
+        id: check-ci-ran
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          echo "Checking if actual CI jobs ran in workflow run $RUN_ID..."
+
+          # Get all jobs from the workflow run
+          JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --paginate --jq '.jobs[] | {name: .name, conclusion: .conclusion}' | jq -c .)
+
+          # Count jobs by status
+          SUCCESS_COUNT=0
+          FAILED_COUNT=0
+          SKIPPED_COUNT=0
+          TOTAL_JOBS=0
+
+          # Jobs to exclude (notification/summary only, not verification)
+          EXCLUDE_PATTERNS="CI Start|CI Success|Report|Notification|Summary|Generate Config|Detect Changes"
+
+          echo "Analyzing jobs..."
+          while IFS= read -r job; do
+            name=$(echo "$job" | jq -r '.name')
+            conclusion=$(echo "$job" | jq -r '.conclusion')
+
+            # Skip excluded jobs (notification/summary only)
+            if echo "$name" | grep -qiE "$EXCLUDE_PATTERNS"; then
+              echo "⏭️ Excluded (notification/summary): $name"
+              continue
+            fi
+
+            # Check for actual CI/verification jobs (case-insensitive)
+            # Look for: Lint, Build, Compliance, Test, Validate, Check, Scan, Verify
+            name_upper=$(echo "$name" | tr '[:lower:]' '[:upper:]')
+            if echo "$name_upper" | grep -qE "(LINT|BUILD|COMPLIANCE|TEST|VALIDATE|CHECK|SCAN|VERIFY|TRIVY|HADOLINT|SHELLCHECK)"; then
+              ((TOTAL_JOBS++)) || true
+              case "$conclusion" in
+                "skipped")
+                  ((SKIPPED_COUNT++)) || true
+                  echo "⏭️ Skipped: $name"
+                  ;;
+                "success")
+                  ((SUCCESS_COUNT++)) || true
+                  echo "✅ Success: $name"
+                  ;;
+                "failure"|"cancelled"|"timed_out")
+                  ((FAILED_COUNT++)) || true
+                  echo "❌ Failed: $name ($conclusion)"
+                  ;;
+                *)
+                  echo "❓ Unknown: $name ($conclusion)"
+                  ;;
+              esac
+            else
+              echo "ℹ️  Not a verification job: $name"
+            fi
+          done <<< "$JOBS"
+
+          echo ""
+          echo "Summary: total=$TOTAL_JOBS, success=$SUCCESS_COUNT, failed=$FAILED_COUNT, skipped=$SKIPPED_COUNT"
+
+          # Determine if auto-merge is allowed
+          if [ "$FAILED_COUNT" -gt 0 ]; then
+            echo "❌ CI jobs failed - auto-merge blocked"
+            {
+              echo "ci_ran=false"
+              echo "reason=failed"
+            } >> "$GITHUB_OUTPUT"
+          elif [ "$TOTAL_JOBS" -eq 0 ]; then
+            echo "⚠️ No verification jobs detected (docs-only or workflow-only changes)"
+            {
+              echo "ci_ran=false"
+              echo "reason=no_jobs"
+            } >> "$GITHUB_OUTPUT"
+          elif [ "$SUCCESS_COUNT" -eq 0 ]; then
+            echo "⚠️ All verification jobs were skipped - auto-merge blocked"
+            {
+              echo "ci_ran=false"
+              echo "reason=all_skipped"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ All CI verification jobs completed successfully"
+            {
+              echo "ci_ran=true"
+              echo "reason=success"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ⏱️ Wait 1 minute before auto-merge
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
+        run: |
+          echo "Waiting 1 minute before enabling auto-merge..."
+          echo "To cancel: Add 'no-merge' label to the PR"
+          sleep 60
+
+      - name: 🔍 Verify PR is still up-to-date and CI is passing
+        id: verify-pr-status
+        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+          ORIGINAL_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "Verifying PR #$PR_NUMBER is still up-to-date and all CI checks are passing..."
+
+          # Get current HEAD SHA of the PR
+          CURRENT_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')
+          echo "Original SHA: $ORIGINAL_SHA"
+          echo "Current SHA:  $CURRENT_SHA"
+
+          # Check if PR HEAD has changed (new commits pushed)
+          if [ "$CURRENT_SHA" != "$ORIGINAL_SHA" ]; then
+            echo "❌ PR HEAD has changed! New commits detected."
+            echo "Original SHA: $ORIGINAL_SHA"
+            echo "Current SHA:  $CURRENT_SHA"
+            echo "Auto-merge blocked - new CI runs must complete first."
+            {
+              echo "still_valid=false"
+              echo "reason=new_commits"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "✅ PR HEAD is still the same"
+
+          # Check for running or failed CI workflows for this SHA
+          echo "Checking for running or failed CI workflows..."
+
+          # Get all workflow runs for this SHA (only Orchestrator CI)
+          WORKFLOW_RUNS_JSON=$(gh api "repos/${{ github.repository }}/actions/runs" \
+            --jq ".workflow_runs[] | select(.head_sha == \"$CURRENT_SHA\" and .name == \"Orchestrator CI\")" \
+            --paginate)
+
+          # Count running workflows
+          RUNNING_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.status == "in_progress" or .status == "queued") | .id' | grep -c . || echo "0")
+
+          # Count failed workflows
+          FAILED_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .id' | grep -c . || echo "0")
+
+          # Count successful workflows (for logging)
+          SUCCESS_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "success") | .id' | grep -c . || echo "0")
+
+          # Log details of each workflow run
+          echo "$WORKFLOW_RUNS_JSON" | jq -r '. | "Found workflow run: \(.name) (id: \(.id), status: \(.status), conclusion: \(.conclusion // "none"))"' || true
+
+          echo ""
+          echo "CI Status Summary:"
+          echo "  Running: $RUNNING_COUNT"
+          echo "  Failed:  $FAILED_COUNT"
+          echo "  Success: $SUCCESS_COUNT"
+
+          # Block auto-merge if there are running or failed workflows
+          if [ "$RUNNING_COUNT" -gt 0 ]; then
+            echo "❌ CI workflows are still running - auto-merge blocked"
+            {
+              echo "still_valid=false"
+              echo "reason=ci_running"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$FAILED_COUNT" -gt 0 ]; then
+            echo "❌ CI workflows have failed - auto-merge blocked"
+            {
+              echo "still_valid=false"
+              echo "reason=ci_failed"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "✅ PR is still up-to-date and all CI checks are passing"
+          {
+            echo "still_valid=true"
+            echo "reason=all_checks_passed"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 🔍 Check for no-merge label
+        id: check-label
+        if: >-
+          steps.find-pr.outputs.found == 'true' &&
+          steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+        run: |
+          echo "Fetching labels for PR #$PR_NUMBER..."
+          # Default to skip=true, only set to false after successful check
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+
+          if ! labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name'); then
+            echo "Error: Failed to fetch labels for PR #$PR_NUMBER"
+            exit 1
+          fi
+
+          if echo "$labels" | grep -q "no-merge"; then
+            echo "🛑 'no-merge' label found. Skipping auto-merge."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🤖 Enable Native Auto-Merge
+        if: >-
+          steps.find-pr.outputs.found == 'true' &&
+          steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true' &&
+          steps.check-label.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+        run: |
+          echo "🚀 Enabling auto-merge for PR #$PR_NUMBER"
+          # Enable strict auto-merge.
+          # This delegates the 'when to merge' decision to GitHub's Branch Protection rules.
+          # The PR will only merge once ALL required status checks (CI) have passed.
+          # Using [skip-tests] since PR was already fully tested - no need to re-run on master.
+          PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title')
+          gh pr merge --auto --squash "$PR_NUMBER" \
+            --subject "${PR_TITLE} (#${PR_NUMBER}) [skip-tests]" \
+            --body "Auto-merged after successful CI verification.
+
+            [skip-tests] - This PR passed all CI checks before merge."
+
+      - name: 📢 Post Merge Success Comment
+        if: >-
+          steps.find-pr.outputs.found == 'true' &&
+          steps.check-author.outputs.allowed == 'true' &&
+          steps.check-ci-ran.outputs.ci_ran == 'true' &&
+          steps.verify-pr-status.outputs.still_valid == 'true' &&
+          steps.check-label.outputs.skip != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
+            if (isNaN(prNumber)) return;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: "🚀 **Auto-merge enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied."
+            });

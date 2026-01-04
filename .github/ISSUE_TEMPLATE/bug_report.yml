@@ -1,30 +1,35 @@
 name: Report an issue
 description: Report an issue with one of FaserF's Custom Addon's
-title: "[Bug]: "
-labels: ["bug"]
+title: '[Bug]: '
+labels:
+  - bug
 assignees:
   - FaserF
 body:
   - type: markdown
     attributes:
-      value: |
-        This issue form is for reporting bugs only!
+      value: 'This issue form is for reporting bugs only!
 
-        If you have a feature or enhancement request, please use the feature request template!
+
+      If you have a feature or enhancement request, please use the feature
+
+      request template!
+
+      '
   - type: textarea
     validations:
       required: true
     attributes:
       label: The problem
-      description: >-
-        Describe the issue you are experiencing here, to communicate to the
-        maintainers. Tell us what you were trying to do and what happened.
+      description: 'Describe the issue you are experiencing here, to communicate to
+        the maintainers. Tell us what you were trying to do and what happened.
 
-        Provide a clear and concise description of what the problem is.
+        Provide a clear and concise description of what the problem is.'
   - type: markdown
     attributes:
-      value: |
-        ## Environment
+      value: '## Environment
+
+        '
   - type: input
     id: version
     validations:
@@ -32,71 +37,89 @@ body:
     attributes:
       label: What version of Home Assistant Core has the issue?
       placeholder: core-
-      description: >
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+      description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
         [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        # yamllint disable-line rule:line-length
+
+        '
   - type: input
     id: version_integration
     validations:
       required: true
     attributes:
       label: What version of the addon has the issue?
-      placeholder:
-      description: >
-        The version of the addon you are currently using.
+      placeholder: null
+      description: 'The version of the addon you are currently using.
+
+        '
   - type: dropdown
+    id: installation_type
     validations:
       required: true
     attributes:
       label: What type of installation are you running?
-      description: >
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+      description: 'Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
         [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+        # yamllint disable-line rule:line-length
+
+        '
       options:
         - Home Assistant OS
         - Home Assistant Container
         - Home Assistant Supervised
         - Home Assistant Core
+      default: 0
   - type: dropdown
+    id: addon_name
     validations:
       required: true
     attributes:
       label: Add-On causing the issue
-      description: >
-        The name of the Addon. For example: Apache2
+      description: 'The name of the Addon. For example: Apache2
+
+        '
       options:
-        - Apache2
-        - Apache2-Minimal-MariaDB
-        - Apache2-Minimal
-        - Assistant Relay
-        - Bash_Script_Executer
-        - BT-MQTT-Gateway
-        - Freenom-DNS-Updater
-        - Matterbridge
-        - Netboot-XYZ
-        - OpenSSL
+        - Other
+        - AegisBot
+        - ShieldDNS
+        - ShieldFile
+        - antigravity-server
+        - apache2
+        - apache2-minimal
+        - apache2-minimal-mariadb
+        - bash_script_executer
+        - homeassistant-test-instance
+        - matterbridge
+        - netboot-xyz
+        - nginx
+        - openssl
         - pterodactyl-panel
         - pterodactyl-wings
-        - Switch_LAN_Play
-        - Switch_LAN_Play_Server
-        - Tuya-Convert
-        - Wiki.JS
-        - xqrepack
-        - Other
+        - solumati
+        - switch_lan_play
+        - switch_lan_play_server
+        - tado_aa
+        - whatsapp
+        - wiki.js
+        - wiki.js3
+        - wordpress
   - type: markdown
     attributes:
-      value: |
-        # Details
+      value: '# Details
+
+        '
   - type: textarea
+    id: log_information
     attributes:
       label: Log information
       render: txt
-      description: >-
-        Please go to the addon within your Homeassistant Instance -> Log and copy the output here
+      description: Please go to the addon within your Homeassistant Instance -> Log
+        and copy the output here
   - type: textarea
     attributes:
       label: Additional information
-      description: >
-        If you have any additional information for us, use the field below.
+      description: 'If you have any additional information for us, use the field below.
+
+        '

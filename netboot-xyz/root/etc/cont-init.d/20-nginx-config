@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+if [ -f /run/ABORT_STARTUP ]; then exit 0; fi
 
 # make our folders
 mkdir -p \
@@ -13,6 +14,6 @@ mkdir -p \
   cp /defaults/nginx.conf /config/nginx/nginx.conf
 [[ ! -f /config/nginx/site-confs/default ]] && \
   cp /defaults/default /config/nginx/site-confs/default
-  
+
 # Ownership
 chown -R abc:abc /assets

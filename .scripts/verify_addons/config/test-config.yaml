@@ -1,0 +1,117 @@
+# Verify Addons Configuration
+# This file contains Renovate-managed versions and test configuration
+
+# --- RENOVATE-MANAGED VERSIONS ---
+# renovate: datasource=docker depName=ghcr.io/hassio-addons/base
+latestBase: "19.0.0"
+
+# renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
+latestDebian: "9.1.0"
+
+# renovate: datasource=docker depName=ghcr.io/home-assistant/amd64-base-python
+latestPython: "3.13-alpine3.21"
+
+# renovate: datasource=node-version depName=node
+latestNode: "24.12.0"
+
+# renovate: datasource=docker depName=ghcr.io/home-assistant/amd64-builder
+builderImage: "ghcr.io/home-assistant/amd64-builder:2025.11.0"
+
+# --- MOCK EXTENSIONS ---
+mockCoreVersion: "2025.12.3"
+mockSupervisorVersion: "2025.12.3"
+mockOsVersion: "16.3"
+mockKernelVersion: "6.12.51-haos"
+mockArch: "amd64"
+
+# --- SCRIPT METADATA ---
+scriptVersion: "3.0.0"
+
+# --- DOCKER RUN SKIPS ---
+# Addons to skip during DockerRun test with reason
+skipDockerRun:
+  wiki.js: "Requires MySQL Service"
+  switch_lan_play: "Requires external switch-lan-play server"
+  netboot-xyz: "Complex initialization requires real environment"
+
+# --- VALID TEST NAMES ---
+validTests:
+  - all
+  - LineEndings
+  - ShellCheck
+  - Hadolint
+  - YamlLint
+  - MarkdownLint
+  - Prettier
+  - AddonLinter
+  - Compliance
+  - Trivy
+  - VersionCheck
+  - DockerBuild
+  - DockerRun
+  - CodeRabbit
+  - WorkflowChecks
+  - PythonChecks
+  - CustomTests
+  - IngressCheck
+  - SupervisorTest
+
+# --- DOCKER-DEPENDENT TESTS ---
+dockerTests:
+  - ShellCheck
+  - Hadolint
+  - SupervisorTest
+  - AddonLinter
+  - Trivy
+  - DockerBuild
+  - DockerRun
+  - WorkflowChecks
+  - CustomTests
+
+# --- DOCS-ONLY ALLOWED TESTS ---
+# Tests that run even when only documentation files changed
+docsOnlyTests:
+  - MarkdownLint
+  - Prettier
+  - LineEndings
+
+# --- TEST WEIGHTS (Seconds per Add-on) ---
+# Used for ETA calculation. These are empirical estimates from measured runs.
+# Note: Add ~20% buffer for slower hardware; Docker tests vary by addon complexity.
+testWeights:
+  LineEndings: 0.3
+  ShellCheck: 1.5
+  Hadolint: 4.0
+  YamlLint: 0.8
+  MarkdownLint: 0.8
+  Prettier: 2.5
+  AddonLinter: 12.0
+  Compliance: 1.5
+  Trivy: 45.0
+  VersionCheck: 1.5
+  DockerBuild: 150.0
+  DockerRun: 45.0
+  CodeRabbit: 2.0
+  WorkflowChecks: 3.0
+  PythonChecks: 2.5
+  AutoFix: 4.0
+  CustomTests: 6.0
+  IngressCheck: 1.5
+  SupervisorTest: 600.0
+
+# --- SUPERVISOR INTEGRATION TEST SETTINGS ---
+# These settings are used for the real Supervisor integration test (optional)
+# Note: SupervisorTest is NOT included in 'all' - requires explicit -SupervisorTest flag
+supervisorTests:
+  # Add-ons to skip during real Supervisor testing (require external services/hardware)
+  skipSupervisorTest:
+    bt-mqtt-gateway: "Requires Bluetooth hardware"
+    tuya-convert: "Requires WiFi hardware for AP mode"
+    switch_lan_play: "Requires external switch-lan-play server"
+    netboot-xyz: "Complex initialization requires real environment"
+    antigravity-server: "Execution takes too long for standard tests"
+
+  # Timeout settings (in seconds)
+  supervisorStartupTimeout: 300
+  addonInstallTimeout: 300
+  addonStartTimeout: 600

@@ -1,0 +1,35 @@
+---
+name: Wiki.JS V3 (Beta)
+version: 4.0.0
+slug: wikijs3
+image: ghcr.io/faserf/hassio-addons-wikijs3-{arch}
+description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
+url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
+arch:
+  # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
+  - amd64
+services:
+  - mysql:need
+map:
+  - ssl
+ingress: true
+init: false
+panel_icon: mdi:wikipedia
+options:
+  ssl: true
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+  log_level: info
+schema:
+  ssl: bool
+  certfile: str
+  keyfile: str
+  log_level: list(error|warn|info|debug)?
+  reset_database: bool?
+  reset_database_confirm: bool?
+ports:
+  3000/tcp: 3000
+  3443/tcp: 3443
+ports_description:
+  3000/tcp: HTTP Entrance port
+  3443/tcp: HTTPS/SSL Entrance port

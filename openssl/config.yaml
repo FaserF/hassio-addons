@@ -1,20 +1,15 @@
 ---
 name: OpenSSL
-version: 1.5.13
+version: 2.0.0
 slug: openssl
-description: OpenSSL - Self signed certificates
+description: Generate self-signed certificates
 url: https://github.com/FaserF/hassio-addons/tree/master/openssl
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
-startup: application
-boot: auto
+image: ghcr.io/faserf/hassio-addons-openssl-{arch}
 map:
   - ssl:rw
-ingress: false
 init: false
 options:
   website_name:

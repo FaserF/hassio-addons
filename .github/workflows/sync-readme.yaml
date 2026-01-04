@@ -1,0 +1,160 @@
+---
+name: Sync README Addon List
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "**/config.yaml"
+      - ".unsupported/**/config.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-readme:
+    name: Sync Add-ons List
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6
+        with:
+          python-version: "3.14"
+
+      - name: 📦 Install dependencies
+        run: pip install pyyaml
+
+      - name: 📝 Generate addon table
+        id: generate
+        run: |
+          python3 << 'EOF'
+          import os
+          import yaml
+          from pathlib import Path
+
+          def parse_version(version_str):
+              try:
+                  parts = str(version_str).lstrip("v").split(".")
+                  return tuple(int(p) for p in parts[:3])
+              except:
+                  return (0, 0, 0)
+
+          def get_status(version, is_unsupported):
+              if is_unsupported:
+                  return "❌"
+              major, _, _ = parse_version(version)
+              return "✅" if major >= 1 else "⚠️"
+
+          repo_root = Path(".")
+          addons = []
+
+          # Regular addons
+          for item in sorted(repo_root.iterdir()):
+              if item.is_dir() and not item.name.startswith((".", "_")):
+                  config = item / "config.yaml"
+                  if config.exists():
+                      addons.append({"path": item.name, "config": config, "unsupported": False})
+
+          # Unsupported addons
+          unsupported = repo_root / ".unsupported"
+          if unsupported.exists():
+              for item in sorted(unsupported.iterdir()):
+                  if item.is_dir():
+                      config = item / "config.yaml"
+                      if config.exists():
+                          addons.append({"path": f".unsupported/{item.name}", "config": config, "unsupported": True})
+
+          # Generate table
+          lines = [
+              "| Name                                                            | Description                               | Status | Added |",
+              "| :-------------------------------------------------------------- | :---------------------------------------- | :----- | :---- |"
+          ]
+
+          import subprocess
+          for addon in addons:
+              with open(addon["config"], "r") as f:
+                  cfg = yaml.safe_load(f)
+              name = cfg.get("name", addon["path"])
+              desc = cfg.get("description", "No description")[:40]
+              if addon["unsupported"]:
+                  desc = f"{desc} (Unsupported)"[:40]
+              version = str(cfg.get("version", "0.0.0"))
+              status = get_status(version, addon["unsupported"])
+
+              # Get first commit date
+              # For unsupported addons, try to find the original creation date
+              # by checking the original path before it was moved to .unsupported
+              try:
+                  config_path = str(addon["config"])
+
+                  # If unsupported, try original path first
+                  if addon["unsupported"]:
+                      # Extract addon name from path (e.g., ".unsupported/bt-mqtt-gateway" -> "bt-mqtt-gateway")
+                      addon_name = Path(addon["config"]).parent.name
+                      original_config = repo_root / addon_name / "config.yaml"
+
+                      # Try to get date from original location
+                      try:
+                          result = subprocess.run(
+                              ["git", "log", "--follow", "--format=%cs", "--", str(original_config)],
+                              capture_output=True, text=True, check=True
+                          )
+                          dates = result.stdout.strip().split("\n")
+                          if dates and dates[-1]:
+                              since = dates[-1][:7]
+                          else:
+                              raise Exception("No dates found")
+                      except:
+                          # Fallback to current location if original path doesn't exist in history
+                          result = subprocess.run(
+                              ["git", "log", "--follow", "--format=%cs", "--", config_path],
+                              capture_output=True, text=True, check=True
+                          )
+                          dates = result.stdout.strip().split("\n")
+                          since = dates[-1][:7] if dates and dates[-1] else "—"
+                  else:
+                      # Regular addon - use current path
+                      result = subprocess.run(
+                          ["git", "log", "--follow", "--format=%cs", "--", config_path],
+                          capture_output=True, text=True, check=True
+                      )
+                      dates = result.stdout.strip().split("\n")
+                      since = dates[-1][:7] if dates and dates[-1] else "—"
+              except:
+                  since = "—"
+
+              lines.append(f"| **[{name}]({addon['path']})** | {desc} | {status} | {since} |")
+
+          table = "\n".join(lines)
+
+          # Read README
+          readme = Path("README.md")
+          if not readme.exists():
+              readme = Path("README.MD")
+          content = readme.read_text()
+
+          # Find and replace table (between markers)
+          import re
+          pattern = r"(\| Name\s+\| Description\s+\| Status \|\n\| :[-]+.+?\n)(.+?)(\n\n<!-- markdownlint-enable MD060 -->)"
+          replacement = r"\1" + "\n".join(lines[2:]) + r"\n\3"
+          new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+
+          readme.write_text(new_content)
+          print(f"Updated {len(addons)} addons in README")
+          EOF
+
+      - name: 📤 Commit changes
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
+        with:
+          commit_message: "docs: auto-sync addon list in README"
+          file_pattern: "README.md README.MD"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"

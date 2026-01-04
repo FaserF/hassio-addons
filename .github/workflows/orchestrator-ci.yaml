@@ -1,0 +1,1230 @@
+name: Orchestrator CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # CI START: Post initial comment
+  # --------------------------------------------------------------------------------
+  ci_start:
+    name: 🚀 CI Start Notification
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 📝 Post CI Starting Comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            const signature = "<!-- ci-start-comment -->";
+            const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            // If the comment already exists, skip posting a new one
+            if (existingComment) {
+                console.log("CI start comment already exists, skipping...");
+                return;
+            }
+
+            let body = signature + "\n";
+            body += "## 🔄 CI Tests Running\n\n";
+            body += "Comprehensive CI tests are now running. This may take a few minutes.\n\n";
+            body += "A detailed feedback comment will be posted once all checks are complete.\n\n";
+            body += "---\n\n";
+            body += "**📋 Merge Policy:**\n";
+            body += "- PRs are typically only merged when **all CI tests pass**\n";
+            body += "- If tests fail, you will receive automated guidance on how to fix the issues\n";
+            body += "- PRs with failing tests may receive limited maintainer attention until resolved\n\n";
+            body += "_*Workflow configuration errors are handled by maintainers_";
+
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+            });
+
+  # --------------------------------------------------------------------------------
+  # FILTER: Detect which add-ons have changed
+  # --------------------------------------------------------------------------------
+  generate-config:
+    name: Generate Config
+    if: github.event_name == 'pull_request' || !contains((github.event.head_commit.message || ''), '[skip-tests]')
+    runs-on: ubuntu-latest
+    outputs:
+      filters: ${{ steps.generator.outputs.filters }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 🐍 Generate Dynamic Filters
+        id: generator
+        run: |
+          import os
+          import json
+          import uuid
+
+          filters = {}
+          # Scan for config.yaml to identify add-ons
+          for root, dirs, files in os.walk("."):
+              if "config.yaml" in files:
+                  addon_name = os.path.relpath(root, ".")
+                  if addon_name == ".": continue
+
+                  # Standardize path separators
+                  addon_name = addon_name.replace(os.path.sep, "/")
+
+                  # Skip hidden directories (including .unsupported - these are built locally from unsupported branch)
+                  # If the path starts with . (including .unsupported), skip
+                  # If the path is inside a hidden dir (like .git/foo), skip
+                  parts = addon_name.split("/")
+                  if parts[0].startswith("."):
+                      continue
+                  if len(parts) > 1 and any(p.startswith(".") for p in parts):
+                       # Skip any path containing hidden directories
+                       continue
+
+                  filters[addon_name] = [f"{addon_name}/**"]
+
+          # Dump as JSON (valid YAML)
+          json_content = json.dumps(filters)
+
+          delimiter = str(uuid.uuid4())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"filters<<{delimiter}\n")
+              f.write(json_content)
+              f.write(f"\n{delimiter}\n")
+
+        shell: python
+
+  # --------------------------------------------------------------------------------
+  # FILTER: Detect which add-ons have changed
+  # --------------------------------------------------------------------------------
+  filter:
+    name: 🔍 Detect Changes
+    needs: generate-config
+    runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.filter.outputs.changes }}
+      docs_only: ${{ steps.change-type.outputs.docs_only }}
+      needs_build: ${{ steps.change-type.outputs.needs_build }}
+      force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+
+      - name: 📂 Run Paths Filter
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        with:
+          filters: ${{ needs.generate-config.outputs.filters }}
+
+      - name: 🔎 Analyze Change Types
+        id: change-type
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Get all changed files in this push/PR
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$({ git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only; })
+          else
+            CHANGED_FILES=$({ git diff --name-only HEAD~1 2>/dev/null || git ls-tree -r HEAD --name-only; })
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Categorize changes
+          docs_only="true"
+          needs_build="false"
+
+          for file in $CHANGED_FILES; do
+            # Check if file requires build (Dockerfile, config, scripts, etc.)
+            if [[ "$file" == */Dockerfile ]] || \
+               [[ "$file" == */build.yaml ]] || \
+               [[ "$file" == */build.json ]] || \
+               [[ "$file" == */config.yaml ]] || \
+               [[ "$file" == */config.json ]] || \
+               [[ "$file" == *run.sh ]] || \
+               [[ "$file" == *.py ]] || \
+               [[ "$file" == */rootfs/* ]] || \
+               [[ "$file" == */root/* ]]; then
+              needs_build="true"
+              docs_only="false"
+            # Check if it's NOT a documentation/workflow file
+            elif [[ "$file" != *.md ]] && \
+                 [[ "$file" != *.MD ]] && \
+                 [[ "$file" != .github/workflows/* ]] && \
+                 [[ "$file" != .github/*.md ]] && \
+                 [[ "$file" != LICENSE* ]] && \
+                 [[ "$file" != */CHANGELOG* ]] && \
+                 [[ "$file" != .gitignore ]] && \
+                 [[ "$file" != .editorconfig ]]; then
+              docs_only="false"
+            fi
+          done
+
+          # Check for Manual Triggers in Commit Message or PR Title
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          # PR_TITLE is passed via env
+          SEARCH_TEXT="$COMMIT_MSG $PR_TITLE"
+          echo "Run Trigger Check on: $SEARCH_TEXT"
+
+          force_supervisor="false"
+          if [[ "$SEARCH_TEXT" == *"[supervisor]"* ]] || [[ "$SEARCH_TEXT" == *"[test-supervisor]"* ]]; then
+             echo "✅ Found [supervisor] trigger!"
+             force_supervisor="true"
+             needs_build="true"
+             # If we force supervisor test, we treat it as if code changed so build runs
+          fi
+
+          if [[ "$SEARCH_TEXT" == *"[build]"* ]] || [[ "$SEARCH_TEXT" == *"[force build]"* ]]; then
+             echo "✅ Found [build] trigger!"
+             needs_build="true"
+          fi
+
+          {
+            echo "docs_only=$docs_only"
+            echo "needs_build=$needs_build"
+            echo "force_supervisor=$force_supervisor"
+          } >> "$GITHUB_OUTPUT"
+          echo "Results: docs_only=$docs_only, needs_build=$needs_build"
+
+  # --------------------------------------------------------------------------------
+  # LINT: Static Analysis (Fail Fast)
+  # --------------------------------------------------------------------------------
+  lint:
+    name: 🧹 Lint & Validate
+    needs: filter
+    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      # 1. ShellCheck
+      - name: 🐚 ShellCheck
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
+        with:
+          scandir: "./${{ matrix.addon }}"
+        env:
+          SHELLCHECK_OPTS: -s bash -e SC2086
+
+      # 2. Hadolint
+      - name: 🐳 Hadolint
+        uses: brpaz/hadolint-action@c27bd9edc1e95eed30474db8f295ff5807ebca14 # v1.5.0
+        with:
+          dockerfile: "./${{ matrix.addon }}/Dockerfile"
+
+      # 3. Common Linters (Markdown/YAML/JSON/Prettier)
+      # ADVISORY CHECKS: These use continue-on-error: true intentionally.
+      # Rationale: Formatting issues are auto-fixed by orchestrator-autofix.yaml,
+      # so we don't block PRs for style violations. Failures still appear in logs.
+      - name: 📝 MarkdownLint
+        continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
+        uses: actionshub/markdownlint@6c82ff529253530dfbf75c37570876c52692835f # v3.1.4
+        with:
+          args: "${{ matrix.addon }}/*.md"
+
+      - name: 📄 YAMLLint
+        continue-on-error: true # Advisory - formatting issues are non-blocking
+        uses: frenck/action-yamllint@34b4bbcaeabedcfefad6adea8c5bbc42af0e2d47 # v1.5
+        with:
+          args: "./${{ matrix.addon }}/*.yaml"
+
+      - name: 💅 Prettier
+        continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
+        run: |
+          npm install -g prettier
+          prettier --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
+
+      # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
+      - name: 🕵️ Add-on Linter
+        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2
+        with:
+          path: "./${{ matrix.addon }}"
+        continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
+
+      # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
+      - name: 🐍 Set up Python (cached)
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+
+      - name: 📦 Install Compliance Deps
+        run: pip install pyyaml
+
+      - name: 🏆 Platinum Compliance Check
+        id: compliance
+        continue-on-error: true
+        run: |
+          set +e
+          # Add addon name as header for report aggregation
+          echo "ADDON: ${{ matrix.addon }}" > compliance_report.txt
+          python3 .scripts/check_compliance.py "./${{ matrix.addon }}" >> compliance_report.txt 2>&1
+          exit_code=$?
+          set -e
+
+          echo "::group::Compliance Report"
+          cat compliance_report.txt
+          echo "::endgroup::"
+
+          if [ "$exit_code" -ne 0 ]; then
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=success" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 📤 Upload Compliance Report
+        if: steps.compliance.outputs.status == 'failure'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: compliance-${{ github.run_id }}-${{ matrix.addon }}
+          path: compliance_report.txt
+          retention-days: 1
+
+      - name: 🛑 Fail if Compliance Error
+        if: steps.compliance.outputs.status == 'failure'
+        run: |
+          echo "::error::Compliance checks failed! See 'Platinum Compliance Check' step for details."
+          cat compliance_report.txt
+          exit 1
+
+      # 6. Security Scan (Trivy)
+      # Scanning the directory for vulnerabilities (fs mode)
+      # Note: Scanning the built image is better, but this scans deps/conf before build.
+      - name: 🛡️ Trivy Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "./${{ matrix.addon }}"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
+
+  # --------------------------------------------------------------------------------
+  # BUILD: Test Build (No Push)
+  # --------------------------------------------------------------------------------
+  build:
+    name: 🏗️ Test Build (${{ matrix.addon }})
+    needs: [filter, lint]
+    # Skip build if only docs/workflows changed (no Dockerfile, config, scripts)
+    if: |
+      always() &&
+      needs.filter.outputs.addons != '[]' &&
+      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.needs_build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Only matrix on addons, build all arches sequentially on same runner
+      matrix:
+        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: 💾 Cache Docker layers (optimized for shared base image)
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+        with:
+          path: /tmp/.buildx-cache
+          # Primary key: addon-specific for precise cache hits
+          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          restore-keys: |
+            # Try addon-specific cache first
+            ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            # Fallback to shared base image cache (all addons share base:19.0.0)
+            ${{ runner.os }}-buildx-base-image-19.0.0-
+            # Last resort: any buildx cache
+            ${{ runner.os }}-buildx-
+
+      - name: ℹ️ Get Add-on Info
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🏗️ Build amd64 (CI optimized)
+        run: |
+          IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
+
+          echo "Building ${{ matrix.addon }} for amd64 only (CI optimization)"
+          echo "Other architectures are built during release."
+
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$(pwd)":/data \
+            -v /tmp/.buildx-cache:/cache:rw \
+            ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+            --test \
+            --amd64 \
+            --target "/data/${{ matrix.addon }}" \
+            --image "$IMAGE" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon || exit 1
+
+          echo "✅ amd64 build successful"
+
+  report:
+    name: 📊 CI & Compliance Report
+    needs: [filter, lint, build, supervisor-test]
+    # Run on failure of any job
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      (needs.lint.result == 'failure' || needs.build.result == 'failure' || needs.supervisor-test.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      actions: read
+    steps:
+      - name: 📥 Download Compliance Artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        continue-on-error: true
+        with:
+          pattern: compliance-*
+          merge-multiple: false
+          path: reports
+
+      - name: 📝 Post Platinum Compliance Report
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            if (!fs.existsSync('reports')) {
+                console.log("No compliance reports found.");
+                return;
+            }
+
+            const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
+
+            // Construct workflow run URL
+            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let summary = "## 🛡️ Platinum Compliance Issues\n\n";
+            summary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+            summary += "The following add-ons failed compliance checks:\n\n";
+            let hasContent = false;
+            let totalIssues = 0;
+            let missingHealthchecks = 0;
+            let missingLogos = 0;
+            let addonsWithHealthcheckIssue = [];
+            let addonsWithLogoIssue = [];
+
+            for (const dir of dirs) {
+                const reportPath = path.join('reports', dir, 'compliance_report.txt');
+                if (fs.existsSync(reportPath)) {
+                   const content = fs.readFileSync(reportPath, 'utf8');
+                   // Extract addon name from "ADDON: xyz" header line
+                   const addonMatch = content.match(/^ADDON: (.+)$/m);
+                   const addonName = addonMatch ? addonMatch[1] : dir.replace('compliance-', '');
+                   // Remove the ADDON line from display content
+                   const displayContent = content.replace(/^ADDON: .+\n/, '');
+
+                   // Filter out success reports that were accidentally uploaded
+                   if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) {
+                       console.log(`Report for ${addonName} contains success message. Skipping detail block.`);
+                       continue;
+                   }
+
+                   if (content.includes("HEALTHCHECK")) {
+                       missingHealthchecks++;
+                       addonsWithHealthcheckIssue.push(addonName);
+                   }
+                   if (content.includes("logo.png")) {
+                       missingLogos++;
+                       addonsWithLogoIssue.push(addonName);
+                   }
+                   totalIssues++;
+
+                   summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
+                   hasContent = true;
+                }
+            }
+
+            // AI-optimized Platinum Compliance Summary
+            summary += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
+            summary += `> **Instructions for AI**: Fix all Platinum compliance issues below.\n\n`;
+
+            summary += "```yaml\n";
+            summary += "# Platinum Compliance Issues for AI Processing\n";
+            summary += `total_addons_with_issues: ${totalIssues}\n\n`;
+
+            if (missingHealthchecks > 0) {
+                summary += "healthcheck_issues:\n";
+                summary += "  count: " + missingHealthchecks + "\n";
+                summary += "  addons:\n";
+                for (const addon of addonsWithHealthcheckIssue) {
+                    summary += `    - addon: "${addon}"\n`;
+                    summary += `      file: "${addon}/Dockerfile"\n`;
+                    summary += `      fix: "Add HEALTHCHECK instruction before CMD/ENTRYPOINT"\n`;
+                    summary += `      example: 'HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://127.0.0.1:PORT/health || exit 1'\n`;
+                }
+            }
+
+            if (missingLogos > 0) {
+                summary += "\nlogo_issues:\n";
+                summary += "  count: " + missingLogos + "\n";
+                summary += "  addons:\n";
+                for (const addon of addonsWithLogoIssue) {
+                    summary += `    - addon: "${addon}"\n`;
+                    summary += `      missing_file: "${addon}/logo.png"\n`;
+                    summary += `      requirements: "500x500px PNG with transparent background"\n`;
+                    summary += `      action: "Generate or provide logo.png image"\n`;
+                }
+            }
+
+            summary += "\n# Platinum Standards Checklist:\n";
+            summary += "required_files:\n";
+            summary += "  - logo.png (500x500px)\n";
+            summary += "  - icon.png (128x128px)\n";
+            summary += "  - translations/en.yaml\n";
+            summary += "  - DOCS.md or README.md\n";
+            summary += "dockerfile_requirements:\n";
+            summary += "  - HEALTHCHECK instruction\n";
+            summary += "  - OCI labels (org.opencontainers.image.*)\n";
+            summary += "  - S6 Overlay integration\n";
+            summary += "  - Official base image (ghcr.io/hassio-addons/base:19.0.0)\n";
+            summary += "```\n";
+            summary += "\n</details>\n\n";
+
+            summary += "💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
+
+            if (hasContent) {
+                 // Find existing comments by this bot with signature
+                const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+
+                // Match current OR legacy signatures
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
+
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) {
+                        console.error(`Failed to minimize comment ${comment.id}:`, error);
+                    }
+                }
+
+                // Double-check if we actually have failures after filtering success messages
+                // This prevents posting an empty "Issues Found" block if the report accidentally contains success text
+                if (!summary.includes("❌ Issues Found") && !summary.includes("⚠️ Warnings")) {
+                    console.log("No actual issues found in reports (filtered). Skipping comment.");
+                    return;
+                }
+
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: summary
+                });
+
+                // Add ci/platinum-issues label (if only platinum issues, not general failures)
+                const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                });
+
+                // Only add platinum-issues if ci/failed is not already set
+                const hasFailedLabel = currentLabels.some(l => l.name === 'ci/failed');
+                if (!hasFailedLabel) {
+                    const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+                    // Blocklist known invalid labels to prevent flapping
+                    const blocklist = ['addon/docker', 'addon/config', 'addon/scripts', 'addon/docs', 'addon/images', 'addon/assets', 'addon/src', 'addon/lib', 'addon/bin', 'addon/test', 'addon/tests'];
+
+                    const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n) && !blocklist.includes(n));
+                    filteredLabels.push('ci/platinum-issues');
+
+                    await github.rest.issues.setLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: filteredLabels
+                    });
+                }
+            } else {
+                 // Clean up old comments if no issues found anymore
+                 const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) { console.error(error); }
+                }
+            }
+
+      - name: 📝 Post General CI Failure Report
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            // Paginate to get ALL jobs (default limit is 30)
+            const allJobs = [];
+            let page = 1;
+            while (true) {
+              const { data } = await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                per_page: 100,
+                page: page,
+              });
+              allJobs.push(...data.jobs);
+              if (data.jobs.length < 100) break;
+              page++;
+            }
+
+            console.log(`Found ${allJobs.length} total jobs in workflow run`);
+
+            // Get jobs that failed directly (failure, cancelled, timed_out)
+            const failedJobs = allJobs.filter(j =>
+                j.conclusion === 'failure' ||
+                j.conclusion === 'cancelled' ||
+                j.conclusion === 'timed_out'
+            );
+
+            // ALSO get jobs that succeeded but have failed steps (continue-on-error)
+            const jobsWithHiddenFailures = allJobs.filter(j =>
+                j.conclusion === 'success' &&
+                j.steps &&
+                j.steps.some(s => s.conclusion === 'failure')
+            );
+
+            // Combine both for reporting
+            const allProblematicJobs = [...failedJobs, ...jobsWithHiddenFailures];
+            console.log(`Found ${allProblematicJobs.length} problematic jobs (${failedJobs.length} failed, ${jobsWithHiddenFailures.length} with hidden failures)`);
+            if (allProblematicJobs.length === 0) return;
+
+            // Filter out Compliance-only failures (handled by Platinum Report)
+            // Only filter if ALL failed steps are Compliance-related
+            const nonComplianceJobs = allProblematicJobs.filter(job => {
+                const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure') : [];
+                if (failedSteps.length === 0) {
+                    // Job failed but no step info - include it
+                    return true;
+                }
+                // Check if ALL failed steps are Compliance-related
+                const allCompliance = failedSteps.every(step =>
+                    step.name && step.name.includes("Compliance")
+                );
+                // Include job if NOT all failures are Compliance (i.e., has non-Compliance failures)
+                return !allCompliance;
+            });
+
+            console.log(`After filtering Compliance-only: ${nonComplianceJobs.length} jobs with non-Compliance failures`);
+
+            // If all failures are Compliance-related, skip this report (Platinum Report handles it)
+            if (nonComplianceJobs.length === 0) {
+                console.log("All failures are Compliance-related. Skipping General CI Report.");
+                // Also minimize old General Failure reports since we are clean now (or handled by Platinum)
+                const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+                const signature = "## ❌ General CI Failure Report";
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) { console.error(error); }
+                }
+                return;
+            }
+
+            // Minimize old General CI Failure reports before posting new one
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+            const signature = "## ❌ General CI Failure Report";
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment {
+                                    isMinimized
+                                }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) { console.error(error); }
+            }
+
+            // Construct workflow run URL
+            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let report = "## ❌ General CI Failure Report\n\n";
+            report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+            report += `Found **${nonComplianceJobs.length}** failed jobs:\n\n`;
+
+            // Failed Jobs List (excluding Compliance) - with clickable links
+            report += "| Job | Step | Link |\n|---|---|---|\n";
+            let affectedAddons = new Set();
+            let specificTests = new Set();
+            let failureTypes = new Set();
+
+            for (const job of nonComplianceJobs) {
+                // Regex to capture "addon" from: "Job Name (addon)" or "Job Name (addon - arch)"
+                const match = job.name.match(/\((.*?)(?: -.*)?\)/);
+                if (match) affectedAddons.add(match[1]);
+
+                // Get ALL failed steps (not just the first one)
+                const failedSteps = job.steps ? job.steps.filter(s =>
+                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+                ) : [];
+
+                // Filter out Compliance steps for display
+                const nonComplianceSteps = failedSteps.filter(step =>
+                    !step.name || !step.name.includes("Compliance")
+                );
+
+                // If job failed but no step info, or all steps are Compliance (shouldn't happen after filter, but safety check)
+                if (nonComplianceSteps.length === 0) {
+                    const stepName = failedSteps.length > 0 ? failedSteps[0].name :
+                                    (job.conclusion === 'cancelled' ? 'Job Cancelled' :
+                                     job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown Step');
+                    const jobLink = `[${job.name}](${job.html_url})`;
+                    report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+                } else {
+                    // Show all non-Compliance failed steps
+                    const jobLink = `[${job.name}](${job.html_url})`;
+                    for (const failedStep of nonComplianceSteps) {
+                        const stepName = failedStep.name || "Unknown Step";
+                        report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+
+                        // Categorize Failure (excluding Compliance)
+                        if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
+                        if (stepName.includes("Build") || job.name.includes("Build")) failureTypes.add("Docker Build");
+                        if (stepName.includes("Trivy")) failureTypes.add("Security Scan");
+                        if (stepName.includes("ShellCheck")) failureTypes.add("ShellCheck");
+                        if (stepName.includes("Hadolint")) failureTypes.add("Hadolint");
+                        if (stepName.includes("Supervisor") || stepName.includes("Test")) failureTypes.add("Supervisor Test");
+
+                        // Map failed step/job to verification script test name
+                        if (stepName.includes("ShellCheck")) specificTests.add("ShellCheck");
+                        else if (stepName.includes("Hadolint")) specificTests.add("Hadolint");
+                        else if (stepName.includes("MarkdownLint")) specificTests.add("MarkdownLint");
+                        else if (stepName.includes("YAMLLint")) specificTests.add("YamlLint");
+                        else if (stepName.includes("Prettier")) specificTests.add("Prettier");
+                        else if (stepName.includes("Add-on Linter")) specificTests.add("AddonLinter");
+                        else if (stepName.includes("Trivy")) specificTests.add("Trivy");
+                        else if (job.name.includes("Build")) specificTests.add("DockerBuild");
+                        else if (stepName.includes("Supervisor") || stepName.includes("Test")) specificTests.add("SupervisorTest");
+                    }
+                }
+            }
+            report += "\n";
+
+            // Build comprehensive AI-optimized summary
+            report += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
+            report += `> **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n`;
+
+            // Group jobs by failure type for better AI processing
+            const lintFailures = [];
+            const buildFailures = [];
+            const securityFailures = [];
+            const supervisorFailures = [];
+            const otherFailures = [];
+
+            for (const job of nonComplianceJobs) {
+                // Get ALL failed steps
+                const failedSteps = job.steps ? job.steps.filter(s =>
+                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+                ) : [];
+
+                // Filter out Compliance steps
+                const nonComplianceSteps = failedSteps.filter(step =>
+                    !step.name || !step.name.includes("Compliance")
+                );
+
+                const addonMatch = job.name.match(/\((.*?)(?: -.*)?\)/);
+                const addon = addonMatch ? addonMatch[1] : "unknown";
+
+                // If no step info, use job conclusion
+                if (nonComplianceSteps.length === 0) {
+                    const stepName = job.conclusion === 'cancelled' ? 'Job Cancelled' :
+                                    job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown';
+                    const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+                    otherFailures.push(entry);
+                } else {
+                    // Process each failed step
+                    for (const failedStep of nonComplianceSteps) {
+                        const stepName = failedStep.name || "Unknown";
+                        const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+
+                        if (stepName.includes("ShellCheck") || stepName.includes("Hadolint") ||
+                            stepName.includes("Lint") || stepName.includes("Prettier") ||
+                            stepName.includes("YAML") || stepName.includes("Markdown")) {
+                            lintFailures.push(entry);
+                        } else if (stepName.includes("Build") || job.name.includes("Build")) {
+                            buildFailures.push(entry);
+                        } else if (stepName.includes("Trivy") || stepName.includes("Security")) {
+                            securityFailures.push(entry);
+                        } else if (stepName.includes("Supervisor") || stepName.includes("Test") || job.name.includes("Supervisor")) {
+                            supervisorFailures.push(entry);
+                        } else {
+                            otherFailures.push(entry);
+                        }
+                    }
+                }
+            }
+
+            // AI-optimized structured output
+            report += "```yaml\n";
+            report += "# CI Failure Analysis for AI Processing\n";
+            report += `total_failures: ${nonComplianceJobs.length}\n`;
+            report += `workflow_run: ${context.runId}\n\n`;
+
+            if (lintFailures.length > 0) {
+                report += "lint_failures:\n";
+                report += "  # Fix with: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
+                for (const f of lintFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    files_to_check:\n`;
+                    if (f.stepName.includes("ShellCheck")) {
+                        report += `      - "${f.addon}/**/*.sh"\n`;
+                        report += `      - "${f.addon}/run.sh"\n`;
+                    }
+                    if (f.stepName.includes("Hadolint")) {
+                        report += `      - "${f.addon}/Dockerfile"\n`;
+                    }
+                    if (f.stepName.includes("Add-on Linter")) {
+                        report += `      - "${f.addon}/config.yaml"\n`;
+                        report += `      - "${f.addon}/build.yaml"\n`;
+                    }
+                }
+            }
+
+            if (buildFailures.length > 0) {
+                report += "\nbuild_failures:\n";
+                report += "  # Docker build errors - check Dockerfile syntax and base images\n";
+                report += "  # Common issues: ARG after FROM, missing packages, invalid base image\n";
+                for (const f of buildFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    files_to_fix:\n`;
+                    report += `      - "${f.addon}/Dockerfile"\n`;
+                    report += `      - "${f.addon}/build.yaml"  # Check build_from image\n`;
+                    report += `    common_fixes:\n`;
+                    report += `      - "Ensure ARG BUILD_FROM is first line after comments"\n`;
+                    report += `      - "Check base image exists: ghcr.io/hassio-addons/base:19.0.0"\n`;
+                    report += `      - "Verify all APK packages exist for Alpine 3.21"\n`;
+                }
+            }
+
+            if (securityFailures.length > 0) {
+                report += "\nsecurity_failures:\n";
+                report += "  # Trivy found vulnerabilities - may need package updates\n";
+                report += "  # NOTE: Some vulnerabilities require upstream fixes (not auto-fixable)\n";
+                for (const f of securityFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    action: "Review Trivy output and update vulnerable packages"\n`;
+                    report += `    manual_review_required: true\n`;
+                }
+            }
+
+            if (supervisorFailures.length > 0) {
+                report += "\nsupervisor_failures:\n";
+                report += "  # Supervisor integration test failures - check addon installation/startup\n";
+                report += "  # Common issues: Addon not detected, installation failed, startup timeout\n";
+                for (const f of supervisorFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    files_to_check:\n`;
+                    report += `      - "${f.addon}/config.yaml"  # Check ingress, ports, schema\n`;
+                    report += `      - "${f.addon}/Dockerfile"  # Check healthcheck, base image\n`;
+                    report += `      - "${f.addon}/rootfs/etc/services.d/*/run"  # Check service scripts\n`;
+                    report += `    common_fixes:\n`;
+                    report += `      - "Verify ingress: true in config.yaml"\n`;
+                    report += `      - "Check that service scripts use correct shebang (#!/usr/bin/with-contenv bashio)"\n`;
+                    report += `      - "Ensure HEALTHCHECK is present in Dockerfile"\n`;
+                    report += `      - "Verify addon slug matches directory name"\n`;
+                }
+            }
+
+            if (otherFailures.length > 0) {
+                report += "\nother_failures:\n";
+                report += "  # These require manual investigation\n";
+                for (const f of otherFailures) {
+                    report += `  - addon: "${f.addon}"\n`;
+                    report += `    step: "${f.stepName}"\n`;
+                    report += `    manual_review_required: true\n`;
+                }
+            }
+
+            report += "\n# Quick fix commands:\n";
+            if (affectedAddons.size > 0) {
+                const addonsList = Array.from(affectedAddons).join('","');
+                report += `powershell: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `bash: pwsh -File ./.scripts/verify_addons/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+            }
+
+            report += "\n# Items NOT fixable by local script:\n";
+            report += "not_auto_fixable:\n";
+            if (buildFailures.length > 0) {
+                report += "  - Docker build errors (require manual Dockerfile fixes)\n";
+            }
+            if (securityFailures.length > 0) {
+                report += "  - Security vulnerabilities (require package updates or upstream fixes)\n";
+            }
+            if (supervisorFailures.length > 0) {
+                report += "  - Supervisor test failures (require addon configuration fixes, check logs)\n";
+            }
+            report += "  - Missing logo.png/icon.png (need to generate or provide images)\n";
+            report += "  - Translation files (need manual creation in translations/en.yaml)\n";
+            report += "```\n";
+            report += "\n</details>\n\n";
+
+            // Pre-calculate the test command
+            let testsArg = "";
+            if (specificTests.size > 0) {
+                testsArg = ` -Tests "${Array.from(specificTests).join('","')}"`;
+            }
+
+            let testCommand = "";
+            if (affectedAddons.size > 0) {
+                const addonsList = Array.from(affectedAddons).join('","');
+                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
+            } else {
+                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
+            }
+
+            // Local Test Command (expanded section)
+            report += `<details>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
+            report += "Run this command locally to reproduce and fix issues:\n\n";
+            report += "**PowerShell:**\n";
+            report += "```powershell\n";
+            report += testCommand + "\n";
+            report += "```\n\n";
+
+            const bashCommand = "pwsh -File " + testCommand.replace(/\\/g, '/').replace(/^\.\\/, './');
+            report += "**Bash:**\n";
+            report += "```bash\n";
+            report += bashCommand + "\n";
+            report += "```\n";
+            report += "\n</details>";
+
+            // Link to Step Summary
+            // workflowRunUrl is already defined in outer scope
+            report += `\n\n> 📊 **View Full Test Summary**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
+
+            const signature = "<!-- general-ci-failure-report -->";
+            const reportBody = signature + "\n" + report;
+
+            // Find and minimize old failure reports
+            const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            // Standardize old signatures too for transition
+            const oldSignatures = ["## ❌ General CI Failure Report", signature];
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && oldSignatures.some(sig => c.body.includes(sig)));
+
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
+            // Post General Report
+            console.log("Posting General Failure Report...");
+            try {
+                await core.summary.addRaw(reportBody).write();
+            } catch (err) {
+                console.log("Could not write to Job Summary:", err);
+            }
+
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: reportBody
+            });
+
+            // Update CI status labels to ci/failed
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+            const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+            filteredLabels.push('ci/failed');
+
+            await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: filteredLabels
+            });
+
+  # --------------------------------------------------------------------------------
+  # SUPERVISOR TEST: Real Supervisor Integration (Only on PRs with code changes)
+  # --------------------------------------------------------------------------------
+  supervisor-test:
+    name: 🏠 Supervisor Integration Test
+    needs: [filter, lint, build]
+    # Only run on PRs with actual code changes (not docs-only), and only if build succeeded
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      (needs.build.result == 'success' || (needs.build.result == 'skipped' && needs.filter.outputs.force_supervisor == 'true')) &&
+      (
+        (
+          needs.filter.outputs.addons != '[]' &&
+          needs.filter.outputs.addons != '' &&
+          needs.filter.outputs.docs_only != 'true'
+        ) ||
+        needs.filter.outputs.force_supervisor == 'true'
+      )
+    uses: ./.github/workflows/orchestrator-supervisor-test.yaml
+    with:
+      addons: ${{ needs.filter.outputs.addons }}
+      timeout: "15"
+
+  success_report:
+    name: ✅ CI Success Summary
+    needs: [filter, lint, build, supervisor-test]
+    # Run when filter and lint pass, build and supervisor-test pass OR were skipped (docs-only changes)
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      needs.filter.result == 'success' &&
+      needs.lint.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      (needs.supervisor-test.result == 'success' || needs.supervisor-test.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 📝 Post Success Comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        continue-on-error: true
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            // Signatures of comments to minimize (cleanup old failures and summaries)
+            const signatures = [
+                "<!-- ci-start-comment -->",
+                "## 🛡️ Platinum Compliance Issues",
+                "<!-- general-ci-failure-report -->",
+                "## ❌ General CI Failure Report",
+                "## ✅ Verification Successful"
+            ];
+
+            const commentsToMinimize = comments.filter(c =>
+                c.user.type === 'Bot' &&
+                signatures.some(sig => c.body.includes(sig))
+            );
+
+            for (const comment of commentsToMinimize) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment {
+                                    isMinimized
+                                }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                }
+            }
+
+            // Check if author is maintainer/bot for auto-merge message
+            const author = context.payload.pull_request.user.login;
+            const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
+
+            // Check if build was skipped (docs-only changes)
+            const buildSkipped = '${{ needs.build.result }}' === 'skipped';
+            const lintSkipped = '${{ needs.lint.result }}' === 'skipped';
+            const allSkipped = buildSkipped && lintSkipped;
+            const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
+
+            // Auto-merge only if actual CI jobs ran
+            let autoMergeNote = "";
+            if (allSkipped) {
+                // No CI ran - warn user
+                autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.\n> If this is unexpected, check for workflow configuration issues.";
+            } else if (isMaintainer) {
+                autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
+            }
+
+            // Check for unresolved errors from previous runs
+            let previousErrorsNote = "";
+            try {
+                // Get previous workflow runs for this PR
+                const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    event: 'pull_request',
+                    status: 'completed',
+                    per_page: 10,
+                });
+
+                // Filter runs for this PR that failed
+                const prRuns = runs.workflow_runs.filter(run =>
+                    run.pull_requests &&
+                    run.pull_requests.some(pr => pr.number === context.issue.number) &&
+                    run.id !== parseInt('${{ github.run_id }}')
+                );
+
+                const failedRuns = prRuns.filter(run => run.conclusion === 'failure');
+
+                // Check what files were changed in those failed runs vs now
+                if (failedRuns.length > 0 && buildSkipped) {
+                    // Build was skipped but there were previous failures
+                    // This means the previous failures might still exist!
+                    previousErrorsNote = "\n\n> ⚠️ **Note**: Build was skipped for this commit, but there were failed runs earlier in this PR. Make sure all previous issues with Dockerfiles/configs are resolved.";
+                }
+            } catch (e) {
+                console.log("Could not check previous runs:", e.message);
+            }
+
+            // Generate message using shared script
+            const generateMessage = require('./.scripts/generate_ci_success_message.js');
+            const body = generateMessage({
+                skipped: allSkipped,
+                buildStatus: buildStatus,
+                autoMergeNote: autoMergeNote,
+                previousErrorsNote: previousErrorsNote
+            });
+
+            // Always post a fresh success comment (old ones are minimized above)
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+            });
+
+            // Update CI status labels
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            // Labels to remove on success (CI status + workflow errors)
+            const labelsToRemove = ['ci/passed', 'ci/failed', 'ci/platinum-issues', 'workflow/lint-error', 'workflow/lint-warning'];
+            const filteredLabels = currentLabels.map(l => l.name).filter(n => !labelsToRemove.includes(n));
+            filteredLabels.push('ci/passed');
+
+            await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: filteredLabels
+            });
+
+            // Minimize the CI start comment
+            const startComment = comments.find(c => c.user.type === 'Bot' && c.body.includes("<!-- ci-start-comment -->"));
+            if (startComment) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: RESOLVED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: startComment.node_id });
+                } catch (e) { console.log("Could not minimize start comment"); }
+            }

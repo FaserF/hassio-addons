@@ -1,0 +1,1227 @@
+name: Orchestrator Release
+
+# Unified release workflow combining:
+# - Manual releases (workflow_dispatch)
+# - Auto-releases after Renovate PRs merge (pull_request.closed)
+# - Repository dispatch from other workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: "Add-on slug (folder name) or list (comma-separated), 'all' for all add-ons, or 'detect' for auto"
+        required: true
+        type: string
+      version:
+        description: "Version increment (major, minor, patch)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      skip_verification:
+        description: "Skip lint/build verification"
+        required: false
+        default: false
+        type: boolean
+      changelog_only:
+        description: "Only update changelog, don't bump version (versions already correct)"
+        required: false
+        default: false
+        type: boolean
+
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+  repository_dispatch:
+    types: [dependency-update, base-image-update, auto-release]
+
+  push:
+    branches:
+      - master
+    paths:
+      - "**/config.yaml"
+      - ".github/workflows/orchestrator-release.yaml"
+
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+  pull-requests: read
+
+env:
+  # Addons that should get auto-releases on dependency updates
+  AUTO_RELEASE_ADDONS: |
+    homeassistant-test-instance
+    wiki.js
+    wiki.js3
+    matterbridge
+    pterodactyl-wings
+    AegisBot
+    solumati
+    netboot-xyz
+    antigravity-server
+    whatsapp
+    switch_lan_play
+    nginx
+    wordpress
+
+  # Labels that indicate safe auto-release
+  SAFE_LABELS: dependencies automerge
+
+  # Labels that block auto-release
+  BLOCK_LABELS: breaking-change major no-release needs-review
+
+jobs:
+  # ================================================================================
+  # DETECT: Determine which addons need release
+  # ================================================================================
+  detect:
+    name: 🔍 Detect Release Targets
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'release(all)'))
+    runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.detect.outputs.addons }}
+      should_release: ${{ steps.detect.outputs.should_release }}
+      is_auto: ${{ steps.detect.outputs.is_auto }}
+      version_type: ${{ steps.detect.outputs.version_type }}
+      is_manual_bump: ${{ steps.detect.outputs.is_manual_bump }}
+      is_all: ${{ steps.detect.outputs.is_all }}
+    steps:
+      - name: ⤵️ Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Detect release targets
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          INPUT_ADDON: ${{ github.event.inputs.addon }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          set -e
+          ADDONS=""
+          SHOULD_RELEASE="false"
+          IS_AUTO="false"
+          VERSION_TYPE="patch"
+          IS_ALL="false"
+
+          # ----------------------------------------------------------------
+          # MANUAL DISPATCH
+          # ----------------------------------------------------------------
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            IS_AUTO="false"
+            VERSION_TYPE="${INPUT_VERSION:-patch}"
+
+            echo "🔍 Manual dispatch detected"
+            echo "  INPUT_ADDON: '$INPUT_ADDON'"
+            echo "  INPUT_VERSION: '$INPUT_VERSION'"
+
+            if [ "$INPUT_ADDON" == "all" ]; then
+              IS_ALL="true"
+              # Find all add-ons (matching Python script logic)
+              echo "🔍 Finding all add-ons..."
+              SKIP_ADDONS="homeassistant-test-instance"
+
+              # Regular addons (top-level directories with config.yaml)
+              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+              for item in */; do
+                item_name="${item%/}"
+                if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
+                  # Skip test add-ons
+                  skip=false
+                  for skip_item in $SKIP_ADDONS; do
+                    if [ "$item_name" == "$skip_item" ]; then
+                      skip=true
+                      break
+                    fi
+                  done
+                  if [ "$skip" == "false" ]; then
+                    [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                  fi
+                fi
+              done
+
+              # .unsupported addons are NOT included - they are built locally from unsupported branch
+              echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
+
+              SHOULD_RELEASE="true"
+              echo "📦 Found add-ons: $ADDONS"
+              echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
+            elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
+              IS_ALL="false"
+              # Handle comma-separated list
+              IFS=',' read -ra INPUT_ADDONS_ARRAY <<< "$INPUT_ADDON"
+              VALID_ADDONS=""
+
+              for addon in "${INPUT_ADDONS_ARRAY[@]}"; do
+                  addon=$(echo "$addon" | xargs) # trim whitespace
+
+                  # Check if it exists (basic check, though dynamic check happens later too)
+                  if [ ! -d "$addon" ]; then
+                      echo "⚠️ Warning: Add-on directory '$addon' does not exist. Skipping."
+                      continue
+                  fi
+
+                  # Check unsupported
+                  if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]]; then
+                    echo "❌ Error: .unsupported addons cannot be built via this workflow"
+                    echo "   .unsupported addons are built locally from the unsupported branch"
+                    echo "   Skipping $addon"
+                    continue
+                  fi
+
+                  [ -z "$VALID_ADDONS" ] && VALID_ADDONS="$addon" || VALID_ADDONS="$VALID_ADDONS,$addon"
+              done
+
+              if [ -n "$VALID_ADDONS" ]; then
+                  ADDONS="$VALID_ADDONS"
+                  SHOULD_RELEASE="true"
+                  echo "📦 Add-ons to release: $ADDONS"
+              else
+                  echo "❌ No valid add-ons found to release from input: '$INPUT_ADDON'"
+                  SHOULD_RELEASE="false"
+              fi
+            elif [ "$INPUT_ADDON" == "detect" ]; then
+              IS_ALL="false"
+              echo "🔍 Auto-detection triggered manually (checking HEAD^ vs HEAD)"
+
+              # Get list of changed files
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+              for file in $CHANGED_FILES; do
+                # Skip .unsupported addons
+                if [[ "$file" == .unsupported/* ]]; then
+                  echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                  continue
+                fi
+
+                if [[ "$file" == *"/config.yaml" ]]; then
+                  addon_dir=$(dirname "$file")
+                  addon_name=$(basename "$addon_dir")
+
+                  # Check if version changed
+                  # Get old version (handle new file case)
+                  if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
+                      OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                  else
+                      OLD_VERSION=""
+                      echo "  ℹ️ New file detected (no old version)"
+                  fi
+                  # Get new version
+                  NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                  if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                     echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
+                     [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                     SHOULD_RELEASE="true"
+                     IS_MANUAL_BUMP="true"
+                     VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                  fi
+                fi
+              done
+
+              if [ -z "$ADDONS" ]; then
+                echo "ℹ️ No version bumps detected in last commit."
+              fi
+            else
+              IS_ALL="false"
+              echo "⚠️ Invalid or missing addon input: '$INPUT_ADDON'"
+              SHOULD_RELEASE="false"
+            fi
+
+          # ----------------------------------------------------------------
+          # REPOSITORY DISPATCH
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            IS_AUTO="true"
+            VERSION_TYPE="${DISPATCH_VERSION:-patch}"
+
+            if [ -n "$DISPATCH_ADDON" ]; then
+              ADDONS="$DISPATCH_ADDON"
+              SHOULD_RELEASE="true"
+            fi
+
+          # ----------------------------------------------------------------
+          # MERGED PR (Auto-release)
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            IS_AUTO="true"
+
+            # Check if PR was merged
+            if [ "$PR_MERGED" != "true" ]; then
+              echo "PR was not merged, skipping."
+              {
+                echo "should_release=false"
+                echo "addons=[]"
+                echo "is_auto=false"
+                echo "version_type=patch"
+              } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # Check for blocking labels
+            CLEAN_BLOCK_LABELS=$(echo "${{ env.BLOCK_LABELS }}" | tr '\n' ' ')
+            for label in $CLEAN_BLOCK_LABELS; do
+              if echo "$PR_LABELS" | grep -qi "\"$label\""; then
+                echo "⛔ Found blocking label: $label"
+                {
+                  echo "should_release=false"
+                  echo "addons=[]"
+                  echo "is_auto=true"
+                  echo "version_type=patch"
+                } >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done
+
+            # Check for safe labels
+            HAS_SAFE="false"
+            CLEAN_SAFE_LABELS=$(echo "${{ env.SAFE_LABELS }}" | tr '\n' ' ')
+            for label in $CLEAN_SAFE_LABELS; do
+              if echo "$PR_LABELS" | grep -qi "\"$label\""; then
+                HAS_SAFE="true"
+                break
+              fi
+            done
+
+            if [ "$HAS_SAFE" != "true" ]; then
+              echo "No safe labels found"
+              {
+                echo "should_release=false"
+                echo "addons=[]"
+                echo "is_auto=true"
+                echo "version_type=patch"
+              } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # Get changed files
+            CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' || echo "")
+
+            # Check if this is a base image update by checking PR title/description
+            IS_BASE_IMAGE_UPDATE="false"
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' || echo "")
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body' || echo "")
+            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images)"; then
+              IS_BASE_IMAGE_UPDATE="true"
+              echo "🔍 Base image update detected from PR title/description"
+            fi
+
+            # If base image update, release ALL affected addons (not just AUTO_RELEASE_ADDONS)
+            # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+            if [ "$IS_BASE_IMAGE_UPDATE" == "true" ]; then
+              echo "🔍 Base image update - releasing all affected addons (excluding .unsupported)"
+              # Find all addons with changed Dockerfile or build.yaml
+              for file in $CHANGED; do
+                # Skip .unsupported addons - they are built locally from unsupported branch
+                if [[ "$file" =~ ^\.unsupported/ ]]; then
+                  echo "  ⏭️ Skipping .unsupported addon: $file"
+                  continue
+                fi
+
+                # Extract addon directory from file path (only regular addons)
+                if [[ "$file" =~ ^([^/]+)/ ]]; then
+                  addon_dir="${BASH_REMATCH[1]}"
+                else
+                  continue
+                fi
+
+                # Check if Dockerfile or build.yaml in this addon was changed
+                if echo "$CHANGED" | grep -qE "^${addon_dir}/(Dockerfile|build\.yaml)$"; then
+                  # Skip if already added
+                  if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                    [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    echo "  ✅ Added $addon_dir (Dockerfile/build.yaml changed)"
+                  fi
+                fi
+              done
+            else
+              # ----------------------------------------------------------------
+              # Detect NEW Add-ons (config.yaml added)
+              # ----------------------------------------------------------------
+              echo "🔍 Checking for newly added add-ons..."
+              # Check for added config.yaml files using git diff
+              # HEAD is the merge commit. HEAD^ is the previous commit on master (first parent).
+              ADDED_FILES=$(git diff --name-status HEAD^ HEAD 2>/dev/null || echo "")
+
+              # Filter for Added (A) config.yaml files
+              ADDED_CONFIGS=$(echo "$ADDED_FILES" | grep "^A" | grep "config.yaml" | awk '{print $2}' || echo "")
+
+              for file in $ADDED_CONFIGS; do
+                 # Skip .unsupported
+                 if [[ "$file" == .unsupported/* ]]; then
+                    continue
+                 fi
+
+                 # Check if it matches pattern: addon_slug/config.yaml
+                 if [[ "$file" =~ ^([^/]+)/config.yaml$ ]]; then
+                    addon_dir="${BASH_REMATCH[1]}"
+                    echo "  🚀 Detected NEW add-on: $addon_dir"
+                    # Add to ADDONS if not already there
+                    if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    fi
+                 fi
+              done
+
+              # Normal dependency update - only release addons in AUTO_RELEASE_ADDONS list
+              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+              echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list (excluding .unsupported)"
+              CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
+              for addon in $CLEAN_AUTO_ADDONS; do
+                # Only check regular addons, skip .unsupported
+                if echo "$CHANGED" | grep -Fq "${addon}/" && ! echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
+                  [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
+                fi
+                # Explicitly skip .unsupported addons
+                if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
+                  echo "  ⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
+                fi
+              done
+            fi
+
+            [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
+          # ----------------------------------------------------------------
+          # PUSH TO MASTER (Manual Version Bump Detection or release(all) trigger)
+          # ----------------------------------------------------------------
+          elif [ "${{ github.event_name }}" == "push" ]; then
+             IS_AUTO="false"
+
+             # Check for "release(all)" in commit message
+             COMMIT_MSG="${github.event.head_commit.message}"
+             if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
+               echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
+               SKIP_ADDONS="homeassistant-test-instance"
+
+               # Regular addons (top-level directories with config.yaml)
+               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+               for item in */; do
+                 item_name="${item%/}"
+                 if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
+                   # Skip test add-ons
+                   skip=false
+                   for skip_item in $SKIP_ADDONS; do
+                     if [ "$item_name" == "$skip_item" ]; then
+                       skip=true
+                       break
+                     fi
+                   done
+                   if [ "$skip" == "false" ]; then
+                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                   fi
+                 fi
+               done
+
+               # .unsupported addons are NOT included - they are built locally from unsupported branch
+               echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
+
+               SHOULD_RELEASE="true"
+               VERSION_TYPE="patch" # Default for release(all)
+               echo "📦 Found add-ons: $ADDONS"
+             else
+               IS_ALL="false"
+               # Original logic: Detect manual version bumps
+               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+               # Get list of changed files
+               CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+               for file in $CHANGED_FILES; do
+                 # Skip .unsupported addons - they are built locally from unsupported branch
+                 if [[ "$file" == .unsupported/* ]]; then
+                   echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                   continue
+                 fi
+
+                 if [[ "$file" == *"/config.yaml" ]]; then
+                   addon_dir=$(dirname "$file")
+                   addon_name=$(basename "$addon_dir")
+
+                   # Check if version changed
+                   # Get old version (handle new file case)
+                   if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
+                       OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                   else
+                       OLD_VERSION=""
+                       echo "  ℹ️ New file detected (no old version)"
+                   fi
+                   # Get new version
+                   NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                   if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                      echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
+                      [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                      SHOULD_RELEASE="true"
+                      IS_MANUAL_BUMP="true"
+                      VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                   fi
+                 fi
+               done
+             fi
+
+          fi
+
+          # Sort addons by priority (only if multiple addons are affected)
+          if [ -n "$ADDONS" ]; then
+            ADDON_COUNT=$(echo "$ADDONS" | tr ',' '\n' | wc -l | tr -d ' ')
+            if [ "$ADDON_COUNT" -gt 1 ]; then
+              echo "📋 Sorting addons by priority (multiple addons detected)..."
+
+              # Split into categories
+              NORMAL_ADDONS=""
+              SWITCH_LAN_PLAY_ADDONS=""
+              PTERODACTYL_ADDONS=""
+              ANTIGRAVITY_ADDON=""
+              UNSUPPORTED_ADDONS=""
+
+              # Process each addon
+              IFS=','
+              for addon in $ADDONS; do
+                addon=$(echo "$addon" | xargs)  # trim whitespace
+
+                # Check category
+                if [[ "$addon" == .unsupported/* ]]; then
+                  # Unsupported addons go last
+                  [ -z "$UNSUPPORTED_ADDONS" ] && UNSUPPORTED_ADDONS="$addon" || UNSUPPORTED_ADDONS="$UNSUPPORTED_ADDONS,$addon"
+                elif [[ "$addon" == "antigravity-server" ]]; then
+                  # antigravity-server goes second-to-last (before unsupported)
+                  ANTIGRAVITY_ADDON="$addon"
+                elif [[ "$addon" == pterodactyl-* ]]; then
+                  # pterodactyl addons go third-to-last
+                  [ -z "$PTERODACTYL_ADDONS" ] && PTERODACTYL_ADDONS="$addon" || PTERODACTYL_ADDONS="$PTERODACTYL_ADDONS,$addon"
+                elif [[ "$addon" == switch_lan_play* ]]; then
+                  # switch_lan_play addons go fourth-to-last
+                  [ -z "$SWITCH_LAN_PLAY_ADDONS" ] && SWITCH_LAN_PLAY_ADDONS="$addon" || SWITCH_LAN_PLAY_ADDONS="$SWITCH_LAN_PLAY_ADDONS,$addon"
+                else
+                  # Normal addons go first
+                  [ -z "$NORMAL_ADDONS" ] && NORMAL_ADDONS="$addon" || NORMAL_ADDONS="$NORMAL_ADDONS,$addon"
+                fi
+              done
+              unset IFS
+
+              # Rebuild in correct order
+              SORTED_ADDONS=""
+              [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
+              [ -n "$SWITCH_LAN_PLAY_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SWITCH_LAN_PLAY_ADDONS" || SORTED_ADDONS="$SWITCH_LAN_PLAY_ADDONS"
+              }
+              [ -n "$PTERODACTYL_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_ADDONS" || SORTED_ADDONS="$PTERODACTYL_ADDONS"
+              }
+              [ -n "$ANTIGRAVITY_ADDON" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$ANTIGRAVITY_ADDON" || SORTED_ADDONS="$ANTIGRAVITY_ADDON"
+              }
+              [ -n "$UNSUPPORTED_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
+              }
+
+              ADDONS="$SORTED_ADDONS"
+              echo "✅ Sorted addons: $ADDONS"
+            fi
+          fi
+
+          # Convert to JSON array (compact format for GitHub Actions output)
+          if [ -n "$ADDONS" ]; then
+            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s -c .)"
+          else
+            JSON="[]"
+          fi
+
+          echo "Addons: $ADDONS"
+          echo "Should release: $SHOULD_RELEASE"
+          echo "Is auto: $IS_AUTO"
+          echo "Version type: $VERSION_TYPE"
+          echo "Is manual bump: ${IS_MANUAL_BUMP:-false}"
+          echo "Is all: ${IS_ALL:-false}"
+
+          # Output as compact JSON (single line) to avoid formatting issues
+          {
+            echo "addons=$JSON"
+            echo "should_release=$SHOULD_RELEASE"
+            echo "is_auto=$IS_AUTO"
+            echo "version_type=$VERSION_TYPE"
+            echo "is_manual_bump=${IS_MANUAL_BUMP:-false}"
+            echo "is_all=${IS_ALL:-false}"
+          } >> "$GITHUB_OUTPUT"
+
+  # ================================================================================
+  # VERIFY: Lint and test build before release
+  # ================================================================================
+  verify:
+    name: ✅ Verify ${{ matrix.addon }}
+    needs: detect
+    if: needs.detect.outputs.should_release == 'true' && github.event.inputs.skip_verification != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJson(needs.detect.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 🕵️ Add-on Linter
+        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: ℹ️ Get Add-on Info
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🏗️ Test Build
+        uses: home-assistant/builder@2025.11.0
+        with:
+          args: |
+            --test \
+            --amd64 \
+            --target /data/${{ matrix.addon }} \
+            --image "${{ steps.info.outputs.image }}" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon
+
+  # ================================================================================
+  # RELEASE: Build & Push
+  # ================================================================================
+  release:
+    name: 🚀 Release ${{ matrix.addon }}
+    needs: [detect, verify]
+    if: |
+      always() &&
+      needs.detect.outputs.should_release == 'true' &&
+      (needs.verify.result == 'success' || needs.verify.result == 'skipped' || github.event.inputs.skip_verification == 'true')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Allow parallel builds to save runner minutes
+      # Increased from 1 to 3 for better resource utilization
+      max-parallel: 3
+      matrix:
+        addon: ${{ fromJson(needs.detect.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Detect if unsupported
+        id: status
+        run: |
+          # shellcheck disable=SC2193
+          if [[ "${{ matrix.addon }}" == .unsupported/* ]]; then
+            echo "is_unsupported=true" >> "$GITHUB_OUTPUT"
+            echo "📦 Addon is UNSUPPORTED"
+          else
+            echo "is_unsupported=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🔧 Inject Version Warning
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Fix Image Field Format (if needed)
+        run: |
+          # Ensure image field uses correct format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          CORRECT_IMAGE="ghcr.io/faserf/hassio-addons-${SLUG}-{arch}"
+
+          if grep -q "^image:" "${{ matrix.addon }}/config.yaml"; then
+            CURRENT_IMAGE=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+            if [ "$CURRENT_IMAGE" != "$CORRECT_IMAGE" ]; then
+              sed -i "s|^image:.*|image: ${CORRECT_IMAGE}|g" "${{ matrix.addon }}/config.yaml"
+              echo "✅ Updated image field from '$CURRENT_IMAGE' to '$CORRECT_IMAGE'"
+            else
+              echo "ℹ️ Image field already correct: $CORRECT_IMAGE"
+            fi
+          else
+            # Add image field if missing
+            sed -i "/^slug:.*/a image: ${CORRECT_IMAGE}" "${{ matrix.addon }}/config.yaml"
+            echo "✅ Added image field: $CORRECT_IMAGE"
+          fi
+
+      - name: ℹ️ Get Add-on Info
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🐋 Login to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: 💾 Cache Docker layers (optimized for shared base image)
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+        with:
+          path: /tmp/.buildx-cache-${{ matrix.addon }}
+          # Primary key: addon-specific for precise cache hits
+          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          restore-keys: |
+            # Try addon-specific cache first
+            ${{ runner.os }}-buildx-${{ matrix.addon }}-
+            # Fallback to shared base image cache (all addons share base:19.0.0)
+            ${{ runner.os }}-buildx-base-image-19.0.0-
+            # Last resort: any buildx cache
+            ${{ runner.os }}-buildx-
+
+      - name: 📝 Bump Version & Changelog
+        run: |
+          VERSION_TYPE="${{ needs.detect.outputs.version_type }}"
+          IS_AUTO="${{ needs.detect.outputs.is_auto }}"
+          IS_MANUAL_BUMP="${{ needs.detect.outputs.is_manual_bump }}"
+          CHANGELOG_ONLY="${{ github.event.inputs.changelog_only || 'false' }}"
+
+          if [ "$IS_AUTO" == "true" ]; then
+            MSG="Automatic release after dependency update"
+          else
+            MSG="Manual release via Orchestrator"
+          fi
+
+          if [ "$IS_MANUAL_BUMP" == "true" ] || [ "$CHANGELOG_ONLY" == "true" ]; then
+             echo "ℹ️ Changelog-only mode: Updating Changelog without version bump."
+             # Get current version from config.yaml
+             CURRENT_VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+             python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$CURRENT_VERSION" --changelog-only --message "$MSG"
+          else
+             python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 Debug Git Status (Post-Bump)
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la "${{ matrix.addon }}"
+          git status
+          git diff
+          grep "version:" "${{ matrix.addon }}/config.yaml"
+
+      - name: 🔄 Pull latest changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Store local changes for this addon
+          ADDON_FILES="${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "📦 Stashing local changes for ${{ matrix.addon }}..."
+            git stash push -m "temp-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+          fi
+
+          # Fetch and update to latest master
+          git fetch origin master
+          git reset --hard origin/master
+
+          # Restore and reapply local changes
+          if git stash list | grep -q "temp-stash-${{ matrix.addon }}"; then
+            echo "🔄 Restoring local changes for ${{ matrix.addon }}..."
+            # Find the stash entry
+            STASH_ENTRY=$(git stash list | grep "temp-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              # Apply stash (don't pop, in case of conflicts)
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Merge conflict detected, resolving..."
+                # If there's a conflict, resolve by taking our version (the addon files)
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
+                # Clean up the stash
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+
+          # Ensure we're on the latest master (handle any merge state)
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/master
+
+          # Reapply changes one more time if needed
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "✅ Local changes preserved for ${{ matrix.addon }}"
+          fi
+
+      - name: 🚀 Commit Changes
+        id: commit_changes
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
+        with:
+          commit_message: |
+            ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
+          file_pattern: "${{ matrix.addon }}"
+          skip_fetch: true
+
+      - name: 🔄 Retry Commit with Pull (if failed)
+        if: steps.commit_changes.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          ADDON_FILES="${{ matrix.addon }}/*"
+
+          # Clean up any merge/rebase state
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+
+          # Store local changes
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "📦 Stashing local changes for retry..."
+            git stash push -m "retry-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+          fi
+
+          # Fetch and reset to latest master
+          git fetch origin master
+          git reset --hard origin/master
+
+          # Restore changes
+          if git stash list | grep -q "retry-stash-${{ matrix.addon }}"; then
+            STASH_ENTRY=$(git stash list | grep "retry-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Conflict on retry, using our version..."
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+
+          # Check if there are changes to commit
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
+            # Use rebase strategy to avoid merge commits
+            git pull --rebase origin master || {
+              echo "⚠️ Rebase failed, trying merge..."
+              git rebase --abort 2>/dev/null || true
+              git pull origin master --no-rebase || echo "Already up to date"
+            }
+            git commit -m "${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
+            git push origin master
+          fi
+
+      - name: ℹ️ Get Add-on Info (Post-Bump)
+        id: info_build
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: 🗑️ Delete existing image version (if exists)
+        continue-on-error: true
+        run: |
+          # Extract version from config.yaml
+          VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+          # Get package name from config.yaml image field
+          # Format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+
+          if [ -z "$IMAGE_FROM_CONFIG" ]; then
+            # Fallback: use slug
+            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            PACKAGE_NAME="hassio-addons-${SLUG}"
+          else
+            # Extract package name: remove ghcr.io/faserf/ prefix
+            PACKAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||' | sed 's/-{arch}$//' | sed 's/-amd64$//' | sed 's/-aarch64$//' | sed 's/-armhf$//' | sed 's/-armv7$//' | sed 's/-i386$//')
+          fi
+
+          OWNER="${{ github.repository_owner }}"
+
+          echo "🔍 Checking for existing image: $PACKAGE_NAME:$VERSION"
+
+          # Get GitHub API token
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+
+          # Function to delete version from a package
+          delete_version() {
+            local pkg_name=$1
+            local version=$2
+            local base_url=$3
+
+            RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github.v3+json" "$base_url")
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            VERSIONS_JSON=$(echo "$RESPONSE" | sed '$d')
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              # Find version ID for the specific version tag
+              VERSION_ID=$(echo "$VERSIONS_JSON" | jq -r ".[] | select(.metadata.container.tags[]? == \"$version\") | .id" | head -n1)
+
+              if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "null" ]; then
+                echo "🗑️ Found existing version $version (ID: $VERSION_ID) for $pkg_name, deleting..."
+                DELETE_URL="${base_url}/${VERSION_ID}"
+                DELETE_RESPONSE=$(curl -s -w "\n%{http_code}" -X DELETE -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github.v3+json" "$DELETE_URL")
+                DELETE_CODE=$(echo "$DELETE_RESPONSE" | tail -n1)
+
+                if [ "$DELETE_CODE" = "204" ]; then
+                  echo "✅ Successfully deleted existing version $version for $pkg_name"
+                  return 0
+                else
+                  echo "⚠️ Failed to delete version (HTTP $DELETE_CODE)"
+                  return 1
+                fi
+              fi
+            fi
+            return 1
+          }
+
+          # Try org endpoint first, then user endpoint
+          ORG_URL="https://api.github.com/orgs/${OWNER}/packages/container/${PACKAGE_NAME}/versions"
+          USER_URL="https://api.github.com/users/${OWNER}/packages/container/${PACKAGE_NAME}/versions"
+
+          if ! delete_version "$PACKAGE_NAME" "$VERSION" "$ORG_URL"; then
+            if ! delete_version "$PACKAGE_NAME" "$VERSION" "$USER_URL"; then
+              echo "ℹ️ No existing version $VERSION found for $PACKAGE_NAME, proceeding with build"
+            fi
+          fi
+
+      - name: 🏗️ Build & Push Add-on
+        run: |
+          # Read architectures from config.yaml
+          # shellcheck disable=SC2001,SC2046
+          ARCHS=$(grep -A 10 "^arch:" "${{ matrix.addon }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
+
+          # Default to amd64 and aarch64 if no arches found
+          if [ -z "$ARCHS" ]; then
+            ARCHS="amd64 aarch64"
+          fi
+
+          echo "🔍 Detected architectures: $ARCHS"
+
+          # Build builder args based on supported architectures (only amd64 and aarch64)
+          # Note: armhf, armv7, and i386 are not supported by this repo
+          BUILDER_ARGS=""
+          for arch in $ARCHS; do
+            case "$arch" in
+              amd64)
+                BUILDER_ARGS="${BUILDER_ARGS}--amd64 \\\\n            "
+                ;;
+              aarch64)
+                BUILDER_ARGS="${BUILDER_ARGS}--aarch64 \\\\n            "
+                ;;
+              armhf|armv7|i386)
+                echo "⚠️ Skipping unsupported architecture: $arch"
+                ;;
+            esac
+          done
+
+          # Remove trailing backslash and newline
+          BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
+
+          # Ensure at least amd64 and aarch64 are built
+          if [ -z "$BUILDER_ARGS" ]; then
+            BUILDER_ARGS="--amd64 \\\\n            --aarch64"
+            BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
+          fi
+
+          echo "🏗️ Building with args:"
+          echo -e "$BUILDER_ARGS"
+
+          # Extract image name from config.yaml
+          # Format should be: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+          # Builder expects: hassio-addons-{slug}-{arch} (without registry prefix)
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+
+          if [ -z "$IMAGE_FROM_CONFIG" ]; then
+            # Fallback: use slug from config
+            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
+          else
+            # Remove ghcr.io/faserf/ prefix to get package name
+            # shellcheck disable=SC2001
+            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
+          fi
+
+          echo "📦 Using image name: $IMAGE_NAME"
+
+          # Use docker run directly to have full control over args
+          # Mount Docker config so builder can access GHCR credentials
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # shellcheck disable=SC2046,SC2001
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
+            -v "$(pwd)":/data \
+            -v /tmp/.buildx-cache-${{ matrix.addon }}:/cache:rw \
+            ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+            $(echo -e "$BUILDER_ARGS") \
+            --target "/data/${{ matrix.addon }}" \
+            --image "$IMAGE_NAME" \
+            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
+            --addon
+
+      - name: 🔄 Bump to Dev Version
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        run: |
+          python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Pull latest changes (before dev commit)
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Store local changes for this addon
+          ADDON_FILES="${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
+            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+          fi
+
+          # Fetch and update to latest master
+          git fetch origin master
+          git reset --hard origin/master
+
+          # Restore and reapply local changes
+          if git stash list | grep -q "temp-stash-dev-${{ matrix.addon }}"; then
+            echo "🔄 Restoring local changes for ${{ matrix.addon }} (dev version)..."
+            STASH_ENTRY=$(git stash list | grep "temp-stash-dev-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Merge conflict detected, resolving..."
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+
+          # Ensure we're on the latest master (handle any merge state)
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/master
+
+          # Reapply changes one more time if needed
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "✅ Local changes preserved for ${{ matrix.addon }} (dev version)"
+          fi
+
+      - name: 🚀 Commit Dev Version
+        id: commit_dev
+        if: |
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
+        with:
+          commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip-tests]"
+          file_pattern: "${{ matrix.addon }}/*"
+          skip_fetch: true
+
+      - name: 🔄 Retry Dev Commit with Pull (if failed)
+        if: |
+          steps.commit_dev.outcome == 'failure' &&
+          success() &&
+          github.event.inputs.changelog_only != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          ADDON_FILES="${{ matrix.addon }}/*"
+
+          # Clean up any merge/rebase state
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+
+          # Store local changes
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            echo "📦 Stashing local changes for retry (dev version)..."
+            git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+          fi
+
+          # Fetch and reset to latest master
+          git fetch origin master
+          git reset --hard origin/master
+
+          # Restore changes
+          if git stash list | grep -q "retry-stash-dev-${{ matrix.addon }}"; then
+            STASH_ENTRY=$(git stash list | grep "retry-stash-dev-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Conflict on retry, using our version..."
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+
+          # Check if there are changes to commit
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
+            # Use rebase strategy to avoid merge commits
+            git pull --rebase origin master || {
+              echo "⚠️ Rebase failed, trying merge..."
+              git rebase --abort 2>/dev/null || true
+              git pull origin master --no-rebase || echo "Already up to date"
+            }
+            git commit -m "chore(${{ matrix.addon }}): bump to dev version [skip-tests]" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
+            git push origin master
+          fi
+
+      - name: 📢 Release Summary
+        run: |
+          {
+            echo "### 🚀 Release Complete"
+            echo ""
+            echo "**Add-on:** ${{ matrix.addon }}"
+            echo "**Type:** ${{ needs.detect.outputs.is_auto == 'true' && 'Auto-release' || 'Manual release' }}"
+            echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}"
+            echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ================================================================================
+  # MONITOR: Check for failure threshold (3 failures) and cancel remaining jobs
+  # ================================================================================
+  monitor-failures:
+    name: ⚠️ Monitor Release Failures
+    needs: [detect]
+    if: |
+      needs.detect.outputs.is_all == 'true' &&
+      needs.detect.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: 🔍 Monitor and Cancel on Threshold
+        run: |
+          echo "Starting failure monitor for 'all' release..."
+          echo "Will cancel remaining jobs if 3 failures are detected."
+          echo "Will also cancel remaining jobs after 5 successful skipped addons."
+          echo ""
+
+          MAX_FAILURES=3
+          MAX_SKIPPED_SUCCESS=5
+          CHECK_INTERVAL=30  # Check every 30 seconds
+          MAX_WAIT_TIME=3600  # Maximum wait time: 1 hour
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $MAX_WAIT_TIME ]; do
+            # Get all release jobs for this workflow run
+            JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "[]")
+
+            # Count failed jobs
+            FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+            # Count successful skipped jobs
+            SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || echo "0")
+            TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
+            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
+
+            echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful), $RUNNING_COUNT running, $TOTAL_COUNT total"
+
+            # Check if skipped threshold reached
+            if [ "$SKIPPED_COUNT" -ge "$MAX_SKIPPED_SUCCESS" ]; then
+              echo ""
+              echo "✅ Threshold reached: $SKIPPED_COUNT successful skipped addons (threshold: $MAX_SKIPPED_SUCCESS)"
+              echo "ℹ️  Most addons are likely working. Stopping monitor (builds will continue running)."
+              echo ""
+              echo "✅ Monitor completed early: $SKIPPED_COUNT successful skipped addons detected. Remaining releases will continue."
+              exit 0
+            fi
+
+            # Check if failure threshold reached
+            if [ "$FAILED_COUNT" -ge "$MAX_FAILURES" ]; then
+              echo ""
+              echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
+              echo "⚠️  WARNING: Too many addons have failed. Cancelling remaining release jobs..."
+
+              # Get all release jobs that are still queued or in_progress
+              RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .id')
+
+              if [ -z "$RUNNING_JOBS" ] || [ "$RUNNING_JOBS" = "" ]; then
+                echo "ℹ️  No remaining jobs to cancel"
+              else
+                CANCELLED_COUNT=0
+                while IFS= read -r JOB_ID; do
+                  if [ -n "$JOB_ID" ] && [ "$JOB_ID" != "null" ]; then
+                    echo "Cancelling job ID: $JOB_ID"
+                    gh api "repos/${{ github.repository }}/actions/jobs/$JOB_ID" -X POST -f state=cancelled 2>/dev/null || echo "  (Job $JOB_ID may have already completed)"
+                    ((CANCELLED_COUNT++)) || true
+                  fi
+                done <<< "$RUNNING_JOBS"
+
+                echo "✅ Cancelled $CANCELLED_COUNT remaining release job(s)"
+              fi
+
+              echo ""
+              echo "⚠️  WARNING: Too many addons failed ($FAILED_COUNT/$MAX_FAILURES threshold). Remaining releases have been cancelled."
+              exit 0
+            fi
+
+            # If no more running jobs, exit
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              echo ""
+              echo "✅ All release jobs completed. Final status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful) out of $TOTAL_COUNT total"
+              exit 0
+            fi
+
+            # Wait before next check
+            sleep $CHECK_INTERVAL
+            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+          done
+
+          echo ""
+          echo "⏱️  Monitor timeout reached. Jobs may still be running."
+        env:
+          GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+  # ================================================================================
+  # CLEANUP: Prune Docker Registry after "all" releases
+  # ================================================================================
+  cleanup-registry:
+    name: 🧹 Cleanup Docker Registry
+    needs: [detect, release, monitor-failures]
+    if: |
+      always() &&
+      needs.detect.outputs.is_all == 'true' &&
+      (needs.release.result == 'success' || needs.release.result == 'failure' || needs.release.result == 'cancelled')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.x"
+
+      - name: 📦 Install Python Dependencies
+        run: pip install requests pyyaml --quiet
+
+      - name: 🗑️ Prune Docker Registry
+        run: python3 .scripts/prune_registry.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}

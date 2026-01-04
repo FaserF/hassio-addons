@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bashio
+
+# Enable strict mode
+set -e
+# shellcheck disable=SC1091
+
+
+
+echo "Starting Apache2..."
+exec /usr/sbin/httpd -D FOREGROUND

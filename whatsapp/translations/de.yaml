@@ -1,0 +1,6 @@
+configuration:
+  log_level:
+    name: Log-Level
+    description: Steuert die Ausführlichkeit der Protokolle.
+network:
+  8099/tcp: Interner API-Port, zu dem sich die Integration verbindet.

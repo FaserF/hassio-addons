@@ -1,0 +1,407 @@
+name: Orchestrator Labeler
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+
+# Prevent multiple labeler runs from fighting over labels
+concurrency:
+  group: labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ Dynamic Labeler
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // 1. Identify Total Add-ons in Repo from BASE BRANCH (not PR branch)
+            // This ensures "All Add-ons" is calculated against the target state, not the PR
+            const baseRef = context.payload.pull_request.base.ref;
+
+            // Get add-ons from base branch via git
+            const { execSync } = require('child_process');
+            let baseAddons = [];
+            try {
+                const lsTree = execSync(`git ls-tree --name-only origin/${baseRef}`, { encoding: 'utf8' });
+                baseAddons = lsTree.split('\n').filter(name => {
+                    if (!name || name.startsWith('.')) return false;
+                    // Check if this dir has config.yaml in base branch
+                    try {
+                        execSync(`git cat-file -e origin/${baseRef}:${name}/config.yaml`, { stdio: 'pipe' });
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                });
+            } catch (e) {
+                console.log('Failed to get base branch addons, falling back to current checkout');
+                const rootEntries = fs.readdirSync('.', { withFileTypes: true });
+                baseAddons = rootEntries.filter(dirent => {
+                    if (!dirent.isDirectory()) return false;
+                    if (dirent.name.startsWith('.')) return false;
+                    return fs.existsSync(path.join(dirent.name, 'config.yaml'));
+                }).map(d => d.name);
+            }
+
+            const totalAddons = baseAddons;
+
+            console.log(`Total Supported Add-ons Detected: ${totalAddons.length}`);
+            console.log(`Add-on list: ${totalAddons.join(', ')}`);
+
+            // Blocklist of known non-addon directories
+            const BLOCKLIST = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests', 'node_modules'];
+
+            // Sanity check: filter out any obviously wrong entries
+            const validAddonPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
+            const validAddons = totalAddons.filter(name => {
+                if (BLOCKLIST.includes(name.toLowerCase())) {
+                    console.log(`Warning: Blocklisted name filtered: ${name}`);
+                    return false;
+                }
+                if (!validAddonPattern.test(name)) {
+                // ... (abbreviated context) ...
+                    console.log(`Warning: Invalid addon name detected and filtered: ${name}`);
+                    return false;
+                }
+                return true;
+            });
+            console.log(`Valid Add-ons after filtering: ${validAddons.join(', ')}`);
+
+            // 2. Identify Changed Files (with Pagination)
+            const changedFiles = [];
+            let page = 1;
+            while (true) {
+              const { data: files } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                per_page: 100,
+                page: page
+              });
+              if (files.length === 0) break;
+              changedFiles.push(...files);
+              page++;
+            }
+
+            console.log(`Total changed files found: ${changedFiles.length}`);
+            const changedAddons = new Set();
+            const labelsToAdd = new Set();
+            const newAddons = new Set(); // Track new addons that don't exist in base branch
+            let hasVersionBump = false;
+            const versionBumpAddons = [];
+
+            // 3. Map Changes to Add-ons
+            console.log("=== Changed files analysis ===");
+            // Track potential new addons by directory
+            const potentialNewAddons = new Map(); // dir -> {hasConfig: bool, fileCount: number, allAdded: bool}
+
+            for (const file of changedFiles) {
+              const parts = file.filename.split('/');
+              if (parts.length > 1) {
+                const rootDir = parts[0];
+                console.log(`File: ${file.filename} -> rootDir: ${rootDir}`);
+
+                // Initialize tracking for this directory
+                if (!potentialNewAddons.has(rootDir)) {
+                    potentialNewAddons.set(rootDir, {
+                        hasConfig: false,
+                        fileCount: 0,
+                        allAdded: true
+                    });
+                }
+                const tracking = potentialNewAddons.get(rootDir);
+                tracking.fileCount++;
+
+                // Check if file was added (not modified or deleted)
+                if (file.status !== 'added') {
+                    tracking.allAdded = false;
+                }
+
+                // Check if this is config.yaml
+                if (file.filename.endsWith('/config.yaml') || file.filename === `${rootDir}/config.yaml`) {
+                    tracking.hasConfig = true;
+                }
+
+                // Track Supported Addons (with blocklist check)
+                if (validAddons.includes(rootDir) && !BLOCKLIST.includes(rootDir.toLowerCase())) {
+                    changedAddons.add(rootDir);
+                    labelsToAdd.add(`addon/${rootDir}`);
+                    console.log(`  -> Added as supported addon: ${rootDir}`);
+                }
+
+                // Track Unsupported Addons (Label individually, don't count towards "All Supported")
+                if (rootDir === '.unsupported' && parts.length > 2) {
+                    const unsupAddon = parts[1];
+                    // Verify existence of config.yaml and not in blocklist
+                    if (!BLOCKLIST.includes(unsupAddon.toLowerCase()) && fs.existsSync(path.join('.', '.unsupported', unsupAddon, 'config.yaml'))) {
+                        labelsToAdd.add(`addon/${unsupAddon}`);
+                        console.log(`  -> Added as unsupported addon: ${unsupAddon}`);
+                    }
+                }
+
+                // 3a. Detect Version Bumps in config.yaml
+                if (file.filename.endsWith('config.yaml') && file.patch) {
+                    // Check if version line was modified
+                    const versionChangePattern = /^\+\s*version:\s*["']?[\d.]+["']?/m;
+                    if (versionChangePattern.test(file.patch)) {
+                        // Determine which addon
+                        let addonName = rootDir;
+                        if (rootDir === '.unsupported' && parts.length > 2) {
+                            addonName = parts[1];
+                        }
+
+                        // Only consider it a version bump if the addon already exists in base branch
+                        // New addons shouldn't get version-bump label (they have initial version, not a bump)
+                        let isNewAddon = false;
+
+                        if (rootDir === '.unsupported' && parts.length > 2) {
+                            // For unsupported addons, check if the addon exists in base branch
+                            try {
+                                execSync(`git cat-file -e origin/${baseRef}:.unsupported/${addonName}/config.yaml`, { stdio: 'pipe' });
+                                // File exists in base branch, so it's not new
+                                isNewAddon = false;
+                            } catch {
+                                // File doesn't exist in base branch, so it's a new addon
+                                isNewAddon = true;
+                            }
+                        } else {
+                            // For supported addons, check if addon exists in baseAddons
+                            isNewAddon = !baseAddons.includes(rootDir);
+                        }
+
+                        if (!isNewAddon) {
+                            hasVersionBump = true;
+                            versionBumpAddons.push(addonName);
+                            console.log(`  -> Version bump detected in: ${addonName}`);
+                        } else {
+                            console.log(`  -> Version line added in new addon ${addonName}, skipping version-bump label`);
+                        }
+                    }
+                }
+              }
+            }
+
+            // After processing all files, check for new addons
+            for (const [rootDir, tracking] of potentialNewAddons.entries()) {
+                // Check if this is a new addon (not in base branch, has config.yaml, valid name)
+                const isNewAddon = !baseAddons.includes(rootDir) &&
+                                   !BLOCKLIST.includes(rootDir.toLowerCase()) &&
+                                   rootDir !== '.unsupported' &&
+                                   validAddonPattern.test(rootDir) &&
+                                   tracking.hasConfig &&
+                                   fs.existsSync(path.join(rootDir, 'config.yaml'));
+
+                if (isNewAddon && !changedAddons.has(rootDir)) {
+                    changedAddons.add(rootDir);
+                    labelsToAdd.add(`addon/${rootDir}`);
+                    newAddons.add(rootDir);
+                    console.log(`  -> Detected NEW addon: ${rootDir} (${tracking.fileCount} files, not in base branch)`);
+                }
+            }
+
+            // Add version-bump label if detected
+            if (hasVersionBump) {
+                labelsToAdd.add('version-bump');
+                console.log(`Version bumps detected in: ${versionBumpAddons.join(', ')}`);
+            }
+
+            console.log(`Changed Supported Add-ons: ${changedAddons.size}`);
+
+            // 4. Determine Managed Labels (What *should* be there)
+            const newManagedLabels = new Set();
+
+            if (validAddons.length > 0 && changedAddons.size === validAddons.length) {
+                console.log("Triggering 'All Add-ons' Label");
+                newManagedLabels.add("All Add-ons");
+            }
+            else if (changedAddons.size > 8) {
+                console.log(`Triggering 'Many Add-ons' Label (Changed: ${changedAddons.size})`);
+                newManagedLabels.add("Many Add-ons");
+            }
+            else {
+                // Individual labels
+                for (const addon of labelsToAdd) {
+                    if (addon !== 'version-bump') { // version-bump is handled separately
+                        newManagedLabels.add(addon);
+                    }
+                }
+            }
+
+            // Always add version-bump if detected (regardless of All/Many Add-ons)
+            if (hasVersionBump) {
+                newManagedLabels.add('version-bump');
+                console.log(`Added 'version-bump' label for: ${versionBumpAddons.join(', ')}`);
+            }
+
+            // Add new-addon label if any new addons detected
+            if (newAddons.size > 0) {
+                newManagedLabels.add('new-addon');
+                console.log(`Added 'new-addon' label for: ${Array.from(newAddons).join(', ')}`);
+            }
+
+            // 5. Fetch, Merge, and Set Labels
+            // Fetch current labels to preserve manual ones (e.g., "help wanted")
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+            });
+
+            console.log("Current Labels:", currentLabels.map(l => l.name));
+
+            // Filter out existing "Managed" labels (stale ones)
+            // Managed = starts with "addon/" OR "All Add-ons" OR "Many Add-ons" OR "version-bump" OR "new-addon"
+            const preservedLabels = currentLabels.map(l => l.name).filter(name => {
+                if (name === "All Add-ons") return false;
+                if (name === "Many Add-ons") return false;
+                if (name === "version-bump") return false;
+                if (name === "new-addon") return false;
+                if (name.startsWith("addon/")) return false;
+                if (name.startsWith("size/")) return false;
+                return true;
+            });
+
+            // Combine Preserved + New Managed
+            let finalLabels = [...preservedLabels, ...newManagedLabels];
+
+            // FINAL SAFETY CHECK: Remove any addon/* labels that don't match known valid addons
+            finalLabels = finalLabels.filter(label => {
+                if (label.startsWith('addon/')) {
+                    const addonName = label.replace('addon/', '');
+                    if (BLOCKLIST.includes(addonName.toLowerCase())) {
+                        console.log(`BLOCKED invalid label: ${label}`);
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            console.log("Final Labels:", finalLabels);
+
+            // ================================================================
+            // SEMANTIC LABELING: Detect PR characteristics
+            // ================================================================
+
+            // Get PR title and body for semantic analysis
+            const prTitle = context.payload.pull_request.title.toLowerCase();
+            const prBody = (context.payload.pull_request.body || '').toLowerCase();
+            const combinedText = `${prTitle} ${prBody}`;
+
+            // Breaking Change Detection
+            if (combinedText.includes('breaking') || prTitle.includes('!:')) {
+                finalLabels.push('breaking-change');
+                console.log("Added 'breaking-change' label");
+            }
+
+            // Semantic Version Labels (from conventional commits)
+            if (prTitle.startsWith('feat') || prTitle.includes('feature')) {
+                finalLabels.push('enhancement');
+                console.log("Added 'enhancement' label");
+            }
+            if (prTitle.startsWith('fix') || prTitle.includes('bugfix')) {
+                finalLabels.push('bug');
+                console.log("Added 'bug' label");
+            }
+            if (prTitle.startsWith('docs') || prTitle.includes('documentation')) {
+                finalLabels.push('documentation');
+                console.log("Added 'documentation' label");
+            }
+            if (prTitle.startsWith('security') || combinedText.includes('cve-') || combinedText.includes('vulnerability')) {
+                finalLabels.push('security');
+                console.log("Added 'security' label");
+            }
+            if (prTitle.startsWith('perf') || combinedText.includes('performance')) {
+                finalLabels.push('performance');
+                console.log("Added 'performance' label");
+            }
+
+            // Size Labels (based on changes)
+            const additions = context.payload.pull_request.additions || 0;
+            const deletions = context.payload.pull_request.deletions || 0;
+            const totalChanges = additions + deletions;
+
+            if (totalChanges <= 10) {
+                finalLabels.push('size/XS');
+            } else if (totalChanges <= 50) {
+                finalLabels.push('size/S');
+            } else if (totalChanges <= 200) {
+                finalLabels.push('size/M');
+            } else if (totalChanges <= 500) {
+                finalLabels.push('size/L');
+            } else {
+                finalLabels.push('size/XL');
+            }
+            console.log(`Added size label for ${totalChanges} changes`);
+
+            // Dependency Updates (Renovate/Dependabot)
+            const prAuthor = context.payload.pull_request.user.login;
+            if (prAuthor === 'renovate[bot]' || prAuthor === 'dependabot[bot]') {
+                if (!finalLabels.includes('dependencies')) {
+                    finalLabels.push('dependencies');
+                }
+                finalLabels.push('automerge');
+                console.log("Added dependency bot labels");
+            }
+
+            // CI/Workflow changes
+            const hasWorkflowChanges = changedFiles.some(f =>
+                f.filename.startsWith('.github/')
+            );
+            if (hasWorkflowChanges) {
+                finalLabels.push('ci');
+                console.log("Added 'ci' label");
+            }
+
+            // Unsupported addon detection
+            const hasUnsupportedChanges = changedFiles.some(f =>
+                f.filename.startsWith('.unsupported/')
+            );
+            if (hasUnsupportedChanges) {
+                finalLabels.push('unsupported');
+                console.log("Added 'unsupported' label");
+            }
+
+            // Remove duplicates
+            finalLabels = [...new Set(finalLabels)];
+
+            console.log("Final Labels with semantics:", finalLabels);
+
+            // Compare with current labels to avoid unnecessary API calls
+            const currentLabelNames = currentLabels.map(l => l.name).sort();
+            const newLabelNames = [...finalLabels].sort();
+
+            if (JSON.stringify(currentLabelNames) === JSON.stringify(newLabelNames)) {
+                console.log("Labels unchanged, skipping API call");
+            } else {
+                console.log("Labels changed, updating via API");
+                // Set Labels (Atomic Update)
+                try {
+                    await github.rest.issues.setLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: finalLabels
+                    });
+                } catch (error) {
+                    console.error("Failed to set labels: " + error.message);
+                    core.setFailed("Failed to set labels: " + error.message);
+                }
+            }

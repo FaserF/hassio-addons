@@ -1,0 +1,175 @@
+name: Orchestrator Governance
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Weekly: Mondays at 00:00
+  issues:
+    types: [opened, edited]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  # --------------------------------------------------------------------------------
+  # LABELER: Auto-label Issues & PRs
+  # --------------------------------------------------------------------------------
+  labeler:
+    name: 🏷️ Auto Labeler
+    runs-on: ubuntu-latest
+    steps:
+      - name: 👤 Auto-assign Issues
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            // Auto-assign all new issues to FaserF
+            try {
+              const { data: issue } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+
+              const currentAssignees = issue.assignees.map(a => a.login);
+              if (!currentAssignees.includes('FaserF')) {
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  assignees: ['FaserF']
+                });
+                console.log('✅ Assigned issue to FaserF');
+              } else {
+                console.log('ℹ️ Issue already assigned to FaserF');
+              }
+            } catch (e) {
+              console.log(`⚠️ Failed to assign issue to FaserF: ${e.message}`);
+            }
+
+      - name: 🏷️ Label Issues (Form-based)
+        if: github.event_name == 'issues'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const body = context.payload.issue.body;
+            if (!body) return;
+
+            // 1. Label Addon based on form selection
+            const regex = /### .*(Add-On|Addon).*\n\n([^\n]+)/i;
+            const match = body.match(regex);
+            if (match && match[2] && match[2] !== 'Other' && match[2] !== '_No response_') {
+               const start = match[2].trim();
+               const addonName = start.toLowerCase().replace(/ /g, '-');
+               const label = `addon/${addonName}`;
+
+               // Dynamic Validation: Check if folder exists via API
+               try {
+                  try {
+                    await github.rest.repos.getContent({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      path: `${addonName}/config.yaml`
+                    });
+                    // If no error, file exists. Proceed.
+                    await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: [label]
+                    });
+                  } catch (err) {
+                     if (err.status === 404) {
+                        console.log(`Addon directory ${addonName} not found or no config.yaml. Skipping label.`);
+                     } else {
+                        throw err;
+                     }
+                  }
+               } catch (e) {
+                  console.log(`Failed to process label ${label}: ${e.message}`);
+               }
+            }
+
+            // 2. Auto-label dev versions
+            // Check both version fields in bug reports
+            // Pattern matches: "### What version of the addon has the issue?" followed by the version
+            const addonVersionRegex = /### .*What version of the addon.*\n\n([^\n]+)/i;
+            const addonVersionMatch = body.match(addonVersionRegex);
+            if (addonVersionMatch && addonVersionMatch[1]) {
+              const addonVersionText = addonVersionMatch[1].trim().toLowerCase();
+              // Check if version contains "dev", "-dev", "edge", "beta", or dev-related patterns
+              if (addonVersionText.includes('dev') ||
+                  addonVersionText.includes('edge') ||
+                  addonVersionText.includes('beta') ||
+                  addonVersionText.includes('-dev') ||
+                  /dev-\w+/.test(addonVersionText)) {
+                try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    labels: ['version/dev']
+                  });
+                  console.log(`Added version/dev label for dev addon version: ${addonVersionText}`);
+                } catch (e) {
+                  console.log(`Failed to add version/dev label: ${e.message}`);
+                }
+              }
+            }
+
+            // Also check Home Assistant Core version field (less common but possible)
+            const coreVersionRegex = /### .*What version of Home Assistant Core.*\n\n([^\n]+)/i;
+            const coreVersionMatch = body.match(coreVersionRegex);
+            if (coreVersionMatch && coreVersionMatch[1]) {
+              const coreVersionText = coreVersionMatch[1].trim().toLowerCase();
+              // Only label if it's clearly a dev version (e.g., "dev", "edge", "beta")
+              if (coreVersionText.includes('dev') ||
+                  coreVersionText.includes('edge') ||
+                  coreVersionText.includes('beta')) {
+                try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    labels: ['version/dev']
+                  });
+                  console.log(`Added version/dev label for dev core version: ${coreVersionText}`);
+                } catch (e) {
+                  console.log(`Failed to add version/dev label: ${e.message}`);
+                }
+              }
+            }
+
+  # --------------------------------------------------------------------------------
+  # STALE: Manage inactive items
+  # --------------------------------------------------------------------------------
+  stale:
+    name: 🧹 Stale Check
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d # v10.1.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 60
+          days-before-close: 7
+          stale-issue-message: "This issue is stale because it has been open 60 days with no activity."
+          stale-pr-message: "This PR is stale because it has been open 60 days with no activity."
+          stale-issue-label: "stale"
+          stale-pr-label: "stale"
+
+  # --------------------------------------------------------------------------------
+  # LOCK: Lock old threads
+  # --------------------------------------------------------------------------------
+  lock:
+    name: 🔒 Lock Threads
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/lock-threads@7266a7ce5c1df01b1c6db85bf8cd86c737dadbe7 # v6.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-inactive-days: "60"
+          pr-inactive-days: "60"

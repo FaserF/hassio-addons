@@ -1,18 +1,13 @@
 ---
 name: Apache2 Minimal
-version: 2.9.0
+version: 3.0.0
 slug: apache2-minimal
-description: OpenSource Webserver without PHP and minimal extra modules
+description: Open Source Webserver without PHP and minimal extra modules.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
-startup: application
-boot: auto
-webui: http://[HOST]:[PORT:80]
+image: ghcr.io/faserf/hassio-addons-apache2-minimal-{arch}
 map:
   - ssl:rw
   - media:rw
@@ -24,7 +19,7 @@ options:
   document_root: /share/htdocs
   default_conf: default
   default_ssl_conf: default
-  website_name: null
+  website_name: "web.local"
   ssl: true
   certfile: fullchain.pem
   keyfile: privkey.pem

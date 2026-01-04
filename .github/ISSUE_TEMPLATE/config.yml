@@ -1,1 +1,6 @@
+---
 blank_issues_enabled: false
+contact_links:
+  - name: 🆕 New Add-on Request
+    url: https://github.com/FaserF/hassio-addons/blob/main/.github/NEW_ADDON_REQUEST.md
+    about: Want a new add-on? Read why I don't accept add-on requests (but feature requests are welcome!)

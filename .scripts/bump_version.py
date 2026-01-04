@@ -1,0 +1,771 @@
+#!/usr/bin/env python3
+"""
+Bump add-on version with auto-generated changelog.
+
+Features:
+- Clickable commit hashes linking to GitHub
+- Clickable version references for dependencies
+- Dev version suffix support (1.2.3-dev)
+- Categorized changelog entries from git history
+"""
+
+import argparse
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime
+from typing import Optional, Tuple
+
+
+
+# GitHub repository for commit links
+GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
+
+# Known dependency release URLs
+DEPENDENCY_URLS = {
+    "ghcr.io/hassio-addons/base": "https://github.com/hassio-addons/addon-base/releases/tag",
+    "ghcr.io/hassio-addons/debian-base": "https://github.com/hassio-addons/addon-debian-base/releases/tag",
+    "ghcr.io/home-assistant/home-assistant": "https://github.com/home-assistant/core/releases/tag",
+    "42wim/matterbridge": "https://github.com/42wim/matterbridge/releases/tag",
+    "pterodactyl/wings": "https://github.com/pterodactyl/wings/releases/tag",
+    "pterodactyl/panel": "https://github.com/pterodactyl/panel/releases/tag",
+    "requarks/wiki": "https://github.com/requarks/wiki/releases/tag",
+    "netbootxyz/webapp": "https://github.com/netbootxyz/webapp/releases/tag",
+}
+
+# Minimum length for meaningful auto-generated changelog content
+MIN_AUTO_CONTENT_LENGTH = 10
+
+
+def get_git_remote_url():
+    """Get the GitHub repo URL from git remote."""
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            url = result.stdout.strip()
+            # Convert SSH to HTTPS
+            if url.startswith("git@github.com:"):
+                url = url.replace("git@github.com:", "https://github.com/")
+            if url.endswith(".git"):
+                url = url[:-4]
+            return url
+    except Exception:
+        pass
+    return GITHUB_REPO
+
+
+def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
+    """Get git commit log with full hash for the addon."""
+    try:
+        addon_name = os.path.basename(addon_path.rstrip("/\\"))
+
+        if since_tag:
+            tag = since_tag
+        else:
+            result = subprocess.run(
+                ["git", "tag", "--sort=-creatordate"],
+                capture_output=True,
+                text=True,
+                cwd=os.path.dirname(addon_path) or ".",
+            )
+            tags = result.stdout.strip().split("\n")
+            # Match tags specific to this addon or simple vX.Y.Z format
+            addon_tags = [
+                t
+                for t in tags
+                if (
+                    t == f"v{addon_name}"
+                    or t.startswith(f"{addon_name}-")
+                    or (t.startswith("v") and len(t.split("-")) == 1)
+                )  # simple v1.2.3
+                and t
+                != ignore_tag  # Ignore specific tag (e.g. current version if it exists)
+            ]
+            tag = addon_tags[0] if addon_tags else None
+
+        # Get full hash for commit links
+        if tag:
+            cmd = [
+                "git",
+                "log",
+                f"{tag}..HEAD",
+                "--pretty=format:%s|%H|%h",
+                "--",
+                addon_path,
+            ]
+        else:
+            cmd = ["git", "log", "-20", "--pretty=format:%s|%H|%h", "--", addon_path]
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            cwd=os.path.dirname(addon_path) or ".",
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            commits = []
+            for line in result.stdout.strip().split("\n"):
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    commits.append(
+                        {
+                            "message": parts[0],
+                            "full_hash": parts[1],
+                            "short_hash": parts[2],
+                        }
+                    )
+            return commits
+
+        return []
+    except Exception as e:
+        print(f"⚠️ Could not get git log: {e}")
+        return []
+
+
+def make_version_link(text, version):
+    """Make version numbers clickable if a matching dependency is found."""
+    for dep_name, base_url in DEPENDENCY_URLS.items():
+        if dep_name.lower() in text.lower():
+            return f"[{version}]({base_url}/{version})"
+    return version
+
+
+def categorize_commits(commits, repo_url):
+    """Categorize commits with clickable links."""
+    categories = {
+        "✨ Features": [],
+        "🐛 Bug Fixes": [],
+        "📦 Dependencies": [],
+        "🔧 Configuration": [],
+        "📝 Documentation": [],
+        "🎨 Style": [],
+        "♻️ Refactor": [],
+        "🔒 Security": [],
+        "🚀 Other": [],
+    }
+
+    for commit in commits:
+        msg = commit["message"]
+        msg_lower = msg.lower()
+        full_hash = commit["full_hash"]
+        short_hash = commit["short_hash"]
+
+        # Skip merge commits and CI commits
+        if msg_lower.startswith("merge ") or "[skip ci]" in msg_lower:
+            continue
+
+        # Create clickable commit reference
+        commit_link = f"[`{short_hash}`]({repo_url}/commit/{full_hash})"
+
+        # Clean up message (remove conventional commit prefix)
+        clean_msg = re.sub(
+            r"^(feat|fix|docs|style|refactor|test|chore|deps?|config)(\([^)]+\))?:\s*",
+            "",
+            msg,
+            flags=re.IGNORECASE,
+        )
+
+        # Make version references clickable
+        version_match = re.search(r"(\d+\.\d+\.\d+)", clean_msg)
+        if version_match:
+            version = version_match.group(1)
+            version_link = make_version_link(clean_msg, version)
+            if version_link != version:
+                clean_msg = clean_msg.replace(version, version_link)
+
+        entry = f"{clean_msg} ({commit_link})"
+
+        # Categorize
+        if any(prefix in msg_lower for prefix in ["feat:", "feat(", "add:", "new:"]):
+            categories["✨ Features"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["fix:", "fix(", "bug:", "bugfix:"]):
+            categories["🐛 Bug Fixes"].append(entry)
+        elif any(
+            prefix in msg_lower
+            for prefix in [
+                "deps:",
+                "dep:",
+                "⬆️",
+                "bump",
+                "renovate",
+                "dependency",
+                "update",
+            ]
+        ):
+            categories["📦 Dependencies"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["config:", "conf:", "chore:"]):
+            categories["🔧 Configuration"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["docs:", "doc:", "readme"]):
+            categories["📝 Documentation"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["style:", "format:", "lint:"]):
+            categories["🎨 Style"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["refactor:", "refact:", "clean:"]):
+            categories["♻️ Refactor"].append(entry)
+        elif any(prefix in msg_lower for prefix in ["security:", "sec:", "vuln:"]):
+            categories["🔒 Security"].append(entry)
+        else:
+            categories["🚀 Other"].append(entry)
+
+    return categories
+
+
+def parse_existing_changelog_entry(content: str) -> dict:
+    """Parse an existing changelog entry into categories."""
+    categories = {}
+    current_category = None
+
+    # Simple parser assuming standard format
+    # ## Version
+    # ### Category
+    # - Item
+
+    lines = content.split("\n")
+    for line in lines:
+        if line.startswith("### "):
+            current_category = line.replace("### ", "").strip()
+            if current_category not in categories:
+                categories[current_category] = []
+        elif line.strip().startswith("- ") and current_category:
+            categories[current_category].append(line.strip()[2:])
+
+    return categories
+
+
+def generate_changelog_entry(
+    version, addon_path, changelog_message=None, existing_entry=None
+):
+    """Generate a detailed changelog entry with clickable links."""
+    entry_date = datetime.now().strftime("%Y-%m-%d")
+    heading = f"## {version} ({entry_date})"
+    entry = f"{heading}\n\n"
+
+    repo_url = get_git_remote_url()
+
+
+
+    commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
+
+    if commits:
+        categories = categorize_commits(commits, repo_url)
+
+        # Merge with existing categories if present
+        if existing_entry:
+            existing_categories = parse_existing_changelog_entry(existing_entry)
+            for cat, items in existing_categories.items():
+                if cat not in categories:
+                    categories[cat] = []
+                current_items_simple = [
+                    x.split(" ([")[0] for x in categories[cat]
+                ]  # approximate
+                for item in items:
+                    # simplistic dedup
+                    if item.split(" ([")[0] not in current_items_simple:
+                        categories[cat].insert(
+                            0, item + " (Manual)"
+                        )  # Mark manual entries? Or just add.
+                    else:
+                        # logic to prefer one? Let's just keep the auto one if it matches.
+                        pass
+
+            pass
+
+        for category, items in categories.items():
+            if items:
+                entry += f"### {category}\n"
+                for item in items[:15]:  # Limit increased
+                    entry += f"- {item}\n"
+                entry += "\n"
+
+        if changelog_message and changelog_message not in [
+            "Manual Release via Orchestrator",
+            "Automatic release after dependency update",
+        ]:
+            entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
+
+        # If we had existing content, we might want to preserve "Release Note" styled things.
+        if existing_entry:
+            pass
+
+    else:
+        if changelog_message:
+            entry += f"- {changelog_message}\n\n"
+        else:
+            entry += f"- Bump version to {version}\n\n"
+
+    return entry
+
+
+def parse_version(version_str):
+    """Parse version string, handling dev suffix and build metadata."""
+    # Split off build metadata (everything after +)
+    version_base = version_str.split("+")[0]
+
+    # Check for dev suffix
+    is_dev = "-dev" in version_base
+    clean_version = version_base.replace("-dev", "")
+
+    parts = clean_version.split(".")
+    if len(parts) != 3:
+        raise ValueError(f"Invalid version format: {version_str}")
+
+    return int(parts[0]), int(parts[1]), int(parts[2]), is_dev
+
+
+def update_image_tag(content, addon_path, is_dev):
+    """Toggle image tag in config.yaml based on dev status."""
+    # Default image convention: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+    # However, config.yaml usually uses {arch} placeholder or implied structure.
+    # Looking at other addons/docs, 'image' in config.yaml is usually:
+    # image: ghcr.io/faserf/{slug}-{arch}
+    # Let's derive slug from config content or path
+
+    slug_match = re.search(r"^slug: ([\w-]+)", content, re.MULTILINE)
+    slug = (
+        slug_match.group(1)
+        if slug_match
+        else os.path.basename(addon_path.rstrip("/\\"))
+    )
+
+    # Image line regex
+    image_pattern = r"^image: .*$"
+
+    if is_dev:
+        # REMOVE image tag for dev versions (force local build)
+        # For edge branch, we want to completely remove the image tag, not comment it
+        if re.search(image_pattern, content, re.MULTILINE):
+            print("🔧 Removing image tag for dev version (forcing local build)")
+            # Remove the image line completely (not just comment it)
+            content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
+        # Also remove any commented out image lines that might exist
+        content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", content, flags=re.MULTILINE)
+        # Check if we actually removed something
+        if not re.search(image_pattern, content, re.MULTILINE):
+            print("ℹ️ No image tag found (already local build compliant)")
+    else:
+        # ADD/RESTORE/UPDATE image tag for release versions
+        # New format: image: ghcr.io/faserf/{slug}-{arch}
+        # Old format (legacy): image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+
+        correct_image_line = (
+            f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+        )
+
+        # Check if image field exists
+        image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
+
+        if image_match:
+            existing_image = image_match.group(1).strip().strip('"').strip("'")
+            # Check if it needs updating to correct format
+            if existing_image != correct_image_line.replace("image: ", ""):
+                # Update existing image field to correct format
+                content = re.sub(
+                    r"^image:\s*.+$", correct_image_line, content, flags=re.MULTILINE
+                )
+                print(
+                    f"🔧 Updated image tag from '{existing_image}' to '{correct_image_line.replace('image: ', '')}'"
+                )
+            else:
+                print(f"ℹ️ Image tag already correct: {existing_image}")
+        elif "# image: local build only" in content:
+            # Restore from commented out
+            content = content.replace("# image: local build only", correct_image_line)
+            print(f"🔧 Restored image tag: {correct_image_line}")
+        elif not re.search(image_pattern, content, re.MULTILINE):
+            # Add new image field
+            # Append after slug or version
+            content = re.sub(
+                r"^(slug: .*)$",
+                f"\\1\n{correct_image_line}",
+                content,
+                flags=re.MULTILINE,
+            )
+            print(f"🔧 Added image tag: {correct_image_line}")
+
+    return content
+
+
+def bump_version(
+    addon_path,
+    increment,
+    changelog_message=None,
+    set_dev=False,
+    force_changelog=False,
+    changelog_only=False,
+    target_version=None,
+):
+    """Bump version with optional dev suffix."""
+    config_path = os.path.join(addon_path, "config.yaml")
+    if not os.path.exists(config_path):
+        config_path = os.path.join(addon_path, "config.json")
+
+    if not os.path.exists(config_path):
+        print(f"❌ Error: Config file not found in {addon_path}")
+        sys.exit(1)
+
+    print(f"📄 Processing {config_path}...")
+
+    with open(config_path, "r") as f:
+        content = f.read()
+
+    # Regex to find version (supports -dev and -dev+commit suffix)
+    version_pattern = (
+        r"""^(version: ["']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["']?)"""
+    )
+    match = re.search(version_pattern, content, re.MULTILINE)
+
+    if not match:
+        print("❌ Error: Could not find version in config file")
+        sys.exit(1)
+
+    current_version = match.group(2)
+    print(f"🔹 Current version: {current_version}")
+
+    major, minor, patch, is_dev = parse_version(current_version)
+
+    # Determine New Version
+    if target_version:
+        new_version = target_version
+        print(f"🔹 Target version provided: {new_version}")
+    else:
+        # If current is dev, just remove -dev for release
+        if is_dev and not set_dev:
+            new_version = f"{major}.{minor}.{patch}"
+            print("📦 Releasing dev version...")
+        else:
+            # Normal increment
+            if increment == "major":
+                major += 1
+                minor = 0
+                patch = 0
+            elif increment == "minor":
+                minor += 1
+                patch = 0
+            elif increment == "patch":
+                patch += 1
+            else:
+                print(f"❌ Error: Unknown increment type {increment}")
+                sys.exit(1)
+
+            if set_dev:
+                # Get current commit SHA for the addon for update tracking
+                try:
+                    result = subprocess.run(
+                        ["git", "log", "-1", "--format=%h", "--", addon_path],
+                        capture_output=True,
+                        text=True,
+                    )
+                    commit_sha = (
+                        result.stdout.strip()[:7] if result.returncode == 0 else ""
+                    )
+                except Exception:
+                    commit_sha = ""
+
+                if commit_sha:
+                    # Docker tags cannot contain '+', so use '-' instead
+                    new_version = f"{major}.{minor}.{patch}-dev-{commit_sha}"
+                else:
+                    new_version = f"{major}.{minor}.{patch}-dev"
+            else:
+                new_version = f"{major}.{minor}.{patch}"
+
+    print(f"🔹 New version: {new_version}")
+
+    # Update Config File (Skip if changelog_only)
+    if not changelog_only:
+        # Replace version in content
+        new_content = content.replace(
+            match.group(0), f"{match.group(1)}{new_version}{match.group(3)}"
+        )
+
+        # Update image tag logic
+        new_content = update_image_tag(new_content, addon_path, is_dev=set_dev)
+
+        with open(config_path, "w") as f:
+            f.write(new_content)
+    else:
+        print("ℹ️ Skipping config.yaml update (changelog-only mode)")
+
+    # Only generate changelog for releases, not dev bumps (unless forced)
+    if not set_dev or force_changelog:
+        changelog_path = os.path.join(addon_path, "CHANGELOG.md")
+        existing_entry = None
+        existing_changelog = ""
+        skip_auto_generation = False
+
+        if os.path.exists(changelog_path):
+            with open(changelog_path, "r") as f:
+                existing_changelog = f.read()
+
+            # Check if entry for new version already exists and extract it
+            version_header_start = f"## {new_version}"
+            if version_header_start in existing_changelog:
+                print(f"[i] Found existing entry for {new_version}.")
+                # Find start and end of this section
+                start_idx = existing_changelog.find(version_header_start)
+                # Find next section (look for next version header or end of file)
+                next_section_match = re.search(
+                    r"\n## \d",
+                    existing_changelog[start_idx + len(version_header_start) :],
+                )
+                if next_section_match:
+                    end_idx = (
+                        start_idx
+                        + len(version_header_start)
+                        + next_section_match.start()
+                    )
+                    existing_entry = existing_changelog[start_idx:end_idx]
+                else:
+                    existing_entry = existing_changelog[start_idx:]
+
+                # Check if existing entry already has auto-generated content
+                # Check for all category headers used by categorize_commits
+                ALL_CATEGORY_MARKERS = [
+                    "### ✨ Features",
+                    "### 🐛 Bug Fixes",
+                    "### 📦 Dependencies",
+                    "### 🔧 Configuration",
+                    "### 📝 Documentation",
+                    "### 🎨 Style",
+                    "### ♻️ Refactor",
+                    "### 🔒 Security",
+                    "### 🚀 Other",
+                ]
+                has_auto_content = any(
+                    marker in existing_entry for marker in ALL_CATEGORY_MARKERS
+                )
+
+                if has_auto_content:
+                    print(
+                        f"[i] Auto-generated changelog already exists for version {new_version}, skipping auto-generation."
+                    )
+                    skip_auto_generation = True
+
+        if not skip_auto_generation:
+            print("📝 Generating changelog from git history...")
+            new_entry = generate_changelog_entry(
+                new_version, addon_path, changelog_message, existing_entry
+            )
+        else:
+            # Skip generation - existing changelog will be preserved
+            new_entry = None
+            print(f"✅ Preserving existing changelog entry for version {new_version}")
+
+        if new_entry is not None and os.path.exists(changelog_path):
+            print(f"📝 Updating {changelog_path}...")
+
+            # Check if entry for new version already exists in the file
+            version_header_start = f"## {new_version}"
+            if version_header_start in existing_changelog:
+                # Find start and end of this section
+                start_idx = existing_changelog.find(version_header_start)
+                # Find next section (look for next version header or end of file)
+                next_section_match = re.search(
+                    r"\n## \d",
+                    existing_changelog[start_idx + len(version_header_start) :],
+                )
+                if next_section_match:
+                    end_idx = (
+                        start_idx
+                        + len(version_header_start)
+                        + next_section_match.start()
+                    )
+                    current_section = existing_changelog[start_idx:end_idx]
+                else:
+                    current_section = existing_changelog[start_idx:]
+                    end_idx = len(existing_changelog)
+
+                # Always extend existing entry, never overwrite
+                # Strip header from auto entry (first 2 lines: "## version (date)" and blank line)
+                auto_lines = new_entry.split("\n")
+                if len(auto_lines) > 2 and auto_lines[0].startswith("##"):
+                    auto_body = "\n".join(auto_lines[2:])  # Skip header and blank line
+                else:
+                    auto_body = "\n".join(auto_lines)
+
+                # Check if auto-generated content already exists in this section
+                # Check for all category headers used by categorize_commits
+                ALL_CATEGORY_MARKERS = [
+                    "### ✨ Features",
+                    "### 🐛 Bug Fixes",
+                    "### 📦 Dependencies",
+                    "### 🔧 Configuration",
+                    "### 📝 Documentation",
+                    "### 🎨 Style",
+                    "### ♻️ Refactor",
+                    "### 🔒 Security",
+                    "### 🚀 Other",
+                ]
+                has_auto_content = any(
+                    marker in current_section for marker in ALL_CATEGORY_MARKERS
+                )
+
+                if (
+                    has_auto_content
+                    and auto_body.strip()
+                    and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH
+                ):
+                    # Auto content already exists, but we want to merge/extend it
+                    # Parse existing categories and merge with new ones
+                    print(
+                        f"[i] Auto-generated content already exists for version {new_version}, merging with new content..."
+                    )
+
+                    # Extract existing categories from current_section
+                    existing_categories = parse_existing_changelog_entry(
+                        current_section
+                    )
+
+                    # Parse new auto-generated categories from auto_body
+                    new_categories = parse_existing_changelog_entry(auto_body)
+
+                    # Merge categories: keep existing items, add new ones (avoid duplicates)
+                    merged_categories = {}
+                    all_category_names = set(
+                        list(existing_categories.keys()) + list(new_categories.keys())
+                    )
+
+                    for cat_name in all_category_names:
+                        merged_items = []
+                        # Add existing items first
+                        if cat_name in existing_categories:
+                            merged_items.extend(existing_categories[cat_name])
+                        # Add new items that don't already exist (simple deduplication by content)
+                        if cat_name in new_categories:
+                            existing_texts = {
+                                item.split(" ([")[0].strip() for item in merged_items
+                            }
+                            for new_item in new_categories[cat_name]:
+                                new_text = new_item.split(" ([")[0].strip()
+                                if new_text not in existing_texts:
+                                    merged_items.append(new_item)
+                        if merged_items:
+                            merged_categories[cat_name] = merged_items
+
+                    # Rebuild the section with merged content
+                    # Keep the original header and any manual content before categories
+                    section_lines = current_section.split("\n")
+                    header_end_idx = 0
+                    for i, line in enumerate(section_lines):
+                        if any(
+                            line.strip().startswith(f"### {marker.split('### ')[1]}")
+                            for marker in ALL_CATEGORY_MARKERS
+                        ):
+                            header_end_idx = i
+                            break
+                    if header_end_idx == 0:
+                        header_end_idx = len(section_lines)
+
+                    # Rebuild section: header + merged categories
+                    merged_section = "\n".join(section_lines[:header_end_idx]).rstrip()
+                    if merged_section and not merged_section.endswith("\n"):
+                        merged_section += "\n\n"
+
+                    # Add merged categories
+                    for category, items in sorted(merged_categories.items()):
+                        if items:
+                            merged_section += f"### {category}\n"
+                            for item in items[:15]:  # Limit items
+                                merged_section += f"- {item}\n"
+                            merged_section += "\n"
+
+                    combined_section = merged_section.rstrip() + "\n"
+                    changelog = (
+                        existing_changelog[:start_idx]
+                        + combined_section
+                        + existing_changelog[end_idx:]
+                    )
+                elif (
+                    auto_body.strip()
+                    and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH
+                ):
+                    # No existing auto content, append new auto content
+                    print(
+                        f"[i] Extending existing entry for version {new_version} with auto-generated content..."
+                    )
+                    combined_section = current_section.rstrip() + "\n\n" + auto_body
+                    changelog = (
+                        existing_changelog[:start_idx]
+                        + combined_section
+                        + existing_changelog[end_idx:]
+                    )
+                else:
+                    # No meaningful auto content, keep existing section as is
+                    print(
+                        f"[i] No new auto-generated content to add for version {new_version}, keeping existing entry"
+                    )
+                    changelog = existing_changelog
+
+            else:
+                # Standard Prepend
+                if "# Changelog" in existing_changelog:
+                    changelog = existing_changelog.replace(
+                        "# Changelog\n", f"# Changelog\n\n{new_entry}", 1
+                    )
+                else:
+                    changelog = f"# Changelog\n\n{new_entry}{existing_changelog}"
+
+            with open(changelog_path, "w") as f:
+                f.write(changelog)
+        elif not skip_auto_generation:
+            # Only create new changelog if we're not skipping auto-generation
+            print("⚠️ CHANGELOG.md not found, creating one.")
+            with open(changelog_path, "w") as f:
+                f.write(f"# Changelog\n\n{new_entry}")
+        else:
+            # skip_auto_generation is True but CHANGELOG.md doesn't exist - this shouldn't happen
+            # but if it does, we skip creation to preserve user intent
+            print(
+                f"[i] Skipping changelog creation (auto-generation skipped for version {new_version})"
+            )
+
+    print(f"✅ {'Dev bump' if set_dev else 'Bumped'} {addon_path} to {new_version}")
+    return new_version
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Bump add-on version with auto-generated changelog"
+    )
+    parser.add_argument("addon", help="Path to add-on directory")
+    parser.add_argument(
+        "increment", choices=["major", "minor", "patch"], help="Version increment type"
+    )
+    parser.add_argument("--message", help="Additional changelog message", default=None)
+    parser.add_argument(
+        "--dev", action="store_true", help="Set version to dev (e.g., 1.2.3-dev)"
+    )
+    parser.add_argument(
+        "--changelog",
+        action="store_true",
+        help="Force changelog generation (even for dev)",
+    )
+
+    parser.add_argument(
+        "--changelog-only",
+        action="store_true",
+        help="Only update Changelog (do not modify config.yaml)",
+    )
+    parser.add_argument(
+        "--target-version",
+        help="Specify exact version (bypass increment logic)",
+        default=None,
+    )
+
+    args = parser.parse_args()
+
+    # Pass args object or specific flag if we refactored bump_version signature
+    bump_version(
+        args.addon,
+        args.increment,
+        args.message,
+        args.dev,
+        args.changelog,
+        args.changelog_only,
+        args.target_version,
+    )
