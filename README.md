@@ -18,6 +18,7 @@ Pre-built Docker images from official releases. Best for most users.
    [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 2. Or manually add:
+
    ```text
    https://github.com/FaserF/hassio-addons
    ```
@@ -30,6 +31,7 @@ Latest development builds - built locally from your device. For testing new feat
    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 
 2. Or manually add:
+
    ```text
    https://github.com/FaserF/hassio-addons#edge
    ```
@@ -39,10 +41,10 @@ Latest development builds - built locally from your device. For testing new feat
 > This takes longer and uses more resources than pre-built images.
 > Edge versions may contain bugs or incomplete features.
 
-| Channel | Pre-built Images | Update Speed | Stability |
-|---------|------------------|--------------|-----------|
-| **Stable** | ✅ Yes | Fast | 🟢 High |
-| **Edge** | ❌ No (local build) | Slow | 🟡 Medium |
+| Channel    | Pre-built Images    | Update Speed | Stability |
+| ---------- | ------------------- | ------------ | --------- |
+| **Stable** | ✅ Yes              | Fast         | 🟢 High   |
+| **Edge**   | ❌ No (local build) | Slow         | 🟡 Medium |
 
 ## Add-ons List 📦
 
@@ -50,8 +52,8 @@ The table below shows **all add-ons** in this repository, including unsupported 
 
 <!-- markdownlint-disable MD060 -->
 
-| Name                                                            | Description                               | Status | Added |
-| :-------------------------------------------------------------- | :---------------------------------------- | :----- | :---- |
+| Name                                                            | Description                               | Status | Added   |
+| :-------------------------------------------------------------- | :---------------------------------------- | :----- | :------ |
 | **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     | 2026-01 |
 | **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC              | ⚠️     | 2026-01 |
 | **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     | 2023-03 |
@@ -101,21 +103,22 @@ Tested on **amd64** architecture.
 
 To install them, you must add this repository again but point to the `unsupported` branch:
 
- 1. Click to add the unsupported repository:
+1. Click to add the unsupported repository:
     [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
 
- 2. Or manually add:
+2. Or manually add:
+
     ```text
     https://github.com/FaserF/hassio-addons#unsupported
     ```
 
- > [!CAUTION]
- > **UNSUPPORTED / LEGACY SOFTWARE**
- >
- > The `unsupported` branch contains add-ons that are **no longer maintained**, deprecated, or broken.
- > They are provided "as-is" for archival purposes.
- > Updates are rare, and functionality is not guaranteed.
- > **These builds are performed locally on your device.**
+> [!CAUTION]
+> **UNSUPPORTED / LEGACY SOFTWARE**
+>
+> The `unsupported` branch contains add-ons that are **no longer maintained**, deprecated, or broken.
+> They are provided "as-is" for archival purposes.
+> Updates are rare, and functionality is not guaranteed.
+> **These builds are performed locally on your device.**
 
 > [!WARNING]
 > Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
@@ -158,7 +161,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
 ## New Add-ons
+
 - [sap-abap-cloud-dev](sap-abap-cloud-dev)
 - [wordpress](wordpress)

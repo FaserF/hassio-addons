@@ -33,7 +33,6 @@ skipDockerRun:
   wiki.js: "Requires MySQL Service"
   switch_lan_play: "Requires external switch-lan-play server"
 
-
 # --- VALID TEST NAMES ---
 validTests:
   - all

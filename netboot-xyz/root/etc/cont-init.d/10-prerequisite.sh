@@ -4,8 +4,8 @@
 
 # Check if protection mode is disabled - this addon requires full system access
 if bashio::addon.protected; then
-    touch /run/ABORT_STARTUP
-    bashio::require.unprotected
+	touch /run/ABORT_STARTUP
+	bashio::require.unprotected
 fi
 
 nginx_uid=abc

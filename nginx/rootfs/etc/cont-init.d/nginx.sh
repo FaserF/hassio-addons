@@ -16,7 +16,7 @@ webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
 
 if [ -z "$website_name" ] || [ "$website_name" = "null" ]; then
-    website_name="web.local"
+	website_name="web.local"
 fi
 
 if [ "$phpini" = "get_file" ]; then
@@ -108,7 +108,7 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 	fi
 
 	# HTTP server block with redirect to HTTPS
-	cat > /etc/nginx/sites-enabled/default.conf <<EOF
+	cat >/etc/nginx/sites-enabled/default.conf <<EOF
 server {
     listen 80;
     server_name ${website_name};
@@ -119,7 +119,7 @@ server {
 EOF
 
 	# HTTPS server block
-	cat > /etc/nginx/sites-enabled/default-ssl.conf <<EOF
+	cat >/etc/nginx/sites-enabled/default-ssl.conf <<EOF
 server {
     listen 443 ssl http2;
     server_name ${website_name};
@@ -156,7 +156,7 @@ EOF
 else
 	echo "SSL is deactivated and/or you are using a custom config."
 	# HTTP only configuration
-	cat > /etc/nginx/sites-enabled/default.conf <<EOF
+	cat >/etc/nginx/sites-enabled/default.conf <<EOF
 server {
     listen 80;
     server_name ${website_name};
@@ -260,7 +260,7 @@ mkdir -p /etc/php84/php-fpm.d
 # Ensure PHP-FPM listens on TCP socket (needed for nginx)
 if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
 	# Create minimal www.conf if it doesn't exist
-	cat > /etc/php84/php-fpm.d/www.conf <<'PHPFPM_EOF'
+	cat >/etc/php84/php-fpm.d/www.conf <<'PHPFPM_EOF'
 [www]
 listen = 127.0.0.1:9000
 PHPFPM_EOF
@@ -271,13 +271,13 @@ else
 		sed -i 's/^listen\s*=.*/listen = 127.0.0.1:9000/' /etc/php84/php-fpm.d/www.conf
 	else
 		# Append listen directive if not present
-		echo "listen = 127.0.0.1:9000" >> /etc/php84/php-fpm.d/www.conf
+		echo "listen = 127.0.0.1:9000" >>/etc/php84/php-fpm.d/www.conf
 	fi
 fi
 
 # Ensure fastcgi_params exists (should be in nginx package, but verify)
 if [ ! -f /etc/nginx/fastcgi_params ]; then
-	cat > /etc/nginx/fastcgi_params <<'FASTCGI_EOF'
+	cat >/etc/nginx/fastcgi_params <<'FASTCGI_EOF'
 fastcgi_param  QUERY_STRING       $query_string;
 fastcgi_param  REQUEST_METHOD    $request_method;
 fastcgi_param  CONTENT_TYPE      $content_type;

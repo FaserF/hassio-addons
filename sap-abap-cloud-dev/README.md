@@ -21,8 +21,6 @@
 
 ## 📖 About
 
-![Supports amd64 Architecture][amd64-shield]
-
 SAP ABAP Cloud Developer Trial for Home Assistant OS
 
 ## ⚠️ IMPORTANT DISCLAIMERS

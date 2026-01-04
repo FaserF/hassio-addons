@@ -6,8 +6,6 @@
 set -e
 # shellcheck disable=SC1091
 
-
-
 ssl=$(bashio::config 'ssl')
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
