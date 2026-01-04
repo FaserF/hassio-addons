@@ -9,6 +9,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Pin sslpsk to specific commit for reproducible builds
 # hadolint ignore=DL3018,DL3013,DL3042
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.2.0"
+ENV ADDON_NAME="tuya-convert BETA (Unsupported)"
+ENV ADDON_SLUG="tuya-convert"
+ENV ADDON_UNSUPPORTED="true"
+
 RUN apk add --no-cache python3 python3-dev py3-pip bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 ncurses && \
     python3 -m venv $VIRTUAL_ENV && \
     pip install --no-cache-dir --upgrade paho-mqtt==1.6.1 tornado==6.4.2 git+https://github.com/drbild/sslpsk.git@d88123a75786953f82f5e25d6c43d9d9259acb62 pycryptodomex==3.20.0 && \
