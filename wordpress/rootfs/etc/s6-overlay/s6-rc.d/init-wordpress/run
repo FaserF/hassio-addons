@@ -51,10 +51,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     db_user_escaped=$(echo "${db_user}" | sed 's/[\/&]/\\&/g')
     db_pass_escaped=$(echo "${db_pass}" | sed 's/[\/&]/\\&/g')
 
-    sed -i "s/database_name_here/${db_name_escaped}/" /var/www/wordpress/wp-config.php
-    sed -i "s/username_here/${db_user_escaped}/" /var/www/wordpress/wp-config.php
-    sed -i "s/password_here/${db_pass_escaped}/" /var/www/wordpress/wp-config.php
-    sed -i "s/localhost/${db_host_escaped}/" /var/www/wordpress/wp-config.php
+    sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|password_here|${db_pass_escaped}|" /var/www/wordpress/wp-config.php
+    sed -i "s|localhost|${db_host_escaped}|" /var/www/wordpress/wp-config.php
 
     # Salt
     bashio::log.info "Generating salts..."
@@ -73,6 +73,8 @@ fi
 # Permissions
 bashio::log.info "Fixing permissions..."
 chown -R nginx:nginx /var/www/wordpress
-chmod -R 755 /var/www/wordpress
+find /var/www/wordpress -type d -exec chmod 755 {} \;
+find /var/www/wordpress -type f -exec chmod 644 {} \;
+chmod 640 /var/www/wordpress/wp-config.php
 
 bashio::log.info "Wordpress initialized!"

@@ -23,7 +23,7 @@
 
 The most popular publication platform on the Web.
 
-Wordpress is open-source software you can use to create a beautiful website, blog, or app.
+WordPress is open-source software you can use to create a beautiful website, blog, or app.
 
 This add-on brings Wordpress to Home Assistant, allowing you to host your own website directly on your Home Assistant instance.
 
