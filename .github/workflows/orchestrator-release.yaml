@@ -865,9 +865,11 @@ jobs:
         run: |
           echo "Starting failure monitor for 'all' release..."
           echo "Will cancel remaining jobs if 3 failures are detected."
+          echo "Will also cancel remaining jobs after 5 successful skipped addons."
           echo ""
 
           MAX_FAILURES=3
+          MAX_SKIPPED_SUCCESS=5
           CHECK_INTERVAL=30  # Check every 30 seconds
           MAX_WAIT_TIME=3600  # Maximum wait time: 1 hour
           ELAPSED=0
@@ -878,12 +880,24 @@ jobs:
 
             # Count failed jobs
             FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+            # Count successful skipped jobs
+            SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || echo "0")
             TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
             RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
 
-            echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $RUNNING_COUNT running, $TOTAL_COUNT total"
+            echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful), $RUNNING_COUNT running, $TOTAL_COUNT total"
 
-            # Check if threshold reached
+            # Check if skipped threshold reached
+            if [ "$SKIPPED_COUNT" -ge "$MAX_SKIPPED_SUCCESS" ]; then
+              echo ""
+              echo "✅ Threshold reached: $SKIPPED_COUNT successful skipped addons (threshold: $MAX_SKIPPED_SUCCESS)"
+              echo "ℹ️  Most addons are likely working. Stopping monitor (builds will continue running)."
+              echo ""
+              echo "✅ Monitor completed early: $SKIPPED_COUNT successful skipped addons detected. Remaining releases will continue."
+              exit 0
+            fi
+
+            # Check if failure threshold reached
             if [ "$FAILED_COUNT" -ge "$MAX_FAILURES" ]; then
               echo ""
               echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
@@ -915,7 +929,7 @@ jobs:
             # If no more running jobs, exit
             if [ "$RUNNING_COUNT" -eq 0 ]; then
               echo ""
-              echo "✅ All release jobs completed. Final status: $FAILED_COUNT failed out of $TOTAL_COUNT total"
+              echo "✅ All release jobs completed. Final status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful) out of $TOTAL_COUNT total"
               exit 0
             fi
 
