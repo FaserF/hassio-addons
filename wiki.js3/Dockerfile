@@ -10,6 +10,13 @@ ARG BUILD_DATE="unknown"
 
 # Install Node.js, Yarn and MariaDB client via APK
 # hadolint ignore=DL3018
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="4.0.0"
+ENV ADDON_NAME="Wiki.JS V3 (Beta)"
+ENV ADDON_SLUG="wikijs3"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client
 
 WORKDIR /wiki
