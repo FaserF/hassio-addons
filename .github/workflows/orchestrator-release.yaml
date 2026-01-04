@@ -69,6 +69,7 @@ env:
     whatsapp
     switch_lan_play
     nginx
+    wordpress
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge

@@ -1,0 +1,42 @@
+---
+name: Wordpress
+version: 0.0.1
+slug: wordpress
+description: "The most popular publication platform on the Web."
+url: "https://github.com/hassio-addons/addon-wordpress"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+image: "ghcr.io/faserf/hassio-addons-wordpress-{arch}"
+startup: services
+services:
+  - mysql
+panel_icon: mdi:wordpress
+ingress: true
+ingress_port: 8099
+init: false
+map:
+  - ssl:rw
+options:
+  database_host: ""
+  database_name: "wordpress"
+  database_user: "wordpress"
+  database_password: ""
+  wordpress_title: "My Blog"
+  wordpress_admin_user: "admin"
+  wordpress_admin_password: "changeme"
+  wordpress_admin_email: "admin@example.com"
+schema:
+  database_host: str
+  database_name: str
+  database_user: str
+  database_password: str
+  wordpress_title: str
+  wordpress_admin_user: str
+  wordpress_admin_password: str
+  wordpress_admin_email: email
+ports:
+  80/tcp: 8099
+ports_description:
+  80/tcp: Web Interface

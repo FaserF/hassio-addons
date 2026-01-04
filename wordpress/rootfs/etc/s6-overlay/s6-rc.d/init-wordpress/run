@@ -1,0 +1,39 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Initialize Wordpress..."
+
+# Check if Wordpress is installed
+if ! -d /var/www/wordpress/wp-admin; then
+    bashio::log.info "Installing Wordpress..."
+    cp -r /usr/src/wordpress/. /var/www/wordpress
+    bashio::log.info "Wordpress installed!"
+fi
+
+# Configuration
+if ! -f /var/www/wordpress/wp-config.php; then
+    bashio::log.info "Creating configuration..."
+    mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php
+
+    # Database
+    db_host=$(bashio::config 'database_host')
+    db_name=$(bashio::config 'database_name')
+    db_user=$(bashio::config 'database_user')
+    db_pass=$(bashio::config 'database_password')
+
+    sed -i "s/database_name_here/${db_name}/" /var/www/wordpress/wp-config.php
+    sed -i "s/username_here/${db_user}/" /var/www/wordpress/wp-config.php
+    sed -i "s/password_here/${db_pass}/" /var/www/wordpress/wp-config.php
+    sed -i "s/localhost/${db_host}/" /var/www/wordpress/wp-config.php
+
+    # Salt
+    bashio::log.info "Generating salts..."
+    curl -s https://api.wordpress.org/secret-key/1.1/salt/ >> /var/www/wordpress/wp-config.php
+fi
+
+# Permissions
+bashio::log.info "Fixing permissions..."
+chown -R nginx:nginx /var/www/wordpress
+chmod -R 755 /var/www/wordpress
+
+bashio::log.info "Wordpress initialized!"
