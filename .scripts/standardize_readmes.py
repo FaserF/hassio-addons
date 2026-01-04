@@ -56,11 +56,38 @@ def is_beta(version_str):
         return True
 
 
-def generate_badges(addon_slug, addon_name):
+def generate_badges(addon_slug, addon_name, addon_path=None):
     """Generate standard badges."""
+    # Extract package name from config.yaml if available
+    package_name = None
+    version = None
+    if addon_path:
+        config, _ = load_addon_config(addon_path)
+        if config:
+            version = config.get("version", "latest")
+            # Get image field to determine package name
+            image = config.get("image", "")
+            if image:
+                # Extract package name from image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
+                # Remove ghcr.io/faserf/ prefix and -{arch} suffix
+                package_name = image.replace("ghcr.io/faserf/", "").replace("-{arch}", "").replace("-amd64", "").replace("-aarch64", "").replace("-armhf", "").replace("-armv7", "").replace("-i386", "")
+            else:
+                # Fallback: derive from slug
+                addon_dirname = os.path.basename(addon_path)
+                package_name = f"hassio-addons-{addon_dirname}"
+    
+    # Generate Docker image badge - shows version from config.yaml and links to GHCR packages
+    if package_name and version:
+        # Link to GHCR package page
+        ghcr_url = f"https://github.com/{MAINTAINER}/hassio-addons/pkgs/container/{package_name}"
+        docker_badge = f"[![Docker Image](https://img.shields.io/badge/docker-{version}-blue.svg?logo=docker&style=flat-square)]({ghcr_url})"
+    else:
+        # Fallback badge
+        docker_badge = f"[![Docker Image](https://img.shields.io/badge/docker-available-blue.svg?logo=docker&style=flat-square)](https://github.com/{MAINTAINER}/hassio-addons/pkgs/container)"
+    
     return f"""[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon={addon_slug})
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![GitHub Release](https://img.shields.io/github/v/release/FaserF/hassio-addons?include_prereleases&style=flat-square)]({REPO_URL}/releases)
+{docker_badge}
 ![Project Maintenance](https://img.shields.io/badge/maintainer-{MAINTAINER}-blue?style=flat-square)"""
 
 
@@ -261,7 +288,7 @@ def process_addon(addon_path):
     # Header
     new_content = f"# {name}\n\n"
     new_content += "![Logo](logo.png)\n\n"
-    new_content += generate_badges(slug, name) + "\n\n"
+    new_content += generate_badges(slug, name, addon_path) + "\n\n"
     new_content += f"> {description}\n\n"
     new_content += "---\n\n"
 

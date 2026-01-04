@@ -9,34 +9,29 @@
 
 > Open Source Webserver with PHP and MariaDB.
 
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-A lightweight Apache 2 web server for Home Assistant OS, with optional PHP 8 and MariaDB support.
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-## 🧰 Versions
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=3.0.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-| Version                                  | Features                                                                     |
-| :--------------------------------------- | :--------------------------------------------------------------------------- |
-| [Full][full_url]                         | Apache2, PHP 8.4 (with common extensions), MariaDB client, ffmpeg, Mosquitto |
-| [Minimal][minimal_url]                   | Apache2 only                                                                 |
-| [Minimal + MariaDB][minimal_mariadb_url] | Apache2, MariaDB client, PHP with basic modules                              |
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-[full_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2
-[minimal_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal
-[minimal_mariadb_url]: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
+## 💡 Feature Request
 
-## 🚀 Installation
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-1. Add the repository to Home Assistant.
-2. Install the `Apache2` add-on via Supervisor.
-3. Place your website files in `document_root` (Default: `/share/htdocs`).
-4. Start the add-on.
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=apache2)**
 
-## 📝 Documentation
-
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 

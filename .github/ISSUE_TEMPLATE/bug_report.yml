@@ -54,6 +54,7 @@ body:
 
         '
   - type: dropdown
+    id: installation_type
     validations:
       required: true
     attributes:
@@ -69,7 +70,9 @@ body:
         - Home Assistant Container
         - Home Assistant Supervised
         - Home Assistant Core
+      default: 0
   - type: dropdown
+    id: addon_name
     validations:
       required: true
     attributes:
@@ -107,6 +110,7 @@ body:
 
         '
   - type: textarea
+    id: log_information
     attributes:
       label: Log information
       render: txt

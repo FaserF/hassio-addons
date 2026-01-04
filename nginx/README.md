@@ -9,44 +9,29 @@
 
 > Open Source Webserver with PHP and MariaDB.
 
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-A lightweight NGINX web server for Home Assistant OS, with optional PHP 8 and MariaDB support.
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-## 🚀 Installation
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.0.1&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-1. Add the repository to Home Assistant.
-2. Install the `NGINX` add-on via Supervisor.
-3. Place your website files in `document_root` (Default: `/share/htdocs`).
-4. Start the add-on.
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-## 🔒 SSL/HTTPS Configuration
+## 💡 Feature Request
 
-> **⚠️ Important**: SSL is **disabled by default** to allow the add-on to start without pre-existing certificates.
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-To enable SSL/HTTPS:
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=nginx)**
 
-1. **Place your SSL certificates** in the `/ssl` directory:
-   - Certificate file: `/ssl/fullchain.pem` (or your custom filename)
-   - Private key file: `/ssl/privkey.pem` (or your custom filename)
-
-2. **Update the configuration** to enable SSL:
-
-   ```yaml
-   ssl: true
-   certfile: fullchain.pem
-   keyfile: privkey.pem
-   ```
-
-3. **Restart the add-on** to apply the changes.
-
-**Note**: The add-on will fail to start if `ssl: true` is set but the certificate files are missing. Ensure certificates are in place before enabling SSL.
-
-## 📝 Documentation
-
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 

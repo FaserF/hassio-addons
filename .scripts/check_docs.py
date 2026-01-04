@@ -1,6 +1,10 @@
 import argparse
 import os
+import re
 import sys
+
+REPO_URL = "https://github.com/FaserF/hassio-addons"
+REPO_BRANCH = "master"
 
 REQUIRED_BADGES = [
     # "shields.io/badge/home%20assistant-addon-blue",
@@ -66,6 +70,41 @@ def check_readme(addon_path, fix=False):
                 f.write(content)
             print("   Fixed.")
 
+    # Check Documentation link - should be absolute GitHub link, not relative
+    # Match various patterns: [Documentation](DOCS.md), [Documentation](./DOCS.md), etc.
+    docs_link_patterns = [
+        (r"\[Documentation\]\(DOCS\.md\)", "DOCS.md"),
+        (r"\[Documentation\]\(\./DOCS\.md\)", "./DOCS.md"),
+        (r"\[Documentation\]\(\.\./DOCS\.md\)", "../DOCS.md"),
+    ]
+    
+    for pattern, link_text in docs_link_patterns:
+        if re.search(pattern, content):
+            errors.append(f"Documentation link is relative ({link_text}) instead of absolute GitHub link.")
+            if fix:
+                print(f"🔧 Fixing Documentation link for {addon_path}")
+                # Check if DOCS.md exists
+                docs_path = os.path.join(addon_path, "DOCS.md")
+                if os.path.exists(docs_path):
+                    # Determine the GitHub path
+                    # Normalize path separators and get relative path from repo root
+                    rel_path = os.path.relpath(addon_path, ".").replace("\\", "/")
+                    # Construct absolute GitHub link
+                    github_link = f"{REPO_URL}/blob/{REPO_BRANCH}/{rel_path}/DOCS.md"
+                    # Replace relative link with absolute link
+                    content = re.sub(
+                        pattern,
+                        f"[Documentation]({github_link})",
+                        content
+                    )
+                    with open(readme_path, "w", encoding="utf-8") as f:
+                        f.write(content)
+                    print(f"   Fixed Documentation link (replaced {link_text}).")
+                    break  # Only fix once
+                else:
+                    print(f"   ⚠️ DOCS.md not found, skipping link fix.")
+                    break
+
     # Heuristic check for other badges
     if "img.shields.io" not in content and "shields.io" not in content:
         # Warn but hard to auto-fix specific version badges without knowledge
@@ -92,6 +131,13 @@ def main():
         dirs = [
             d for d in os.listdir(".") if os.path.isdir(d) and not d.startswith(".")
         ]
+        # Also check .unsupported directory
+        unsupported_path = ".unsupported"
+        if os.path.exists(unsupported_path):
+            for d in os.listdir(unsupported_path):
+                d_path = os.path.join(unsupported_path, d)
+                if os.path.isdir(d_path):
+                    dirs.append(d_path)
 
     failed = False
     for d in dirs:

@@ -9,25 +9,29 @@
 
 > Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, auto renew domains and more. (Unsupported)
 
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-Freenom DNS Updater for Homeassistant OS
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-Freenom is a (free) Registrar provider. This is a docker image based on @maxisoft 's work from his [Freenom DNS Updater](https://github.com/maxisoft/Freenom-dns-updater).
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=2.0.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-## 📝 Documentation
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+## 💡 Feature Request
 
-## 🚀 Installation
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-1. Add this repository to your **Home Assistant Add-on Store** (unsupported branch).
-1. Install the **Freenom-dns-updater** add-on.
-1. Put your config file somewhere at `/share`.
-1. Configure the options.
-1. Start the add-on.
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=freenom-dns-updater)**
+
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 

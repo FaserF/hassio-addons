@@ -9,28 +9,29 @@
 
 > Nintendo Switch Lan Play -Server
 
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-Nintendo Switch LAN-Play Server for Homeassistant OS
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-To play with your CFW Nintendo Switch online, you can use this addon + a public or private Server. This addon can be used, to stop running the lan play client on a Desktop PC/Laptop.
-
-This is just the Server Software and NOT the Client Software. To use a lan-play client with Homeassistant OS, please have a look at my other addon: [switch_lan_play](https://github.com/FaserF/hassio-addons/switch_lan_play)
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=2.0.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
 > [!NOTE]
-> The first start can take up to 10 minutes because the docker image will self-compile the latest lan-play software based on your architecture.
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-## 📝 Documentation
+## 💡 Feature Request
 
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-## 🚀 Installation
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=switch_lan_play_server)**
 
-1. Add this repository to your **Home Assistant Add-on Store**.
-1. Install the **Switch LAN Play Server** add-on.
-1. Start the add-on.
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 

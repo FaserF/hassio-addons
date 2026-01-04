@@ -9,46 +9,29 @@
 
 > Home Assistant WhatsApp Backend (Baileys/Node.js)
 
----
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-> [!CAUTION]
-> **Experimental / Beta Status**
->
-> This add-on is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-> **A lightweight, robust backend for the WhatsApp Integration in Home Assistant.**
-> Powered by [Baileys](https://github.com/WhiskeySockets/Baileys) and Node.js. 🚀
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-This addon acts as a bridge between Home Assistant and the WhatsApp Web
-protocol. It runs a high-performance Node.js application that simulates a real
-WhatsApp client (like a browser), allowing you to send messages, images, and
-notifications directly from your smart home.
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.3.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-### ✨ Key Features
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-- **🚀 Ultra Fast**: Built on Node.js 22 and the lightweight Baileys library
-  (no heavy Chrome/Puppeteer required!).
-- **🔒 Secure & Private**: Runs locally on your device. No cloud bridge, no
-  external API costs.
-- **💾 Persistent Session**: Stays logged in even after restarts.
-- **🐳 Docker Optimized**: Platinum Quality image (S6 Overlay, Alpine Base).
+## 💡 Feature Request
 
-## 📝 Documentation
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=whatsapp)**
 
-## 🛠️ Installation
-
-1. **Add Repository**: Add this repository to your Home Assistant Add-on Store.
-1. **Install**: Search for **"WhatsApp"** and click **Install**.
-1. **Start**: Click **Start**. Wait a few seconds for the logs to show "API
-   listening".
-1. **Watchdog**: Enable "Watchdog" to ensure high availability.
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 

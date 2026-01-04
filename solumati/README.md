@@ -9,49 +9,29 @@
 
 > The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
 
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
 ---
 
-## 📖 About
+## 🐛 Report a Bug
 
-<!-- markdownlint-disable MD033 MD013 -->
-<div align="center">
-  <img src="https://raw.githubusercontent.com/FaserF/Solumati/master/frontend/public/logo/logo-text.png" alt="Solumati Logo" width="200">
-  <br>
-  <strong>The Anti-Swipe Revolution</strong>
-  <br>
-</div>
-<!-- markdownlint-enable MD033 -->
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-**Solumati** is a self-hosted dating platform designed to bring meaning back to
-matchmaking.
-You help many people to use this add-on from the main repository.
-own private instance of the
-Solumati platform directly on your Home Assistant server, ensuring complete data
-privacy and control.
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=2.0.0&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-## ✨ Features
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-- **🔒 Secure & Private**: Your data stays on your server.
-- **🏠 Home Assistant Ingress**: Seamless integration via the HA sidebar with
-  no port forwarding required.
-- **🔌 Auto-Configuration**: Zero-config setup; the database connection is
-  managed automatically.
-- **🧪 Test Mode**: Includes a built-in mode to generate dummy users for safe
-  testing.
-- **📧 OAuth & SMTP**: Full support for external authentication and email
-  notifications (configured via the Admin Panel).
+## 💡 Feature Request
 
-## 📝 Documentation
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-For detailed information, configuration, and folder usage, please refer to the **[Documentation](DOCS.md)** (also available via the **Documentation** tab in the Home Assistant interface).
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=solumati)**
 
-## 🚀 Installation
-
-1. Add this repository to your **Home Assistant Add-on Store**.
-1. Install the **Solumati** add-on.
-1. Configure the options.
-1. Start the add-on.
-1. Click **"OPEN WEB UI"** to launch the interface.
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 
