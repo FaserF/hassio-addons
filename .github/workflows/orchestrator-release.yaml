@@ -625,9 +625,9 @@ jobs:
 
           # Store local changes for this addon
           ADDON_FILES="${{ matrix.addon }}/*"
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }}..."
-            git stash push -m "temp-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "temp-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -644,8 +644,8 @@ jobs:
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Merge conflict detected, resolving..."
                 # If there's a conflict, resolve by taking our version (the addon files)
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 # Clean up the stash
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
@@ -658,7 +658,7 @@ jobs:
           git reset --hard origin/master
 
           # Reapply changes one more time if needed
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }}"
           fi
 
@@ -859,6 +859,7 @@ jobs:
             -v "$(pwd)":/data \
             -v /tmp/.buildx-cache-${{ matrix.addon }}:/cache:rw \
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+            # shellcheck disable=SC2046,SC2001
             $(echo -e "$BUILDER_ARGS") \
             --target "/data/${{ matrix.addon }}" \
             --image "$IMAGE_NAME" \
@@ -886,7 +887,7 @@ jobs:
           ADDON_FILES="${{ matrix.addon }}/*"
           if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
-            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
