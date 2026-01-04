@@ -375,19 +375,19 @@ jobs:
             ADDON_COUNT=$(echo "$ADDONS" | tr ',' '\n' | wc -l | tr -d ' ')
             if [ "$ADDON_COUNT" -gt 1 ]; then
               echo "📋 Sorting addons by priority (multiple addons detected)..."
-              
+
               # Split into categories
               NORMAL_ADDONS=""
               SWITCH_LAN_PLAY_ADDONS=""
               PTERODACTYL_ADDONS=""
               ANTIGRAVITY_ADDON=""
               UNSUPPORTED_ADDONS=""
-              
+
               # Process each addon
               IFS=','
               for addon in $ADDONS; do
                 addon=$(echo "$addon" | xargs)  # trim whitespace
-                
+
                 # Check category
                 if [[ "$addon" == .unsupported/* ]]; then
                   # Unsupported addons go last
@@ -407,7 +407,7 @@ jobs:
                 fi
               done
               unset IFS
-              
+
               # Rebuild in correct order
               SORTED_ADDONS=""
               [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
@@ -423,7 +423,7 @@ jobs:
               [ -n "$UNSUPPORTED_ADDONS" ] && {
                 [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
               }
-              
+
               ADDONS="$SORTED_ADDONS"
               echo "✅ Sorted addons: $ADDONS"
             fi

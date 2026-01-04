@@ -65,7 +65,9 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
 
 # Configure Logging
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
-    && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf
+    && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
+    && addgroup -S www-data || true \
+    && adduser -S -G www-data www-data || true
 
 # Copy data for add-on
 COPY rootfs /
