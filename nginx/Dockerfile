@@ -23,6 +23,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     && apk --no-cache add \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
+    jq \
     php84-fpm \
     php84 \
     php84-mysqli \

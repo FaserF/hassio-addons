@@ -140,7 +140,13 @@ fi
 
 # Get local IP
 # We can use the Supervisor API to get the Host IP
-host_ip=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq -r '.data.interfaces[] | select(.primary) | .ipv4.address[]' | head -n 1 | cut -d'/' -f1)
+host_ip=""
+if [ -n "$SUPERVISOR_TOKEN" ]; then
+    network_info=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info 2>/dev/null)
+    if [ -n "$network_info" ] && echo "$network_info" | jq -e . >/dev/null 2>&1; then
+        host_ip=$(echo "$network_info" | jq -r '.data.interfaces[]? | select(.primary == true) | .ipv4.address[]?' 2>/dev/null | head -n 1 | cut -d'/' -f1)
+    fi
+fi
 
 # Fallback if Host IP is empty
 if [ -z "$host_ip" ]; then
@@ -157,7 +163,13 @@ if [ "$ssl" = "true" ]; then
 fi
 
 # Get External Port from Supervisor
-external_port=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info | jq -r ".data.network.\"${port}/tcp\"")
+external_port=""
+if [ -n "$SUPERVISOR_TOKEN" ]; then
+    addon_info=$(curl -sSL --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info 2>/dev/null)
+    if [ -n "$addon_info" ] && echo "$addon_info" | jq -e . >/dev/null 2>&1; then
+        external_port=$(echo "$addon_info" | jq -r ".data.network.\"${port}/tcp\"?" 2>/dev/null)
+    fi
+fi
 
 bashio::log.info "---------------------------------------------------"
 bashio::log.info "NGINX is starting..."

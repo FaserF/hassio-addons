@@ -22,6 +22,7 @@ RUN mkdir /run/apache2 \
     # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
     apache2 \
     curl \
+    jq \
     php84-apache2 \
     apache2-utils \
     apache2-mod-wsgi \

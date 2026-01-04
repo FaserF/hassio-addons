@@ -28,6 +28,7 @@ RUN mkdir /run/apache2 \
         apache2-mod-wsgi \
         apache2-ssl \
         curl \
+        jq \
     && addgroup -S www-data || true \
     && adduser -S -G www-data www-data || true \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
