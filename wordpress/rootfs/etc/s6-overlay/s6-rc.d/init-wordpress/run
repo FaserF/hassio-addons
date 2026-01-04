@@ -46,10 +46,11 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     db_pass=$(bashio::config 'database_password')
 
     # Escape special characters for sed
-    db_host_escaped=$(echo "${db_host}" | sed 's/[\/&]/\\&/g')
-    db_name_escaped=$(echo "${db_name}" | sed 's/[\/&]/\\&/g')
-    db_user_escaped=$(echo "${db_user}" | sed 's/[\/&]/\\&/g')
-    db_pass_escaped=$(echo "${db_pass}" | sed 's/[\/&]/\\&/g')
+    # We escape backslashes first, then the delimiter (|) and ampersands
+    db_host_escaped=$(echo "${db_host}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_name_escaped=$(echo "${db_name}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_user_escaped=$(echo "${db_user}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_pass_escaped=$(echo "${db_pass}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
 
     sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
     sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php
@@ -62,9 +63,14 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
          bashio::exit.nok "Failed to fetch unique keys and salts from WordPress.org!"
     fi
 
+    # Validate salt content
+    if [ ! -s /tmp/wp-salts ] || ! grep -q "define('AUTH_KEY'" /tmp/wp-salts; then
+        rm -f /tmp/wp-salts
+        bashio::exit.nok "Downloaded salt file is empty or invalid!"
+    fi
+
     # Replace placeholder salts in config
-    # We remove the default placeholder blocks and append the proper ones, or robustly replace line by line.
-    # Simpler: Delete the default salt definitions and append new ones.
+    # Delete the default salt definitions and append new ones.
     sed -i "/define('AUTH_KEY'/,/define('NONCE_SALT'/d" /var/www/wordpress/wp-config.php
     cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
     rm -f /tmp/wp-salts
@@ -72,9 +78,9 @@ fi
 
 # Permissions
 bashio::log.info "Fixing permissions..."
-chown -R nginx:nginx /var/www/wordpress
-find /var/www/wordpress -type d -exec chmod 755 {} \;
-find /var/www/wordpress -type f -exec chmod 644 {} \;
-chmod 640 /var/www/wordpress/wp-config.php
+chown -R nginx:nginx /var/www/wordpress || bashio::exit.nok "Failed to set ownership for /var/www/wordpress"
+find /var/www/wordpress -type d -exec chmod 755 {} \; || bashio::exit.nok "Failed to set directory permissions"
+find /var/www/wordpress -type f -exec chmod 644 {} \; || bashio::exit.nok "Failed to set file permissions"
+chmod 640 /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to set permissions for wp-config.php"
 
 bashio::log.info "Wordpress initialized!"

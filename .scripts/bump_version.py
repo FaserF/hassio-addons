@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 from typing import Optional, Tuple
 
-import yaml  # Added for safe config handling
+
 
 # GitHub repository for commit links
 GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
@@ -247,10 +247,7 @@ def generate_changelog_entry(
 
     repo_url = get_git_remote_url()
 
-    ignore_tags = [
-        f"v{version}",
-        f"{os.path.basename(addon_path.rstrip('/\\'))}-{version}",
-    ]
+
 
     commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
 
@@ -508,7 +505,7 @@ def bump_version(
             # Check if entry for new version already exists and extract it
             version_header_start = f"## {new_version}"
             if version_header_start in existing_changelog:
-                print(f"ℹ️ Found existing entry for {new_version}.")
+                print(f"[i] Found existing entry for {new_version}.")
                 # Find start and end of this section
                 start_idx = existing_changelog.find(version_header_start)
                 # Find next section (look for next version header or end of file)
@@ -545,7 +542,7 @@ def bump_version(
 
                 if has_auto_content:
                     print(
-                        f"ℹ️ Auto-generated changelog already exists for version {new_version}, skipping auto-generation."
+                        f"[i] Auto-generated changelog already exists for version {new_version}, skipping auto-generation."
                     )
                     skip_auto_generation = True
 
@@ -616,7 +613,7 @@ def bump_version(
                     # Auto content already exists, but we want to merge/extend it
                     # Parse existing categories and merge with new ones
                     print(
-                        f"ℹ️ Auto-generated content already exists for version {new_version}, merging with new content..."
+                        f"[i] Auto-generated content already exists for version {new_version}, merging with new content..."
                     )
 
                     # Extract existing categories from current_section
@@ -689,7 +686,7 @@ def bump_version(
                 ):
                     # No existing auto content, append new auto content
                     print(
-                        f"ℹ️ Extending existing entry for version {new_version} with auto-generated content..."
+                        f"[i] Extending existing entry for version {new_version} with auto-generated content..."
                     )
                     combined_section = current_section.rstrip() + "\n\n" + auto_body
                     changelog = (
@@ -700,7 +697,7 @@ def bump_version(
                 else:
                     # No meaningful auto content, keep existing section as is
                     print(
-                        f"ℹ️ No new auto-generated content to add for version {new_version}, keeping existing entry"
+                        f"[i] No new auto-generated content to add for version {new_version}, keeping existing entry"
                     )
                     changelog = existing_changelog
 
@@ -724,7 +721,7 @@ def bump_version(
             # skip_auto_generation is True but CHANGELOG.md doesn't exist - this shouldn't happen
             # but if it does, we skip creation to preserve user intent
             print(
-                f"ℹ️ Skipping changelog creation (auto-generation skipped for version {new_version})"
+                f"[i] Skipping changelog creation (auto-generation skipped for version {new_version})"
             )
 
     print(f"✅ {'Dev bump' if set_dev else 'Bumped'} {addon_path} to {new_version}")

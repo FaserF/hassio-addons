@@ -37,26 +37,7 @@ on your Home Assistant instance.
 1. Check the logs of the "Wordpress" add-on to see if everything went well.
 1. Click the "OPEN WEB UI" button to access your Wordpress site.
 
----
 
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-### Options
-
-```yaml
-database_host: ''
-database_name: wordpress
-database_password: ''
-database_user: wordpress
-wordpress_admin_email: admin@example.com
-wordpress_admin_password: changeme
-wordpress_admin_user: admin
-wordpress_title: My Blog
-```
-
----
 
 ### Option: `database_host`
 

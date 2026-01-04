@@ -677,7 +677,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="${{ matrix.addon }}"
+          ADDON_FILES="${{ matrix.addon }}/*"
 
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
@@ -699,16 +699,16 @@ jobs:
             if [ -n "$STASH_ENTRY" ]; then
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Conflict on retry, using our version..."
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
             fi
           fi
 
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
-            git add $ADDON_FILES
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
             # Use rebase strategy to avoid merge commits
             git pull --rebase origin master || {
               echo "⚠️ Rebase failed, trying merge..."
@@ -796,6 +796,7 @@ jobs:
       - name: 🏗️ Build & Push Add-on
         run: |
           # Read architectures from config.yaml
+          # shellcheck disable=SC2001,SC2046
           ARCHS=$(grep -A 10 "^arch:" "${{ matrix.addon }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
 
           # Default to amd64 and aarch64 if no arches found
@@ -852,6 +853,8 @@ jobs:
 
           # Use docker run directly to have full control over args
           # Mount Docker config so builder can access GHCR credentials
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
+          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
           # Mount cache directory for faster builds (caching enabled, --no-cache removed)
           # shellcheck disable=SC2046,SC2001
           docker run --rm --privileged \
@@ -914,7 +917,7 @@ jobs:
           git reset --hard origin/master
 
           # Reapply changes one more time if needed
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "✅ Local changes preserved for ${{ matrix.addon }} (dev version)"
           fi
 
