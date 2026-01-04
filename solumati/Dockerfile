@@ -13,6 +13,8 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Install System Requirements
 # hadolint ignore=DL3018
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.0.0"
 ENV ADDON_NAME="Solumati"
