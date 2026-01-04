@@ -1,4 +1,15 @@
 # xqrepack
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is currently **UNSUPPORTED**.
+> It is no longer actively developed or maintained.
+> - No new features will be added.
+> - Bugs will likely not be fixed.
+> - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
+>
+> **USE AT YOUR OWN RISK.**
+
 
 <img src="logo.png" alt="Logo" width="200">
 

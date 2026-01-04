@@ -26,7 +26,7 @@ By setting this to `true`, you confirm:
 - You understand this is for testing purposes only
 - You accept all responsibility for your usage
 
-SAP License: https://www.sap.com/about/legal/disclaimer.html
+SAP License: <https://www.sap.com/about/legal/disclaimer.html>
 
 ### Option: `ignore_requirements`
 

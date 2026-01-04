@@ -45,10 +45,7 @@ on:
       - master
     paths:
       - "**/config.yaml"
-      - ".github/workflows/orchestrator-release.yaml"
-
-
-permissions:
+      - ".github/workflows/orchestrator-release.yaml"permissions:
   contents: write
   packages: write
   actions: write

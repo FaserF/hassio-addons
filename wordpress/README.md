@@ -69,6 +69,28 @@ The username for the admin account.
 
 The title of your Wordpress site.
 
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
+
+---
+
+## ⚙️ Configuration
+
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+
+### Options
+
+```yaml
+database_host: ''
+database_name: wordpress
+database_password: ''
+database_user: wordpress
+wordpress_admin_email: admin@example.com
+wordpress_admin_password: ''
+wordpress_admin_user: admin
+wordpress_title: My Blog
+```
+
 ---
 
 ## 👨‍💻 Credits & License

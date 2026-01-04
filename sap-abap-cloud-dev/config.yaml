@@ -7,8 +7,6 @@ url: https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-dev
 image: ghcr.io/faserf/hassio-addons-sap-abap-cloud-dev-{arch}
 arch:
   - amd64
-startup: services
-boot: auto
 init: false
 panel_icon: mdi:database-cog
 map:
@@ -34,5 +32,4 @@ ports_description:
   50000/tcp: ICM HTTP
   50001/tcp: ICM HTTPS
 ingress: true
-ingress_port: 8443
 webui: https://[HOST]:[PORT:8443]

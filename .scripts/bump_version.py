@@ -17,7 +17,6 @@ import sys
 from datetime import datetime
 from typing import Optional, Tuple
 
-
 # GitHub repository for commit links
 GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
 

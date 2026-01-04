@@ -11,8 +11,9 @@
 - Ingress support
 
 ### 📦 Dependencies
+
 - 📝 release(apache2-minimal): update changelog [skip-tests] ([`bb9feed`](https://github.com/FaserF/hassio-addons/commit/bb9feed1d85cbb4f602c85fed4846f536129ec69))
 
 ### 📌 Release Note
-- Manual release via Orchestrator
 
+- Manual release via Orchestrator

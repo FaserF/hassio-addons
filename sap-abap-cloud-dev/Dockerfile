@@ -2,7 +2,7 @@
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
 # renovate: datasource=docker depName=sapse/abap-cloud-developer-trial
-ARG SAP_IMAGE=sapse/abap-cloud-developer-trial:ABAPTRIAL_2023
+ARG SAP_IMAGE=sapse/abap-cloud-developer-trial:2023
 # hadolint ignore=DL3006
 FROM ${SAP_IMAGE} AS sap-source
 
@@ -29,7 +29,7 @@ RUN apt-get update \
         xz-utils \
         jq \
         procps \
-        libaio1 \
+        libaio1t64 \
         libatomic1 \
         libnuma1 \
         libstdc++6 \

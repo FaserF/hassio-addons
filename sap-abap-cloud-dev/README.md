@@ -1,7 +1,27 @@
-# Home Assistant Add-on: SAP ABAP Cloud Developer Trial
+# SAP ABAP Cloud Developer Trial
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_sap-abap-cloud-dev)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.0.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-sap-abap-cloud-dev)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> SAP ABAP Platform Trial for local ABAP development
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 ![Supports amd64 Architecture][amd64-shield]
-![Project Maintenance][maintenance-shield]
 
 SAP ABAP Cloud Developer Trial for Home Assistant OS
 
@@ -14,8 +34,6 @@ SAP ABAP Cloud Developer Trial for Home Assistant OS
 > **FOR TESTING ONLY**: This add-on is intended solely for personal learning, skill development, and testing SAP ABAP. It is NOT intended for production use.
 
 > **SAP LICENSE TERMS**: You must comply with all SAP licensing terms and conditions. Visit [SAP's Terms](https://www.sap.com/about/legal/disclaimer.html) for details.
-
-## About
 
 This add-on provides the official SAP ABAP Cloud Developer Trial environment, allowing you to run a complete SAP ABAP Platform on SAP HANA 2.0 directly from Home Assistant.
 
@@ -42,60 +60,28 @@ This add-on provides the official SAP ABAP Cloud Developer Trial environment, al
 
 ## Installation
 
-[![FaserF Homeassistant Addons](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
-
 1. Add this repository to your Home Assistant add-on store
 2. Install the "SAP ABAP Cloud Developer Trial" add-on
 3. **READ AND ACCEPT** the SAP license terms
 4. Set `agree_to_license: true` in the configuration
 5. Start the add-on (initial startup takes 5-10 minutes)
 
-## Configuration
+---
 
-See the [documentation](DOCS.md) for configuration details.
+## ⚙️ Configuration
 
-## Connection Details
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-After the add-on starts:
+### Options
 
-| Setting            | Value                  |
-| ------------------ | ---------------------- |
-| Application Server | Your Home Assistant IP |
-| Instance Number    | 00                     |
-| System ID          | A4H                    |
-| Client             | 001                    |
-| Default User       | DEVELOPER              |
+```yaml
+agree_to_license: false
+ignore_requirements: false
+```
 
-**Web Access:** `https://<your-ip>:8443/sap/bc/ui2/flp`
+---
 
-## License Renewal
+## 👨‍💻 Credits & License
 
-The SAP trial license expires after 3 months. You must renew it yourself following SAP's process.
-
-## Support
-
-Got questions or problems?
-
-You can [open an issue here][issue] on GitHub.
-
-**Note:** Issues related to SAP software itself should be directed to SAP Community forums, not this repository.
-
-## Authors & Contributors
-
-The SAP ABAP Trial is provided by [SAP SE](https://www.sap.com/).
-This Home Assistant add-on wrapper is maintained by [FaserF].
-
-## License
-
-MIT License (for the add-on wrapper only)
-
-Copyright (c) 2024-2026 FaserF
-
-**The SAP software is subject to SAP's own license terms. This add-on does not grant any rights to SAP software.**
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
-
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[FaserF]: https://github.com/FaserF/
-[issue]: https://github.com/FaserF/hassio-addons/issues
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
