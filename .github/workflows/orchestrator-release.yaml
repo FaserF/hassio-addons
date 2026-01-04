@@ -138,6 +138,7 @@ jobs:
               SKIP_ADDONS="homeassistant-test-instance"
 
               # Regular addons (top-level directories with config.yaml)
+              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
               for item in */; do
                 item_name="${item%/}"
                 if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
@@ -155,25 +156,26 @@ jobs:
                 fi
               done
 
-              # Unsupported addons
-              if [ -d ".unsupported" ]; then
-                for item in .unsupported/*/; do
-                  if [ -f "${item}config.yaml" ]; then
-                    item_name=".unsupported/$(basename "$item")"
-                    [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
-                  fi
-                done
-              fi
+              # .unsupported addons are NOT included - they are built locally from unsupported branch
+              echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
 
               SHOULD_RELEASE="true"
               echo "📦 Found add-ons: $ADDONS"
               echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
             elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
               IS_ALL="false"
-              # Single addon specified
-              ADDONS="$INPUT_ADDON"
-              SHOULD_RELEASE="true"
-              echo "📦 Single addon specified: $ADDONS"
+              # Single addon specified - check if it's from .unsupported
+              if [[ "$INPUT_ADDON" == .unsupported/* ]] || [[ "$INPUT_ADDON" == .unsupported* ]]; then
+                echo "❌ Error: .unsupported addons cannot be built via this workflow"
+                echo "   .unsupported addons are built locally from the unsupported branch"
+                echo "   Please build $INPUT_ADDON manually or use the unsupported branch workflow"
+                SHOULD_RELEASE="false"
+                ADDONS=""
+              else
+                ADDONS="$INPUT_ADDON"
+                SHOULD_RELEASE="true"
+                echo "📦 Single addon specified: $ADDONS"
+              fi
             else
               IS_ALL="false"
               echo "⚠️ Invalid or missing addon input: '$INPUT_ADDON'"
@@ -259,14 +261,19 @@ jobs:
             fi
 
             # If base image update, release ALL affected addons (not just AUTO_RELEASE_ADDONS)
+            # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
             if [ "$IS_BASE_IMAGE_UPDATE" == "true" ]; then
-              echo "🔍 Base image update - releasing all affected addons"
+              echo "🔍 Base image update - releasing all affected addons (excluding .unsupported)"
               # Find all addons with changed Dockerfile or build.yaml
               for file in $CHANGED; do
-                # Extract addon directory from file path
-                if [[ "$file" =~ ^\.unsupported/([^/]+)/ ]]; then
-                  addon_dir=".unsupported/${BASH_REMATCH[1]}"
-                elif [[ "$file" =~ ^([^/]+)/ ]]; then
+                # Skip .unsupported addons - they are built locally from unsupported branch
+                if [[ "$file" =~ ^\.unsupported/ ]]; then
+                  echo "  ⏭️ Skipping .unsupported addon: $file"
+                  continue
+                fi
+                
+                # Extract addon directory from file path (only regular addons)
+                if [[ "$file" =~ ^([^/]+)/ ]]; then
                   addon_dir="${BASH_REMATCH[1]}"
                 else
                   continue
@@ -283,15 +290,17 @@ jobs:
               done
             else
               # Normal dependency update - only release addons in AUTO_RELEASE_ADDONS list
-              echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list"
+              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+              echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list (excluding .unsupported)"
               CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
               for addon in $CLEAN_AUTO_ADDONS; do
-                if echo "$CHANGED" | grep -Fq "${addon}/"; then
+                # Only check regular addons, skip .unsupported
+                if echo "$CHANGED" | grep -Fq "${addon}/" && ! echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
                   [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
                 fi
-                # Check .unsupported too
+                # Explicitly skip .unsupported addons
                 if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
-                  [ -z "$ADDONS" ] && ADDONS=".unsupported/$addon" || ADDONS="$ADDONS,.unsupported/$addon"
+                  echo "  ⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
                 fi
               done
             fi
@@ -310,6 +319,7 @@ jobs:
                SKIP_ADDONS="homeassistant-test-instance"
 
                # Regular addons (top-level directories with config.yaml)
+               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
                for item in */; do
                  item_name="${item%/}"
                  if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
@@ -327,15 +337,8 @@ jobs:
                  fi
                done
 
-               # Unsupported addons
-               if [ -d ".unsupported" ]; then
-                 for item in .unsupported/*/; do
-                   if [ -f "${item}config.yaml" ]; then
-                     item_name=".unsupported/$(basename "$item")"
-                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
-                   fi
-                 done
-               fi
+               # .unsupported addons are NOT included - they are built locally from unsupported branch
+               echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
 
                SHOULD_RELEASE="true"
                VERSION_TYPE="patch" # Default for release(all)
@@ -343,10 +346,17 @@ jobs:
              else
                IS_ALL="false"
                # Original logic: Detect manual version bumps
+               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
                # Get list of changed files
                CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
                for file in $CHANGED_FILES; do
+                 # Skip .unsupported addons - they are built locally from unsupported branch
+                 if [[ "$file" == .unsupported/* ]]; then
+                   echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                   continue
+                 fi
+                 
                  if [[ "$file" == *"/config.yaml" ]]; then
                    addon_dir=$(dirname "$file")
                    addon_name=$(basename "$addon_dir")

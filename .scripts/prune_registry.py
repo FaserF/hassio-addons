@@ -6,6 +6,7 @@ import requests
 # Configuration
 ORG_NAME = os.environ.get("GITHUB_REPOSITORY_OWNER")
 TOKEN = os.environ.get("GITHUB_TOKEN")
+DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 
 # Retention settings
 KEEP_VERSIONS_SUPPORTED = 2  # Keep 2 versions for supported addons
@@ -25,7 +26,15 @@ print()
 
 HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
-    "Accept": "application/vnd.github.v3+json",
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
+# GraphQL uses different headers
+GRAPHQL_HEADERS = {
+    "Authorization": f"Bearer {TOKEN}",
+    "Accept": "application/vnd.github+json",
+    "Content-Type": "application/json",
 }
 
 
@@ -60,15 +69,100 @@ def is_unsupported_addon(package_name):
     return False
 
 
+def get_packages_via_graphql():
+    """Alternative: Use GraphQL API to list packages (workaround for REST API 400 error)."""
+    import json
+    
+    query = """
+    query($org: String!, $packageType: PackageType!, $first: Int!, $after: String) {
+      organization(login: $org) {
+        packages(first: $first, after: $after, packageType: $packageType) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            name
+            id
+          }
+        }
+      }
+    }
+    """
+    
+    all_packages = []
+    cursor = None
+    has_next_page = True
+    
+    print(f"🔍 Fetching packages via GraphQL API from: {ORG_NAME}")
+    
+    while has_next_page:
+        variables = {
+            "org": ORG_NAME,
+            "packageType": "CONTAINER",
+            "first": 100,
+            "after": cursor
+        }
+        
+            try:
+            res = requests.post(
+                "https://api.github.com/graphql",
+                headers=GRAPHQL_HEADERS,
+                json={"query": query, "variables": variables}
+            )
+            
+            if res.status_code != 200:
+                print(f"❌ GraphQL request failed: {res.status_code} {res.text}")
+                break
+                
+            data = res.json()
+            
+            if "errors" in data:
+                print(f"❌ GraphQL errors: {data['errors']}")
+                break
+            
+            if "data" not in data or "organization" not in data["data"]:
+                print(f"❌ Unexpected GraphQL response structure")
+                break
+            
+            org_data = data["data"]["organization"]
+            if org_data is None:
+                print(f"⚠️ Organization '{ORG_NAME}' not found or not accessible")
+                break
+            
+            packages = org_data.get("packages", {})
+            nodes = packages.get("nodes", [])
+            page_info = packages.get("pageInfo", {})
+            
+            # Convert GraphQL format to REST API format for compatibility
+            for node in nodes:
+                all_packages.append({"name": node["name"], "id": node["id"]})
+            
+            has_next_page = page_info.get("hasNextPage", False)
+            cursor = page_info.get("endCursor")
+            
+        except requests.RequestException as e:
+            print(f"❌ GraphQL API Request Failed: {e}")
+            break
+        except (KeyError, ValueError) as e:
+            print(f"❌ Failed to parse GraphQL response: {e}")
+            break
+    
+    print(f"   Found {len(all_packages)} package(s) via GraphQL")
+    return all_packages
+
+
 def get_packages(package_type="container"):
     """Get all packages with pagination support."""
     all_packages = []
     page = 1
     per_page = 100
+    base_url = None
+    use_user_endpoint = False
 
     # Try org endpoint first
-    base_url = f"https://api.github.com/orgs/{ORG_NAME}/packages"
     print(f"🔍 Fetching packages from: orgs/{ORG_NAME}")
+    base_url = f"https://api.github.com/orgs/{ORG_NAME}/packages"
 
     while True:
         url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
@@ -80,9 +174,10 @@ def get_packages(package_type="container"):
             break
 
         if res.status_code == 404:
-            # Try user endpoint if org fails
-            if page == 1:
-                print(f"⚠️ Org endpoint failed, trying user endpoint...")
+            # Try user endpoint if org fails (only on first page)
+            if page == 1 and not use_user_endpoint:
+                print(f"⚠️ Org endpoint failed (404), trying user endpoint...")
+                use_user_endpoint = True
                 base_url = f"https://api.github.com/user/packages"
                 url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
                 try:
@@ -92,14 +187,46 @@ def get_packages(package_type="container"):
                     print(f"❌ API Request Failed: {e}")
                     break
             else:
+                # No more pages
                 break
+
+        if res.status_code == 400:
+            # Bad request - known GitHub API issue with container packages
+            error_text = res.text
+            print(f"⚠️ Bad Request (400) - Known GitHub API issue with container packages")
+            print(f"   Trying GraphQL API as workaround...")
+            
+            # Try GraphQL API as workaround
+            graphql_packages = get_packages_via_graphql()
+            if graphql_packages:
+                return graphql_packages
+            else:
+                print(f"❌ GraphQL workaround also failed")
+                print(f"   💡 Hint: This is a known GitHub API limitation. Consider using GitHub CLI:")
+                print(f"      gh api orgs/{ORG_NAME}/packages?package_type=container")
+                break
+
+        if res.status_code == 401:
+            print(f"❌ Unauthorized (401): Check if GITHUB_TOKEN is valid and has 'read:packages' permission")
+            break
+
+        if res.status_code == 403:
+            print(f"❌ Forbidden (403): Token may not have 'read:packages' permission")
+            print(f"   💡 Hint: Ensure the token has 'read:packages' and 'delete:packages' scopes")
+            break
 
         if res.status_code != 200:
             if page == 1:
                 print(f"❌ Failed to list packages: {res.status_code} {res.text}")
             break
 
-        page_packages = res.json()
+        try:
+            page_packages = res.json()
+        except ValueError as e:
+            print(f"❌ Failed to parse JSON response: {e}")
+            print(f"   Response: {res.text[:200]}")
+            break
+
         if not page_packages:
             break
 
@@ -139,6 +266,10 @@ def get_package_versions(package_name, package_type="container"):
 
 
 def delete_version(package_name, version_id, package_type="container"):
+    if DRY_RUN:
+        print(f"   [DRY RUN] Would delete version {version_id} for {package_name}")
+        return True
+    
     url = f"https://api.github.com/orgs/{ORG_NAME}/packages/{package_type}/{package_name}/versions/{version_id}"
     res = requests.delete(url, headers=HEADERS, timeout=10)
     if res.status_code == 204:
@@ -189,7 +320,10 @@ def is_invalid_package(name):
 
 
 def main():
-    print(f"🧹 Pruning registry for {ORG_NAME}...")
+    mode = "🔍 DRY RUN" if DRY_RUN else "🧹 Pruning"
+    print(f"{mode} registry for {ORG_NAME}...")
+    if DRY_RUN:
+        print(f"   ⚠️ DRY RUN MODE: No versions will actually be deleted")
     print(f"   📦 Supported addons: Keep {KEEP_VERSIONS_SUPPORTED} versions")
     print(f"   🏚️ Unsupported addons: Keep {KEEP_VERSIONS_UNSUPPORTED} version(s)")
     print()
@@ -271,7 +405,11 @@ def main():
                     deleted_count += 1
 
     print()
-    print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
+    if DRY_RUN:
+        print(f"📊 Summary: Would delete {deleted_count} version(s) across {len(packages)} package(s)")
+        print(f"   ℹ️ Run without DRY_RUN=true to actually delete these versions")
+    else:
+        print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
 
 
 if __name__ == "__main__":

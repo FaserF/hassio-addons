@@ -95,14 +95,14 @@ jobs:
                   # Standardize path separators
                   addon_name = addon_name.replace(os.path.sep, "/")
 
-                  # Skip hidden directories EXCEPT .unsupported
-                  # If the path starts with . and is NOT .unsupported, skip
+                  # Skip hidden directories (including .unsupported - these are built locally from unsupported branch)
+                  # If the path starts with . (including .unsupported), skip
                   # If the path is inside a hidden dir (like .git/foo), skip
                   parts = addon_name.split("/")
-                  if parts[0].startswith(".") and parts[0] != ".unsupported":
+                  if parts[0].startswith("."):
                       continue
-                  if len(parts) > 1 and any(p.startswith(".") and p != ".unsupported" for p in parts):
-                       # This handles .unsupported/addon (allowed) but skips .git/addon or addon/.hidden
+                  if len(parts) > 1 and any(p.startswith(".") for p in parts):
+                       # Skip any path containing hidden directories
                        continue
 
                   filters[addon_name] = [f"{addon_name}/**"]

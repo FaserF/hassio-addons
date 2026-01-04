@@ -77,10 +77,11 @@ jobs:
             while IFS= read -r config_file; do
               addon_dir=$(dirname "$config_file")
               addon_name=$(basename "$addon_dir")
-              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ]; then
+              # Skip .unsupported addons - they are built locally from unsupported branch
+              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ] && [[ "$addon_dir" != ./.unsupported/* ]]; then
                 ADDONS="${ADDONS}${addon_name}"$'\n'
               fi
-            done < <(find . -maxdepth 2 -name "config.yaml" -exec grep -l "^ingress: true" {} +)
+            done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -exec grep -l "^ingress: true" {} +)
           else
             # Comma-separated list
             ADDONS=$(echo "$INPUT" | tr ',' '\n')
@@ -90,16 +91,24 @@ jobs:
           echo "$ADDONS"
 
           # Filter to only ingress-enabled addons
+          # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
           INGRESS_ADDONS=""
           # shellcheck disable=SC2086
           for addon in $ADDONS; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
+            
+            # Skip .unsupported addons - they are built locally from unsupported branch
+            if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -f "./.unsupported/$addon/config.yaml" ]; then
+              echo "⏭️ $addon is unsupported - skipping (built locally from unsupported branch)"
+              continue
+            fi
+            
             config_file=""
 
             if [ -f "./$addon/config.yaml" ]; then
               config_file="./$addon/config.yaml"
-            elif [ -f "./.unsupported/$addon/config.yaml" ]; then
-              echo "⏭️ $addon is unsupported - skipping"
+            else
+              echo "⏭️ $addon not found - skipping"
               continue
             fi
 
@@ -162,15 +171,20 @@ jobs:
             -out /tmp/ha-data/ssl/fullchain.pem
 
           # Copy add-ons to local addons directory
+          # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
           IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
           for addon in "${ADDON_ARRAY[@]}"; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
+            
+            # Skip .unsupported addons - they should not be tested here
+            if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -d "./.unsupported/$addon" ]; then
+              echo "⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
+              continue
+            fi
+            
             if [ -d "./$addon" ]; then
               echo "Copying $addon to local addons..."
               cp -r "./$addon" "/tmp/ha-data/addons/local/"
-            elif [ -d "./.unsupported/$addon" ]; then
-              echo "Copying $addon from unsupported to local addons..."
-              cp -r "./.unsupported/$addon" "/tmp/ha-data/addons/local/"
             else
               echo "Warning: Add-on $addon not found"
             fi
@@ -294,9 +308,18 @@ jobs:
             echo "=========================================="
 
             # Get exact slug from config.yaml
+            # NOTE: .unsupported addons should not reach here, but check anyway
             CONFIG_FILE="./$addon/config.yaml"
             if [ ! -f "$CONFIG_FILE" ]; then
-              CONFIG_FILE="./.unsupported/$addon/config.yaml"
+              if [ -f "./.unsupported/$addon/config.yaml" ]; then
+                echo "❌ Error: .unsupported addon $addon should not be tested here"
+                RESULTS="$RESULTS\n❌ $addon: ERROR (Unsupported addon)"
+                continue
+              else
+                echo "❌ Error: Config file not found for $addon"
+                RESULTS="$RESULTS\n❌ $addon: ERROR (Config not found)"
+                continue
+              fi
             fi
 
             # Extract slug using grep/sed (avoids yq dependency)
