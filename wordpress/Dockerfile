@@ -5,7 +5,7 @@ FROM ${BUILD_FROM}
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG WORDPRESS_VERSION="6.7.1"
+ARG WORDPRESS_VERSION="6.8"
 
 # Setup base
 
@@ -34,6 +34,7 @@ RUN \
     \
     && curl -J -L -o /tmp/wordpress.tar.gz \
         "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \
+    && echo "511705749ab8da65fdf5a018344173d5  /tmp/wordpress.tar.gz" | md5sum -c - \
     && mkdir -p /usr/src/wordpress \
     && tar zxvf /tmp/wordpress.tar.gz -C /usr/src/wordpress --strip-components=1 \
     && rm -f /tmp/wordpress.tar.gz \
@@ -44,7 +45,7 @@ RUN \
 # Copy root filesystem
 COPY rootfs /
 
-RUN chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down
+RUN find /etc/s6-overlay/s6-rc.d -mindepth 2 -name run -exec chmod +x {} \;
 
 
 # Build arguments

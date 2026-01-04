@@ -3,17 +3,41 @@
 
 bashio::log.info "Initialize Wordpress..."
 
+# Check validation
+if ! bashio::config.has_value 'database_host'; then
+    bashio::exit.nok "A 'database_host' is required!"
+fi
+
+if ! bashio::config.has_value 'database_password'; then
+    bashio::exit.nok "A 'database_password' is required!"
+fi
+
+if ! bashio::config.has_value 'database_name'; then
+    bashio::exit.nok "A 'database_name' is required!"
+fi
+
+if ! bashio::config.has_value 'database_user'; then
+    bashio::exit.nok "A 'database_user' is required!"
+fi
+
+if bashio::config.equals 'wordpress_admin_password' 'changeme'; then
+    bashio::exit.nok "You are using the insecure default admin password 'changeme'. Please change it!"
+fi
+
 # Check if Wordpress is installed
-if ! -d /var/www/wordpress/wp-admin; then
+if [ ! -d /var/www/wordpress/wp-admin ]; then
     bashio::log.info "Installing Wordpress..."
-    cp -r /usr/src/wordpress/. /var/www/wordpress
+    if [ ! -d /usr/src/wordpress ]; then
+        bashio::exit.nok "Source directory /usr/src/wordpress not found!"
+    fi
+    cp -r /usr/src/wordpress/. /var/www/wordpress || bashio::exit.nok "Failed to copy Wordpress files!"
     bashio::log.info "Wordpress installed!"
 fi
 
 # Configuration
-if ! -f /var/www/wordpress/wp-config.php; then
+if [ ! -f /var/www/wordpress/wp-config.php ]; then
     bashio::log.info "Creating configuration..."
-    mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php
+    mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to create wp-config.php!"
 
     # Database
     db_host=$(bashio::config 'database_host')
@@ -21,14 +45,29 @@ if ! -f /var/www/wordpress/wp-config.php; then
     db_user=$(bashio::config 'database_user')
     db_pass=$(bashio::config 'database_password')
 
-    sed -i "s/database_name_here/${db_name}/" /var/www/wordpress/wp-config.php
-    sed -i "s/username_here/${db_user}/" /var/www/wordpress/wp-config.php
-    sed -i "s/password_here/${db_pass}/" /var/www/wordpress/wp-config.php
-    sed -i "s/localhost/${db_host}/" /var/www/wordpress/wp-config.php
+    # Escape special characters for sed
+    db_host_escaped=$(echo "${db_host}" | sed 's/[\/&]/\\&/g')
+    db_name_escaped=$(echo "${db_name}" | sed 's/[\/&]/\\&/g')
+    db_user_escaped=$(echo "${db_user}" | sed 's/[\/&]/\\&/g')
+    db_pass_escaped=$(echo "${db_pass}" | sed 's/[\/&]/\\&/g')
+
+    sed -i "s/database_name_here/${db_name_escaped}/" /var/www/wordpress/wp-config.php
+    sed -i "s/username_here/${db_user_escaped}/" /var/www/wordpress/wp-config.php
+    sed -i "s/password_here/${db_pass_escaped}/" /var/www/wordpress/wp-config.php
+    sed -i "s/localhost/${db_host_escaped}/" /var/www/wordpress/wp-config.php
 
     # Salt
     bashio::log.info "Generating salts..."
-    curl -s https://api.wordpress.org/secret-key/1.1/salt/ >> /var/www/wordpress/wp-config.php
+    if ! curl -s https://api.wordpress.org/secret-key/1.1/salt/ > /tmp/wp-salts; then
+         bashio::exit.nok "Failed to fetch unique keys and salts from WordPress.org!"
+    fi
+
+    # Replace placeholder salts in config
+    # We remove the default placeholder blocks and append the proper ones, or robustly replace line by line.
+    # Simpler: Delete the default salt definitions and append new ones.
+    sed -i "/define( 'AUTH_KEY'/,/define( 'NONCE_SALT'/d" /var/www/wordpress/wp-config.php
+    cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
+    rm -f /tmp/wp-salts
 fi
 
 # Permissions
