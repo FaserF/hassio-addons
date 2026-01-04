@@ -59,7 +59,7 @@ def get_git_remote_url():
     return GITHUB_REPO
 
 
-def get_git_log_for_addon(addon_path, since_tag=None):
+def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
     """Get git commit log with full hash for the addon."""
     try:
         addon_name = os.path.basename(addon_path.rstrip("/\\"))
@@ -78,9 +78,10 @@ def get_git_log_for_addon(addon_path, since_tag=None):
             addon_tags = [
                 t
                 for t in tags
-                if t == f"v{addon_name}"
+                if (t == f"v{addon_name}"
                 or t.startswith(f"{addon_name}-")
-                or (t.startswith("v") and len(t.split("-")) == 1)  # simple v1.2.3
+                or (t.startswith("v") and len(t.split("-")) == 1))  # simple v1.2.3
+                and t != ignore_tag # Ignore specific tag (e.g. current version if it exists)
             ]
             tag = addon_tags[0] if addon_tags else None
 
@@ -241,15 +242,10 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
     entry = f"{heading}\n\n"
 
     repo_url = get_git_remote_url()
-    # If existing entry, we might need to look further back?
-    # Or just assume the commits since the tag are what we want to add.
-    # The 'since_tag' logic in get_git_log_for_addon uses the *previous* tag.
-    # If we are strictly appending new commits that happened *after* the manual bump (unlikely if runs immediately)
-    # OR if we want to list commits *included* in this bump.
-    # If manual bump happened in HEAD, and we run this, HEAD is the bump.
-    # We want commits from PrevTag..HEAD.
 
-    commits = get_git_log_for_addon(addon_path)
+    ignore_tags = [f"v{version}", f"{os.path.basename(addon_path.rstrip('/\\'))}-{version}"]
+
+    commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
 
     if commits:
         categories = categorize_commits(commits, repo_url)
@@ -260,12 +256,6 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
             for cat, items in existing_categories.items():
                 if cat not in categories:
                     categories[cat] = []
-                # Append existing items if not duplicates (simple string check)
-                # Note: existing items might not have links formatted same way if manual.
-                # We'll just add them to the top or bottom?
-                # Better: Keep existing items, add new ones.
-                # Actually, if we are "updating" the changelog for the *current* version,
-                # we probably want to capture everything.
                 current_items_simple = [x.split(' ([')[0] for x in categories[cat]] # approximate
                 for item in items:
                     # simplistic dedup
@@ -274,17 +264,6 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
                     else:
                          # logic to prefer one? Let's just keep the auto one if it matches.
                          pass
-
-            # Actually, simpler: Just Re-generate the full list of commits from git
-            # and append any *manual* notes found in the existing entry that *aren't* in git?
-            # That's hard.
-            # User request: "erweitere den Changelog um auto changelog inhalt" (extend with auto content).
-            # This implies the existing content is manual/custom and we should add our auto-detected stuff to it.
-
-            # Let's trust git log is the source of truth for "auto content".
-            # We will render the git log categories.
-            # If the user wrote something, where is it?
-            # If they wrote "### Fixed\n- my fix", we should preserve it.
 
             pass
 
@@ -295,19 +274,6 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
                     entry += f"- {item}\n"
                 entry += "\n"
 
-        # If existing entry had content not in our categories, we might lose it with clean regeneration.
-        # But implementing a full merge is complex.
-        # Strategy: If existing entry exists, we Append our auto-generated stuff?
-        # Or we prepend it?
-        # "Erweitere ... um auto changelog inhalt".
-        # Let's append the auto-generated categories *after* any user defined text?
-        # Or merge into the categories.
-
-        # Revised Strategy for "Extend":
-        # 1. Take existing entry body.
-        # 2. Append "### Auto-detected Changes" ? No, that's ugly.
-        # 3. Just merging categories is best.
-
         if changelog_message and changelog_message not in [
             "Manual Release via Orchestrator",
             "Automatic release after dependency update",
@@ -316,11 +282,7 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
 
         # If we had existing content, we might want to preserve "Release Note" styled things.
         if existing_entry:
-             # simple append of original raw content if it doesn't look like generated categories
-             # This is risky.
-             # Let's stick to: Overwrite with full git history (which includes the manual commit presumably)
-             # PLUS keep specific manual notes?
-             pass
+            pass
 
     else:
         if changelog_message:
@@ -385,12 +347,12 @@ def update_image_tag(content, addon_path, is_dev):
         # ADD/RESTORE/UPDATE image tag for release versions
         # New format: image: ghcr.io/faserf/{slug}-{arch}
         # Old format (legacy): image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
-        
+
         correct_image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
-        
+
         # Check if image field exists
         image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
-        
+
         if image_match:
             existing_image = image_match.group(1).strip().strip('"').strip("'")
             # Check if it needs updating to correct format
