@@ -99,7 +99,7 @@ def get_packages_via_graphql():
     while has_next_page:
         variables = {
             "org": ORG_NAME,
-            "packageType": "CONTAINER",
+            "packageType": "DOCKER",
             "first": 100,
             "after": cursor
         }
