@@ -256,7 +256,7 @@ jobs:
           fi
 
           # Dependencies
-          if echo "${{ needs.filter-ingress.outputs.ingress_addons }}" | grep -qE "wiki.js|pterodactyl-panel"; then
+          if echo "${{ needs.filter-ingress.outputs.ingress_addons }}" | grep -qE "wiki.js|pterodactyl-panel|wordpress"; then
             echo "Installing Dependency: MariaDB (core_mariadb)..."
             if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
@@ -306,7 +306,7 @@ jobs:
             addon=$(echo "$addon" | xargs)  # trim whitespace
             if [ -z "$addon" ]; then continue; fi
 
-            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel"; then
+            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel|wordpress"; then
                  echo "⏭️ $addon dependency failed - skipping"
                  RESULTS="$RESULTS\n⏭️ $addon: SKIP (Dependency failed)"
                  continue
@@ -441,6 +441,9 @@ jobs:
                 OPTS='{"website_name": "example.com"}'
               elif [ "$addon" = "bash_script_executer" ]; then
                 OPTS='{"script_path": "/share/test.sh"}'
+              elif [ "$addon" = "wordpress" ]; then
+                # Wordpress requires database config
+                OPTS='{"database_host": "core-mariadb"}'
               fi
 
               if [ -n "$OPTS" ]; then
