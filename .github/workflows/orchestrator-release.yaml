@@ -611,16 +611,45 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stash any local changes first
-          git stash || echo "No changes to stash"
-          # Fetch latest changes
+          
+          # Store local changes for this addon
+          ADDON_FILES="${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "📦 Stashing local changes for ${{ matrix.addon }}..."
+            git stash push -m "temp-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+          fi
+          
+          # Fetch and update to latest master
           git fetch origin master
-          # Reset to match remote exactly
           git reset --hard origin/master
-          # Restore stashed changes if any
-          git stash pop || echo "No stashed changes"
-          # Pull any new changes
-          git pull origin master --no-rebase || echo "Already up to date"
+          
+          # Restore and reapply local changes
+          if git stash list | grep -q "temp-stash-${{ matrix.addon }}"; then
+            echo "🔄 Restoring local changes for ${{ matrix.addon }}..."
+            # Find the stash entry
+            STASH_ENTRY=$(git stash list | grep "temp-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              # Apply stash (don't pop, in case of conflicts)
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Merge conflict detected, resolving..."
+                # If there's a conflict, resolve by taking our version (the addon files)
+                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
+                git add $ADDON_FILES
+                # Clean up the stash
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+          
+          # Ensure we're on the latest master (handle any merge state)
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/master
+          
+          # Reapply changes one more time if needed
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "✅ Local changes preserved for ${{ matrix.addon }}"
+          fi
 
       - name: 🚀 Commit Changes
         id: commit_changes
@@ -636,17 +665,45 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stash any local changes
-          git stash || echo "No changes to stash"
-          # Fetch and reset to remote
+          
+          ADDON_FILES="${{ matrix.addon }}/*"
+          
+          # Clean up any merge/rebase state
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          
+          # Store local changes
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "📦 Stashing local changes for retry..."
+            git stash push -m "retry-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+          fi
+          
+          # Fetch and reset to latest master
           git fetch origin master
           git reset --hard origin/master
-          # Restore stashed changes
-          git stash pop || echo "No stashed changes"
-          git pull origin master --no-rebase || echo "Already up to date"
+          
+          # Restore changes
+          if git stash list | grep -q "retry-stash-${{ matrix.addon }}"; then
+            STASH_ENTRY=$(git stash list | grep "retry-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Conflict on retry, using our version..."
+                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
+                git add $ADDON_FILES
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+          
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
-            git add "${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            git add $ADDON_FILES
+            # Use rebase strategy to avoid merge commits
+            git pull --rebase origin master || {
+              echo "⚠️ Rebase failed, trying merge..."
+              git rebase --abort 2>/dev/null || true
+              git pull origin master --no-rebase || echo "Already up to date"
+            }
             git commit -m "${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
             git push origin master || echo "Push failed"
           fi
@@ -813,14 +870,41 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stash any local changes
-          git stash || echo "No changes to stash"
-          # Fetch and reset to remote
+          
+          # Store local changes for this addon
+          ADDON_FILES="${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
+            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+          fi
+          
+          # Fetch and update to latest master
           git fetch origin master
           git reset --hard origin/master
-          # Restore stashed changes
-          git stash pop || echo "No stashed changes"
-          git pull origin master --no-rebase || echo "Already up to date"
+          
+          # Restore and reapply local changes
+          if git stash list | grep -q "temp-stash-dev-${{ matrix.addon }}"; then
+            echo "🔄 Restoring local changes for ${{ matrix.addon }} (dev version)..."
+            STASH_ENTRY=$(git stash list | grep "temp-stash-dev-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Merge conflict detected, resolving..."
+                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
+                git add $ADDON_FILES
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+          
+          # Ensure we're on the latest master (handle any merge state)
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/master
+          
+          # Reapply changes one more time if needed
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "✅ Local changes preserved for ${{ matrix.addon }} (dev version)"
+          fi
 
       - name: 🚀 Commit Dev Version
         id: commit_dev
@@ -841,17 +925,45 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stash any local changes
-          git stash || echo "No changes to stash"
-          # Fetch and reset to remote
+          
+          ADDON_FILES="${{ matrix.addon }}/*"
+          
+          # Clean up any merge/rebase state
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          
+          # Store local changes
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            echo "📦 Stashing local changes for retry (dev version)..."
+            git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+          fi
+          
+          # Fetch and reset to latest master
           git fetch origin master
           git reset --hard origin/master
-          # Restore stashed changes
-          git stash pop || echo "No stashed changes"
-          git pull origin master --no-rebase || echo "Already up to date"
+          
+          # Restore changes
+          if git stash list | grep -q "retry-stash-dev-${{ matrix.addon }}"; then
+            STASH_ENTRY=$(git stash list | grep "retry-stash-dev-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+            if [ -n "$STASH_ENTRY" ]; then
+              git stash apply "$STASH_ENTRY" || {
+                echo "⚠️ Conflict on retry, using our version..."
+                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
+                git add $ADDON_FILES
+                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+              }
+            fi
+          fi
+          
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain ${{ matrix.addon }}/*)" ]; then
-            git add "${{ matrix.addon }}/*"
+          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+            git add $ADDON_FILES
+            # Use rebase strategy to avoid merge commits
+            git pull --rebase origin master || {
+              echo "⚠️ Rebase failed, trying merge..."
+              git rebase --abort 2>/dev/null || true
+              git pull origin master --no-rebase || echo "Already up to date"
+            }
             git commit -m "chore(${{ matrix.addon }}): bump to dev version [skip-tests]" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
             git push origin master || echo "Push failed"
           fi
