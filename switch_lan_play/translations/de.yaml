@@ -1,7 +1,0 @@
-configuration:
-  server:
-    name: "Server-Adresse"
-    description: "Adresse des Lan-Play-Servers (z.B. switch.lan-play.com:11451)."
-  log_level:
-    name: "Log-Stufe"
-    description: "Legt die Log-Stufe fest. Verwende 'debug' für detaillierte Debug-Nachrichten oder 'info' um Debug-Nachrichten auszufiltern (Standard: info)."

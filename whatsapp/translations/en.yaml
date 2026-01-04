@@ -1,6 +1,0 @@
-configuration:
-  log_level:
-    name: Log Level
-    description: Controls the verbosity of the logs.
-network:
-  8099/tcp: Internal API Port for the Integration to connect to.

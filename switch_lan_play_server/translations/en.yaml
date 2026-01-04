@@ -1,7 +1,0 @@
-configuration:
-  username:
-    name: "Username"
-    description: "Username for the server."
-  password:
-    name: "Password"
-    description: "Password for the server."

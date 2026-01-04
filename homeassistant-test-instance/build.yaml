@@ -1,5 +1,0 @@
----
-# Pin to specific version for reproducible builds (CodeRabbit: reproducible builds)
-build_from:
-  aarch64: "ghcr.io/home-assistant/home-assistant:2025.12.5"
-  amd64: "ghcr.io/home-assistant/home-assistant:2025.12.5"

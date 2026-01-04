@@ -1,4 +1,0 @@
-configuration:
-  config_file:
-    name: "Configuration File"
-    description: "Content of the configuration file."

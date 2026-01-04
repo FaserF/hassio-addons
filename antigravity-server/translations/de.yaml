@@ -1,7 +1,0 @@
-configuration:
-  vnc_password:
-    name: "VNC Passwort"
-    description: "Optionales Passwort für den VNC-Zugang. Wenn leer, wird ein Passwort generiert."
-  log_level:
-    name: "Protokoll-Ebene"
-    description: "Steuert die Ausführlichkeit der Protokolle (Standard ist 'info')."

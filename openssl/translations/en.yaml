@@ -1,4 +1,0 @@
-configuration:
-  website_name:
-    name: "Website Name (CN)"
-    description: "The Common Name (CN) for which the certificate should be issued."

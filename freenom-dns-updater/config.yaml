@@ -1,0 +1,20 @@
+arch:
+  - aarch64
+  - amd64
+description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
+  a domain's dns record, auto renew domains and more. (Unsupported)
+
+init: false
+map:
+  - share:rw
+name: Freenom-dns-updater (Unsupported)
+options:
+  config_file: null
+  update_time_in_seconds: 86400
+panel_icon: mdi:web-box
+schema:
+  config_file: str
+  update_time_in_seconds: int
+slug: freenom-dns-updater
+url: https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater
+version: 2.0.0
