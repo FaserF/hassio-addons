@@ -85,8 +85,13 @@ fi
 if [ -L /config ]; then
 	rm /config
 elif [ -d /config ]; then
-	# Try to remove if empty/not mount, otherwise warn and skip
-	rmdir /config 2>/dev/null || echo "Info: /config is a mount or non-empty/busy, skipping replacement with symlink."
+	# Check if /config is a mount
+	if grep -q " /config " /proc/mounts; then
+		echo "Info: /config is a mount, skipping replacement with symlink."
+	else
+		echo "Info: Removing existing /config directory to replace with symlink..."
+		rm -rf /config
+	fi
 else
 	rm -f /config
 fi
