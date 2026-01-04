@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       addon:
-        description: "Add-on slug (folder name), 'all' for all add-ons, or 'detect' for auto"
+        description: "Add-on slug (folder name) or list (comma-separated), 'all' for all add-ons, or 'detect' for auto"
         required: true
         type: string
       version:
@@ -165,17 +165,79 @@ jobs:
               echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
             elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
               IS_ALL="false"
-              # Single addon specified - check if it's from .unsupported
-              if [[ "$INPUT_ADDON" == .unsupported/* ]] || [[ "$INPUT_ADDON" == .unsupported* ]]; then
-                echo "❌ Error: .unsupported addons cannot be built via this workflow"
-                echo "   .unsupported addons are built locally from the unsupported branch"
-                echo "   Please build $INPUT_ADDON manually or use the unsupported branch workflow"
-                SHOULD_RELEASE="false"
-                ADDONS=""
+              # Handle comma-separated list
+              IFS=',' read -ra INPUT_ADDONS_ARRAY <<< "$INPUT_ADDON"
+              VALID_ADDONS=""
+
+              for addon in "${INPUT_ADDONS_ARRAY[@]}"; do
+                  addon=$(echo "$addon" | xargs) # trim whitespace
+
+                  # Check if it exists (basic check, though dynamic check happens later too)
+                  if [ ! -d "$addon" ]; then
+                      echo "⚠️ Warning: Add-on directory '$addon' does not exist. Skipping."
+                      continue
+                  fi
+
+                  # Check unsupported
+                  if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]]; then
+                    echo "❌ Error: .unsupported addons cannot be built via this workflow"
+                    echo "   .unsupported addons are built locally from the unsupported branch"
+                    echo "   Skipping $addon"
+                    continue
+                  fi
+
+                  [ -z "$VALID_ADDONS" ] && VALID_ADDONS="$addon" || VALID_ADDONS="$VALID_ADDONS,$addon"
+              done
+
+              if [ -n "$VALID_ADDONS" ]; then
+                  ADDONS="$VALID_ADDONS"
+                  SHOULD_RELEASE="true"
+                  echo "📦 Add-ons to release: $ADDONS"
               else
-                ADDONS="$INPUT_ADDON"
-                SHOULD_RELEASE="true"
-                echo "📦 Single addon specified: $ADDONS"
+                  echo "❌ No valid add-ons found to release from input: '$INPUT_ADDON'"
+                  SHOULD_RELEASE="false"
+              fi
+            elif [ "$INPUT_ADDON" == "detect" ]; then
+              IS_ALL="false"
+              echo "🔍 Auto-detection triggered manually (checking HEAD^ vs HEAD)"
+
+              # Get list of changed files
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+              for file in $CHANGED_FILES; do
+                # Skip .unsupported addons
+                if [[ "$file" == .unsupported/* ]]; then
+                  echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                  continue
+                fi
+
+                if [[ "$file" == *"/config.yaml" ]]; then
+                  addon_dir=$(dirname "$file")
+                  addon_name=$(basename "$addon_dir")
+
+                  # Check if version changed
+                  # Get old version (handle new file case)
+                  if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
+                      OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                  else
+                      OLD_VERSION=""
+                      echo "  ℹ️ New file detected (no old version)"
+                  fi
+                  # Get new version
+                  NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                  if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                     echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
+                     [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                     SHOULD_RELEASE="true"
+                     IS_MANUAL_BUMP="true"
+                     VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                  fi
+                fi
+              done
+
+              if [ -z "$ADDONS" ]; then
+                echo "ℹ️ No version bumps detected in last commit."
               fi
             else
               IS_ALL="false"
