@@ -14,5 +14,6 @@ schema:
   firmware_name: str
   firmware_path: str
 slug: xqrepack
+image: ghcr.io/faserf/hassio-addons-xqrepack-{arch}
 url: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
 version: 2.0.0
