@@ -290,6 +290,34 @@ jobs:
                 fi
               done
             else
+              # ----------------------------------------------------------------
+              # Detect NEW Add-ons (config.yaml added)
+              # ----------------------------------------------------------------
+              echo "🔍 Checking for newly added add-ons..."
+              # Check for added config.yaml files using git diff
+              # HEAD is the merge commit. HEAD^ is the previous commit on master (first parent).
+              ADDED_FILES=$(git diff --name-status HEAD^ HEAD 2>/dev/null || echo "")
+
+              # Filter for Added (A) config.yaml files
+              ADDED_CONFIGS=$(echo "$ADDED_FILES" | grep "^A" | grep "config.yaml" | awk '{print $2}' || echo "")
+
+              for file in $ADDED_CONFIGS; do
+                 # Skip .unsupported
+                 if [[ "$file" == .unsupported/* ]]; then
+                    continue
+                 fi
+
+                 # Check if it matches pattern: addon_slug/config.yaml
+                 if [[ "$file" =~ ^([^/]+)/config.yaml$ ]]; then
+                    addon_dir="${BASH_REMATCH[1]}"
+                    echo "  🚀 Detected NEW add-on: $addon_dir"
+                    # Add to ADDONS if not already there
+                    if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    fi
+                 fi
+              done
+
               # Normal dependency update - only release addons in AUTO_RELEASE_ADDONS list
               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
               echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list (excluding .unsupported)"
@@ -363,8 +391,13 @@ jobs:
                    addon_name=$(basename "$addon_dir")
 
                    # Check if version changed
-                   # Get old version
-                   OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                   # Get old version (handle new file case)
+                   if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
+                       OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                   else
+                       OLD_VERSION=""
+                       echo "  ℹ️ New file detected (no old version)"
+                   fi
                    # Get new version
                    NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
