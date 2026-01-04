@@ -23,6 +23,7 @@ ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3018
 # shellcheck disable=SC2015
 RUN mkdir /run/apache2 \
     && apk --no-cache add \

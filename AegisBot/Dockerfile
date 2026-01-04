@@ -29,6 +29,7 @@ ENV ADDON_NAME="AegisBot"
 ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3018
 RUN \
     apk add --no-cache \
     musl \

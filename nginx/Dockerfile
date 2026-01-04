@@ -22,6 +22,7 @@ ENV ADDON_SLUG="nginx"
 ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
+# hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     && apk --no-cache add \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \

@@ -18,7 +18,7 @@ ENV ADDON_SLUG="apache2"
 ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
-# hadolint ignore=DL3018
+# hadolint ignore=DL3018,DL3003
 RUN mkdir /run/apache2 \
     && apk --no-cache add \
     # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
@@ -65,7 +65,7 @@ RUN mkdir /run/apache2 \
     mariadb-client \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 \
-    && wget --progress=dot:giga https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
+    && curl -L -o musl-locales-master.zip https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
     && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
@@ -73,10 +73,11 @@ RUN mkdir /run/apache2 \
     && apk del --no-cache cmake make gcc gettext-dev libintl
 
 # Configure Logging
+# shellcheck disable=SC2015
 RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf \
-    && addgroup -S www-data || true \
-    && adduser -S -G www-data www-data || true
+    && (addgroup -S www-data || true) \
+    && (adduser -S -G www-data www-data || true)
 
 # Copy data for add-on
 COPY rootfs /

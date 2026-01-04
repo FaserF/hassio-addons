@@ -20,6 +20,7 @@ ENV ADDON_NAME="Tado Auto Assist"
 ENV ADDON_SLUG="tado_aa"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache curl
 
 # Download and patch tado_aa.py to use environment variables
@@ -38,7 +39,7 @@ RUN python3 -m venv venv
 # Install python-tado via pip
 # hadolint ignore=DL3042
 ENV TADO_VERSION="0.19.2"
-# shellcheck source=/dev/null disable=SC1091
+# shellcheck disable=SC1091
 RUN source ./venv/bin/activate && \
     pip install --no-cache-dir python-tado==${TADO_VERSION}
 
