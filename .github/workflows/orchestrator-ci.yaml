@@ -86,6 +86,10 @@ jobs:
           import uuid
 
           filters = {}
+          # Add-ons excluded from CI builds/tests (only built during release)
+          # These add-ons are too large or resource-intensive for CI
+          CI_EXCLUDED_ADDONS = {"sap-abap-cloud-dev"}
+
           # Scan for config.yaml to identify add-ons
           for root, dirs, files in os.walk("."):
               if "config.yaml" in files:
@@ -104,6 +108,11 @@ jobs:
                   if len(parts) > 1 and any(p.startswith(".") for p in parts):
                        # Skip any path containing hidden directories
                        continue
+
+                  # Skip CI-excluded add-ons (heavy/long-running, only built on release)
+                  if addon_name in CI_EXCLUDED_ADDONS:
+                      print(f"Skipping CI-excluded add-on: {addon_name}")
+                      continue
 
                   filters[addon_name] = [f"{addon_name}/**"]
 
