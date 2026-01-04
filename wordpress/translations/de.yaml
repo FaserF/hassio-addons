@@ -13,7 +13,7 @@ configuration:
     description: Passwort für die Datenbank.
   wordpress_title:
     name: Seitentitel
-    description: Titel deiner Wordpress-Seite.
+    description: Titel deiner WordPress-Seite.
   wordpress_admin_user:
     name: Admin Benutzer
     description: Benutzername für das generische Admin-Konto.

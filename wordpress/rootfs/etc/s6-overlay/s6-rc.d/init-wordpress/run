@@ -65,7 +65,7 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     # Replace placeholder salts in config
     # We remove the default placeholder blocks and append the proper ones, or robustly replace line by line.
     # Simpler: Delete the default salt definitions and append new ones.
-    sed -i "/define( 'AUTH_KEY'/,/define( 'NONCE_SALT'/d" /var/www/wordpress/wp-config.php
+    sed -i "/define('AUTH_KEY'/,/define('NONCE_SALT'/d" /var/www/wordpress/wp-config.php
     cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
     rm -f /tmp/wp-salts
 fi
