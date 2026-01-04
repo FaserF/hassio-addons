@@ -60,20 +60,22 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     # Salt
     bashio::log.info "Generating salts..."
     if ! curl -s https://api.wordpress.org/secret-key/1.1/salt/ > /tmp/wp-salts; then
-         bashio::exit.nok "Failed to fetch unique keys and salts from WordPress.org!"
+         bashio::log.warning "Failed to fetch unique keys and salts from WordPress.org! Using defaults (potentially insecure)."
+         rm -f /tmp/wp-salts
+    else
+        # Validate salt content
+        if [ ! -s /tmp/wp-salts ] || ! grep -q "define('AUTH_KEY'" /tmp/wp-salts; then
+            bashio::log.warning "Downloaded salt file is empty or invalid! Using defaults (potentially insecure)."
+            rm -f /tmp/wp-salts
+        else
+            # Request successful and valid: Replace placeholder salts
+            # Delete the default salt definitions and append new ones.
+            sed -i "/define('AUTH_KEY'/,/define('NONCE_SALT'/d" /var/www/wordpress/wp-config.php
+            cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
+            rm -f /tmp/wp-salts
+            bashio::log.info "Authentication keys and salts successfully updated."
+        fi
     fi
-
-    # Validate salt content
-    if [ ! -s /tmp/wp-salts ] || ! grep -q "define('AUTH_KEY'" /tmp/wp-salts; then
-        rm -f /tmp/wp-salts
-        bashio::exit.nok "Downloaded salt file is empty or invalid!"
-    fi
-
-    # Replace placeholder salts in config
-    # Delete the default salt definitions and append new ones.
-    sed -i "/define('AUTH_KEY'/,/define('NONCE_SALT'/d" /var/www/wordpress/wp-config.php
-    cat /tmp/wp-salts >> /var/www/wordpress/wp-config.php
-    rm -f /tmp/wp-salts
 fi
 
 # Permissions
