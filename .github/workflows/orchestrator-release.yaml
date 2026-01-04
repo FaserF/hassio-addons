@@ -684,9 +684,9 @@ jobs:
           git rebase --abort 2>/dev/null || true
 
           # Store local changes
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
             echo "📦 Stashing local changes for retry..."
-            git stash push -m "retry-stash-${{ matrix.addon }}" -- $ADDON_FILES || echo "No changes to stash"
+            git stash push -m "retry-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
           fi
 
           # Fetch and reset to latest master
@@ -846,6 +846,7 @@ jobs:
             IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
           else
             # Remove ghcr.io/faserf/ prefix to get package name
+            # shellcheck disable=SC2001
             IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
           fi
 
@@ -963,16 +964,16 @@ jobs:
             if [ -n "$STASH_ENTRY" ]; then
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Conflict on retry, using our version..."
-                git checkout --ours -- $ADDON_FILES 2>/dev/null || true
-                git add $ADDON_FILES
+                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
+                git add "$ADDON_FILES"
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
             fi
           fi
 
           # Check if there are changes to commit
-          if [ -n "$(git status --porcelain $ADDON_FILES)" ]; then
-            git add $ADDON_FILES
+          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+            git add "$ADDON_FILES"
             # Use rebase strategy to avoid merge commits
             git pull --rebase origin master || {
               echo "⚠️ Rebase failed, trying merge..."
