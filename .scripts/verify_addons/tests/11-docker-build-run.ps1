@@ -33,6 +33,7 @@ $mockName = "mock-supervisor"
 $networkName = "ha-addon-test-net"
 $globalMockDir = Join-Path $OutputDir "tmp_mock_global"
 $globalOptionsPath = $null
+$script:KeepGlobalEnv = $false
 
 if ($doRuns) {
     Write-Host "    > Setting up global persistent mock environment..." -ForegroundColor Gray
@@ -519,6 +520,7 @@ try {
 
             if ($hasCustomTest -and $willRunCustom) {
                 Write-Host "    > Custom test found for $($a.Name), keeping container '$contName' for later reuse." -ForegroundColor Gray
+                $script:KeepGlobalEnv = $true
             } else {
                 docker rm -f $contName 2>&1 | Out-Null
                 Remove-Item $tempDir -Recurse -Force 2>$null
@@ -528,10 +530,12 @@ try {
     }
 } finally {
     # Global Cleanup
-    if ($doRuns) {
+    if ($doRuns -and -not $script:KeepGlobalEnv) {
         Write-Host "    > Cleaning up global mock environment..." -ForegroundColor Gray
         try { docker rm -f $mockName 2>&1 | Out-Null } catch {}
         try { docker network rm $networkName 2>&1 | Out-Null } catch {}
         try { Remove-Item $globalMockDir -Recurse -Force 2>$null } catch {}
+    } elseif ($script:KeepGlobalEnv) {
+        Write-Host "    > Preserving global mock environment for custom tests..." -ForegroundColor DarkGray
     }
 }

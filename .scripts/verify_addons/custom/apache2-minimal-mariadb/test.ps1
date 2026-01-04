@@ -6,7 +6,7 @@ param(
     [Parameter(Mandatory)]$ContainerName
 )
 
-Write-Host "    > [Custom] Verifying Apache2 Functionality..." -ForegroundColor Gray
+Write-Host "    > [Custom] Verifying Apache2 Minimal MariaDB Functionality..." -ForegroundColor Gray
 
 # Get Docker Logs
 $logs = docker logs "$ContainerName" 2>&1
@@ -23,15 +23,6 @@ if ($logs -match "Apache/|httpd|AH00558|resuming normal operations") {
     Add-Result -Addon $Addon.Name -Check "ApacheStartup" -Status "PASS" -Message "Apache startup detected in logs."
 } else {
     Add-Result -Addon $Addon.Name -Check "ApacheStartup" -Status "WARN" -Message "Apache startup message not found."
-}
-
-# Check for PHP (if not minimal)
-if ($Addon.Name -notmatch "minimal") {
-    if ($logs -match "PHP/|php-fpm|PHP 8") {
-        Add-Result -Addon $Addon.Name -Check "PHPLoaded" -Status "PASS" -Message "PHP runtime detected."
-    } else {
-        Add-Result -Addon $Addon.Name -Check "PHPLoaded" -Status "INFO" -Message "PHP not detected in logs (may be normal)."
-    }
 }
 
 # Check for Version Warning (if beta)

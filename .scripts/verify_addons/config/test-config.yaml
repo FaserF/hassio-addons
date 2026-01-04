@@ -32,7 +32,7 @@ scriptVersion: "3.0.0"
 skipDockerRun:
   wiki.js: "Requires MySQL Service"
   switch_lan_play: "Requires external switch-lan-play server"
-  netboot-xyz: "Complex initialization requires real environment"
+
 
 # --- VALID TEST NAMES ---
 validTests:
