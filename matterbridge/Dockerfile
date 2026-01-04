@@ -45,13 +45,13 @@ RUN mkdir /etc/matterbridge \
   && ln -sf /matterbridge.toml /etc/matterbridge/matterbridge.toml
 
 # Copy data for add-on
-COPY run.sh /
-RUN chmod a+x /run.sh
+WORKDIR /
+COPY run.sh /etc/services.d/matterbridge/run
+RUN chmod +x /etc/services.d/matterbridge/run
+
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
     CMD pgrep -x matterbridge || exit 1
-
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="Matterbridge"

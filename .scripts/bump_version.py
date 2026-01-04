@@ -18,7 +18,6 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 
-
 # GitHub repository for commit links
 GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
 
@@ -246,8 +245,6 @@ def generate_changelog_entry(
     entry = f"{heading}\n\n"
 
     repo_url = get_git_remote_url()
-
-
 
     commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
 

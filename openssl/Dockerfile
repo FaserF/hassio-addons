@@ -16,13 +16,12 @@ ENV ADDON_UNSUPPORTED="false"
 RUN apk --no-cache add openssl
 
 # Copy data for add-on
-COPY run.sh /
-RUN chmod a+x /run.sh
+WORKDIR /
+COPY run.sh /etc/services.d/openssl/run
+RUN chmod +x /etc/services.d/openssl/run
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD /usr/bin/openssl rand -base64 8 > /dev/null 2>&1 || exit 1
-
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL \

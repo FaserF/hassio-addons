@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory)]$RepoRoot,
     [Parameter(Mandatory)]$ContainerName
 )
-Write-Host "    > [Custom] Verifying Nginx..." -ForegroundColor Gray
+Write-Host "    > [Custom] Verifying Wordpress..." -ForegroundColor Gray
 $logs = docker logs "$ContainerName" 2>&1
 if ($logs -match "FaserF's Addon Repository") {
     Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "PASS" -Message "Banner found."

@@ -4,7 +4,6 @@ import sys
 import yaml
 
 
-
 def check_addon(addon_path):
     errors = []
     warnings = []

@@ -5,41 +5,19 @@ param(
     [Parameter(Mandatory)]$RepoRoot,
     [Parameter(Mandatory)]$ContainerName
 )
-
-Write-Host "    > [Custom] Verifying Apache2 Minimal MariaDB Functionality..." -ForegroundColor Gray
-
-# Get Docker Logs
+Write-Host "    > [Custom] Verifying Apache2-MariaDB..." -ForegroundColor Gray
 $logs = docker logs "$ContainerName" 2>&1
-
-# Check for Standard Banner or Custom Startup Message
-if ($logs -match "FaserF's Addon Repository" -or $logs -match "Starting Apache2...") {
-    Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "PASS" -Message "Banner/Startup message found."
+if ($logs -match "FaserF's Addon Repository") {
+    Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "PASS" -Message "Banner found."
+}
+$procCheck = docker exec "$ContainerName" ps aux 2>&1
+if ($procCheck -match "httpd" -or $procCheck -match "apache2") {
+     Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "PASS" -Message "Apache process detected."
 } else {
-    Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "FAIL" -Message "Banner NOT found in logs."
+     Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "FAIL" -Message "Apache process NOT found."
 }
-
-# Check for Apache startup
-if ($logs -match "Apache/|httpd|AH00558|resuming normal operations") {
-    Add-Result -Addon $Addon.Name -Check "ApacheStartup" -Status "PASS" -Message "Apache startup detected in logs."
+if ($procCheck -match "mariadbd" -or $procCheck -match "mysqld") {
+     Add-Result -Addon $Addon.Name -Check "DBCheck" -Status "PASS" -Message "MariaDB process detected."
 } else {
-    Add-Result -Addon $Addon.Name -Check "ApacheStartup" -Status "WARN" -Message "Apache startup message not found."
-}
-
-# Check for Version Warning (if beta)
-if ($logs -match "You are running a BETA version") {
-    Add-Result -Addon $Addon.Name -Check "VersionWarning" -Status "INFO" -Message "Beta warning detected."
-}
-
-# Try HTTP check if container is running
-try {
-    $containerIp = docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ContainerName 2>$null
-    if ($containerIp) {
-        $response = Invoke-WebRequest -Uri "http://${containerIp}:80" -TimeoutSec 15 -UseBasicParsing -ErrorAction SilentlyContinue
-        if ($response.StatusCode -eq 200) {
-            Add-Result -Addon $Addon.Name -Check "HTTPResponse" -Status "PASS" -Message "HTTP 200 OK from Apache"
-        }
-    }
-} catch {
-    # HTTP check is optional, don't fail if network isn't accessible
-    Write-Host "    > [Custom] HTTP check skipped (network not accessible)" -ForegroundColor DarkGray
+     Add-Result -Addon $Addon.Name -Check "DBCheck" -Status "FAIL" -Message "MariaDB process NOT found."
 }

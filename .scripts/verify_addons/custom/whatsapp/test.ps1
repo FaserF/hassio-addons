@@ -26,13 +26,13 @@ if (-not $containerRunning) {
 
 # 2. Test: Verify Health Endpoint
 # The addon starts a web server on port 8099
-Write-Host "      - Verifying health endpoint (http://127.0.0.1:8099/)..." -ForegroundColor Gray
+Write-Host "      - Verifying health endpoint (http://127.0.0.1:8066/)..." -ForegroundColor Gray
 
 # Wait loop (up to 120 seconds)
 $healthPassed = $false
 for ($i = 0; $i -lt 24; $i++) {
     # Attempt curl inside container
-    $curlResult = docker exec $ContainerName curl -f -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8099/ 2>$null
+    $curlResult = docker exec $ContainerName curl -f -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8066/health 2>$null
     $curlResult = $curlResult.Trim()
 
     # Write-Host "DEBUG: Curl result: '$curlResult'" -ForegroundColor DarkGray

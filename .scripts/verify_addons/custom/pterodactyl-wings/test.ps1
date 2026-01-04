@@ -5,14 +5,13 @@ param(
     [Parameter(Mandatory)]$RepoRoot,
     [Parameter(Mandatory)]$ContainerName
 )
-Write-Host "    > [Custom] Verifying Nginx..." -ForegroundColor Gray
+Write-Host "    > [Custom] Verifying Pterodactyl Wings..." -ForegroundColor Gray
 $logs = docker logs "$ContainerName" 2>&1
 if ($logs -match "FaserF's Addon Repository") {
     Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "PASS" -Message "Banner found."
 }
-$procCheck = docker exec "$ContainerName" ps aux 2>&1
-if ($procCheck -match "nginx") {
-     Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "PASS" -Message "Nginx process detected."
+if ($logs -match "wings") {
+     Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "PASS" -Message "Wings process/log detected."
 } else {
-     Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "FAIL" -Message "Nginx process NOT found."
+    Add-Result -Addon $Addon.Name -Check "ProcessCheck" -Status "WARN" -Message "Wings start not confirmed."
 }

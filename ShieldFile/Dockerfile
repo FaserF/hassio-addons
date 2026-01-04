@@ -37,16 +37,15 @@ RUN apk add --no-cache curl bash dos2unix openssl \
 COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser
 
 # Copy Addon run script to S6 services directory
-# Copy Run Script
-COPY run.sh /run.sh
-RUN dos2unix /run.sh && chmod a+x /run.sh
+WORKDIR /
+COPY run.sh /etc/services.d/shieldfile/run
+RUN dos2unix /etc/services.d/shieldfile/run && chmod +x /etc/services.d/shieldfile/run
 
 # Healthcheck
 HEALTHCHECK \
     --interval=5m --timeout=3s \
     CMD curl --fail http://127.0.0.1:80/ || exit 1
 
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"

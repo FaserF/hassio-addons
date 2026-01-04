@@ -120,6 +120,20 @@ try {
             docker pull $builderImage | Out-Null
         }
 
+        # CONFIG: Force cleanup of the "GitHub Addon Image" if it exists, to ensure we never use it.
+        # This addresses the user requirement: "never use the github addon image".
+        if (Test-Path $configFile) {
+            $confObj = Get-Content $configFile | ConvertFrom-Yaml
+            if ($confObj.image) {
+                # Expand {arch}
+                $remoteImg = $confObj.image.Replace("{arch}", $arch)
+                if (docker images -q $remoteImg) {
+                    Write-Host "    > Enforcing local build: Removing detected remote image '$remoteImg'..." -ForegroundColor DarkGray
+                    docker rmi -f $remoteImg 2>&1 | Out-Null
+                }
+            }
+        }
+
         # Construct Builder Arguments
         $buildArgs = @("run", "--rm", "--privileged")
         $buildArgs += "-v", "/var/run/docker.sock:/var/run/docker.sock"
@@ -131,13 +145,13 @@ try {
         $buildArgs += "--target", "/data"
         $buildArgs += "--image", $imgName
         $buildArgs += "--docker-hub", "local"
+        $buildArgs += "--no-cache" # Force rebuild
 
         $buildSuccess = $false
         $skippedBuild = $false
 
-        # Check for existing image (exact match first, then by name)
-        # We use strict sub-expressions $() to ensure command executes separate from -or
-        if ($CacheImages -and ($(docker images -q "local/${imgName}:latest") -or $(docker images -q "local/${imgName}"))) {
+        # Force build (ignore cache check logic for now as per requirement)
+        if ($false -and $CacheImages -and ($(docker images -q "local/${imgName}:latest") -or $(docker images -q "local/${imgName}"))) {
              Write-Host "    > Cache enabled: Image 'local/$imgName' found. Skipping build." -ForegroundColor Green
              $buildSuccess = $true
              $skippedBuild = $true
