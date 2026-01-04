@@ -25,15 +25,17 @@ The most popular publication platform on the Web.
 
 WordPress is open-source software you can use to create a beautiful website, blog, or app.
 
-This add-on brings Wordpress to Home Assistant, allowing you to host your own website directly on your Home Assistant instance.
+This add-on brings Wordpress to Home Assistant, allowing you to host your own website directly
+on your Home Assistant instance.
 
 ## Installation
 
 1. Search for the "Wordpress" add-on in the Supervisor add-on store and install it.
-2. Configure the `database` settings in the `Configuration` tab. You must have a MariaDB/MySQL database available.
-3. Start the "Wordpress" add-on.
-4. Check the logs of the "Wordpress" add-on to see if everything went well.
-5. Click the "OPEN WEB UI" button to access your Wordpress site.
+1. Configure the `database` settings in the `Configuration` tab. You must have a MariaDB/MySQL
+   database available.
+1. Start the "Wordpress" add-on.
+1. Check the logs of the "Wordpress" add-on to see if everything went well.
+1. Click the "OPEN WEB UI" button to access your Wordpress site.
 
 ---
 
@@ -56,39 +58,35 @@ wordpress_title: My Blog
 
 ---
 
-## ⚙️ Configuration
-
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
-
-#### Option: `database_host`
+### Option: `database_host`
 
 The hostname of your MariaDB/MySQL database.
 
-#### Option: `database_name`
+### Option: `database_name`
 
 The name of the database to use.
 
-#### Option: `database_password`
+### Option: `database_password`
 
 The password for the database user.
 
-#### Option: `database_user`
+### Option: `database_user`
 
 The username for the database.
 
-#### Option: `wordpress_admin_email`
+### Option: `wordpress_admin_email`
 
 The email address for the admin account.
 
-#### Option: `wordpress_admin_password`
+### Option: `wordpress_admin_password`
 
 The password for the admin account.
 
-#### Option: `wordpress_admin_user`
+### Option: `wordpress_admin_user`
 
 The username for the admin account.
 
-#### Option: `wordpress_title`
+### Option: `wordpress_title`
 
 The title of your Wordpress site.
 
