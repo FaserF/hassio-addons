@@ -43,9 +43,8 @@ def get_all_addons():
     if os.path.exists(unsupported_dir):
         for item in sorted(os.listdir(unsupported_dir)):
             item_path = os.path.join(unsupported_dir, item)
-            if (
-                os.path.isdir(item_path)
-                and os.path.exists(os.path.join(item_path, "config.yaml"))
+            if os.path.isdir(item_path) and os.path.exists(
+                os.path.join(item_path, "config.yaml")
             ):
                 addon_path = f".unsupported/{item}"
                 if item not in SKIP_ADDONS:

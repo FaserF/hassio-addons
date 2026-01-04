@@ -70,7 +70,15 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
             if image:
                 # Extract package name from image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
                 # Remove ghcr.io/faserf/ prefix and -{arch} suffix
-                package_name = image.replace("ghcr.io/faserf/", "").replace("-{arch}", "").replace("-amd64", "").replace("-aarch64", "").replace("-armhf", "").replace("-armv7", "").replace("-i386", "")
+                package_name = (
+                    image.replace("ghcr.io/faserf/", "")
+                    .replace("-{arch}", "")
+                    .replace("-amd64", "")
+                    .replace("-aarch64", "")
+                    .replace("-armhf", "")
+                    .replace("-armv7", "")
+                    .replace("-i386", "")
+                )
             else:
                 # Fallback: derive from slug
                 addon_dirname = os.path.basename(addon_path)

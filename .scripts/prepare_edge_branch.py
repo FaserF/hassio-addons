@@ -39,7 +39,9 @@ def remove_image_from_config(config_path: str) -> bool:
         # First remove uncommented image lines
         new_content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
         # Then remove commented out image lines
-        new_content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE)
+        new_content = re.sub(
+            r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE
+        )
 
         if new_content != content:
             with open(config_path, "w", encoding="utf-8") as f:
@@ -86,9 +88,7 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
             rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
         )
         # Pattern 3: name: Value (no quotes)
-        pattern_nq = re.compile(
-            rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE
-        )
+        pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE)
 
         new_content = content
         updated = False

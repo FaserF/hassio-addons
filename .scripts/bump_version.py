@@ -14,8 +14,8 @@ import os
 import re
 import subprocess
 import sys
-from typing import Optional, Tuple
 from datetime import datetime
+from typing import Optional, Tuple
 
 import yaml  # Added for safe config handling
 
@@ -78,10 +78,13 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
             addon_tags = [
                 t
                 for t in tags
-                if (t == f"v{addon_name}"
-                or t.startswith(f"{addon_name}-")
-                or (t.startswith("v") and len(t.split("-")) == 1))  # simple v1.2.3
-                and t != ignore_tag # Ignore specific tag (e.g. current version if it exists)
+                if (
+                    t == f"v{addon_name}"
+                    or t.startswith(f"{addon_name}-")
+                    or (t.startswith("v") and len(t.split("-")) == 1)
+                )  # simple v1.2.3
+                and t
+                != ignore_tag  # Ignore specific tag (e.g. current version if it exists)
             ]
             tag = addon_tags[0] if addon_tags else None
 
@@ -222,20 +225,21 @@ def parse_existing_changelog_entry(content: str) -> dict:
     # ### Category
     # - Item
 
-    lines = content.split('\n')
+    lines = content.split("\n")
     for line in lines:
-        if line.startswith('### '):
-            current_category = line.replace('### ', '').strip()
+        if line.startswith("### "):
+            current_category = line.replace("### ", "").strip()
             if current_category not in categories:
                 categories[current_category] = []
-        elif line.strip().startswith('- ') and current_category:
+        elif line.strip().startswith("- ") and current_category:
             categories[current_category].append(line.strip()[2:])
 
     return categories
 
 
-
-def generate_changelog_entry(version, addon_path, changelog_message=None, existing_entry=None):
+def generate_changelog_entry(
+    version, addon_path, changelog_message=None, existing_entry=None
+):
     """Generate a detailed changelog entry with clickable links."""
     entry_date = datetime.now().strftime("%Y-%m-%d")
     heading = f"## {version} ({entry_date})"
@@ -243,7 +247,10 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
 
     repo_url = get_git_remote_url()
 
-    ignore_tags = [f"v{version}", f"{os.path.basename(addon_path.rstrip('/\\'))}-{version}"]
+    ignore_tags = [
+        f"v{version}",
+        f"{os.path.basename(addon_path.rstrip('/\\'))}-{version}",
+    ]
 
     commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
 
@@ -256,21 +263,25 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
             for cat, items in existing_categories.items():
                 if cat not in categories:
                     categories[cat] = []
-                current_items_simple = [x.split(' ([')[0] for x in categories[cat]] # approximate
+                current_items_simple = [
+                    x.split(" ([")[0] for x in categories[cat]
+                ]  # approximate
                 for item in items:
                     # simplistic dedup
-                    if item.split(' ([')[0] not in current_items_simple:
-                         categories[cat].insert(0, item + " (Manual)") # Mark manual entries? Or just add.
+                    if item.split(" ([")[0] not in current_items_simple:
+                        categories[cat].insert(
+                            0, item + " (Manual)"
+                        )  # Mark manual entries? Or just add.
                     else:
-                         # logic to prefer one? Let's just keep the auto one if it matches.
-                         pass
+                        # logic to prefer one? Let's just keep the auto one if it matches.
+                        pass
 
             pass
 
         for category, items in categories.items():
             if items:
                 entry += f"### {category}\n"
-                for item in items[:15]: # Limit increased
+                for item in items[:15]:  # Limit increased
                     entry += f"- {item}\n"
                 entry += "\n"
 
@@ -278,7 +289,7 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
             "Manual Release via Orchestrator",
             "Automatic release after dependency update",
         ]:
-             entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
+            entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
 
         # If we had existing content, we might want to preserve "Release Note" styled things.
         if existing_entry:
@@ -333,13 +344,9 @@ def update_image_tag(content, addon_path, is_dev):
         if re.search(image_pattern, content, re.MULTILINE):
             print("🔧 Removing image tag for dev version (forcing local build)")
             # Remove the image line completely (not just comment it)
-            content = re.sub(
-                r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE
-            )
+            content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
         # Also remove any commented out image lines that might exist
-        content = re.sub(
-            r"^(\s*)#\s*image:.*$\n?", "", content, flags=re.MULTILINE
-        )
+        content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", content, flags=re.MULTILINE)
         # Check if we actually removed something
         if not re.search(image_pattern, content, re.MULTILINE):
             print("ℹ️ No image tag found (already local build compliant)")
@@ -348,7 +355,9 @@ def update_image_tag(content, addon_path, is_dev):
         # New format: image: ghcr.io/faserf/{slug}-{arch}
         # Old format (legacy): image: ghcr.io/faserf/hassio-addons-{slug}-{arch}
 
-        correct_image_line = f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+        correct_image_line = (
+            f"image: ghcr.io/faserf/hassio-addons-{slug.lower()}-{{arch}}"
+        )
 
         # Check if image field exists
         image_match = re.search(r"^image:\s*(.+)$", content, re.MULTILINE)
@@ -359,12 +368,11 @@ def update_image_tag(content, addon_path, is_dev):
             if existing_image != correct_image_line.replace("image: ", ""):
                 # Update existing image field to correct format
                 content = re.sub(
-                    r"^image:\s*.+$",
-                    correct_image_line,
-                    content,
-                    flags=re.MULTILINE
+                    r"^image:\s*.+$", correct_image_line, content, flags=re.MULTILINE
                 )
-                print(f"🔧 Updated image tag from '{existing_image}' to '{correct_image_line.replace('image: ', '')}'")
+                print(
+                    f"🔧 Updated image tag from '{existing_image}' to '{correct_image_line.replace('image: ', '')}'"
+                )
             else:
                 print(f"ℹ️ Image tag already correct: {existing_image}")
         elif "# image: local build only" in content:
@@ -375,7 +383,10 @@ def update_image_tag(content, addon_path, is_dev):
             # Add new image field
             # Append after slug or version
             content = re.sub(
-                r"^(slug: .*)$", f"\\1\n{correct_image_line}", content, flags=re.MULTILINE
+                r"^(slug: .*)$",
+                f"\\1\n{correct_image_line}",
+                content,
+                flags=re.MULTILINE,
             )
             print(f"🔧 Added image tag: {correct_image_line}")
 
@@ -452,7 +463,9 @@ def bump_version(
                         capture_output=True,
                         text=True,
                     )
-                    commit_sha = result.stdout.strip()[:7] if result.returncode == 0 else ""
+                    commit_sha = (
+                        result.stdout.strip()[:7] if result.returncode == 0 else ""
+                    )
                 except Exception:
                     commit_sha = ""
 
@@ -489,45 +502,58 @@ def bump_version(
         skip_auto_generation = False
 
         if os.path.exists(changelog_path):
-             with open(changelog_path, "r") as f:
+            with open(changelog_path, "r") as f:
                 existing_changelog = f.read()
 
-             # Check if entry for new version already exists and extract it
-             version_header_start = f"## {new_version}"
-             if version_header_start in existing_changelog:
-                 print(f"ℹ️ Found existing entry for {new_version}.")
-                 # Find start and end of this section
-                 start_idx = existing_changelog.find(version_header_start)
-                 # Find next section (look for next version header or end of file)
-                 next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+len(version_header_start):])
-                 if next_section_match:
-                     end_idx = start_idx + len(version_header_start) + next_section_match.start()
-                     existing_entry = existing_changelog[start_idx:end_idx]
-                 else:
-                     existing_entry = existing_changelog[start_idx:]
+            # Check if entry for new version already exists and extract it
+            version_header_start = f"## {new_version}"
+            if version_header_start in existing_changelog:
+                print(f"ℹ️ Found existing entry for {new_version}.")
+                # Find start and end of this section
+                start_idx = existing_changelog.find(version_header_start)
+                # Find next section (look for next version header or end of file)
+                next_section_match = re.search(
+                    r"\n## \d",
+                    existing_changelog[start_idx + len(version_header_start) :],
+                )
+                if next_section_match:
+                    end_idx = (
+                        start_idx
+                        + len(version_header_start)
+                        + next_section_match.start()
+                    )
+                    existing_entry = existing_changelog[start_idx:end_idx]
+                else:
+                    existing_entry = existing_changelog[start_idx:]
 
-                 # Check if existing entry already has auto-generated content
-                 # Check for all category headers used by categorize_commits
-                 ALL_CATEGORY_MARKERS = [
-                     "### ✨ Features",
-                     "### 🐛 Bug Fixes",
-                     "### 📦 Dependencies",
-                     "### 🔧 Configuration",
-                     "### 📝 Documentation",
-                     "### 🎨 Style",
-                     "### ♻️ Refactor",
-                     "### 🔒 Security",
-                     "### 🚀 Other",
-                 ]
-                 has_auto_content = any(marker in existing_entry for marker in ALL_CATEGORY_MARKERS)
+                # Check if existing entry already has auto-generated content
+                # Check for all category headers used by categorize_commits
+                ALL_CATEGORY_MARKERS = [
+                    "### ✨ Features",
+                    "### 🐛 Bug Fixes",
+                    "### 📦 Dependencies",
+                    "### 🔧 Configuration",
+                    "### 📝 Documentation",
+                    "### 🎨 Style",
+                    "### ♻️ Refactor",
+                    "### 🔒 Security",
+                    "### 🚀 Other",
+                ]
+                has_auto_content = any(
+                    marker in existing_entry for marker in ALL_CATEGORY_MARKERS
+                )
 
-                 if has_auto_content:
-                     print(f"ℹ️ Auto-generated changelog already exists for version {new_version}, skipping auto-generation.")
-                     skip_auto_generation = True
+                if has_auto_content:
+                    print(
+                        f"ℹ️ Auto-generated changelog already exists for version {new_version}, skipping auto-generation."
+                    )
+                    skip_auto_generation = True
 
         if not skip_auto_generation:
             print("📝 Generating changelog from git history...")
-            new_entry = generate_changelog_entry(new_version, addon_path, changelog_message, existing_entry)
+            new_entry = generate_changelog_entry(
+                new_version, addon_path, changelog_message, existing_entry
+            )
         else:
             # Skip generation - existing changelog will be preserved
             new_entry = None
@@ -542,9 +568,16 @@ def bump_version(
                 # Find start and end of this section
                 start_idx = existing_changelog.find(version_header_start)
                 # Find next section (look for next version header or end of file)
-                next_section_match = re.search(r"\n## \d", existing_changelog[start_idx+len(version_header_start):])
+                next_section_match = re.search(
+                    r"\n## \d",
+                    existing_changelog[start_idx + len(version_header_start) :],
+                )
                 if next_section_match:
-                    end_idx = start_idx + len(version_header_start) + next_section_match.start()
+                    end_idx = (
+                        start_idx
+                        + len(version_header_start)
+                        + next_section_match.start()
+                    )
                     current_section = existing_changelog[start_idx:end_idx]
                 else:
                     current_section = existing_changelog[start_idx:]
@@ -571,22 +604,34 @@ def bump_version(
                     "### 🔒 Security",
                     "### 🚀 Other",
                 ]
-                has_auto_content = any(marker in current_section for marker in ALL_CATEGORY_MARKERS)
+                has_auto_content = any(
+                    marker in current_section for marker in ALL_CATEGORY_MARKERS
+                )
 
-                if has_auto_content and auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
+                if (
+                    has_auto_content
+                    and auto_body.strip()
+                    and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH
+                ):
                     # Auto content already exists, but we want to merge/extend it
                     # Parse existing categories and merge with new ones
-                    print(f"ℹ️ Auto-generated content already exists for version {new_version}, merging with new content...")
+                    print(
+                        f"ℹ️ Auto-generated content already exists for version {new_version}, merging with new content..."
+                    )
 
                     # Extract existing categories from current_section
-                    existing_categories = parse_existing_changelog_entry(current_section)
+                    existing_categories = parse_existing_changelog_entry(
+                        current_section
+                    )
 
                     # Parse new auto-generated categories from auto_body
                     new_categories = parse_existing_changelog_entry(auto_body)
 
                     # Merge categories: keep existing items, add new ones (avoid duplicates)
                     merged_categories = {}
-                    all_category_names = set(list(existing_categories.keys()) + list(new_categories.keys()))
+                    all_category_names = set(
+                        list(existing_categories.keys()) + list(new_categories.keys())
+                    )
 
                     for cat_name in all_category_names:
                         merged_items = []
@@ -595,9 +640,11 @@ def bump_version(
                             merged_items.extend(existing_categories[cat_name])
                         # Add new items that don't already exist (simple deduplication by content)
                         if cat_name in new_categories:
-                            existing_texts = {item.split(' ([')[0].strip() for item in merged_items}
+                            existing_texts = {
+                                item.split(" ([")[0].strip() for item in merged_items
+                            }
                             for new_item in new_categories[cat_name]:
-                                new_text = new_item.split(' ([')[0].strip()
+                                new_text = new_item.split(" ([")[0].strip()
                                 if new_text not in existing_texts:
                                     merged_items.append(new_item)
                         if merged_items:
@@ -608,7 +655,10 @@ def bump_version(
                     section_lines = current_section.split("\n")
                     header_end_idx = 0
                     for i, line in enumerate(section_lines):
-                        if any(line.strip().startswith(f"### {marker.split('### ')[1]}") for marker in ALL_CATEGORY_MARKERS):
+                        if any(
+                            line.strip().startswith(f"### {marker.split('### ')[1]}")
+                            for marker in ALL_CATEGORY_MARKERS
+                        ):
                             header_end_idx = i
                             break
                     if header_end_idx == 0:
@@ -628,15 +678,30 @@ def bump_version(
                             merged_section += "\n"
 
                     combined_section = merged_section.rstrip() + "\n"
-                    changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
-                elif auto_body.strip() and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH:
+                    changelog = (
+                        existing_changelog[:start_idx]
+                        + combined_section
+                        + existing_changelog[end_idx:]
+                    )
+                elif (
+                    auto_body.strip()
+                    and len(auto_body.strip()) > MIN_AUTO_CONTENT_LENGTH
+                ):
                     # No existing auto content, append new auto content
-                    print(f"ℹ️ Extending existing entry for version {new_version} with auto-generated content...")
+                    print(
+                        f"ℹ️ Extending existing entry for version {new_version} with auto-generated content..."
+                    )
                     combined_section = current_section.rstrip() + "\n\n" + auto_body
-                    changelog = existing_changelog[:start_idx] + combined_section + existing_changelog[end_idx:]
+                    changelog = (
+                        existing_changelog[:start_idx]
+                        + combined_section
+                        + existing_changelog[end_idx:]
+                    )
                 else:
                     # No meaningful auto content, keep existing section as is
-                    print(f"ℹ️ No new auto-generated content to add for version {new_version}, keeping existing entry")
+                    print(
+                        f"ℹ️ No new auto-generated content to add for version {new_version}, keeping existing entry"
+                    )
                     changelog = existing_changelog
 
             else:
@@ -658,7 +723,9 @@ def bump_version(
         else:
             # skip_auto_generation is True but CHANGELOG.md doesn't exist - this shouldn't happen
             # but if it does, we skip creation to preserve user intent
-            print(f"ℹ️ Skipping changelog creation (auto-generation skipped for version {new_version})")
+            print(
+                f"ℹ️ Skipping changelog creation (auto-generation skipped for version {new_version})"
+            )
 
     print(f"✅ {'Dev bump' if set_dev else 'Bumped'} {addon_path} to {new_version}")
     return new_version

@@ -101,14 +101,14 @@ def get_packages_via_graphql():
             "org": ORG_NAME,
             "packageType": "DOCKER",
             "first": 100,
-            "after": cursor
+            "after": cursor,
         }
 
         try:
             res = requests.post(
                 "https://api.github.com/graphql",
                 headers=GRAPHQL_HEADERS,
-                json={"query": query, "variables": variables}
+                json={"query": query, "variables": variables},
             )
 
             if res.status_code != 200:
@@ -193,7 +193,9 @@ def get_packages(package_type="container"):
         if res.status_code == 400:
             # Bad request - known GitHub API issue with container packages
             error_text = res.text
-            print(f"⚠️ Bad Request (400) - Known GitHub API issue with container packages")
+            print(
+                f"⚠️ Bad Request (400) - Known GitHub API issue with container packages"
+            )
             print(f"   Trying GraphQL API as workaround...")
 
             # Try GraphQL API as workaround
@@ -202,17 +204,23 @@ def get_packages(package_type="container"):
                 return graphql_packages
             else:
                 print(f"❌ GraphQL workaround also failed")
-                print(f"   💡 Hint: This is a known GitHub API limitation. Consider using GitHub CLI:")
+                print(
+                    f"   💡 Hint: This is a known GitHub API limitation. Consider using GitHub CLI:"
+                )
                 print(f"      gh api orgs/{ORG_NAME}/packages?package_type=container")
                 break
 
         if res.status_code == 401:
-            print(f"❌ Unauthorized (401): Check if GITHUB_TOKEN is valid and has 'read:packages' permission")
+            print(
+                f"❌ Unauthorized (401): Check if GITHUB_TOKEN is valid and has 'read:packages' permission"
+            )
             break
 
         if res.status_code == 403:
             print(f"❌ Forbidden (403): Token may not have 'read:packages' permission")
-            print(f"   💡 Hint: Ensure the token has 'read:packages' and 'delete:packages' scopes")
+            print(
+                f"   💡 Hint: Ensure the token has 'read:packages' and 'delete:packages' scopes"
+            )
             break
 
         if res.status_code != 200:
@@ -406,10 +414,14 @@ def main():
 
     print()
     if DRY_RUN:
-        print(f"📊 Summary: Would delete {deleted_count} version(s) across {len(packages)} package(s)")
+        print(
+            f"📊 Summary: Would delete {deleted_count} version(s) across {len(packages)} package(s)"
+        )
         print(f"   ℹ️ Run without DRY_RUN=true to actually delete these versions")
     else:
-        print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
+        print(
+            f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)"
+        )
 
 
 if __name__ == "__main__":
