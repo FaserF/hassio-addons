@@ -21,6 +21,8 @@ ENV PYTHONUNBUFFERED=1
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.0"
 ENV ADDON_NAME="AegisBot"
