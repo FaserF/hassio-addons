@@ -459,6 +459,12 @@ jobs:
                    // Remove the ADDON line from display content
                    const displayContent = content.replace(/^ADDON: .+\n/, '');
 
+                   // Filter out success reports that were accidentally uploaded
+                   if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) {
+                       console.log(`Report for ${addonName} contains success message. Skipping detail block.`);
+                       continue;
+                   }
+
                    if (content.includes("HEALTHCHECK")) {
                        missingHealthchecks++;
                        addonsWithHealthcheckIssue.push(addonName);
@@ -523,7 +529,7 @@ jobs:
             summary += "💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
 
             if (hasContent) {
-                // Find existing comments by this bot with signature
+                 // Find existing comments by this bot with signature
                 const { data: comments } = await github.rest.issues.listComments({
                    owner: context.repo.owner,
                    repo: context.repo.repo,
@@ -547,6 +553,13 @@ jobs:
                     } catch (error) {
                         console.error(`Failed to minimize comment ${comment.id}:`, error);
                     }
+                }
+
+                // Double-check if we actually have failures after filtering success messages
+                // This prevents posting an empty "Issues Found" block if the report accidentally contains success text
+                if (!summary.includes("❌ Issues Found") && !summary.includes("⚠️ Warnings")) {
+                    console.log("No actual issues found in reports (filtered). Skipping comment.");
+                    return;
                 }
 
                 await github.rest.issues.createComment({
@@ -579,6 +592,28 @@ jobs:
                         issue_number: context.issue.number,
                         labels: filteredLabels
                     });
+                }
+            } else {
+                 // Clean up old comments if no issues found anymore
+                 const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+                const signature = "## 🛡️ Platinum Compliance Issues";
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) { console.error(error); }
                 }
             }
 
@@ -644,7 +679,50 @@ jobs:
             // If all failures are Compliance-related, skip this report (Platinum Report handles it)
             if (nonComplianceJobs.length === 0) {
                 console.log("All failures are Compliance-related. Skipping General CI Report.");
+                // Also minimize old General Failure reports since we are clean now (or handled by Platinum)
+                const { data: comments } = await github.rest.issues.listComments({
+                   owner: context.repo.owner,
+                   repo: context.repo.repo,
+                   issue_number: context.issue.number,
+                });
+                const signature = "## ❌ General CI Failure Report";
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                for (const comment of previousComments) {
+                    try {
+                        await github.graphql(`
+                            mutation($subjectId: ID!) {
+                                minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                    minimizedComment {
+                                        isMinimized
+                                    }
+                                }
+                            }
+                        `, { subjectId: comment.node_id });
+                    } catch (error) { console.error(error); }
+                }
                 return;
+            }
+
+            // Minimize old General CI Failure reports before posting new one
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+            const signature = "## ❌ General CI Failure Report";
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+            for (const comment of previousComments) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment {
+                                    isMinimized
+                                }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (error) { console.error(error); }
             }
 
             // Construct workflow run URL
