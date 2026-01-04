@@ -13,6 +13,8 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003,DL3047
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.0.1"
 ENV ADDON_NAME="NGINX"
