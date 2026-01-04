@@ -87,7 +87,7 @@ module.exports = async ({ github, context, core }) => {
   // Determine if this is a real error or just a successful run with exit code != 0
   // If actionlint reports "Found 0 issues" and there's no stderr, it likely succeeded
   // even if exit code was non-zero (can happen with some actionlint versions/configs)
-  const isLikelySuccess = hasZeroIssues && !hasStderr && errors.length === 0;
+  const isLikelySuccess = (hasZeroIssues || (isEmpty && !hasStderr)) && errors.length === 0;
   const isInternalError = !isLikelySuccess && errors.length === 0 && (hasZeroIssues || isEmpty) && hasStderr;
 
   // --- Generate GitHub Step Summary ---

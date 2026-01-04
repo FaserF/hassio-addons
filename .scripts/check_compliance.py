@@ -138,11 +138,12 @@ def main():
 
     failed = False
 
-    print("==================================================")
-    print("      ADD-ON COMPLIANCE CHECKER")
-    print("==================================================")
+    args = sys.argv[1:]
+    # Remove script name if passed as first arg in some invocations (safety check)
+    if args and args[0] == "check_compliance.py":
+        args = args[1:]
 
-    for addon in sys.argv[1:]:
+    for addon in args:
         if not os.path.exists(addon):
             # Skip if not a directory (e.g. file passed by mistake)
             continue
