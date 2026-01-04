@@ -370,6 +370,65 @@ jobs:
 
           fi
 
+          # Sort addons by priority (only if multiple addons are affected)
+          if [ -n "$ADDONS" ]; then
+            ADDON_COUNT=$(echo "$ADDONS" | tr ',' '\n' | wc -l | tr -d ' ')
+            if [ "$ADDON_COUNT" -gt 1 ]; then
+              echo "📋 Sorting addons by priority (multiple addons detected)..."
+              
+              # Split into categories
+              NORMAL_ADDONS=""
+              SWITCH_LAN_PLAY_ADDONS=""
+              PTERODACTYL_ADDONS=""
+              ANTIGRAVITY_ADDON=""
+              UNSUPPORTED_ADDONS=""
+              
+              # Process each addon
+              IFS=','
+              for addon in $ADDONS; do
+                addon=$(echo "$addon" | xargs)  # trim whitespace
+                
+                # Check category
+                if [[ "$addon" == .unsupported/* ]]; then
+                  # Unsupported addons go last
+                  [ -z "$UNSUPPORTED_ADDONS" ] && UNSUPPORTED_ADDONS="$addon" || UNSUPPORTED_ADDONS="$UNSUPPORTED_ADDONS,$addon"
+                elif [[ "$addon" == "antigravity-server" ]]; then
+                  # antigravity-server goes second-to-last (before unsupported)
+                  ANTIGRAVITY_ADDON="$addon"
+                elif [[ "$addon" == pterodactyl-* ]]; then
+                  # pterodactyl addons go third-to-last
+                  [ -z "$PTERODACTYL_ADDONS" ] && PTERODACTYL_ADDONS="$addon" || PTERODACTYL_ADDONS="$PTERODACTYL_ADDONS,$addon"
+                elif [[ "$addon" == switch_lan_play* ]]; then
+                  # switch_lan_play addons go fourth-to-last
+                  [ -z "$SWITCH_LAN_PLAY_ADDONS" ] && SWITCH_LAN_PLAY_ADDONS="$addon" || SWITCH_LAN_PLAY_ADDONS="$SWITCH_LAN_PLAY_ADDONS,$addon"
+                else
+                  # Normal addons go first
+                  [ -z "$NORMAL_ADDONS" ] && NORMAL_ADDONS="$addon" || NORMAL_ADDONS="$NORMAL_ADDONS,$addon"
+                fi
+              done
+              unset IFS
+              
+              # Rebuild in correct order
+              SORTED_ADDONS=""
+              [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
+              [ -n "$SWITCH_LAN_PLAY_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SWITCH_LAN_PLAY_ADDONS" || SORTED_ADDONS="$SWITCH_LAN_PLAY_ADDONS"
+              }
+              [ -n "$PTERODACTYL_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_ADDONS" || SORTED_ADDONS="$PTERODACTYL_ADDONS"
+              }
+              [ -n "$ANTIGRAVITY_ADDON" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$ANTIGRAVITY_ADDON" || SORTED_ADDONS="$ANTIGRAVITY_ADDON"
+              }
+              [ -n "$UNSUPPORTED_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
+              }
+              
+              ADDONS="$SORTED_ADDONS"
+              echo "✅ Sorted addons: $ADDONS"
+            fi
+          fi
+
           # Convert to JSON array (compact format for GitHub Actions output)
           if [ -n "$ADDONS" ]; then
             JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s -c .)"
@@ -807,32 +866,32 @@ jobs:
           echo "Starting failure monitor for 'all' release..."
           echo "Will cancel remaining jobs if 3 failures are detected."
           echo ""
-          
+
           MAX_FAILURES=3
           CHECK_INTERVAL=30  # Check every 30 seconds
           MAX_WAIT_TIME=3600  # Maximum wait time: 1 hour
           ELAPSED=0
-          
+
           while [ $ELAPSED -lt $MAX_WAIT_TIME ]; do
             # Get all release jobs for this workflow run
             JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "[]")
-            
+
             # Count failed jobs
             FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
             TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
             RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
-            
+
             echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $RUNNING_COUNT running, $TOTAL_COUNT total"
-            
+
             # Check if threshold reached
             if [ "$FAILED_COUNT" -ge "$MAX_FAILURES" ]; then
               echo ""
               echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
               echo "⚠️  WARNING: Too many addons have failed. Cancelling remaining release jobs..."
-              
+
               # Get all release jobs that are still queued or in_progress
               RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .id')
-              
+
               if [ -z "$RUNNING_JOBS" ] || [ "$RUNNING_JOBS" = "" ]; then
                 echo "ℹ️  No remaining jobs to cancel"
               else
@@ -844,27 +903,27 @@ jobs:
                     ((CANCELLED_COUNT++)) || true
                   fi
                 done <<< "$RUNNING_JOBS"
-                
+
                 echo "✅ Cancelled $CANCELLED_COUNT remaining release job(s)"
               fi
-              
+
               echo ""
               echo "⚠️  WARNING: Too many addons failed ($FAILED_COUNT/$MAX_FAILURES threshold). Remaining releases have been cancelled."
               exit 0
             fi
-            
+
             # If no more running jobs, exit
             if [ "$RUNNING_COUNT" -eq 0 ]; then
               echo ""
               echo "✅ All release jobs completed. Final status: $FAILED_COUNT failed out of $TOTAL_COUNT total"
               exit 0
             fi
-            
+
             # Wait before next check
             sleep $CHECK_INTERVAL
             ELAPSED=$((ELAPSED + CHECK_INTERVAL))
           done
-          
+
           echo ""
           echo "⏱️  Monitor timeout reached. Jobs may still be running."
         env:
