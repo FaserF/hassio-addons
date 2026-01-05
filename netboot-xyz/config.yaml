@@ -11,6 +11,7 @@ image: ghcr.io/faserf/hassio-addons-netboot-xyz-{arch}
 host_network: true
 # webui: http://[HOST]:[PORT:3000]
 ingress: true
+ingress_port: 3000
 init: false
 full_access: true
 privileged:
