@@ -6,7 +6,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-2.0.0}"
-	local NAME="ShieldFile"
 	local SLUG="shieldfile"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

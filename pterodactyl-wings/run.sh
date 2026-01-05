@@ -6,7 +6,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-2.0.0}"
-	local NAME="pterodactyl Wings Gameserver"
 	local SLUG="pterodactyl_wings"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

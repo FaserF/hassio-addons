@@ -20,7 +20,7 @@ ENV ADDON_UNSUPPORTED="false"
 RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    nodejs npm yarn wget dos2unix mariadb-client
+    nodejs npm yarn wget dos2unix postgresql-client
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

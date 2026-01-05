@@ -9,7 +9,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-3.0.0}"
-	local NAME="Apache2"
 	local SLUG="apache2"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

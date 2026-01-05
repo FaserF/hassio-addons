@@ -9,7 +9,7 @@ arch:
   # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
   - amd64
 services:
-  - mysql:need
+  - postgres:need
 map:
   - ssl
 ingress: true

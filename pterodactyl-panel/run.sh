@@ -9,7 +9,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-0.10.0}"
-	local NAME="pterodactyl Panel Gameserver - BETA"
 	local SLUG="pterodactyl_panel"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

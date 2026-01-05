@@ -8,7 +8,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-0.2.1}"
-	local NAME="AegisBot"
 	local SLUG="aegisbot"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

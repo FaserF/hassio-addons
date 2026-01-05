@@ -7,7 +7,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-2.0.0}"
-	local NAME="Bash Script Executer"
 	local SLUG="bashscriptexecuter"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

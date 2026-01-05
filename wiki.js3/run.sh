@@ -9,7 +9,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-0.2.0}"
-	local NAME="Wiki.JS V3 (Beta)"
 	local SLUG="wikijs3"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
@@ -147,37 +146,37 @@ if [ "$ssl" = "true" ]; then
 	fi
 fi
 
-# Require mariadb service to be available
-if ! bashio::services.available "mysql"; then
-	bashio::log.error "This add-on requires the MariaDB core add-on 2.0 or newer!"
-	bashio::exit.nok "Make sure the MariaDB add-on is installed and running"
+# Require postgres service to be available
+if ! bashio::services.available "postgres"; then
+	bashio::log.error "This add-on requires a PostgreSQL add-on to be installed and running!"
+	bashio::exit.nok "Make sure a PostgreSQL add-on is installed and has a service link to this add-on."
 fi
 
-host=$(bashio::services "mysql" "host")
-password=$(bashio::services "mysql" "password")
-port=$(bashio::services "mysql" "port")
-username=$(bashio::services "mysql" "username")
+host=$(bashio::services "postgres" "host")
+password=$(bashio::services "postgres" "password")
+port=$(bashio::services "postgres" "port")
+username=$(bashio::services "postgres" "username")
 
 if [ -z "$host" ]; then
-	bashio::log.warning "MariaDB connection details not found. Waiting..."
+	bashio::log.warning "PostgreSQL connection details not found. Waiting..."
 	# Retry for up to 5 minutes (30 * 10s)
 	for i in {1..30}; do
 		sleep 10
-		host=$(bashio::services "mysql" "host")
+		host=$(bashio::services "postgres" "host")
 		if [ -n "$host" ]; then
 			break
 		fi
-		bashio::log.debug "Waiting for MariaDB... ($i/30)"
+		bashio::log.debug "Waiting for PostgreSQL... ($i/30)"
 	done
 
 	if [ -z "$host" ]; then
-		bashio::log.error "MariaDB not found after waiting. Exiting."
+		bashio::log.error "PostgreSQL not found after waiting. Exiting."
 		exit 1
 	fi
 	# Refresh other variables if host found later
-	password=$(bashio::services "mysql" "password")
-	port=$(bashio::services "mysql" "port")
-	username=$(bashio::services "mysql" "username")
+	password=$(bashio::services "postgres" "password")
+	port=$(bashio::services "postgres" "port")
+	username=$(bashio::services "postgres" "username")
 fi
 
 #Drop database based on config flag (with safeguards)
@@ -205,18 +204,15 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "Creating backup before database reset..."
 	bashio::log.info "Backup location: $BACKUP_FILE"
 
-	# Create backup using mysqldump with MYSQL_PWD for security
-	export MYSQL_PWD="${password}"
-	if mysqldump -h "${host}" -P "${port}" -u "${username}" --skip-ssl wiki >"$BACKUP_FILE" 2>/dev/null; then
+	# Create backup using pg_dump
+	if PGPASSWORD="${password}" pg_dump -h "${host}" -p "${port}" -U "${username}" wiki >"$BACKUP_FILE" 2>/dev/null; then
 		bashio::log.info "Backup created successfully: $BACKUP_FILE"
 	else
 		bashio::log.warning "Backup failed (database may not exist yet), continuing with reset..."
 	fi
-	unset MYSQL_PWD
 
 	bashio::log.warning 'Recreating database (dropping existing if present)...'
-	echo "DROP DATABASE IF EXISTS wiki;" |
-		MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" --skip_ssl
+	PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -c "DROP DATABASE IF EXISTS wiki;"
 
 	#Remove reset_database options
 	bashio::addon.option 'reset_database'
@@ -231,7 +227,7 @@ CONFIG_CONTENT=$(
 	cat <<EOF
 port: 3000
 db:
-  type: mysql
+  type: postgres
   host: ${host}
   port: ${port}
   user: ${username}
@@ -270,8 +266,11 @@ fi
 echo "$CONFIG_CONTENT" >/wiki/config.yml
 
 # Create database if not exists
-echo "CREATE DATABASE IF NOT EXISTS wiki;" |
-	MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" --skip_ssl
+PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'wiki'" | grep -q 1 || PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -c "CREATE DATABASE wiki;"
+
+# Enable pg_trgm extension (required for Wiki.js 3.0 search)
+bashio::log.info "Ensuring 'pg_trgm' extension is enabled..."
+PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d wiki -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 echo "Starting Wiki.JS V3"
 node server

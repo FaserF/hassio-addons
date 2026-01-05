@@ -40,6 +40,7 @@ RUN \
     && rm -f /tmp/wordpress.tar.gz \
     \
     # Cleanup
+    && rm -f /etc/nginx/http.d/default.conf \
     && rm -rf /var/cache/apk/*
 
 # Copy root filesystem

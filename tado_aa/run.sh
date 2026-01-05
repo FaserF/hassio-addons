@@ -9,7 +9,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-2.0.0}"
-	local NAME="Tado Auto Assist"
 	local SLUG="tado_aa"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

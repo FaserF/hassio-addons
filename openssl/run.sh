@@ -7,7 +7,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-2.0.0}"
-	local NAME="OpenSSL"
 	local SLUG="openssl"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
