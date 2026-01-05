@@ -241,6 +241,7 @@ db:
   user: ${username}
   pass: ${password}
   db: wiki
+  ssl: false
 ssl:
   enabled: ${ssl}
   port: 3443
