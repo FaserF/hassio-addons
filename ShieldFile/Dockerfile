@@ -45,7 +45,7 @@ RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run
 # Healthcheck
 HEALTHCHECK \
     --interval=5m --timeout=3s \
-    CMD curl --fail http://127.0.0.1:80/ || exit 1
+    CMD curl --fail http://127.0.0.1:8099/ || exit 1
 
 
 # Labels

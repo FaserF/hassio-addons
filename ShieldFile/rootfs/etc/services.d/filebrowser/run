@@ -19,5 +19,5 @@ exec filebrowser \
     --port "8080" \
     --database "$DB_PATH" \
     --root "$BASE_DIR" \
-    --baseurl "$INGRESS_ENTRY" \
+    --baseURL "$INGRESS_ENTRY" \
     --log stdout

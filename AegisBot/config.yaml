@@ -13,7 +13,7 @@ ingress: true
 ingress_stream: true
 panel_icon: mdi:robot
 ports:
-  8099/tcp: 8099
+  8099/tcp: 8098
 ports_description:
   8099/tcp: Web Interface (HTTP)
 map:

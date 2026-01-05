@@ -23,10 +23,7 @@ _show_startup_banner() {
 	fi
 
 	# Header
-	bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	bashio::log.blue "  🏠 $NAME"
-	bashio::log.blue "  📦 Version: $VERSION"
-	bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 
 	# Status indicator
 	if [ "$UNSUPPORTED" = "true" ]; then
@@ -167,9 +164,9 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "Creating backup before database reset..."
 	bashio::log.info "Backup location: $BACKUP_FILE"
 
-	# Create backup using mysqldump with MYSQL_PWD for security
+	# Create backup using mariadb-dump with MYSQL_PWD for security
 	export MYSQL_PWD="${password}"
-	if mysqldump -h "${host}" -P "${port}" -u "${username}" --skip-ssl "${db}" >"$BACKUP_FILE" 2>/dev/null; then
+	if mariadb-dump -h "${host}" -P "${port}" -u "${username}" --skip-ssl "${db}" >"$BACKUP_FILE" 2>/dev/null; then
 		bashio::log.info "Backup created successfully: $BACKUP_FILE"
 	else
 		bashio::log.warning "Backup failed (database may not exist yet), continuing with reset..."
@@ -178,7 +175,7 @@ if bashio::config.true 'reset_database'; then
 
 	bashio::log.warning 'Recreating database (dropping existing if present)...'
 	echo "DROP DATABASE IF EXISTS ${db};" |
-		MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
+		MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" || {
 		bashio::log.error "Failed to drop database ${db}"
 		exit 1
 	}
@@ -191,12 +188,12 @@ fi
 echo "preparing database ${db}"
 
 echo "CREATE DATABASE IF NOT EXISTS ${db};" |
-	MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
+	MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" || {
 	bashio::log.error "Failed to create database ${db}"
 	exit 1
 }
-echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' WITH GRANT OPTION;" |
-	MYSQL_PWD="${password}" mysql -h "${host}" -P "${port}" -u "${username}" || {
+echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' IDENTIFIED BY '${password_mariadb}' WITH GRANT OPTION;" |
+	MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" || {
 	bashio::log.error "Failed to grant privileges on database ${db}"
 	exit 1
 }

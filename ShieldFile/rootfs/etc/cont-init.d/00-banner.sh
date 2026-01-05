@@ -20,10 +20,7 @@ _show_startup_banner() {
 	fi
 
 	# Header
-	bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	bashio::log.blue "  🏠 $NAME"
-	bashio::log.blue "  📦 Version: $VERSION"
-	bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 
 	# Status indicator
 	if [ "$UNSUPPORTED" = "true" ]; then
