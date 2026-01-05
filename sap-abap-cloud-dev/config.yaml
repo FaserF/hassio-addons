@@ -32,4 +32,4 @@ ports_description:
   50000/tcp: ICM HTTP
   50001/tcp: ICM HTTPS
 ingress: true
-webui: https://[HOST]:[PORT:8443]
+ingress_port: 8443
