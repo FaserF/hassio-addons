@@ -69,6 +69,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     | 2023-05 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     | 2023-05 |
 | **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                   | ✅     | 2023-05 |
+| **[SAP ABAP Cloud Dev](sap-abap-cloud-dev)**                    | SAP ABAP Platform Trial                   | ⚠️     | 2026-01 |
 | **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server               | ✅     | 2026-01 |
 | **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                       | ✅     | 2026-01 |
 | **[Solumati](solumati)**                                        | Solar Panel Monitoring                    | ✅     | 2026-01 |
@@ -79,6 +80,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     | 2026-01 |
 | **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                          | ✅     | 2023-05 |
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                         | ⚠️     | 2026-01 |
+| **[Wordpress](wordpress)**                                      | The most popular publication platform     | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2023-05 |
 
 <!-- markdownlint-enable MD060 -->
@@ -160,8 +162,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-## New Add-ons
-
-- [sap-abap-cloud-dev](sap-abap-cloud-dev)
-- [wordpress](wordpress)
