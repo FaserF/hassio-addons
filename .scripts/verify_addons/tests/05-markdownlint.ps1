@@ -28,12 +28,16 @@ foreach ($a in $Addons) {
 
         # Only run if files exist to avoid error
         if (Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md") {
-            npx markdownlint-cli $target --config "$configPath" --ignore "node_modules" --ignore ".git" --ignore ".unsupported"
-            if ($LASTEXITCODE -ne 0) { throw "Fail" }
+            $output = npx markdownlint-cli $target --config "$configPath" --ignore "node_modules" --ignore ".git" --ignore ".unsupported" 2>&1 | Out-String
+            if ($LASTEXITCODE -ne 0) { throw $output }
             Add-Result -Addon $a.Name -Check "MarkdownLint" -Status "PASS" -Message "OK"
         }
     }
     catch {
-        Add-Result -Addon $a.Name -Check "MarkdownLint" -Status "FAIL" -Message "Errors found (See log)"
+        $msg = $_.Exception.Message
+        # Clean up message to be a single line summary or short snippet
+        $summary = $msg.Split([Environment]::NewLine) | Select-Object -First 1
+        Add-Result -Addon $a.Name -Check "MarkdownLint" -Status "FAIL" -Message "Errors found: $summary (See log for details)"
+        if ($global:VerboseNotifications -or $global:Debug) { Write-Host $msg -ForegroundColor DarkGray }
     }
 }

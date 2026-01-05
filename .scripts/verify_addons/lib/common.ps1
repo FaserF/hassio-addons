@@ -534,14 +534,19 @@ function Get-TestConfig {
         # Try to use powershell-yaml module if available
         if (Get-Module -ListAvailable -Name powershell-yaml) {
             Import-Module powershell-yaml -ErrorAction Stop
-            $config = Get-Content $ConfigPath -Raw | ConvertFrom-Yaml
-            # Merge with defaults for any missing keys
-            foreach ($key in $defaults.Keys) {
-                if (-not $config.ContainsKey($key)) {
-                    $config[$key] = $defaults[$key]
+            try {
+                $config = Get-Content $ConfigPath -Raw | ConvertFrom-Yaml
+                # Merge with defaults for any missing keys
+                foreach ($key in $defaults.Keys) {
+                    if (-not $config.ContainsKey($key)) {
+                        $config[$key] = $defaults[$key]
+                    }
                 }
+                return $config
+            } catch {
+                Write-Warning "ConvertFrom-Yaml failed: $_"
+                # Fall through to regex parser
             }
-            return $config
         }
     } catch {
         Write-Warning "Failed to parse config file with YAML parser: $_"

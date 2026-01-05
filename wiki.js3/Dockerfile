@@ -24,6 +24,12 @@ RUN apk add --no-cache \
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
+# Reinstall dependencies for Node 24 compatibility
+RUN apk add --no-cache --virtual .build-deps build-base python3 && \
+    rm -rf node_modules && \
+    yarn install --production && \
+    yarn cache clean && \
+    apk del .build-deps
 # Extract and persist Wiki.js version for runtime banner
 RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown") && \
     echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \
