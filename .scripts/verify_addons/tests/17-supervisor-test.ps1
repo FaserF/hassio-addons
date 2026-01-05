@@ -38,8 +38,19 @@ $containerName = "ha-supervisor-test-local"
 $networkName = "ha-supervisor-test-net"
 $haPort = 7123
 $supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 300
-$addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 3600
-$addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 3600
+
+# Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
+$largeAddons = @('sap-abap-cloud-dev')
+$hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
+if ($hasLargeAddon) {
+    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 7200
+    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 7200
+    Write-Host "    > Large add-on detected ($($hasLargeAddon.Name)), using extended timeouts." -ForegroundColor Yellow
+}
+else {
+    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 600
+    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 600
+}
 
 # Get skip list
 $skipList = @{}
@@ -200,6 +211,28 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             New-Item -ItemType Directory -Path $nbImage -Force | Out-Null
             New-Item -ItemType Directory -Path $nbConfig -Force | Out-Null
             Write-Host "      Created netboot media directories for $safeName" -ForegroundColor DarkGray
+        }
+    }
+
+    # Pre-pull large base images on the host to avoid Supervisor timeouts
+    Write-Host "    > Pre-pulling base images for add-ons..." -ForegroundColor Gray
+    foreach ($addon in $Addons) {
+        $buildYamlPath = Join-Path $addon.FullName 'build.yaml'
+        if (Test-Path $buildYamlPath) {
+            $buildYamlContent = Get-Content $buildYamlPath -Raw
+            if ($buildYamlContent -match 'amd64:\s*(.+)') {
+                $baseImage = $matches[1].Trim() -replace "[`"']", ''
+                if ($baseImage -match '/' -or $baseImage -match ':') {
+                    Write-Host "      Pre-pulling: $baseImage (for $($addon.Name))" -ForegroundColor Cyan
+                    try {
+                        docker pull $baseImage 2>&1 | ForEach-Object { Write-Host "        $_" -ForegroundColor DarkGray }
+                        Write-Host "      Done." -ForegroundColor Green
+                    }
+                    catch {
+                        Write-Warning "      Failed to pre-pull $baseImage : $_"
+                    }
+                }
+            }
         }
     }
 

@@ -135,7 +135,7 @@ jobs:
               IS_ALL="true"
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
-              SKIP_ADDONS="homeassistant-test-instance"
+              SKIP_ADDONS="homeassistant-test-instance sap-abap-cloud-dev"
 
               # Regular addons (top-level directories with config.yaml)
               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
@@ -406,7 +406,7 @@ jobs:
              COMMIT_MSG="${github.event.head_commit.message}"
              if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
                echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
-               SKIP_ADDONS="homeassistant-test-instance"
+               SKIP_ADDONS="homeassistant-test-instance sap-abap-cloud-dev"
 
                # Regular addons (top-level directories with config.yaml)
                # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
