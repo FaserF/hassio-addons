@@ -26,9 +26,9 @@ options:
   wordpress_admin_password: ""
   wordpress_admin_email: "admin@example.com"
 schema:
-  database_host: str
-  database_name: str
-  database_user: str
+  database_host: str?
+  database_name: str?
+  database_user: str?
   database_password: str
   wordpress_title: str
   wordpress_admin_user: str

@@ -3,21 +3,31 @@
 
 bashio::log.info "Initialize Wordpress..."
 
-# Check validation
+# Set defaults for optional values
 if ! bashio::config.has_value 'database_host'; then
-    bashio::exit.nok "A 'database_host' is required!"
+    bashio::log.info "No database_host configured, using Home Assistant MariaDB addon (core-mariadb)"
+    DB_HOST="core-mariadb"
+else
+    DB_HOST=$(bashio::config 'database_host')
 fi
 
 if ! bashio::config.has_value 'database_password'; then
     bashio::exit.nok "A 'database_password' is required!"
 fi
+DB_PASS=$(bashio::config 'database_password')
 
 if ! bashio::config.has_value 'database_name'; then
-    bashio::exit.nok "A 'database_name' is required!"
+    bashio::log.info "No database_name configured, using default 'wordpress'"
+    DB_NAME="wordpress"
+else
+    DB_NAME=$(bashio::config 'database_name')
 fi
 
 if ! bashio::config.has_value 'database_user'; then
-    bashio::exit.nok "A 'database_user' is required!"
+    bashio::log.info "No database_user configured, using default 'wordpress'"
+    DB_USER="wordpress"
+else
+    DB_USER=$(bashio::config 'database_user')
 fi
 
 if bashio::config.equals 'wordpress_admin_password' 'changeme'; then
@@ -39,18 +49,13 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     bashio::log.info "Creating configuration..."
     mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to create wp-config.php!"
 
-    # Database
-    db_host=$(bashio::config 'database_host')
-    db_name=$(bashio::config 'database_name')
-    db_user=$(bashio::config 'database_user')
-    db_pass=$(bashio::config 'database_password')
-
+    # Database - use variables set during validation
     # Escape special characters for sed
     # We escape backslashes first, then the delimiter (|) and ampersands
-    db_host_escaped=$(echo "${db_host}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_name_escaped=$(echo "${db_name}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_user_escaped=$(echo "${db_user}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_pass_escaped=$(echo "${db_pass}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_host_escaped=$(echo "${DB_HOST}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_name_escaped=$(echo "${DB_NAME}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_user_escaped=$(echo "${DB_USER}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_pass_escaped=$(echo "${DB_PASS}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
 
     sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
     sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php
