@@ -108,15 +108,15 @@ fi
 
 # Get Ingress Entry
 if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
-    INGRESS_ENTRY=$(bashio::addon.ingress_entry)
+	INGRESS_ENTRY=$(bashio::addon.ingress_entry)
 else
-    INGRESS_ENTRY="/"
+	INGRESS_ENTRY="/"
 fi
 bashio::log.info "ℹ️  Ingress Entry Path: ${INGRESS_ENTRY}"
 
 # Write Ingress Entry to file for FileBrowser service to pick up
 mkdir -p /var/run/shieldfile
-echo "${INGRESS_ENTRY}" > /var/run/shieldfile/ingress_entry
+echo "${INGRESS_ENTRY}" >/var/run/shieldfile/ingress_entry
 
 # Setup Nginx
 bashio::log.info "🔧 Generating Nginx Configuration..."

@@ -132,17 +132,17 @@ set -e
 bashio::log.info "Loading configuration..."
 
 if bashio::config.exists 'server'; then
-    server=$(bashio::config 'server')
-    bashio::log.info "Using server: $server"
+	server=$(bashio::config 'server')
+	bashio::log.info "Using server: $server"
 else
-    bashio::log.error "Configuration 'server' is missing!"
-    bashio::exit.nok
+	bashio::log.error "Configuration 'server' is missing!"
+	bashio::exit.nok
 fi
 
 if bashio::config.exists 'log_level'; then
-    log_level=$(bashio::config 'log_level')
+	log_level=$(bashio::config 'log_level')
 else
-    log_level="info"
+	log_level="info"
 fi
 bashio::log.info "Log level: $log_level"
 
