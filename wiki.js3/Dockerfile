@@ -17,7 +17,10 @@ ENV ADDON_NAME="Wiki.JS V3 (Beta)"
 ENV ADDON_SLUG="wikijs3"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client
+RUN apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    nodejs npm yarn wget dos2unix mariadb-client
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
