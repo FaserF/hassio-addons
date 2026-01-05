@@ -79,13 +79,6 @@ ignore_requirements: false
 
 ---
 
-> [!IMPORTANT]
-> **Local Build Only**
->
-> This add-on is **always built locally** on your device and is excluded from the pre-built Docker image releases. The SAP ABAP Platform Trial Docker image is approximately **40 GB** in size, making it impractical to distribute via GitHub Container Registry. Initial installation and updates may take a significant amount of time depending on your internet connection and device performance.
-
----
-
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.
