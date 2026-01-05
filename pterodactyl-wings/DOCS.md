@@ -21,7 +21,7 @@ config_file: /share/pterodactyl/config.yml
 3. **Create Node**: Navigate to the Admin View -> Nodes and create a new node.
 4. **Get Configuration**: Click on the 'Configuration' tab of your newly created node.
 5. **Update Config File**: Copy the YAML Configuration block shown in the Panel and paste it into your `config.yml` file (default: `/share/pterodactyl/config.yml`).
-    - **Note**: Ensure the paths in the config file match your Home Assistant environment. The default template already sets `data: /share/pterodactyl/data` and SSL paths to `/ssl/...`.
+   - **Note**: Ensure the paths in the config file match your Home Assistant environment. The default template already sets `data: /share/pterodactyl/data` and SSL paths to `/ssl/...`.
 6. **Restart Wings**: Restart this add-on to apply the configuration.
 
 ## 📂 Folder Usage

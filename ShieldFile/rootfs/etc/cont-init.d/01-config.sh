@@ -7,12 +7,10 @@ bashio::log.info "🛡️ Initializing ShieldFile..."
 DB_PATH="/data/database.db"
 CERT_DIR="/ssl"
 
-
 # Read Config
 CERT_FILE=$(bashio::config 'certfile')
 KEY_FILE=$(bashio::config 'keyfile')
 PORT=$(bashio::config 'port')
-
 
 # Certificates
 FULL_CERT_PATH="${CERT_DIR}/${CERT_FILE}"
