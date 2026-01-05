@@ -1,6 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
-# renovate: datasource=docker depName=ghcr.io/requarks/wiki
 FROM ghcr.io/requarks/wiki:2@sha256:f7e92a711280e75d88e5c0892af15ccbf53d64b7963e3da9911cbb053d79698d AS wiki_release
 
 # hadolint ignore=DL3006
