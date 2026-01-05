@@ -1,6 +1,6 @@
 # Wiki.JS V3 (Beta)
 
-<img src="logo.png" alt="Logo" width="200">
+![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_wiki.js3)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -56,6 +56,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 certfile: fullchain.pem
+db_password: wikijs
 keyfile: privkey.pem
 log_level: info
 ssl: true

@@ -136,16 +136,16 @@ declare username
 
 # SSL validation
 if [ "$ssl" = "true" ]; then
-    bashio::log.info "SSL is enabled. Validating certificates..."
-    if [ ! -f "/ssl/$certfile" ]; then
-        bashio::log.error "Cannot find certificate file $certfile. Turn off SSL or check if the file exists at /ssl/"
-        exit 1
-    fi
-    if [ ! -f "/ssl/$keyfile" ]; then
-        bashio::log.error "Cannot find certificate key file $keyfile. Turn off SSL or check if the file exists at /ssl/"
-        exit 1
-    fi
-    bashio::log.info "SSL certificates validated."
+	bashio::log.info "SSL is enabled. Validating certificates..."
+	if [ ! -f "/ssl/$certfile" ]; then
+		bashio::log.error "Cannot find certificate file $certfile. Turn off SSL or check if the file exists at /ssl/"
+		exit 1
+	fi
+	if [ ! -f "/ssl/$keyfile" ]; then
+		bashio::log.error "Cannot find certificate key file $keyfile. Turn off SSL or check if the file exists at /ssl/"
+		exit 1
+	fi
+	bashio::log.info "SSL certificates validated."
 fi
 
 # Embedded PostgreSQL configuration
@@ -159,16 +159,16 @@ bashio::log.info "Starting embedded PostgreSQL server..."
 
 # Initialize PostgreSQL data directory if it doesn't exist
 if [ ! -d "$PGDATA" ] || [ ! -f "$PGDATA/PG_VERSION" ]; then
-    bashio::log.info "Initializing PostgreSQL database..."
-    mkdir -p "$PGDATA"
-    chown -R postgres:postgres "$PGDATA"
-    chmod 700 "$PGDATA"
-    su-exec postgres initdb -D "$PGDATA" --encoding=UTF8 --locale=C
+	bashio::log.info "Initializing PostgreSQL database..."
+	mkdir -p "$PGDATA"
+	chown -R postgres:postgres "$PGDATA"
+	chmod 700 "$PGDATA"
+	su-exec postgres initdb -D "$PGDATA" --encoding=UTF8 --locale=C
 
-    # Configure PostgreSQL for local connections
-    echo "host all all 127.0.0.1/32 md5" >> "$PGDATA/pg_hba.conf"
-    echo "listen_addresses = 'localhost'" >> "$PGDATA/postgresql.conf"
-    bashio::log.info "PostgreSQL initialized successfully."
+	# Configure PostgreSQL for local connections
+	echo "host all all 127.0.0.1/32 md5" >>"$PGDATA/pg_hba.conf"
+	echo "listen_addresses = 'localhost'" >>"$PGDATA/postgresql.conf"
+	bashio::log.info "PostgreSQL initialized successfully."
 fi
 
 # Ensure correct ownership
@@ -181,16 +181,16 @@ su-exec postgres pg_ctl -D "$PGDATA" -l /var/log/postgresql.log start
 # Wait for PostgreSQL to be ready
 bashio::log.info "Waiting for PostgreSQL to be ready..."
 for i in {1..30}; do
-    if su-exec postgres pg_isready -q; then
-        break
-    fi
-    sleep 1
+	if su-exec postgres pg_isready -q; then
+		break
+	fi
+	sleep 1
 done
 
 if ! su-exec postgres pg_isready -q; then
-    bashio::log.error "PostgreSQL failed to start!"
-    cat /var/log/postgresql.log
-    exit 1
+	bashio::log.error "PostgreSQL failed to start!"
+	cat /var/log/postgresql.log
+	exit 1
 fi
 
 bashio::log.info "PostgreSQL is ready!"

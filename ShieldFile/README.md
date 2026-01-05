@@ -1,6 +1,6 @@
 # ShieldFile
 
-<img src="logo.png" alt="Logo" width="200">
+![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_ShieldFile)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -53,8 +53,8 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-  - password: changeme
-    username: admin
+- password: changeme
+  username: admin
 ```
 
 ---
