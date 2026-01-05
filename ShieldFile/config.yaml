@@ -7,7 +7,12 @@ arch:
   - aarch64
   - amd64
 init: false
-host_network: true
+ingress: true
+ingress_port: 8099
+ports:
+  8443/tcp: 8443
+ports_description:
+  8443/tcp: "Direct Secure Access (HTTPS)"
 map:
   - homeassistant_config:rw
   - ssl:rw

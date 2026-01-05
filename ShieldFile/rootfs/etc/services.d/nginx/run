@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091
+
+bashio::log.info "🚀 Starting Nginx..."
+exec nginx -g 'daemon off;'
