@@ -5,9 +5,9 @@
 ## Disclaimers
 
 > **NO LICENSE PROVIDED**: This add-on does NOT include any SAP license.
-
+>
 > **NO WARRANTY**: Provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss or other issues.
-
+>
 > **FOR TESTING ONLY**: Intended solely for personal learning and skill development.
 
 ## Options

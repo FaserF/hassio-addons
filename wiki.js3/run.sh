@@ -134,50 +134,69 @@ declare password
 declare port
 declare username
 
+# SSL validation
 if [ "$ssl" = "true" ]; then
-	echo "You have activated SSL. SSL Settings will be applied"
-	if [ ! -f "/ssl/$certfile" ]; then
-		bashio::log.error "Cannot find certificate file $certfile . Turn off SSL or check for if the file really exists at /ssl/"
-		exit 1
-	fi
-	if [ ! -f "/ssl/$keyfile" ]; then
-		bashio::log.error "Cannot find certificate key file $keyfile . Turn off SSL or check for if the file really exists at /ssl/"
-		exit 1
-	fi
+    bashio::log.info "SSL is enabled. Validating certificates..."
+    if [ ! -f "/ssl/$certfile" ]; then
+        bashio::log.error "Cannot find certificate file $certfile. Turn off SSL or check if the file exists at /ssl/"
+        exit 1
+    fi
+    if [ ! -f "/ssl/$keyfile" ]; then
+        bashio::log.error "Cannot find certificate key file $keyfile. Turn off SSL or check if the file exists at /ssl/"
+        exit 1
+    fi
+    bashio::log.info "SSL certificates validated."
 fi
 
-# Require postgres service to be available
-if ! bashio::services.available "postgres"; then
-	bashio::log.error "This add-on requires a PostgreSQL add-on to be installed and running!"
-	bashio::exit.nok "Make sure a PostgreSQL add-on is installed and has a service link to this add-on."
+# Embedded PostgreSQL configuration
+PGDATA="/data/postgresql"
+host="localhost"
+port="5432"
+username="postgres"
+password=$(bashio::config 'db_password')
+
+bashio::log.info "Starting embedded PostgreSQL server..."
+
+# Initialize PostgreSQL data directory if it doesn't exist
+if [ ! -d "$PGDATA" ] || [ ! -f "$PGDATA/PG_VERSION" ]; then
+    bashio::log.info "Initializing PostgreSQL database..."
+    mkdir -p "$PGDATA"
+    chown -R postgres:postgres "$PGDATA"
+    chmod 700 "$PGDATA"
+    su-exec postgres initdb -D "$PGDATA" --encoding=UTF8 --locale=C
+
+    # Configure PostgreSQL for local connections
+    echo "host all all 127.0.0.1/32 md5" >> "$PGDATA/pg_hba.conf"
+    echo "listen_addresses = 'localhost'" >> "$PGDATA/postgresql.conf"
+    bashio::log.info "PostgreSQL initialized successfully."
 fi
 
-host=$(bashio::services "postgres" "host")
-password=$(bashio::services "postgres" "password")
-port=$(bashio::services "postgres" "port")
-username=$(bashio::services "postgres" "username")
+# Ensure correct ownership
+chown -R postgres:postgres "$PGDATA" /run/postgresql
 
-if [ -z "$host" ]; then
-	bashio::log.warning "PostgreSQL connection details not found. Waiting..."
-	# Retry for up to 5 minutes (30 * 10s)
-	for i in {1..30}; do
-		sleep 10
-		host=$(bashio::services "postgres" "host")
-		if [ -n "$host" ]; then
-			break
-		fi
-		bashio::log.debug "Waiting for PostgreSQL... ($i/30)"
-	done
+# Start PostgreSQL server
+bashio::log.info "Starting PostgreSQL server..."
+su-exec postgres pg_ctl -D "$PGDATA" -l /var/log/postgresql.log start
 
-	if [ -z "$host" ]; then
-		bashio::log.error "PostgreSQL not found after waiting. Exiting."
-		exit 1
-	fi
-	# Refresh other variables if host found later
-	password=$(bashio::services "postgres" "password")
-	port=$(bashio::services "postgres" "port")
-	username=$(bashio::services "postgres" "username")
+# Wait for PostgreSQL to be ready
+bashio::log.info "Waiting for PostgreSQL to be ready..."
+for i in {1..30}; do
+    if su-exec postgres pg_isready -q; then
+        break
+    fi
+    sleep 1
+done
+
+if ! su-exec postgres pg_isready -q; then
+    bashio::log.error "PostgreSQL failed to start!"
+    cat /var/log/postgresql.log
+    exit 1
 fi
+
+bashio::log.info "PostgreSQL is ready!"
+
+# Set postgres password if not already set
+su-exec postgres psql -c "ALTER USER postgres WITH PASSWORD '${password}';" 2>/dev/null || true
 
 #Drop database based on config flag (with safeguards)
 if bashio::config.true 'reset_database'; then
@@ -204,15 +223,15 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "Creating backup before database reset..."
 	bashio::log.info "Backup location: $BACKUP_FILE"
 
-	# Create backup using pg_dump
-	if PGPASSWORD="${password}" pg_dump -h "${host}" -p "${port}" -U "${username}" wiki >"$BACKUP_FILE" 2>/dev/null; then
+	# Create backup using pg_dump (using local socket connection)
+	if su-exec postgres pg_dump wiki >"$BACKUP_FILE" 2>/dev/null; then
 		bashio::log.info "Backup created successfully: $BACKUP_FILE"
 	else
 		bashio::log.warning "Backup failed (database may not exist yet), continuing with reset..."
 	fi
 
 	bashio::log.warning 'Recreating database (dropping existing if present)...'
-	PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -c "DROP DATABASE IF EXISTS wiki;"
+	su-exec postgres psql -d postgres -c "DROP DATABASE IF EXISTS wiki;"
 
 	#Remove reset_database options
 	bashio::addon.option 'reset_database'
@@ -266,11 +285,11 @@ fi
 echo "$CONFIG_CONTENT" >/wiki/config.yml
 
 # Create database if not exists
-PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'wiki'" | grep -q 1 || PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d postgres -c "CREATE DATABASE wiki;"
+su-exec postgres psql -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'wiki'" | grep -q 1 || su-exec postgres psql -d postgres -c "CREATE DATABASE wiki;"
 
 # Enable pg_trgm extension (required for Wiki.js 3.0 search)
 bashio::log.info "Ensuring 'pg_trgm' extension is enabled..."
-PGPASSWORD="${password}" psql -h "${host}" -p "${port}" -U "${username}" -d wiki -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+su-exec postgres psql -d wiki -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 echo "Starting Wiki.JS V3"
 node server

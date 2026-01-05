@@ -20,7 +20,9 @@ ENV ADDON_UNSUPPORTED="false"
 RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    nodejs npm yarn wget dos2unix postgresql-client
+    nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib \
+    && mkdir -p /var/lib/postgresql/data /run/postgresql \
+    && chown -R postgres:postgres /var/lib/postgresql /run/postgresql
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

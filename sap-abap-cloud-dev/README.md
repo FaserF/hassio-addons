@@ -1,6 +1,6 @@
 # SAP ABAP Cloud Developer Trial
 
-![Logo](logo.png)
+<img src="logo.png" alt="Logo" width="200">
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_sap-abap-cloud-dev)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -26,12 +26,12 @@ SAP ABAP Cloud Developer Trial for Home Assistant OS
 ## ⚠️ IMPORTANT DISCLAIMERS
 
 > **NO LICENSE PROVIDED**: This add-on does NOT include any SAP license. You must obtain your own license from SAP and agree to SAP's terms of use.
-
+>
 > **NO WARRANTY**: This add-on is provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss, system damage, or any other issues arising from the use of this add-on.
-
+>
 > **FOR TESTING ONLY**: This add-on is intended solely for personal learning, skill development, and testing SAP ABAP. It is NOT intended for production use.
-
-> **SAP LICENSE TERMS**: You must comply with all SAP licensing terms and conditions. Visit [SAP's Terms](https://www.sap.com/about/legal/disclaimer.html) for details.
+>
+> **SAP LICENSE TERMS**: You must comply with all SAP licensing terms and conditions. Visit [SAP's Terms](https://hub.docker.com/r/sapse/abap-cloud-developer-trial#licenses) for details.
 
 This add-on provides the official SAP ABAP Cloud Developer Trial environment, allowing you to run a complete SAP ABAP Platform on SAP HANA 2.0 directly from Home Assistant.
 

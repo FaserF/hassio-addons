@@ -1,5 +1,10 @@
 # Changelog
 
+> [!CAUTION]
+> **DEPRECATED ADD-ON**
+>
+> This add-on is **no longer supported** as of January 2026. The upstream Matterbridge project has not been developed since **January 2023** and is considered abandoned.
+
 ## 2.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉
@@ -22,7 +27,7 @@ This release represents a significant effort to standardize and improve all addo
 
 - Update orchestrator-release.yaml ([`4774494`](https://github.com/FaserF/hassio-addons/commit/477449414ddf817f9297c2ac38ade8009b69ae12))
 
-### 🎉 Major Release - Unified Addon Update
+### 📋 Major Release - Changes
 
 - **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the addons. (Manual)
 - **Unsupported Branch**: A new `unsupported` branch has been created for addons that no longer receive direct manual support. These addons are still maintained but may have limited support compared to the main addons. (Manual)

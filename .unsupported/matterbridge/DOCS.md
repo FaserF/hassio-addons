@@ -1,6 +1,11 @@
-# Matterbridge Documentation
+# Matterbridge Documentation (Unsupported)
 
 A simple chat bridge between different messanger apps.
+
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is **no longer supported**. The upstream Matterbridge project has not been developed since **January 2023** and is considered abandoned. No support will be provided.
 
 ## ⚙️ Configuration
 
@@ -20,4 +25,7 @@ log_level: info
 
 ## Support
 
-For issues and feature requests, please use the GitHub repository issues.
+> [!WARNING]
+> **No Support Provided**
+>
+> Since Matterbridge has not been developed since January 2023, no support is available for this add-on.

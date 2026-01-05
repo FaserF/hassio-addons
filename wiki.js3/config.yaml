@@ -8,8 +8,6 @@ url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
   # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
   - amd64
-services:
-  - postgres:need
 map:
   - ssl
 ingress: true
@@ -20,6 +18,7 @@ options:
   certfile: fullchain.pem
   keyfile: privkey.pem
   log_level: info
+  db_password: "wikijs"
 schema:
   ssl: bool
   certfile: str
@@ -27,6 +26,7 @@ schema:
   log_level: list(error|warn|info|debug)?
   reset_database: bool?
   reset_database_confirm: bool?
+  db_password: str?
 ports:
   3000/tcp: 3000
   3443/tcp: 3443

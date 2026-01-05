@@ -64,7 +64,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)      | ❌     | 2023-05 |
 | **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)         | ❌     | 2023-05 |
 | **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing         | ⚠️     | 2026-01 |
-| **[Matterbridge](matterbridge)**                                | Simple chat bridge                        | ✅     | 2023-05 |
+| **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)          | ❌     | 2023-05 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                       | ✅     | 2023-05 |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator         | ✅     | 2023-05 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                   | ⚠️     | 2023-05 |
