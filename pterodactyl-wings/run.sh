@@ -148,18 +148,17 @@ fi
 mkdir -p /etc/pterodactyl
 ln -sf "$config_file" /etc/pterodactyl/config.yml
 
-
 echo "Starting Pterodactyl Daemon..."
 
 # Check if using dummy config
 if grep -q 'token: "example"' "$config_file"; then
-    bashio::log.warning "-----------------------------------------------------------"
-    bashio::log.warning " Add-on is NOT configured!"
-    bashio::log.warning " You are using the default configuration template."
-    bashio::log.warning " Please edit $config_file with your Panel's node configuration."
-    bashio::log.warning " The add-on will wait here until you restart it with a valid config."
-    bashio::log.warning "-----------------------------------------------------------"
-    sleep infinity
+	bashio::log.warning "-----------------------------------------------------------"
+	bashio::log.warning " Add-on is NOT configured!"
+	bashio::log.warning " You are using the default configuration template."
+	bashio::log.warning " Please edit $config_file with your Panel's node configuration."
+	bashio::log.warning " The add-on will wait here until you restart it with a valid config."
+	bashio::log.warning "-----------------------------------------------------------"
+	sleep infinity
 fi
 
 exec /usr/local/bin/wings

@@ -21,7 +21,6 @@ _show_startup_banner() {
 
 	# Header
 
-
 	# Status indicator
 	if [ "$UNSUPPORTED" = "true" ]; then
 		bashio::log.error "🚨 STATUS: UNSUPPORTED"
