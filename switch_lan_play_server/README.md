@@ -46,6 +46,8 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ### Options
 
+
+
 ---
 
 ## 👨‍💻 Credits & License
