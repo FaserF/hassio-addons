@@ -130,15 +130,7 @@ fi
 set -e
 # shellcheck disable=SC1091
 
-# Start PHP-FPM in background
-# Check if php-fpm84 exists, otherwise try php-fpm
-if command -v php-fpm84 >/dev/null 2>&1; then
-    php-fpm84 -D
-elif command -v php-fpm >/dev/null 2>&1; then
-    php-fpm -D
-else
-    bashio::log.warning "PHP-FPM not found, PHP support may not work"
-fi
+
 
 # Get local IP
 # We can use the Supervisor API to get the Host IP

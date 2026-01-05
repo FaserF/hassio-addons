@@ -186,12 +186,15 @@ fi
 
 # Include sites-enabled in main nginx.conf
 if ! grep -q "include /etc/nginx/sites-enabled" /etc/nginx/nginx.conf; then
-	# Add include directive in http block (after existing includes if any, or after http {)
-	if grep -q "include /etc/nginx/conf.d/\*.conf;" /etc/nginx/nginx.conf; then
-		sed -i '/include \/etc\/nginx\/conf.d\/\*\.conf;/a\    include /etc/nginx/sites-enabled/*.conf;' /etc/nginx/nginx.conf
+	# Add include directive in http block
+	# Check for active include directives (ignore comments by requiring start of line anchor with optional space)
+	if grep -E -q "^[[:space:]]*include[[:space:]]+/etc/nginx/http\.d/\*\.conf;" /etc/nginx/nginx.conf; then
+		sed -i -E '/^[[:space:]]*include[[:space:]]+\/etc\/nginx\/http\.d\/\*\.conf;/a\    include /etc/nginx/sites-enabled/*.conf;' /etc/nginx/nginx.conf
+	elif grep -E -q "^[[:space:]]*include[[:space:]]+/etc/nginx/conf\.d/\*\.conf;" /etc/nginx/nginx.conf; then
+		sed -i -E '/^[[:space:]]*include[[:space:]]+\/etc\/nginx\/conf\.d\/\*\.conf;/a\    include /etc/nginx/sites-enabled/*.conf;' /etc/nginx/nginx.conf
 	else
-		# If no conf.d include, add after http { line
-		sed -i '/^http {/a\    include /etc/nginx/sites-enabled/*.conf;' /etc/nginx/nginx.conf
+		# Fallback: find http block, handling potential whitespace
+		sed -i -E '/^http[[:space:]]*\{/a\    include /etc/nginx/sites-enabled/*.conf;' /etc/nginx/nginx.conf
 	fi
 fi
 
@@ -307,3 +310,15 @@ fi
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"
+
+# Verify Nginx configuration
+if ! nginx -t; then
+    echo "❌ Nginx configuration Check Failed!"
+    echo "Dump of /etc/nginx/nginx.conf:"
+    cat /etc/nginx/nginx.conf
+    if [ -f /etc/nginx/sites-enabled/default.conf ]; then
+        echo "Dump of /etc/nginx/sites-enabled/default.conf:"
+        cat /etc/nginx/sites-enabled/default.conf
+    fi
+    exit 1
+fi

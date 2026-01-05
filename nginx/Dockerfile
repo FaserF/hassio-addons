@@ -79,7 +79,7 @@ RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /
 COPY rootfs /
 COPY index.html /
 
-RUN chmod +x /etc/cont-init.d/nginx.sh /etc/services.d/nginx/run
+RUN chmod +x /etc/cont-init.d/nginx.sh /etc/services.d/*/run
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:80 || exit 1
