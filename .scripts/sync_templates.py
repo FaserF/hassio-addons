@@ -67,7 +67,7 @@ def sync_template():
             line = lines[j]
             stripped = line.strip()
 
-            if not stripped: # empty line
+            if not stripped:  # empty line
                 continue
 
             cur_indent = len(line) - len(line.lstrip())
@@ -91,7 +91,9 @@ def sync_template():
         if end_index == -1:
             end_index = len(lines)
 
-        print(f"✅ Updating add-on list options between lines {start_index+1} and {end_index}")
+        print(
+            f"✅ Updating add-on list options between lines {start_index+1} and {end_index}"
+        )
 
         # Construct new lines
         new_lines_list = []
@@ -118,6 +120,7 @@ def sync_template():
 
     else:
         print("⚠️ Could not find 'Add-On causing the issue' -> 'options:' block.")
+
 
 if __name__ == "__main__":
     sync_template()

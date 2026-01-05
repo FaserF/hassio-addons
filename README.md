@@ -104,13 +104,13 @@ Tested on **amd64** architecture.
 To install them, you must add this repository again but point to the `unsupported` branch:
 
 1. Click to add the unsupported repository:
-    [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
+   [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
 
 2. Or manually add:
 
-    ```text
-    https://github.com/FaserF/hassio-addons#unsupported
-    ```
+   ```text
+   https://github.com/FaserF/hassio-addons#unsupported
+   ```
 
 > [!CAUTION]
 > **UNSUPPORTED / LEGACY SOFTWARE**
