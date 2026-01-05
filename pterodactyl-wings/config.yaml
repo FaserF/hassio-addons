@@ -15,7 +15,7 @@ ingress: true
 init: false
 panel_icon: mdi:controller
 options:
-  config_file:
+  config_file: /share/pterodactyl/config.yml
 schema:
   config_file: str
 ports:

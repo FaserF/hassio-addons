@@ -31,6 +31,9 @@ RUN set -o pipefail && \
     echo "${CHECKSUM}  /usr/local/bin/wings" | sha256sum -c - && \
     chmod u+x /usr/local/bin/wings
 
+# Copy rootfs
+COPY rootfs /
+
 # Copy data for add-on
 COPY run.sh /
 RUN chmod a+x /run.sh

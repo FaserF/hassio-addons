@@ -144,9 +144,15 @@ if [ ! -f "$config_file" ]; then
 	bashio::log.info ""
 	bashio::log.info "📦 Panel Add-on: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
 	bashio::log.info ""
-	bashio::log.warning "Creating dummy config for testing purposes..."
+	bashio::log.warning "Creating default config for you at ${config_file}..."
+    bashio::log.warning "Please edit this file with your node configuration details!"
 	mkdir -p "$(dirname "$config_file")"
-	touch "$config_file"
+    if [ -f /etc/pterodactyl/config.yaml.default ]; then
+        cp /etc/pterodactyl/config.yaml.default "$config_file"
+    else
+        bashio::log.error "Default config template not found!"
+        touch "$config_file"
+    fi
 fi
 
 mkdir -p /etc/pterodactyl
