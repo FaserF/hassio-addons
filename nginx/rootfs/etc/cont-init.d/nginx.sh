@@ -313,12 +313,12 @@ ls -l "$webrootdocker"
 
 # Verify Nginx configuration
 if ! nginx -t; then
-    echo "❌ Nginx configuration Check Failed!"
-    echo "Dump of /etc/nginx/nginx.conf:"
-    cat /etc/nginx/nginx.conf
-    if [ -f /etc/nginx/sites-enabled/default.conf ]; then
-        echo "Dump of /etc/nginx/sites-enabled/default.conf:"
-        cat /etc/nginx/sites-enabled/default.conf
-    fi
-    exit 1
+	echo "❌ Nginx configuration Check Failed!"
+	echo "Dump of /etc/nginx/nginx.conf:"
+	cat /etc/nginx/nginx.conf
+	if [ -f /etc/nginx/sites-enabled/default.conf ]; then
+		echo "Dump of /etc/nginx/sites-enabled/default.conf:"
+		cat /etc/nginx/sites-enabled/default.conf
+	fi
+	exit 1
 fi
