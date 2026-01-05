@@ -6,7 +6,7 @@ CONFIG_DIR="/data/homeassistant"
 
 # Simple logging function to match HA log format
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') $1 $2"
+	echo "$(date '+%Y-%m-%d %H:%M:%S') $1 $2"
 }
 
 log INFO "-----------------------------------------------------------"
