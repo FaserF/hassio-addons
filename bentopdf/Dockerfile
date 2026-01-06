@@ -12,7 +12,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Nginx
 # hadolint ignore=DL3018
-RUN apk add --no-cache nginx \
+RUN    apk add --no-cache \
+        nginx \
+        curl \
     && rm -f /etc/nginx/http.d/default.conf
 
 # Copy rootfs
