@@ -531,8 +531,10 @@ jobs:
               # Split into categories
               NORMAL_ADDONS=""
               SWITCH_LAN_PLAY_ADDONS=""
-              PTERODACTYL_ADDONS=""
+              PTERODACTYL_WINGS_ADDONS=""
+              PTERODACTYL_PANEL_ADDONS=""
               ANTIGRAVITY_ADDON=""
+              SAP_ADDON=""
               UNSUPPORTED_ADDONS=""
 
               # Process each addon
