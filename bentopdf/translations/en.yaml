@@ -1,0 +1,10 @@
+configuration:
+  ssl:
+    name: "Enable SSL"
+    description: "Enables encrypted HTTPS connections."
+  certfile:
+    name: "Certificate File"
+    description: "The name of the certificate file for SSL/TLS."
+  keyfile:
+    name: "Key File"
+    description: "The name of the private key file for SSL/TLS."
