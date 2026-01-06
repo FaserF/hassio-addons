@@ -590,8 +590,8 @@ jobs:
 
             ADDONS="$SORTED_ADDONS"
             echo "✅ Sorted addons: $ADDONS"
+            fi
           fi
-        fi
 
           # Convert to JSON array (compact format for GitHub Actions output)
           if [ -n "$ADDONS" ]; then
