@@ -15,6 +15,8 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.0.0"
 ENV ADDON_NAME="Netboot.xyz"
