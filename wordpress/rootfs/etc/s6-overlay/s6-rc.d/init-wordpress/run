@@ -8,7 +8,7 @@ if ! bashio::config.has_value 'database_host'; then
     if bashio::services.available "mysql"; then
         bashio::log.info "Using MySQL service connection details..."
         DB_HOST=$(bashio::services "mysql" "host")
-        if bashio::services.has_port "mysql"; then
+        if bashio::var.has_value "$(bashio::services.port "mysql")"; then
             DB_HOST="${DB_HOST}:$(bashio::services.port "mysql")"
         fi
     else

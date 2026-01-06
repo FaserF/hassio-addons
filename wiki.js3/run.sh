@@ -22,12 +22,6 @@ _show_startup_banner() {
         DEV_COMMIT="${VERSION##*+}"
     fi
 
-    # Header
-    bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    bashio::log.blue "  🏠 $NAME"
-    bashio::log.blue "  📦 Version: $VERSION"
-    bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
     # Status indicator
     if [ "$UNSUPPORTED" = "true" ]; then
         bashio::log.error "🚨 STATUS: UNSUPPORTED"
@@ -129,6 +123,7 @@ fi
 
 # Enable strict mode
 set -e
+set -x
 # shellcheck disable=SC1091
 
 ssl=$(bashio::config 'ssl')

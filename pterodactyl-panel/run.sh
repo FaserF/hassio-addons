@@ -206,6 +206,11 @@ cd /var/www/html/ || {
 	exit 1
 }
 
+# Fixed permissions early to ensure nginx user can read/write
+bashio::log.info "Fixing permissions..."
+chown -R nginx:nginx storage bootstrap/cache
+chown nginx:nginx .env 2>/dev/null || true
+
 echo "[setup] Comparing environment settings file from /share/pterodactyl/.env"
 setup_user=false
 if [ ! -d /share/pterodactyl/ ]; then
@@ -214,11 +219,19 @@ fi
 if [ ! -f /share/pterodactyl/.env ]; then
 	echo "No old config file found, starting first setup of pterodactyl"
 	echo "[setup] Generating Application Key..."
-	# Run as nginx user
-	su-exec nginx php artisan key:generate --no-interaction --force
+
+    # Generate key manually to avoid boot errors
+    APP_KEY="base64:$(openssl rand -base64 32)"
+    echo "REDIS_HOST=$hostname" >>.env
+
+    # Check if APP_KEY exists in .env, replace or append
+    if grep -q "^APP_KEY=" .env; then
+        sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+    else
+        echo "APP_KEY=$APP_KEY" >> .env
+    fi
+
 	echo "[setup] Application Key Generated"
-	hostname="hostname"
-	echo "REDIS_HOST=$hostname" >>.env
 	cp .env /share/pterodactyl/.env
 	setup_user=true
 else
@@ -226,15 +239,21 @@ else
 	cp /share/pterodactyl/.env .env
 fi
 
-# Ensure APP_KEY exists
+# Ensure APP_KEY exists (for recovery)
 if ! grep -q "^APP_KEY=base64:" .env; then
 	echo "[setup] Application Key missing or invalid, generating..."
-	# Run as nginx user
-	su-exec nginx php artisan key:generate --no-interaction --force
+	APP_KEY="base64:$(openssl rand -base64 32)"
+
+    if grep -q "^APP_KEY=" .env; then
+        sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+    else
+        echo "APP_KEY=$APP_KEY" >> .env
+    fi
+
 	cp .env /share/pterodactyl/.env
 fi
 
-# Ensure correct permissions on .env
+# Ensure correct permissions on .env (again, just in case)
 chown nginx:nginx .env
 
 echo ""
@@ -344,9 +363,8 @@ php_service_pid=$!
 
 echo "[start] Starting Pterodactyl Panel"
 
-# Optimized permissions: Only fix critical directories, rely on Dockerfile for the rest
-# chown -R nginx:nginx /var/www/*  <-- This was causing the hang
-chown -R nginx:nginx storage bootstrap/cache
+# Optimized permissions: Permissions were fixed early in the script
+
 
 # Create log files with correct permissions
 touch /var/log/nginx/pterodactyl.app-error.log
