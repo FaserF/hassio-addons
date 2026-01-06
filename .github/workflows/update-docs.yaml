@@ -1,0 +1,40 @@
+name: Update Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/config.yaml"
+      - ".scripts/generate_docs.py"
+      - "docs/css/**"
+  workflow_dispatch:
+
+jobs:
+  update-docs:
+    name: 📝 Update Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install Dependencies
+        run: |
+          pip install pyyaml
+
+      - name: 📄 Generate Docs
+        run: |
+          python3 .scripts/generate_docs.py
+
+      - name: 🚀 Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update index.html"
+          file_pattern: "docs/index.html"

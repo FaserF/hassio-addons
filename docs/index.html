@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Icons (Material Design Icons via CDN or SVGs) -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -30,108 +30,431 @@
 
     <main class="container">
 
+        <div class="stats-bar">
+            <span>📦 Total Add-ons: <strong>28</strong></span>
+            <span>✅ Stable: <strong>14</strong></span>
+            <span>⚠️ Beta: <strong>9</strong></span>
+        </div>
+
         <div class="addons-grid">
-            <!-- WordPress -->
-            <div class="addon-card">
-                <div class="addon-header">
-                    <div class="addon-icon">📝</div>
-                    <div class="addon-title">WordPress</div>
-                </div>
-                <div class="addon-desc">The most popular publication platform on the Web. Fully featured with MariaDB and PHP.</div>
-                <div class="addon-footer">
-                    <span class="tag beta">Beta</span>
-                    <a href="https://github.com/FaserF/hassio-addons/tree/master/wordpress" class="view-link" target="_blank">View Docs →</a>
-                </div>
-            </div>
-
-            <!-- Wiki.js -->
-            <div class="addon-card">
-                <div class="addon-header">
-                    <div class="addon-icon">📚</div>
-                    <div class="addon-title">Wiki.js V3</div>
-                </div>
-                <div class="addon-desc">The most powerful and extensible open source Wiki software (Version 3 Beta).</div>
-                <div class="addon-footer">
-                    <span class="tag beta">Beta</span>
-                    <a href="https://github.com/FaserF/hassio-addons/tree/master/wiki.js3" class="view-link" target="_blank">View Docs →</a>
-                </div>
-            </div>
-
-            <!-- Antigravity Server -->
-            <div class="addon-card">
-                <div class="addon-header">
-                    <div class="addon-icon">🚀</div>
-                    <div class="addon-title">Antigravity Server</div>
-                </div>
-                <div class="addon-desc">Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.</div>
-                <div class="addon-footer">
-                    <span class="tag beta">Beta</span>
-                    <a href="https://github.com/FaserF/hassio-addons/tree/master/antigravity-server" class="view-link" target="_blank">View Docs →</a>
-                </div>
-            </div>
-
-            <!-- Pterodactyl Panel -->
-            <div class="addon-card">
-                <div class="addon-header">
-                    <div class="addon-icon">🎮</div>
-                    <div class="addon-title">Pterodactyl Panel</div>
-                </div>
-                <div class="addon-desc">Open-Source Game Server Management Panel (Beta).</div>
-                <div class="addon-footer">
-                    <span class="tag beta">Beta</span>
-                    <a href="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel" class="view-link" target="_blank">View Docs →</a>
-                </div>
-            </div>
-
-            <!-- Apache2 -->
-            <div class="addon-card">
+            
+            <div class="addon-card stable">
                 <div class="addon-header">
                     <div class="addon-icon">🌐</div>
                     <div class="addon-title">Apache2</div>
                 </div>
-                <div class="addon-desc">Robust Webserver with PHP and MariaDB support.</div>
+                <div class="addon-desc">Open Source Webserver with PHP and MariaDB.</div>
+                <div class="addon-meta">
+                    <span class="version">v3.0.0</span>
+                </div>
                 <div class="addon-footer">
                     <span class="tag stable">Stable</span>
                     <a href="https://github.com/FaserF/hassio-addons/tree/master/apache2" class="view-link" target="_blank">View Docs →</a>
                 </div>
             </div>
 
-             <!-- Nginx -->
-             <div class="addon-card">
+            <div class="addon-card stable">
                 <div class="addon-header">
-                    <div class="addon-icon">🚦</div>
-                    <div class="addon-title">NGINX</div>
+                    <div class="addon-icon">🌐</div>
+                    <div class="addon-title">Apache2 Minimal</div>
                 </div>
-                <div class="addon-desc">High-performance Webserver with PHP and MariaDB.</div>
+                <div class="addon-desc">Open Source Webserver without PHP and minimal extra modules.</div>
+                <div class="addon-meta">
+                    <span class="version">v3.0.0</span>
+                </div>
                 <div class="addon-footer">
-                    <span class="tag beta">Beta</span>
-                    <a href="https://github.com/FaserF/hassio-addons/tree/master/nginx" class="view-link" target="_blank">View Docs →</a>
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal" class="view-link" target="_blank">View Docs →</a>
                 </div>
             </div>
 
-            <!-- ShieldDNS -->
-            <div class="addon-card">
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🌐</div>
+                    <div class="addon-title">Apache2 Minimal with MariaDB Client</div>
+                </div>
+                <div class="addon-desc">Open Source Webserver with MariaDB Client and some PHP Modules.</div>
+                <div class="addon-meta">
+                    <span class="version">v3.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">📦</div>
+                    <div class="addon-title">Bash Script Executer</div>
+                </div>
+                <div class="addon-desc">Execute your own bash scripts inside this Homeassistant Addon environment.</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">👢</div>
+                    <div class="addon-title">Netboot.xyz</div>
+                </div>
+                <div class="addon-desc">PXE-Server to deploy a OS inside your local network</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🔐</div>
+                    <div class="addon-title">OpenSSL</div>
+                </div>
+                <div class="addon-desc">Generate self-signed certificates</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/openssl" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
                 <div class="addon-header">
                     <div class="addon-icon">🛡️</div>
                     <div class="addon-title">ShieldDNS</div>
                 </div>
-                <div class="addon-desc">DNS-over-HTTPS & TLS Server for enhanced privacy.</div>
+                <div class="addon-desc">High-performance DoT proxy for AdGuard Home</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
                 <div class="addon-footer">
                     <span class="tag stable">Stable</span>
                     <a href="https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS" class="view-link" target="_blank">View Docs →</a>
                 </div>
             </div>
 
-            <!-- SAP ABAP -->
-            <div class="addon-card">
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🛡️</div>
+                    <div class="addon-title">ShieldFile</div>
+                </div>
+                <div class="addon-desc">Secure, Web-based File Manager (SFTP over HTTPS)</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/ShieldFile" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">📦</div>
+                    <div class="addon-title">Solumati</div>
+                </div>
+                <div class="addon-desc">The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/solumati" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🎮</div>
+                    <div class="addon-title">Switch LAN Play Client</div>
+                </div>
+                <div class="addon-desc">Nintendo Switch Lan Play -Client</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🎮</div>
+                    <div class="addon-title">Switch LAN Play Server</div>
+                </div>
+                <div class="addon-desc">Nintendo Switch Lan Play -Server</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🌡️</div>
+                    <div class="addon-title">Tado Auto Assist</div>
+                </div>
+                <div class="addon-desc">Tado Auto-Assist for Geofencing and open Window detection</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/tado_aa" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">📚</div>
+                    <div class="addon-title">Wiki.JS</div>
+                </div>
+                <div class="addon-desc">The most powerful and extensible open source Wiki software</div>
+                <div class="addon-meta">
+                    <span class="version">v3.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/wiki.js" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card stable">
+                <div class="addon-header">
+                    <div class="addon-icon">🎮</div>
+                    <div class="addon-title">pterodactyl Wings Gameserver</div>
+                </div>
+                <div class="addon-desc">Open Source Gameserver</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag stable">Stable</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-wings" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">🤖</div>
+                    <div class="addon-title">AegisBot</div>
+                </div>
+                <div class="addon-desc">Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features</div>
+                <div class="addon-meta">
+                    <span class="version">v0.2.1</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/AegisBot" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">🚀</div>
+                    <div class="addon-title">Antigravity-Server</div>
+                </div>
+                <div class="addon-desc">Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.</div>
+                <div class="addon-meta">
+                    <span class="version">v0.2.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/antigravity-server" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">📦</div>
+                    <div class="addon-title">Home Assistant Test Instance</div>
+                </div>
+                <div class="addon-desc">A standalone Home Assistant Core instance for testing purposes.</div>
+                <div class="addon-meta">
+                    <span class="version">v0.2.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/home-assistant/home-assistant" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">🚦</div>
+                    <div class="addon-title">NGINX</div>
+                </div>
+                <div class="addon-desc">Open Source Webserver with PHP and MariaDB.</div>
+                <div class="addon-meta">
+                    <span class="version">v0.0.1</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/nginx" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
                 <div class="addon-header">
                     <div class="addon-icon">🏢</div>
-                    <div class="addon-title">SAP ABAP Cloud</div>
+                    <div class="addon-title">SAP ABAP Cloud Developer Trial</div>
                 </div>
-                <div class="addon-desc">SAP ABAP Platform Trial for local ABAP development.</div>
+                <div class="addon-desc">SAP ABAP Platform Trial for local ABAP development</div>
+                <div class="addon-meta">
+                    <span class="version">v0.0.1</span>
+                </div>
                 <div class="addon-footer">
                     <span class="tag beta">Beta</span>
                     <a href="https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-dev" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">🏢</div>
+                    <div class="addon-title">WhatsApp</div>
+                </div>
+                <div class="addon-desc">Home Assistant WhatsApp Backend (Baileys/Node.js)</div>
+                <div class="addon-meta">
+                    <span class="version">v0.3.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/ha-whatsapp" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">📚</div>
+                    <div class="addon-title">Wiki.JS V3 (Beta)</div>
+                </div>
+                <div class="addon-desc">The most powerful and extensible open source Wiki software (Version 3 - Beta)</div>
+                <div class="addon-meta">
+                    <span class="version">v0.2.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/wiki.js3" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">📝</div>
+                    <div class="addon-title">Wordpress</div>
+                </div>
+                <div class="addon-desc">The most popular publication platform on the Web.</div>
+                <div class="addon-meta">
+                    <span class="version">v0.0.1</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/wordpress" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card beta">
+                <div class="addon-header">
+                    <div class="addon-icon">🎮</div>
+                    <div class="addon-title">pterodactyl Panel Gameserver - BETA</div>
+                </div>
+                <div class="addon-desc">Open-Source Gameserver - Currently not fully working</div>
+                <div class="addon-meta">
+                    <span class="version">v0.10.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag beta">Beta</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card unsupported">
+                <div class="addon-header">
+                    <div class="addon-icon">🛡️</div>
+                    <div class="addon-title">Freenom-dns-updater (Unsupported)</div>
+                </div>
+                <div class="addon-desc">Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, auto renew domains and more. (Unsupported)</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag unsupported">Unsupported</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/freenom-dns-updater" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card unsupported">
+                <div class="addon-header">
+                    <div class="addon-icon">🌉</div>
+                    <div class="addon-title">Matterbridge (Unsupported)</div>
+                </div>
+                <div class="addon-desc">A simple chat bridge (Unsupported - Matterbridge not developed since Jan 2023) (Unsupported)</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag unsupported">Unsupported</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/matterbridge" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card unsupported">
+                <div class="addon-header">
+                    <div class="addon-icon">🚪</div>
+                    <div class="addon-title">bt-mqtt-gateway (Unsupported)</div>
+                </div>
+                <div class="addon-desc">Bluetooth MQTT Gateway Server (Unsupported)</div>
+                <div class="addon-meta">
+                    <span class="version">v3.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag unsupported">Unsupported</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/bt-mqtt-gateway" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card unsupported">
+                <div class="addon-header">
+                    <div class="addon-icon">🔌</div>
+                    <div class="addon-title">tuya-convert BETA (Unsupported)</div>
+                </div>
+                <div class="addon-desc">Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (Unsupported)</div>
+                <div class="addon-meta">
+                    <span class="version">v0.2.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag unsupported">Unsupported</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/tuya-convert" class="view-link" target="_blank">View Docs →</a>
+                </div>
+            </div>
+
+            <div class="addon-card unsupported">
+                <div class="addon-header">
+                    <div class="addon-icon">📦</div>
+                    <div class="addon-title">xqrepack (Unsupported)</div>
+                </div>
+                <div class="addon-desc">These scripts allow you to modify the different Xiaomi router firmware images to make sure SSH and UART access is always enabled. (Unsupported)</div>
+                <div class="addon-meta">
+                    <span class="version">v2.0.0</span>
+                </div>
+                <div class="addon-footer">
+                    <span class="tag unsupported">Unsupported</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/xqrepack" class="view-link" target="_blank">View Docs →</a>
                 </div>
             </div>
 
