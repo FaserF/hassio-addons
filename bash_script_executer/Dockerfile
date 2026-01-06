@@ -9,6 +9,8 @@ ARG BUILD_DATE="unknown"
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.0.0"
 ENV ADDON_NAME="Bash Script Executer"
