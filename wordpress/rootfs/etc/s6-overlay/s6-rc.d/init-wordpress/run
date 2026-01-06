@@ -21,7 +21,7 @@ fi
 
 if ! bashio::config.has_value 'database_password'; then
     if bashio::services.available "mysql"; then
-        DB_PASS=$(bashio::services.credentials "mysql" "password")
+        DB_PASS=$(bashio::services "mysql" "password")
     else
         bashio::exit.nok "A 'database_password' is required!"
     fi
@@ -38,7 +38,7 @@ fi
 
 if ! bashio::config.has_value 'database_user'; then
     if bashio::services.available "mysql"; then
-        DB_USER=$(bashio::services.credentials "mysql" "username")
+        DB_USER=$(bashio::services "mysql" "username")
     else
         bashio::log.info "No database_user configured, using default 'wordpress'"
         DB_USER="wordpress"

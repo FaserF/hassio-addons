@@ -695,8 +695,8 @@ jobs:
                    repo: context.repo.repo,
                    issue_number: context.issue.number,
                 });
-                const signature = "## ❌ General CI Failure Report";
-                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+                const reportSignature = "## ❌ General CI Failure Report";
+                const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
                 for (const comment of previousComments) {
                     try {
                         await github.graphql(`
@@ -719,8 +719,8 @@ jobs:
                repo: context.repo.repo,
                issue_number: context.issue.number,
             });
-            const signature = "## ❌ General CI Failure Report";
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(signature));
+            const reportSignature = "## ❌ General CI Failure Report";
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
             for (const comment of previousComments) {
                 try {
                     await github.graphql(`

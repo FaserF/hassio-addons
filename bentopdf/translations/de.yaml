@@ -1,0 +1,10 @@
+configuration:
+  ssl:
+    name: "SSL aktivieren"
+    description: "Aktiviert verschlüsselte HTTPS-Verbindungen."
+  certfile:
+    name: "Zertifikatsdatei"
+    description: "Der Name der Zertifikatsdatei für SSL/TLS."
+  keyfile:
+    name: "Schlüsseldatei"
+    description: "Der Name der privaten Schlüsseldatei für SSL/TLS."

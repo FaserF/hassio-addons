@@ -1,0 +1,57 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+certfile=$(bashio::config 'certfile')
+keyfile=$(bashio::config 'keyfile')
+ssl=$(bashio::config 'ssl')
+
+# SSL Validation
+if bashio::var.true "${ssl}"; then
+    if ! bashio::config.has_value 'certfile'; then
+        bashio::log.fatal "SSL enabled but 'certfile' option is empty!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::config.has_value 'keyfile'; then
+        bashio::log.fatal "SSL enabled but 'keyfile' option is empty!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::fs.file_exists "/ssl/${certfile}"; then
+        bashio::log.fatal "SSL enabled but certificate file '/ssl/${certfile}' not found!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::fs.file_exists "/ssl/${keyfile}"; then
+        bashio::log.fatal "SSL enabled but key file '/ssl/${keyfile}' not found!"
+        bashio::exit.nok
+    fi
+fi
+
+# Generate Nginx configuration
+bashio::log.info "Generating Nginx configuration..."
+cat > /etc/nginx/http.d/ingress.conf <<EOF || bashio::exit.nok "Failed to generate Nginx configuration"
+server {
+    listen 8035 $(if bashio::var.true "${ssl}"; then echo "ssl"; fi);
+    root /var/www/bentopdf;
+    index index.html;
+    server_name _;
+    client_max_body_size 0;
+
+    $(if bashio::var.true "${ssl}"; then echo "
+    ssl_certificate /ssl/${certfile};
+    ssl_certificate_key /ssl/${keyfile};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    "; fi)
+
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+}
+EOF
+
+bashio::log.info "Starting BentoPDF application..."
+
+# Start Nginx
+exec nginx -c /etc/nginx/nginx.conf -g "daemon off;"
