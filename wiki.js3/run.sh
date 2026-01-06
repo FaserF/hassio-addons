@@ -311,5 +311,17 @@ su-exec postgres psql -d wiki -c "CREATE EXTENSION pg_trgm SCHEMA public;"
 bashio::log.info "Verifying 'pg_trgm' installation..."
 su-exec postgres psql -d wiki -c "SELECT opcname FROM pg_opclass WHERE opcname LIKE '%trgm%';"
 
+# DIAGNOSTIC: Try to create the index manually to see if it works
+bashio::log.info "Running diagnostic index creation..."
+su-exec postgres psql -d wiki -c "CREATE TABLE IF NOT EXISTS test_diagnostics (content text);" || true
+if su-exec postgres psql -d wiki -c "CREATE INDEX test_diag_idx ON test_diagnostics USING GIN (content gin_trgm_ops);"; then
+    bashio::log.info "Diagnostic index creation SUCCESSFUL"
+else
+    bashio::log.error "Diagnostic index creation FAILED"
+    su-exec postgres psql -d wiki -c "SHOW search_path;"
+    su-exec postgres psql -d wiki -c "\dx"
+fi
+su-exec postgres psql -d wiki -c "DROP TABLE IF EXISTS test_diagnostics;"
+
 echo "Starting Wiki.JS V3"
 node server
