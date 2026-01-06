@@ -11,6 +11,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.3.0"
 ENV ADDON_NAME="WhatsApp"
