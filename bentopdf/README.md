@@ -1,12 +1,11 @@
-# BentoPDF (Beta)
+# BentoPDF
 
-<img src="logo.png" width="300" alt="Logo">
+![Logo](logo.png)
 
-[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=bentopdf)
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_bentopdf)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-bentopdf)
+[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons/bentopdf/{arch})
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
 > Self-hosted, privacy-first PDF toolkit
 
@@ -21,6 +20,16 @@
 ---
 
 ## 📖 About
+
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
+
+> Self-hosted, privacy-first PDF toolkit
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
 
 BentoPDF is a comprehensive PDF toolkit that runs entirely in your browser. It allows you to merge, split, compress, and convert PDFs without uploading your files to a server, ensuring your data remains private.
 
@@ -54,9 +63,9 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
-ssl: false
 certfile: fullchain.pem
 keyfile: privkey.pem
+ssl: false
 ```
 
 ---
@@ -65,6 +74,3 @@ keyfile: privkey.pem
 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
-
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
