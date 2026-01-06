@@ -124,23 +124,31 @@ config_file=$(bashio::config 'config_file')
 echo "Using config file from ${config_file}..."
 
 if [ ! -f "$config_file" ]; then
-	bashio::log.warning "⚠️  Wings configuration file not found at ${config_file}!"
-	bashio::log.info ""
-	bashio::log.info "💡 Wings needs to be configured from the Pterodactyl Panel first:"
-	bashio::log.info "   1. Install & configure the Pterodactyl Panel add-on"
-	bashio::log.info "   2. Create a new Node in the Panel's admin section"
-	bashio::log.info "   3. Download the config.yml from the Node configuration"
-	bashio::log.info ""
-	bashio::log.info "📦 Panel Add-on: https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"
-	bashio::log.info ""
-	bashio::log.warning "Creating default config for you at ${config_file}..."
-	bashio::log.warning "Please edit this file with your node configuration details!"
-	mkdir -p "$(dirname "$config_file")"
-	if [ -f /etc/pterodactyl/config.yaml.default ]; then
-		cp /etc/pterodactyl/config.yaml.default "$config_file"
+	bashio::log.info "Configuration file not found at ${config_file}"
+	bashio::log.info "Checking for auto-generated configuration from Panel..."
+
+	SHARED_CONFIG="/share/pterodactyl/config.yml"
+
+	# Wait for shared config if it doesn't exist
+	if [ ! -f "$SHARED_CONFIG" ]; then
+		bashio::log.warning "Wings configuration not found in shared storage!"
+		bashio::log.info "Waiting for Pterodactyl Panel to generate configuration at ${SHARED_CONFIG}..."
+		bashio::log.info "Ensure the Pterodactyl Panel add-on is installed and running."
+
+		while [ ! -f "$SHARED_CONFIG" ]; do
+			sleep 10
+		done
+		bashio::log.info "Configuration file discovered from Panel!"
+	fi
+
+	# If our config file IS the shared config, we are done (it exists now)
+	# Otherwise, copy it to our target location
+	if [ "$config_file" != "$SHARED_CONFIG" ]; then
+		bashio::log.info "Copying configuration to ${config_file}..."
+		mkdir -p "$(dirname "$config_file")"
+		cp "$SHARED_CONFIG" "$config_file"
 	else
-		bashio::log.error "Default config template not found!"
-		touch "$config_file"
+		bashio::log.info "Using shared configuration file directly."
 	fi
 fi
 
@@ -155,6 +163,7 @@ if grep -q 'token: "example"' "$config_file"; then
 	bashio::log.warning " Add-on is NOT configured!"
 	bashio::log.warning " You are using the default configuration template."
 	bashio::log.warning " Please edit $config_file with your Panel's node configuration."
+	bashio::log.warning " OR delete this file to attempt auto-configuration from Panel."
 	bashio::log.warning " The add-on will wait here until you restart it with a valid config."
 	bashio::log.warning "-----------------------------------------------------------"
 	sleep infinity

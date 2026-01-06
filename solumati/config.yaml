@@ -34,4 +34,4 @@ schema:
   factory_reset: bool?
   marketing_page_enabled: bool?
   dev_use_main_branch: bool?
-  github_token: str?
+  github_token: password?

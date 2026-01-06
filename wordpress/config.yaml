@@ -29,10 +29,10 @@ schema:
   database_host: str?
   database_name: str?
   database_user: str?
-  database_password: str
+  database_password: password
   wordpress_title: str
   wordpress_admin_user: str
-  wordpress_admin_password: str
+  wordpress_admin_password: password
   wordpress_admin_email: email
 ports:
   80/tcp: 8099

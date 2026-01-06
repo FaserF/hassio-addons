@@ -317,7 +317,7 @@ jobs:
             IS_BASE_IMAGE_UPDATE="false"
             PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' || echo "")
             PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body' || echo "")
-            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images)"; then
+            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images|Bailys|Homeassistant Addon Base|Important Update)"; then
               IS_BASE_IMAGE_UPDATE="true"
               echo "🔍 Base image update detected from PR title/description"
             fi
@@ -394,6 +394,48 @@ jobs:
                 fi
               done
             fi
+
+            # ----------------------------------------------------------------
+            # Check for Manual Version Bumps in PR (Manifest Version Change)
+            # ----------------------------------------------------------------
+            echo "🔍 Checking for version bumps in merged PR..."
+            # Get list of changed files in the merge commit
+            CHANGED_FILES_DIFF=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+
+            for file in $CHANGED_FILES_DIFF; do
+              # Skip .unsupported addons
+              if [[ "$file" == .unsupported/* ]]; then
+                continue
+              fi
+
+              if [[ "$file" == *"/config.yaml" ]]; then
+                addon_dir=$(dirname "$file")
+                addon_name=$(basename "$addon_dir")
+
+                # Check if version changed
+                if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
+                    OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+                else
+                    OLD_VERSION=""
+                fi
+                NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+                if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+                   echo "🚀 Detected version bump in $addon_name (via PR): $OLD_VERSION -> $NEW_VERSION"
+                   # Add to ADDONS if not already there
+                   if [[ ! ",$ADDONS," =~ ,"$addon_name", ]]; then
+                     [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                   fi
+                   # Set Manual Bump flags (treat as manual bump to respect the version in file)
+                   SHOULD_RELEASE="true"
+                   # If it's a manual bump in PR, we usually want to respect that version,
+                   # but the workflow logic later relies on VERSION_TYPE.
+                   # If we want to use the version FROM the file, we can set VERSION_TYPE to that version string.
+                   VERSION_TYPE="$NEW_VERSION"
+                   IS_MANUAL_BUMP="true" # This flag prevents double-bumping if logic allows
+                fi
+              fi
+            done
 
             [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
           # ----------------------------------------------------------------
@@ -726,10 +768,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Store local changes for this addon
-          ADDON_FILES="${{ matrix.addon }}/*"
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+          ADDON_FILES="."
+          if [ -n "$(git status --porcelain)" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }}..."
-            git stash push -m "temp-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+            git stash push -u -m "temp-stash-${{ matrix.addon }}" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -770,7 +812,7 @@ jobs:
         with:
           commit_message: |
             ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
-          file_pattern: "${{ matrix.addon }}"
+          file_pattern: "."
           skip_fetch: true
 
       - name: 🔄 Retry Commit with Pull (if failed)
@@ -779,16 +821,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="${{ matrix.addon }}/*"
+          ADDON_FILES="."
 
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
 
           # Store local changes
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+          if [ -n "$(git status --porcelain)" ]; then
             echo "📦 Stashing local changes for retry..."
-            git stash push -m "retry-stash-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+            git stash push -u -m "retry-stash-${{ matrix.addon }}" || echo "No changes to stash"
           fi
 
           # Fetch and reset to latest master
@@ -990,10 +1032,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Store local changes for this addon
-          ADDON_FILES="${{ matrix.addon }}/*"
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+          ADDON_FILES="."
+          if [ -n "$(git status --porcelain)" ]; then
             echo "📦 Stashing local changes for ${{ matrix.addon }} (dev version)..."
-            git stash push -m "temp-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+            git stash push -u -m "temp-stash-dev-${{ matrix.addon }}" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -1032,7 +1074,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "chore(${{ matrix.addon }}): bump to dev version [skip-tests]"
-          file_pattern: "${{ matrix.addon }}/*"
+          file_pattern: "."
           skip_fetch: true
 
       - name: 🔄 Retry Dev Commit with Pull (if failed)
@@ -1044,16 +1086,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="${{ matrix.addon }}/*"
+          ADDON_FILES="."
 
           # Clean up any merge/rebase state
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
 
           # Store local changes
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
+          if [ -n "$(git status --porcelain)" ]; then
             echo "📦 Stashing local changes for retry (dev version)..."
-            git stash push -m "retry-stash-dev-${{ matrix.addon }}" -- "$ADDON_FILES" || echo "No changes to stash"
+            git stash push -u -m "retry-stash-dev-${{ matrix.addon }}" || echo "No changes to stash"
           fi
 
           # Fetch and reset to latest master

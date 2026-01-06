@@ -43,6 +43,7 @@ RUN apk add --no-cache \
     php83-zip \
     php83-xmlwriter \
     tini \
+    su-exec \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
     && ln -sf /usr/bin/php83 /usr/bin/php
 

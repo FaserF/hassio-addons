@@ -26,7 +26,7 @@ schema:
   log_level: list(error|warn|info|debug)?
   reset_database: bool?
   reset_database_confirm: bool?
-  db_password: str?
+  db_password: password?
 ports:
   3000/tcp: 3000
   3443/tcp: 3443
