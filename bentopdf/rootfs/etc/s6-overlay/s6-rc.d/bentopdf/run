@@ -5,9 +5,22 @@ certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 ssl=$(bashio::config 'ssl')
 
+# SSL Validation
+if bashio::var.true "${ssl}"; then
+    if ! bashio::fs.file_exists "/ssl/${certfile}"; then
+        bashio::log.fatal "SSL enabled but certificate file '/ssl/${certfile}' not found!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::fs.file_exists "/ssl/${keyfile}"; then
+        bashio::log.fatal "SSL enabled but key file '/ssl/${keyfile}' not found!"
+        bashio::exit.nok
+    fi
+fi
+
 # Generate Nginx configuration
 bashio::log.info "Generating Nginx configuration..."
-cat > /etc/nginx/http.d/ingress.conf <<EOF
+cat > /etc/nginx/http.d/ingress.conf <<EOF || bashio::exit.nok "Failed to generate Nginx configuration"
 server {
     listen 8035 $(if bashio::var.true "${ssl}"; then echo "ssl"; fi);
     root /var/www/bentopdf;
