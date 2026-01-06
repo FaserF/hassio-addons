@@ -8,6 +8,8 @@ FROM ${BUILD_FROM} AS builder
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.0.0"
 ENV ADDON_NAME="Switch LAN Play Client"
