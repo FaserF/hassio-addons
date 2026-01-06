@@ -115,8 +115,9 @@ ICON_MAP = {
     "freenom": "🆓",
     "matterbridge": "🌉",
     "tuya": "🔌",
-    "xqrepack": "📦"
+    "xqrepack": "📦",
 }
+
 
 def get_icon(slug: str, name: str) -> str:
     """Guess emoji icon based on slug/name."""
@@ -124,7 +125,7 @@ def get_icon(slug: str, name: str) -> str:
     for key, icon in ICON_MAP.items():
         if key in search_str:
             return icon
-    return "📦" # Default package icon
+    return "📦"  # Default package icon
 
 
 def parse_version(version_str: str) -> tuple:
@@ -138,7 +139,9 @@ def parse_version(version_str: str) -> tuple:
         return (0, 0, 0)
 
 
-def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> dict:
+def extract_metadata(
+    config_path: Path, relative_path: str, is_unsupported: bool
+) -> dict:
     """Extract metadata from config.yaml."""
     try:
         with open(config_path, "r", encoding="utf-8") as f:
@@ -148,7 +151,10 @@ def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool
         slug = config.get("slug", "unknown")
         description = config.get("description", "No description provided.")
         version = str(config.get("version", "0.0.0"))
-        url = config.get("url", f"https://github.com/FaserF/hassio-addons/tree/master/{relative_path}")
+        url = config.get(
+            "url",
+            f"https://github.com/FaserF/hassio-addons/tree/master/{relative_path}",
+        )
 
         # Determine status
         if is_unsupported:
@@ -171,7 +177,10 @@ def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool
             "status_text": status_text,
             "status_class": status_class,
             "icon": get_icon(slug, name),
-            "sort_key": (0 if status_class == "stable" else 1 if status_class == "beta" else 2, name)
+            "sort_key": (
+                0 if status_class == "stable" else 1 if status_class == "beta" else 2,
+                name,
+            ),
         }
     except Exception as e:
         print(f"Error parsing {config_path}: {e}")
@@ -187,7 +196,11 @@ def main():
     # scan for addons
     # 1. Main dir
     for item in sorted(repo_root.iterdir()):
-        if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "docs":
+        if (
+            item.is_dir()
+            and not item.name.startswith((".", "_"))
+            and item.name != "docs"
+        ):
             config_path = item / "config.yaml"
             if config_path.exists():
                 meta = extract_metadata(config_path, item.name, False)
@@ -201,7 +214,9 @@ def main():
             if item.is_dir():
                 config_path = item / "config.yaml"
                 if config_path.exists():
-                    meta = extract_metadata(config_path, f".unsupported/{item.name}", True)
+                    meta = extract_metadata(
+                        config_path, f".unsupported/{item.name}", True
+                    )
                     if meta:
                         addons.append(meta)
 
@@ -218,7 +233,7 @@ def main():
             url=addon["url"],
             status_text=addon["status_text"],
             status_class=addon["status_class"],
-            icon=addon["icon"]
+            icon=addon["icon"],
         )
 
     # Stats
@@ -228,10 +243,7 @@ def main():
 
     # Final HTML
     final_html = HTML_TEMPLATE.format(
-        addons_grid=grid_html,
-        total_addons=total,
-        stable_count=stable,
-        beta_count=beta
+        addons_grid=grid_html, total_addons=total, stable_count=stable, beta_count=beta
     )
 
     # Write output
@@ -240,6 +252,7 @@ def main():
         f.write(final_html)
 
     print(f"✅ Generated docs/index.html with {total} addons.")
+
 
 if __name__ == "__main__":
     main()
