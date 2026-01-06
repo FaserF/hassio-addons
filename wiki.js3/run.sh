@@ -1,6 +1,8 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
+set -x
+set +e
 
 # <ADDON_BANNER_INJECTION>
 

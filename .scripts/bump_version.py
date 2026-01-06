@@ -279,7 +279,7 @@ def generate_changelog_entry(
                 entry += "\n"
 
         if changelog_message and changelog_message not in [
-            "Manual Release via Orchestrator",
+            "Manual release via Orchestrator",
             "Automatic release after dependency update",
         ]:
             entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
@@ -327,6 +327,11 @@ def update_image_tag(content, addon_path, is_dev):
         if slug_match
         else os.path.basename(addon_path.rstrip("/\\"))
     )
+
+    # Skip image update for SAP
+    if "sap-abap-cloud-dev" in addon_path:
+        print("ℹ️ Skipping image tag update for SAP (enforcing local build)")
+        return content
 
     # Image line regex
     image_pattern = r"^image: .*$"

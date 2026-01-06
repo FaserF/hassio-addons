@@ -31,6 +31,10 @@ on:
         required: false
         default: false
         type: boolean
+      changelog_message:
+        description: "Custom changelog message (optional)"
+        required: false
+        type: string
 
   pull_request:
     types: [closed]
@@ -136,7 +140,7 @@ jobs:
               IS_ALL="true"
               # Find all add-ons (matching Python script logic)
               echo "🔍 Finding all add-ons..."
-              SKIP_ADDONS="homeassistant-test-instance sap-abap-cloud-dev"
+              SKIP_ADDONS="homeassistant-test-instance"
 
               # Regular addons (top-level directories with config.yaml)
               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
@@ -536,46 +540,58 @@ jobs:
               for addon in $ADDONS; do
                 addon=$(echo "$addon" | xargs)  # trim whitespace
 
-                # Check category
-                if [[ "$addon" == .unsupported/* ]]; then
-                  # Unsupported addons go last
-                  [ -z "$UNSUPPORTED_ADDONS" ] && UNSUPPORTED_ADDONS="$addon" || UNSUPPORTED_ADDONS="$UNSUPPORTED_ADDONS,$addon"
-                elif [[ "$addon" == "antigravity-server" ]]; then
-                  # antigravity-server goes second-to-last (before unsupported)
-                  ANTIGRAVITY_ADDON="$addon"
-                elif [[ "$addon" == pterodactyl-* ]]; then
-                  # pterodactyl addons go third-to-last
-                  [ -z "$PTERODACTYL_ADDONS" ] && PTERODACTYL_ADDONS="$addon" || PTERODACTYL_ADDONS="$PTERODACTYL_ADDONS,$addon"
-                elif [[ "$addon" == switch_lan_play* ]]; then
-                  # switch_lan_play addons go fourth-to-last
-                  [ -z "$SWITCH_LAN_PLAY_ADDONS" ] && SWITCH_LAN_PLAY_ADDONS="$addon" || SWITCH_LAN_PLAY_ADDONS="$SWITCH_LAN_PLAY_ADDONS,$addon"
-                else
-                  # Normal addons go first
-                  [ -z "$NORMAL_ADDONS" ] && NORMAL_ADDONS="$addon" || NORMAL_ADDONS="$NORMAL_ADDONS,$addon"
-                fi
-              done
-              unset IFS
+              # Check category
+              if [[ "$addon" == .unsupported/* ]]; then
+                # Unsupported addons go last
+                [ -z "$UNSUPPORTED_ADDONS" ] && UNSUPPORTED_ADDONS="$addon" || UNSUPPORTED_ADDONS="$UNSUPPORTED_ADDONS,$addon"
+              elif [[ "$addon" == "sap-abap-cloud-dev" ]]; then
+                 # SAP goes second-to-last (after antigravity, before unsupported)
+                SAP_ADDON="$addon"
+              elif [[ "$addon" == "antigravity-server" ]]; then
+                # antigravity-server goes third-to-last
+                ANTIGRAVITY_ADDON="$addon"
+              elif [[ "$addon" == pterodactyl-panel* ]]; then
+                 # pterodactyl panel goes fourth-to-last
+                 [ -z "$PTERODACTYL_PANEL_ADDONS" ] && PTERODACTYL_PANEL_ADDONS="$addon" || PTERODACTYL_PANEL_ADDONS="$PTERODACTYL_PANEL_ADDONS,$addon"
+              elif [[ "$addon" == pterodactyl-wings* ]]; then
+                 # pterodactyl wings goes fifth-to-last
+                 [ -z "$PTERODACTYL_WINGS_ADDONS" ] && PTERODACTYL_WINGS_ADDONS="$addon" || PTERODACTYL_WINGS_ADDONS="$PTERODACTYL_WINGS_ADDONS,$addon"
+              elif [[ "$addon" == switch_lan_play* ]]; then
+                # switch_lan_play addons go sixth-to-last
+                [ -z "$SWITCH_LAN_PLAY_ADDONS" ] && SWITCH_LAN_PLAY_ADDONS="$addon" || SWITCH_LAN_PLAY_ADDONS="$SWITCH_LAN_PLAY_ADDONS,$addon"
+              else
+                # Normal addons go first
+                [ -z "$NORMAL_ADDONS" ] && NORMAL_ADDONS="$addon" || NORMAL_ADDONS="$NORMAL_ADDONS,$addon"
+              fi
+            done
+            unset IFS
 
-              # Rebuild in correct order
-              SORTED_ADDONS=""
-              [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
-              [ -n "$SWITCH_LAN_PLAY_ADDONS" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SWITCH_LAN_PLAY_ADDONS" || SORTED_ADDONS="$SWITCH_LAN_PLAY_ADDONS"
-              }
-              [ -n "$PTERODACTYL_ADDONS" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_ADDONS" || SORTED_ADDONS="$PTERODACTYL_ADDONS"
-              }
-              [ -n "$ANTIGRAVITY_ADDON" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$ANTIGRAVITY_ADDON" || SORTED_ADDONS="$ANTIGRAVITY_ADDON"
-              }
-              [ -n "$UNSUPPORTED_ADDONS" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
-              }
+            # Rebuild in correct order
+            SORTED_ADDONS=""
+            [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
+            [ -n "$SWITCH_LAN_PLAY_ADDONS" ] && {
+              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SWITCH_LAN_PLAY_ADDONS" || SORTED_ADDONS="$SWITCH_LAN_PLAY_ADDONS"
+            }
+            [ -n "$PTERODACTYL_WINGS_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_WINGS_ADDONS" || SORTED_ADDONS="$PTERODACTYL_WINGS_ADDONS"
+            }
+            [ -n "$PTERODACTYL_PANEL_ADDONS" ] && {
+                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_PANEL_ADDONS" || SORTED_ADDONS="$PTERODACTYL_PANEL_ADDONS"
+            }
+            [ -n "$ANTIGRAVITY_ADDON" ] && {
+              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$ANTIGRAVITY_ADDON" || SORTED_ADDONS="$ANTIGRAVITY_ADDON"
+            }
+            [ -n "$SAP_ADDON" ] && {
+              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SAP_ADDON" || SORTED_ADDONS="$SAP_ADDON"
+            }
+            [ -n "$UNSUPPORTED_ADDONS" ] && {
+              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
+            }
 
-              ADDONS="$SORTED_ADDONS"
-              echo "✅ Sorted addons: $ADDONS"
-            fi
+            ADDONS="$SORTED_ADDONS"
+            echo "✅ Sorted addons: $ADDONS"
           fi
+        fi
 
           # Convert to JSON array (compact format for GitHub Actions output)
           if [ -n "$ADDONS" ]; then
@@ -629,6 +645,7 @@ jobs:
           path: "./${{ matrix.addon }}"
 
       - name: 🏗️ Test Build
+        if: matrix.addon != 'sap-abap-cloud-dev'
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
@@ -682,6 +699,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔧 Fix Image Field Format (if needed)
+        if: matrix.addon != 'sap-abap-cloud-dev'
         run: |
           # Ensure image field uses correct format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
           SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
@@ -708,6 +726,7 @@ jobs:
           path: "./${{ matrix.addon }}"
 
       - name: 🐋 Login to GitHub Container Registry
+        if: matrix.addon != 'sap-abap-cloud-dev'
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io
@@ -715,6 +734,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐳 Set up Docker Buildx
+        if: matrix.addon != 'sap-abap-cloud-dev'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: 💾 Cache Docker layers (optimized for shared base image)
@@ -741,7 +761,12 @@ jobs:
           if [ "$IS_AUTO" == "true" ]; then
             MSG="Automatic release after dependency update"
           else
-            MSG="Manual release via Orchestrator"
+            # Use custom message if provided, otherwise default
+            if [ -n "${{ github.event.inputs.changelog_message }}" ]; then
+              MSG="${{ github.event.inputs.changelog_message }}"
+            else
+              MSG="Manual release via Orchestrator"
+            fi
           fi
 
           if [ "$IS_MANUAL_BUMP" == "true" ] || [ "$CHANGELOG_ONLY" == "true" ]; then
@@ -817,7 +842,7 @@ jobs:
           skip_fetch: true
 
       - name: 🔄 Retry Commit with Pull (if failed)
-        if: steps.commit_changes.outcome == 'failure'
+        if: failure() && steps.commit_changes.outcome == 'failure'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -939,6 +964,7 @@ jobs:
           fi
 
       - name: 🏗️ Build & Push Add-on
+        if: matrix.addon != 'sap-abap-cloud-dev'
         run: |
           # Read architectures from config.yaml
           # shellcheck disable=SC2001,SC2046
