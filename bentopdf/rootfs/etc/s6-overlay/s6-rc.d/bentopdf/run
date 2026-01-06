@@ -45,16 +45,6 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
     "; fi)
 
-    # Ingress Support: Rewrite asset paths
-    sub_filter_once off;
-    sub_filter_types text/html text/css application/javascript application/x-javascript;
-    sub_filter 'href="/' 'href="$http_x_ingress_path/';
-    sub_filter 'src="/' 'src="$http_x_ingress_path/';
-    sub_filter 'url("/' 'url("$http_x_ingress_path/';
-
-    # Also handle standard JSON/manifest paths often used in SPAs
-    sub_filter ':"/' ':"$http_x_ingress_path/';
-
     location / {
         try_files \$uri \$uri/ /index.html;
     }
