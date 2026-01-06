@@ -1,5 +1,5 @@
 name: BentoPDF
-version: 0.1.1
+version: 0.1.0
 slug: bentopdf
 description: Self-hosted, privacy-first PDF toolkit
 url: https://github.com/FaserF/hassio-addons/tree/master/bentopdf
