@@ -226,6 +226,14 @@ else
 	cp /share/pterodactyl/.env .env
 fi
 
+# Ensure APP_KEY exists
+if ! grep -q "^APP_KEY=base64:" .env; then
+	echo "[setup] Application Key missing or invalid, generating..."
+	# Run as nginx user
+	su-exec nginx php artisan key:generate --no-interaction --force
+	cp .env /share/pterodactyl/.env
+fi
+
 # Ensure correct permissions on .env
 chown nginx:nginx .env
 

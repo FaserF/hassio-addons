@@ -7,7 +7,7 @@ bashio::log.info "Initialize Wordpress..."
 if ! bashio::config.has_value 'database_host'; then
     if bashio::services.available "mysql"; then
         bashio::log.info "Using MySQL service connection details..."
-        DB_HOST=$(bashio::services.host "mysql")
+        DB_HOST=$(bashio::services "mysql" "host")
         if bashio::services.has_port "mysql"; then
             DB_HOST="${DB_HOST}:$(bashio::services.port "mysql")"
         fi
