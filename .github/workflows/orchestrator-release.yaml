@@ -608,14 +608,14 @@ jobs:
           echo "Is all: ${IS_ALL:-false}"
 
           # Output as compact JSON (single line) to avoid formatting issues
-          {
+          (
             echo "addons=$JSON"
             echo "should_release=$SHOULD_RELEASE"
             echo "is_auto=$IS_AUTO"
             echo "version_type=$VERSION_TYPE"
             echo "is_manual_bump=${IS_MANUAL_BUMP:-false}"
             echo "is_all=${IS_ALL:-false}"
-          } >> "$GITHUB_OUTPUT"
+          ) >> "$GITHUB_OUTPUT"
 
   # ================================================================================
   # VERIFY: Lint and test build before release
@@ -1087,10 +1087,17 @@ jobs:
 
             # Count failed jobs
             FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+            FAILED_COUNT=$((FAILED_COUNT + 0)) # Ensure integer
+
             # Count successful skipped jobs
             SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || echo "0")
+            SKIPPED_COUNT=$((SKIPPED_COUNT + 0)) # Ensure integer
+
             TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
+            TOTAL_COUNT=$((TOTAL_COUNT + 0)) # Ensure integer
+
             RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
+            RUNNING_COUNT=$((RUNNING_COUNT + 0)) # Ensure integer
 
             echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful), $RUNNING_COUNT running, $TOTAL_COUNT total"
 
