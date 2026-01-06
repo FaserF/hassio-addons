@@ -592,14 +592,13 @@ jobs:
           echo "Is all: ${IS_ALL:-false}"
 
           # Output as compact JSON (single line) to avoid formatting issues
-          (
-            echo "addons=$JSON"
-            echo "should_release=$SHOULD_RELEASE"
-            echo "is_auto=$IS_AUTO"
-            echo "version_type=$VERSION_TYPE"
-            echo "is_manual_bump=${IS_MANUAL_BUMP:-false}"
-            echo "is_all=${IS_ALL:-false}"
-          ) >> "$GITHUB_OUTPUT"
+          echo "addons=$JSON" >> "$GITHUB_OUTPUT"
+          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+          echo "is_auto=$IS_AUTO" >> "$GITHUB_OUTPUT"
+          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+          # shellcheck disable=SC2154
+          echo "is_manual_bump=${IS_MANUAL_BUMP:-false}" >> "$GITHUB_OUTPUT"
+          echo "is_all=${IS_ALL:-false}" >> "$GITHUB_OUTPUT"
 
   # ================================================================================
   # VERIFY: Lint and test build before release
