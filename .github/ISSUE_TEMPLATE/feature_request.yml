@@ -42,6 +42,7 @@ body:
         - apache2-minimal
         - apache2-minimal-mariadb
         - bash_script_executer
+        - bentopdf
         - homeassistant-test-instance
         - matterbridge
         - netboot-xyz

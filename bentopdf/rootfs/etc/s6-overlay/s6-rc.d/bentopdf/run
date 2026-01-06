@@ -1,0 +1,34 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+certfile=$(bashio::config 'certfile')
+keyfile=$(bashio::config 'keyfile')
+ssl=$(bashio::config 'ssl')
+
+# Generate Nginx configuration
+bashio::log.info "Generating Nginx configuration..."
+cat > /etc/nginx/http.d/ingress.conf <<EOF
+server {
+    listen 8035 $(if bashio::var.true "${ssl}"; then echo "ssl"; fi);
+    root /var/www/bentopdf;
+    index index.html;
+    server_name _;
+    client_max_body_size 0;
+
+    $(if bashio::var.true "${ssl}"; then echo "
+    ssl_certificate /ssl/${certfile};
+    ssl_certificate_key /ssl/${keyfile};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    "; fi)
+
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+}
+EOF
+
+bashio::log.info "Starting BentoPDF application..."
+
+# Start Nginx
+exec nginx -c /etc/nginx/nginx.conf -g "daemon off;"
