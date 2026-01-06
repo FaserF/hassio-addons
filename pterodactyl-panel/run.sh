@@ -196,15 +196,14 @@ echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' IDENTIFIED BY '${password
 	exit 1
 }
 
-
 if [ "$host" = "localhost" ]; then
 	host=127.0.0.1
 fi
 
 # Ensure we are in the web root
 cd /var/www/html/ || {
-    bashio::log.error "Could not find web root directory!"
-    exit 1
+	bashio::log.error "Could not find web root directory!"
+	exit 1
 }
 
 echo "[setup] Comparing environment settings file from /share/pterodactyl/.env"
@@ -215,7 +214,7 @@ fi
 if [ ! -f /share/pterodactyl/.env ]; then
 	echo "No old config file found, starting first setup of pterodactyl"
 	echo "[setup] Generating Application Key..."
-    # Run as nginx user
+	# Run as nginx user
 	su-exec nginx php artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
 	hostname="hostname"
@@ -249,7 +248,7 @@ fi
 
 if [ ! -f /share/pterodactyl/config.yml ]; then
 	echo "[setup] Generating default Wings configuration..."
-	cat << 'EOF' > /tmp/generate_config.php
+	cat <<'EOF' >/tmp/generate_config.php
 <?php
 require __DIR__ . '/vendor/autoload.php';
 $app = require __DIR__ . '/bootstrap/app.php';
@@ -295,7 +294,7 @@ echo \Symfony\Component\Yaml\Yaml::dump($config);
 EOF
 
 	# Run the script
-	php /tmp/generate_config.php > /share/pterodactyl/config.yml
+	php /tmp/generate_config.php >/share/pterodactyl/config.yml
 	rm /tmp/generate_config.php
 
 	if [ -s /share/pterodactyl/config.yml ]; then
@@ -330,12 +329,10 @@ if [ "$setup_user" = "true" ]; then
 	echo "Please ensure to change these credentials as soon as possible."
 fi
 
-
 echo "[start] Starting nginx and php"
 # PHP-FPM is configured to run as nginx user in pool config
 /usr/sbin/php-fpm83 --nodaemonize -c /etc/php83 &
 php_service_pid=$!
-
 
 echo "[start] Starting Pterodactyl Panel"
 
