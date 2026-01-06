@@ -59,6 +59,7 @@ env:
     homeassistant-test-instance
     wiki.js
     wiki.js3
+    bentopdf
     matterbridge
     pterodactyl-wings
     AegisBot
@@ -799,7 +800,7 @@ jobs:
           # Ensure we're on the latest master (handle any merge state)
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
-          git reset --hard origin/master
+          git rebase --abort 2>/dev/null || true
 
           # Reapply changes one more time if needed
           if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
@@ -1059,7 +1060,7 @@ jobs:
           # Ensure we're on the latest master (handle any merge state)
           git merge --abort 2>/dev/null || true
           git rebase --abort 2>/dev/null || true
-          git reset --hard origin/master
+          git rebase --abort 2>/dev/null || true
 
           # Reapply changes one more time if needed
           if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then

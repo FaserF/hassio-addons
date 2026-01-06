@@ -176,6 +176,8 @@ chown -R postgres:postgres "$PGDATA" /run/postgresql
 
 # Start PostgreSQL server
 bashio::log.info "Starting PostgreSQL server..."
+touch /var/log/postgresql.log
+chown postgres:postgres /var/log/postgresql.log
 su-exec postgres pg_ctl -D "$PGDATA" -l /var/log/postgresql.log start
 
 # Wait for PostgreSQL to be ready

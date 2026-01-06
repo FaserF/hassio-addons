@@ -5,16 +5,29 @@ bashio::log.info "Initialize Wordpress..."
 
 # Set defaults for optional values
 if ! bashio::config.has_value 'database_host'; then
-    bashio::log.info "No database_host configured, using Home Assistant MariaDB addon (core-mariadb)"
-    DB_HOST="core-mariadb"
+    if bashio::services.available "mysql"; then
+        bashio::log.info "Using MySQL service connection details..."
+        DB_HOST=$(bashio::services.host "mysql")
+        if bashio::services.has_port "mysql"; then
+            DB_HOST="${DB_HOST}:$(bashio::services.port "mysql")"
+        fi
+    else
+        bashio::log.info "No database_host configured, using Home Assistant MariaDB addon (core-mariadb)"
+        DB_HOST="core-mariadb"
+    fi
 else
     DB_HOST=$(bashio::config 'database_host')
 fi
 
 if ! bashio::config.has_value 'database_password'; then
-    bashio::exit.nok "A 'database_password' is required!"
+    if bashio::services.available "mysql"; then
+        DB_PASS=$(bashio::services.credentials "mysql" "password")
+    else
+        bashio::exit.nok "A 'database_password' is required!"
+    fi
+else
+    DB_PASS=$(bashio::config 'database_password')
 fi
-DB_PASS=$(bashio::config 'database_password')
 
 if ! bashio::config.has_value 'database_name'; then
     bashio::log.info "No database_name configured, using default 'wordpress'"
@@ -24,8 +37,12 @@ else
 fi
 
 if ! bashio::config.has_value 'database_user'; then
-    bashio::log.info "No database_user configured, using default 'wordpress'"
-    DB_USER="wordpress"
+    if bashio::services.available "mysql"; then
+        DB_USER=$(bashio::services.credentials "mysql" "username")
+    else
+        bashio::log.info "No database_user configured, using default 'wordpress'"
+        DB_USER="wordpress"
+    fi
 else
     DB_USER=$(bashio::config 'database_user')
 fi

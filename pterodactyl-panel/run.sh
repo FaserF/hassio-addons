@@ -218,7 +218,7 @@ if [ ! -f /share/pterodactyl/.env ]; then
 	su-exec nginx php artisan key:generate --no-interaction --force
 	echo "[setup] Application Key Generated"
 	hostname="hostname"
-	echo "REDIS_HOST=$hostname" >.env
+	echo "REDIS_HOST=$hostname" >>.env
 	cp .env /share/pterodactyl/.env
 	setup_user=true
 else
