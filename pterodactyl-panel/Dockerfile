@@ -9,6 +9,8 @@ FROM ${BUILD_FROM} as base
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.10.0"
 ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"
