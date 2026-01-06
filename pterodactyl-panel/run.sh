@@ -222,6 +222,7 @@ if [ ! -f /share/pterodactyl/.env ]; then
 
     # Generate key manually to avoid boot errors
     APP_KEY="base64:$(openssl rand -base64 32)"
+    hostname="localhost"
     echo "REDIS_HOST=$hostname" >>.env
 
     # Check if APP_KEY exists in .env, replace or append
