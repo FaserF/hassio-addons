@@ -1,8 +1,7 @@
 ---
 name: Wiki.JS V3 (Beta)
-version: 0.2.1
+version: 0.2.2-dev-9149af5
 slug: wikijs3
-image: ghcr.io/faserf/hassio-addons-wikijs3-{arch}
 description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
