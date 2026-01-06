@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 (2026-01-06)
+
+### 🚀 Other
+- general improvements ([`8ef1b20`](https://github.com/FaserF/hassio-addons/commit/8ef1b20bceb93de8a5411f955e626494823bfef4))
+
+### 📌 Release Note
+- Manual release via Orchestrator
+
+
 ## 0.2.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉
