@@ -7,6 +7,16 @@ ssl=$(bashio::config 'ssl')
 
 # SSL Validation
 if bashio::var.true "${ssl}"; then
+    if ! bashio::config.has_value 'certfile'; then
+        bashio::log.fatal "SSL enabled but 'certfile' option is empty!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::config.has_value 'keyfile'; then
+        bashio::log.fatal "SSL enabled but 'keyfile' option is empty!"
+        bashio::exit.nok
+    fi
+
     if ! bashio::fs.file_exists "/ssl/${certfile}"; then
         bashio::log.fatal "SSL enabled but certificate file '/ssl/${certfile}' not found!"
         bashio::exit.nok
@@ -34,6 +44,16 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     "; fi)
+
+    # Ingress Support: Rewrite asset paths
+    sub_filter_once off;
+    sub_filter_types text/html text/css application/javascript application/x-javascript;
+    sub_filter 'href="/' 'href="$http_x_ingress_path/';
+    sub_filter 'src="/' 'src="$http_x_ingress_path/';
+    sub_filter 'url("/' 'url("$http_x_ingress_path/';
+
+    # Also handle standard JSON/manifest paths often used in SPAs
+    sub_filter ':"/' ':"$http_x_ingress_path/';
 
     location / {
         try_files \$uri \$uri/ /index.html;
