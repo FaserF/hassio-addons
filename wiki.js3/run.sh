@@ -302,6 +302,7 @@ bashio::log.info "Ensuring 'pg_trgm' extension is enabled..."
 # Force recreate to ensure operators are loaded correctly
 su-exec postgres psql -d wiki -c "DROP EXTENSION IF EXISTS pg_trgm;"
 su-exec postgres psql -d wiki -c "CREATE EXTENSION pg_trgm SCHEMA public;"
+su-exec postgres psql -d wiki -c "ALTER DATABASE wiki SET search_path TO public;"
 
 # Verify extension installation
 bashio::log.info "Verifying 'pg_trgm' installation..."
