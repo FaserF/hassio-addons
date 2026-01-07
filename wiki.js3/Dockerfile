@@ -43,6 +43,9 @@ RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || 
 
 COPY rootfs /
 
+RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
+    && dos2unix /etc/cont-init.d/*.sh /etc/services.d/*/run
+
 
 # Labels
 LABEL \
