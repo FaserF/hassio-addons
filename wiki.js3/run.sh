@@ -300,6 +300,7 @@ su-exec postgres psql -d postgres -tc "SELECT 1 FROM pg_database WHERE datname =
 # Enable pg_trgm extension (required for Wiki.js 3.0 search)
 bashio::log.info "Ensuring 'pg_trgm' extension is enabled..."
 # Force recreate to ensure operators are loaded correctly
+su-exec postgres psql -d wiki -c "DROP EXTENSION IF EXISTS pg_trgm;"
 su-exec postgres psql -d wiki -c "CREATE EXTENSION pg_trgm SCHEMA pg_catalog;"
 
 # Verify extension installation
