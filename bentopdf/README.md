@@ -21,8 +21,6 @@
 
 ## 📖 About
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
-
 > Self-hosted, privacy-first PDF toolkit
 
 > [!CAUTION]
