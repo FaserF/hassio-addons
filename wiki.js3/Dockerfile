@@ -41,14 +41,8 @@ RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || 
     echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \
     rm -f /wiki/config.sample.yml
 
-COPY run.sh /
-RUN chmod a+x /run.sh \
-    && dos2unix /run.sh
-# Healthcheck (use wget since it's available in base image)
-HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
-    CMD wget --spider -q http://127.0.0.1:3000/ || exit 1
+COPY rootfs /
 
-CMD [ "/run.sh" ]
 
 # Labels
 LABEL \

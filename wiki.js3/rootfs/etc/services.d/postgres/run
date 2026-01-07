@@ -1,0 +1,23 @@
+#!/usr/bin/with-contenv bashio
+
+PGDATA="/data/postgresql"
+
+# Initialize PostgreSQL data directory if it doesn't exist
+if [ ! -d "$PGDATA" ] || [ ! -f "$PGDATA/PG_VERSION" ]; then
+	bashio::log.info "Initializing PostgreSQL database..."
+	mkdir -p "$PGDATA"
+	chown -R postgres:postgres "$PGDATA"
+	chmod 700 "$PGDATA"
+	su-exec postgres initdb -D "$PGDATA" --encoding=UTF8 --locale=C
+
+	# Configure PostgreSQL for local connections
+	echo "host all all 127.0.0.1/32 md5" >>"$PGDATA/pg_hba.conf"
+	echo "listen_addresses = 'localhost'" >>"$PGDATA/postgresql.conf"
+	bashio::log.info "PostgreSQL initialized successfully."
+fi
+
+# Ensure correct ownership
+chown -R postgres:postgres "$PGDATA" /run/postgresql
+
+bashio::log.info "Starting PostgreSQL server..."
+exec su-exec postgres postgres -D "$PGDATA"
