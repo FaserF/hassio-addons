@@ -13,12 +13,6 @@ ARG XQREPACK_RELEASE="v1.1"
 
 # hadolint ignore=DL3018,DL3013,DL3042
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
-ENV ADDON_NAME="xqrepack (Unsupported)"
-ENV ADDON_SLUG="xqrepack"
-ENV ADDON_UNSUPPORTED="true"
-
 RUN apk add --no-cache \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3 python3-dev py3-pip && \
     python3 -m venv $VIRTUAL_ENV && \

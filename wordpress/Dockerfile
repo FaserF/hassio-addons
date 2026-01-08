@@ -11,12 +11,6 @@ ARG WORDPRESS_VERSION="6.8"
 
 # hadolint ignore=DL3018,DL3003
 
-# Addon metadata (injected by CI)
-
-ENV ADDON_NAME="Wordpress"
-ENV ADDON_SLUG="wordpress"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN \
     apk add --no-cache \
         nginx \

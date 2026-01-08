@@ -9,12 +9,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # 1. Install Node.js & Git (Using standard repos for stability)
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-
-ENV ADDON_NAME="WhatsApp"
-ENV ADDON_SLUG="whatsapp"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN \
     apk add --no-cache \
         nodejs \

@@ -13,12 +13,6 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Install System Requirements
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-
-ENV ADDON_NAME="Solumati"
-ENV ADDON_SLUG="solumati"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN \
     apk add --no-cache \
     nodejs \

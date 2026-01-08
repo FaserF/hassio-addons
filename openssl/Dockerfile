@@ -5,12 +5,6 @@ ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-
-ENV ADDON_NAME="OpenSSL"
-ENV ADDON_SLUG="openssl"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN apk --no-cache add openssl
 
 # Copy data for add-on

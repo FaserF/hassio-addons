@@ -13,12 +13,6 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3047
 
-# Addon metadata (injected by CI)
-
-ENV ADDON_NAME="NGINX"
-ENV ADDON_SLUG="nginx"
-ENV ADDON_UNSUPPORTED="false"
-
 WORKDIR /tmp
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \

@@ -7,12 +7,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
-ENV ADDON_NAME="Matterbridge"
-ENV ADDON_SLUG="matterbridge"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN apk --no-cache add wget go tar
 # Version and checksum must be updated together
 # Find checksums at: https://github.com/42wim/matterbridge/releases

@@ -11,12 +11,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 #WORKDIR /opt/freenom_dns_updater
 # hadolint ignore=DL3018,DL3013,DL3042
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
-ENV ADDON_NAME="Freenom-dns-updater (Unsupported)"
-ENV ADDON_SLUG="freenom-dns-updater"
-ENV ADDON_UNSUPPORTED="true"
-
 RUN apk add --no-cache zlib openssl-dev binutils python3 py3-pip && \
     pip install --no-cache-dir freenom-dns-updater==1.2.9
 #RUN rm -rf /opt/freenom_dns_updater
