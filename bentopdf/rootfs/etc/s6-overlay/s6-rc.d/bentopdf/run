@@ -54,4 +54,4 @@ EOF
 bashio::log.info "Starting BentoPDF application..."
 
 # Start Nginx
-exec nginx -c /etc/nginx/nginx.conf -g "daemon off;"
+exec nginx -c /etc/nginx/nginx.conf

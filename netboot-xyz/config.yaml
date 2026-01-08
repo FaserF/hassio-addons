@@ -35,4 +35,4 @@ ports_description:
   "85": "NGINX server for hosting boot assets - REQUIRED for PXE boot!"
   "3000": "Web configuration interface (uses Ingress, can be changed)"
   69/udp: "TFTP Port - REQUIRED for PXE boot!"
-# Edge sync trigger: 2026-01-08
+

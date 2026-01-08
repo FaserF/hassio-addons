@@ -24,4 +24,4 @@ ports:
 ports_description:
   8080/tcp: "8080"
   2022/tcp: "2022"
-# Edge sync trigger: 2026-01-08
+

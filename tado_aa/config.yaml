@@ -21,4 +21,4 @@ schema:
   minTemp: int
   maxTemp: int
   log_level: list(info|minimal)?
-# Edge sync trigger: 2026-01-08
+

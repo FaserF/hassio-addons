@@ -19,4 +19,4 @@ schema:
   server: str
   log_level: list(info|debug)?
 ports: {}
-# Edge sync trigger: 2026-01-08
+

@@ -25,4 +25,4 @@ options:
 schema:
   vnc_password: match(^.{0,8}$)?
   log_level: str?
-# Edge sync trigger: 2026-01-08
+

@@ -45,4 +45,4 @@ ports:
 ports_description:
   80/tcp: Web interface http
   443/tcp: SSL Web interface
-# Edge sync trigger: 2026-01-08
+

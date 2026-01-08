@@ -33,4 +33,4 @@ ports:
 ports_description:
   3000/tcp: HTTP Entrance port
   3443/tcp: HTTPS/SSL Entrance port
-# Edge sync trigger: 2026-01-08
+
