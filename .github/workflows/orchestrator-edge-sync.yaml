@@ -65,8 +65,10 @@ jobs:
 
           if [ -z "$CHANGED_FILES" ]; then
             # If we can't determine changes, assume we should run
-            echo "only_workflows=false" >> "$GITHUB_OUTPUT"
-            echo "changed_addons=ALL" >> "$GITHUB_OUTPUT"
+            {
+              echo "only_workflows=false"
+              echo "changed_addons=ALL"
+            } >> "$GITHUB_OUTPUT"
             echo "⚠️ Could not determine changed files, proceeding with sync"
             exit 0
           fi
@@ -86,9 +88,11 @@ jobs:
 
           echo "Changed addons: $CHANGED_ADDONS"
           # Save to output (newline-separated -> space-separated for easier parsing)
-          echo "changed_addons<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$CHANGED_ADDONS" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "changed_addons<<EOF"
+            echo "$CHANGED_ADDONS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
           # Check if only workflow files (and possibly docs) were changed
           ONLY_WORKFLOWS=true

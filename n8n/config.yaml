@@ -7,7 +7,6 @@ url: "https://github.com/faserf/hassio-addons/tree/master/n8n"
 arch:
   - aarch64
   - amd64
-image: "ghcr.io/faserf/hassio-addons-n8n-{arch}"
 ingress: true
 ingress_port: 5678
 init: false

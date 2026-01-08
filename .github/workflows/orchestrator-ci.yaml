@@ -725,13 +725,13 @@ jobs:
             }
 
             // Minimize old General CI Failure reports before posting new one
-            const { data: comments } = await github.rest.issues.listComments({
+            const { data: existingComments } = await github.rest.issues.listComments({
                owner: context.repo.owner,
                repo: context.repo.repo,
                issue_number: context.issue.number,
             });
             const reportSignature = "## ❌ General CI Failure Report";
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
+            const previousComments = existingComments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
             for (const comment of previousComments) {
                 try {
                     await github.graphql(`
