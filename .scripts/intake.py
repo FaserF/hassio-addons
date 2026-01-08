@@ -66,7 +66,8 @@ def detect_new_addons(fix=False):
         last_table_line = -1
 
         for i, line in enumerate(lines):
-            if "| Name |" in line or "| Addon |" in line:
+            # Relaxed check for table headers
+            if "| Name" in line and "| Description" in line:
                 in_table = True
             if in_table:
                 if line.strip().startswith("|"):
@@ -95,11 +96,7 @@ def detect_new_addons(fix=False):
                 f.write("\n".join(lines))
             print("✅ README.md updated.")
         else:
-            print("⚠️ Could not find Add-ons table in README.md. Appending list.")
-            with open(README_PATH, "a", encoding="utf-8") as f:
-                f.write("\n\n## New Add-ons\n")
-                for addon in new_addons:
-                    f.write(f"- [{addon}]({addon})\n")
+            print("❌ Could not find Add-ons table in README.md. Please check the table format.")
 
     return new_addons
 

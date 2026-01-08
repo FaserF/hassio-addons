@@ -163,18 +163,32 @@ jobs:
               echo "ci_ran=false"
               echo "reason=failed"
             } >> "$GITHUB_OUTPUT"
+
+            # Post comment and fail
+            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI jobs failed."
+            exit 1
+
           elif [ "$TOTAL_JOBS" -eq 0 ]; then
             echo "⚠️ No verification jobs detected (docs-only or workflow-only changes)"
             {
               echo "ci_ran=false"
               echo "reason=no_jobs"
             } >> "$GITHUB_OUTPUT"
+
+            # Post info comment and exit success (don't fail workflow for docs)
+            gh issue comment "$PR_NUMBER" --body "ℹ️ **Auto-merge skipped:** No verification jobs required (Docs/Workflow only)."
+            exit 0
+
           elif [ "$SUCCESS_COUNT" -eq 0 ]; then
             echo "⚠️ All verification jobs were skipped - auto-merge blocked"
             {
               echo "ci_ran=false"
               echo "reason=all_skipped"
             } >> "$GITHUB_OUTPUT"
+
+             # Post comment and fail
+            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** All verification jobs were skipped."
+            exit 1
           else
             echo "✅ All CI verification jobs completed successfully"
             {
@@ -215,7 +229,10 @@ jobs:
               echo "still_valid=false"
               echo "reason=new_commits"
             } >> "$GITHUB_OUTPUT"
-            exit 0
+
+            # Inform user
+            gh issue comment "$PR_NUMBER" --body "ℹ️ **Auto-merge skipped:** New commits were detected on the PR."
+            exit 0 # Exit 0 here might be okay as new CI will trigger another run, but let's be consistent. Keeping 0 is safer to avoid noise.
           fi
 
           echo "✅ PR HEAD is still the same"
@@ -247,13 +264,15 @@ jobs:
           echo "  Success: $SUCCESS_COUNT"
 
           # Block auto-merge if there are running or failed workflows
-          if [ "$RUNNING_COUNT" -gt 0 ]; then
             echo "❌ CI workflows are still running - auto-merge blocked"
             {
               echo "still_valid=false"
               echo "reason=ci_running"
             } >> "$GITHUB_OUTPUT"
-            exit 0
+
+            # Post comment and fail workflow for visibility
+            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI workflows are still running."
+            exit 1
           fi
 
           if [ "$FAILED_COUNT" -gt 0 ]; then
@@ -262,7 +281,10 @@ jobs:
               echo "still_valid=false"
               echo "reason=ci_failed"
             } >> "$GITHUB_OUTPUT"
-            exit 0
+
+            # Post comment and fail workflow
+            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI validation failed."
+            exit 1
           fi
 
           echo "✅ PR is still up-to-date and all CI checks are passing"
@@ -293,6 +315,9 @@ jobs:
 
           if echo "$labels" | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            # We don't fail here as this is an intentional user action
+            exit 0
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi

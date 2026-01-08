@@ -1,31 +1,4 @@
----
-name: SAP ABAP Cloud Developer Trial
-version: 0.0.1
-slug: sap-abap-cloud-dev
-description: SAP ABAP Platform Trial for local ABAP development
-url: https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-dev
-image: ghcr.io/faserf/hassio-addons-sap-abap-cloud-dev-{arch}
-arch:
-  - amd64
-init: false
-panel_icon: mdi:database-cog
-map:
-  - share:rw
-options:
-  agree_to_license: false
-  ignore_requirements: false
-schema:
-  agree_to_license: bool
-  ignore_requirements: bool
-ports:
-  3200/tcp: 3200
-  3300/tcp: 3300
-  8443/tcp: 8443
-  30213/tcp: 30213
-  50000/tcp: 50000
-  50001/tcp: 50001
-ports_description:
-  3200/tcp: SAP GUI (instance 00)
+
 ---
 name: SAP ABAP Cloud Developer Trial
 version: 0.0.1

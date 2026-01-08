@@ -106,8 +106,8 @@
       "matchStrings": [
         "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
       ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "Requarks/wiki"
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/requarks/wiki"
     },
     {
       "customType": "regex",
