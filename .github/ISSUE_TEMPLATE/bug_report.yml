@@ -84,7 +84,6 @@ body:
         - bash_script_executer
         - bentopdf
         - homeassistant-test-instance
-        - matterbridge
         - n8n
         - netboot-xyz
         - nginx
