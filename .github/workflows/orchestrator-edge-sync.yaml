@@ -66,6 +66,7 @@ jobs:
           if [ -z "$CHANGED_FILES" ]; then
             # If we can't determine changes, assume we should run
             echo "only_workflows=false" >> "$GITHUB_OUTPUT"
+            echo "changed_addons=ALL" >> "$GITHUB_OUTPUT"
             echo "⚠️ Could not determine changed files, proceeding with sync"
             exit 0
           fi
@@ -75,6 +76,19 @@ jobs:
 
           echo "Changed files:"
           echo "$CHANGED_FILES"
+
+          # Extract addon directories from changed files
+          CHANGED_ADDONS=$(echo "$CHANGED_FILES" | \
+            grep -E "^[^./][^/]+/" | \
+            cut -d'/' -f1 | \
+            sort -u | \
+            grep -v "^\\." || echo "")
+
+          echo "Changed addons: $CHANGED_ADDONS"
+          # Save to output (newline-separated -> space-separated for easier parsing)
+          echo "changed_addons<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED_ADDONS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
           # Check if only workflow files (and possibly docs) were changed
           ONLY_WORKFLOWS=true
@@ -156,30 +170,27 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
         run: |
-          # Get list of addons changed since the last edge branch
-          echo "🔍 Finding changed addons since last edge sync..."
+          echo "🔍 Determining which addons to bump..."
 
-          if git rev-parse --verify origin/edge >/dev/null 2>&1; then
-            # Compare edge to current master (HEAD)
-            CHANGED_FILES=$(git diff --name-only origin/edge HEAD 2>/dev/null || echo "")
+          # For workflow_dispatch, bump all addons
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "📦 workflow_dispatch: Bumping ALL addons"
+            CHANGED_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
           else
-            # Edge doesn't exist yet - treat all addons as changed
-            echo "⚠️ Edge branch doesn't exist - bumping all addons"
-            CHANGED_FILES=$(find . -maxdepth 2 -name "config.yaml" | sed 's|^\./||' | sed 's|/config.yaml||')
-          fi
+            # Use the addons detected in the check_changes step
+            CHANGED_ADDONS="${{ steps.check_changes.outputs.changed_addons }}"
 
-          # Extract unique addon directories from changed files
-          # Only match top-level directories (addon folders)
-          CHANGED_ADDONS=$(echo "$CHANGED_FILES" | \
-            grep -E "^[^./][^/]+/" | \
-            cut -d'/' -f1 | \
-            sort -u | \
-            grep -v "^\\." || echo "")
+            # Handle special case where we couldn't detect changes
+            if [ "$CHANGED_ADDONS" = "ALL" ]; then
+              echo "⚠️ Could not detect specific changes - bumping all addons"
+              CHANGED_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
+            fi
+          fi
 
           if [ -z "$CHANGED_ADDONS" ]; then
             echo "ℹ️ No addon changes detected - skipping version bump"
           else
-            echo "📦 Changed addons:"
+            echo "📦 Addons to bump:"
             echo "$CHANGED_ADDONS" | while read addon; do
               [ -n "$addon" ] && echo "  - $addon"
             done
@@ -193,7 +204,6 @@ jobs:
               fi
             done
           fi
-
 
       - name: 🚀 Push edge branch
         if: |
