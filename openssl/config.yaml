@@ -15,4 +15,3 @@ options:
   website_name:
 schema:
   website_name: str
-
