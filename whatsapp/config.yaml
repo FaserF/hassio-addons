@@ -16,5 +16,6 @@ options:
 schema:
   log_level: str
 host_network: true
+hassio_api: true
 ingress: true
 ingress_entry: /

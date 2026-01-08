@@ -4,27 +4,146 @@ bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
 export PORT=8066
 
-# Automatic Integration Installation
-if [ ! -d "/config/custom_components/whatsapp" ]; then
-    bashio::log.warning "Integration not found in /config/custom_components/whatsapp"
+# Detect Home Assistant config directory
+HA_CONFIG_ROOT=""
+for path in "/config" "/homeassistant"; do
+    if [ -d "$path" ]; then
+        HA_CONFIG_ROOT="$path"
+        break
+    fi
+done
+
+if [ -z "$HA_CONFIG_ROOT" ]; then
+    bashio::log.error "Could not find Home Assistant configuration directory in /config or /homeassistant"
+    # Fallback to /config and hope for the best
+    HA_CONFIG_ROOT="/config"
+fi
+
+INTEGRATION_DIR="${HA_CONFIG_ROOT}/custom_components/whatsapp"
+
+# Function to compare semantic versions
+version_gt() {
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+}
+
+# Automatic Integration Installation & Update Check
+if [ ! -d "$INTEGRATION_DIR" ]; then
+    bashio::log.warning "Integration not found in $INTEGRATION_DIR"
+    bashio::log.info "Fetching latest release information..."
+
+    # Determine Version to install
+    RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
+    TAG_NAME=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name')
+
+    if [ "$TAG_NAME" == "null" ] || [ -z "$TAG_NAME" ]; then
+        # Check for pre-release fallback
+        TAG_NAME=$(echo "$RELEASES" | jq -r '.[0].tag_name')
+        if [ "$TAG_NAME" != "null" ] && [ -n "$TAG_NAME" ]; then
+             bashio::log.info "No stable release found, using latest pre-release: $TAG_NAME"
+             CLONE_ARGS=("--branch" "$TAG_NAME")
+        else
+             bashio::log.info "No releases found, falling back to default branch"
+             CLONE_ARGS=()
+        fi
+    else
+        bashio::log.info "Installing latest stable release: $TAG_NAME"
+        CLONE_ARGS=("--branch" "$TAG_NAME")
+    fi
+
     bashio::log.info "Attempting to install FaserF/ha-whatsapp integration..."
 
-    mkdir -p /tmp/ha-whatsapp_install
-    if git clone --depth 1 https://github.com/FaserF/ha-whatsapp.git /tmp/ha-whatsapp_install; then
+    mkdir -p "/tmp/ha-whatsapp_install"
+    if git clone --depth 1 "${CLONE_ARGS[@]}" https://github.com/FaserF/ha-whatsapp.git "/tmp/ha-whatsapp_install" > /dev/null 2>&1; then
         if [ -d "/tmp/ha-whatsapp_install/custom_components/whatsapp" ]; then
-            mkdir -p /config/custom_components
-            cp -r /tmp/ha-whatsapp_install/custom_components/whatsapp /config/custom_components/
-            bashio::log.info "✅ Integration installed successfully!"
-            bashio::log.warning "RESTART HOME ASSISTANT to load the new integration!"
+            mkdir -p "${HA_CONFIG_ROOT}/custom_components"
+            # Use cp -rf for forceful copy
+            cp -rf "/tmp/ha-whatsapp_install/custom_components/whatsapp" "${HA_CONFIG_ROOT}/custom_components/"
+
+            # Double check installation
+            if [ -d "$INTEGRATION_DIR" ]; then
+                bashio::log.info "✅ Integration installed successfully to $INTEGRATION_DIR"
+                bashio::log.warning "RESTART HOME ASSISTANT to load the new integration!"
+
+                # Create a "Repair" (Persistent Notification) in HA
+                bashio::log.info "Publishing repair notification to Home Assistant..."
+                curl -s -X POST \
+                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    -d '{"title": "WhatsApp Integration: Restart Required", "message": "The WhatsApp integration has been automatically installed. Please restart Home Assistant to load and use the integration.", "notification_id": "whatsapp_restart_required"}' \
+                    http://supervisor/core/api/services/persistent_notification/create > /dev/null
+            else
+                bashio::log.error "❌ Copy failed: $INTEGRATION_DIR still does not exist."
+            fi
         else
             bashio::log.error "❌ Could not find 'custom_components/whatsapp' in the repository."
         fi
     else
         bashio::log.error "❌ Failed to clone repository."
     fi
-    rm -rf /tmp/ha-whatsapp_install
+    rm -rf "/tmp/ha-whatsapp_install"
 else
-    bashio::log.info "✅ Integration found."
+    bashio::log.info "✅ Integration found at $INTEGRATION_DIR"
+
+    # Update Check Logic
+    bashio::log.info "Checking for integration updates..."
+
+    # 1. Get current version
+    if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+        CURRENT_VERSION=$(jq -r '.version' "$INTEGRATION_DIR/manifest.json")
+        bashio::log.info "Current Integration Version: $CURRENT_VERSION"
+
+        # 2. Fetch remote data
+        RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
+        LATEST_STABLE=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name' | sed 's/^v//')
+        LATEST_BETA=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == true)) | .[0].tag_name' | sed 's/^v//')
+
+        # Clean current version for comparison (remove 'v' prefix if present)
+        CLEAN_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/^v//')
+
+        UPDATE_AVAILABLE=false
+        UPDATE_VERSION=""
+
+        # 3. Decision Logic based on version type
+        if [[ "$CLEAN_CURRENT" == *"-dev"* ]] || [[ "$CLEAN_CURRENT" == *"dev"* ]]; then
+            # DEV VERSION: Compare against main branch manifest
+            bashio::log.info "Development version detected. Checking main branch manifest..."
+            REMOTE_MANIFEST=$(curl -s "https://raw.githubusercontent.com/FaserF/ha-whatsapp/master/custom_components/whatsapp/manifest.json")
+            REMOTE_VERSION=$(echo "$REMOTE_MANIFEST" | jq -r '.version' | sed 's/^v//')
+
+            if version_gt "$REMOTE_VERSION" "$CLEAN_CURRENT"; then
+                UPDATE_AVAILABLE=true
+                UPDATE_VERSION="$REMOTE_VERSION (Main Branch)"
+            fi
+        elif [[ "$CLEAN_CURRENT" == *"-beta"* ]] || [[ "$CLEAN_CURRENT" == *"-rc"* ]]; then
+            # BETA VERSION: Notify about newer Stable OR newer Beta
+            if [ "$LATEST_STABLE" != "null" ] && version_gt "$LATEST_STABLE" "$CLEAN_CURRENT"; then
+                UPDATE_AVAILABLE=true
+                UPDATE_VERSION="$LATEST_STABLE (Stable Upgrade)"
+            elif [ "$LATEST_BETA" != "null" ] && version_gt "$LATEST_BETA" "$CLEAN_CURRENT"; then
+                UPDATE_AVAILABLE=true
+                UPDATE_VERSION="$LATEST_BETA (Beta Update)"
+            fi
+        else
+            # STABLE VERSION: Only notify about newer Stable
+            if [ "$LATEST_STABLE" != "null" ] && version_gt "$LATEST_STABLE" "$CLEAN_CURRENT"; then
+                UPDATE_AVAILABLE=true
+                UPDATE_VERSION="$LATEST_STABLE"
+            fi
+        fi
+
+        if [ "$UPDATE_AVAILABLE" = true ]; then
+            bashio::log.yellow "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            bashio::log.yellow "⬆️  INTEGRATION UPDATE AVAILABLE: $UPDATE_VERSION"
+            bashio::log.yellow "   Current: $CURRENT_VERSION"
+            bashio::log.yellow "   Note: Preferably use HACS for integration"
+            bashio::log.yellow "   update management."
+            bashio::log.yellow "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        else
+            bashio::log.info "✨ Integration is up to date."
+        fi
+    else
+        bashio::log.warning "Could not find manifest.json for version check."
+    fi
 fi
 
 cd /opt/whatsapp
