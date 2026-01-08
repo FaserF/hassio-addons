@@ -53,4 +53,4 @@ schema:
   debug: bool?
   demo_mode: bool
   demo_mode_type: list(ephemeral|persistent)?
-# Edge sync trigger: 2026-01-08
+
