@@ -35,6 +35,11 @@ COPY rootfs /
 RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
     && dos2unix /etc/cont-init.d/*.sh /etc/services.d/*/run
 
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=3 \
+    CMD wget --spider -q http://127.0.0.1:3000/ || exit 1
+
 # Labels
 LABEL \
     org.opencontainers.image.title="Wiki.JS V3 (Beta)" \
