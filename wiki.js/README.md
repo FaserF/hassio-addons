@@ -38,8 +38,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
 
----
-
 ## 🏁 First Startup
 
 On the first startup, you will be prompted with an administration setup wizard. The wizard will guide you through the initial configuration of your wiki connection and the creation of your administrator account.

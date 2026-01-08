@@ -24,8 +24,6 @@ ssl: true
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
 - `/data`: Used for persistent storage of Wiki.js application files, local database, and configurations.
 
-
-
 ## 🔄 Version Information
 
 This addon automatically updates to the latest Wiki.js V3 Beta releases. The addon version and Wiki.js version may differ - the addon version reflects the addon itself, while Wiki.js V3 is updated automatically from the official Docker image.
