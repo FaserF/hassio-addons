@@ -1,6 +1,6 @@
 ---
 name: N8n
-version: 2.2.4
+version: 0.1.1
 slug: n8n
 description: "Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation."
 url: "https://github.com/faserf/hassio-addons/tree/master/n8n"
@@ -12,8 +12,14 @@ ingress_port: 5678
 init: false
 panel_icon: mdi:workflow
 options:
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
   log_level: info
 schema:
+  ssl: bool?
+  certfile: str?
+  keyfile: str?
   log_level: list(trace|debug|info|warning|error)?
 ports:
   5678/tcp: 5678

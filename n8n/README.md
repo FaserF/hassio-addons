@@ -1,49 +1,59 @@
-# Home Assistant Add-on: N8n
+# N8n
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armv7 Architecture][armv7-shield]
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
-N8n workflow automation tool for Home Assistant.
+> Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation.
 
-## About
+---
 
-N8n (Nodemation) is an extendable workflow automation tool. With a fair-code distribution model, n8n will always have visible source code, available to self-host, and allows you to add your own custom functions, logic, and apps. N8n's node-based approach makes it highly versatile, enabling you to connect anything to everything.
+## 📖 About
 
-[N8n Website][n8n]
+N8n (Nodemation) is an extendable workflow automation tool. With a fair-code distribution model, n8n will always have visible source code, available to self-host, and allows you to add your own custom functions, logic, and apps.
 
-## Installation
+---
 
-1. Search for the "N8n" add-on in the Supervisor add-on store.
-2. Install the add-on.
-3. Start the "N8n" add-on.
-4. Check the logs of the "N8n" add-on to see if everything went well.
-5. Click "OPEN WEB UI" to access the N8n interface.
+## 🐛 Report a Bug
 
-## Configuration
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
-**Note**: This add-on supports Ingress. You can verify this by checking if the "OPEN WEB UI" button is active.
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&addon_name=n8n&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
 
-### Option: `ssl`
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
 
-(Optional) Enable SSL/TLS for N8n. Default is `false`.
+## 💡 Feature Request
 
-### Option: `certfile`
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-The certificate file to use for SSL. Default `fullchain.pem`.
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=n8n)**
 
-### Option: `keyfile`
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
-The private key file to use for SSL. Default `privkey.pem`.
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
 
-### Option: `log_level`
+---
 
-The log level of the add-on.
+## ⚙️ Configuration
 
-## Support
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-Got questions?
-You can open an issue here on GitHub.
+### Options
+
+```yaml
+ssl: false
+certfile: fullchain.pem
+keyfile: privkey.pem
+log_level: info
+```
+
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[n8n]: https://n8n.io

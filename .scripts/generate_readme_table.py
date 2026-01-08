@@ -104,7 +104,10 @@ def generate_table(addons: list[dict]) -> str:
             # Added date placeholder - should be manually maintained in README.md
             added = "YYYY-MM"
 
-            line = f"| **[{name}]({addon['path']})**{' ' * max(0, 50 - len(name) - len(addon['path']))} | {description:<41} | {status}     | {added} |"
+            # Format with simple padding for readability in raw markdown,
+            # though markdown renderers align tables automatically.
+            link_md = f"[{name}]({addon['path']})"
+            line = f"| **{link_md:<55}** | {description:<41} | {status}     | {added} |"
             lines.append(line)
 
         except Exception as e:

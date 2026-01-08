@@ -15,6 +15,39 @@ export N8N_USER_FOLDER="/data/n8n"
 export N8N_PORT="5678"
 export N8N_LISTEN_ADDRESS="0.0.0.0"
 
+# SSL Configuration
+if bashio::config.true 'ssl'; then
+    bashio::log.info "SSL is enabled"
+    export N8N_PROTOCOL="https"
+
+    certfile=$(bashio::config 'certfile')
+    keyfile=$(bashio::config 'keyfile')
+
+    # Use defaults if not provided
+    if bashio::var.is_empty "${certfile}"; then
+        certfile="fullchain.pem"
+    fi
+    if bashio::var.is_empty "${keyfile}"; then
+        keyfile="privkey.pem"
+    fi
+
+    export N8N_SSL_CERT="/ssl/${certfile}"
+    export N8N_SSL_KEY="/ssl/${keyfile}"
+
+    if ! bashio::fs.file_exists "${N8N_SSL_CERT}"; then
+        bashio::log.error "Certificate file '${N8N_SSL_CERT}' not found!"
+        bashio::exit.nok
+    fi
+
+    if ! bashio::fs.file_exists "${N8N_SSL_KEY}"; then
+        bashio::log.error "Key file '${N8N_SSL_KEY}' not found!"
+        bashio::exit.nok
+    fi
+else
+    # Explicitly set http if ssl is false/missing to be safe
+    export N8N_PROTOCOL="http"
+fi
+
 # Set Log Level from config (with fallback)
 if bashio::config.has_value 'log_level'; then
     export N8N_LOG_LEVEL=$(bashio::config 'log_level')

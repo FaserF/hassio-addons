@@ -125,9 +125,7 @@ jobs:
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - name: ⤵️ Checkout master
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0

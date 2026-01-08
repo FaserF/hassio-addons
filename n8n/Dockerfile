@@ -3,7 +3,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 FROM ${BUILD_FROM}
 
 # Redeclare ARG after FROM for use in build stage
-ARG N8N_VERSION=2.2.4
+ARG N8N_VERSION=2.3.1
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -32,7 +32,10 @@ RUN \
     && n8n --version
 
 # Copy root filesystem
+# Copy root filesystem
 COPY rootfs /
+RUN chmod a+x /etc/services.d/n8n/run
+
 
 # Build arguments
 ARG BUILD_ARCH
@@ -58,12 +61,14 @@ LABEL \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/faserf/hassio-addons" \
     org.opencontainers.image.source="https://github.com/faserf/hassio-addons" \
-    org.opencontainers.image.documentation="https://github.com/faserf/hassio-addons/blob/master/addons/n8n/README.md" \
+    org.opencontainers.image.documentation="https://github.com/faserf/hassio-addons/blob/master/n8n/README.md" \
     org.opencontainers.image.created="${BUILD_DATE}" \
     org.opencontainers.image.revision="${BUILD_REF}" \
     org.opencontainers.image.version="${BUILD_VERSION}"
 
+# uses s6-overlay from base image
+
 # Health check - using /healthz/readiness which is enabled by default
-# (Note: /healthz requires QUEUE_HEALTH_CHECK_ACTIVE=true to be set)
+# (standard /healthz requires additional environment configuration)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl --fail http://127.0.0.1:5678/healthz/readiness || exit 1
