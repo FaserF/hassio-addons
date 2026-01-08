@@ -45,4 +45,3 @@ schema:
 #   # 853/tcp: 853
 #   # 443/tcp: 3443
 image: ghcr.io/faserf/hassio-addons-shielddns-{arch}
-
