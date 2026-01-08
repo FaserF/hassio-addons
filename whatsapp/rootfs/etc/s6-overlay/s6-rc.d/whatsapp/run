@@ -5,5 +5,28 @@ bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 export PORT=$(bashio::addon.port 8066)
 export MDNS_NAME=$(bashio::config 'mdns_name')
 
+# Automatic Integration Installation
+if [ ! -d "/config/custom_components/whatsapp" ]; then
+    bashio::log.warning "Integration not found in /config/custom_components/whatsapp"
+    bashio::log.info "Attempting to install FaserF/ha-whatsapp integration..."
+
+    mkdir -p /tmp/ha-whatsapp_install
+    if git clone --depth 1 https://github.com/FaserF/ha-whatsapp.git /tmp/ha-whatsapp_install; then
+        if [ -d "/tmp/ha-whatsapp_install/custom_components/whatsapp" ]; then
+            mkdir -p /config/custom_components
+            cp -r /tmp/ha-whatsapp_install/custom_components/whatsapp /config/custom_components/
+            bashio::log.info "✅ Integration installed successfully!"
+            bashio::log.warning "RESTART HOME ASSISTANT to load the new integration!"
+        else
+            bashio::log.error "❌ Could not find 'custom_components/whatsapp' in the repository."
+        fi
+    else
+        bashio::log.error "❌ Failed to clone repository."
+    fi
+    rm -rf /tmp/ha-whatsapp_install
+else
+    bashio::log.info "✅ Integration found."
+fi
+
 cd /opt/whatsapp
 exec node index.js
