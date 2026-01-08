@@ -8,7 +8,6 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-0.3.0}"
-	local NAME="AegisBot"
 	local SLUG="aegisbot"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
@@ -44,9 +43,9 @@ _show_startup_banner() {
 	if command -v curl &>/dev/null; then
 		local UPDATE_MSG=""
 
-		# Get latest stable version from config.yaml
+		# Get latest stable version from config.yaml (wrap in subshell to prevent set -e issues)
 		local LATEST_STABLE
-		LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//')
+		LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//' || echo "")
 
 		if [ -n "$LATEST_STABLE" ]; then
 			# For DEV versions: Check if there are newer commits for this addon
@@ -54,7 +53,7 @@ _show_startup_banner() {
 				if [ -n "$DEV_COMMIT" ]; then
 					# Get latest commit for this addon from GitHub
 					local LATEST_COMMIT
-					LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7)
+					LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7 || echo "")
 
 					if [ -n "$LATEST_COMMIT" ] && [ "$LATEST_COMMIT" != "$DEV_COMMIT" ]; then
 						UPDATE_MSG="⬆️  DEV UPDATE: New commits available"
@@ -111,9 +110,9 @@ _show_startup_banner() {
 	bashio::log.info ""
 }
 
-# Show banner on startup
+# Show banner on startup (errors in banner should not crash the addon)
 if type bashio::log.blue &>/dev/null 2>&1; then
-	_show_startup_banner
+	_show_startup_banner || true
 fi
 
 # </ADDON_BANNER_INJECTION>
@@ -391,7 +390,6 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 	# Get GitHub Token from config (optional)
 	GITHUB_TOKEN=""
 	if bashio::config.has_value 'github_token'; then
-		local TOKEN_VALUE
 		TOKEN_VALUE=$(bashio::config 'github_token')
 		# Remove any trailing/leading whitespace
 		TOKEN_VALUE=$(echo "$TOKEN_VALUE" | xargs)
@@ -622,7 +620,6 @@ if bashio::config.true 'developer_mode' && [ "${INITIAL_DOWNLOAD_DONE:-false}" !
 	# Get GitHub Token (Optional) - use same logic as main download
 	GITHUB_TOKEN=""
 	if bashio::config.has_value 'github_token'; then
-		local TOKEN_VALUE
 		TOKEN_VALUE=$(bashio::config 'github_token')
 		TOKEN_VALUE=$(echo "$TOKEN_VALUE" | xargs)
 		if [ -n "$TOKEN_VALUE" ] && [ "$TOKEN_VALUE" != "null" ]; then

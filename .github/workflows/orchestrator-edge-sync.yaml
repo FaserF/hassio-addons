@@ -151,22 +151,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔄 Update version to dev
+      - name: 🔄 Update version for changed addons only
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
         run: |
-          # Bump all supported addon versions to dev
-          for config in */config.yaml; do
-            if [ -f "$config" ]; then
-              ADDON_DIR=$(dirname "$config")
-              # Skip .unsupported directory entry if it somehow exists
-              if [[ "$ADDON_DIR" != "." ]] && [[ ! "$ADDON_DIR" =~ ^\. ]]; then
-                echo "Processing $ADDON_DIR..."
-                python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $ADDON_DIR"
+          # Get list of addons changed since the last edge branch
+          echo "🔍 Finding changed addons since last edge sync..."
+
+          if git rev-parse --verify origin/edge >/dev/null 2>&1; then
+            # Compare edge to current master (HEAD)
+            CHANGED_FILES=$(git diff --name-only origin/edge HEAD 2>/dev/null || echo "")
+          else
+            # Edge doesn't exist yet - treat all addons as changed
+            echo "⚠️ Edge branch doesn't exist - bumping all addons"
+            CHANGED_FILES=$(find . -maxdepth 2 -name "config.yaml" | sed 's|^\./||' | sed 's|/config.yaml||')
+          fi
+
+          # Extract unique addon directories from changed files
+          # Only match top-level directories (addon folders)
+          CHANGED_ADDONS=$(echo "$CHANGED_FILES" | \
+            grep -E "^[^./][^/]+/" | \
+            cut -d'/' -f1 | \
+            sort -u | \
+            grep -v "^\\." || echo "")
+
+          if [ -z "$CHANGED_ADDONS" ]; then
+            echo "ℹ️ No addon changes detected - skipping version bump"
+          else
+            echo "📦 Changed addons:"
+            echo "$CHANGED_ADDONS" | while read addon; do
+              [ -n "$addon" ] && echo "  - $addon"
+            done
+
+            # Bump only changed addons
+            for addon in $CHANGED_ADDONS; do
+              if [ -f "$addon/config.yaml" ]; then
+                echo ""
+                echo "📝 Bumping $addon..."
+                python3 .scripts/bump_version.py "$addon" patch --dev --changelog 2>/dev/null || echo "⚠️ Skipping $addon"
               fi
-            fi
-          done
+            done
+          fi
+
 
       - name: 🚀 Push edge branch
         if: |
