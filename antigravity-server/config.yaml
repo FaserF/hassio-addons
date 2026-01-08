@@ -25,4 +25,3 @@ options:
 schema:
   vnc_password: match(^.{0,8}$)?
   log_level: str?
-
