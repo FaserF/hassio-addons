@@ -30,8 +30,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 > [!NOTE]
 > Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
-
-
 ## ⚙️ Configuration
 
 Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
