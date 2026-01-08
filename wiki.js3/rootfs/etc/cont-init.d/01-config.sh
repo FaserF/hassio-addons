@@ -64,9 +64,13 @@ if [ ! -f "$CONFIG_FILE" ]; then
 	echo "$CONFIG_CONTENT" >"$CONFIG_FILE"
 	bashio::log.info "Configuration file created successfully."
 else
-	bashio::log.info "Configuration file already exists at $CONFIG_FILE. Updating with current settings..."
-	echo "$CONFIG_CONTENT" >"$CONFIG_FILE"
-	bashio::log.info "Configuration file updated successfully."
+	# Check if content has changed
+	current_content=$(cat "$CONFIG_FILE")
+	if [ "$current_content" != "$CONFIG_CONTENT" ]; then
+		bashio::log.info "Configuration has changed. Updating $CONFIG_FILE..."
+		echo "$CONFIG_CONTENT" >"$CONFIG_FILE"
+		bashio::log.info "Configuration file updated successfully."
+	fi
 fi
 
 # Also create config.yml in /wiki for backward compatibility

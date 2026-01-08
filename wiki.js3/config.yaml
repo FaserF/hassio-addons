@@ -2,7 +2,7 @@
 name: Wiki.JS V3 (Beta)
 version: 0.3.0
 slug: wiki.js3
-image: ghcr.io/faserf/hassio-addons-wiki.js3-{arch}
+
 description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
@@ -33,4 +33,3 @@ ports:
 ports_description:
   3000/tcp: HTTP Entrance port
   3443/tcp: HTTPS/SSL Entrance port
-
