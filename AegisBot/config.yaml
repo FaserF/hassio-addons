@@ -53,4 +53,3 @@ schema:
   debug: bool?
   demo_mode: bool
   demo_mode_type: list(ephemeral|persistent)?
-

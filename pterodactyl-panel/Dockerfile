@@ -33,6 +33,7 @@ RUN apk add --no-cache \
     php83-ctype \
     php83-zip \
     php83-xmlwriter \
+    php83-iconv \
     tini \
     su-exec \
     openssl \
@@ -49,7 +50,7 @@ WORKDIR /var/www/html
 RUN apk add --no-cache \
     yarn \
     git \
-    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.11.11 \
+    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.12.0 \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \

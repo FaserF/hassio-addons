@@ -12,4 +12,3 @@ ports:
 map:
   - homeassistant_config:rw
 init: false
-

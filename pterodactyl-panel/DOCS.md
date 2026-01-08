@@ -2,12 +2,15 @@
 
 pterodactyl Panel Gameserver for Homeassistant OS
 
-Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive UI to end users.
+Pterodactyl® is a free, open-source game server management panel built with PHP, React,
+and Go. Designed with security in mind, Pterodactyl runs all game servers in isolated
+Docker containers while exposing a beautiful and intuitive UI to end users.
 
 > [!WARNING]
 > Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.
 >
-> For me I am unable to login until now. Seems to have something to do with redis, but I dont get what exactly.
+> For me I am unable to login until now. Seems to have something to do with redis,
+> but I dont get what exactly.
 
 ## ⚙️ Configuration
 
@@ -31,4 +34,15 @@ ssl: true
 
 ## Support
 
-For issues and feature requests, please use the GitHub repository issues.
+If you encounter any issues with this add-on, please report them using the link below.
+The issue form will be pre-filled with the add-on information to help us resolve the
+problem faster.
+
+> Please use the link above to report problems. This ensures that all necessary
+> information (add-on name, version, etc.) is automatically included in your bug report.
+
+If you have an idea for a new feature or improvement, please use the link below to
+submit a feature request. The form will be pre-filled with the add-on information.
+
+> Please use the link above to request features. This ensures that the add-on name
+> is automatically included in your feature request.
