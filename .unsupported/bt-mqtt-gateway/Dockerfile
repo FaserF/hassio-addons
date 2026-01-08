@@ -2,7 +2,6 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-
 # Install necessary packages and prepare environment
 # hadolint ignore=DL3018,DL3013,DL3042,DL3006
 # Set version (pinned for reproducibility)
@@ -16,8 +15,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
-
-
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="3.0.0"

@@ -17,18 +17,8 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # We grab the binary from the official image
 # hadolint ignore=DL3018,DL4006
 
-
-
-
-
-
-
-
-
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
+
 ENV ADDON_NAME="ShieldFile"
 ENV ADDON_SLUG="shieldfile"
 ENV ADDON_UNSUPPORTED="false"
@@ -48,7 +38,6 @@ RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run
 HEALTHCHECK \
     --interval=5m --timeout=3s \
     CMD curl --fail http://127.0.0.1:8099/ || exit 1
-
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"

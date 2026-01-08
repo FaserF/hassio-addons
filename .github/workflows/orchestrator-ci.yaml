@@ -387,6 +387,13 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
 
+      - name: 🔧 Inject Version Warning
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 🏗️ Build amd64 (CI optimized)
         run: |
           IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)

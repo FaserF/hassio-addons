@@ -2,17 +2,12 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
-
 # Install system requirements
 # Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
 
-
-
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.10.0"
+
 ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"
 ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
@@ -93,7 +88,6 @@ COPY run.sh /
 RUN chmod a+x /run.sh \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 CMD [ "/run.sh" ]
-
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \

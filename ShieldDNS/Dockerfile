@@ -7,7 +7,6 @@ FROM coredns/coredns:1.13.2 AS coredns
 # hadolint ignore=DL3007
 FROM cloudflare/cloudflared:2025.11.1 AS cloudflared
 
-
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -18,18 +17,8 @@ ENV CLOUDFLARED_VERSION="2025.11.1"
 
 # Setup CoreDNS and Cloudflared
 
-
-
-
-
-
-
-
-
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
+
 ENV ADDON_NAME="ShieldDNS"
 ENV ADDON_SLUG="shielddns"
 ENV ADDON_UNSUPPORTED="false"

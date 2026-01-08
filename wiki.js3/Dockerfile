@@ -10,17 +10,6 @@ ARG BUILD_DATE="unknown"
 
 # Install Node.js, Yarn and MariaDB client via APK
 # hadolint ignore=DL3018
-
-
-
-
-
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.1"
-ENV ADDON_NAME="Wiki.JS V3 (Beta)"
-ENV ADDON_SLUG="wikijs3"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
@@ -45,7 +34,6 @@ COPY rootfs /
 
 RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
     && dos2unix /etc/cont-init.d/*.sh /etc/services.d/*/run
-
 
 # Labels
 LABEL \

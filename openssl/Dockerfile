@@ -5,12 +5,8 @@ ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018
 
-
-
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
+
 ENV ADDON_NAME="OpenSSL"
 ENV ADDON_SLUG="openssl"
 ENV ADDON_UNSUPPORTED="false"

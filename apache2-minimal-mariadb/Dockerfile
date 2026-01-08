@@ -6,21 +6,10 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for apache2 to store PID file and install dependencies
 
-
-
-
-
-
-
-
-
-
-
-
 # shellcheck disable=SC2015
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.0.0"
+
 ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"

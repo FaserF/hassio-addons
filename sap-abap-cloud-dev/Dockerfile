@@ -12,7 +12,7 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.0.1"
+
 ENV ADDON_NAME="SAP ABAP Cloud Developer Trial"
 ENV ADDON_SLUG="sap-abap-cloud-dev"
 

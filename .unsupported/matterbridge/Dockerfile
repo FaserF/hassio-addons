@@ -2,15 +2,10 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS builder
 
-
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
-
-
-
-
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.0.0"

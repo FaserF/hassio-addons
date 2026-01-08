@@ -5,12 +5,8 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # hadolint ignore=DL3018
 
-
-
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.0.0"
+
 ENV ADDON_NAME="pterodactyl Wings Gameserver"
 ENV ADDON_SLUG="pterodactyl_wings"
 ENV ADDON_UNSUPPORTED="false"
@@ -40,7 +36,6 @@ COPY rootfs /
 COPY run.sh /
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
-
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:8080 || exit 1

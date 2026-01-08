@@ -12,7 +12,7 @@ ARG WORDPRESS_VERSION="6.8"
 # hadolint ignore=DL3018,DL3003
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.0.1"
+
 ENV ADDON_NAME="Wordpress"
 ENV ADDON_SLUG="wordpress"
 ENV ADDON_UNSUPPORTED="false"
@@ -54,7 +54,6 @@ RUN \
 COPY rootfs /
 
 RUN find /etc/s6-overlay/s6-rc.d -mindepth 2 -name run -exec chmod +x {} \;
-
 
 # Build arguments
 ARG BUILD_ARCH
