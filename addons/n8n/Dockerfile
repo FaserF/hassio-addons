@@ -63,6 +63,7 @@ LABEL \
     org.opencontainers.image.revision="${BUILD_REF}" \
     org.opencontainers.image.version="${BUILD_VERSION}"
 
-# Health check
-HEALTHCHECK \
-    CMD curl --fail http://127.0.0.1:5678/healthz || exit 1
+# Health check - using /healthz/readiness which is enabled by default
+# (Note: /healthz requires QUEUE_HEALTH_CHECK_ACTIVE=true to be set)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl --fail http://127.0.0.1:5678/healthz/readiness || exit 1

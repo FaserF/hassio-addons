@@ -316,11 +316,15 @@ jobs:
             echo "status=success" >> "$GITHUB_OUTPUT"
           fi
 
+          # Sanitize addon name for artifact naming (replace / with -)
+          ADDON_SAFE=$(echo "${{ matrix.addon }}" | tr '/' '-')
+          echo "addon_safe=$ADDON_SAFE" >> "$GITHUB_OUTPUT"
+
       - name: 📤 Upload Compliance Report
         if: steps.compliance.outputs.status == 'failure'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: compliance-${{ github.run_id }}-${{ matrix.addon | replace('/', '-') }}
+          name: compliance-${{ github.run_id }}-${{ steps.compliance.outputs.addon_safe }}
           path: compliance_report.txt
           retention-days: 1
 

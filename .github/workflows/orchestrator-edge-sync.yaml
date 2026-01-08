@@ -151,7 +151,7 @@ jobs:
 
             # Create temp file to store versions
             VERSIONS_FILE="/tmp/edge_versions.txt"
-            > "$VERSIONS_FILE"
+            true > "$VERSIONS_FILE"
 
             # Get config.yaml files from edge branch
             for config in $(git ls-tree -r --name-only origin/edge | grep -E "^[^./][^/]+/config.yaml$"); do
@@ -229,7 +229,7 @@ jobs:
           # Bump changed addons
           if [ -n "$CHANGED_ADDONS" ]; then
             echo "📦 Addons to bump (changed in this push):"
-            echo "$CHANGED_ADDONS" | while read addon; do
+            echo "$CHANGED_ADDONS" | while read -r addon; do
               [ -n "$addon" ] && echo "  - $addon"
             done
 

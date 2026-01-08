@@ -2,6 +2,10 @@
 """
 Generate the Add-ons List table for the main README.md.
 This script reads all addon config.yaml files and generates a markdown table.
+
+NOTE: The "Added" column in README.md is manually maintained. This script
+generates a 4-column table placeholder, but the actual "Added" dates should
+be preserved from the existing README.md or added manually for new add-ons.
 """
 
 import os
@@ -74,8 +78,8 @@ def find_addons(repo_root: Path) -> list[dict]:
 def generate_table(addons: list[dict]) -> str:
     """Generate the markdown table from addon info."""
     lines = [
-        "| Name                                                            | Description                               | Status |",
-        "| :-------------------------------------------------------------- | :---------------------------------------- | :----- |",
+        "| Name                                                            | Description                               | Status | Added   |",
+        "| :-------------------------------------------------------------- | :---------------------------------------- | :----- | :------ |",
     ]
 
     for addon in addons:
@@ -97,7 +101,10 @@ def generate_table(addons: list[dict]) -> str:
             if addon["unsupported"]:
                 description = f"{description} (Unsupported)"
 
-            line = f"| **[{name}]({addon['path']})**{' ' * max(0, 50 - len(name) - len(addon['path']))} | {description:<41} | {status}     |"
+            # Added date placeholder - should be manually maintained in README.md
+            added = "YYYY-MM"
+
+            line = f"| **[{name}]({addon['path']})**{' ' * max(0, 50 - len(name) - len(addon['path']))} | {description:<41} | {status}     | {added} |"
             lines.append(line)
 
         except Exception as e:
@@ -107,14 +114,16 @@ def generate_table(addons: list[dict]) -> str:
 
 
 def main():
-    repo_root = Path(__file__).parent.parent.parent
-    readme_path = repo_root / "README.md"
+    repo_root = Path(__file__).parent.parent
 
     addons = find_addons(repo_root)
     table = generate_table(addons)
 
     print("Generated table:")
     print(table)
+    print("\nNOTE: The 'Added' column contains placeholders (YYYY-MM).")
+    print("Please manually update the dates based on the existing README.md")
+    print("or use the actual add-on creation dates for new add-ons.")
 
     # Note: This script only prints the table.
     # The workflow will handle the actual replacement.
