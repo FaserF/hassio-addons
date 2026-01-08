@@ -36,14 +36,22 @@ def find_addons(repo_root: Path) -> list[dict]:
     """Find all addons in the repository."""
     addons = []
 
-    # Regular addons (top-level directories with config.yaml)
-    for item in sorted(repo_root.iterdir()):
-        if item.is_dir() and not item.name.startswith((".", "_")):
-            config_path = item / "config.yaml"
-            if config_path.exists():
-                addons.append(
-                    {"path": item.name, "config": config_path, "unsupported": False}
-                )
+    # Regular addons (top-level directories or addons/ subdirectory)
+    dirs_to_check = [repo_root]
+    addons_dir = repo_root / "addons"
+    if addons_dir.exists():
+        dirs_to_check.append(addons_dir)
+
+    for directory in dirs_to_check:
+        for item in sorted(directory.iterdir()):
+            if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "addons":
+                config_path = item / "config.yaml"
+                if config_path.exists():
+                    # Calculate relative path from repo_root
+                    rel_path = item.relative_to(repo_root).as_posix()
+                    addons.append(
+                        {"path": rel_path, "config": config_path, "unsupported": FALSE}
+                    )
 
     # Unsupported addons
     unsupported_dir = repo_root / ".unsupported"

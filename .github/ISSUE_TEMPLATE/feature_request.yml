@@ -45,6 +45,7 @@ body:
         - bentopdf
         - homeassistant-test-instance
         - matterbridge
+        - n8n
         - netboot-xyz
         - nginx
         - openssl

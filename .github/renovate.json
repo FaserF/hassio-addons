@@ -207,20 +207,6 @@
     },
     {
       "customType": "regex",
-      "description": "Track Wiki.js V2 Docker image digest",
-      "managerFilePatterns": [
-        "/wiki.js/Dockerfile$"
-      ],
-      "matchStrings": [
-        "FROM ghcr\\.io/requarks/wiki:(?<currentValue>[^@]+)@sha256:(?<currentDigest>[a-f0-9]+)"
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "ghcr.io/requarks/wiki",
-      "versioningTemplate": "docker",
-      "currentValueTemplate": "2"
-    },
-    {
-      "customType": "regex",
       "description": "Track Wiki.js V3 Docker image digest",
       "managerFilePatterns": [
         "/wiki.js3/Dockerfile$/"
@@ -257,6 +243,18 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "WordPress/WordPress"
+    },
+    {
+      "customType": "regex",
+      "description": "Track n8n version in Dockerfile (ARG N8N_VERSION=X.X.X)",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG N8N_VERSION=[\"']?(?<currentValue>\\d+\\.\\d+\\.\\d+)[\"']?"
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "n8n"
     }
   ],
   "packageRules": [
@@ -350,23 +348,6 @@
         ],
         "executionMode": "branch"
       }
-    },
-    {
-      "description": "Wiki.js V2 - auto-update Docker image digest",
-      "matchDepNames": [
-        "ghcr.io/requarks/wiki"
-      ],
-      "matchFileNames": [
-        "wiki.js/Dockerfile"
-      ],
-      "automerge": true,
-      "ignoreTests": false,
-      "allowedVersions": "/^2/",
-      "versioning": "docker",
-      "updateTypes": [
-        "digest"
-      ],
-      "currentValueTemplate": "2"
     },
     {
       "description": "Wiki.js V3 - auto-update Docker image digest",

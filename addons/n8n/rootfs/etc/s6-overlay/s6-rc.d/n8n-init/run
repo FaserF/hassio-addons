@@ -1,0 +1,17 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Add-on: N8n
+# Configures N8n before the main service starts
+# ==============================================================================
+bashio::log.info "Configuring N8n..."
+
+# Ensure persistence
+if ! bashio::fs.directory_exists "/data/n8n"; then
+    bashio::log.info "Creating persistent storage directory..."
+    mkdir -p /data/n8n
+fi
+
+# Set ownership if needed (running as root usually in base image but good practice)
+# chown -R root:root /data/n8n
+
+bashio::log.info "Configuration complete."
