@@ -1,8 +1,8 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
-# Note: This uses Wiki.js V3 Beta/Alpha - update digest when new versions are released
-# The digest is tracked by Renovate via custom manager in .github/renovate.json
-FROM ghcr.io/requarks/wiki:3.0.0-alpha AS wiki_release
+# Note: This uses Wiki.js V3 Beta/Alpha - Renovate tracks ARG WIKIJS_VERSION
+ARG WIKIJS_VERSION=3.0.0-alpha.380
+FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
