@@ -8,7 +8,7 @@
 _show_startup_banner() {
 	local VERSION="${ADDON_VERSION:-unknown}"
 	local NAME="${ADDON_NAME:-Wiki.JS V3 (Beta)}"
-	local SLUG="${ADDON_SLUG:-wikijs3}"
+	local SLUG="wiki.js3"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
 	local MAINTAINER="FaserF"
@@ -45,7 +45,7 @@ _show_startup_banner() {
 
 		# Get latest stable version from config.yaml
 		local LATEST_STABLE
-		LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//')
+		LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//' || echo "")
 
 		if [ -n "$LATEST_STABLE" ]; then
 			# For DEV versions: Check if there are newer commits for this addon
@@ -53,7 +53,7 @@ _show_startup_banner() {
 				if [ -n "$DEV_COMMIT" ]; then
 					# Get latest commit for this addon from GitHub
 					local LATEST_COMMIT
-					LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7)
+					LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7 || echo "")
 
 					if [ -n "$LATEST_COMMIT" ] && [ "$LATEST_COMMIT" != "$DEV_COMMIT" ]; then
 						UPDATE_MSG="⬆️  DEV UPDATE: New commits available"
