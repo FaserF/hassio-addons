@@ -11,7 +11,9 @@ if ! bashio::fs.directory_exists "/data/n8n"; then
     mkdir -p /data/n8n
 fi
 
-# Set ownership if needed (running as root usually in base image but good practice)
-# chown -R root:root /data/n8n
+# Note: Ownership is not explicitly set here because the add-on runs as root
+# in the base image and /data is managed by the Supervisor. If running as a
+# non-root user in the future, uncomment and adjust the following line:
+# chown -R n8n:n8n /data/n8n
 
 bashio::log.info "Configuration complete."

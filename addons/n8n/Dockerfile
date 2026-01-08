@@ -1,7 +1,9 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:16.3.1
-ARG N8N_VERSION=2.2.4
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+
+# Redeclare ARG after FROM for use in build stage
+ARG N8N_VERSION=2.2.4
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -14,6 +16,7 @@ RUN \
         python3-dev \
     \
     && apk add --no-cache \
+        curl \
         nodejs \
         npm \
         python3 \
@@ -21,7 +24,7 @@ RUN \
     \
     && npm install -g "n8n@${N8N_VERSION}" \
     \
-    && apk del --no-cache --purge .build-dependencies \
+    && apk del --purge .build-dependencies \
     && rm -f -r \
         /root/.npm \
         /root/.cache \

@@ -297,7 +297,8 @@
         "FaserF/Solumati",
         "spacemeowx2/switch-lan-play",
         "Eidolf/Docker-AntiGravity",
-        "WordPress/WordPress"
+        "WordPress/WordPress",
+        "n8n"
       ],
       "automerge": false
     },

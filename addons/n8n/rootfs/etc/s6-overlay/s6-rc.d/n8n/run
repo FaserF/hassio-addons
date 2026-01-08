@@ -9,16 +9,10 @@ export N8N_USER_FOLDER="/data/n8n"
 export N8N_PORT="5678"
 export N8N_LISTEN_ADDRESS="0.0.0.0"
 
-# Set Log Level
+# Set Log Level from config
 if bashio::config.has_value 'log_level'; then
     export N8N_LOG_LEVEL=$(bashio::config 'log_level')
 fi
-
-# Set SSL if enabled (Basic implementation, n8n handles SSL or via Ingress/Nginx)
-# If using Ingress, SSL is terminated by HA/Supervisor.
-# If using direct port, user might want SSL.
-# For simplicity, we trust Ingress/Supervisor for now, or users run behind proxy.
-# n8n has SSL options but simpler to start without internal SSL complexity if not fully requested.
 
 bashio::log.info "Starting N8n..."
 

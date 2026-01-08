@@ -50,7 +50,7 @@ def find_addons(repo_root: Path) -> list[dict]:
                     # Calculate relative path from repo_root
                     rel_path = item.relative_to(repo_root).as_posix()
                     addons.append(
-                        {"path": rel_path, "config": config_path, "unsupported": FALSE}
+                        {"path": rel_path, "config": config_path, "unsupported": False}
                     )
 
     # Unsupported addons

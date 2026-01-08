@@ -9,6 +9,8 @@ Write-Host "    > [Custom] Verifying N8n..." -ForegroundColor Gray
 $logs = docker logs "$ContainerName" 2>&1
 if ($logs -match "FaserF's Addon Repository") {
     Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "PASS" -Message "Banner found."
+} else {
+    Add-Result -Addon $Addon.Name -Check "BannerCheck" -Status "FAIL" -Message "Banner not found in container logs."
 }
 $procCheck = docker exec "$ContainerName" ps aux 2>&1
 if ($procCheck -match "n8n") {

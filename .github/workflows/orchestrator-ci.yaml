@@ -320,7 +320,7 @@ jobs:
         if: steps.compliance.outputs.status == 'failure'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: compliance-${{ github.run_id }}-${{ matrix.addon }}
+          name: compliance-${{ github.run_id }}-${{ matrix.addon | replace('/', '-') }}
           path: compliance_report.txt
           retention-days: 1
 
