@@ -84,6 +84,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                         | ⚠️     | 2026-01 |
 | **[Wordpress](wordpress)**                                      | The most popular publication platform     | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2023-05 |
+| [N8n](n8n) | Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation. |
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
