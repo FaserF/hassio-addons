@@ -30,10 +30,7 @@ If you have an idea for a new feature or improvement, please use the link below 
 > [!NOTE]
 > Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
-This project is open-source and available under the MIT License.
-Maintained by **FaserF**.
 
----
 
 ## ⚙️ Configuration
 
@@ -42,10 +39,10 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
-ssl: false
-certfile: fullchain.pem
-keyfile: privkey.pem
-log_level: info
+ssl: false # Enable SSL/TLS (optional)
+certfile: fullchain.pem # Certificate file path (optional)
+keyfile: privkey.pem # Private key file path (optional)
+log_level: info # Log level (trace, debug, info, warning, error)
 ```
 
 ---

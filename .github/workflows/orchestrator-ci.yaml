@@ -731,8 +731,8 @@ jobs:
                issue_number: context.issue.number,
             });
             const reportSignature = "## ❌ General CI Failure Report";
-            const previousComments = existingComments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
-            for (const comment of previousComments) {
+            const oldGeneralComments = existingComments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
+            for (const comment of oldGeneralComments) {
                 try {
                     await github.graphql(`
                         mutation($subjectId: ID!) {
