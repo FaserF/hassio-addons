@@ -17,6 +17,13 @@ ENV PYTHONUNBUFFERED=1
 
 # hadolint ignore=DL3018
 
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.3.0"
+ENV ADDON_NAME="AegisBot"
+ENV ADDON_SLUG="aegisbot"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN \
     apk add --no-cache \
     musl \
