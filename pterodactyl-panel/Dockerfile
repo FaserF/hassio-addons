@@ -33,6 +33,7 @@ RUN apk add --no-cache \
     php83-ctype \
     php83-zip \
     php83-xmlwriter \
+    php83-iconv \
     tini \
     su-exec \
     openssl \
