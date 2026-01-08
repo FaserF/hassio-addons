@@ -48,11 +48,9 @@ ssl:
   format: pem
   key: /ssl/${keyfile}
   cert: /ssl/${certfile}
-pool:
 bindIP: 0.0.0.0
 logLevel: ${log_level}
 offline: false
-ha: false
 dataPath: ./data
 EOF
 )

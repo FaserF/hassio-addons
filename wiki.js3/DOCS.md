@@ -24,9 +24,7 @@ ssl: true
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
 - `/data`: Used for persistent storage of Wiki.js application files, local database, and configurations.
 
-## Requirements
 
-Please ensure that the MariaDB Addon is installed!
 
 ## 🔄 Version Information
 

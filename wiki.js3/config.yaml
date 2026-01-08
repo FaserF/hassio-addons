@@ -28,8 +28,8 @@ schema:
   reset_database_confirm: bool?
   db_password: password?
 ports:
-  3000/tcp: 3000
-  3443/tcp: 3443
+  3000/tcp: 3001
+  3443/tcp: 3444
 ports_description:
   3000/tcp: HTTP Entrance port
   3443/tcp: HTTPS/SSL Entrance port

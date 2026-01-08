@@ -40,6 +40,14 @@ Maintained by **FaserF**.
 
 ---
 
+## 🏁 First Startup
+
+On the first startup, you will be prompted with an administration setup wizard. The wizard will guide you through the initial configuration of your wiki connection and the creation of your administrator account.
+
+Please create your own **Administrator Account** (Email / Password) during this process.
+
+---
+
 ## ⚙️ Configuration
 
 Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
