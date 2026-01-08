@@ -5,6 +5,7 @@ This addon exposes a REST API that acts as a bridge between Home Assistant (via 
 ## Authentication
 
 All API requests (except `/health`) **MUST** include the `X-Auth-Token` header.
+
 - The token is automatically generated on first run.
 - You can view and copy the token from the Addon Dashboard (Web UI).
 
@@ -13,17 +14,21 @@ All API requests (except `/health`) **MUST** include the `X-Auth-Token` header.
 ### 1. Connection Management
 
 #### `POST /session/start`
+
 Initiates a new session. If not connected, it starts the QR code generation process.
 
 **Response:**
+
 ```json
 { "status": "starting", "message": "Session init started" }
 ```
 
 #### `GET /status`
+
 Returns connection status and library version.
 
 **Response:**
+
 ```json
 {
   "connected": true,
@@ -32,9 +37,11 @@ Returns connection status and library version.
 ```
 
 #### `GET /qr`
+
 Returns the current QR code as a Data URL image string if scanning is required.
 
 **Response:**
+
 ```json
 {
   "status": "scanning",
@@ -43,9 +50,11 @@ Returns the current QR code as a Data URL image string if scanning is required.
 ```
 
 #### `DELETE /session`
+
 Logs out and deletes the current session data. Useful for resetting connection errors.
 
 **Response:**
+
 ```json
 { "status": "success", "message": "Session deleted and logged out" }
 ```
@@ -53,9 +62,11 @@ Logs out and deletes the current session data. Useful for resetting connection e
 ### 2. Messaging
 
 #### `POST /send_message`
+
 Sends a basic text message.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -64,9 +75,11 @@ Sends a basic text message.
 ```
 
 #### `POST /send_image`
+
 Sends an image from a public URL.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -76,9 +89,11 @@ Sends an image from a public URL.
 ```
 
 #### `POST /send_poll`
+
 Sends a poll.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -88,9 +103,11 @@ Sends a poll.
 ```
 
 #### `POST /send_location`
+
 Sends a location pin.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -102,10 +119,12 @@ Sends a location pin.
 ```
 
 #### `POST /send_buttons`
+
 Sends a message with interactive buttons.
-*Note: Button support varies by device and WhatsApp version.*
+_Note: Button support varies by device and WhatsApp version._
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -119,9 +138,11 @@ Sends a message with interactive buttons.
 ```
 
 #### `POST /send_reaction`
+
 Reacts to a specific message.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
@@ -133,23 +154,28 @@ Reacts to a specific message.
 ### 3. Interaction
 
 #### `POST /set_presence`
+
 Sets the chat presence/status.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
   "presence": "composing"
 }
 ```
-*Values: `composing`, `recording`, `paused`, `available`*
+
+_Values: `composing`, `recording`, `paused`, `available`_
 
 ### 4. Events & Logs
 
 #### `GET /events`
+
 Polling endpoint for the integration. Returns a list of received messages and clears the queue.
 
 **Response:**
+
 ```json
 [
   {
@@ -160,19 +186,21 @@ Polling endpoint for the integration. Returns a list of received messages and cl
 ```
 
 #### `GET /logs`
+
 Returns the recent internal connection logs (used by dashboard).
 
 **Response:**
+
 ```json
-[
-  { "timestamp": "10:00:00 AM", "msg": "Connected", "type": "success" }
-]
+[{ "timestamp": "10:00:00 AM", "msg": "Connected", "type": "success" }]
 ```
 
 #### `GET /health`
+
 Healthcheck endpoint for Docker/Supervisor. No auth required.
 
 **Response:**
+
 ```json
 { "status": "ok", "service": "whatsapp-addon" }
 ```

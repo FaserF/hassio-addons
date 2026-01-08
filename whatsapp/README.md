@@ -19,16 +19,6 @@
 
 ---
 
-> [!IMPORTANT]
-> **Integration Required**
->
-> This add-on acts as a backend bridge. To use it with Home Assistant, you **must** also have the [ha-whatsapp integration](https://github.com/FaserF/ha-whatsapp) installed.
-> The integration handles the creation of entities and services in Home Assistant.
->
-> If the integration is not found in your `/config/custom_components` folder, this add-on will attempt to automatically install it for you on startup.
-
----
-
 ## 📖 About
 
 If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
@@ -68,25 +58,6 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 log_level: info
 mdns_name: WhatsApp Addon
 ```
-
-
----
-
-## 📚 API Documentation
-
-For advanced usage or custom integrations, this add-on exposes a full REST API.
-
-**[View API Documentation](API.md)**
-
-**Supported Features:**
-- Sending Text Messages
-- Sending Images (via URL)
-- Sending Polls
-- Sending Locations
-- Sending Interactive Buttons
-- Reacting to Messages
-- Status/Presence Updates (typing, recording...)
-- Event Polling (Incoming messages)
 
 ---
 

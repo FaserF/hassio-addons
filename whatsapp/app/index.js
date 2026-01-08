@@ -5,7 +5,7 @@ import {
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-  delay
+  delay,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
@@ -67,8 +67,8 @@ let eventQueue = []; // Queue for polling events
 
 // --- Helper Functions ---
 function getJid(number) {
-    if (number.includes('@')) return number;
-    return `${number}@s.whatsapp.net`;
+  if (number.includes('@')) return number;
+  return `${number}@s.whatsapp.net`;
 }
 
 // --- mDNS / Bonjour ---
@@ -202,11 +202,11 @@ async function connectToWhatsApp() {
 
   // Handle Incoming Messages
   sock.ev.on('messages.upsert', async (m) => {
-      // Add simplified event to queue
-      // The integration expects a list of event objects
-      if (m.messages && m.messages.length > 0) {
-          eventQueue.push(...m.messages);
-      }
+    // Add simplified event to queue
+    // The integration expects a list of event objects
+    if (m.messages && m.messages.length > 0) {
+      eventQueue.push(...m.messages);
+    }
   });
 }
 
@@ -275,10 +275,10 @@ app.get('/status', (req, res) => {
 
 // GET /events (Polling)
 app.get('/events', (req, res) => {
-    // Return all queued events and clear queue
-    const events = [...eventQueue];
-    eventQueue = [];
-    res.json(events);
+  // Return all queued events and clear queue
+  const events = [...eventQueue];
+  eventQueue = [];
+  res.json(events);
 });
 
 // GET /logs
@@ -303,133 +303,133 @@ app.post('/send_message', async (req, res) => {
 
 // POST /send_image
 app.post('/send_image', async (req, res) => {
-    const { number, url, caption } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, url, caption } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        // Baileys supports URL directly
-        await sock.sendMessage(jid, {
-            image: { url: url },
-            caption: caption
-        });
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to send image: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+  try {
+    const jid = getJid(number);
+    // Baileys supports URL directly
+    await sock.sendMessage(jid, {
+      image: { url: url },
+      caption: caption,
+    });
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to send image: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // POST /send_poll
 app.post('/send_poll', async (req, res) => {
-    const { number, question, options } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, question, options } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        await sock.sendMessage(jid, {
-            poll: {
-                name: question,
-                values: options,
-                selectableCount: 1 // Single select by default, maybe expose this?
-            }
-        });
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to send poll: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      poll: {
+        name: question,
+        values: options,
+        selectableCount: 1, // Single select by default, maybe expose this?
+      },
+    });
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to send poll: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // POST /send_location
 app.post('/send_location', async (req, res) => {
-    const { number, latitude, longitude, title, description } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, latitude, longitude, title, description } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        await sock.sendMessage(jid, {
-            location: {
-                degreesLatitude: latitude,
-                degreesLongitude: longitude,
-                name: title,
-                address: description
-            }
-        });
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to send location: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      location: {
+        degreesLatitude: latitude,
+        degreesLongitude: longitude,
+        name: title,
+        address: description,
+      },
+    });
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to send location: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // POST /send_reaction
 app.post('/send_reaction', async (req, res) => {
-    const { number, reaction, messageId } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, reaction, messageId } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        await sock.sendMessage(jid, {
-            react: {
-                text: reaction, // use empty string to remove reaction
-                key: { id: messageId } // Assuming remoteJid is implicit if not provided, or better provided?
-                // Baileys needs `remoteJid` in `key` usually?
-                // `sock.sendMessage(jid, { react: { text: "👍", key: { remoteJid: jid, fromMe: false, id: "..." } } })`
-            }
-        });
-        // Note: For a precise reaction, we might need `fromMe` or the full key object.
-        // But Baileys docs say `key` only usually needs `id` if passing to `sendMessage(jid, ...)`
-        // However, it's safer if we knew if it was fromMe or not.
-        // For now, we try with just ID. If it fails, we might need more info from integration (which it doesn't send).
-        // Actually, integration only sends `message_id`.
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      react: {
+        text: reaction, // use empty string to remove reaction
+        key: { id: messageId }, // Assuming remoteJid is implicit if not provided, or better provided?
+        // Baileys needs `remoteJid` in `key` usually?
+        // `sock.sendMessage(jid, { react: { text: "👍", key: { remoteJid: jid, fromMe: false, id: "..." } } })`
+      },
+    });
+    // Note: For a precise reaction, we might need `fromMe` or the full key object.
+    // But Baileys docs say `key` only usually needs `id` if passing to `sendMessage(jid, ...)`
+    // However, it's safer if we knew if it was fromMe or not.
+    // For now, we try with just ID. If it fails, we might need more info from integration (which it doesn't send).
+    // Actually, integration only sends `message_id`.
 
-        // Wait, correct usage is:
-        // await sock.sendMessage(jid, { react: { text: reaction, key: { remoteJid: jid, id: messageId } } })
+    // Wait, correct usage is:
+    // await sock.sendMessage(jid, { react: { text: reaction, key: { remoteJid: jid, id: messageId } } })
 
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to send reaction: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to send reaction: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // POST /send_buttons
 app.post('/send_buttons', async (req, res) => {
-    const { number, message, buttons, footer } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, message, buttons, footer } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        // Buttons are tricky in Baileys and vary by version.
-        // Assuming 'buttons' array matches Baileys structure: [{buttonId, buttonText: {displayText}, type: 1}]
-        await sock.sendMessage(jid, {
-            text: message,
-            footer: footer,
-            buttons: buttons,
-            headerType: 1
-        });
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to send buttons: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+  try {
+    const jid = getJid(number);
+    // Buttons are tricky in Baileys and vary by version.
+    // Assuming 'buttons' array matches Baileys structure: [{buttonId, buttonText: {displayText}, type: 1}]
+    await sock.sendMessage(jid, {
+      text: message,
+      footer: footer,
+      buttons: buttons,
+      headerType: 1,
+    });
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to send buttons: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // POST /set_presence
 app.post('/set_presence', async (req, res) => {
-    const { number, presence } = req.body;
-    if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const { number, presence } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
-        const jid = getJid(number);
-        // presence: 'available' | 'composing' | 'recording' | 'paused'
-        await sock.sendPresenceUpdate(presence, jid);
-        res.json({ status: 'sent' });
-    } catch (e) {
-        addLog(`Failed to set presence: ${e.message}`, 'error');
-        res.status(500).json({ detail: e.toString() });
-    }
+  try {
+    const jid = getJid(number);
+    // presence: 'available' | 'composing' | 'recording' | 'paused'
+    await sock.sendPresenceUpdate(presence, jid);
+    res.json({ status: 'sent' });
+  } catch (e) {
+    addLog(`Failed to set presence: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // GET /health - Simple health check endpoint for ingress readiness
