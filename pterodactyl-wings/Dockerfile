@@ -13,9 +13,9 @@ RUN apk add --no-cache ca-certificates curl tini tzdata && \
 ARG WINGS_VERSION=v1.12.0
 ENV WINGS_VERSION=${WINGS_VERSION}
 ARG TARGETARCH
-# SHA256 checksums for version 1.11.13 (from official release notes)
-ARG WINGS_SHA256_AMD64=aca5fa45ddf1c10f092c16dd758b920d8a3fa9f91c37aacc62745e72958bf71a
-ARG WINGS_SHA256_ARM64=a3d71e8c67e261fdd287f73dcab98d2a55dbba9ce001794e0006e4ed88fafe6a
+# SHA256 checksums for version v1.12.0 (from official release)
+ARG WINGS_SHA256_AMD64=b8250adebb41f7bf03605753694273b707122d6f11f84f203b23ecc986724577
+ARG WINGS_SHA256_ARM64=a219d5a97deccccff1e951f8beb97f0f5b59b256d702b2a06bc91a813886b274
 # hadolint ignore=DL4006,SC3040,SC2039
 RUN set -o pipefail && \
     if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \

@@ -103,6 +103,29 @@ update_netboot_xyz() {
 	log "Updated $dockerfile with new checksum"
 }
 
+update_solumati() {
+	local version="$1"
+	local dockerfile="solumati/Dockerfile"
+
+	log "Fetching checksum for FaserF/Solumati $version..."
+
+	# Download source tarball and compute checksum
+	local checksum
+	checksum=$(curl -sL "https://github.com/FaserF/Solumati/archive/refs/tags/${version}.tar.gz" | sha256sum | cut -d' ' -f1)
+
+	if [[ -z "$checksum" || "$checksum" == *"Not Found"* ]]; then
+		log "ERROR: Failed to download source tarball for $version"
+		exit 1
+	fi
+
+	log "Source checksum: $checksum"
+
+	# Update Dockerfile
+	sed -i "s/ARG SOLUMATI_SHA256=.*/ARG SOLUMATI_SHA256=\"${checksum}\"/" "$dockerfile"
+
+	log "Updated $dockerfile with new checksum"
+}
+
 case "$PACKAGE" in
 pterodactyl-wings | pterodactyl/wings)
 	update_pterodactyl_wings "$VERSION"
@@ -112,6 +135,9 @@ matterbridge | 42wim/matterbridge)
 	;;
 netboot-xyz | netbootxyz/webapp)
 	update_netboot_xyz "$VERSION"
+	;;
+solumati | FaserF/Solumati)
+	update_solumati "$VERSION"
 	;;
 *)
 	log "Unknown package: $PACKAGE"
