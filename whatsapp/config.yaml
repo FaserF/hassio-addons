@@ -13,13 +13,8 @@ map:
 panel_icon: mdi:whatsapp
 options:
   log_level: info
-  mdns_name: "WhatsApp Addon"
 schema:
   log_level: str
-  mdns_name: str
-ports:
-  8066/tcp: 8066
-ports_description:
-  8066/tcp: WhatsApp API (for Integration)
+host_network: true
 ingress: true
 ingress_entry: /

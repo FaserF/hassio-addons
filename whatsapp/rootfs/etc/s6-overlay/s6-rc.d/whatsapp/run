@@ -2,8 +2,7 @@
 
 bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
-export PORT=$(bashio::addon.port 8066)
-export MDNS_NAME=$(bashio::config 'mdns_name')
+export PORT=8066
 
 # Automatic Integration Installation
 if [ ! -d "/config/custom_components/whatsapp" ]; then
