@@ -33,3 +33,4 @@ ports_description:
   50001/tcp: ICM HTTPS
 ingress: true
 ingress_port: 8443
+# Edge sync trigger: 2026-01-08

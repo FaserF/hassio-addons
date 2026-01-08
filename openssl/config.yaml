@@ -15,3 +15,4 @@ options:
   website_name:
 schema:
   website_name: str
+# Edge sync trigger: 2026-01-08

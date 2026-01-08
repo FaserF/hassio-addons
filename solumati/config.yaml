@@ -35,3 +35,4 @@ schema:
   marketing_page_enabled: bool?
   dev_use_main_branch: bool?
   github_token: password?
+# Edge sync trigger: 2026-01-08

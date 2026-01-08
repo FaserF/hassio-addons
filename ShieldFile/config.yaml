@@ -38,3 +38,4 @@ schema:
   port: port
   log_level: list(debug|info|error|warning)
 image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}
+# Edge sync trigger: 2026-01-08

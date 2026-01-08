@@ -12,3 +12,4 @@ ports:
 map:
   - homeassistant_config:rw
 init: false
+# Edge sync trigger: 2026-01-08

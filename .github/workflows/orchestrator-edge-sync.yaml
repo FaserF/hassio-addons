@@ -137,6 +137,39 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: 💾 Save dev versions from edge branch
+        id: save_versions
+        if: |
+          github.event_name == 'workflow_dispatch' ||
+          steps.check_changes.outputs.only_workflows != 'true'
+        run: |
+          pip install pyyaml --quiet
+
+          # Check if edge branch exists and save versions
+          if git rev-parse --verify origin/edge >/dev/null 2>&1; then
+            echo "📋 Saving current dev versions from edge branch..."
+
+            # Create temp file to store versions
+            VERSIONS_FILE="/tmp/edge_versions.txt"
+            > "$VERSIONS_FILE"
+
+            # Get config.yaml files from edge branch
+            for config in $(git ls-tree -r --name-only origin/edge | grep -E "^[^./][^/]+/config.yaml$"); do
+              ADDON=$(dirname "$config")
+              VERSION=$(git show "origin/edge:$config" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"']*\)["'"'"']\?/\1/')
+              if [ -n "$VERSION" ]; then
+                echo "$ADDON=$VERSION" >> "$VERSIONS_FILE"
+                echo "  $ADDON: $VERSION"
+              fi
+            done
+
+            # Output file path for later step
+            echo "versions_file=$VERSIONS_FILE" >> "$GITHUB_OUTPUT"
+          else
+            echo "⚠️ Edge branch doesn't exist yet - no versions to preserve"
+            echo "versions_file=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: 🌿 Reset edge branch to master
         if: |
           github.event_name == 'workflow_dispatch' ||
@@ -172,10 +205,13 @@ jobs:
         run: |
           echo "🔍 Determining which addons to bump..."
 
+          # Get all addon directories
+          ALL_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
+
           # For workflow_dispatch, bump all addons
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "📦 workflow_dispatch: Bumping ALL addons"
-            CHANGED_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
+            CHANGED_ADDONS="$ALL_ADDONS"
           else
             # Use the addons detected in the check_changes step
             CHANGED_ADDONS="${{ steps.check_changes.outputs.changed_addons }}"
@@ -183,24 +219,47 @@ jobs:
             # Handle special case where we couldn't detect changes
             if [ "$CHANGED_ADDONS" = "ALL" ]; then
               echo "⚠️ Could not detect specific changes - bumping all addons"
-              CHANGED_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
+              CHANGED_ADDONS="$ALL_ADDONS"
             fi
           fi
 
-          if [ -z "$CHANGED_ADDONS" ]; then
-            echo "ℹ️ No addon changes detected - skipping version bump"
-          else
-            echo "📦 Addons to bump:"
+          # Load saved versions file
+          VERSIONS_FILE="${{ steps.save_versions.outputs.versions_file }}"
+
+          # Bump changed addons
+          if [ -n "$CHANGED_ADDONS" ]; then
+            echo "📦 Addons to bump (changed in this push):"
             echo "$CHANGED_ADDONS" | while read addon; do
               [ -n "$addon" ] && echo "  - $addon"
             done
 
-            # Bump only changed addons
             for addon in $CHANGED_ADDONS; do
               if [ -f "$addon/config.yaml" ]; then
                 echo ""
                 echo "📝 Bumping $addon..."
                 python3 .scripts/bump_version.py "$addon" patch --dev --changelog 2>/dev/null || echo "⚠️ Skipping $addon"
+              fi
+            done
+          fi
+
+          # Restore previous dev versions for UNCHANGED addons
+          if [ -n "$VERSIONS_FILE" ] && [ -f "$VERSIONS_FILE" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo ""
+            echo "🔄 Restoring dev versions for unchanged addons..."
+
+            for addon in $ALL_ADDONS; do
+              # Skip if this addon was changed (already bumped above)
+              if echo "$CHANGED_ADDONS" | grep -q "^${addon}$"; then
+                continue
+              fi
+
+              # Look up saved version
+              SAVED_VERSION=$(grep "^${addon}=" "$VERSIONS_FILE" 2>/dev/null | cut -d'=' -f2)
+
+              if [ -n "$SAVED_VERSION" ] && [[ "$SAVED_VERSION" == *"-dev"* ]]; then
+                echo "  📌 Restoring $addon to $SAVED_VERSION"
+                # Update version in config.yaml using sed
+                sed -i "s/^version:.*/version: \"$SAVED_VERSION\"/" "$addon/config.yaml"
               fi
             done
           fi

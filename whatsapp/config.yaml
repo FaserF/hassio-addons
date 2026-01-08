@@ -19,3 +19,4 @@ host_network: true
 hassio_api: true
 ingress: true
 ingress_entry: /
+# Edge sync trigger: 2026-01-08
