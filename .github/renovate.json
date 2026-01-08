@@ -229,6 +229,18 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "WordPress/WordPress"
+    },
+    {
+      "customType": "regex",
+      "description": "Track n8n version in Dockerfile (ARG N8N_VERSION=X.X.X)",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG N8N_VERSION=[\"']?(?<currentValue>\\d+\\.\\d+\\.\\d+)[\"']?"
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "n8n"
     }
   ],
   "packageRules": [
@@ -271,7 +283,8 @@
         "FaserF/Solumati",
         "spacemeowx2/switch-lan-play",
         "Eidolf/Docker-AntiGravity",
-        "WordPress/WordPress"
+        "WordPress/WordPress",
+        "n8n"
       ],
       "automerge": false
     },

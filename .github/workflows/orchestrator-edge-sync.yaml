@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: ⤵️ Checkout for file check
         if: github.event_name == 'push'
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -65,8 +65,10 @@ jobs:
 
           if [ -z "$CHANGED_FILES" ]; then
             # If we can't determine changes, assume we should run
-            echo "only_workflows=false" >> "$GITHUB_OUTPUT"
-            echo "changed_addons=ALL" >> "$GITHUB_OUTPUT"
+            {
+              echo "only_workflows=false"
+              echo "changed_addons=ALL"
+            } >> "$GITHUB_OUTPUT"
             echo "⚠️ Could not determine changed files, proceeding with sync"
             exit 0
           fi
@@ -86,9 +88,11 @@ jobs:
 
           echo "Changed addons: $CHANGED_ADDONS"
           # Save to output (newline-separated -> space-separated for easier parsing)
-          echo "changed_addons<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$CHANGED_ADDONS" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "changed_addons<<EOF"
+            echo "$CHANGED_ADDONS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
           # Check if only workflow files (and possibly docs) were changed
           ONLY_WORKFLOWS=true
@@ -121,9 +125,7 @@ jobs:
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - name: ⤵️ Checkout master
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0
@@ -151,7 +153,7 @@ jobs:
 
             # Create temp file to store versions
             VERSIONS_FILE="/tmp/edge_versions.txt"
-            > "$VERSIONS_FILE"
+            true > "$VERSIONS_FILE"
 
             # Get config.yaml files from edge branch
             for config in $(git ls-tree -r --name-only origin/edge | grep -E "^[^./][^/]+/config.yaml$"); do
@@ -229,7 +231,7 @@ jobs:
           # Bump changed addons
           if [ -n "$CHANGED_ADDONS" ]; then
             echo "📦 Addons to bump (changed in this push):"
-            echo "$CHANGED_ADDONS" | while read addon; do
+            echo "$CHANGED_ADDONS" | while read -r addon; do
               [ -n "$addon" ] && echo "  - $addon"
             done
 
