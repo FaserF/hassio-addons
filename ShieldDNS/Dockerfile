@@ -43,7 +43,7 @@ RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD curl --fail http://127.0.0.1:80/ || exit 1
+    CMD pgrep coredns || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"

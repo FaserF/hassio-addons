@@ -93,7 +93,7 @@ RUN chmod a+x /run.sh \
 CMD [ "/run.sh" ]
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
   CMD curl --fail http://127.0.0.1:80 || exit 1
 
 # Labels

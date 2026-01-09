@@ -45,7 +45,7 @@ RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
     && dos2unix /etc/cont-init.d/*.sh /etc/services.d/*/run
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
     CMD wget --spider -q http://127.0.0.1:3000/ || exit 1
 
 # Labels

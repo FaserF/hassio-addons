@@ -123,7 +123,7 @@ COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
 # Health check - faster detection with startup grace period
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
     CMD curl --fail http://127.0.0.1:8077/ || exit 1
 
 CMD [ "/run.sh" ]

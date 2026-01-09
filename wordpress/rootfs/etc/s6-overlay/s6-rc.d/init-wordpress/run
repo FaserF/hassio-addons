@@ -51,6 +51,42 @@ if bashio::config.equals 'wordpress_admin_password' 'changeme'; then
     bashio::exit.nok "You are using the insecure default admin password 'changeme'. Please change it!"
 fi
 
+# Ensure database exists and is accessible
+if bashio::services.available "mysql"; then
+    bashio::log.info "Checking database connection..."
+
+    local h p u pass
+    h=$(bashio::services "mysql" "host")
+    p=$(bashio::services "mysql" "port")
+    u=$(bashio::services "mysql" "username")
+    pass=$(bashio::services "mysql" "password")
+
+    # Use default port if not set
+    if bashio::var.is_empty "$p"; then p=3306; fi
+
+    # Export password for client commands
+    export MYSQL_PWD="$pass"
+
+    # Wait for loop
+    for i in {1..30}; do
+        if mariadb-admin ping -h "$h" -P "$p" -u "$u" --silent; then
+            break
+        fi
+        bashio::log.info "Waiting for database... $i/30"
+        sleep 2
+    done
+
+    # Create DB
+    bashio::log.info "Ensuring database '$DB_NAME' exists..."
+    if ! mariadb -h "$h" -P "$p" -u "$u" -e "USE \`$DB_NAME\`" 2>/dev/null; then
+         bashio::log.info "Database '$DB_NAME' not found. Creating..."
+         mariadb -h "$h" -P "$p" -u "$u" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`"
+         bashio::log.info "Database created."
+    fi
+
+    unset MYSQL_PWD
+fi
+
 # Check if Wordpress is installed
 if [ ! -d /var/www/wordpress/wp-admin ]; then
     bashio::log.info "Installing Wordpress..."

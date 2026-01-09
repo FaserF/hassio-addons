@@ -19,7 +19,7 @@ _show_startup_banner() {
 		DEV_COMMIT="${VERSION##*+}"
 	fi
 
-	# Header
+
 
 	# Status indicator
 	if [ "$UNSUPPORTED" = "true" ]; then

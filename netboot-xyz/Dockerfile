@@ -55,7 +55,7 @@ EXPOSE 3000
 RUN chmod a+x /etc/cont-init.d/* /etc/services.d/*/run
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=30s \
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
   CMD curl --fail http://127.0.0.1:3000 || exit 1
 
 # Labels
