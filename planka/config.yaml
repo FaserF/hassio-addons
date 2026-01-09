@@ -11,8 +11,8 @@ arch:
 map:
   - ssl
 ingress: true
-ingress_port: 3000
-init: false
+ingress_port: 1337
+
 panel_icon: mdi:kanban
 options:
   ssl: true
@@ -27,6 +27,6 @@ schema:
   log_level: list(error|warn|info|debug)
   secret_key: str?
 ports:
-  3000/tcp: 3000
+  1337/tcp: 1337
 ports_description:
-  3000/tcp: Web Interface
+  1337/tcp: Web Interface

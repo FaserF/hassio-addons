@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/env bashio
 # shellcheck shell=bash
 
 bashio::log.info "Configuring Tiny Tiny RSS..."
@@ -11,7 +11,9 @@ if ! bashio::fs.file_exists "/data/ttrss_db_password"; then
         openssl rand -base64 32 > /data/ttrss_db_password
     )
 fi
-TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
+if ! TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password) || [ -z "$TTRSS_DB_PASSWORD" ]; then
+    bashio::exit.nok "Failed to read database password from /data/ttrss_db_password"
+fi
 
 # Generate config.php
 bashio::log.info "Generating config.php..."
