@@ -201,6 +201,18 @@ jobs:
                 echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
                 sed -i '/^\s*image:/d' "$DEST_DIR/config.yaml"
               fi
+
+              # Remap common ports that might conflict in CI (Pterodactyl Wings)
+              if [ -f "$DEST_DIR/config.yaml" ]; then
+                 if grep -q "8080/tcp" "$DEST_DIR/config.yaml"; then
+                    echo "Remapping port 8080 to 8088 to avoid CI conflicts..."
+                    sed -i 's/8080/8088/g' "$DEST_DIR/config.yaml"
+                 fi
+                 if grep -q "2022" "$DEST_DIR/config.yaml"; then
+                    echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
+                    sed -i 's/2022/2028/g' "$DEST_DIR/config.yaml"
+                 fi
+              fi
             else
               echo "Warning: Add-on $addon not found"
             fi
@@ -485,6 +497,8 @@ jobs:
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                   echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
                   echo "$START_OUTPUT"
+                  echo "Dumping Supervisor Logs for 500 Error:"
+                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 || true
                   docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
                   RESULTS="$RESULTS\n⚠️ $addon: WARN (Start 500 error - likely CI issue)"
                   # Continue with status check even though start reported 500
