@@ -174,6 +174,7 @@ jobs:
           # Generate dummy Pterodactyl config to prevent startup hang in CI
           mkdir -p /tmp/ha-data/share/pterodactyl
           echo 'token: "example"' > /tmp/ha-data/share/pterodactyl/config.yml
+          chmod -R 777 /tmp/ha-data/share
 
           # Copy add-ons to local addons directory
           # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
@@ -472,8 +473,10 @@ jobs:
 
               # Start add-on
               echo "Starting $addon..."
+              set +e # Don't exit on error
               START_OUTPUT=$(timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
               START_EXIT=$?
+              set -e # Re-enable exit on error
 
               # Handle 500 errors as warnings instead of failures
               # Note: This is likely a CI container issue, but could also indicate real add-on start problems
