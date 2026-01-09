@@ -532,13 +532,14 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 			fi
 
 			# Insert user directly into database
-			RESULT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
+			RESULT=$(
+				mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
 ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
 SELECT ROW_COUNT();
 EOF
-)
+			)
 			unset MYSQL_PWD
 
 			if echo "$RESULT" | grep -q "ERROR"; then
@@ -715,13 +716,14 @@ if [ "$setup_user" = "true" ]; then
 		fi
 
 		# Insert user directly into database
-		RESULT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
+		RESULT=$(
+			mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
 ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
 SELECT ROW_COUNT();
 EOF
-)
+		)
 		unset MYSQL_PWD
 
 		if echo "$RESULT" | grep -q "ERROR"; then
