@@ -18,7 +18,6 @@ jobs:
     # Actor check and PR detection moved to steps for better reliability
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_repository.fork == false &&
       github.event.workflow_run.head_branch != 'master'
     steps:
       - name: ⤵️ Check out code
