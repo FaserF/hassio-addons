@@ -629,7 +629,7 @@ fi
 
 # Create default location and node if they don't exist
 # This is optional - errors are logged but don't stop the add-on
-if [ "$LOCATIONS_TABLE_EXISTS" != "0" ] && [ "$NODES_TABLE_EXISTS" != "0" ] && ([ "$LOCATION_COUNT" = "0" ] || [ "$NODE_COUNT" = "0" ]); then
+if [ "$LOCATIONS_TABLE_EXISTS" != "0" ] && [ "$NODES_TABLE_EXISTS" != "0" ] && { [ "$LOCATION_COUNT" = "0" ] || [ "$NODE_COUNT" = "0" ]; }; then
 	bashio::log.info "Location or Node count is 0, attempting to create default location and node for Wings (optional feature)..."
 
 	# Extract FQDN and scheme from APP_URL
@@ -676,16 +676,16 @@ if [ "$LOCATIONS_TABLE_EXISTS" != "0" ] && [ "$NODES_TABLE_EXISTS" != "0" ] && (
 
 	cat <<EOF >/tmp/setup_location_node.php
 <?php
+require __DIR__ . '/vendor/autoload.php';
+\$app = require __DIR__ . '/bootstrap/app.php';
+\$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+use Pterodactyl\Models\Location;
+use Pterodactyl\Models\Node;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
+
 try {
-    require __DIR__ . '/vendor/autoload.php';
-    \$app = require __DIR__ . '/bootstrap/app.php';
-    \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-    use Pterodactyl\Models\Location;
-    use Pterodactyl\Models\Node;
-    use Illuminate\Support\Str;
-    use Ramsey\Uuid\Uuid;
-
     // Create or get default location
     \$location = Location::firstOrCreate([
         'short' => 'default',
