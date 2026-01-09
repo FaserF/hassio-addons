@@ -4,11 +4,14 @@
 bashio::log.info "Configuring Tiny Tiny RSS..."
 
 # Retrieve DB Password
-if bashio::fs.file_exists "/data/ttrss_db_password"; then
-    TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
-else
-    bashio::exit.nok "Database password not found. Init failed."
+# Retrieve or Generate DB Password
+if ! bashio::fs.file_exists "/data/ttrss_db_password"; then
+    (
+        umask 077
+        openssl rand -base64 32 > /data/ttrss_db_password
+    )
 fi
+TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
 
 # Generate config.php
 bashio::log.info "Generating config.php..."

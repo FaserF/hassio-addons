@@ -6,11 +6,18 @@ until pg_isready -h localhost -U postgres; do
     sleep 1
 done
 
-# Generate password if not exists
-if ! bashio::fs.file_exists "/data/ttrss_db_password"; then
-    openssl rand -base64 32 > /data/ttrss_db_password
+# Generate or Read password?
+# Since init-tt-rss now runs first and generates it, we just read.
+if bashio::fs.file_exists "/data/ttrss_db_password"; then
+    TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
+else
+    # Fallback/Safety
+    (
+        umask 077
+        openssl rand -base64 32 > /data/ttrss_db_password
+    )
+    TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
 fi
-TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
 
 # Create TT-RSS database and user if they don't exist
 bashio::log.info "Ensuring TT-RSS database and user exist..."

@@ -7,8 +7,7 @@ arch:
   - aarch64
   - amd64
 startup: services
-init: true
-map: []
+
 options:
   self_url: ""
 schema:
