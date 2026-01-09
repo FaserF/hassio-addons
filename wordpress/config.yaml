@@ -19,10 +19,14 @@ options:
   wordpress_title: "My Blog"
   wordpress_admin_user: "admin"
   wordpress_admin_email: "admin@example.com"
+  wordpress_url: ""
+
 schema:
   wordpress_title: str
   wordpress_admin_user: str
   wordpress_admin_email: email
+  wordpress_url: str?
+
 ports:
   80/tcp: 8099
 ports_description:

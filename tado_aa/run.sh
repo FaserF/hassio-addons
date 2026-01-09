@@ -53,8 +53,6 @@ _show_startup_banner() {
         for ((i=${#ver2[@]}; i<${#ver1[@]}; i++)); do ver2[i]=0; done
 
         for ((i=0; i<${#ver1[@]}; i++)); do
-            # Handle non-numeric (e.g. dev versions) by treating as 0
-
             # Fallback for pure bash without regex substitution if needed, but lets assume simple numbers for stable check
             # Simple sanitization: remove anything not a digit
             n1=$(echo "${ver1[i]}" | tr -cd '0-9')
@@ -171,7 +169,6 @@ export TADO_USERNAME="${username}"
 export TADO_PASSWORD="${password}"
 export TADO_MIN_TEMP="${minTemp:-5}"
 export TADO_MAX_TEMP="${maxTemp:-25}"
-
 source /venv/bin/activate
 
 echo "Starting Tado Auto Assist python script from adrianslabu/tado_aa"

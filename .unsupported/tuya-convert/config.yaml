@@ -2,12 +2,12 @@ arch:
   - aarch64
   - amd64
 description: Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated)
-  (Unsupported)
+
 host_network: true
 init: false
 map:
   - share:rw
-name: tuya-convert BETA (Unsupported)
+name: tuya-convert BETA
 options:
   accept_eula: "false"
   backup_path: /share/tuya-convert/

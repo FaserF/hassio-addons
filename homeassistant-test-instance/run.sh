@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/with-contenv bashio
 # Home Assistant Test Instance - Startup Script
 # This wrapper ensures proper logging to the add-on log viewer
 

@@ -50,7 +50,9 @@ This release represents a significant effort to standardize and improve all addo
 
 ### 📌 Release Note
 
-- Manual release via Orchestrator## 1.7.2 (2026-01-03)
+- Manual release via Orchestrator
+
+## 1.7.2 (2026-01-03)
 
 - Bump version to 1.7.2
 

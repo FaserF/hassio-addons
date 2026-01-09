@@ -31,13 +31,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <style>
-        .addon-meta {{ display: flex; flex-direction: column; gap: 4px; font-size: 0.9em; margin: 10px 0; }}
-        .version-row {{ display: flex; justify-content: space-between; align-items: center; }}
-        .version-label {{ font-weight: bold; color: #8b949e; font-size: 0.8em; }}
-        .version-value {{ font-family: 'JetBrains Mono', monospace; }}
-        .version-date {{ font-size: 0.8em; color: #6e7681; margin-left: 4px; }}
-    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Fonts -->
 </head>
 <body>
 
@@ -61,6 +56,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <span>📦 Total Add-ons: <strong>{total_addons}</strong></span>
             <span>✅ Stable: <strong>{stable_count}</strong></span>
             <span>⚠️ Beta: <strong>{beta_count}</strong></span>
+            <span>🛡️ Unsupported: <strong>{unsupported_count}</strong></span>
         </div>
 
         <div class="addons-grid">
@@ -195,7 +191,7 @@ def get_git_info(path: Path) -> dict:
     except subprocess.CalledProcessError:
         pass
     except Exception as e:
-        print(f"Error fetching git info for {path}: {e}")
+        print(f"Error fetching git info for {path} ({type(e).__name__}): {e}")
 
     return info
 
@@ -251,7 +247,7 @@ def extract_metadata(
             ),
         }
     except Exception as e:
-        print(f"Error parsing {config_path}: {e}")
+        print(f"Error parsing {config_path} ({type(e).__name__}): {e}")
         return None
 
 
@@ -315,10 +311,15 @@ def main():
     total = len(addons)
     stable = sum(1 for a in addons if a["status_class"] == "stable")
     beta = sum(1 for a in addons if a["status_class"] == "beta")
+    unsupported = sum(1 for a in addons if a["status_class"] == "unsupported")
 
     # Final HTML
     final_html = HTML_TEMPLATE.format(
-        addons_grid=grid_html, total_addons=total, stable_count=stable, beta_count=beta
+        addons_grid=grid_html,
+        total_addons=total,
+        stable_count=stable,
+        beta_count=beta,
+        unsupported_count=unsupported
     )
 
     # Write output

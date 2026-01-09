@@ -29,22 +29,18 @@ fi
 # Ensure database exists and is accessible
 bashio::log.info "Checking database connection..."
 
-local h p u pass
-
 h="$DB_HOST"
 p="$DB_PORT"
-
-    u="$DB_USER"
-    pass="$DB_PASS"
+u="$DB_USER"
+pass="$DB_PASS"
 
     # Create temporary config file for secure authentication
-    local temp_config
     temp_config=$(mktemp)
+    install -m 600 /dev/null "$temp_config"
     cat > "$temp_config" <<EOF
 [client]
 password=$pass
 EOF
-    chmod 600 "$temp_config"
 
     # Wait for loop
     for i in {1..30}; do
@@ -76,7 +72,6 @@ EOF
 
     # Cleanup
     rm -f "$temp_config"
-fi
 
 # Check if Wordpress is installed
 if [ ! -d /var/www/wordpress/wp-admin ]; then
@@ -145,12 +140,17 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
     ADMIN_USER=$(bashio::config 'wordpress_admin_user')
     ADMIN_EMAIL=$(bashio::config 'wordpress_admin_email')
     TITLE=$(bashio::config 'wordpress_title')
+    WORDPRESS_URL=$(bashio::config 'wordpress_url')
+
+    if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
+        WORDPRESS_URL="http://localhost"
+    fi
 
     # Install Wordpress
     if wp core install \
         --allow-root \
         --path=/var/www/wordpress \
-        --url="http://localhost" \
+        --url="${WORDPRESS_URL}" \
         --title="${TITLE}" \
         --admin_user="${ADMIN_USER}" \
         --admin_password="${ADMIN_PASS}" \

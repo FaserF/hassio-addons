@@ -8,7 +8,7 @@
 
 ### 📌 Release Note
 
-- General addon structure improvements and startup bug fixes
+- General add-ons structure improvements and startup bug fixes
 
 ## 0.3.1 (2026-01-08)
 

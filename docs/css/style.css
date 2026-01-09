@@ -251,22 +251,34 @@ h1 {
 }
 
 .addon-meta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  color: #6e7681;
-  margin-bottom: 1.2rem;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85em;
+  margin: 10px 0;
+  color: var(--text-secondary);
 }
 
-.addon-meta::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--border-color);
+.version-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-label {
+  font-weight: bold;
+  color: #8b949e;
+  font-size: 0.8em;
+}
+
+.version-value {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.version-date {
+  font-size: 0.8em;
+  color: #6e7681;
+  margin-left: 4px;
 }
 
 .addon-footer {

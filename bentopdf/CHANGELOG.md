@@ -8,7 +8,7 @@
 
 ### 📌 Release Note
 
-- General addon structure improvements and startup bug fixes
+- General add-on structure improvements and startup bug fixes
 
 ## 0.1.0
 

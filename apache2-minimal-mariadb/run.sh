@@ -59,11 +59,9 @@ _show_startup_banner() {
         for ((i=${#ver2[@]}; i<${#ver1[@]}; i++)); do ver2[i]=0; done
 
         for ((i=0; i<${#ver1[@]}; i++)); do
-            # Handle non-numeric (e.g. dev versions) by treating as 0
-
-            # Simple sanitization: remove anything not a digit
-            n1=$(echo "${ver1[i]}" | tr -cd '0-9')
-            n2=$(echo "${ver2[i]}" | tr -cd '0-9')
+            # Simple sanitization: remove anything not a digit (Pure Bash)
+            local n1="${ver1[i]//[^0-9]/}"
+            local n2="${ver2[i]//[^0-9]/}"
 
             # Empty string -> 0
             [ -z "$n1" ] && n1=0
