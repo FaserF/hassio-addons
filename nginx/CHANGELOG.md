@@ -8,7 +8,10 @@
 
 ### 📌 Release Note
 
-- General add-on structure improvements and startup bug fixes
+- Dynamic version sourcing via `bashio::addon.version` for accurate runtime version display
+- Healthcheck timing adjustments for improved reliability
+- Startup script improvements and bug fixes
+- Auto-formatting applied (shfmt, prettier, markdownlint)
 
 ## 0.1.1 (2026-01-08)
 

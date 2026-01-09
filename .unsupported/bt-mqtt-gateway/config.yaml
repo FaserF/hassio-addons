@@ -1,7 +1,7 @@
 arch:
   - aarch64
   - amd64
-description: Bluetooth MQTT Gateway Server
+description: Unsupported - Bluetooth MQTT Gateway Server (no longer maintained)
 host_dbus: true
 host_network: true
 init: false

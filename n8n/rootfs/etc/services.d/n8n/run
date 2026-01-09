@@ -28,12 +28,16 @@ _show_startup_banner() {
     local DEV_COMMIT=""
     if [[ "$VERSION" == *"+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
+        DEV_COMMIT="${DEV_COMMIT:0:7}"
     fi
 
     # Status indicator
     if [ "$UNSUPPORTED" = "true" ]; then
         bashio::log.error "🚨 STATUS: UNSUPPORTED"
         bashio::log.error "   This addon is no longer maintained!"
+    elif [ "$VERSION" = "unknown" ]; then
+        bashio::log.warning "❓ STATUS: UNKNOWN"
+        bashio::log.warning "   Could not determine addon version."
     elif [[ "$VERSION" == *"-dev"* ]]; then
         bashio::log.warning "🚧 STATUS: DEVELOPMENT"
         bashio::log.warning "   This is a development build!"
@@ -223,7 +227,8 @@ fi
 
 # Set Log Level from config (with fallback)
 if bashio::config.has_value 'log_level'; then
-    export N8N_LOG_LEVEL=$(bashio::config 'log_level')
+    N8N_LOG_LEVEL="$(bashio::config 'log_level')"
+    export N8N_LOG_LEVEL
 else
     export N8N_LOG_LEVEL="info"
 fi

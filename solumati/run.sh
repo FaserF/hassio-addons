@@ -472,7 +472,6 @@ bashio::log.info "Solumati is now running!"
 bashio::log.info "Access via Home Assistant Ingress or http://homeassistant.local:8099"
 
 # Trap signals to stop processes correctly
-# Trap signals to stop processes correctly
 cleanup() {
     local exit_code=${1:-0}
 	bashio::log.info "Shutting down services..."
@@ -497,7 +496,6 @@ trap cleanup SIGTERM SIGHUP SIGINT
 # Wait for any process to exit
 wait -n $NGINX_PID $BACKEND_PID
 
-# Exit with error if a process died unexpectedly
 # Exit with error if a process died unexpectedly
 if ! kill -0 "$NGINX_PID" 2>/dev/null; then
     bashio::log.error "Nginx exited unexpectedly!"

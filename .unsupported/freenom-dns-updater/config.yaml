@@ -1,8 +1,7 @@
 arch:
   - aarch64
   - amd64
-description: Freenom Registrar Domain Management - update dns records, Manage (add/update/remove)
-  a domain's dns record, auto renew domains and more.
+description: Unsupported - Freenom Registrar Domain Management (Freenom service discontinued)
 
 init: false
 map:

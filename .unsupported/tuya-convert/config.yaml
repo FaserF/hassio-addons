@@ -1,7 +1,7 @@
 arch:
   - aarch64
   - amd64
-description: Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated)
+description: Unsupported - Tuya-Convert flash utility (Tuya patched vulnerability, no longer works)
 
 host_network: true
 init: false

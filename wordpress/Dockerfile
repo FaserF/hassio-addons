@@ -41,13 +41,14 @@ RUN \
     \
     && curl -J -L -o /tmp/wordpress.tar.gz \
         "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \
+    # SHA256 from https://wordpress.org/wordpress-6.8.tar.gz.sha256 (verified 2026-01)
     && echo "f7dbedc423ddb3f2f3e98e9140f1720bfd6d4a8f4873c85da2e62f6a078de10a  /tmp/wordpress.tar.gz" | sha256sum -c - \
     && mkdir -p /usr/src/wordpress \
     && tar zxvf /tmp/wordpress.tar.gz -C /usr/src/wordpress --strip-components=1 \
     && rm -f /tmp/wordpress.tar.gz \
     \
-    && curl -L -o /usr/local/bin/wp "https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-2.12.0.phar" \
-    && echo "78c4a45330e2518e38ee1347071f0b07b13e9a1843b4fddc30b2c24458525b5b  /usr/local/bin/wp" | sha256sum -c - \
+    && curl -L -o /usr/local/bin/wp "https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar" \
+    && echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  /usr/local/bin/wp" | sha256sum -c - \
     && chmod +x /usr/local/bin/wp \
     \
     # Cleanup

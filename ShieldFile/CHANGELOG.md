@@ -44,8 +44,8 @@ This release represents a significant effort to standardize and improve all add-
 
 ### 📋 Major Release - Changes
 
-- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the addons. (Manual)
-- **Unsupported Branch**: A new `unsupported` branch has been created for addons that no longer receive direct manual support. These addons are still maintained but may have limited support compared to the main addons. (Manual)
+- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the add-ons. (Manual)
+- **Unsupported Branch**: A new `unsupported` branch has been created for add-ons that no longer receive direct manual support. These add-ons are still maintained but may have limited support compared to the main add-ons. (Manual)
 - **Edge Branch (Beta)**: A new `edge` branch is now available for those who want to test the latest features and improvements before they are released to the stable channel. (Manual)
 
 ### 📌 Release Note

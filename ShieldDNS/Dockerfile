@@ -41,7 +41,7 @@ RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
-    CMD wget -q --spider http://localhost:8080/health || exit 1
+    CMD curl -fS http://localhost:8080/health || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"

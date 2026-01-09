@@ -29,22 +29,17 @@ fi
 # Ensure database exists and is accessible
 bashio::log.info "Checking database connection..."
 
-h="$DB_HOST"
-p="$DB_PORT"
-u="$DB_USER"
-pass="$DB_PASS"
-
     # Create temporary config file for secure authentication
     temp_config=$(mktemp)
     install -m 600 /dev/null "$temp_config"
     cat > "$temp_config" <<EOF
 [client]
-password=$pass
+password=$DB_PASS
 EOF
 
     # Wait for loop
     for i in {1..30}; do
-        if mariadb-admin --defaults-extra-file="$temp_config" ping -h "$h" -P "$p" -u "$u" --silent; then
+        if mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
             break
         fi
         bashio::log.info "Waiting for database... $i/30"
@@ -52,7 +47,7 @@ EOF
     done
 
     # Verify connection after loop
-    if ! mariadb-admin --defaults-extra-file="$temp_config" ping -h "$h" -P "$p" -u "$u" --silent; then
+    if ! mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
         bashio::log.error "Could not connect to database after retries!"
         rm -f "$temp_config"
         exit 1
@@ -60,9 +55,9 @@ EOF
 
     # Create DB
     bashio::log.info "Ensuring database '$DB_NAME' exists..."
-    if ! mariadb --defaults-extra-file="$temp_config" -h "$h" -P "$p" -u "$u" -e "USE \`$DB_NAME\`" 2>/dev/null; then
+    if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
          bashio::log.info "Database '$DB_NAME' not found. Creating..."
-         if ! mariadb --defaults-extra-file="$temp_config" -h "$h" -P "$p" -u "$u" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`"; then
+         if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`"; then
             bashio::log.error "Failed to create database '$DB_NAME'!"
             rm -f "$temp_config"
             exit 1
@@ -144,6 +139,23 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
 
     if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
         WORDPRESS_URL="http://localhost"
+    fi
+
+    # Validate required configuration
+    MISSING_CONFIGS=""
+    if [ -z "$ADMIN_USER" ] || [ "$ADMIN_USER" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_admin_user "
+    fi
+    if [ -z "$ADMIN_EMAIL" ] || [ "$ADMIN_EMAIL" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_admin_email "
+    fi
+    if [ -z "$TITLE" ] || [ "$TITLE" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_title "
+    fi
+    if [ -n "$MISSING_CONFIGS" ]; then
+        bashio::log.error "Missing required configuration: ${MISSING_CONFIGS}"
+        bashio::log.error "Please configure these options in the add-on settings."
+        exit 1
     fi
 
     # Install Wordpress

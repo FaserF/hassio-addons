@@ -17,7 +17,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+""*" ]]; then
+    if [[ "$VERSION" == *"+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -790,6 +790,7 @@ bashio::log.info "Access via Home Assistant Ingress"
 
 # Trap signals to stop processes correctly
 cleanup() {
+	local exit_code=${1:-0}
 	bashio::log.info "Shutting down services..."
 
 	# Stop Nginx gracefully
@@ -801,7 +802,7 @@ cleanup() {
 	wait $BACKEND_PID 2>/dev/null
 
 	bashio::log.info "All services stopped"
-	exit 0
+	exit "$exit_code"
 }
 
 trap cleanup SIGTERM SIGHUP SIGINT
@@ -810,5 +811,12 @@ trap cleanup SIGTERM SIGHUP SIGINT
 wait -n $NGINX_PID $BACKEND_PID
 
 # Exit with error if a process died unexpectedly
-bashio::log.error "One of the services exited. Stopping addon..."
-cleanup
+if ! kill -0 "$NGINX_PID" 2>/dev/null; then
+	bashio::log.error "Nginx exited unexpectedly!"
+elif ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+	bashio::log.error "Backend service exited unexpectedly!"
+else
+	bashio::log.error "One of the services exited unexpectedly!"
+fi
+bashio::log.error "Stopping addon..."
+cleanup 1

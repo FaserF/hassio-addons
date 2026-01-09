@@ -194,11 +194,9 @@ h1 {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(
-    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.03),
-    transparent 40%
-  );
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.03),
+      transparent 40%);
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -267,7 +265,7 @@ h1 {
 
 .version-label {
   font-weight: bold;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 0.8em;
 }
 
@@ -277,7 +275,8 @@ h1 {
 
 .version-date {
   font-size: 0.8em;
-  color: #6e7681;
+  color: var(--text-secondary);
+  opacity: 0.8;
   margin-left: 4px;
 }
 
