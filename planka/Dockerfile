@@ -12,9 +12,11 @@ RUN \
         nodejs \
         npm \
         python3 \
+        py3-pip \
         postgresql \
         postgresql-contrib \
         nginx \
+    # hadolint ignore=DL3013
     && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
@@ -33,7 +35,7 @@ COPY rootfs /
 # Set permissions
 RUN \
     chmod a+x /etc/s6-overlay/s6-rc.d/*/run \
-    && chmod a+x /etc/s6-overlay/s6-rc.d/*/*.sh 2>/dev/null || true
+    && { chmod a+x /etc/s6-overlay/s6-rc.d/*/*.sh 2>/dev/null || true; }
 
 # Labels
 LABEL \

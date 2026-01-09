@@ -6,34 +6,36 @@ FROM $BUILD_FROM
 RUN \
     apk add --no-cache \
         nginx=1.26.2-r4 \
-        php83=8.3.15-r0 \
-        php83-curl=8.3.15-r0 \
-        php83-dom=8.3.15-r0 \
-        php83-fileinfo=8.3.15-r0 \
-        php83-fpm=8.3.15-r0 \
-        php83-gd=8.3.15-r0 \
-        php83-iconv=8.3.15-r0 \
-        php83-intl=8.3.15-r0 \
-        php83-json=8.3.15-r0 \
-        php83-mbstring=8.3.15-r0 \
-        php83-mysqlnd=8.3.15-r0 \
-        php83-opcache=8.3.15-r0 \
-        php83-openssl=8.3.15-r0 \
-        php83-pdo=8.3.15-r0 \
-        php83-pdo_mysql=8.3.15-r0 \
-        php83-pdo_pgsql=8.3.15-r0 \
-        php83-pdo_sqlite=8.3.15-r0 \
+        postgresql \
+        postgresql-contrib \
+        php83=8.3.23-r0 \
+        php83-curl=8.3.23-r0 \
+        php83-dom=8.3.23-r0 \
+        php83-fileinfo=8.3.23-r0 \
+        php83-fpm=8.3.23-r0 \
+        php83-gd=8.3.23-r0 \
+        php83-iconv=8.3.23-r0 \
+        php83-intl=8.3.23-r0 \
+        php83-json=8.3.23-r0 \
+        php83-mbstring=8.3.23-r0 \
+        php83-mysqlnd=8.3.23-r0 \
+        php83-opcache=8.3.23-r0 \
+        php83-openssl=8.3.23-r0 \
+        php83-pdo=8.3.23-r0 \
+        php83-pdo_mysql=8.3.23-r0 \
+        php83-pdo_pgsql=8.3.23-r0 \
+        php83-pdo_sqlite=8.3.23-r0 \
         php83-pecl-apcu=5.1.24-r0 \
-        php83-pgsql=8.3.15-r0 \
-        php83-phar=8.3.15-r0 \
-        php83-posix=8.3.15-r0 \
-        php83-session=8.3.15-r0 \
-        php83-simplexml=8.3.15-r0 \
-        php83-sqlite3=8.3.15-r0 \
-        php83-tokenizer=8.3.15-r0 \
-        php83-xml=8.3.15-r0 \
-        php83-xmlwriter=8.3.15-r0 \
-        php83-zip=8.3.15-r0 \
+        php83-pgsql=8.3.23-r0 \
+        php83-phar=8.3.23-r0 \
+        php83-posix=8.3.23-r0 \
+        php83-session=8.3.23-r0 \
+        php83-simplexml=8.3.23-r0 \
+        php83-sqlite3=8.3.23-r0 \
+        php83-tokenizer=8.3.23-r0 \
+        php83-xml=8.3.23-r0 \
+        php83-xmlwriter=8.3.23-r0 \
+        php83-zip=8.3.23-r0 \
         git=2.47.1-r0 \
     \
     && ln -s /usr/bin/php83 /usr/bin/php \

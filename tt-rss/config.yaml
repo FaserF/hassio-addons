@@ -7,14 +7,15 @@ arch:
   - aarch64
   - amd64
 startup: services
-boot: auto
 init: false
 map:
-  - config:rw
-options: {}
-schema: {}
-ports:
-  80/tcp: 80
+  - homeassistant_config:rw
+options:
+  secret_key: ""
+  self_url: ""
+schema:
+  secret_key: str?
+  self_url: str?
 ingress: true
 ingress_port: 80
 panel_icon: mdi:rss

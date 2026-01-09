@@ -11,7 +11,7 @@ arch:
 map:
   - ssl
 ingress: true
-ingress_port: 0
+ingress_port: 3000
 init: false
 panel_icon: mdi:kanban
 options:

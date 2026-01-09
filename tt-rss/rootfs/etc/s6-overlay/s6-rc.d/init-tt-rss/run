@@ -3,10 +3,65 @@
 
 bashio::log.info "Configuring Tiny Tiny RSS..."
 
-# Configure Database
-# For now, we assume user provides DB details via config or external variables.
-# Ideally, we should support auto-discovery or simple SQLite for basic usage if possible,
-# but TT-RSS strongly recommends Postgres/MySQL.
+# Retrieve DB Password
+if bashio::fs.file_exists "/data/ttrss_db_password"; then
+    TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password)
+else
+    bashio::exit.nok "Database password not found. Init failed."
+fi
+
+# Generate config.php
+bashio::log.info "Generating config.php..."
+SELF_URL_PATH=$(bashio::addon.ingress_entry)
+# If self_url is set in options, use it, else default to ingress path
+CONFIG_SELF_URL=$(bashio::config 'self_url')
+if [ -z "$CONFIG_SELF_URL" ] || [ "$CONFIG_SELF_URL" = "null" ]; then
+    CONFIG_SELF_URL="${SELF_URL_PATH}/"
+fi
+
+cat > /var/www/tt-rss/config.php <<EOF
+<?php
+    putenv('TTRSS_DB_TYPE=pgsql');
+    putenv('TTRSS_DB_HOST=localhost');
+    putenv('TTRSS_DB_USER=ttrss');
+    putenv('TTRSS_DB_NAME=ttrss');
+    putenv('TTRSS_DB_PASS=${TTRSS_DB_PASSWORD}');
+    putenv('TTRSS_DB_PORT=5432');
+    putenv('TTRSS_SELF_URL_PATH=${CONFIG_SELF_URL}');
+    putenv('TTRSS_PHP_EXECUTABLE=/usr/bin/php');
+    putenv('TTRSS_SINGLE_USER_MODE=true');
+    putenv('TTRSS_SIMPLE_UPDATE_MODE=true');
+    // Ensure we handle reverse proxy headers if needed
+    // TTRSS uses HTTP_X_FORWARDED_PROTO etc automatically if configured?
+    // We might need TTRSS_ENABLE_GZIP...
+    // For now, minimal env injection via config.php wrapper.
+    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+    // Include default config? No, config.php replaces it usually or we define constants.
+    // TT-RSS usually expects config.php to define constants.
+    // However, docker-compose setups often use env vars.
+    // We can define constants here.
+    define('DB_TYPE', 'pgsql');
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'ttrss');
+    define('DB_NAME', 'ttrss');
+    define('DB_PASS', '${TTRSS_DB_PASSWORD}');
+    define('DB_PORT', '5432');
+    define('SELF_URL_PATH', '${CONFIG_SELF_URL}');
+    define('PHP_EXECUTABLE', '/usr/bin/php');
+    define('SINGLE_USER_MODE', true);
+    define('SIMPLE_UPDATE_MODE', true);
+    define('auth_internal', true);
+    // Allow plugins if needed
+    define('PLUGINS', 'auth_internal, note');
+    define('LOG_DESTINATION', '');
+    define('CHECK_FOR_UPDATES', false);
+    define('ENABLE_GZIP_OUTPUT', false);
+    define('SESSION_COOKIE_LIFETIME', 86400*30);
+    // Handle reverse proxy
+    if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+        \$_SERVER['HTTPS'] = 'on';
+    }
+EOF
 
 # Permission fix
 chown -R nginx:nginx /var/www/tt-rss

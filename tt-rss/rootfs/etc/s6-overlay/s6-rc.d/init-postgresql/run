@@ -15,7 +15,7 @@ if ! bashio::fs.directory_exists "${DATA_DIR}"; then
     {
         echo "host all all 127.0.0.1/32 md5"
         echo "host all all ::1/128 md5"
-        echo "local all all trust" # Allow local socket for maintenance without password if needed, or use md5
+        echo "local all all trust"
     } > "${DATA_DIR}/pg_hba.conf"
 
     chown postgres:postgres "${DATA_DIR}/pg_hba.conf"

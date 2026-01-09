@@ -9,7 +9,7 @@
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
 
-Tiny Tiny RSS is a free and open source web-based news feed (RSS/Atom) reader and aggregator.
+Tiny Tiny RSS is a free and open-source web-based news feed (RSS/Atom) reader and aggregator.
 
 ## About
 
