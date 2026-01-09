@@ -175,6 +175,21 @@ minTemp=$(bashio::config 'minTemp')
 maxTemp=$(bashio::config 'maxTemp')
 log_level=$(bashio::config 'log_level')
 
+# Validate credentials
+if [ -z "$username" ] || [ "$username" == "null" ] || [ -z "$password" ] || [ "$password" == "null" ]; then
+	bashio::log.error "=========================================="
+	bashio::log.error "❌ Missing Tado credentials!"
+	bashio::log.error "=========================================="
+	bashio::log.error "Please configure your Tado username and password in the add-on configuration."
+	bashio::log.error ""
+	bashio::log.error "Required configuration:"
+	bashio::log.error "  username: Your Tado email address"
+	bashio::log.error "  password: Your Tado password"
+	bashio::log.error ""
+	bashio::log.error "You can find these settings in the 'Configuration' tab of this add-on."
+	bashio::exit.nok
+fi
+
 export TADO_USERNAME="${username}"
 export TADO_PASSWORD="${password}"
 export TADO_MIN_TEMP="${minTemp:-5}"

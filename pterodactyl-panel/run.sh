@@ -316,13 +316,13 @@ fi
 chown nginx:nginx .env
 
 echo "[setup] Setting APP_URL..."
-# Use Ingress URL if available, otherwise use configured app_url
-if bashio::var.has_value "$(bashio::addon.ingress_url)"; then
-	APP_URL="$(bashio::addon.ingress_url)"
-	bashio::log.info "Using Ingress URL for APP_URL: $APP_URL"
-elif bashio::config.has_value 'app_url' && [ -n "$(bashio::config 'app_url')" ]; then
+# Use configured app_url if available, otherwise fall back to Ingress URL
+if bashio::config.has_value 'app_url' && [ -n "$(bashio::config 'app_url')" ]; then
 	APP_URL=$(bashio::config 'app_url')
 	bashio::log.info "Using configured APP_URL: $APP_URL"
+elif bashio::var.has_value "$(bashio::addon.ingress_url)"; then
+	APP_URL="$(bashio::addon.ingress_url)"
+	bashio::log.info "No app_url configured, using Ingress URL for APP_URL: $APP_URL"
 else
 	APP_URL="http://pterodactyl.local"
 	bashio::log.warning "No APP_URL configured and Ingress not available, using default: $APP_URL"

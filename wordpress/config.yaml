@@ -19,15 +19,23 @@ options:
   wordpress_title: "My Blog"
   wordpress_admin_user: "admin"
   wordpress_admin_email: "admin@example.com"
-  wordpress_url: ""
+  wordpress_url: "http://wordpress.local"
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
 
 schema:
   wordpress_title: str
   wordpress_admin_user: str
   wordpress_admin_email: email
   wordpress_url: str?
+  ssl: bool
+  certfile: str
+  keyfile: str
 
 ports:
   80/tcp: 8099
+  443/tcp: 8449
 ports_description:
-  80/tcp: Web Interface
+  80/tcp: Web Interface HTTP
+  443/tcp: Web Interface HTTPS

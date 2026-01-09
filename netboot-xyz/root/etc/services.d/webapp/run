@@ -11,8 +11,30 @@ addon_version=$(bashio::addon.version)
 cd /app
 # Use the ingress port (3000) - this addon uses ingress for the web interface
 export WEB_APP_PORT=$(bashio::addon.ingress_port)
+
+# Fallback to default port if ingress_port is not set
+if [ -z "$WEB_APP_PORT" ]; then
+    WEB_APP_PORT=3000
+    export WEB_APP_PORT
+fi
+
+# Kill any existing node processes that might be using the port
+# This prevents EADDRINUSE errors when the service restarts
+if command -v pgrep >/dev/null 2>&1 && pgrep -f "node.*app.js" >/dev/null 2>&1; then
+    bashio::log.warning "Found existing node app.js processes. Terminating them..."
+    if command -v pkill >/dev/null 2>&1; then
+        pkill -f "node.*app.js" 2>/dev/null || true
+    else
+        # Fallback: use ps and kill
+        ps aux | grep "[n]ode.*app.js" | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+    fi
+    sleep 2
+fi
+
 if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
     export SUBFOLDER=$(bashio::addon.ingress_entry)
 fi
+
+bashio::log.info "Starting webapp on port ${WEB_APP_PORT}..."
 exec \
 /usr/bin/node app.js

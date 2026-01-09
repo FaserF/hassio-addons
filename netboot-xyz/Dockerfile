@@ -27,6 +27,7 @@ RUN \
     dnsmasq \
     nginx \
     nodejs \
+    procps \
     tftp-hpa && \
   echo "**** install build packages ****" && \
   apk add --no-cache --virtual=build-dependencies \
