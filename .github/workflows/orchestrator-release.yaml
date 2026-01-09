@@ -681,9 +681,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # Use max-parallel: 1 to prevent race conditions when pushing to master
-      # Multiple parallel jobs can conflict when they each try to commit and push
-      max-parallel: 1
+      # Use max-parallel: 5 to allow concurrent releases
+      # Retry logic handles potential git race conditions
+      max-parallel: 5
       matrix:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
@@ -818,8 +818,6 @@ jobs:
 
           # Restore and reapply local changes
           if git stash list | grep -q "temp-stash-${{ matrix.addon }}"; then
-            echo "🔄 Restoring local changes for ${{ matrix.addon }}..."
-            # Find the stash entry
             STASH_ENTRY=$(git stash list | grep "temp-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
             if [ -n "$STASH_ENTRY" ]; then
               # Apply stash (don't pop, in case of conflicts)
@@ -844,62 +842,49 @@ jobs:
             echo "✅ Local changes preserved for ${{ matrix.addon }}"
           fi
 
-      - name: 🚀 Commit Changes
-        id: commit_changes
-        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
-        with:
-          commit_message: |
-            ${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}
-          file_pattern: "."
-          skip_fetch: true
-
-      - name: 🔄 Retry Commit with Pull (if failed)
-        if: failure() && steps.commit_changes.outcome == 'failure'
+      - name: 🚀 Commit & Push (with Retry)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          ADDON_FILES="."
+          MAX_RETRIES=5
+          DELAY=5
 
-          # Clean up any merge/rebase state
-          git merge --abort 2>/dev/null || true
-          git rebase --abort 2>/dev/null || true
+          for ((i=1; i<=MAX_RETRIES; i++)); do
+            echo "Attempt $i of $MAX_RETRIES..."
 
-          # Store local changes
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "📦 Stashing local changes for retry..."
-            git stash push -u -m "retry-stash-${{ matrix.addon }}" || echo "No changes to stash"
-          fi
+            # 1. Check status and Commit
+            if [ -n "$(git status --porcelain)" ]; then
+              git add .
+              COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}"
+              git commit -m "$COMMIT_MSG" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Commit failed or empty"
+            else
+              echo "Nothing to commit (or already committed)"
+            fi
 
-          # Fetch and reset to latest master
-          git fetch origin master
-          git reset --hard origin/master
+            # 2. Push
+            if git push origin master; then
+              echo "✅ Push successful!"
+              exit 0
+            fi
 
-          # Restore changes
-          if git stash list | grep -q "retry-stash-${{ matrix.addon }}"; then
-            STASH_ENTRY=$(git stash list | grep "retry-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
-            if [ -n "$STASH_ENTRY" ]; then
-              git stash apply "$STASH_ENTRY" || {
-                echo "⚠️ Conflict on retry, using our version..."
-                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
-                git add "$ADDON_FILES"
-                git stash drop "$STASH_ENTRY" 2>/dev/null || true
+            echo "⚠️ Push failed."
+            if [ $i -lt $MAX_RETRIES ]; then
+              # Random jitter
+              JITTER=$(( ( RANDOM % 10 )  + 5 ))
+              echo "Waiting ${JITTER}s before retry..."
+              sleep $JITTER
+
+              echo "🔄 Pulling latest changes (rebase)..."
+              git pull --rebase origin master || {
+                echo "Rebase failed, trying merge..."
+                git rebase --abort 2>/dev/null || true
+                git pull origin master --no-rebase || echo "Merge failed"
               }
             fi
-          fi
-
-          # Check if there are changes to commit
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
-            git add "$ADDON_FILES"
-            # Use rebase strategy to avoid merge commits
-            git pull --rebase origin master || {
-              echo "⚠️ Rebase failed, trying merge..."
-              git rebase --abort 2>/dev/null || true
-              git pull origin master --no-rebase || echo "Already up to date"
-            }
-            git commit -m "${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Nothing to commit"
-            git push origin master
-          fi
+          done
+          echo "❌ Failed to push after $MAX_RETRIES attempts"
+          exit 1
 
       - name: ℹ️ Get Add-on Info (Post-Bump)
         id: info_build
