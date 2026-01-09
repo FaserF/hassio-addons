@@ -46,33 +46,6 @@ wordpress_title: My Blog
 wordpress_url: http://wordpress.local
 ```
 
-### ⚠️ Important Limitations
-
-#### URL Configuration
-
-**Recommended**: Set `wordpress_url` to your **external/public domain** (e.g., `http://wp.fabiseitz.de` or `https://wp.fabiseitz.de`).
-
-**Why?**
-- WordPress uses the configured URL to generate asset URLs (CSS, JavaScript, images)
-- If you set an internal IP address, external visitors won't be able to load assets
-- The configured URL should match how most users will access your site
-
-#### Internal vs. External Access
-
-- **External Access** (via domain): ✅ Fully supported - all assets load correctly
-- **Internal Access** (via IP address): ⚠️ **Limited support**
-  - The site will load, but assets (CSS, JS, images) may not load correctly
-  - This is because WordPress generates asset URLs based on the configured `wordpress_url`
-  - If `wordpress_url` is set to a domain, but you access via IP, assets will try to load from the domain
-  - **Workaround**: Use the external domain even when accessing from your local network, or configure your router to resolve the domain to the internal IP
-
-#### Best Practice
-
-1. Set `wordpress_url` to your **external/public domain** (e.g., `https://wp.fabiseitz.de`)
-2. Access WordPress via the **same domain** (even from internal network)
-3. Configure your router/DNS to resolve the domain to your Home Assistant IP internally
-4. This ensures consistent behavior for all users
-
 ---
 
 ## 👨‍💻 Credits & License

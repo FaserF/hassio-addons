@@ -41,7 +41,7 @@ path_config: /media/netboot/config
 
 The iPXE binaries used by netboot.xyz are not signed by Microsoft, which means they will fail Secure Boot's signature verification.
 
-### If you see "signature verification failed" errors:
+### If you see "signature verification failed" errors
 
 1. Enter your computer's BIOS/UEFI settings (usually F2, F10, F12, or Del during boot)
 2. Navigate to the Security or Boot settings
