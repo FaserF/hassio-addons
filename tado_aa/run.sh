@@ -9,7 +9,10 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION=$(bashio::addon.version)
+    if ! VERSION=$(bashio::addon.version 2>/dev/null); then
+        VERSION="unknown"
+    fi
+    [ -z "$VERSION" ] && VERSION="unknown"
     local SLUG="tado_aa"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -18,7 +21,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+""*" ]]; then
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -54,8 +57,8 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Simple sanitization: remove anything not a digit (Pure Bash)
-            local n1="${ver1[i]//[^0-9]/}"
-            local n2="${ver2[i]//[^0-9]/}"
+            local n1="${ver1[i]//[!0-9]/}"
+            local n2="${ver2[i]//[!0-9]/}"
 
             # Empty string -> 0
             [ -z "$n1" ] && n1=0
@@ -149,7 +152,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi
 

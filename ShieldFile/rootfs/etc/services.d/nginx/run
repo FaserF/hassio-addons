@@ -8,8 +8,9 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION="$(bashio::addon.version)" || VERSION="unknown"
-    [ -z "$VERSION" ] && VERSION="unknown"
+    if ! VERSION="$(bashio::addon.version 2>/dev/null)" || [ -z "$VERSION" ]; then
+        VERSION="unknown"
+    fi
     local NAME="ShieldFile"
     local SLUG="shieldfile"
     local UNSUPPORTED="false"
@@ -19,7 +20,8 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+"* ]]; then
+    # Only extract commit for dev versions with build metadata (1.2.3-dev+abc123)
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -150,7 +152,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi
 

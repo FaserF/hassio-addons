@@ -24,7 +24,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+"* ]]; then
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -155,7 +155,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi
 

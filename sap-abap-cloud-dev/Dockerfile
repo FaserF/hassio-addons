@@ -15,7 +15,6 @@ ARG BUILD_DATE="unknown"
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install SAP dependencies
-# hadolint ignore=DL3008
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.0.1"

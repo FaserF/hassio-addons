@@ -2,6 +2,9 @@
 # shellcheck disable=SC1091
 # shellcheck shell=bash
 
+# Source bashio early for banner functions
+source /usr/lib/bashio/bashio.sh
+
 # <ADDON_BANNER_INJECTION>
 
 # ============================================================================
@@ -20,7 +23,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+"* ]]; then
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -152,7 +155,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi
 
@@ -449,10 +452,18 @@ if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
 	# Re-checking DOH_PORT emptiness just to be sure we don't bind empty port
 	if [ -n "${DOH_PORT}" ]; then
 		bashio::log.info "  Exposing DoH CoreDNS on Port: ${ACTUAL_COREDNS_PORT}"
+		# Add health endpoint if DoT is not configured (DoT already has one)
+		local DOH_HEALTH_CONFIG=""
+		if [ -z "${DOT_PORT}" ] || [ "${DOT_PORT}" = "null" ]; then
+			DOH_HEALTH_CONFIG="    health :8080 {
+        lameduck 5s
+    }"
+		fi
 		cat <<EOF >>${COREFILE_PATH}
 https://.:${ACTUAL_COREDNS_PORT} {
     tls ${FULL_CERT_PATH} ${FULL_KEY_PATH}
     forward . ${ACTIVE_DNS_SERVER}
+    ${DOH_HEALTH_CONFIG}
     $(echo -e "${DNS_LOG_CONFIG}")
 }
 EOF

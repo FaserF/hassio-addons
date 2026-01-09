@@ -20,7 +20,7 @@ if bashio::services.available "mysql"; then
         DB_PORT="3306"
     fi
 else
-    bashio::exit.nok "This add-on now requires the MariaDB add-on to be installed and available!"
+    bashio::exit.nok "The 'mysql' service is not available! Please install and start the MariaDB add-on."
 fi
 
 # Removed insecure password check as we now auto-generate it
@@ -31,11 +31,11 @@ bashio::log.info "Checking database connection..."
 
     # Create temporary config file for secure authentication
     temp_config=$(mktemp)
+    # Ensure cleanup on any exit
+    trap 'rm -f "$temp_config"' EXIT
     install -m 600 /dev/null "$temp_config"
-    cat > "$temp_config" <<EOF
-[client]
-password=$DB_PASS
-EOF
+    # Use printf for safe credential handling (avoids shell interpolation issues)
+    printf '[client]\npassword=%s\n' "$DB_PASS" > "$temp_config"
 
     # Wait for loop
     for i in {1..30}; do
@@ -49,7 +49,6 @@ EOF
     # Verify connection after loop
     if ! mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
         bashio::log.error "Could not connect to database after retries!"
-        rm -f "$temp_config"
         exit 1
     fi
 
@@ -57,7 +56,7 @@ EOF
     bashio::log.info "Ensuring database '$DB_NAME' exists..."
     if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
          bashio::log.info "Database '$DB_NAME' not found. Creating..."
-         if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`"; then
+         if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"; then
             bashio::log.error "Failed to create database '$DB_NAME'!"
             rm -f "$temp_config"
             exit 1
@@ -86,10 +85,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     # Database - use variables set during validation
     # Escape special characters for sed
     # We escape backslashes first, then the delimiter (|) and ampersands
-    db_host_escaped=$(echo "${DB_HOST_CONFIG}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_name_escaped=$(echo "${DB_NAME}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_user_escaped=$(echo "${DB_USER}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_pass_escaped=$(echo "${DB_PASS}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_host_escaped=$(printf '%s' "${DB_HOST_CONFIG}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_name_escaped=$(printf '%s' "${DB_NAME}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_user_escaped=$(printf '%s' "${DB_USER}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_pass_escaped=$(printf '%s' "${DB_PASS}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
 
     sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
     sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php

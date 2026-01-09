@@ -8,7 +8,7 @@
 
 ### 📌 Release Note
 
-- General addon structure improvements and startup bug fixes
+- Improved Docker healthchecks (start-period 120s, retries 5), dynamic version detection, and startup banner fixes
 
 ## 0.3.0 (2026-01-06)
 

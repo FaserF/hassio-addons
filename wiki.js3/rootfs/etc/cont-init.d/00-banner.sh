@@ -117,6 +117,6 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi

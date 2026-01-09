@@ -11,6 +11,7 @@ _show_startup_banner() {
         bashio::log.warning "Could not determine addon version"
     fi
     [ -z "$VERSION" ] && VERSION="unknown"
+    # shellcheck disable=SC2034
     local NAME="Switch LAN Play Server"
     local SLUG="switch-lan-play-server"
     local UNSUPPORTED="false"
@@ -20,7 +21,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+"* ]]; then
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -151,7 +152,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue &>/dev/null; then
     _show_startup_banner
 fi
 
@@ -164,13 +165,13 @@ set -e
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 
-echo "For more information or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
+bashio::log.info "For more information or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
 
-echo "Starting lan-play server - To Connect your switch with this server have a look at https://github.com/spacemeowx2/switch-lan-play#2-switch"
+bashio::log.info "Starting lan-play server - To Connect your switch with this server have a look at https://github.com/spacemeowx2/switch-lan-play#2-switch"
 cd switch-lan-play/server || exit
 if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 	exec npm start -- --simpleAuth "$username:$password"
 else
-	echo "No username and/or password was provided. Using no authentication to connect to this Server."
+	bashio::log.info "No username and/or password was provided. Using no authentication to connect to this Server."
 	exec npm start
 fi
