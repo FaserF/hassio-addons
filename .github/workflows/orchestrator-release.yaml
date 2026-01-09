@@ -74,6 +74,9 @@ env:
     switch_lan_play
     nginx
     wordpress
+    n8n
+    tado_aa
+    bash_script_executer
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge

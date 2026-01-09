@@ -168,7 +168,7 @@ fi
 
 
 # Enable strict mode
-set -euo pipefail
+set -eo pipefail
 
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
