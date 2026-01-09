@@ -49,7 +49,11 @@ def find_addons(repo_root: Path) -> list[dict]:
     for directory in dirs_to_check:
         for item in sorted(directory.iterdir()):
             # Exclude 'addons' to avoid processing the parent directory itself
-            if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "addons":
+            if (
+                item.is_dir()
+                and not item.name.startswith((".", "_"))
+                and item.name != "addons"
+            ):
                 config_path = item / "config.yaml"
                 if config_path.exists():
                     # Calculate relative path from repo_root

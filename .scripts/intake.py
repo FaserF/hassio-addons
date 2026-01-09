@@ -96,7 +96,9 @@ def detect_new_addons(fix=False):
                 f.write("\n".join(lines))
             print("✅ README.md updated.")
         else:
-            print("❌ Could not find Add-ons table in README.md. Please check the table format.")
+            print(
+                "❌ Could not find Add-ons table in README.md. Please check the table format."
+            )
 
     return new_addons
 
