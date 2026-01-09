@@ -277,6 +277,13 @@ else
     fi
 
     if [ -n "$WORDPRESS_URL" ] && [ "$WORDPRESS_URL" != "null" ]; then
+        # Ensure URL starts with http:// or https://
+        if [[ ! "$WORDPRESS_URL" =~ ^https?:// ]]; then
+            # If no protocol, add http://
+            WORDPRESS_URL="http://${WORDPRESS_URL}"
+            bashio::log.info "Added missing protocol to wordpress_url: ${WORDPRESS_URL}"
+        fi
+
         # Auto-append port to URL if SSL is enabled and no port is specified
         if bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == https://* ]]; then
             if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
@@ -300,10 +307,20 @@ else
         CURRENT_SITE_URL=$(wp option get siteurl --allow-root --path=/var/www/wordpress 2>/dev/null || echo "")
         CURRENT_HOME_URL=$(wp option get home --allow-root --path=/var/www/wordpress 2>/dev/null || echo "")
 
+        # Normalize current URLs (add protocol if missing)
+        if [ -n "$CURRENT_SITE_URL" ] && [[ ! "$CURRENT_SITE_URL" =~ ^https?:// ]]; then
+            CURRENT_SITE_URL="http://${CURRENT_SITE_URL}"
+        fi
+        if [ -n "$CURRENT_HOME_URL" ] && [[ ! "$CURRENT_HOME_URL" =~ ^https?:// ]]; then
+            CURRENT_HOME_URL="http://${CURRENT_HOME_URL}"
+        fi
+
         if [ "$CURRENT_SITE_URL" != "$WORDPRESS_URL" ] || [ "$CURRENT_HOME_URL" != "$WORDPRESS_URL" ]; then
             bashio::log.info "Updating WordPress URLs to: ${WORDPRESS_URL}"
             wp option update siteurl "${WORDPRESS_URL}" --allow-root --path=/var/www/wordpress 2>/dev/null || true
             wp option update home "${WORDPRESS_URL}" --allow-root --path=/var/www/wordpress 2>/dev/null || true
+        else
+            bashio::log.info "WordPress URLs are already correctly set to: ${WORDPRESS_URL}"
         fi
     fi
 fi
@@ -360,8 +377,23 @@ else
 	bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	bashio::log.info "WordPress is accessible via:"
 	bashio::log.info "  HTTP:  http://<your-home-assistant-ip>:8099"
+	bashio::log.info ""
+	bashio::log.info "Current WordPress URL: ${WORDPRESS_URL:-not set}"
 	bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 fi
+
+# Verify nginx configuration file exists
+if [ ! -f /etc/nginx/http.d/default.conf ]; then
+	bashio::log.error "Nginx configuration file not found at /etc/nginx/http.d/default.conf!"
+	bashio::log.error "This should have been created during initialization."
+	exit 1
+fi
+
+bashio::log.info "Nginx and PHP-FPM services will be started by s6-overlay."
+bashio::log.info "If you cannot access WordPress, check:"
+bashio::log.info "  1. Port 8099 (HTTP) or 8449 (HTTPS) is accessible"
+bashio::log.info "  2. WordPress URL is correctly set: ${WORDPRESS_URL:-not set}"
+bashio::log.info "  3. Nginx and PHP-FPM are running (check service logs)"
 
 # Warning if wordpress_url doesn't match SSL setting
 # Get wordpress_url if not already set

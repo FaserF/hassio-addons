@@ -15,7 +15,6 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="pterodactyl Panel Gameserver - BETA"
 	local SLUG="pterodactyl_panel"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -385,9 +384,30 @@ echo "[setup] Setup database credentials..."
 echo "MariaDB informations: ${host} ${port}"
 su-exec nginx php artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}" --no-interaction
 
-if [ "$setup_user" = "true" ]; then
+# Check if database tables exist by querying the users table
+echo "[setup] Checking if database tables exist..."
+export MYSQL_PWD="${password_mariadb}"
+TABLE_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'users';" 2>/dev/null | tail -n 1 || echo "0")
+unset MYSQL_PWD
+
+if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
+	bashio::log.warning "Database tables not found. Running migrations..."
 	echo "[setup] Migrating/Seeding database..."
 	su-exec nginx php artisan migrate --seed --no-interaction --force
+	if [ "$setup_user" != "true" ]; then
+		bashio::log.info "Database migrated. Creating default admin user..."
+		echo "[setup] Creating default user..."
+		su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
+		echo "For the first login use admin@example.com / admin as user and your database password to sign in."
+		echo "Please ensure to change these credentials as soon as possible."
+	fi
+elif [ "$setup_user" = "true" ]; then
+	echo "[setup] Migrating/Seeding database..."
+	su-exec nginx php artisan migrate --seed --no-interaction --force
+else
+	bashio::log.info "Database tables exist. Running migrations to ensure schema is up to date..."
+	# Run migrations without seed to ensure schema is up to date
+	su-exec nginx php artisan migrate --no-interaction --force || bashio::log.warning "Migration check failed, but continuing..."
 fi
 
 if [ ! -f /share/pterodactyl/config.yml ]; then

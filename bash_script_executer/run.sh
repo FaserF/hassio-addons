@@ -13,7 +13,6 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Bash Script Executer"
 	local SLUG="bashscriptexecuter"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

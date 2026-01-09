@@ -15,7 +15,6 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Apache2"
 	local SLUG="apache2"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

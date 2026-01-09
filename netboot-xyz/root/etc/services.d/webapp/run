@@ -77,8 +77,23 @@ if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
     export SUBFOLDER=$(bashio::addon.ingress_entry)
 fi
 
-bashio::log.info "Starting webapp on port ${WEB_APP_PORT}..."
+# Ensure the app listens on all interfaces (0.0.0.0) not just localhost
+# This is important when using host_network mode
+# The netboot.xyz webapp uses PORT environment variable and listens on 0.0.0.0 by default
+export PORT=${WEB_APP_PORT}
+
+# Verify app.js exists
+if [ ! -f /app/app.js ]; then
+	bashio::log.error "app.js not found in /app directory!"
+	bashio::log.error "The webapp may not have been installed correctly."
+	exit 1
+fi
+
+bashio::log.info "Starting webapp on port ${PORT} (listening on all interfaces)..."
+bashio::log.info "Web UI should be accessible at: http://<your-home-assistant-ip>:3002"
+bashio::log.info "Note: The app listens on port 3000 internally, which is mapped to port 3002 externally."
 
 # Use exec to replace the shell process with node
 # This ensures proper signal handling and process management
+# The app should listen on 0.0.0.0 by default, but we ensure PORT is set
 exec /usr/bin/node app.js
