@@ -1,0 +1,29 @@
+# Pterodactyl Wings Daemon Configuration Example
+# Place this file in: /share/pterodactyl/config.yml
+# If you use the Pterodactyl Panel add-on, this file is generated automatically.
+
+debug: false
+uuid: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+token_id: xxxxxxxxxxxxxxxxxx
+token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+api:
+  host: 0.0.0.0
+  port: 8080
+  ssl:
+    enabled: false
+    cert: ""
+    key: ""
+  upload_limit: 100
+
+system:
+  data: /var/lib/pterodactyl
+  sftp:
+    bind_port: 2022
+  disk_check_interval: 150
+  activity_send_interval: 60
+
+remote: https://panel.example.com
+
+# For security purposes, replace example.com with your actual Panel domain.
+# Replace the uuid, token_id, and token with values from your Panel's Node configuration.

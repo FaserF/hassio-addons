@@ -150,13 +150,26 @@ def categorize_commits(commits, repo_url):
 
     for commit in commits:
         msg = commit["message"]
-        msg_lower = msg.lower()
         full_hash = commit["full_hash"]
         short_hash = commit["short_hash"]
 
         # Skip merge commits and CI commits
         if msg_lower.startswith("merge ") or "[skip ci]" in msg_lower:
             continue
+
+        # Skip release commits for OTHER addons (e.g. release(n8n) in pterodactyl history)
+        # This can happen if file patterns were missing in previous commits
+        addon_name = os.path.basename(repo_url.rstrip("/")) # fallback
+        # Get addon name from the path passed to the script
+        match = re.search(r"release\(([^)]+)\)", msg_lower)
+        if match:
+            trigger_addon = match.group(1).lower()
+            # If we are in the bump_version script, we know which addon we are processing
+            # We skip if the release message mentions a different addon
+            target_addon = os.path.basename(os.getcwd()).lower()
+            # Note: bump_version.py is usually called with addon_path as arg
+            if trigger_addon != target_addon and trigger_addon != "all":
+                continue
 
         # Create clickable commit reference
         commit_link = f"[`{short_hash}`]({repo_url}/commit/{full_hash})"

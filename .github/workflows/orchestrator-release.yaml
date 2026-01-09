@@ -854,8 +854,8 @@ jobs:
             echo "Attempt $i of $MAX_RETRIES..."
 
             # 1. Check status and Commit
-            if [ -n "$(git status --porcelain)" ]; then
-              git add .
+            if [ -n "$(git status --porcelain "${{ matrix.addon }}")" ]; then
+              git add "${{ matrix.addon }}"
               COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}"
               git commit -m "$COMMIT_MSG" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Commit failed or empty"
             else

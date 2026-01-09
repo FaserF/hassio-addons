@@ -26,8 +26,10 @@ fi
 # Removed insecure password check as we now auto-generate it
 
 
-# Ensure database exists and is accessible
-bashio::log.info "Checking database connection..."
+    # Ensure database exists and is accessible
+    bashio::log.info "Checking database connection..."
+    bashio::log.info "Database Host: ${DB_HOST}"
+    bashio::log.info "Database Port: ${DB_PORT}"
 
     # Create temporary config file for secure authentication
     temp_config=$(mktemp)
@@ -39,24 +41,25 @@ bashio::log.info "Checking database connection..."
 
     # Wait for loop
     for i in {1..30}; do
-        if mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
+        if mariadb-admin --defaults-extra-file="$temp_config" ping --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
             break
         fi
         bashio::log.info "Waiting for database... $i/30"
         sleep 2
     done
 
-    # Verify connection after loop
-    if ! mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
+    # Verify connection after loop (removing --silent to see error on last failure)
+    if ! mariadb-admin --defaults-extra-file="$temp_config" ping --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER"; then
         bashio::log.error "Could not connect to database after retries!"
+        rm -f "$temp_config"
         exit 1
     fi
 
     # Create DB
     bashio::log.info "Ensuring database '$DB_NAME' exists..."
-    if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
+    if ! mariadb --defaults-extra-file="$temp_config" --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
          bashio::log.info "Database '$DB_NAME' not found. Creating..."
-         if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"; then
+         if ! mariadb --defaults-extra-file="$temp_config" --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"; then
             bashio::log.error "Failed to create database '$DB_NAME'!"
             rm -f "$temp_config"
             exit 1

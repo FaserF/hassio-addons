@@ -48,6 +48,10 @@ if ($DockerAvailable) {
                     # netboot-xyz requires full access for network boot services
                     Add-Result -Addon $a.Name -Check "AddonLinter" -Status "WARN" -Message "Allowed 'full_access' (User Required)"
                 }
+                elseif ($a.Name -eq "pterodactyl-wings" -and ($res -match "full_access" -or $res -match "host_network")) {
+                    # pterodactyl-wings requires host network and full access for game server ports
+                    Add-Result -Addon $a.Name -Check "AddonLinter" -Status "WARN" -Message "Allowed 'host_network/full_access' (Game Server Ports)"
+                }
                 else {
                     Add-Result -Addon $a.Name -Check "AddonLinter" -Status "FAIL" -Message $res
                 }

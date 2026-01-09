@@ -50,6 +50,32 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 config_file: /share/pterodactyl/config.yml
 ```
 
+### Example Configurations
+
+- **Add-on Configuration**: [examples/addon_config.yaml](examples/addon_config.yaml)
+- **Wings Daemon Configuration**: [examples/wings_config.yml](examples/wings_config.yml)
+
+---
+
+## 🌐 Host Network Mode
+
+This add-on uses `host_network: true` to allow game servers to dynamically bind to any port they require (e.g., 27015 for GMod, 27017 for MW3).
+
+### What if I disable `host_network`?
+
+If you rebuild this add-on without `host_network`, you must manually map **every port** your game servers need in `config.yaml`. For example:
+
+```yaml
+ports:
+  8080/tcp: 8080
+  2022/tcp: 2022
+  27015/udp: 27015
+  27015/tcp: 27015
+  # ... add every game port here
+```
+
+This is tedious and error-prone. **Using `host_network: true` is strongly recommended.**
+
 ---
 
 ## 👨‍💻 Credits & License

@@ -7,6 +7,11 @@
 [![Docker Image](https://img.shields.io/badge/docker-2.1.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-netboot-xyz)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
+## Example Configuration
+
+An example `menu.ipxe` configuration file can be found [here](examples/menu.ipxe).
+This file demonstrates how to configure custom boot entries for Windows 11, Linux Mint, and SystemRescue.
+
 > PXE-Server to deploy a OS inside your local network
 
 ---

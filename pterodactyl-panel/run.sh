@@ -174,8 +174,8 @@ set -e
 
 # Get Addon Version
 
-SSL_CERT=/ssl/$(bashio::config 'certfile')
-SSL_CERT_KEY=/ssl/$(bashio::config 'keyfile')
+export SSL_CERT=/ssl/$(bashio::config 'certfile')
+export SSL_CERT_KEY=/ssl/$(bashio::config 'keyfile')
 password_mariadb=$(bashio::config 'password')
 db=panel
 
@@ -305,6 +305,18 @@ fi
 # Ensure correct permissions on .env (again, just in case)
 chown nginx:nginx .env
 
+echo "[setup] Setting APP_URL..."
+APP_URL=$(bashio::config 'app_url')
+if [ -n "$APP_URL" ]; then
+	if grep -q "^APP_URL=" .env; then
+		sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env
+	else
+		echo "APP_URL=$APP_URL" >>.env
+	fi
+fi
+sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
+sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
+
 echo ""
 echo "[setup] Clearing cache/views..."
 
@@ -382,19 +394,14 @@ else
 	echo "[setup] Wings configuration already exists at /share/pterodactyl/config.yml"
 fi
 
-if [ ! -f /share/pterodactyl/nginx_default.conf ]; then
-	# Checks if SSL certificate and key exists, otherwise default to http traffic
-	if bashio::config.true 'ssl'; then
-		echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT},${SSL_CERT_KEY}."
-		envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
-			</etc/nginx/templates/https.conf >/etc/nginx/conf.d/default.conf
-	else
-		echo "[setup] Warning: SSL Certificate was not specified or doesn't exist, using HTTP."
-		cat /etc/nginx/templates/http.conf >/etc/nginx/conf.d/default.conf
-	fi
-	cp /etc/nginx/conf.d/default.conf /share/pterodactyl/nginx_default.conf
+# Checks if SSL certificate and key exists, otherwise default to http traffic
+if bashio::config.true 'ssl'; then
+    echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT} and ${SSL_CERT_KEY}."
+    envsubst '${SSL_CERT} ${SSL_CERT_KEY}' \
+        </etc/nginx/templates/https.conf >/etc/nginx/conf.d/default.conf
 else
-	cp /share/pterodactyl/nginx_default.conf /etc/nginx/conf.d/default.conf
+    echo "[setup] Warning: SSL Certificate was not specified or doesn't exist, using HTTP."
+    cat /etc/nginx/templates/http.conf >/etc/nginx/conf.d/default.conf
 fi
 
 if [ "$setup_user" = "true" ]; then
