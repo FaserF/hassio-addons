@@ -1,4 +1,4 @@
-#!/command/with-contenv bashio
+#!/usr/bin/env bashio
 
 # Set strict error handling
 set -o pipefail

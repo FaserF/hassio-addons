@@ -1,25 +1,2 @@
-#!/command/with-contenv bashio
-
-# Wait for PostgreSQL to be ready
-bashio::log.info "Waiting for PostgreSQL to be ready..."
-until pg_isready -h localhost -U postgres; do
-    sleep 1
-done
-
-# Create Planka database and user if they don't exist
-bashio::log.info "Ensuring Planka database and user exist..."
-psql -h localhost -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'planka'" | grep -q 1 || \
-    psql -h localhost -U postgres -c "CREATE DATABASE planka;"
-
-# Generate password if not exists
-if ! bashio::fs.file_exists "/data/planka_db_password"; then
-    openssl rand -base64 32 > /data/planka_db_password
-fi
-PLANKA_DB_PASSWORD=$(cat /data/planka_db_password)
-
-psql -h localhost -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = 'planka'" | grep -q 1 || \
-    psql -h localhost -U postgres -c "CREATE USER planka WITH PASSWORD '${PLANKA_DB_PASSWORD}';"
-
-psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE planka TO planka;"
-# Grant schema privileges if needed (public schema usually open)
-# Planka needs to create tables.
+#!/command/execlineb
+foreground { /etc/s6-overlay/s6-rc.d/init-planka/run }

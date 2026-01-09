@@ -2,4 +2,4 @@
 
 bashio::log.info "Starting PostgreSQL..."
 
-exec su-exec postgres postgres -D /data/database
+exec s6-setuidgid postgres postgres -D /data/database

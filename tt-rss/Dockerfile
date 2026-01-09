@@ -50,6 +50,12 @@ COPY rootfs /
 # Move custom PHP config to correct location for PHP 8.4
 RUN if [ -d /etc/php ]; then cp -r /etc/php/* /etc/php84/ && rm -rf /etc/php; fi
 
+# Set permissions
+RUN \
+    find /etc/s6-overlay/s6-rc.d -type f -name "*" -exec sed -i 's/\r$//' {} + \
+    && chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up \
+    && { chmod a+x /etc/s6-overlay/s6-rc.d/*/*.sh 2>/dev/null || true; }
+
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE

@@ -9,7 +9,7 @@ if ! bashio::fs.directory_exists "${DATA_DIR}"; then
     chown -R postgres:postgres "${DATA_DIR}"
     chmod 700 "${DATA_DIR}"
 
-    su-exec postgres initdb -D "${DATA_DIR}" || bashio::exit.nok "Failed to initialize database"
+    s6-setuidgid postgres initdb -D "${DATA_DIR}" || bashio::exit.nok "Failed to initialize database"
 
     # Configure pg_hba.conf for local access
     {
@@ -32,22 +32,22 @@ fi
 POSTGRES_PASSWORD=$(cat /data/postgres_password)
 
 # Start Postgres temporarily to set password
-if ! su-exec postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start; then
+if ! s6-setuidgid postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start; then
     bashio::exit.nok "Failed to start PostgreSQL for initialization"
 fi
 
 # Securely set password using PGPASSWORD to avoid log warnings or leaks
 export PGPASSWORD="${POSTGRES_PASSWORD}"
-if ! su-exec postgres psql -v ON_ERROR_STOP=1 --username=postgres -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';" > /dev/null; then
+if ! s6-setuidgid postgres psql -v ON_ERROR_STOP=1 --username=postgres -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';" > /dev/null; then
     bashio::log.error "Failed to set postgres superuser password"
     # Don't exit here to try to cleanup, or exit immediately?
     # Better to fail fast.
-    su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop
+    s6-setuidgid postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop
     bashio::exit.nok "Failed to set postgres superuser password"
 fi
 unset PGPASSWORD
 
 # Stop Postgres so s6 can manage it
-if ! su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop; then
+if ! s6-setuidgid postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop; then
     bashio::log.warning "Failed to stop temporary PostgreSQL instance"
 fi

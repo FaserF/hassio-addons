@@ -1,4 +1,4 @@
-#!/command/with-contenv bashio
+#!/usr/bin/env bashio
 
 bashio::log.info "Starting PostgreSQL..."
 exec su-exec postgres postgres -D /data/database
