@@ -31,8 +31,8 @@ schema:
   reset_database_confirm: bool?
   db_password: password?
 ports:
-  3000/tcp: 3001
+  3011/tcp: 3001
   3443/tcp: 3444
 ports_description:
-  3000/tcp: HTTP Entrance port
+  3011/tcp: HTTP Entrance port (internal port 3011, external port 3001)
   3443/tcp: HTTPS/SSL Entrance port

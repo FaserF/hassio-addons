@@ -1,4 +1,34 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+
+# Wait a moment for init to complete
+sleep 2
+
+# Verify nginx configuration file exists
+if [ ! -f /etc/nginx/http.d/default.conf ]; then
+	bashio::log.error "Nginx configuration file not found at /etc/nginx/http.d/default.conf!"
+	bashio::log.error "This should have been created during initialization."
+	exit 1
+fi
+
+# Test nginx configuration
+if ! nginx -t 2>&1; then
+	bashio::log.error "Nginx configuration test failed!"
+	bashio::log.error "Configuration file content:"
+	cat /etc/nginx/http.d/default.conf || true
+	exit 1
+fi
+
+# Check if port 80 is accessible
+if command -v ss >/dev/null 2>&1; then
+	if ss -tuln | grep -q ":80 "; then
+		bashio::log.warning "Port 80 is already in use!"
+		ss -tuln | grep ":80 " || true
+	fi
+fi
+
 bashio::log.info "Starting Nginx..."
+bashio::log.info "Nginx will listen on port 80 (mapped to external port 8099)"
+
+# Start nginx in foreground
 exec nginx -g "daemon off;"

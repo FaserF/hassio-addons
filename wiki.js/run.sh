@@ -273,7 +273,7 @@ mkdir -p /config
 # Generate configuration content once
 CONFIG_CONTENT=$(
 	cat <<EOF
-port: 3000
+port: 3010
 db:
   type: mariadb
   host: ${host}

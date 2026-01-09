@@ -384,15 +384,52 @@ echo "[setup] Setup database credentials..."
 echo "MariaDB informations: ${host} ${port}"
 su-exec nginx php artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}" --no-interaction
 
+# Disable SSL for database connection (MariaDB core addon doesn't support SSL)
+# Remove any SSL-related database configuration
+if grep -q "^DB_SSL_CA=" .env; then
+	sed -i "s|^DB_SSL_CA=.*|#DB_SSL_CA=|" .env
+	bashio::log.info "Disabled DB_SSL_CA"
+fi
+if grep -q "^DB_SSL_CERT=" .env; then
+	sed -i "s|^DB_SSL_CERT=.*|#DB_SSL_CERT=|" .env
+	bashio::log.info "Disabled DB_SSL_CERT"
+fi
+if grep -q "^DB_SSL_KEY=" .env; then
+	sed -i "s|^DB_SSL_KEY=.*|#DB_SSL_KEY=|" .env
+	bashio::log.info "Disabled DB_SSL_KEY"
+fi
+# Ensure SSL is explicitly disabled
+if ! grep -q "^DB_SSL=" .env; then
+	echo "DB_SSL=false" >>.env
+	bashio::log.info "Set DB_SSL=false to disable SSL for database connection"
+else
+	sed -i "s|^DB_SSL=.*|DB_SSL=false|" .env
+	bashio::log.info "Updated DB_SSL=false to disable SSL for database connection"
+fi
+
 # Check if database tables exist by querying the users table
 echo "[setup] Checking if database tables exist..."
 export MYSQL_PWD="${password_mariadb}"
 TABLE_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'users';" 2>/dev/null | tail -n 1 || echo "0")
 unset MYSQL_PWD
 
+# Clear config cache again after database SSL settings were updated
+su-exec nginx php artisan config:clear
+
+# The schema loader uses mysql command directly and requires SSL
+# We need to disable schema loading by removing or renaming the schema file
+# This is safe because migrations will create the tables anyway
+SCHEMA_FILE="database/schema/mysql-schema.sql"
+if [ -f "$SCHEMA_FILE" ]; then
+	bashio::log.info "Temporarily disabling schema loader to avoid SSL issues..."
+	mv "$SCHEMA_FILE" "${SCHEMA_FILE}.disabled" 2>/dev/null || true
+	bashio::log.info "Schema file disabled. Migrations will create tables from scratch."
+fi
+
 if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 	bashio::log.warning "Database tables not found. Running migrations..."
 	echo "[setup] Migrating/Seeding database..."
+	# Run migrations - schema loader is disabled, so SSL won't be an issue
 	su-exec nginx php artisan migrate --seed --no-interaction --force
 	if [ "$setup_user" != "true" ]; then
 		bashio::log.info "Database migrated. Creating default admin user..."
@@ -403,6 +440,7 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 	fi
 elif [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."
+	# Run migrations with explicit SSL disabled
 	su-exec nginx php artisan migrate --seed --no-interaction --force
 else
 	bashio::log.info "Database tables exist. Running migrations to ensure schema is up to date..."

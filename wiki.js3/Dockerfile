@@ -44,7 +44,7 @@ RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
-    CMD wget --spider -q http://127.0.0.1:3000/ || exit 1
+    CMD wget --spider -q http://127.0.0.1:3011/ || exit 1
 
 # Labels
 LABEL \

@@ -9,14 +9,12 @@ addon_version=$(bashio::addon.version)
 
 # Run App
 cd /app
-# Use the ingress port (3000) - this addon uses ingress for the web interface
-export WEB_APP_PORT=$(bashio::addon.ingress_port)
+# Use fixed port 3000 for host_network mode (cannot be changed)
+# This port must remain 3000 to avoid conflicts with other services
+WEB_APP_PORT=3000
+export WEB_APP_PORT
 
-# Fallback to default port if ingress_port is not set
-if [ -z "$WEB_APP_PORT" ]; then
-    WEB_APP_PORT=3000
-    export WEB_APP_PORT
-fi
+bashio::log.info "Using fixed port 3000 for webapp (required for host_network mode)"
 
 # Kill any existing node processes that might be using the port
 # This prevents EADDRINUSE errors when the service restarts

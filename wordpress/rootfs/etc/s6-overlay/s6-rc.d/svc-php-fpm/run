@@ -1,4 +1,17 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+
+# Wait a moment for init to complete
+sleep 1
+
+# Verify PHP-FPM configuration
+if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
+	bashio::log.error "PHP-FPM configuration file not found!"
+	exit 1
+fi
+
 bashio::log.info "Starting PHP-FPM..."
+bashio::log.info "PHP-FPM will listen on 127.0.0.1:9000"
+
+# Start PHP-FPM in foreground
 exec php-fpm84 -F

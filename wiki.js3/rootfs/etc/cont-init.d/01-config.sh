@@ -32,7 +32,7 @@ mkdir -p /config
 # Generate configuration content once
 CONFIG_CONTENT=$(
 	cat <<EOF
-port: 3000
+port: 3011
 db:
   type: postgres
   host: ${host}
