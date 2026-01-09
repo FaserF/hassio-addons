@@ -591,15 +591,46 @@ fi
 # Note: This is a "nice to have" feature - errors are logged but don't stop the add-on from starting
 bashio::log.info "Checking if default location and node need to be created..."
 
+# Wait a moment for database to be fully ready after migrations
+sleep 3
+
+# Initialize variables
+LOCATIONS_TABLE_EXISTS="0"
+NODES_TABLE_EXISTS="0"
+LOCATION_COUNT="0"
+NODE_COUNT="0"
+
+# Check if locations and nodes tables exist first
 export MYSQL_PWD="${password_mariadb}"
-LOCATION_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM locations;" 2>/dev/null | tail -n 1 || echo "0")
-NODE_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM nodes;" 2>/dev/null | tail -n 1 || echo "0")
-unset MYSQL_PWD
+
+# Test database connection first
+if ! mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT 1;" >/dev/null 2>&1; then
+	bashio::log.warning "⚠ Cannot connect to database. Skipping automatic location/node creation."
+	unset MYSQL_PWD
+else
+	LOCATIONS_TABLE_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'locations';" 2>/dev/null | tail -n 1 || echo "0")
+	NODES_TABLE_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'nodes';" 2>/dev/null | tail -n 1 || echo "0")
+
+	bashio::log.info "Table existence check: locations=${LOCATIONS_TABLE_EXISTS}, nodes=${NODES_TABLE_EXISTS}"
+
+	if [ "$LOCATIONS_TABLE_EXISTS" = "0" ] || [ "$NODES_TABLE_EXISTS" = "0" ]; then
+		bashio::log.warning "⚠ Locations or Nodes tables don't exist yet. Skipping automatic creation."
+		bashio::log.warning "This is normal on first start - tables will be created by migrations."
+		unset MYSQL_PWD
+	else
+		# Tables exist, check counts
+		LOCATION_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM locations;" 2>/dev/null | tail -n 1 || echo "0")
+		NODE_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM nodes;" 2>/dev/null | tail -n 1 || echo "0")
+		unset MYSQL_PWD
+
+		bashio::log.info "Current database state: Locations=${LOCATION_COUNT}, Nodes=${NODE_COUNT}"
+	fi
+fi
 
 # Create default location and node if they don't exist
 # This is optional - errors are logged but don't stop the add-on
-if [ "$LOCATION_COUNT" = "0" ] || [ "$NODE_COUNT" = "0" ]; then
-	bashio::log.info "Attempting to create default location and node for Wings (optional feature)..."
+if [ "$LOCATIONS_TABLE_EXISTS" != "0" ] && [ "$NODES_TABLE_EXISTS" != "0" ] && ([ "$LOCATION_COUNT" = "0" ] || [ "$NODE_COUNT" = "0" ]); then
+	bashio::log.info "Location or Node count is 0, attempting to create default location and node for Wings (optional feature)..."
 
 	# Extract FQDN and scheme from APP_URL
 	APP_URL_HOST="${APP_URL#http://}"
@@ -780,6 +811,7 @@ EOF
 	fi
 	rm -f /tmp/generate_config.php
 else
+	bashio::log.info "Location and Node already exist (Locations=${LOCATION_COUNT}, Nodes=${NODE_COUNT})"
 	bashio::log.info "Wings configuration already exists at /share/pterodactyl/config.yml"
 fi
 
