@@ -195,14 +195,6 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
 
-      - name: ⏱️ Wait 1 minute before auto-merge
-        if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
-        run: |
-          echo "Waiting 1 minute before enabling auto-merge..."
-          echo "To cancel: Add 'no-merge' label to the PR"
-          gh issue comment "${{ steps.find-pr.outputs.pr_number }}" --body "⏱️ **Auto-merge queueing...** Verification successful. Enabling auto-merge in 1 minute if no 'no-merge' label is present."
-          sleep 60
-
       - name: 🔍 Verify PR is still up-to-date and CI is passing
         id: verify-pr-status
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'

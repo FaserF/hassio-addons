@@ -10,7 +10,6 @@ arch:
 image: ghcr.io/faserf/hassio-addons-pterodactyl_panel-{arch}
 services:
   - mysql:need
-webui: "[PROTO:ssl]://[HOST]:[PORT:80]"
 map:
   - share:rw
   - ssl

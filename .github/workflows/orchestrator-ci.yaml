@@ -1165,7 +1165,7 @@ jobs:
                 // No CI ran - warn user
                 autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.\n> If this is unexpected, check for workflow configuration issues.";
             } else if (isMaintainer) {
-                autoMergeNote = "\n\n⏱️ **Auto-merge will be enabled in 1 minute** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
+                autoMergeNote = "\n\n🚀 **Auto-merge will be enabled** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
             }
 
             // Check for unresolved errors from previous runs

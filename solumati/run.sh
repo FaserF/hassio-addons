@@ -14,7 +14,8 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Solumati" # shellcheck disable=SC2034
+	# shellcheck disable=SC2034
+	local NAME="Solumati"
 	local SLUG="solumati"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
