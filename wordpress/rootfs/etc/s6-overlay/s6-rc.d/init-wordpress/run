@@ -171,6 +171,34 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
         bashio::exit.nok "The configuration 'wordpress_url' is missing! Please set your external URL (e.g. https://example.com) in the add-on configuration."
     fi
 
+    # Auto-append port to URL if SSL is enabled and no port is specified
+    # This ensures WordPress knows it's accessible via the mapped HTTPS port (8449)
+    if bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == https://* ]]; then
+        # Check if URL already contains a port
+        if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+            # Extract host part (remove protocol and path)
+            URL_HOST="${WORDPRESS_URL#https://}"
+            URL_HOST="${URL_HOST%%/*}"
+            URL_PATH="${WORDPRESS_URL#https://$URL_HOST}"
+
+            # Add port 8449 (mapped HTTPS port)
+            WORDPRESS_URL="https://${URL_HOST}:8449${URL_PATH}"
+            bashio::log.info "Auto-appended HTTPS port 8449 to wordpress_url: ${WORDPRESS_URL}"
+        fi
+    elif ! bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == http://* ]]; then
+        # Check if URL already contains a port
+        if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+            # Extract host part (remove protocol and path)
+            URL_HOST="${WORDPRESS_URL#http://}"
+            URL_HOST="${URL_HOST%%/*}"
+            URL_PATH="${WORDPRESS_URL#http://$URL_HOST}"
+
+            # Add port 8099 (mapped HTTP port)
+            WORDPRESS_URL="http://${URL_HOST}:8099${URL_PATH}"
+            bashio::log.info "Auto-appended HTTP port 8099 to wordpress_url: ${WORDPRESS_URL}"
+        fi
+    fi
+
     # Validate required configuration
     MISSING_CONFIGS=""
     if [ -z "$ADMIN_USER" ] || [ "$ADMIN_USER" == "null" ]; then
@@ -221,6 +249,63 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
     fi
 else
     bashio::log.info "Wordpress database already installed."
+
+    # Update WordPress URL if SSL setting changed or URL needs port update
+    # Always set WORDPRESS_URL to avoid "unbound variable" errors later
+    WORDPRESS_URL=$(bashio::config 'wordpress_url' || echo "")
+    if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
+        WORDPRESS_URL="http://wordpress.local"
+    fi
+
+    # Auto-append port to URL if SSL is enabled and no port is specified
+    if bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == https://* ]]; then
+        if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+            URL_HOST="${WORDPRESS_URL#https://}"
+            URL_HOST="${URL_HOST%%/*}"
+            URL_PATH="${WORDPRESS_URL#https://$URL_HOST}"
+            WORDPRESS_URL="https://${URL_HOST}:8449${URL_PATH}"
+            bashio::log.info "Auto-appended HTTPS port 8449 to wordpress_url: ${WORDPRESS_URL}"
+        fi
+    elif ! bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == http://* ]]; then
+        if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+            URL_HOST="${WORDPRESS_URL#http://}"
+            URL_HOST="${URL_HOST%%/*}"
+            URL_PATH="${WORDPRESS_URL#http://$URL_HOST}"
+            WORDPRESS_URL="http://${URL_HOST}:8099${URL_PATH}"
+            bashio::log.info "Auto-appended HTTP port 8099 to wordpress_url: ${WORDPRESS_URL}"
+        fi
+    fi
+
+    if [ -n "$WORDPRESS_URL" ] && [ "$WORDPRESS_URL" != "null" ]; then
+        # Auto-append port to URL if SSL is enabled and no port is specified
+        if bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == https://* ]]; then
+            if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+                URL_HOST="${WORDPRESS_URL#https://}"
+                URL_HOST="${URL_HOST%%/*}"
+                URL_PATH="${WORDPRESS_URL#https://$URL_HOST}"
+                WORDPRESS_URL="https://${URL_HOST}:8449${URL_PATH}"
+                bashio::log.info "Auto-appended HTTPS port 8449 to wordpress_url: ${WORDPRESS_URL}"
+            fi
+        elif ! bashio::config.true 'ssl' && [[ "$WORDPRESS_URL" == http://* ]]; then
+            if [[ ! "$WORDPRESS_URL" =~ :[0-9]+(/|$) ]]; then
+                URL_HOST="${WORDPRESS_URL#http://}"
+                URL_HOST="${URL_HOST%%/*}"
+                URL_PATH="${WORDPRESS_URL#http://$URL_HOST}"
+                WORDPRESS_URL="http://${URL_HOST}:8099${URL_PATH}"
+                bashio::log.info "Auto-appended HTTP port 8099 to wordpress_url: ${WORDPRESS_URL}"
+            fi
+        fi
+
+        # Update WordPress site URL and home URL
+        CURRENT_SITE_URL=$(wp option get siteurl --allow-root --path=/var/www/wordpress 2>/dev/null || echo "")
+        CURRENT_HOME_URL=$(wp option get home --allow-root --path=/var/www/wordpress 2>/dev/null || echo "")
+
+        if [ "$CURRENT_SITE_URL" != "$WORDPRESS_URL" ] || [ "$CURRENT_HOME_URL" != "$WORDPRESS_URL" ]; then
+            bashio::log.info "Updating WordPress URLs to: ${WORDPRESS_URL}"
+            wp option update siteurl "${WORDPRESS_URL}" --allow-root --path=/var/www/wordpress 2>/dev/null || true
+            wp option update home "${WORDPRESS_URL}" --allow-root --path=/var/www/wordpress 2>/dev/null || true
+        fi
+    fi
 fi
 
 # Configure nginx based on SSL settings
@@ -279,8 +364,15 @@ else
 fi
 
 # Warning if wordpress_url doesn't match SSL setting
-if bashio::config.true 'ssl' && [[ "${WORDPRESS_URL}" == http://* ]]; then
-	bashio::log.warning "SSL is enabled, but wordpress_url starts with http://. Consider changing it to https://."
-elif ! bashio::config.true 'ssl' && [[ "${WORDPRESS_URL}" == https://* ]]; then
-	bashio::log.warning "SSL is disabled, but wordpress_url starts with https://. Consider changing it to http://."
+# Get wordpress_url if not already set
+if [ -z "${WORDPRESS_URL:-}" ]; then
+	WORDPRESS_URL=$(bashio::config 'wordpress_url' || echo "")
+fi
+
+if [ -n "${WORDPRESS_URL}" ] && [ "${WORDPRESS_URL}" != "null" ]; then
+	if bashio::config.true 'ssl' && [[ "${WORDPRESS_URL}" == http://* ]]; then
+		bashio::log.warning "SSL is enabled, but wordpress_url starts with http://. Consider changing it to https://."
+	elif ! bashio::config.true 'ssl' && [[ "${WORDPRESS_URL}" == https://* ]]; then
+		bashio::log.warning "SSL is disabled, but wordpress_url starts with https://. Consider changing it to http://."
+	fi
 fi

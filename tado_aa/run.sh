@@ -190,13 +190,27 @@ if [ -z "$username" ] || [ "$username" == "null" ] || [ -z "$password" ] || [ "$
 	bashio::exit.nok
 fi
 
+# Check if old/invalid token file exists and warn user
+if [ -f /data/refresh_token ]; then
+	bashio::log.warning "Found existing refresh token file."
+	bashio::log.warning "If you're experiencing login issues, try deleting /data/refresh_token"
+	bashio::log.warning "and restarting the add-on to force a fresh login."
+fi
+
 export TADO_USERNAME="${username}"
 export TADO_PASSWORD="${password}"
 export TADO_MIN_TEMP="${minTemp:-5}"
 export TADO_MAX_TEMP="${maxTemp:-25}"
 source /venv/bin/activate
 
-echo "Starting Tado Auto Assist python script from adrianslabu/tado_aa"
+bashio::log.info "Starting Tado Auto Assist python script from adrianslabu/tado_aa"
+bashio::log.info "Using username: ${username}"
+bashio::log.info "If login fails, please verify:"
+bashio::log.info "  1. Your Tado email address is correct"
+bashio::log.info "  2. Your Tado password is correct"
+bashio::log.info "  3. Your Tado account is active and not locked"
+bashio::log.info "  4. If the error persists, delete /data/refresh_token and restart"
+
 if [ "$log_level" != "minimal" ]; then
 	exec python3 -u /tado_aa.py
 else

@@ -341,12 +341,37 @@ if [[ "$APP_URL" == https://* ]]; then
 	if ! grep -q "^SESSION_SECURE_COOKIE=" .env; then
 		echo "SESSION_SECURE_COOKIE=true" >>.env
 	fi
-	# Ensure trusted proxies are configured (Laravel will trust all proxies by default in production)
-	# This is handled by Pterodactyl's TrustProxies middleware
+fi
+
+# Configure trusted proxies for reverse proxy/ingress setup
+# Pterodactyl needs to trust the proxy headers when behind Home Assistant Ingress
+if ! grep -q "^TRUSTED_PROXIES=" .env; then
+	echo "TRUSTED_PROXIES=*" >>.env
+	bashio::log.info "Configured TRUSTED_PROXIES=* for reverse proxy support"
+fi
+
+# Ensure session domain is not set (let Laravel use default)
+# This helps with cookie issues behind reverse proxies
+if grep -q "^SESSION_DOMAIN=" .env; then
+	sed -i "s|^SESSION_DOMAIN=.*|#SESSION_DOMAIN=|" .env
+	bashio::log.info "Removed SESSION_DOMAIN to allow Laravel to handle it automatically"
+fi
+
+# Ensure session driver is set to file (default, but make sure it's set)
+if ! grep -q "^SESSION_DRIVER=" .env; then
+	echo "SESSION_DRIVER=file" >>.env
+	bashio::log.info "Set SESSION_DRIVER=file"
 fi
 
 sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
-sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
+# Temporarily enable debug to see detailed error messages (can be disabled later)
+if ! grep -q "^APP_DEBUG=" .env; then
+	echo "APP_DEBUG=true" >>.env
+	bashio::log.warning "APP_DEBUG enabled for troubleshooting. Disable in production after fixing issues."
+else
+	sed -i "s|^APP_DEBUG=.*|APP_DEBUG=true|" .env
+	bashio::log.warning "APP_DEBUG enabled for troubleshooting. Disable in production after fixing issues."
+fi
 
 echo ""
 echo "[setup] Clearing cache/views..."

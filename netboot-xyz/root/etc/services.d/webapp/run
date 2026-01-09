@@ -20,21 +20,65 @@ fi
 
 # Kill any existing node processes that might be using the port
 # This prevents EADDRINUSE errors when the service restarts
+bashio::log.info "Checking for existing processes on port ${WEB_APP_PORT}..."
+
+# Function to check if port is in use
+check_port() {
+    local port=$1
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -i ":${port}" >/dev/null 2>&1
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -tuln | grep -q ":${port} " >/dev/null 2>&1
+    elif command -v ss >/dev/null 2>&1; then
+        ss -tuln | grep -q ":${port} " >/dev/null 2>&1
+    else
+        # Fallback: check for node processes
+        pgrep -f "node.*app.js" >/dev/null 2>&1
+    fi
+}
+
+# Kill node processes
 if command -v pgrep >/dev/null 2>&1 && pgrep -f "node.*app.js" >/dev/null 2>&1; then
     bashio::log.warning "Found existing node app.js processes. Terminating them..."
     if command -v pkill >/dev/null 2>&1; then
-        pkill -f "node.*app.js" 2>/dev/null || true
+        pkill -9 -f "node.*app.js" 2>/dev/null || true
     else
         # Fallback: use ps and kill
         ps aux | grep "[n]ode.*app.js" | awk '{print $2}' | xargs kill -9 2>/dev/null || true
     fi
-    sleep 2
+    sleep 1
 fi
+
+# Wait for port to be free (max 10 seconds)
+max_wait=10
+wait_count=0
+while check_port "${WEB_APP_PORT}" && [ $wait_count -lt $max_wait ]; do
+    bashio::log.warning "Port ${WEB_APP_PORT} is still in use, waiting... ($wait_count/$max_wait)"
+    sleep 1
+    wait_count=$((wait_count + 1))
+
+    # Try to kill processes using the port
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -ti ":${WEB_APP_PORT}" | xargs kill -9 2>/dev/null || true
+    elif command -v fuser >/dev/null 2>&1; then
+        fuser -k "${WEB_APP_PORT}/tcp" 2>/dev/null || true
+    fi
+done
+
+if check_port "${WEB_APP_PORT}"; then
+    bashio::log.error "Port ${WEB_APP_PORT} is still in use after ${max_wait} seconds!"
+    bashio::log.error "Please check what process is using this port and stop it manually."
+    exit 1
+fi
+
+bashio::log.info "Port ${WEB_APP_PORT} is free, proceeding with startup..."
 
 if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
     export SUBFOLDER=$(bashio::addon.ingress_entry)
 fi
 
 bashio::log.info "Starting webapp on port ${WEB_APP_PORT}..."
-exec \
-/usr/bin/node app.js
+
+# Use exec to replace the shell process with node
+# This ensures proper signal handling and process management
+exec /usr/bin/node app.js
