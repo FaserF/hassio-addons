@@ -66,7 +66,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)                                                            | ❌     | 2023-05 |
 | **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing                                                            | ⚠️     | 2026-01 |
 | **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)                                                             | ❌     | 2023-05 |
-| **[N8n](addons/n8n)**                                           | Workflow automation tool for Home Assistant                                                  | ⚠️     | 2026-01 |
+| **[N8n](n8n)**                                           | Workflow automation tool for Home Assistant                                                  | ⚠️     | 2026-01 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                                                                          | ✅     | 2023-05 |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator                                                            | ✅     | 2023-05 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                                                                      | ⚠️     | 2023-05 |
@@ -84,7 +84,6 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                                                                            | ⚠️     | 2026-01 |
 | **[Wordpress](wordpress)**                                      | The most popular publication platform                                                        | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)                                                       | ❌     | 2023-05 |
-| [N8n](n8n)                                                      | Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation. |
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
@@ -124,7 +123,7 @@ To install them, you must add this repository again but point to the `unsupporte
 > They are provided "as-is" for archival purposes.
 > Updates are rare, and functionality is not guaranteed.
 > **These builds are performed locally on your device.**
-
+<!-- separator -->
 > [!WARNING]
 > Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
 
