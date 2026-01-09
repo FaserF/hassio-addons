@@ -10,7 +10,6 @@ ENV ADDON_NAME="OpenSSL"
 ENV ADDON_SLUG="openssl"
 ENV ADDON_UNSUPPORTED="false"
 
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.1.1"
 ENV ADDON_NAME="OpenSSL"

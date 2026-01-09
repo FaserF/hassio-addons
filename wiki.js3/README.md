@@ -71,6 +71,8 @@ certfile: fullchain.pem
 db_password: wikijs
 keyfile: privkey.pem
 log_level: info
+reset_database: false
+reset_database_confirm: false
 ssl: true
 ```
 

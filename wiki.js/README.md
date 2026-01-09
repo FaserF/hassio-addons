@@ -56,6 +56,8 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
+reset_database: false
+reset_database_confirm: false
 ssl: true
 ```
 
