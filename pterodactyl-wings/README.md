@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_pterodactyl-wings)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![Docker Image](https://img.shields.io/badge/docker-2.1.3-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-pterodactyl_wings)
+[![Docker Image](https://img.shields.io/badge/docker-2.1.4-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-pterodactyl_wings)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Open Source Gameserver
@@ -49,32 +49,6 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 config_file: /share/pterodactyl/config.yml
 ```
-
-### Example Configurations
-
-- **Add-on Configuration**: [examples/addon_config.yaml](examples/addon_config.yaml)
-- **Wings Daemon Configuration**: [examples/wings_config.yml](examples/wings_config.yml)
-
----
-
-## 🌐 Host Network Mode
-
-This add-on uses `host_network: true` to allow game servers to dynamically bind to any port they require (e.g., 27015 for GMod, 27017 for MW3).
-
-### What if I disable `host_network`?
-
-If you rebuild this add-on without `host_network`, you must manually map **every port** your game servers need in `config.yaml`. For example:
-
-```yaml
-ports:
-  8080/tcp: 8080
-  2022/tcp: 2022
-  27015/udp: 27015
-  27015/tcp: 27015
-  # ... add every game port here
-```
-
-This is tedious and error-prone. **Using `host_network: true` is strongly recommended.**
 
 ---
 

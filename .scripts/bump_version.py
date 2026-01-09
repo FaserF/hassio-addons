@@ -159,7 +159,7 @@ def categorize_commits(commits, repo_url):
 
         # Skip release commits for OTHER addons (e.g. release(n8n) in pterodactyl history)
         # This can happen if file patterns were missing in previous commits
-        addon_name = os.path.basename(repo_url.rstrip("/")) # fallback
+        addon_name = os.path.basename(repo_url.rstrip("/"))  # fallback
         # Get addon name from the path passed to the script
         match = re.search(r"release\(([^)]+)\)", msg_lower)
         if match:

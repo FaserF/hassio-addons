@@ -16,7 +16,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install SAP dependencies
 
-
 # hadolint ignore=DL3008
 # DL3008 ignored: We intentionally don't pin package versions to ensure
 # security updates are applied when the image is rebuilt. Reproducibility is less
