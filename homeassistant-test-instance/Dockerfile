@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2025.12.5
+ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2026.1.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
