@@ -101,8 +101,82 @@ if ! nginx -t; then
 	exit 1
 fi
 
-# Start nginx in foreground (for s6-overlay)
-# This will replace the shell process, so no code after this will execute
+# Start nginx in background first to verify it starts successfully
 bashio::log.info "Starting Nginx process (foreground mode)..."
-bashio::log.info "Nginx is now running. Access WordPress at http://<your-home-assistant-ip>:8099"
+nginx -g "daemon on;" || {
+	bashio::log.error "Failed to start Nginx!"
+	exit 1
+}
+
+# Wait a moment for nginx to start
+sleep 2
+
+# Verify nginx is actually running and listening
+if ! pgrep -f "nginx: master process" >/dev/null 2>&1; then
+	bashio::log.error "Nginx process not found after startup!"
+	exit 1
+fi
+
+# Check if nginx is listening on port 80
+if command -v ss >/dev/null 2>&1; then
+	if ss -tuln | grep -q ":80 "; then
+		bashio::log.info "✓ Nginx is listening on port 80"
+		# Show what's listening
+		ss -tuln | grep ":80 " || true
+	else
+		bashio::log.error "✗ Nginx is NOT listening on port 80!"
+		bashio::log.error "Port status:"
+		ss -tuln | grep ":80 " || bashio::log.error "No process found on port 80"
+		# Try to get nginx error log
+		if [ -f /var/log/nginx/error.log ]; then
+			bashio::log.error "Last 10 lines of nginx error log:"
+			tail -10 /var/log/nginx/error.log || true
+		fi
+		exit 1
+	fi
+elif command -v netstat >/dev/null 2>&1; then
+	if netstat -tuln | grep -q ":80 "; then
+		bashio::log.info "✓ Nginx is listening on port 80"
+	else
+		bashio::log.error "✗ Nginx is NOT listening on port 80!"
+		exit 1
+	fi
+fi
+
+# Test if nginx responds to requests
+bashio::log.info "Testing nginx response..."
+if command -v curl >/dev/null 2>&1; then
+	RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:80/ 2>/dev/null || echo "000")
+	if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "302" ] || [ "$RESPONSE" = "301" ]; then
+		bashio::log.info "✓ Nginx responds to requests (HTTP $RESPONSE)"
+	else
+		bashio::log.warning "⚠ Nginx responded with HTTP $RESPONSE (expected 200/302/301)"
+	fi
+fi
+
+# Check PHP-FPM connectivity
+bashio::log.info "Testing PHP-FPM connectivity..."
+if command -v nc >/dev/null 2>&1; then
+	if nc -z 127.0.0.1 9000 2>/dev/null; then
+		bashio::log.info "✓ PHP-FPM is reachable on 127.0.0.1:9000"
+	else
+		bashio::log.warning "⚠ PHP-FPM is not reachable on 127.0.0.1:9000"
+	fi
+fi
+
+# Show final status
+bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+bashio::log.info "Nginx Status:"
+bashio::log.info "  ✓ Process: Running"
+bashio::log.info "  ✓ Listening: Port 80 (external: 8099)"
+bashio::log.info "  ✓ Document Root: /var/www/wordpress"
+bashio::log.info ""
+bashio::log.info "Access WordPress at: http://<your-home-assistant-ip>:8099"
+bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Restart nginx in foreground mode for proper signal handling
+nginx -s stop 2>/dev/null || true
+sleep 1
+
+# Start nginx in foreground (for s6-overlay)
 exec nginx -g "daemon off;"

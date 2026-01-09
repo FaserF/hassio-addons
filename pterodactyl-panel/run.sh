@@ -453,30 +453,12 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 	bashio::log.warning "Database tables not found. Running migrations..."
 	echo "[setup] Migrating/Seeding database..."
 
-	# Run first migration to create migrations table, then check and mark problematic migration
-	# Run migrations in steps: first create migrations table, then mark problematic one, then continue
-	su-exec nginx php artisan migrate:status --no-interaction 2>/dev/null || {
-		# If migrations table doesn't exist, run first migration to create it
-		bashio::log.info "Creating migrations table..."
-		su-exec nginx php artisan migrate --step --no-interaction --force 2>/dev/null || true
-	}
-
-	# Now check and mark problematic migration if needed (migrations table should exist now)
-	export MYSQL_PWD="${password_mariadb}"
-	MIGRATIONS_TABLE_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'migrations';" 2>/dev/null | tail -n 1 || echo "0")
-	if [ "$MIGRATIONS_TABLE_EXISTS" != "0" ]; then
-		DAEMON_SECRET_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemonSecret';" 2>/dev/null | tail -n 1 || echo "0")
-		MIGRATION_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM migrations WHERE migration = '2020_04_10_141024_store_node_tokens_as_encrypted_value';" 2>/dev/null | tail -n 1 || echo "0")
-
-		if [ "$DAEMON_SECRET_EXISTS" = "0" ] && [ "$MIGRATION_EXISTS" = "0" ]; then
-			bashio::log.info "Marking problematic migration as completed before running remaining migrations..."
-			MAX_BATCH=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COALESCE(MAX(batch), 0) FROM migrations;" 2>/dev/null | tail -n 1 || echo "1")
-			NEW_BATCH=$((MAX_BATCH + 1))
-			mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', ${NEW_BATCH});" 2>/dev/null || true
-			bashio::log.info "Migration marked as completed."
-		fi
+	# Temporarily rename the problematic migration file to prevent it from running
+	PROBLEMATIC_MIGRATION="database/migrations/2020_04_10_141024_store_node_tokens_as_encrypted_value.php"
+	if [ -f "$PROBLEMATIC_MIGRATION" ]; then
+		bashio::log.info "Temporarily disabling problematic migration file..."
+		mv "$PROBLEMATIC_MIGRATION" "${PROBLEMATIC_MIGRATION}.disabled" 2>/dev/null || true
 	fi
-	unset MYSQL_PWD
 
 	# Run migrations - schema loader is disabled, so SSL won't be an issue
 	# Use --force to continue even if some migrations fail
@@ -492,6 +474,27 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 		fi
 		bashio::log.warning "Migration completed with warnings, but critical tables exist. Continuing..."
 	}
+
+	# Re-enable the problematic migration file and mark it as completed
+	if [ -f "${PROBLEMATIC_MIGRATION}.disabled" ]; then
+		bashio::log.info "Re-enabling problematic migration file and marking it as completed..."
+		mv "${PROBLEMATIC_MIGRATION}.disabled" "$PROBLEMATIC_MIGRATION" 2>/dev/null || true
+
+		# Mark the migration as completed in the database
+		export MYSQL_PWD="${password_mariadb}"
+		MIGRATIONS_TABLE_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'migrations';" 2>/dev/null | tail -n 1 || echo "0")
+		if [ "$MIGRATIONS_TABLE_EXISTS" != "0" ]; then
+			MIGRATION_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM migrations WHERE migration = '2020_04_10_141024_store_node_tokens_as_encrypted_value';" 2>/dev/null | tail -n 1 || echo "0")
+			if [ "$MIGRATION_EXISTS" = "0" ]; then
+				MAX_BATCH=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COALESCE(MAX(batch), 0) FROM migrations;" 2>/dev/null | tail -n 1 || echo "1")
+				NEW_BATCH=$((MAX_BATCH + 1))
+				mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', ${NEW_BATCH});" 2>/dev/null || true
+				bashio::log.info "Problematic migration marked as completed in database."
+			fi
+		fi
+		unset MYSQL_PWD
+	fi
+
 	if [ "$setup_user" != "true" ]; then
 		bashio::log.info "Database migrated. Creating default admin user..."
 		echo "[setup] Creating default user..."
@@ -513,16 +516,37 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 			bashio::log.info "Attempting to create user directly in database..."
 			# Fallback: create user directly in database with all required fields
 			export MYSQL_PWD="${password_mariadb}"
-			HASHED_PASSWORD=$(php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);")
-			UUID=$(php -r "echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')")
 
-			mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>/dev/null || true
+			# Generate password hash using PHP (Laravel uses bcrypt)
+			HASHED_PASSWORD=$(cd /var/www/html && su-exec nginx php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);" 2>/dev/null || echo "")
+			if [ -z "$HASHED_PASSWORD" ]; then
+				# Fallback: use openssl if PHP fails
+				HASHED_PASSWORD=$(openssl passwd -1 "${password_mariadb}" 2>/dev/null || echo "")
+			fi
+
+			# Generate UUID
+			UUID=$(cd /var/www/html && su-exec nginx php -r "require 'vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
+			if [ -z "$UUID" ]; then
+				# Fallback: generate UUID-like string
+				UUID=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
+			fi
+
+			# Insert user directly into database
+			RESULT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
 ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
+SELECT ROW_COUNT();
 EOF
+)
 			unset MYSQL_PWD
-			bashio::log.info "User creation attempted directly in database."
+
+			if echo "$RESULT" | grep -q "ERROR"; then
+				bashio::log.error "Failed to create user in database:"
+				echo "$RESULT" | grep "ERROR" || true
+			else
+				bashio::log.info "✓ Admin user created successfully in database with external_id: ${EXTERNAL_ID}"
+			fi
 		fi
 
 		echo "For the first login use admin@example.com / admin as user and your database password to sign in."
@@ -530,10 +554,38 @@ EOF
 	fi
 elif [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."
+
+	# Temporarily rename the problematic migration file to prevent it from running
+	PROBLEMATIC_MIGRATION="database/migrations/2020_04_10_141024_store_node_tokens_as_encrypted_value.php"
+	if [ -f "$PROBLEMATIC_MIGRATION" ]; then
+		bashio::log.info "Temporarily disabling problematic migration file..."
+		mv "$PROBLEMATIC_MIGRATION" "${PROBLEMATIC_MIGRATION}.disabled" 2>/dev/null || true
+	fi
+
 	# Run migrations with explicit SSL disabled
 	su-exec nginx php artisan migrate --seed --no-interaction --force || {
 		bashio::log.warning "Migration completed with warnings. Continuing..."
 	}
+
+	# Re-enable the problematic migration file and mark it as completed
+	if [ -f "${PROBLEMATIC_MIGRATION}.disabled" ]; then
+		bashio::log.info "Re-enabling problematic migration file and marking it as completed..."
+		mv "${PROBLEMATIC_MIGRATION}.disabled" "$PROBLEMATIC_MIGRATION" 2>/dev/null || true
+
+		# Mark the migration as completed in the database
+		export MYSQL_PWD="${password_mariadb}"
+		MIGRATIONS_TABLE_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'migrations';" 2>/dev/null | tail -n 1 || echo "0")
+		if [ "$MIGRATIONS_TABLE_EXISTS" != "0" ]; then
+			MIGRATION_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM migrations WHERE migration = '2020_04_10_141024_store_node_tokens_as_encrypted_value';" 2>/dev/null | tail -n 1 || echo "0")
+			if [ "$MIGRATION_EXISTS" = "0" ]; then
+				MAX_BATCH=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COALESCE(MAX(batch), 0) FROM migrations;" 2>/dev/null | tail -n 1 || echo "1")
+				NEW_BATCH=$((MAX_BATCH + 1))
+				mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', ${NEW_BATCH});" 2>/dev/null || true
+				bashio::log.info "Problematic migration marked as completed in database."
+			fi
+		fi
+		unset MYSQL_PWD
+	fi
 else
 	bashio::log.info "Database tables exist. Running migrations to ensure schema is up to date..."
 	# Run migrations without seed to ensure schema is up to date
@@ -647,16 +699,37 @@ if [ "$setup_user" = "true" ]; then
 		bashio::log.info "Attempting to create user directly in database..."
 		# Fallback: create user directly in database with all required fields
 		export MYSQL_PWD="${password_mariadb}"
-		HASHED_PASSWORD=$(php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);")
-		UUID=$(php -r "echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')")
 
-		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>/dev/null || true
+		# Generate password hash using PHP (Laravel uses bcrypt)
+		HASHED_PASSWORD=$(cd /var/www/html && su-exec nginx php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);" 2>/dev/null || echo "")
+		if [ -z "$HASHED_PASSWORD" ]; then
+			# Fallback: use openssl if PHP fails
+			HASHED_PASSWORD=$(openssl passwd -1 "${password_mariadb}" 2>/dev/null || echo "")
+		fi
+
+		# Generate UUID
+		UUID=$(cd /var/www/html && su-exec nginx php -r "require 'vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
+		if [ -z "$UUID" ]; then
+			# Fallback: generate UUID-like string
+			UUID=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
+		fi
+
+		# Insert user directly into database
+		RESULT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
 ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
+SELECT ROW_COUNT();
 EOF
+)
 		unset MYSQL_PWD
-		bashio::log.info "User creation attempted directly in database."
+
+		if echo "$RESULT" | grep -q "ERROR"; then
+			bashio::log.error "Failed to create user in database:"
+			echo "$RESULT" | grep "ERROR" || true
+		else
+			bashio::log.info "✓ Admin user created successfully in database with external_id: ${EXTERNAL_ID}"
+		fi
 	fi
 
 	echo "For the first login use admin@example.com / admin as user and your database password to sign in."

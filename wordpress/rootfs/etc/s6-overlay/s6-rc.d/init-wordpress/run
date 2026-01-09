@@ -150,6 +150,30 @@ fi
 # Permissions
 bashio::log.info "Fixing permissions..."
 chown -R nginx:nginx /var/www/wordpress || bashio::exit.nok "Failed to set ownership for /var/www/wordpress"
+chmod -R 755 /var/www/wordpress 2>/dev/null || true
+
+# Ensure index.php is readable
+if [ -f /var/www/wordpress/index.php ]; then
+	chmod 644 /var/www/wordpress/index.php
+	chown nginx:nginx /var/www/wordpress/index.php
+	bashio::log.info "✓ WordPress index.php permissions verified"
+fi
+
+# Create a simple test file to verify nginx is serving files
+cat > /var/www/wordpress/test.html <<'EOF'
+<!DOCTYPE html>
+<html>
+<head><title>WordPress Test</title></head>
+<body>
+<h1>WordPress Add-on Test</h1>
+<p>If you see this, Nginx is working correctly!</p>
+<p>WordPress should be accessible at: <a href="/">WordPress</a></p>
+</body>
+</html>
+EOF
+chmod 644 /var/www/wordpress/test.html
+chown nginx:nginx /var/www/wordpress/test.html
+bashio::log.info "Created test.html - you can access it at http://<your-ip>:8099/test.html to verify Nginx is working"
 find /var/www/wordpress -type d -exec chmod 755 {} \; || bashio::exit.nok "Failed to set directory permissions"
 find /var/www/wordpress -type f -exec chmod 644 {} \; || bashio::exit.nok "Failed to set file permissions"
 chmod 640 /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to set permissions for wp-config.php"

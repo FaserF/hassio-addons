@@ -146,9 +146,11 @@ fi
 
 bashio::log.info "Port ${WEB_APP_PORT} is free, proceeding with startup..."
 
-if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
-    export SUBFOLDER=$(bashio::addon.ingress_entry)
-fi
+# With host_network: true, we don't use Ingress, so SUBFOLDER should not be set
+# SUBFOLDER is only for Ingress mode, which doesn't work with host_network
+# Unset SUBFOLDER to ensure the app serves from root path "/"
+unset SUBFOLDER
+bashio::log.info "Using host_network mode - serving from root path (no SUBFOLDER)"
 
 # Ensure the app listens on all interfaces (0.0.0.0) not just localhost
 # This is important when using host_network mode
@@ -163,10 +165,14 @@ if [ ! -f /app/app.js ]; then
 fi
 
 bashio::log.info "Starting webapp on port ${PORT} (listening on all interfaces)..."
-bashio::log.info "Web UI should be accessible at: http://<your-home-assistant-ip>:3002"
-bashio::log.info "Note: The app listens on port 3000 internally, which is mapped to port 3002 externally."
+bashio::log.info "Environment variables:"
+bashio::log.info "  PORT=${PORT}"
+bashio::log.info "  SUBFOLDER=${SUBFOLDER:-(not set)}"
+bashio::log.info "Web UI should be accessible at: http://<your-home-assistant-ip>:3000"
+bashio::log.info "Note: Using host_network mode - port 3000 is directly accessible (no port mapping)."
 
 # Use exec to replace the shell process with node
 # This ensures proper signal handling and process management
 # The app should listen on 0.0.0.0 by default, but we ensure PORT is set
+bashio::log.info "Executing: node app.js"
 exec /usr/bin/node app.js
