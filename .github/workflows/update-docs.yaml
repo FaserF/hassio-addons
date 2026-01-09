@@ -34,7 +34,7 @@ jobs:
           python3 .scripts/generate_docs.py
 
       - name: 🚀 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-update index.html"
           file_pattern: "docs/index.html"
