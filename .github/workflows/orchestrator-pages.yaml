@@ -35,7 +35,7 @@ jobs:
         run: python .scripts/generate_docs.py
 
       - name: 🚀 Commit Changes (Optional but good for history)
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-update index.html [skip ci]"
           file_pattern: "docs/index.html"
