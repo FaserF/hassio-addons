@@ -82,6 +82,14 @@ if [ ! -d /var/www/wordpress/wp-admin ]; then
         bashio::exit.nok "Source directory /usr/src/wordpress not found!"
     fi
     cp -r /usr/src/wordpress/. /var/www/wordpress || bashio::exit.nok "Failed to copy Wordpress files!"
+
+    # Ensure mu-plugins directory exists and copy the disable-url-redirects plugin
+    mkdir -p /var/www/wordpress/wp-content/mu-plugins
+    if [ -f /usr/src/wordpress/wp-content/mu-plugins/disable-url-redirects.php ]; then
+        cp /usr/src/wordpress/wp-content/mu-plugins/disable-url-redirects.php /var/www/wordpress/wp-content/mu-plugins/
+        bashio::log.info "Installed MU plugin to disable URL redirects for IP access"
+    fi
+
     bashio::log.info "Wordpress installed!"
 fi
 
@@ -115,6 +123,7 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     fi
 
     # Add HTTP_HOST fix to wp-config.php to avoid warnings during CLI operations
+    # Also disable WordPress URL redirects to allow access via IP address
     if ! grep -q "Set HTTP_HOST for CLI" /var/www/wordpress/wp-config.php 2>/dev/null; then
         # Find the line with "That's all, stop editing!" and insert before it
         sed -i "/That's all, stop editing/i\\
@@ -122,6 +131,15 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
 if (defined('WP_CLI') && WP_CLI && !isset(\$_SERVER['HTTP_HOST'])) {\\
     \$_SERVER['HTTP_HOST'] = '${HTTP_HOST_VAL}';\\
 }\\
+/* Disable WordPress URL redirects to allow access via IP address */\\
+if (!defined('WP_SITEURL')) {\\
+    define('WP_SITEURL', get_option('siteurl'));\\
+}\\
+if (!defined('WP_HOME')) {\\
+    define('WP_HOME', get_option('home'));\\
+}\\
+/* Allow access via any hostname/IP to prevent redirects */\\
+\$_SERVER['HTTP_HOST'] = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : 'localhost';\\
 " /var/www/wordpress/wp-config.php
     fi
 else
@@ -133,12 +151,22 @@ else
     wp config set DB_HOST "${DB_HOST_CONFIG}" --allow-root --path=/var/www/wordpress
 
     # Ensure HTTP_HOST fix is in wp-config.php
+    # Also disable WordPress URL redirects to allow access via IP address
     if ! grep -q "Set HTTP_HOST for CLI" /var/www/wordpress/wp-config.php 2>/dev/null; then
         sed -i "/That's all, stop editing/i\\
 /* Set HTTP_HOST for CLI operations to avoid warnings */\\
 if (defined('WP_CLI') && WP_CLI && !isset(\$_SERVER['HTTP_HOST'])) {\\
     \$_SERVER['HTTP_HOST'] = '${HTTP_HOST_VAL}';\\
 }\\
+/* Disable WordPress URL redirects to allow access via IP address */\\
+if (!defined('WP_SITEURL')) {\\
+    define('WP_SITEURL', get_option('siteurl'));\\
+}\\
+if (!defined('WP_HOME')) {\\
+    define('WP_HOME', get_option('home'));\\
+}\\
+/* Allow access via any hostname/IP to prevent redirects */\\
+\$_SERVER['HTTP_HOST'] = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : 'localhost';\\
 " /var/www/wordpress/wp-config.php
     fi
 fi

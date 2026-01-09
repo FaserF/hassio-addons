@@ -1,4 +1,5 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 if [ -f /run/ABORT_STARTUP ]; then exit 0; fi
 
 # create local logs dir
@@ -6,37 +7,80 @@ mkdir -p \
   /config/menus/remote \
   /config/menus/local
 
-# download menus if not found
-if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
-  if [[ -z ${MENU_VERSION+x} ]]; then \
-    MENU_VERSION=$(curl -sL "https://api.github.com/repos/netbootxyz/netboot.xyz/releases/latest" | jq -r '.tag_name')
+# Get latest menu version from GitHub
+if [[ -z ${MENU_VERSION+x} ]]; then
+  MENU_VERSION=$(curl -sL "https://api.github.com/repos/netbootxyz/netboot.xyz/releases/latest" | jq -r '.tag_name' || echo "")
+fi
+
+# Check current version if menuversion.txt exists
+CURRENT_VERSION=""
+if [ -f /config/menuversion.txt ]; then
+  CURRENT_VERSION=$(cat /config/menuversion.txt 2>/dev/null || echo "")
+fi
+
+# Download/update menus if not found or if a newer version is available
+if [[ ! -f /config/menus/remote/menu.ipxe ]] || [[ "$CURRENT_VERSION" != "$MENU_VERSION" ]]; then
+  if [ -n "$MENU_VERSION" ]; then
+    if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" != "$MENU_VERSION" ]; then
+      bashio::log.info "Updating Netboot.xyz menus from ${CURRENT_VERSION} to ${MENU_VERSION}"
+    else
+      bashio::log.info "Downloading Netboot.xyz menus at ${MENU_VERSION}"
+    fi
+
+    # menu files
+    curl -o \
+      /config/endpoints.yml -sL \
+      "https://raw.githubusercontent.com/netbootxyz/netboot.xyz/${MENU_VERSION}/endpoints.yml" || {
+      bashio::log.error "Failed to download endpoints.yml"
+      exit 1
+    }
+
+    curl -o \
+      /tmp/menus.tar.gz -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/menus.tar.gz" || {
+      bashio::log.error "Failed to download menus.tar.gz"
+      exit 1
+    }
+
+    tar xf \
+      /tmp/menus.tar.gz -C \
+      /config/menus/remote || {
+      bashio::log.error "Failed to extract menus.tar.gz"
+      exit 1
+    }
+
+    # boot files
+    curl -o \
+      /config/menus/remote/netboot.xyz-undionly.kpxe -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-undionly.kpxe" || bashio::log.warning "Failed to download netboot.xyz-undionly.kpxe"
+
+    curl -o \
+      /config/menus/remote/netboot.xyz.efi -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.efi" || bashio::log.warning "Failed to download netboot.xyz.efi"
+
+    curl -o \
+      /config/menus/remote/netboot.xyz.kpxe -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.kpxe" || bashio::log.warning "Failed to download netboot.xyz.kpxe"
+
+    curl -o \
+      /config/menus/remote/netboot.xyz-arm64.efi -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi" || bashio::log.warning "Failed to download netboot.xyz-arm64.efi"
+
+    # Save version and copy files
+    echo -n "${MENU_VERSION}" > /config/menuversion.txt
+    cp /config/menus/remote/* /config/menus 2>/dev/null || true
+    rm -f /tmp/menus.tar.gz
+
+    bashio::log.info "✓ Netboot.xyz menus updated to version ${MENU_VERSION}"
+  else
+    bashio::log.error "Failed to get latest menu version from GitHub"
+    if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
+      bashio::log.error "No menus found and cannot download. Please check your internet connection."
+      exit 1
+    else
+      bashio::log.warning "Using existing menus (version ${CURRENT_VERSION:-unknown})"
+    fi
   fi
-  echo "[netbootxyz-init] Downloading Netboot.xyz at ${MENU_VERSION}"
-  # menu files
-  curl -o \
-    /config/endpoints.yml -sL \
-    "https://raw.githubusercontent.com/netbootxyz/netboot.xyz/${MENU_VERSION}/endpoints.yml"
-  curl -o \
-    /tmp/menus.tar.gz -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/menus.tar.gz"
-  tar xf \
-    /tmp/menus.tar.gz -C \
-    /config/menus/remote
-  # boot files
-  curl -o \
-    /config/menus/remote/netboot.xyz-undionly.kpxe -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-undionly.kpxe"
-  curl -o \
-    /config/menus/remote/netboot.xyz.efi -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.efi"
-  curl -o \
-    /config/menus/remote/netboot.xyz.kpxe -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.kpxe"
-  curl -o \
-    /config/menus/remote/netboot.xyz-arm64.efi -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi"
-  # layer and cleanup
-  echo -n ${MENU_VERSION} > /config/menuversion.txt
-  cp /config/menus/remote/* /config/menus
-  rm -f /tmp/menus.tar.gz
+else
+  bashio::log.info "Netboot.xyz menus are up to date (version ${CURRENT_VERSION})"
 fi
