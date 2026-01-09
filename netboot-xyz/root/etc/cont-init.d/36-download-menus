@@ -49,22 +49,69 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]] || [[ "$CURRENT_VERSION" != "$MENU_
       exit 1
     }
 
-    # boot files
-    curl -o \
-      /config/menus/remote/netboot.xyz-undionly.kpxe -sL \
-      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-undionly.kpxe" || bashio::log.warning "Failed to download netboot.xyz-undionly.kpxe"
+    # boot files - download with retry and verification
+    download_boot_file() {
+        local url=$1
+        local dest=$2
+        local name=$3
+        local max_retries=3
+        local retry=0
 
-    curl -o \
-      /config/menus/remote/netboot.xyz.efi -sL \
-      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.efi" || bashio::log.warning "Failed to download netboot.xyz.efi"
+        while [ $retry -lt $max_retries ]; do
+            if curl -f -L -o "$dest" "$url" 2>/dev/null; then
+                # Verify file is not empty and has reasonable size (> 1KB)
+                if [ -s "$dest" ] && [ "$(stat -f%z "$dest" 2>/dev/null || stat -c%s "$dest" 2>/dev/null || echo 0)" -gt 1024 ]; then
+                    return 0
+                else
+                    bashio::log.warning "Downloaded file $name is too small or empty, retrying..."
+                    rm -f "$dest"
+                fi
+            fi
+            retry=$((retry + 1))
+            if [ $retry -lt $max_retries ]; then
+                bashio::log.warning "Download failed for $name, retrying... ($retry/$max_retries)"
+                sleep 2
+            fi
+        done
+        return 1
+    }
 
-    curl -o \
-      /config/menus/remote/netboot.xyz.kpxe -sL \
-      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.kpxe" || bashio::log.warning "Failed to download netboot.xyz.kpxe"
+    # Download boot files with verification
+    if download_boot_file \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-undionly.kpxe" \
+      "/config/menus/remote/netboot.xyz-undionly.kpxe" \
+      "netboot.xyz-undionly.kpxe"; then
+        bashio::log.info "✓ Downloaded netboot.xyz-undionly.kpxe"
+    else
+        bashio::log.warning "⚠ Failed to download netboot.xyz-undionly.kpxe"
+    fi
 
-    curl -o \
-      /config/menus/remote/netboot.xyz-arm64.efi -sL \
-      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi" || bashio::log.warning "Failed to download netboot.xyz-arm64.efi"
+    if download_boot_file \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.efi" \
+      "/config/menus/remote/netboot.xyz.efi" \
+      "netboot.xyz.efi"; then
+        bashio::log.info "✓ Downloaded netboot.xyz.efi"
+    else
+        bashio::log.warning "⚠ Failed to download netboot.xyz.efi"
+    fi
+
+    if download_boot_file \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz.kpxe" \
+      "/config/menus/remote/netboot.xyz.kpxe" \
+      "netboot.xyz.kpxe"; then
+        bashio::log.info "✓ Downloaded netboot.xyz.kpxe"
+    else
+        bashio::log.warning "⚠ Failed to download netboot.xyz.kpxe"
+    fi
+
+    if download_boot_file \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi" \
+      "/config/menus/remote/netboot.xyz-arm64.efi" \
+      "netboot.xyz-arm64.efi"; then
+        bashio::log.info "✓ Downloaded netboot.xyz-arm64.efi"
+    else
+        bashio::log.warning "⚠ Failed to download netboot.xyz-arm64.efi"
+    fi
 
     # Save version and copy files
     echo -n "${MENU_VERSION}" > /config/menuversion.txt
@@ -72,6 +119,17 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]] || [[ "$CURRENT_VERSION" != "$MENU_
     rm -f /tmp/menus.tar.gz
 
     bashio::log.info "✓ Netboot.xyz menus updated to version ${MENU_VERSION}"
+    bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    bashio::log.warning "⚠️  IMPORTANT: Secure Boot must be DISABLED!"
+    bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    bashio::log.warning "netboot.xyz does NOT support Secure Boot."
+    bashio::log.warning "The iPXE binaries are not signed by Microsoft."
+    bashio::log.warning ""
+    bashio::log.warning "If you see 'signature verification failed' errors:"
+    bashio::log.warning "  1. Enter your BIOS/UEFI settings"
+    bashio::log.warning "  2. Disable Secure Boot"
+    bashio::log.warning "  3. Save and reboot"
+    bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   else
     bashio::log.error "Failed to get latest menu version from GitHub"
     if [[ ! -f /config/menus/remote/menu.ipxe ]]; then

@@ -9,8 +9,8 @@ FROM ${BUILD_FROM} as base
 ENV PTERODACTYL_VERSION="v1.12.0"
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.11.1"
-ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"
+ENV ADDON_VERSION="1.0.0"
+ENV ADDON_NAME="pterodactyl Panel Gameserver"
 ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
 
@@ -96,8 +96,8 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
   CMD curl --fail http://127.0.0.1:80 || exit 1
 
 # Labels
-LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver - BETA"
-LABEL org.opencontainers.image.description="Open-Source Gameserver - Currently not fully working"
+LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver"
+LABEL org.opencontainers.image.description="Open-Source Gameserver Management Panel"
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"

@@ -123,7 +123,7 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     fi
 
     # Add HTTP_HOST fix to wp-config.php to avoid warnings during CLI operations
-    # Also disable WordPress URL redirects to allow access via IP address
+    # The MU plugin handles URL redirects, so we don't need to modify wp-config.php for that
     if ! grep -q "Set HTTP_HOST for CLI" /var/www/wordpress/wp-config.php 2>/dev/null; then
         # Find the line with "That's all, stop editing!" and insert before it
         sed -i "/That's all, stop editing/i\\
@@ -131,15 +131,6 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
 if (defined('WP_CLI') && WP_CLI && !isset(\$_SERVER['HTTP_HOST'])) {\\
     \$_SERVER['HTTP_HOST'] = '${HTTP_HOST_VAL}';\\
 }\\
-/* Disable WordPress URL redirects to allow access via IP address */\\
-if (!defined('WP_SITEURL')) {\\
-    define('WP_SITEURL', get_option('siteurl'));\\
-}\\
-if (!defined('WP_HOME')) {\\
-    define('WP_HOME', get_option('home'));\\
-}\\
-/* Allow access via any hostname/IP to prevent redirects */\\
-\$_SERVER['HTTP_HOST'] = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : 'localhost';\\
 " /var/www/wordpress/wp-config.php
     fi
 else
@@ -151,22 +142,13 @@ else
     wp config set DB_HOST "${DB_HOST_CONFIG}" --allow-root --path=/var/www/wordpress
 
     # Ensure HTTP_HOST fix is in wp-config.php
-    # Also disable WordPress URL redirects to allow access via IP address
+    # The MU plugin handles URL redirects, so we don't need to modify wp-config.php for that
     if ! grep -q "Set HTTP_HOST for CLI" /var/www/wordpress/wp-config.php 2>/dev/null; then
         sed -i "/That's all, stop editing/i\\
 /* Set HTTP_HOST for CLI operations to avoid warnings */\\
 if (defined('WP_CLI') && WP_CLI && !isset(\$_SERVER['HTTP_HOST'])) {\\
     \$_SERVER['HTTP_HOST'] = '${HTTP_HOST_VAL}';\\
 }\\
-/* Disable WordPress URL redirects to allow access via IP address */\\
-if (!defined('WP_SITEURL')) {\\
-    define('WP_SITEURL', get_option('siteurl'));\\
-}\\
-if (!defined('WP_HOME')) {\\
-    define('WP_HOME', get_option('home'));\\
-}\\
-/* Allow access via any hostname/IP to prevent redirects */\\
-\$_SERVER['HTTP_HOST'] = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : 'localhost';\\
 " /var/www/wordpress/wp-config.php
     fi
 fi

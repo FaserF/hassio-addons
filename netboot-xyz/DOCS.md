@@ -35,6 +35,24 @@ path_config: /media/netboot/config
   - `path_config`: `/media/netboot/config` (Location for menu and instance configuration)
 - `/data`: Used internally by the add-on for persistent meta-data storage.
 
+## ⚠️ Secure Boot
+
+**IMPORTANT**: netboot.xyz does **NOT** support Secure Boot!
+
+The iPXE binaries used by netboot.xyz are not signed by Microsoft, which means they will fail Secure Boot's signature verification.
+
+### If you see "signature verification failed" errors:
+
+1. Enter your computer's BIOS/UEFI settings (usually F2, F10, F12, or Del during boot)
+2. Navigate to the Security or Boot settings
+3. **Disable Secure Boot**
+4. Save changes and reboot
+5. Try PXE booting again
+
+### Why is this necessary?
+
+Secure Boot requires all boot loaders to be cryptographically signed by a trusted authority (typically Microsoft). Since netboot.xyz uses open-source iPXE binaries that are not Microsoft-signed, they cannot pass Secure Boot verification.
+
 ## Support
 
 For issues and feature requests, please use the GitHub repository issues.

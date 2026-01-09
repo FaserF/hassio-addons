@@ -586,65 +586,210 @@ else
 	}
 fi
 
-if [ ! -f /share/pterodactyl/config.yml ]; then
-	echo "[setup] Generating default Wings configuration..."
-	cat <<'EOF' >/tmp/generate_config.php
+# Check if default location and node should be created
+# This runs after migrations to ensure tables exist
+# Note: This is a "nice to have" feature - errors are logged but don't stop the add-on from starting
+bashio::log.info "Checking if default location and node need to be created..."
+
+export MYSQL_PWD="${password_mariadb}"
+LOCATION_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM locations;" 2>/dev/null | tail -n 1 || echo "0")
+NODE_COUNT=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM nodes;" 2>/dev/null | tail -n 1 || echo "0")
+unset MYSQL_PWD
+
+# Create default location and node if they don't exist
+# This is optional - errors are logged but don't stop the add-on
+if [ "$LOCATION_COUNT" = "0" ] || [ "$NODE_COUNT" = "0" ]; then
+	bashio::log.info "Attempting to create default location and node for Wings (optional feature)..."
+
+	# Extract FQDN and scheme from APP_URL
+	APP_URL_HOST="${APP_URL#http://}"
+	APP_URL_HOST="${APP_URL_HOST#https://}"
+	APP_URL_HOST="${APP_URL_HOST%%/*}"
+
+	# Determine scheme and port
+	if [[ "$APP_URL" == https://* ]]; then
+		SCHEME="https"
+		# Extract port from APP_URL if present, otherwise use default 443
+		if [[ "$APP_URL_HOST" == *:* ]]; then
+			WINGS_PORT="${APP_URL_HOST##*:}"
+			WINGS_FQDN="${APP_URL_HOST%:*}"
+		else
+			WINGS_PORT="443"
+			WINGS_FQDN="$APP_URL_HOST"
+		fi
+	else
+		SCHEME="http"
+		# Extract port from APP_URL if present, otherwise use default 80
+		if [[ "$APP_URL_HOST" == *:* ]]; then
+			WINGS_PORT="${APP_URL_HOST##*:}"
+			WINGS_FQDN="${APP_URL_HOST%:*}"
+		else
+			WINGS_PORT="80"
+			WINGS_FQDN="$APP_URL_HOST"
+		fi
+	fi
+
+	# Default Wings daemon port (can be changed in Wings config)
+	DAEMON_LISTEN="8080"
+	DAEMON_SFTP="2022"
+
+	# File directories - use /share/pterodactyl for persistent storage
+	DATA_DIR="/share/pterodactyl"
+
+	bashio::log.info "Configuring default location and node:"
+	bashio::log.info "  FQDN: ${WINGS_FQDN}"
+	bashio::log.info "  Scheme: ${SCHEME}"
+	bashio::log.info "  Port: ${WINGS_PORT}"
+	bashio::log.info "  Daemon Listen: ${DAEMON_LISTEN}"
+	bashio::log.info "  Data Directory: ${DATA_DIR}"
+
+	cat <<EOF >/tmp/setup_location_node.php
 <?php
-require __DIR__ . '/vendor/autoload.php';
-$app = require __DIR__ . '/bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+try {
+    require __DIR__ . '/vendor/autoload.php';
+    \$app = require __DIR__ . '/bootstrap/app.php';
+    \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use Pterodactyl\Models\Location;
-use Pterodactyl\Models\Node;
-use Illuminate\Support\Str;
-use Ramsey\Uuid\Uuid;
+    use Pterodactyl\Models\Location;
+    use Pterodactyl\Models\Node;
+    use Illuminate\Support\Str;
+    use Ramsey\Uuid\Uuid;
 
-$location = Location::firstOrCreate([
-    'short' => 'local',
-], [
-    'long' => 'Local Location',
-]);
-
-$node = Node::where('name', 'Local Node')->first();
-if (!$node) {
-    $node = new Node();
-    $node->forceFill([
-        'name' => 'Local Node',
-        'location_id' => $location->id,
-        'fqdn' => 'local-pterodactyl-wings',
-        'scheme' => 'http',
-        'memory' => 0,
-        'memory_overallocate' => 0,
-        'disk' => 0,
-        'disk_overallocate' => 0,
-        'upload_size' => 100,
-        'daemon_sftp' => 2022,
-        'daemon_listen' => 8080,
-        'uuid' => Uuid::uuid4()->toString(),
-        'daemon_token' => Str::random(Node::DAEMON_TOKEN_LENGTH),
-        'daemon_token_id' => Str::random(Node::DAEMON_TOKEN_ID_LENGTH),
-        'public' => 1,
-        'maintenance_mode' => 0,
+    // Create or get default location
+    \$location = Location::firstOrCreate([
+        'short' => 'default',
+    ], [
+        'long' => 'Default Location',
     ]);
-    $node->save();
-}
 
-$config = $app->make(\Pterodactyl\Services\Nodes\NodeConfigurationService::class)->handle($node);
-echo \Symfony\Component\Yaml\Yaml::dump($config);
+    echo "Location ID: " . \$location->id . "\n";
+
+    // Check if default node exists
+    \$node = Node::where('name', 'Default Node')->first();
+    if (!\$node) {
+        \$node = new Node();
+        \$node->forceFill([
+            'name' => 'Default Node',
+            'location_id' => \$location->id,
+            'fqdn' => '${WINGS_FQDN}',
+            'scheme' => '${SCHEME}',
+            'memory' => 0,
+            'memory_overallocate' => 0,
+            'disk' => 0,
+            'disk_overallocate' => 0,
+            'upload_size' => 100,
+            'daemon_sftp' => ${DAEMON_SFTP},
+            'daemon_listen' => ${DAEMON_LISTEN},
+            'uuid' => Uuid::uuid4()->toString(),
+            'daemon_token' => Str::random(Node::DAEMON_TOKEN_LENGTH),
+            'daemon_token_id' => Str::random(Node::DAEMON_TOKEN_ID_LENGTH),
+            'public' => 1,
+            'maintenance_mode' => 0,
+        ]);
+        \$node->save();
+        echo "Node created with UUID: " . \$node->uuid . "\n";
+        echo "Node FQDN: " . \$node->fqdn . "\n";
+        echo "Node Scheme: " . \$node->scheme . "\n";
+    } else {
+        // Update existing node with correct FQDN and scheme
+        \$node->fqdn = '${WINGS_FQDN}';
+        \$node->scheme = '${SCHEME}';
+        \$node->daemon_listen = ${DAEMON_LISTEN};
+        \$node->daemon_sftp = ${DAEMON_SFTP};
+        \$node->save();
+        echo "Node updated with UUID: " . \$node->uuid . "\n";
+        echo "Node FQDN: " . \$node->fqdn . "\n";
+        echo "Node Scheme: " . \$node->scheme . "\n";
+    }
+
+    // Generate Wings configuration
+    \$config = \$app->make(\Pterodactyl\Services\Nodes\NodeConfigurationService::class)->handle(\$node);
+
+    // Update file paths in config to use persistent storage
+    \$config['system']['data'] = '${DATA_DIR}/servers';
+    \$config['system']['backup_directory'] = '${DATA_DIR}/backups';
+    \$config['system']['log_directory'] = '${DATA_DIR}/logs';
+
+    echo \Symfony\Component\Yaml\Yaml::dump(\$config);
+} catch (\Exception \$e) {
+    echo "ERROR: " . \$e->getMessage() . "\n";
+    exit(1);
+}
 EOF
 
-	# Run the script
-	php /tmp/generate_config.php >/share/pterodactyl/config.yml
-	rm /tmp/generate_config.php
-
-	if [ -s /share/pterodactyl/config.yml ]; then
-		echo "[setup] Wings configuration generated successfully at /share/pterodactyl/config.yml"
+	# Run the script - errors are logged but don't stop the add-on
+	if su-exec nginx php /tmp/setup_location_node.php >/share/pterodactyl/config.yml 2>&1; then
+		if [ -s /share/pterodactyl/config.yml ] && ! grep -q "^ERROR:" /share/pterodactyl/config.yml 2>/dev/null; then
+			bashio::log.info "✓ Default location and node created successfully"
+			bashio::log.info "✓ Wings configuration generated at /share/pterodactyl/config.yml"
+		else
+			bashio::log.warning "⚠ Failed to generate Wings configuration (this is optional)"
+			if [ -s /share/pterodactyl/config.yml ]; then
+				bashio::log.warning "Error details:"
+				grep "^ERROR:" /share/pterodactyl/config.yml 2>/dev/null || cat /share/pterodactyl/config.yml | head -5
+			fi
+		fi
 	else
-		echo "[setup] Failed to generate Wings configuration!"
+		bashio::log.warning "⚠ Failed to create default location and node (this is optional)"
+		bashio::log.warning "You can create them manually in the Panel web interface"
+		if [ -s /share/pterodactyl/config.yml ]; then
+			bashio::log.warning "Error output:"
+			cat /share/pterodactyl/config.yml | head -10
+		fi
 	fi
+	rm -f /tmp/setup_location_node.php
+elif [ ! -f /share/pterodactyl/config.yml ]; then
+	# If location/node exist but config.yml doesn't, regenerate it
+	bashio::log.info "Regenerating Wings configuration from existing node..."
+	cat <<'EOF' >/tmp/generate_config.php
+<?php
+try {
+    require __DIR__ . '/vendor/autoload.php';
+    $app = require __DIR__ . '/bootstrap/app.php';
+    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+    use Pterodactyl\Models\Node;
+
+    $node = Node::first();
+    if ($node) {
+        $config = $app->make(\Pterodactyl\Services\Nodes\NodeConfigurationService::class)->handle($node);
+
+        // Update file paths in config to use persistent storage
+        $config['system']['data'] = '/share/pterodactyl/servers';
+        $config['system']['backup_directory'] = '/share/pterodactyl/backups';
+        $config['system']['log_directory'] = '/share/pterodactyl/logs';
+
+        echo \Symfony\Component\Yaml\Yaml::dump($config);
+    } else {
+        echo "# No nodes found\n";
+    }
+} catch (\Exception $e) {
+    echo "ERROR: " . $e->getMessage() . "\n";
+    exit(1);
+}
+EOF
+
+	if su-exec nginx php /tmp/generate_config.php >/share/pterodactyl/config.yml 2>&1; then
+		if [ -s /share/pterodactyl/config.yml ] && ! grep -q "^ERROR:" /share/pterodactyl/config.yml 2>/dev/null; then
+			bashio::log.info "✓ Wings configuration regenerated successfully"
+		else
+			bashio::log.warning "⚠ Failed to regenerate Wings configuration (this is optional)"
+		fi
+	else
+		bashio::log.warning "⚠ Failed to regenerate Wings configuration (this is optional)"
+	fi
+	rm -f /tmp/generate_config.php
 else
-	echo "[setup] Wings configuration already exists at /share/pterodactyl/config.yml"
+	bashio::log.info "Wings configuration already exists at /share/pterodactyl/config.yml"
 fi
+
+# Create required directories for Wings
+mkdir -p /share/pterodactyl/servers /share/pterodactyl/backups /share/pterodactyl/logs
+chown -R nginx:nginx /share/pterodactyl 2>/dev/null || true
+bashio::log.info "Created Wings data directories:"
+bashio::log.info "  Servers: /share/pterodactyl/servers"
+bashio::log.info "  Backups: /share/pterodactyl/backups"
+bashio::log.info "  Logs: /share/pterodactyl/logs"
 
 # Checks if SSL certificate and key exists, otherwise default to http traffic
 if bashio::config.true 'ssl'; then

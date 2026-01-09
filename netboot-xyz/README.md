@@ -59,6 +59,10 @@ path: /media/netboot/image
 path_config: /media/netboot/config
 ```
 
+### ⚠️ Secure Boot
+
+**IMPORTANT**: netboot.xyz does **NOT** support Secure Boot! If you see "signature verification failed" errors, you must **disable Secure Boot** in your computer's BIOS/UEFI settings. See [DOCS.md](DOCS.md) for detailed instructions.
+
 ---
 
 ## 👨‍💻 Credits & License
