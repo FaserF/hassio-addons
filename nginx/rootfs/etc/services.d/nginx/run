@@ -10,7 +10,9 @@ _show_startup_banner() {
     if ! VERSION=$(bashio::addon.version 2>/dev/null); then
         VERSION="unknown"
     fi
-    [ -z "$VERSION" ] && VERSION="unknown"
+    if [ -z "$VERSION" ]; then
+        VERSION="unknown"
+    fi
     local NAME="NGINX"
     local SLUG="nginx"
     local UNSUPPORTED="false"
@@ -20,11 +22,8 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"-dev+"* ]]; then
-        # Extract last part (commit), remove non-hex chars, take first 7
+    if [[ "$VERSION" == *"+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
-        DEV_COMMIT="${DEV_COMMIT//[^0-9a-fA-F]/}"
-        DEV_COMMIT="${DEV_COMMIT:0:7}"
     fi
 
     # Status indicator
@@ -58,9 +57,14 @@ _show_startup_banner() {
         for ((i=${#ver2[@]}; i<${#ver1[@]}; i++)); do ver2[i]=0; done
 
         for ((i=0; i<${#ver1[@]}; i++)); do
-            # Simple sanitization: remove anything not a digit (Pure Bash)
-            local n1="${ver1[i]%%[^0-9]*}"
-            local n2="${ver2[i]%%[^0-9]*}"
+            # Handle non-numeric (e.g. dev versions) by treating as 0
+            # Simple sanitization: remove anything not a digit using bash expansion
+            local n1="${ver1[i]//[!0-9]/}"
+            local n2="${ver2[i]//[!0-9]/}"
+
+            # Fallback (rarely needed if using bash, but harmless to keep if desired,
+            # though user suggestion implies we can rely on bash expansion)
+            # We will use the bash expansion result directly.
 
             # Empty string -> 0
             [ -z "$n1" ] && n1=0
@@ -154,11 +158,13 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.info &>/dev/null; then
+if type bashio::log.blue &>/dev/null 2>&1; then
     _show_startup_banner
 fi
 
 # </ADDON_BANNER_INJECTION>
+
+
 
 
 
