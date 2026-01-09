@@ -9,6 +9,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # 1. Install Node.js & Git (Using standard repos for stability)
 # hadolint ignore=DL3018
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.4.0"
 ENV ADDON_NAME="WhatsApp"
