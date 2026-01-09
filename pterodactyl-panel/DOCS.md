@@ -24,7 +24,6 @@ After the first start, you can log in with the following default credentials:
 >
 > 1. **If you set a password in the configuration:**
 >    - Use the exact password you entered in the `password` field of the add-on configuration.
->
 > 2. **If you left the password field empty:**
 >    - A random password was automatically generated during the first startup.
 >    - Check the add-on logs for a message like: `"No database password set in configuration! Generating random password: XXXXXXXXXX"`
@@ -33,6 +32,7 @@ After the first start, you can log in with the following default credentials:
 
 > [!NOTE]
 > The `password` field in the configuration serves **two purposes**:
+>
 > - It's used as the database password for the `pterodactyl` database user
 > - It's also used as the initial admin login password for the panel
 >

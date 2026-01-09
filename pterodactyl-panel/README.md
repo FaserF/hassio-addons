@@ -30,6 +30,7 @@
 
 > [!TIP]
 > **Login Information:**
+>
 > - **Email:** `admin@example.com`
 > - **Password:** The value you set in the `password` field (or check the logs if you left it empty)
 
@@ -87,16 +88,9 @@ app_url: http://pterodactyl.local
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
-password: ''  # Optional: Database password and admin login password. If empty, a random password is generated.
+password: ''
 ssl: false
 ```
-
-> [!NOTE]
-> **About the `password` field:**
-> - This password is used for both the database connection AND the initial admin login
-> - If left empty (`''`), a random password will be generated and displayed in the startup logs
-> - **Save the password** if you need direct database access or for the first login
-> - Default login: `admin@example.com` / `<your-password>`
 
 ---
 
