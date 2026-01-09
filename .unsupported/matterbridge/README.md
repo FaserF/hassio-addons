@@ -10,7 +10,6 @@
 >
 > **USE AT YOUR OWN RISK.**
 
-
 ![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_matterbridge)

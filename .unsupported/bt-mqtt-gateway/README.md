@@ -10,7 +10,6 @@
 >
 > **USE AT YOUR OWN RISK.**
 
-
 ![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_bt-mqtt-gateway)
@@ -27,7 +26,6 @@
 If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
 If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
-
 
 ## 🐛 Report a Bug
 
@@ -46,8 +44,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 
 > [!NOTE]
 > Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
-
-
 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.

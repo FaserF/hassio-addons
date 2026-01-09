@@ -165,10 +165,6 @@ fi
 
 # </ADDON_BANNER_INJECTION>
 
-
-
-
-
 CONFIG_DIR="/data/homeassistant"
 
 # Simple logging function to match HA log format

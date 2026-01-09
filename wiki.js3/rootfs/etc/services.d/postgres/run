@@ -166,6 +166,12 @@ fi
 
 
 
+
+
+
+
+
+
 PGDATA="/data/postgresql"
 
 # Initialize PostgreSQL data directory if it doesn't exist

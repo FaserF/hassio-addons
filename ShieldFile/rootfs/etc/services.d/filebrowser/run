@@ -167,6 +167,12 @@ fi
 
 
 
+
+
+
+
+
+
 # Retrieve variables passed from init script or config
 DB_PATH="/data/database.db"
 BASE_DIR=$(bashio::config 'base_directory')
