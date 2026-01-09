@@ -13,5 +13,12 @@ fi
 bashio::log.info "Starting PHP-FPM..."
 bashio::log.info "PHP-FPM will listen on 127.0.0.1:9000"
 
+# Verify WordPress directory exists
+if [ ! -d /var/www/wordpress ]; then
+	bashio::log.error "WordPress directory /var/www/wordpress does not exist!"
+	exit 1
+fi
+
 # Start PHP-FPM in foreground
+bashio::log.info "Starting PHP-FPM process..."
 exec php-fpm84 -F

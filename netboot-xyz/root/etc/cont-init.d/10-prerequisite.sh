@@ -9,8 +9,6 @@ if bashio::addon.protected; then
 fi
 
 nginx_uid=abc
-declare nginx_port
-declare tftp_port
 # Force ports to required values for host_network mode
 # These ports MUST remain fixed: 85 (NGINX), 3000 (Web UI), 69 (TFTP)
 nginx_port=85
@@ -19,23 +17,11 @@ dhcp_range=$(bashio::config 'dhcp_range')
 path=$(bashio::config 'path')
 path_config=$(bashio::config 'path_config')
 
-# Validate that ports are not changed (critical for host_network mode)
-CONFIGURED_NGINX_PORT=$(bashio::addon.port 85 2>/dev/null || echo "85")
-CONFIGURED_TFTP_PORT=$(bashio::addon.port "69/udp" 2>/dev/null || echo "69")
-
-if [ "${CONFIGURED_NGINX_PORT}" != "85" ]; then
-	bashio::log.error "NGINX port must be 85 for host_network mode! Current: ${CONFIGURED_NGINX_PORT}"
-	bashio::log.error "PXE boot requires port 85. Please set port mapping to '85: 85' in config."
-	exit 1
-fi
-
-if [ "${CONFIGURED_TFTP_PORT}" != "69" ]; then
-	bashio::log.error "TFTP port must be 69 for host_network mode! Current: ${CONFIGURED_TFTP_PORT}"
-	bashio::log.error "PXE boot requires port 69. Please set port mapping to '69/udp: 69' in config."
-	exit 1
-fi
-
-bashio::log.info "Ports validated: NGINX=85, TFTP=69, Web UI=3000 (all fixed for host_network mode)"
+# Note: With host_network: true, ports are fixed and cannot be changed
+# The config.yaml defines "85": 85 and "69/udp": 69, which means internal=external
+# We don't need to validate via bashio::addon.port as it may return empty with host_network
+# Instead, we just use the fixed values directly
+bashio::log.info "Using fixed ports for host_network mode: NGINX=85, TFTP=69, Web UI=3000"
 
 echo "Creating user $nginx_uid and setting permissions..."
 

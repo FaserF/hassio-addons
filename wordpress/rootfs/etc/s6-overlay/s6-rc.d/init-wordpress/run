@@ -390,10 +390,16 @@ if [ ! -f /etc/nginx/http.d/default.conf ]; then
 fi
 
 bashio::log.info "Nginx and PHP-FPM services will be started by s6-overlay."
-bashio::log.info "If you cannot access WordPress, check:"
+bashio::log.info ""
+bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+bashio::log.info "Troubleshooting:"
+bashio::log.info "  If you cannot access WordPress, check:"
 bashio::log.info "  1. Port 8099 (HTTP) or 8449 (HTTPS) is accessible"
 bashio::log.info "  2. WordPress URL is correctly set: ${WORDPRESS_URL:-not set}"
 bashio::log.info "  3. Nginx and PHP-FPM are running (check service logs)"
+bashio::log.info "  4. Try accessing: http://<your-home-assistant-ip>:8099"
+bashio::log.info "  5. Check nginx error logs: /var/log/nginx/error.log"
+bashio::log.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Warning if wordpress_url doesn't match SSL setting
 # Get wordpress_url if not already set

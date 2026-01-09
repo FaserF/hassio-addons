@@ -426,11 +426,44 @@ if [ -f "$SCHEMA_FILE" ]; then
 	bashio::log.info "Schema file disabled. Migrations will create tables from scratch."
 fi
 
+# Check if daemonSecret column exists in nodes table (for migration fix)
+export MYSQL_PWD="${password_mariadb}"
+DAEMON_SECRET_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemonSecret';" 2>/dev/null | tail -n 1 || echo "0")
+unset MYSQL_PWD
+
+# If daemonSecret doesn't exist but daemon_token does, the migration already ran
+# We need to mark the migration as completed manually
+if [ "$DAEMON_SECRET_EXISTS" = "0" ]; then
+	export MYSQL_PWD="${password_mariadb}"
+	DAEMON_TOKEN_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemon_token';" 2>/dev/null | tail -n 1 || echo "0")
+	unset MYSQL_PWD
+
+	if [ "$DAEMON_TOKEN_EXISTS" != "0" ]; then
+		bashio::log.info "daemonSecret column already migrated to daemon_token. Marking migration as completed..."
+		# Mark the migration as completed by inserting it into migrations table
+		export MYSQL_PWD="${password_mariadb}"
+		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', (SELECT COALESCE(MAX(batch), 0) + 1 FROM (SELECT batch FROM migrations) AS m));" 2>/dev/null || true
+		unset MYSQL_PWD
+	fi
+fi
+
 if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 	bashio::log.warning "Database tables not found. Running migrations..."
 	echo "[setup] Migrating/Seeding database..."
 	# Run migrations - schema loader is disabled, so SSL won't be an issue
-	su-exec nginx php artisan migrate --seed --no-interaction --force
+	# Use --force to continue even if some migrations fail
+	su-exec nginx php artisan migrate --seed --no-interaction --force || {
+		bashio::log.warning "Some migrations may have failed. Checking if critical tables exist..."
+		# Check if users table exists (critical for panel to work)
+		export MYSQL_PWD="${password_mariadb}"
+		USERS_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${db}' AND table_name = 'users';" 2>/dev/null | tail -n 1 || echo "0")
+		unset MYSQL_PWD
+		if [ "$USERS_EXISTS" = "0" ]; then
+			bashio::log.error "Critical users table not found after migration. Database setup may be incomplete."
+			exit 1
+		fi
+		bashio::log.warning "Migration completed with warnings, but critical tables exist. Continuing..."
+	}
 	if [ "$setup_user" != "true" ]; then
 		bashio::log.info "Database migrated. Creating default admin user..."
 		echo "[setup] Creating default user..."
@@ -441,11 +474,16 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 elif [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."
 	# Run migrations with explicit SSL disabled
-	su-exec nginx php artisan migrate --seed --no-interaction --force
+	su-exec nginx php artisan migrate --seed --no-interaction --force || {
+		bashio::log.warning "Migration completed with warnings. Continuing..."
+	}
 else
 	bashio::log.info "Database tables exist. Running migrations to ensure schema is up to date..."
 	# Run migrations without seed to ensure schema is up to date
-	su-exec nginx php artisan migrate --no-interaction --force || bashio::log.warning "Migration check failed, but continuing..."
+	# Continue even if some migrations fail (they may have already run)
+	su-exec nginx php artisan migrate --no-interaction --force || {
+		bashio::log.warning "Some migrations may have failed, but continuing..."
+	}
 fi
 
 if [ ! -f /share/pterodactyl/config.yml ]; then

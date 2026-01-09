@@ -30,5 +30,39 @@ fi
 bashio::log.info "Starting Nginx..."
 bashio::log.info "Nginx will listen on port 80 (mapped to external port 8099)"
 
-# Start nginx in foreground
+# Verify WordPress directory exists and is readable
+if [ ! -d /var/www/wordpress ]; then
+	bashio::log.error "WordPress directory /var/www/wordpress does not exist!"
+	exit 1
+fi
+
+if [ ! -f /var/www/wordpress/index.php ]; then
+	bashio::log.warning "WordPress index.php not found in /var/www/wordpress"
+	bashio::log.warning "This might be normal if WordPress is not yet installed"
+fi
+
+# Check if PHP-FPM is running (wait up to 10 seconds)
+bashio::log.info "Waiting for PHP-FPM to be ready..."
+for i in {1..10}; do
+	if pgrep -f "php-fpm84: master process" >/dev/null 2>&1; then
+		bashio::log.info "PHP-FPM is running"
+		break
+	fi
+	if [ $i -eq 10 ]; then
+		bashio::log.warning "PHP-FPM not detected, but continuing with Nginx startup..."
+	else
+		sleep 1
+	fi
+done
+
+# Show nginx configuration summary
+bashio::log.info "Nginx configuration summary:"
+bashio::log.info "  - Listening on: 0.0.0.0:80 (all interfaces)"
+bashio::log.info "  - External port: 8099"
+bashio::log.info "  - Document root: /var/www/wordpress"
+bashio::log.info "  - PHP-FPM: 127.0.0.1:9000"
+bashio::log.info ""
+
+# Start nginx in foreground (for s6-overlay)
+bashio::log.info "Starting Nginx process..."
 exec nginx -g "daemon off;"
