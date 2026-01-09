@@ -9,6 +9,8 @@ EXPOSE 8123
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.1"
 ENV ADDON_NAME="Home Assistant Test Instance"

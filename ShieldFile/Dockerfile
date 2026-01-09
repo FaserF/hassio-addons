@@ -18,6 +18,8 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # hadolint ignore=DL3018,DL4006
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.1.0"
 ENV ADDON_NAME="ShieldFile"

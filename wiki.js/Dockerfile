@@ -11,6 +11,8 @@ ARG BUILD_DATE="unknown"
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="3.1.1"
 ENV ADDON_NAME="Wiki.JS"

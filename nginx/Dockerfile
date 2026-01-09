@@ -16,6 +16,8 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.1"
 ENV ADDON_NAME="NGINX"

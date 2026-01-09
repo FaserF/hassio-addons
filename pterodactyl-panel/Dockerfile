@@ -7,6 +7,8 @@ FROM ${BUILD_FROM} as base
 # hadolint ignore=DL3018
 
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.11.0"
 ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"

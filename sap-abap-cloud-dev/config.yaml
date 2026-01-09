@@ -32,4 +32,3 @@ ports_description:
   50000/tcp: ICM HTTP
   50001/tcp: ICM HTTPS
 ingress: true
-ingress_port: 8443

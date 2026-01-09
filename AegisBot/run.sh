@@ -49,7 +49,9 @@ _show_startup_banner() {
         if [ "$v1" = "$v2" ]; then return 1; fi
 
         local IFS=.
-        local i ver1=($v1) ver2=($v2)
+        local i ver1 ver2
+        read -ra ver1 <<< "$v1"
+        read -ra ver2 <<< "$v2"
 
         # Pad with zeros
         for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do ver1[i]=0; done
@@ -161,6 +163,8 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
+
+
 
 
 

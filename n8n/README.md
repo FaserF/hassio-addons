@@ -21,8 +21,6 @@
 
 ## 📖 About
 
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
-
 > Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation.
 
 N8n (Nodemation) is an extendable workflow automation tool. With a fair-code distribution model, n8n will always have visible source code, available to self-host, and allows you to add your own custom functions, logic, and apps.

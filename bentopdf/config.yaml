@@ -3,7 +3,6 @@ version: 0.1.0
 slug: bentopdf
 description: Self-hosted, privacy-first PDF toolkit
 url: https://github.com/FaserF/hassio-addons/tree/master/bentopdf
-startup: services
 arch:
   - aarch64
   - amd64
@@ -24,5 +23,4 @@ ports:
 ports_description:
   8035/tcp: Web Interface (HTTP/HTTPS)
 ingress: true
-ingress_port: 8035
 panel_icon: mdi:file-pdf-box
