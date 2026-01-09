@@ -1,7 +1,8 @@
 ---
 name: N8n
-version: 0.1.1
+version: 0.1.2
 slug: n8n
+image: ghcr.io/faserf/hassio-addons-n8n-{arch}
 description: "Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation."
 url: "https://github.com/faserf/hassio-addons/tree/master/n8n"
 arch:

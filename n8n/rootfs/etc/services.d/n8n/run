@@ -176,6 +176,8 @@ fi
 
 
 
+
+
 # Ensure persistence directory exists
 if ! bashio::fs.directory_exists "/data/n8n"; then
     bashio::log.info "Creating persistent storage directory..."
