@@ -20,6 +20,8 @@ options:
   certfile: fullchain.pem
   keyfile: privkey.pem
   log_level: info
+  reset_database: false
+  reset_database_confirm: false
 schema:
   ssl: bool
   certfile: str
