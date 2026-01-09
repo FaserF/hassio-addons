@@ -236,6 +236,17 @@ echo "CREATE DATABASE IF NOT EXISTS ${db};" |
 	bashio::log.error "Failed to create database ${db}"
 	exit 1
 }
+if [ -z "$password_mariadb" ]; then
+	if [ -f .env ]; then
+		password_mariadb=$(grep "^DB_PASSWORD=" .env | cut -d'=' -f2)
+	fi
+	if [ -z "$password_mariadb" ]; then
+		password_mariadb=$(openssl rand -base64 12)
+		bashio::log.warning "No database password set in configuration! Generating random password: ${password_mariadb}"
+		bashio::log.warning "Please save this password if you need direct database access."
+	fi
+fi
+
 echo "GRANT ALL PRIVILEGES ON ${db}.* TO 'pterodactyl' IDENTIFIED BY '${password_mariadb}' WITH GRANT OPTION;" |
 	MYSQL_PWD="${password}" mariadb -h "${host}" -P "${port}" -u "${username}" || {
 	bashio::log.error "Failed to grant privileges on database ${db}"
@@ -325,7 +336,7 @@ su-exec nginx php artisan config:clear
 echo ""
 echo "[setup] Setup database credentials..."
 echo "MariaDB informations: ${host} ${port}"
-su-exec nginx php artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}"
+su-exec nginx php artisan p:environment:database --host "${host}" --port "${port}" --username "pterodactyl" --password "${password_mariadb}" --no-interaction
 
 if [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."

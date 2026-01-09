@@ -11,7 +11,7 @@ ingress: true
 panel_icon: mdi:shield-lock
 ports:
 
-  8443/tcp: 8443
+  8443/tcp: 8445
 ports_description:
   8443/tcp: "Direct Secure Access (HTTPS)"
 map:
@@ -27,7 +27,7 @@ options:
     - username: "admin"
       password: "changeme"
   base_directory: "/share"
-  port: 8443
+  port: 8445
   log_level: "info"
 schema:
   certfile: str

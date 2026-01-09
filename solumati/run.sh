@@ -271,7 +271,7 @@ else
 		export APP_BASE_URL
 		bashio::log.info "App base URL auto-detected from Ingress: $APP_BASE_URL"
 	else
-		export APP_BASE_URL="http://homeassistant.local:8099"
+		export APP_BASE_URL="http://homeassistant.local:32418"
 		bashio::log.info "App base URL set to default: $APP_BASE_URL"
 	fi
 fi
@@ -471,7 +471,7 @@ nginx -g "daemon off;" &
 NGINX_PID=$!
 
 bashio::log.info "Solumati is now running!"
-bashio::log.info "Access via Home Assistant Ingress or http://homeassistant.local:8099"
+bashio::log.info "Access via Home Assistant Ingress or http://homeassistant.local:32418"
 
 # Trap signals to stop processes correctly
 cleanup() {

@@ -50,7 +50,7 @@ initrd http://${boot_domain}/image/clonezilla/initrd.img
 boot
 
 :memtest
-kernel http://${boot_domain}/image/memtest/memtest.bin
+kernel http://${boot_domain}/image/memtest/memtest86-usb.img
 boot
 
 :netbootxyz

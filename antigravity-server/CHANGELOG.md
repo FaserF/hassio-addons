@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0 (2026-01-09)
+
+### 📌 Release Note
+- Addon is now considered stable - initial stable release
+
 ## 0.3.3 (2026-01-09)
 
 ### 📦 Dependencies

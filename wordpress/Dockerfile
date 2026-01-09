@@ -51,6 +51,14 @@ RUN \
     && echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  /usr/local/bin/wp" | sha256sum -c - \
     && chmod +x /usr/local/bin/wp \
     \
+    # Create PHP symlinks
+    && ln -s /usr/bin/php84 /usr/bin/php \
+    && ln -s /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
+    \
+    # Create PHP symlinks
+    && ln -s /usr/bin/php84 /usr/bin/php \
+    && ln -s /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
+    \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \
     && rm -rf /var/cache/apk/*

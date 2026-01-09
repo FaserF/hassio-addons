@@ -16,7 +16,7 @@ map:
   - homeassistant_config:rw
   - share:rw
 ports:
-  80/tcp: 8099
+  80/tcp: 32418
 ports_description:
   80/tcp: "Web Interface Port (use Ingress for secure access)"
 options:
