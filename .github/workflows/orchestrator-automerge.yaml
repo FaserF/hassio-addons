@@ -16,9 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only run if CI succeeded and not from a fork
     # Actor check and PR detection moved to steps for better reliability
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch != 'master'
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -81,7 +79,7 @@ jobs:
         if: steps.find-pr.outputs.found == 'true'
         run: |
           AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
-          ALLOWED_AUTHORS="dependabot[bot] renovate[bot] github-actions[bot] FaserF"
+          ALLOWED_AUTHORS="dependabot[bot] renovate[bot] github-actions[bot] github-actions FaserF"
 
           echo "Checking if '$AUTHOR' is in allowed list..."
 
@@ -91,6 +89,7 @@ jobs:
           else
             echo "⏭️ Author '$AUTHOR' is not in auto-merge list. Skipping."
             echo "allowed=false" >> "$GITHUB_OUTPUT"
+            gh issue comment "${{ steps.find-pr.outputs.pr_number }}" --body "⏭️ **Auto-merge skipped:** Author '$AUTHOR' is not in the allowed list for automated merging."
           fi
 
       - name: 🔬 Check if CI jobs actually ran and succeeded
@@ -201,6 +200,7 @@ jobs:
         run: |
           echo "Waiting 1 minute before enabling auto-merge..."
           echo "To cancel: Add 'no-merge' label to the PR"
+          gh issue comment "${{ steps.find-pr.outputs.pr_number }}" --body "⏱️ **Auto-merge queueing...** Verification successful. Enabling auto-merge in 1 minute if no 'no-merge' label is present."
           sleep 60
 
       - name: 🔍 Verify PR is still up-to-date and CI is passing
@@ -316,7 +316,7 @@ jobs:
           if echo "$labels" | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            # We don't fail here as this is an intentional user action
+            gh issue comment "$PR_NUMBER" --body "🛑 **Auto-merge cancelled:** 'no-merge' label detected on the PR."
             exit 0
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
