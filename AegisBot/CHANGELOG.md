@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3 (2026-01-09)
+
+### 📦 Dependencies
+- 🚀 release(n8n): version bump [skip-tests] ([`09fb196`](https://github.com/FaserF/hassio-addons/commit/09fb1968338774fcd193caa4e33f80a7cb5cad81))
+
+### 📌 Release Note
+- bug fixes and startup improvements
+
+
 ## 0.3.2 (2026-01-09)
 
 ### 🎨 Style
