@@ -6,12 +6,14 @@ FROM ${BUILD_FROM} as base
 # Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
 
+ENV PTERODACTYL_VERSION="v1.12.0"
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.11.1"
 ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"
 ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
-ENV PTERODACTYL_VERSION="v1.12.0"
 
 RUN apk add --no-cache \
     redis \
