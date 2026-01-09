@@ -7,7 +7,13 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION=$(bashio::addon.version)
+    if ! VERSION=$(bashio::addon.version 2>/dev/null); then
+        bashio::log.warning "Unable to retrieve addon version, using fallback."
+        VERSION="unknown"
+    fi
+    if [ -z "$VERSION" ]; then
+         VERSION="unknown"
+    fi
     local SLUG="switch-lan-play"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -156,8 +162,6 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
-
-
 
 # Enable strict mode
 set -e

@@ -9,7 +9,13 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION=$(bashio::addon.version)
+    if ! VERSION=$(bashio::addon.version 2>/dev/null); then
+        VERSION="unknown"
+    fi
+    if [ -z "$VERSION" ]; then
+        VERSION="unknown"
+    fi
+    local NAME="Apache2"
     local SLUG="apache2"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -18,7 +24,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+""*" ]]; then
+    if [[ "$VERSION" == *"+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -54,9 +60,7 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Handle non-numeric (e.g. dev versions) by treating as 0
-            local n1="${ver1[i] preg_replace '[^0-9]' ''}"
-            local n2="${ver2[i] preg_replace '[^0-9]' ''}"
-            # Fallback for pure bash without regex substitution if needed, but lets assume simple numbers for stable check
+
             # Simple sanitization: remove anything not a digit
             n1=$(echo "${ver1[i]}" | tr -cd '0-9')
             n2=$(echo "${ver2[i]}" | tr -cd '0-9')
@@ -158,8 +162,6 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
-
-
 
 # Enable strict mode
 set -e

@@ -11,8 +11,6 @@ ARG WORDPRESS_VERSION="6.8"
 
 # hadolint ignore=DL3018,DL3003
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.0"
 ENV ADDON_NAME="Wordpress"
@@ -47,6 +45,10 @@ RUN \
     && mkdir -p /usr/src/wordpress \
     && tar zxvf /tmp/wordpress.tar.gz -C /usr/src/wordpress --strip-components=1 \
     && rm -f /tmp/wordpress.tar.gz \
+    \
+    && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp \
     \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \

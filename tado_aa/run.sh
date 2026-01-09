@@ -54,8 +54,7 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Handle non-numeric (e.g. dev versions) by treating as 0
-            local n1="${ver1[i] preg_replace '[^0-9]' ''}"
-            local n2="${ver2[i] preg_replace '[^0-9]' ''}"
+
             # Fallback for pure bash without regex substitution if needed, but lets assume simple numbers for stable check
             # Simple sanitization: remove anything not a digit
             n1=$(echo "${ver1[i]}" | tr -cd '0-9')
@@ -158,8 +157,6 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
-
-
 
 # Enable strict mode
 set -eo pipefail

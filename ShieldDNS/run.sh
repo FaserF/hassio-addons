@@ -9,7 +9,7 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION=$(bashio::addon.version)
+    VERSION="$(bashio::addon.version)"
     local SLUG="shielddns"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -158,8 +158,6 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
-
-
 
 # Enable strict mode
 set -e

@@ -1,6 +1,6 @@
 # Multi-stage build: Use HA debian-base for S6/Bashio, pull SAP runtime from SAP image
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0 # hadolint ignore=DL3008
 # renovate: datasource=docker depName=sapse/abap-cloud-developer-trial
 ARG SAP_IMAGE=sapse/abap-cloud-developer-trial:2023
 # hadolint ignore=DL3006
@@ -17,14 +17,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install SAP dependencies
 # hadolint ignore=DL3008
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.0.1"
 ENV ADDON_NAME="SAP ABAP Cloud Developer Trial"
 ENV ADDON_SLUG="sap-abap-cloud-dev"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \

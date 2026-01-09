@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0 # hadolint ignore=DL3008
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -15,7 +15,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install dependencies for NoVNC and VNC server
 # Install dependencies and tools
 
-
 # hadolint ignore=DL3008,SC1091
 
 # Addon metadata (injected by CI)
@@ -24,6 +23,7 @@ ENV ADDON_NAME="Antigravity-Server"
 ENV ADDON_SLUG="antigravity-server"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

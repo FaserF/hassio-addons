@@ -16,22 +16,12 @@ init: false
 map:
   - ssl:rw
 options:
-  database_host: ""
-  database_name: "wordpress"
-  database_user: "wordpress"
-  database_password: ""
   wordpress_title: "My Blog"
   wordpress_admin_user: "admin"
-  wordpress_admin_password: ""
   wordpress_admin_email: "admin@example.com"
 schema:
-  database_host: str?
-  database_name: str?
-  database_user: str?
-  database_password: password
   wordpress_title: str
   wordpress_admin_user: str
-  wordpress_admin_password: password
   wordpress_admin_email: email
 ports:
   80/tcp: 8099

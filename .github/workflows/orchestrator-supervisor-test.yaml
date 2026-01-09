@@ -561,8 +561,6 @@ jobs:
                   FAILED=1
                 fi
               fi
-
-
               # Verification Override for Pterodactyl Wings (Wait for Config)
               if [ "$FAILED" -eq 1 ]; then
                  LOGS=$(docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 || true)
