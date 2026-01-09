@@ -678,9 +678,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # Allow parallel builds to save runner minutes
-      # Increased from 1 to 3 for better resource utilization
-      max-parallel: 3
+      # Use max-parallel: 1 to prevent race conditions when pushing to master
+      # Multiple parallel jobs can conflict when they each try to commit and push
+      max-parallel: 1
       matrix:
         addon: ${{ fromJson(needs.detect.outputs.addons) }}
     steps:
