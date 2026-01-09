@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Configuring Tiny Tiny RSS..."
+
+# Configure Database
+# For now, we assume user provides DB details via config or external variables.
+# Ideally, we should support auto-discovery or simple SQLite for basic usage if possible,
+# but TT-RSS strongly recommends Postgres/MySQL.
+
+# Permission fix
+chown -R nginx:nginx /var/www/tt-rss

@@ -71,6 +71,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator           | ✅     | 2023-05 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                     | ⚠️     | 2023-05 |
 | **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                     | ✅     | 2023-05 |
+| **[Planka](planka)**                                            | Project Tracking Tool                       | ⚠️     | 2026-01 |
 | **[SAP ABAP Cloud Dev](sap-abap-cloud-dev)**                    | SAP ABAP Platform Trial                     | ⚠️     | 2026-01 |
 | **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server                 | ✅     | 2026-01 |
 | **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                         | ✅     | 2026-01 |
@@ -78,6 +79,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client             | ✅     | 2023-05 |
 | **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server             | ✅     | 2023-05 |
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence       | ✅     | 2023-05 |
+| **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                         | ⚠️     | 2026-01 |
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)   | ❌     | 2023-05 |
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)      | ⚠️     | 2026-01 |
 | **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                            | ✅     | 2023-05 |

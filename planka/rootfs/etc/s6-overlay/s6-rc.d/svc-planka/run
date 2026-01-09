@@ -1,0 +1,29 @@
+#!/command/with-contenv bashio
+
+bashio::log.info "Starting Planka..."
+
+# Configure environment variables
+export DATABASE_URL="postgresql://planka:planka@localhost:5432/planka"
+export PORT=1337
+# Generate secret key if not set in config (or use config options)
+# Config has 'secret_key'. if empty, generate one?
+# Planka requires SECRET_KEY.
+SECRET=$(bashio::config 'secret_key')
+if [ -z "$SECRET" ]; then
+    bashio::log.warn "No secret_key provided. Generating a temporary one. Sessions will be lost on restart."
+    SECRET=$(openssl rand -hex 32)
+fi
+export SECRET_KEY="$SECRET"
+
+# BASE_URL handling for Ingress
+# Planka runs at root usually?
+# Ingress access: /api/hassio_ingress/slug/...
+# Planka needs to know its base URL if it constructs absolute links.
+# If config ingress is true, bashio provides bashio::addon.ingress_entry
+export BASE_URL=$(bashio::addon.ingress_entry)
+
+cd /opt/planka
+
+# Start Planka
+# Official image CMD is ./start.sh which runs node index.js
+exec ./start.sh

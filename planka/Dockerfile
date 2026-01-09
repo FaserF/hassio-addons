@@ -1,0 +1,52 @@
+ARG BUILD_FROM
+FROM ghcr.io/plankanban/planka:1.24.1 AS planka
+
+FROM ${BUILD_FROM}
+
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Setup base system
+RUN \
+    apk add --no-cache \
+        nodejs \
+        npm \
+        python3 \
+        postgresql \
+        postgresql-contrib \
+        nginx \
+    && pip3 install --no-cache-dir --break-system-packages setuptools
+
+# Copy Planka
+WORKDIR /opt/planka
+COPY --from=planka /app/ .
+
+# Rebuild dependencies for Alpine compatibility if needed
+RUN \
+    if [ -d ".venv" ]; then rm -rf .venv; fi \
+    && python3 -m venv .venv \
+    && .venv/bin/pip3 install -r requirements.txt --no-cache-dir
+
+# Copy rootfs
+COPY rootfs /
+
+# Set permissions
+RUN \
+    chmod a+x /etc/s6-overlay/s6-rc.d/*/run \
+    && chmod a+x /etc/s6-overlay/s6-rc.d/*/*.sh 2>/dev/null || true
+
+# Labels
+LABEL \
+    org.opencontainers.image.title="Planka" \
+    org.opencontainers.image.description="The elegant open source project tracking tool" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
+    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/planka" \
+    org.opencontainers.image.source="https://github.com/FaserF/hassio-addons/tree/master/planka" \
+    org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/planka/README.md" \
+    org.opencontainers.image.created="${BUILD_DATE}"
+
+# Healthcheck
+HEALTHCHECK \
+    CMD curl --fail http://127.0.0.1:1337 || exit 1

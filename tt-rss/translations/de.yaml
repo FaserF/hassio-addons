@@ -1,0 +1,15 @@
+configuration:
+  log_level:
+    name: Log Level
+    description: Steuert den Grad der Protokollausführlichkeit.
+  ssl:
+    name: SSL
+    description: Aktiviert/Deaktiviert SSL (HTTPS) auf der Weboberfläche.
+  certfile:
+    name: SSL Zertifikatsdatei
+    description: Der Name der SSL-Zertifikatsdatei.
+  keyfile:
+    name: SSL Schlüsseldatei
+    description: Der Name der SSL-Schlüsseldatei.
+network:
+  80/tcp: Weboberfläche

@@ -1,0 +1,18 @@
+configuration:
+  ssl:
+    name: SSL
+    description: Aktiviert/Deaktiviert SSL (HTTPS) auf der Weboberfläche.
+  certfile:
+    name: SSL Zertifikatsdatei
+    description: Der Name der SSL-Zertifikatsdatei.
+  keyfile:
+    name: SSL Schlüsseldatei
+    description: Der Name der SSL-Schlüsseldatei.
+  log_level:
+    name: Log Level
+    description: Steuert den Grad der Protokollausführlichkeit.
+  secret_key:
+    name: Geheimer Schlüssel
+    description: Geheimer Schlüssel zum Signieren von Sitzungen.
+network:
+  3000/tcp: Weboberfläche

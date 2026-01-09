@@ -1,0 +1,13 @@
+#!/command/with-contenv bashio
+
+# Initialize PostgreSQL data directory
+DATA_DIR="/data/database"
+
+if ! bashio::fs.directory_exists "${DATA_DIR}"; then
+    bashio::log.info "Initializing PostgreSQL database..."
+    mkdir -p "${DATA_DIR}"
+    chown -R postgres:postgres "${DATA_DIR}"
+    chmod 700 "${DATA_DIR}"
+
+    su-exec postgres initdb -D "${DATA_DIR}" || bashio::exit.nok "Failed to initialize database"
+fi
