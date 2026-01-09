@@ -20,42 +20,61 @@ bashio::log.info "Using fixed port 3000 for webapp (required for host_network mo
 # This prevents EADDRINUSE errors when the service restarts
 bashio::log.info "Checking for existing processes on port ${WEB_APP_PORT}..."
 
-# Function to check if port is in use and show what's using it
+# Function to check if port is in use (only network connections, not file descriptors)
 check_port() {
     local port=$1
-    if command -v lsof >/dev/null 2>&1; then
-        lsof -i ":${port}" >/dev/null 2>&1
-    elif command -v netstat >/dev/null 2>&1; then
-        netstat -tuln | grep -q ":${port} " >/dev/null 2>&1
-    elif command -v ss >/dev/null 2>&1; then
+    # Use ss or netstat to check for actual network listeners (TCP/UDP)
+    # This avoids false positives from file descriptors
+    if command -v ss >/dev/null 2>&1; then
+        # Check for TCP listeners on the port
         ss -tuln | grep -q ":${port} " >/dev/null 2>&1
+    elif command -v netstat >/dev/null 2>&1; then
+        # Check for TCP listeners on the port
+        netstat -tuln | grep -q ":${port} " >/dev/null 2>&1
+    elif command -v lsof >/dev/null 2>&1; then
+        # Only check for network connections, not all file descriptors
+        lsof -i ":${port}" -sTCP:LISTEN >/dev/null 2>&1
     else
         # Fallback: check for node processes
         pgrep -f "node.*app.js" >/dev/null 2>&1
     fi
 }
 
-# Function to show what's using the port
+# Function to show what's using the port (only network listeners)
 show_port_usage() {
     local port=$1
-    bashio::log.info "Checking what's using port ${port}..."
-    if command -v lsof >/dev/null 2>&1; then
-        local pids=$(lsof -ti ":${port}" 2>/dev/null || true)
-        if [ -n "$pids" ]; then
-            bashio::log.warning "Processes using port ${port}:"
-            for pid in $pids; do
-                if [ -f "/proc/${pid}/cmdline" ]; then
-                    local cmd=$(cat "/proc/${pid}/cmdline" 2>/dev/null | tr '\0' ' ' || echo "unknown")
-                    bashio::log.warning "  PID ${pid}: ${cmd}"
-                else
-                    bashio::log.warning "  PID ${pid}: (process info not available)"
-                fi
+    bashio::log.info "Checking what's listening on port ${port}..."
+    if command -v ss >/dev/null 2>&1; then
+        local listeners=$(ss -tulnp | grep ":${port} " || true)
+        if [ -n "$listeners" ]; then
+            bashio::log.warning "Network listeners on port ${port}:"
+            echo "$listeners" | while IFS= read -r line; do
+                bashio::log.warning "  $line"
             done
+        else
+            bashio::log.info "No network listeners found on port ${port}"
         fi
-    elif command -v ss >/dev/null 2>&1; then
-        ss -tulnp | grep ":${port} " || true
     elif command -v netstat >/dev/null 2>&1; then
-        netstat -tulnp | grep ":${port} " || true
+        local listeners=$(netstat -tulnp | grep ":${port} " || true)
+        if [ -n "$listeners" ]; then
+            bashio::log.warning "Network listeners on port ${port}:"
+            echo "$listeners" | while IFS= read -r line; do
+                bashio::log.warning "  $line"
+            done
+        else
+            bashio::log.info "No network listeners found on port ${port}"
+        fi
+    elif command -v lsof >/dev/null 2>&1; then
+        # Only show network listeners, not all file descriptors
+        local listeners=$(lsof -i ":${port}" -sTCP:LISTEN 2>/dev/null || true)
+        if [ -n "$listeners" ]; then
+            bashio::log.warning "Network listeners on port ${port}:"
+            echo "$listeners" | while IFS= read -r line; do
+                bashio::log.warning "  $line"
+            done
+        else
+            bashio::log.info "No network listeners found on port ${port}"
+        fi
     fi
 }
 
@@ -71,14 +90,19 @@ if command -v pgrep >/dev/null 2>&1 && pgrep -f "node.*app.js" >/dev/null 2>&1; 
     sleep 2
 fi
 
-# Check if port is in use and show what's using it
+# Check if port is in use (only network listeners)
 if check_port "${WEB_APP_PORT}"; then
     show_port_usage "${WEB_APP_PORT}"
 
-    # Try to kill processes using the port
+    # Try to kill processes using the port (only network listeners)
     bashio::log.warning "Attempting to free port ${WEB_APP_PORT}..."
-    if command -v lsof >/dev/null 2>&1; then
-        lsof -ti ":${WEB_APP_PORT}" | xargs kill -9 2>/dev/null || true
+    if command -v ss >/dev/null 2>&1; then
+        ss -tulnp | grep ":${WEB_APP_PORT} " | grep -oP 'pid=\K[0-9]+' | xargs kill -9 2>/dev/null || true
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -tulnp | grep ":${WEB_APP_PORT} " | grep -oP '[0-9]+/[^ ]+' | cut -d'/' -f1 | xargs kill -9 2>/dev/null || true
+    elif command -v lsof >/dev/null 2>&1; then
+        # Only kill network listeners, not file descriptors
+        lsof -ti ":${WEB_APP_PORT}" -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
     elif command -v fuser >/dev/null 2>&1; then
         fuser -k "${WEB_APP_PORT}/tcp" 2>/dev/null || true
     fi
@@ -97,9 +121,16 @@ while check_port "${WEB_APP_PORT}" && [ $wait_count -lt $max_wait ]; do
     sleep 1
     wait_count=$((wait_count + 1))
 
-    # Try to kill processes using the port again
-    if command -v lsof >/dev/null 2>&1; then
-        lsof -ti ":${WEB_APP_PORT}" | xargs kill -9 2>/dev/null || true
+    # Try to kill processes using the port again (only network listeners)
+    if command -v ss >/dev/null 2>&1; then
+        # Get PIDs of processes listening on the port
+        ss -tulnp | grep ":${WEB_APP_PORT} " | grep -oP 'pid=\K[0-9]+' | xargs kill -9 2>/dev/null || true
+    elif command -v netstat >/dev/null 2>&1; then
+        # Get PIDs of processes listening on the port
+        netstat -tulnp | grep ":${WEB_APP_PORT} " | grep -oP '[0-9]+/[^ ]+' | cut -d'/' -f1 | xargs kill -9 2>/dev/null || true
+    elif command -v lsof >/dev/null 2>&1; then
+        # Only kill network listeners, not file descriptors
+        lsof -ti ":${WEB_APP_PORT}" -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
     elif command -v fuser >/dev/null 2>&1; then
         fuser -k "${WEB_APP_PORT}/tcp" 2>/dev/null || true
     fi

@@ -75,6 +75,34 @@ bashio::log.info "  - Document root: /var/www/wordpress"
 bashio::log.info "  - PHP-FPM: 127.0.0.1:9000"
 bashio::log.info ""
 
+# Verify the default.conf file exists
+if [ -f /etc/nginx/http.d/default.conf ]; then
+	bashio::log.info "Nginx configuration file exists and is ready"
+else
+	bashio::log.error "Nginx configuration file /etc/nginx/http.d/default.conf not found!"
+	exit 1
+fi
+
+# Ensure nginx can write to log directories
+mkdir -p /var/log/nginx /var/run
+touch /var/log/nginx/access.log /var/log/nginx/error.log
+chmod 755 /var/log/nginx /var/run
+chmod 644 /var/log/nginx/*.log 2>/dev/null || true
+
+# Verify nginx binary exists and is executable
+if ! command -v nginx >/dev/null 2>&1; then
+	bashio::log.error "Nginx binary not found!"
+	exit 1
+fi
+
+# Final configuration test
+if ! nginx -t; then
+	bashio::log.error "Nginx configuration test failed before startup!"
+	exit 1
+fi
+
 # Start nginx in foreground (for s6-overlay)
-bashio::log.info "Starting Nginx process..."
+# This will replace the shell process, so no code after this will execute
+bashio::log.info "Starting Nginx process (foreground mode)..."
+bashio::log.info "Nginx is now running. Access WordPress at http://<your-home-assistant-ip>:8099"
 exec nginx -g "daemon off;"

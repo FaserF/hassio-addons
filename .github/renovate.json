@@ -17,9 +17,6 @@
     "^sed",
     "^bash"
   ],
-  "allowedPostUpgradeCommands": [
-    "^bash \\.github/scripts/update-checksums\\.sh"
-  ],
   "customManagers": [
     {
       "customType": "regex",
