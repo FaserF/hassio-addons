@@ -37,10 +37,13 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
+certfile: fullchain.pem
+keyfile: privkey.pem
+ssl: false
 wordpress_admin_email: admin@example.com
 wordpress_admin_user: admin
 wordpress_title: My Blog
-wordpress_url: ''
+wordpress_url: http://wordpress.local
 ```
 
 ---
