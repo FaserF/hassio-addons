@@ -226,7 +226,7 @@ jobs:
             -p ${{ env.HA_PORT }}:7123 \
             -v /tmp/ha-data/addons:/mnt/supervisor/addons \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
-            -v /tmp/ha-data/share:/mnt/supervisor/share \
+            --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
             -v ha-supervisor-storage:/var/lib/docker \
