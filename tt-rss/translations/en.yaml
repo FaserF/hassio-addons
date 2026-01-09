@@ -1,0 +1,15 @@
+configuration:
+  log_level:
+    name: Log level
+    description: Controls the level of log verbosity.
+  ssl:
+    name: SSL
+    description: Enables/Disables SSL (HTTPS) on the web interface.
+  certfile:
+    name: SSL Certificate File
+    description: The name of the SSL certificate file.
+  keyfile:
+    name: SSL Key File
+    description: The name of the SSL key file.
+network:
+  80/tcp: Web Interface

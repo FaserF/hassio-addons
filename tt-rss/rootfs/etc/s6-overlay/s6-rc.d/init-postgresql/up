@@ -1,0 +1,2 @@
+#!/command/execlineb
+foreground { /etc/s6-overlay/s6-rc.d/init-postgresql/run }

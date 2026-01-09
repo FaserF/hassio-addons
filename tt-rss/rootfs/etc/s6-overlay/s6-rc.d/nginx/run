@@ -1,0 +1,5 @@
+#!/usr/bin/env bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting Nginx..."
+exec nginx -g "daemon off;"

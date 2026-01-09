@@ -1,0 +1,41 @@
+#!/usr/bin/env bashio
+
+# Initialize PostgreSQL data directory
+DATA_DIR="/data/database"
+
+if ! bashio::fs.directory_exists "${DATA_DIR}"; then
+    bashio::log.info "Initializing PostgreSQL database..."
+    mkdir -p "${DATA_DIR}"
+    chown -R postgres:postgres "${DATA_DIR}"
+    chmod 700 "${DATA_DIR}"
+
+    su-exec postgres initdb -D "${DATA_DIR}" || bashio::exit.nok "Failed to initialize database"
+
+    # Configure pg_hba.conf for local access
+    {
+        echo "host all all 127.0.0.1/32 md5"
+        echo "host all all ::1/128 md5"
+        echo "local all all trust" # Allow local socket for maintenance without password if needed, or use md5
+    } > "${DATA_DIR}/pg_hba.conf"
+
+    chown postgres:postgres "${DATA_DIR}/pg_hba.conf"
+    chmod 600 "${DATA_DIR}/pg_hba.conf"
+fi
+
+# Set Postgres Superuser Password
+if ! bashio::fs.file_exists "/data/postgres_password"; then
+    # Generate securely
+    (
+        umask 077
+        openssl rand -base64 32 > /data/postgres_password
+    )
+fi
+POSTGRES_PASSWORD=$(cat /data/postgres_password)
+
+# Start Postgres temporarily to set password
+su-exec postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start
+
+su-exec postgres psql -v ON_ERROR_STOP=1 --username=postgres --no-password -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';"
+
+# Stop Postgres so s6 can manage it
+su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop

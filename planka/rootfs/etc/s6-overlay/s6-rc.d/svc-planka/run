@@ -1,0 +1,46 @@
+#!/usr/bin/env bashio
+
+# Set strict error handling
+set -o pipefail
+
+bashio::log.info "Starting Planka..."
+
+# Configure environment variables
+# DB Password
+if bashio::fs.file_exists "/data/planka_db_password"; then
+    # Read without trailing newline
+    PLANKA_DB_PASSWORD=$(tr -d '\n' < /data/planka_db_password)
+else
+    # Should not happen if init-planka ran
+    PLANKA_DB_PASSWORD="planka"
+fi
+
+# URL Encode Password (simple python oneliner as we have python)
+ENCODED_PASS=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PLANKA_DB_PASSWORD}'))")
+
+export DATABASE_URL="postgresql://planka:${ENCODED_PASS}@localhost:5432/planka"
+export PORT=1337
+
+# Secret Key
+SECRET=$(bashio::config 'secret_key')
+if [ -z "$SECRET" ]; then
+    if ! bashio::fs.file_exists "/data/secret_key"; then
+        bashio::log.warn "No secret_key provided. Generating a persistent one."
+        openssl rand -hex 32 > /data/secret_key
+    fi
+    SECRET=$(cat /data/secret_key)
+fi
+export SECRET_KEY="$SECRET"
+export TRUST_PROXY=1
+
+# BASE_URL handling for Ingress
+if bashio::addon.ingress_is_enabled; then
+    export BASE_URL="$(bashio::addon.ingress_entry)"
+fi
+
+if ! cd /opt/planka; then
+    bashio::exit.nok "Failed to change directory to /opt/planka"
+fi
+
+# Start Planka
+exec ./start.sh
