@@ -11,7 +11,6 @@ ARG WORDPRESS_VERSION="6.8"
 
 # hadolint ignore=DL3018,DL3003
 
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.0"
 ENV ADDON_NAME="Wordpress"

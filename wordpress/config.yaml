@@ -12,7 +12,6 @@ services:
   - mysql:need
 panel_icon: mdi:wordpress
 ingress: true
-ingress_port: 80
 init: false
 map:
   - ssl:rw

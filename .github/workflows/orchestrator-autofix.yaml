@@ -183,9 +183,11 @@ jobs:
           find .github/workflows -name "*.yaml" -type f -exec sed -i 's/[[:space:]]*$//' {} +
 
       # 7. Clean Excessive Blank Lines
+      # 7. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
         run: |
-          find .github/workflows -name "*.yaml" -type f -exec sed -i -z 's/\n\{3,\}/\n\n/g' {} +
+          python3 .scripts/clean_blank_lines.py
+
 
       # 8. Bump Test Script Version
       - name: 🆙 Bump Test Script Version

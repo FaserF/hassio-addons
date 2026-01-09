@@ -1,4 +1,14 @@
 # tuya-convert BETA (Unsupported)
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is currently **UNSUPPORTED**.
+> It is no longer actively developed or maintained.
+> - No new features will be added.
+> - Bugs will likely not be fixed.
+> - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
+>
+> **USE AT YOUR OWN RISK.**
 
 ![Logo](logo.png)
 
@@ -25,7 +35,6 @@ If you encounter any issues with this add-on, please report them using the link 
 
 If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
 
-
 ## 🐛 Report a Bug
 
 If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
@@ -43,8 +52,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 
 > [!NOTE]
 > Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
-
-
 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.

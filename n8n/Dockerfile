@@ -43,7 +43,6 @@ RUN \
 COPY rootfs /
 RUN chmod a+x /etc/services.d/n8n/run
 
-
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE

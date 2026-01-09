@@ -22,7 +22,6 @@ This release represents a significant effort to standardize and improve all addo
 
 - Manual release via Orchestrator
 
-
 ## 1.7.1
 
 - Automatically updated addon-base to version v19.0.0
