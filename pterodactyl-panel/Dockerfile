@@ -6,13 +6,13 @@ FROM ${BUILD_FROM} as base
 # Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
 
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.11.0"
+ENV ADDON_VERSION="0.11.1"
 ENV ADDON_NAME="pterodactyl Panel Gameserver - BETA"
 ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
+ENV PTERODACTYL_VERSION="v1.12.0"
+
 
 RUN apk add --no-cache \
     redis \
@@ -58,7 +58,7 @@ WORKDIR /var/www/html
 RUN apk add --no-cache \
     yarn \
     git \
-    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch release/v1.12.0 \
+    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch "release/${PTERODACTYL_VERSION}" \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \
@@ -79,7 +79,6 @@ RUN apk add --no-cache \
 # All build requirements get scrapped as to maintain a small image
 FROM base as production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
-ENV PTERODACTYL_VERSION="v1.11.11"
 
 WORKDIR /var/www/html
 
@@ -93,7 +92,7 @@ RUN chmod a+x /run.sh \
 CMD [ "/run.sh" ]
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
   CMD curl --fail http://127.0.0.1:80 || exit 1
 
 # Labels

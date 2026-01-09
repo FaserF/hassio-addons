@@ -3,53 +3,69 @@
 
 bashio::log.info "Initialize Wordpress..."
 
-# Set defaults for optional values
-if ! bashio::config.has_value 'database_host'; then
-    if bashio::services.available "mysql"; then
-        bashio::log.info "Using MySQL service connection details..."
-        DB_HOST=$(bashio::services "mysql" "host")
-        if bashio::var.has_value "$(bashio::services "mysql" "port")"; then
-            DB_HOST="${DB_HOST}:$(bashio::services "mysql" "port")"
-        fi
-    else
-        bashio::log.info "No database_host configured, using Home Assistant MariaDB addon (core-mariadb)"
-        DB_HOST="core-mariadb"
-    fi
-else
-    DB_HOST=$(bashio::config 'database_host')
-fi
-
-if ! bashio::config.has_value 'database_password'; then
-    if bashio::services.available "mysql"; then
-        DB_PASS=$(bashio::services "mysql" "password")
-    else
-        bashio::exit.nok "A 'database_password' is required!"
-    fi
-else
-    DB_PASS=$(bashio::config 'database_password')
-fi
-
-if ! bashio::config.has_value 'database_name'; then
-    bashio::log.info "No database_name configured, using default 'wordpress'"
+# Configure database connection
+if bashio::services.available "mysql"; then
+    bashio::log.info "Configuring Wordpress to use the MySQL service..."
+    DB_HOST=$(bashio::services "mysql" "host")
+    DB_PORT=$(bashio::services "mysql" "port")
+    DB_USER=$(bashio::services "mysql" "username")
+    DB_PASS=$(bashio::services "mysql" "password")
     DB_NAME="wordpress"
-else
-    DB_NAME=$(bashio::config 'database_name')
-fi
 
-if ! bashio::config.has_value 'database_user'; then
-    if bashio::services.available "mysql"; then
-        DB_USER=$(bashio::services "mysql" "username")
+    # Combine host and port for Wordpress config
+    if bashio::var.has_value "${DB_PORT}"; then
+        DB_HOST_CONFIG="${DB_HOST}:${DB_PORT}"
     else
-        bashio::log.info "No database_user configured, using default 'wordpress'"
-        DB_USER="wordpress"
+        DB_HOST_CONFIG="${DB_HOST}"
+        DB_PORT="3306"
     fi
 else
-    DB_USER=$(bashio::config 'database_user')
+    bashio::exit.nok "The 'mysql' service is not available! Please install and start the MariaDB add-on."
 fi
 
-if bashio::config.equals 'wordpress_admin_password' 'changeme'; then
-    bashio::exit.nok "You are using the insecure default admin password 'changeme'. Please change it!"
-fi
+# Removed insecure password check as we now auto-generate it
+
+
+# Ensure database exists and is accessible
+bashio::log.info "Checking database connection..."
+
+    # Create temporary config file for secure authentication
+    temp_config=$(mktemp)
+    # Ensure cleanup on any exit
+    trap 'rm -f "$temp_config"' EXIT
+    install -m 600 /dev/null "$temp_config"
+    # Use printf for safe credential handling (avoids shell interpolation issues)
+    printf '[client]\npassword=%s\n' "$DB_PASS" > "$temp_config"
+
+    # Wait for loop
+    for i in {1..30}; do
+        if mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
+            break
+        fi
+        bashio::log.info "Waiting for database... $i/30"
+        sleep 2
+    done
+
+    # Verify connection after loop
+    if ! mariadb-admin --defaults-extra-file="$temp_config" ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --silent; then
+        bashio::log.error "Could not connect to database after retries!"
+        exit 1
+    fi
+
+    # Create DB
+    bashio::log.info "Ensuring database '$DB_NAME' exists..."
+    if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
+         bashio::log.info "Database '$DB_NAME' not found. Creating..."
+         if ! mariadb --defaults-extra-file="$temp_config" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"; then
+            bashio::log.error "Failed to create database '$DB_NAME'!"
+            rm -f "$temp_config"
+            exit 1
+         fi
+         bashio::log.info "Database created."
+    fi
+
+    # Cleanup
+    rm -f "$temp_config"
 
 # Check if Wordpress is installed
 if [ ! -d /var/www/wordpress/wp-admin ]; then
@@ -69,10 +85,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     # Database - use variables set during validation
     # Escape special characters for sed
     # We escape backslashes first, then the delimiter (|) and ampersands
-    db_host_escaped=$(echo "${DB_HOST}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_name_escaped=$(echo "${DB_NAME}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_user_escaped=$(echo "${DB_USER}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
-    db_pass_escaped=$(echo "${DB_PASS}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_host_escaped=$(printf '%s' "${DB_HOST_CONFIG}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_name_escaped=$(printf '%s' "${DB_NAME}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_user_escaped=$(printf '%s' "${DB_USER}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
+    db_pass_escaped=$(printf '%s' "${DB_PASS}" | sed 's/\\/\\\\/g' | sed 's/[|&]/\\&/g')
 
     sed -i "s|database_name_here|${db_name_escaped}|" /var/www/wordpress/wp-config.php
     sed -i "s|username_here|${db_user_escaped}|" /var/www/wordpress/wp-config.php
@@ -108,3 +124,60 @@ find /var/www/wordpress -type f -exec chmod 644 {} \; || bashio::exit.nok "Faile
 chmod 640 /var/www/wordpress/wp-config.php || bashio::exit.nok "Failed to set permissions for wp-config.php"
 
 bashio::log.info "Wordpress initialized!"
+
+# Check if Wordpress is already installed
+if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
+    bashio::log.info "Wordpress not installed. Installing..."
+
+    # Generate secure password
+    ADMIN_PASS=$(openssl rand -base64 24)
+    ADMIN_USER=$(bashio::config 'wordpress_admin_user')
+    ADMIN_EMAIL=$(bashio::config 'wordpress_admin_email')
+    TITLE=$(bashio::config 'wordpress_title')
+    WORDPRESS_URL=$(bashio::config 'wordpress_url')
+
+    if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
+        bashio::exit.nok "The configuration 'wordpress_url' is missing! Please set your external URL (e.g. https://example.com) in the add-on configuration."
+    fi
+
+    # Validate required configuration
+    MISSING_CONFIGS=""
+    if [ -z "$ADMIN_USER" ] || [ "$ADMIN_USER" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_admin_user "
+    fi
+    if [ -z "$ADMIN_EMAIL" ] || [ "$ADMIN_EMAIL" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_admin_email "
+    fi
+    if [ -z "$TITLE" ] || [ "$TITLE" == "null" ]; then
+        MISSING_CONFIGS="${MISSING_CONFIGS}wordpress_title "
+    fi
+    if [ -n "$MISSING_CONFIGS" ]; then
+        bashio::log.error "Missing required configuration: ${MISSING_CONFIGS}"
+        bashio::log.error "Please configure these options in the add-on settings."
+        exit 1
+    fi
+
+    # Install Wordpress
+    if wp core install \
+        --allow-root \
+        --path=/var/www/wordpress \
+        --url="${WORDPRESS_URL}" \
+        --title="${TITLE}" \
+        --admin_user="${ADMIN_USER}" \
+        --admin_password="${ADMIN_PASS}" \
+        --admin_email="${ADMIN_EMAIL}"; then
+
+        bashio::log.info "Wordpress installed successfully!"
+        bashio::log.warning "------------------------------------------------"
+        # Security Note: We are intentionally logging the password here for user convenience
+        # during the initial setup, as requested by the user.
+        bashio::log.warning "Wordpress Admin Password: ${ADMIN_PASS}"
+        bashio::log.warning "PLEASE SAVE THIS PASSWORD NOW!"
+        bashio::log.warning "This password will NOT be shown again."
+        bashio::log.warning "------------------------------------------------"
+    else
+        bashio::log.error "Failed to install Wordpress!"
+    fi
+else
+    bashio::log.info "Wordpress database already installed."
+fi

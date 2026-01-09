@@ -1,12 +1,11 @@
 arch:
   - aarch64
   - amd64
-description: These scripts allow you to modify the different Xiaomi router firmware
-  images to make sure SSH and UART access is always enabled. (Unsupported)
+description: Unsupported - Xiaomi router firmware modification scripts (no longer maintained)
 init: false
 map:
   - share:rw
-name: xqrepack (Unsupported)
+name: xqrepack
 options:
   firmware_name: miwifi_r3600_firmware.bin
   firmware_path: /share/miwifi_firmware/

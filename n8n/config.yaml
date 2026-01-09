@@ -16,11 +16,15 @@ options:
   certfile: fullchain.pem
   keyfile: privkey.pem
   log_level: info
+  port: 5678
+  listen_address: "0.0.0.0"
 schema:
   ssl: bool?
   certfile: str?
   keyfile: str?
   log_level: list(trace|debug|info|warning|error)?
+  port: int?
+  listen_address: str?
 ports:
   5678/tcp: 5678
 ports_description:

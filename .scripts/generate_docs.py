@@ -5,13 +5,13 @@ Generate the GitHub Pages index.html from addon metadata.
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
 import yaml
 
 # Template for the HTML file
-# We use a simple string replacement for simplicity and robustness
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,6 +53,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <span>📦 Total Add-ons: <strong>{total_addons}</strong></span>
             <span>✅ Stable: <strong>{stable_count}</strong></span>
             <span>⚠️ Beta: <strong>{beta_count}</strong></span>
+            <span>🛡️ Unsupported: <strong>{unsupported_count}</strong></span>
         </div>
 
         <div class="addons-grid">
@@ -78,7 +79,14 @@ ADDON_CARD_TEMPLATE = """
                 </div>
                 <div class="addon-desc">{description}</div>
                 <div class="addon-meta">
-                    <span class="version">v{version}</span>
+                    <div class="version-row">
+                        <span class="version-label">Stable</span>
+                        <span class="version-value">v{version} <span class="version-date">({stable_date})</span></span>
+                    </div>
+                    <div class="version-row">
+                        <span class="version-label">Edge</span>
+                        <span class="version-value">{edge_hash} <span class="version-date">({edge_date})</span></span>
+                    </div>
                 </div>
                 <div class="addon-footer">
                     <span class="tag {status_class}">{status_text}</span>
@@ -88,9 +96,6 @@ ADDON_CARD_TEMPLATE = """
 """
 
 # Map MDI icons to emojis (fallback) or use text
-# Ideal would be SVG or font, but for now we stick to simple emoji/text mapping logic or generic icons
-# based on names if specific icon not found.
-# For this implementation particularity we will try to be smart or generic.
 ICON_MAP = {
     "wordpress": "📝",
     "wiki": "📚",
@@ -144,6 +149,50 @@ def parse_version(version_str: str) -> tuple:
         return (0, 0, 0)
 
 
+def get_git_info(path: Path) -> dict:
+    """
+    Get git information for a specific path.
+    Returns dictionary with:
+        - edge_hash: Short hash of last commit
+        - edge_date: Date of last commit
+        - stable_date: Date of last change to config.yaml (proxy for release date)
+    """
+    info = {
+        "edge_hash": "HEAD",
+        "edge_date": "Unknown",
+        "stable_date": "Unknown"
+    }
+
+    try:
+        # Get Edge info (latest commit to the directory)
+        # git log -1 --format="%h|%cd" --date=short -- <path>
+        cmd = ["git", "log", "-1", "--format=%h|%cd", "--date=short", "--", str(path)]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        if result.stdout.strip():
+            edge_hash, edge_date = result.stdout.strip().split("|")
+            info["edge_hash"] = edge_hash
+            info["edge_date"] = edge_date
+
+        # Get Stable info (last commit to config.yaml)
+        # git log -1 --format="%cd" --date=short -- <path>/config.yaml
+        config_path = path / "config.yaml"
+        if config_path.exists():
+            cmd = ["git", "log", "-1", "--format=%cd", "--date=short", "--", str(config_path)]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            if result.stdout.strip():
+                info["stable_date"] = result.stdout.strip()
+            else:
+                # Fallback to current date or unknown if git fails/no history
+                info["stable_date"] = "Unknown"
+
+    except subprocess.CalledProcessError:
+        pass
+    except Exception as e:
+        print(f"Error fetching git info for {path} ({type(e).__name__}): {e}")
+
+    return info
+
+
 def extract_metadata(
     config_path: Path, relative_path: str, is_unsupported: bool
 ) -> dict:
@@ -160,6 +209,10 @@ def extract_metadata(
             "url",
             f"https://github.com/FaserF/hassio-addons/tree/master/{relative_path}",
         )
+
+        # Get Git Info
+        addon_dir = config_path.parent
+        git_info = get_git_info(addon_dir)
 
         # Determine status
         if is_unsupported:
@@ -182,13 +235,16 @@ def extract_metadata(
             "status_text": status_text,
             "status_class": status_class,
             "icon": get_icon(slug, name),
+            "stable_date": git_info["stable_date"],
+            "edge_hash": git_info["edge_hash"],
+            "edge_date": git_info["edge_date"],
             "sort_key": (
                 0 if status_class == "stable" else 1 if status_class == "beta" else 2,
                 name,
             ),
         }
     except Exception as e:
-        print(f"Error parsing {config_path}: {e}")
+        print(f"Error parsing {config_path} ({type(e).__name__}): {e}")
         return None
 
 
@@ -197,6 +253,8 @@ def main():
     docs_dir = repo_root / "docs"
 
     addons = []
+
+    print("🔍 Scanning addons and fetching git info (this may take a moment)...")
 
     # scan for addons
     # 1. Main dir
@@ -208,6 +266,7 @@ def main():
         ):
             config_path = item / "config.yaml"
             if config_path.exists():
+                print(f"  - Processing {item.name}...")
                 meta = extract_metadata(config_path, item.name, False)
                 if meta:
                     addons.append(meta)
@@ -219,6 +278,7 @@ def main():
             if item.is_dir():
                 config_path = item / "config.yaml"
                 if config_path.exists():
+                    print(f"  - Processing .unsupported/{item.name}...")
                     meta = extract_metadata(
                         config_path, f".unsupported/{item.name}", True
                     )
@@ -239,16 +299,24 @@ def main():
             status_text=addon["status_text"],
             status_class=addon["status_class"],
             icon=addon["icon"],
+            stable_date=addon["stable_date"],
+            edge_hash=addon["edge_hash"],
+            edge_date=addon["edge_date"],
         )
 
     # Stats
     total = len(addons)
     stable = sum(1 for a in addons if a["status_class"] == "stable")
     beta = sum(1 for a in addons if a["status_class"] == "beta")
+    unsupported = sum(1 for a in addons if a["status_class"] == "unsupported")
 
     # Final HTML
     final_html = HTML_TEMPLATE.format(
-        addons_grid=grid_html, total_addons=total, stable_count=stable, beta_count=beta
+        addons_grid=grid_html,
+        total_addons=total,
+        stable_count=stable,
+        beta_count=beta,
+        unsupported_count=unsupported
     )
 
     # Write output

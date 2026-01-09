@@ -5,10 +5,8 @@ ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018
 
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.1.0"
+ENV ADDON_VERSION="2.1.1"
 ENV ADDON_NAME="Bash Script Executer"
 ENV ADDON_SLUG="bashscriptexecuter"
 ENV ADDON_UNSUPPORTED="false"
@@ -20,7 +18,7 @@ COPY run.sh /
 
 # Health check - verify run.sh process is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD pgrep -x run.sh >/dev/null || exit 1
+    CMD pgrep -f run.sh >/dev/null || exit 1
 
 RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]

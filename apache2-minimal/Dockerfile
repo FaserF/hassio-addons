@@ -6,10 +6,8 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
 
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.1.0"
+ENV ADDON_VERSION="3.1.1"
 ENV ADDON_NAME="Apache2 Minimal"
 ENV ADDON_SLUG="apache2-minimal"
 ENV ADDON_UNSUPPORTED="false"

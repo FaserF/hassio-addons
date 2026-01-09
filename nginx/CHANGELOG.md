@@ -3,11 +3,15 @@
 ## 0.1.2 (2026-01-09)
 
 ### 🎨 Style
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`72718f5`](https://github.com/FaserF/hassio-addons/commit/72718f5cfc149f65ec936797326b6782ef996461))
+
+- auto-fix (shfmt, black, isort, prettier, markdownlint) ([`72718f5`](https://github.com/FaserF/hassio-addons/commit/72718f5cfc149f65ec936797326b6782ef996461))
 
 ### 📌 Release Note
-- General addon structure improvements and startup bug fixes
 
+- Dynamic version sourcing via `bashio::addon.version` for accurate runtime version display
+- Healthcheck timing adjustments for improved reliability
+- Startup script improvements and bug fixes
+- Auto-formatting applied (shfmt, prettier, markdownlint)
 
 ## 0.1.1 (2026-01-08)
 

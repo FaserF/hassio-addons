@@ -3,11 +3,12 @@
 ## 2.1.3 (2026-01-09)
 
 ### 🎨 Style
+
 - auto-fix (shfmt,black,isort,prettier,markdownlint) ([`72718f5`](https://github.com/FaserF/hassio-addons/commit/72718f5cfc149f65ec936797326b6782ef996461))
 
 ### 📌 Release Note
-- General addon structure improvements and startup bug fixes
 
+- General addon structure improvements and startup bug fixes
 
 ## 2.1.2 (2026-01-09)
 

@@ -11,8 +11,6 @@ ARG WORDPRESS_VERSION="6.8"
 
 # hadolint ignore=DL3018,DL3003
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.0"
 ENV ADDON_NAME="Wordpress"
@@ -43,10 +41,15 @@ RUN \
     \
     && curl -J -L -o /tmp/wordpress.tar.gz \
         "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \
-    && echo "511705749ab8da65fdf5a018344173d5  /tmp/wordpress.tar.gz" | md5sum -c - \
+    # SHA256 from https://wordpress.org/wordpress-6.8.tar.gz.sha256 (verified 2026-01)
+    && echo "f7dbedc423ddb3f2f3e98e9140f1720bfd6d4a8f4873c85da2e62f6a078de10a  /tmp/wordpress.tar.gz" | sha256sum -c - \
     && mkdir -p /usr/src/wordpress \
     && tar zxvf /tmp/wordpress.tar.gz -C /usr/src/wordpress --strip-components=1 \
     && rm -f /tmp/wordpress.tar.gz \
+    \
+    && curl -L -o /usr/local/bin/wp "https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar" \
+    && echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  /usr/local/bin/wp" | sha256sum -c - \
+    && chmod +x /usr/local/bin/wp \
     \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \

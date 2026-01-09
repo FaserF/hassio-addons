@@ -6,20 +6,19 @@
 # ============================================================================
 _show_startup_banner() {
 	# shellcheck disable=SC2155
-	local VERSION="$(bashio::addon.version)"
-	local SLUG="shieldfile"
-	local UNSUPPORTED="false"
+	    local VERSION
+    VERSION=$(bashio::addon.version)
+    local SLUG="shieldfile"
+    local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
 	local MAINTAINER="FaserF"
 
 	# Extract base version and commit from dev versions (1.2.3-dev+abc123)
 	local BASE_VERSION="${VERSION%%-dev*}"
 	local DEV_COMMIT=""
-	if [[ "$VERSION" == *"+"* ]]; then
+	if [[ "$VERSION" == *"-dev+"* ]]; then
 		DEV_COMMIT="${VERSION##*+}"
 	fi
-
-	# Header
 
 	# Status indicator
 	if [ "$UNSUPPORTED" = "true" ]; then
