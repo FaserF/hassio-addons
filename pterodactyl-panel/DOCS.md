@@ -19,8 +19,24 @@ After the first start, you can log in with the following default credentials:
 - **Email:** `admin@example.com`
 - **Password:** The value you set in the **password** field of the add-on configuration.
 
+> [!IMPORTANT]
+> **How to get your password:**
+>
+> 1. **If you set a password in the configuration:**
+>    - Use the exact password you entered in the `password` field of the add-on configuration.
+>
+> 2. **If you left the password field empty:**
+>    - A random password was automatically generated during the first startup.
+>    - Check the add-on logs for a message like: `"No database password set in configuration! Generating random password: XXXXXXXXXX"`
+>    - You can also find it in `/share/pterodactyl/.env` as `DB_PASSWORD=`
+>    - Or check the startup logs for: `"For the first login use admin@example.com / admin as user and your database password to sign in."`
+
 > [!NOTE]
-> If you did not set a password in the configuration, a random one was generated and printed in the add-on logs during the first startup. You can also find it in `/share/pterodactyl/.env` as `DB_PASSWORD`.
+> The `password` field in the configuration serves **two purposes**:
+> - It's used as the database password for the `pterodactyl` database user
+> - It's also used as the initial admin login password for the panel
+>
+> If you don't set a password, a random one is generated and shown in the logs. **Make sure to save it!**
 
 Please change the password and email address in the panel settings immediately after your first login.
 

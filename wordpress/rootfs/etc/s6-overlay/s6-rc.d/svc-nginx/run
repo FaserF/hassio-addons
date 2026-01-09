@@ -41,19 +41,31 @@ if [ ! -f /var/www/wordpress/index.php ]; then
 	bashio::log.warning "This might be normal if WordPress is not yet installed"
 fi
 
-# Check if PHP-FPM is running (wait up to 10 seconds)
+# Check if PHP-FPM is running (wait up to 15 seconds)
 bashio::log.info "Waiting for PHP-FPM to be ready..."
-for i in {1..10}; do
-	if pgrep -f "php-fpm84: master process" >/dev/null 2>&1; then
-		bashio::log.info "PHP-FPM is running"
+PHP_FPM_READY=false
+for i in {1..15}; do
+	# Check multiple ways: process name, port 9000, socket file
+	if pgrep -f "php-fpm84.*master" >/dev/null 2>&1 || \
+	   pgrep -f "php-fpm.*master" >/dev/null 2>&1 || \
+	   (command -v ss >/dev/null 2>&1 && ss -tuln | grep -q ":9000 ") || \
+	   (command -v netstat >/dev/null 2>&1 && netstat -tuln | grep -q ":9000 ") || \
+	   [ -S /run/php-fpm84.sock ] 2>/dev/null || \
+	   [ -S /var/run/php-fpm84.sock ] 2>/dev/null; then
+		bashio::log.info "✓ PHP-FPM is running (checked: $i/15)"
+		PHP_FPM_READY=true
 		break
 	fi
-	if [ $i -eq 10 ]; then
-		bashio::log.warning "PHP-FPM not detected, but continuing with Nginx startup..."
-	else
+	if [ $i -lt 15 ]; then
+		bashio::log.debug "PHP-FPM not ready yet, waiting... ($i/15)"
 		sleep 1
 	fi
 done
+
+if [ "$PHP_FPM_READY" = "false" ]; then
+	bashio::log.warning "PHP-FPM not detected after 15 seconds, but continuing with Nginx startup..."
+	bashio::log.warning "Nginx will start, but PHP requests may fail until PHP-FPM is ready."
+fi
 
 # Show nginx configuration summary
 bashio::log.info "Nginx configuration summary:"

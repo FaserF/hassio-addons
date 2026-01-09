@@ -19,6 +19,18 @@ if [ ! -d /var/www/wordpress ]; then
 	exit 1
 fi
 
+# Test PHP-FPM configuration before starting
+if ! php-fpm84 -t 2>/dev/null; then
+	bashio::log.warning "PHP-FPM configuration test had warnings, but continuing..."
+fi
+
 # Start PHP-FPM in foreground
 bashio::log.info "Starting PHP-FPM process..."
-exec php-fpm84 -F
+bashio::log.info "PHP-FPM will be accessible at 127.0.0.1:9000 for Nginx"
+
+# Start PHP-FPM and capture any errors
+exec php-fpm84 -F || {
+	bashio::log.error "PHP-FPM failed to start!"
+	bashio::log.error "Check PHP-FPM configuration and logs for details."
+	exit 1
+}

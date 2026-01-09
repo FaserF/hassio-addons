@@ -20,7 +20,7 @@ bashio::log.info "Using fixed port 3000 for webapp (required for host_network mo
 # This prevents EADDRINUSE errors when the service restarts
 bashio::log.info "Checking for existing processes on port ${WEB_APP_PORT}..."
 
-# Function to check if port is in use
+# Function to check if port is in use and show what's using it
 check_port() {
     local port=$1
     if command -v lsof >/dev/null 2>&1; then
@@ -35,7 +35,31 @@ check_port() {
     fi
 }
 
-# Kill node processes
+# Function to show what's using the port
+show_port_usage() {
+    local port=$1
+    bashio::log.info "Checking what's using port ${port}..."
+    if command -v lsof >/dev/null 2>&1; then
+        local pids=$(lsof -ti ":${port}" 2>/dev/null || true)
+        if [ -n "$pids" ]; then
+            bashio::log.warning "Processes using port ${port}:"
+            for pid in $pids; do
+                if [ -f "/proc/${pid}/cmdline" ]; then
+                    local cmd=$(cat "/proc/${pid}/cmdline" 2>/dev/null | tr '\0' ' ' || echo "unknown")
+                    bashio::log.warning "  PID ${pid}: ${cmd}"
+                else
+                    bashio::log.warning "  PID ${pid}: (process info not available)"
+                fi
+            done
+        fi
+    elif command -v ss >/dev/null 2>&1; then
+        ss -tulnp | grep ":${port} " || true
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -tulnp | grep ":${port} " || true
+    fi
+}
+
+# Kill node processes first
 if command -v pgrep >/dev/null 2>&1 && pgrep -f "node.*app.js" >/dev/null 2>&1; then
     bashio::log.warning "Found existing node app.js processes. Terminating them..."
     if command -v pkill >/dev/null 2>&1; then
@@ -44,7 +68,21 @@ if command -v pgrep >/dev/null 2>&1 && pgrep -f "node.*app.js" >/dev/null 2>&1; 
         # Fallback: use ps and kill
         ps aux | grep "[n]ode.*app.js" | awk '{print $2}' | xargs kill -9 2>/dev/null || true
     fi
-    sleep 1
+    sleep 2
+fi
+
+# Check if port is in use and show what's using it
+if check_port "${WEB_APP_PORT}"; then
+    show_port_usage "${WEB_APP_PORT}"
+
+    # Try to kill processes using the port
+    bashio::log.warning "Attempting to free port ${WEB_APP_PORT}..."
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -ti ":${WEB_APP_PORT}" | xargs kill -9 2>/dev/null || true
+    elif command -v fuser >/dev/null 2>&1; then
+        fuser -k "${WEB_APP_PORT}/tcp" 2>/dev/null || true
+    fi
+    sleep 2
 fi
 
 # Wait for port to be free (max 10 seconds)
@@ -52,10 +90,14 @@ max_wait=10
 wait_count=0
 while check_port "${WEB_APP_PORT}" && [ $wait_count -lt $max_wait ]; do
     bashio::log.warning "Port ${WEB_APP_PORT} is still in use, waiting... ($wait_count/$max_wait)"
+    if [ $wait_count -eq 0 ]; then
+        show_port_usage "${WEB_APP_PORT}"
+    fi
+
     sleep 1
     wait_count=$((wait_count + 1))
 
-    # Try to kill processes using the port
+    # Try to kill processes using the port again
     if command -v lsof >/dev/null 2>&1; then
         lsof -ti ":${WEB_APP_PORT}" | xargs kill -9 2>/dev/null || true
     elif command -v fuser >/dev/null 2>&1; then
@@ -65,7 +107,9 @@ done
 
 if check_port "${WEB_APP_PORT}"; then
     bashio::log.error "Port ${WEB_APP_PORT} is still in use after ${max_wait} seconds!"
+    show_port_usage "${WEB_APP_PORT}"
     bashio::log.error "Please check what process is using this port and stop it manually."
+    bashio::log.error "You can use: lsof -i :${WEB_APP_PORT} or ss -tulnp | grep :${WEB_APP_PORT}"
     exit 1
 fi
 

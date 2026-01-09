@@ -24,9 +24,14 @@
 ## Installation
 
 1. Search for the "pterodactyl Panel Gameserver - BETA" add-on in the Home Assistant add-on store and install it.
-2. Set a **password** in the configuration tab.
+2. (Optional) Set a **password** in the configuration tab. If left empty, a random password will be generated and shown in the logs.
 3. Start the add-on.
 4. For initial login credentials, please refer to the [Documentation](DOCS.md#%F0%9F%9A%80-first-login).
+
+> [!TIP]
+> **Login Information:**
+> - **Email:** `admin@example.com`
+> - **Password:** The value you set in the `password` field (or check the logs if you left it empty)
 
 > Open-Source Gameserver - Currently not fully working
 
@@ -82,9 +87,16 @@ app_url: http://pterodactyl.local
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
-password: ''
+password: ''  # Optional: Database password and admin login password. If empty, a random password is generated.
 ssl: false
 ```
+
+> [!NOTE]
+> **About the `password` field:**
+> - This password is used for both the database connection AND the initial admin login
+> - If left empty (`''`), a random password will be generated and displayed in the startup logs
+> - **Save the password** if you need direct database access or for the first login
+> - Default login: `admin@example.com` / `<your-password>`
 
 ---
 

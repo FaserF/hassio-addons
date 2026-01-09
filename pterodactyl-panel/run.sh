@@ -429,21 +429,31 @@ fi
 # Check if daemonSecret column exists in nodes table (for migration fix)
 export MYSQL_PWD="${password_mariadb}"
 DAEMON_SECRET_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemonSecret';" 2>/dev/null | tail -n 1 || echo "0")
+DAEMON_TOKEN_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemon_token';" 2>/dev/null | tail -n 1 || echo "0")
+MIGRATION_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM migrations WHERE migration = '2020_04_10_141024_store_node_tokens_as_encrypted_value';" 2>/dev/null | tail -n 1 || echo "0")
 unset MYSQL_PWD
 
-# If daemonSecret doesn't exist but daemon_token does, the migration already ran
-# We need to mark the migration as completed manually
-if [ "$DAEMON_SECRET_EXISTS" = "0" ]; then
-	export MYSQL_PWD="${password_mariadb}"
-	DAEMON_TOKEN_EXISTS=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${db}' AND table_name = 'nodes' AND column_name = 'daemon_token';" 2>/dev/null | tail -n 1 || echo "0")
-	unset MYSQL_PWD
-
+# If daemonSecret doesn't exist but daemon_token does, the migration already ran or isn't needed
+# We need to mark the migration as completed manually to avoid errors
+if [ "$DAEMON_SECRET_EXISTS" = "0" ] && [ "$MIGRATION_EXISTS" = "0" ]; then
 	if [ "$DAEMON_TOKEN_EXISTS" != "0" ]; then
 		bashio::log.info "daemonSecret column already migrated to daemon_token. Marking migration as completed..."
 		# Mark the migration as completed by inserting it into migrations table
 		export MYSQL_PWD="${password_mariadb}"
-		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', (SELECT COALESCE(MAX(batch), 0) + 1 FROM (SELECT batch FROM migrations) AS m));" 2>/dev/null || true
+		MAX_BATCH=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COALESCE(MAX(batch), 0) FROM migrations;" 2>/dev/null | tail -n 1 || echo "1")
+		NEW_BATCH=$((MAX_BATCH + 1))
+		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', ${NEW_BATCH});" 2>/dev/null || true
 		unset MYSQL_PWD
+		bashio::log.info "Migration marked as completed."
+	elif [ "$TABLE_COUNT" != "0" ]; then
+		# If tables exist but daemonSecret was never there, mark migration as completed anyway
+		bashio::log.info "daemonSecret column never existed. Marking migration as completed..."
+		export MYSQL_PWD="${password_mariadb}"
+		MAX_BATCH=$(mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "SELECT COALESCE(MAX(batch), 0) FROM migrations;" 2>/dev/null | tail -n 1 || echo "1")
+		NEW_BATCH=$((MAX_BATCH + 1))
+		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" -e "INSERT IGNORE INTO migrations (migration, batch) VALUES ('2020_04_10_141024_store_node_tokens_as_encrypted_value', ${NEW_BATCH});" 2>/dev/null || true
+		unset MYSQL_PWD
+		bashio::log.info "Migration marked as completed."
 	fi
 fi
 
@@ -467,7 +477,15 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 	if [ "$setup_user" != "true" ]; then
 		bashio::log.info "Database migrated. Creating default admin user..."
 		echo "[setup] Creating default user..."
-		su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
+		# Generate a unique external_id for the user (required field)
+		EXTERNAL_ID=$(openssl rand -hex 16)
+		su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}" --external-id "${EXTERNAL_ID}" || {
+			bashio::log.warning "Failed to create user with external_id. Trying without it..."
+			# Fallback: try to set external_id manually after user creation
+			su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}" || {
+				bashio::log.error "Failed to create admin user. You may need to create it manually via the panel."
+			}
+		}
 		echo "For the first login use admin@example.com / admin as user and your database password to sign in."
 		echo "Please ensure to change these credentials as soon as possible."
 	fi
@@ -572,7 +590,15 @@ fi
 
 if [ "$setup_user" = "true" ]; then
 	echo "[setup] Creating default user..."
-	su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}"
+	# Generate a unique external_id for the user (required field)
+	EXTERNAL_ID=$(openssl rand -hex 16)
+	su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}" --external-id "${EXTERNAL_ID}" || {
+		bashio::log.warning "Failed to create user with external_id. Trying without it..."
+		# Fallback: try to set external_id manually after user creation
+		su-exec nginx php artisan p:user:make --admin "1" --email "admin@example.com" --username "admin" --name-first "Default" --name-last "Admin" --password "${password_mariadb}" || {
+			bashio::log.error "Failed to create admin user. You may need to create it manually via the panel."
+		}
+	}
 
 	echo "For the first login use admin@example.com / admin as user and your database password to sign in."
 	echo "Please ensure to change these credentials as soon as possible."
