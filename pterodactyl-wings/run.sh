@@ -122,10 +122,12 @@ _show_startup_banner() {
 
 # Show banner on startup
 if type bashio::log.blue &>/dev/null 2>&1; then
-	_show_startup_banner
+    _show_startup_banner
 fi
 
 # </ADDON_BANNER_INJECTION>
+
+
 
 # Enable strict mode
 set -e

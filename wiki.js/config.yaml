@@ -1,8 +1,8 @@
 ---
 name: Wiki.JS
-version: 3.1.0
+version: 3.1.1
 slug: wiki.js
-image: ghcr.io/faserf/hassio-addons-wiki.js-{arch}
+image: ghcr.io/faserf/hassio-addons-wiki-{arch}
 description: The most powerful and extensible open source Wiki software
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
 arch:
