@@ -70,6 +70,30 @@ su-exec postgres psql -d postgres -tc "SELECT 1 FROM pg_database WHERE datname =
 bashio::log.info "Ensuring 'pg_trgm' extension is enabled..."
 su-exec postgres psql -d wiki -c "CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA pg_catalog;"
 
+# Patch servers.mjs to avoid ERR_SERVER_ALREADY_LISTEN
+bashio::log.info "Patching servers.mjs to fix bootloop..."
+node -e "
+const fs = require('fs');
+const path = '/wiki/server/core/servers.mjs';
+try {
+  if (fs.existsSync(path)) {
+    let content = fs.readFileSync(path, 'utf8');
+    const regex = /((?:this\.)?\w+)\.listen\(/g;
+    const newContent = content.replace(regex, 'if(!\$1.listening)\$1.listen(');
+    if (content !== newContent) {
+      fs.writeFileSync(path, newContent);
+      console.log('Successfully patched servers.mjs');
+    } else {
+      console.log('Pattern not found or already patched in servers.mjs');
+    }
+  } else {
+    console.log('servers.mjs not found, skipping patch during this run');
+  }
+} catch (e) {
+  console.error('Error patching servers.mjs:', e);
+}
+"
+
 echo "Starting Wiki.JS V3"
 cd /wiki
 exec node server

@@ -10,7 +10,7 @@ arch:
 ingress: true
 ingress_port: 5678
 init: false
-panel_icon: mdi:workflow
+panel_icon: mdi:sitemap
 options:
   ssl: false
   certfile: fullchain.pem

@@ -10,6 +10,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 # hadolint ignore=DL3018
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.1.1"
+ENV ADDON_NAME="N8n"
+ENV ADDON_SLUG="n8n"
+ENV ADDON_UNSUPPORTED="false"
+
 RUN \
     apk add --no-cache --virtual .build-dependencies \
         build-base \

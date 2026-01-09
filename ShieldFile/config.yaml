@@ -8,6 +8,7 @@ arch:
   - amd64
 init: false
 ingress: true
+panel_icon: mdi:shield-lock
 ports:
 
   8443/tcp: 8443

@@ -69,7 +69,6 @@ def generate_startup_banner_code(addon_info: dict, unsupported: bool) -> str:
     name = addon_info["name"]
     slug = addon_info["slug"]
 
-    # Escape for bash
     # Escape for bash (escape \, ", `, $)
     name_escaped = (
         name.replace("\\", "\\\\")
@@ -87,8 +86,8 @@ _show_startup_banner() {{
     local NAME="{name_escaped}"
     local SLUG="{slug}"
     local UNSUPPORTED="{"true" if unsupported else "false"}"
-    local REPO="{GITHUB_REPO}"
     local MAINTAINER="{MAINTAINER}"
+    local REPO="$MAINTAINER/hassio-addons"
 
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${{VERSION%%-dev*}}"
@@ -117,8 +116,38 @@ _show_startup_banner() {{
         bashio::log.green "✅ STATUS: STABLE"
     fi
 
-    # Helper for semantic version comparison
-    version_gt() {{ test "$(printf '%s\\n' "$@" | sort -V | head -n 1)" != "$1"; }}
+    # Helper for semantic version comparison (Pure Bash)
+    # Returns 0 if $1 > $2, 1 otherwise
+    version_gt() {{
+        local v1="$1"
+        local v2="$2"
+        if [ "$v1" = "$v2" ]; then return 1; fi
+
+        local IFS=.
+        local i ver1=($v1) ver2=($v2)
+
+        # Pad with zeros
+        for ((i=${{#ver1[@]}}; i<${{#ver2[@]}}; i++)); do ver1[i]=0; done
+        for ((i=${{#ver2[@]}}; i<${{#ver1[@]}}; i++)); do ver2[i]=0; done
+
+        for ((i=0; i<${{#ver1[@]}}; i++)); do
+            # Handle non-numeric (e.g. dev versions) by treating as 0
+            local n1="${{ver1[i] preg_replace '[^0-9]' ''}}"
+            local n2="${{ver2[i] preg_replace '[^0-9]' ''}}"
+            # Fallback for pure bash without regex substitution if needed, but lets assume simple numbers for stable check
+            # Simple sanitization: remove anything not a digit
+            n1=$(echo "${{ver1[i]}}" | tr -cd '0-9')
+            n2=$(echo "${{ver2[i]}}" | tr -cd '0-9')
+
+            # Empty string -> 0
+            [ -z "$n1" ] && n1=0
+            [ -z "$n2" ] && n2=0
+
+            if ((10#$n1 > 10#$n2)); then return 0; fi
+            if ((10#$n1 < 10#$n2)); then return 1; fi
+        done
+        return 1
+    }}
 
     # ========================================================================
     # Smart Update Check
@@ -126,17 +155,25 @@ _show_startup_banner() {{
     if command -v curl &>/dev/null; then
         local UPDATE_MSG=""
 
+        # Ensure we don't fail on pipe errors
+        local LATEST_STABLE=""
+
         # Get latest stable version from config.yaml
-        local LATEST_STABLE
-        LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//')
+        if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//'); then
+            : # Success
+        else
+            LATEST_STABLE=""
+        fi
 
         if [ -n "$LATEST_STABLE" ]; then
             # For DEV versions: Check if there are newer commits for this addon
             if [[ "$VERSION" == *"-dev"* ]]; then
                 if [ -n "$DEV_COMMIT" ]; then
                     # Get latest commit for this addon from GitHub
-                    local LATEST_COMMIT
-                    LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7)
+                    local LATEST_COMMIT=""
+                    if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
+                         :
+                    fi
 
                     if [ -n "$LATEST_COMMIT" ] && [ "$LATEST_COMMIT" != "$DEV_COMMIT" ]; then
                         UPDATE_MSG="⬆️  DEV UPDATE: New commits available"
@@ -330,8 +367,8 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     lines.insert(insert_idx, banner_code)
     content = "\n".join(lines)
 
-    with open(run_script, "w", encoding="utf-8") as f:
-        f.write(content)
+    with open(run_script, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content.replace("\r\n", "\n"))
 
     print(f"✅ Injected startup banner into {run_script}")
     return True

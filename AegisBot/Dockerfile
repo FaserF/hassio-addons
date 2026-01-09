@@ -16,10 +16,8 @@ ENV PYTHONUNBUFFERED=1
 # hadolint ignore=DL3018,DL3017
 
 # hadolint ignore=DL3018
-
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.3.0"
+ENV ADDON_VERSION="0.3.1"
 ENV ADDON_NAME="AegisBot"
 ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
