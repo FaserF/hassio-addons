@@ -848,7 +848,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           MAX_RETRIES=5
-          DELAY=5
 
           for ((i=1; i<=MAX_RETRIES; i++)); do
             echo "Attempt $i of $MAX_RETRIES..."
@@ -870,7 +869,7 @@ jobs:
 
             echo "⚠️ Push failed."
             if [ $i -lt $MAX_RETRIES ]; then
-              # Random jitter
+              # Random jitter (5-14 seconds)
               JITTER=$(( ( RANDOM % 10 )  + 5 ))
               echo "Waiting ${JITTER}s before retry..."
               sleep $JITTER
