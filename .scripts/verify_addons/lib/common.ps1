@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Common functions and utilities for the verify_addons test suite.
+    Common functions and utilities for the verify_test_addons test suite.
 
 .DESCRIPTION
     This module contains shared functions used across all test stages:

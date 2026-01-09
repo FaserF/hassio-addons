@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs local CI/CD verification for Home Assistant Add-ons V3.0.0.
+    Runs local CI/CD verification for Home Assistant Add-ons V3.1.0.
 #>
 
 param(

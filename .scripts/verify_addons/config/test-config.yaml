@@ -25,7 +25,7 @@ mockKernelVersion: "6.12.51-haos"
 mockArch: "amd64"
 
 # --- SCRIPT METADATA ---
-scriptVersion: "3.0.0"
+scriptVersion: "3.1.0"
 
 # --- DOCKER RUN SKIPS ---
 # Addons to skip during DockerRun test with reason

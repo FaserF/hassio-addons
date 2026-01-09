@@ -38,28 +38,28 @@ Run the main orchestrator from the repository root:
 
 ```powershell
 # Run all tests on all add-ons
-.\.scripts\verify_addons.ps1
+.\.scripts\verify_test_addons.ps1
 
 # Test specific add-on(s)
-.\.scripts\verify_addons.ps1 -Addon apache2,openssl
+.\.scripts\verify_test_addons.ps1 -Addon apache2,openssl
 
 # Run specific tests only
-.\.scripts\verify_addons.ps1 -Tests ShellCheck,Hadolint
+.\.scripts\verify_test_addons.ps1 -Tests ShellCheck,Hadolint
 
 # Fix issues automatically
-.\.scripts\verify_addons.ps1 -Fix
+.\.scripts\verify_test_addons.ps1 -Fix
 
 # Only check changed add-ons
-.\.scripts\verify_addons.ps1 -ChangedOnly
+.\.scripts\verify_test_addons.ps1 -ChangedOnly
 
 # Include unsupported add-ons
-.\.scripts\verify_addons.ps1 -IncludeUnsupported
+.\.scripts\verify_test_addons.ps1 -IncludeUnsupported
 
 # Run real Supervisor integration test (resource-intensive!)
-.\.scripts\verify_addons.ps1 -Addon whatsapp -SupervisorTest
+.\.scripts\verify_test_addons.ps1 -Addon whatsapp -SupervisorTest
 
 # Run without desktop notifications
-.\.scripts\verify_addons.ps1 -DisableNotifications
+.\.scripts\verify_test_addons.ps1 -DisableNotifications
 ```
 
 ## Available Tests
