@@ -21,6 +21,7 @@ RUN \
     apk add --no-cache \
         nginx \
         mariadb-client \
+        openssl \
         php84 \
         php84-fpm \
         php84-mysqli \

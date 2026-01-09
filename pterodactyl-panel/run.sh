@@ -316,14 +316,35 @@ fi
 chown nginx:nginx .env
 
 echo "[setup] Setting APP_URL..."
-APP_URL=$(bashio::config 'app_url')
-if [ -n "$APP_URL" ]; then
-	if grep -q "^APP_URL=" .env; then
-		sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env
-	else
-		echo "APP_URL=$APP_URL" >>.env
-	fi
+# Use Ingress URL if available, otherwise use configured app_url
+if bashio::var.has_value "$(bashio::addon.ingress_url)"; then
+	APP_URL="$(bashio::addon.ingress_url)"
+	bashio::log.info "Using Ingress URL for APP_URL: $APP_URL"
+elif bashio::config.has_value 'app_url' && [ -n "$(bashio::config 'app_url')" ]; then
+	APP_URL=$(bashio::config 'app_url')
+	bashio::log.info "Using configured APP_URL: $APP_URL"
+else
+	APP_URL="http://pterodactyl.local"
+	bashio::log.warning "No APP_URL configured and Ingress not available, using default: $APP_URL"
 fi
+
+if grep -q "^APP_URL=" .env; then
+	sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env
+else
+	echo "APP_URL=$APP_URL" >>.env
+fi
+
+# Force HTTPS if APP_URL uses HTTPS (for Cloudflare Tunnel or reverse proxies)
+if [[ "$APP_URL" == https://* ]]; then
+	bashio::log.info "APP_URL uses HTTPS, ensuring secure session cookies..."
+	# Set session secure flag if not already set
+	if ! grep -q "^SESSION_SECURE_COOKIE=" .env; then
+		echo "SESSION_SECURE_COOKIE=true" >>.env
+	fi
+	# Ensure trusted proxies are configured (Laravel will trust all proxies by default in production)
+	# This is handled by Pterodactyl's TrustProxies middleware
+fi
+
 sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
 sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
 
