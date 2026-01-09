@@ -13,7 +13,6 @@ ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
 ENV PTERODACTYL_VERSION="v1.12.0"
 
-
 RUN apk add --no-cache \
     redis \
     curl \

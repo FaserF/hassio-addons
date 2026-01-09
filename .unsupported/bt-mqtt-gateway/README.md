@@ -1,4 +1,4 @@
-# bt-mqtt-gateway (Unsupported)
+# bt-mqtt-gateway
 
 ![Logo](logo.png)
 
@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-3.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-bt-mqtt-gateway)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Bluetooth MQTT Gateway Server (Unsupported)
+> Unsupported - Bluetooth MQTT Gateway Server (no longer maintained) (Unsupported)
 
 ---
 

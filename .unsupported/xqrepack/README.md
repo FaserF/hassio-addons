@@ -1,4 +1,4 @@
-# xqrepack (Unsupported)
+# xqrepack
 
 ![Logo](logo.png)
 
@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-2.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-xqrepack)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> These scripts allow you to modify the different Xiaomi router firmware images to make sure SSH and UART access is always enabled. (Unsupported)
+> Unsupported - Xiaomi router firmware modification scripts (no longer maintained) (Unsupported)
 
 ---
 

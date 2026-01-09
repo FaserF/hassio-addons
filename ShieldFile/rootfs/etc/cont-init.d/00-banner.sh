@@ -6,10 +6,10 @@
 # ============================================================================
 _show_startup_banner() {
 	# shellcheck disable=SC2155
-	    local VERSION
-    VERSION=$(bashio::addon.version)
-    local SLUG="shieldfile"
-    local UNSUPPORTED="false"
+	local VERSION
+	VERSION=$(bashio::addon.version)
+	local SLUG="shieldfile"
+	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"
 	local MAINTAINER="FaserF"
 

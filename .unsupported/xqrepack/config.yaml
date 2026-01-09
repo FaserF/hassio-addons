@@ -1,10 +1,11 @@
 arch:
-  - aarch64
-  - amd64
-description: Unsupported - Xiaomi router firmware modification scripts (no longer maintained)
+- aarch64
+- amd64
+description: Unsupported - Xiaomi router firmware modification scripts (no longer
+  maintained) (Unsupported)
 init: false
 map:
-  - share:rw
+- share:rw
 name: xqrepack
 options:
   firmware_name: miwifi_r3600_firmware.bin

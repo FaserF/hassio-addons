@@ -1,4 +1,4 @@
-# Freenom-dns-updater (Unsupported)
+# Freenom-dns-updater
 
 ![Logo](logo.png)
 
@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-2.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-freenom-dns-updater)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, auto renew domains and more. (Unsupported)
+> Unsupported - Freenom Registrar Domain Management (Freenom service discontinued) (Unsupported)
 
 ---
 

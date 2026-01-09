@@ -2,7 +2,7 @@ name: Matterbridge
 version: 2.0.0
 slug: matterbridge
 description: A simple chat bridge (Unsupported - Matterbridge not developed since
-  Jan 2023)
+  Jan 2023) (Unsupported)
 url: https://github.com/FaserF/hassio-addons/tree/master/.unsupported/matterbridge
 arch:
 - aarch64

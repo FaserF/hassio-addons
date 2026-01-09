@@ -157,11 +157,7 @@ def get_git_info(path: Path) -> dict:
         - edge_date: Date of last commit
         - stable_date: Date of last change to config.yaml (proxy for release date)
     """
-    info = {
-        "edge_hash": "HEAD",
-        "edge_date": "Unknown",
-        "stable_date": "Unknown"
-    }
+    info = {"edge_hash": "HEAD", "edge_date": "Unknown", "stable_date": "Unknown"}
 
     try:
         # Get Edge info (latest commit to the directory)
@@ -177,7 +173,15 @@ def get_git_info(path: Path) -> dict:
         # git log -1 --format="%cd" --date=short -- <path>/config.yaml
         config_path = path / "config.yaml"
         if config_path.exists():
-            cmd = ["git", "log", "-1", "--format=%cd", "--date=short", "--", str(config_path)]
+            cmd = [
+                "git",
+                "log",
+                "-1",
+                "--format=%cd",
+                "--date=short",
+                "--",
+                str(config_path),
+            ]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             if result.stdout.strip():
                 info["stable_date"] = result.stdout.strip()
@@ -316,7 +320,7 @@ def main():
         total_addons=total,
         stable_count=stable,
         beta_count=beta,
-        unsupported_count=unsupported
+        unsupported_count=unsupported,
     )
 
     # Write output

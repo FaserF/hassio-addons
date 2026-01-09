@@ -1,4 +1,4 @@
-# tuya-convert BETA (Unsupported)
+# tuya-convert BETA
 
 ![Logo](logo.png)
 
@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.2.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-tuya-convert)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (Unsupported)
+> Unsupported - Tuya-Convert flash utility (Tuya patched vulnerability, no longer works) (Unsupported)
 
 ---
 
@@ -57,7 +57,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 accept_eula: 'false'
 backup_path: /share/tuya-convert/
-firmware: tasmota.bin
+firmware: ''
 ```
 
 ---

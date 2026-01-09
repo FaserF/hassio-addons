@@ -1,11 +1,11 @@
 arch:
-  - aarch64
-  - amd64
+- aarch64
+- amd64
 description: Unsupported - Freenom Registrar Domain Management (Freenom service discontinued)
-
+  (Unsupported)
 init: false
 map:
-  - share:rw
+- share:rw
 name: Freenom-dns-updater
 options:
   config_file: null

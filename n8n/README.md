@@ -54,7 +54,9 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 certfile: fullchain.pem
 keyfile: privkey.pem
+listen_address: 0.0.0.0
 log_level: info
+port: 5678
 ssl: false
 ```
 

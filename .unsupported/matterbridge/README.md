@@ -1,4 +1,4 @@
-# Matterbridge (Unsupported)
+# Matterbridge
 
 ![Logo](logo.png)
 
