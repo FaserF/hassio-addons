@@ -873,7 +873,7 @@ jobs:
 
             if (lintFailures.length > 0) {
                 report += "lint_failures:\n";
-                report += "  # Fix with: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
+                report += "  # Fix with: .\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
                 for (const f of lintFailures) {
                     report += `  - addon: "${f.addon}"\n`;
                     report += `    step: "${f.stepName}"\n`;
@@ -951,8 +951,8 @@ jobs:
             report += "\n# Quick fix commands:\n";
             if (affectedAddons.size > 0) {
                 const addonsList = Array.from(affectedAddons).join('","');
-                report += `powershell: .\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
-                report += `bash: pwsh -File ./.scripts/verify_addons/verify_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `powershell: .\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+                report += `bash: pwsh -File ./.scripts/verify_addons/verify_test_addons.ps1 -Addon "${addonsList}" -Fix\n`;
             }
 
             report += "\n# Items NOT fixable by local script:\n";
@@ -980,9 +980,9 @@ jobs:
             let testCommand = "";
             if (affectedAddons.size > 0) {
                 const addonsList = Array.from(affectedAddons).join('","');
-                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
+                testCommand = `.\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
             } else {
-                testCommand = `.\\.scripts\\verify_addons\\verify_addons.ps1 -Addon all -Fix${testsArg}`;
+                testCommand = `.\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon all -Fix${testsArg}`;
             }
 
             // Local Test Command (expanded section)

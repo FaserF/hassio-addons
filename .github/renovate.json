@@ -17,6 +17,9 @@
     "^sed",
     "^bash"
   ],
+  "allowedPostUpgradeCommands": [
+    "^bash \\.github/scripts/update-checksums\\.sh"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -287,6 +290,21 @@
         "n8n"
       ],
       "automerge": false
+    },
+    {
+      "description": "Solumati - auto-update checksums via postUpgradeTasks",
+      "matchDepNames": [
+        "FaserF/Solumati"
+      ],
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh solumati {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "solumati/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "description": "Netboot.xyz - auto-update checksums",

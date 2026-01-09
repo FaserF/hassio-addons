@@ -264,6 +264,7 @@ jobs:
           echo "  Success: $SUCCESS_COUNT"
 
           # Block auto-merge if there are running or failed workflows
+          if [ "$RUNNING_COUNT" -gt 0 ]; then
             echo "❌ CI workflows are still running - auto-merge blocked"
             {
               echo "still_valid=false"
