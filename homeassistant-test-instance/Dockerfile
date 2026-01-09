@@ -7,6 +7,8 @@ EXPOSE 8123
 
 # Copy and setup the run script
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.1"
 ENV ADDON_NAME="Home Assistant Test Instance"
