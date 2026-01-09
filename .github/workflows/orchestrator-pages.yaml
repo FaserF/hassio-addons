@@ -1,0 +1,51 @@
+name: "🚀 Generate & Deploy Pages"
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "**/config.yaml"
+      - ".scripts/generate_docs.py"
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install Dependencies
+        run: pip install pyyaml
+
+      - name: 📄 Generate Docs
+        run: python .scripts/generate_docs.py
+
+      - name: 🚀 Commit Changes (Optional but good for history)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update index.html [skip ci]"
+          file_pattern: "docs/index.html"
+
+      - name: 🏗️ Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

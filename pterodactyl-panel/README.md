@@ -7,6 +7,13 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.11.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-pterodactyl_panel)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
+## Installation
+
+1. Search for the "pterodactyl Panel Gameserver - BETA" add-on in the Home Assistant add-on store and install it.
+2. Set a **password** in the configuration tab.
+3. Start the add-on.
+4. For initial login credentials, please refer to the [Documentation](DOCS.md#%F0%9F%9A%80-first-login).
+
 > Open-Source Gameserver - Currently not fully working
 
 ---

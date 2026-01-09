@@ -10,7 +10,7 @@ arch:
 image: ghcr.io/faserf/hassio-addons-pterodactyl_panel-{arch}
 services:
   - mysql:need
-# webui: "[PROTO:ssl]://[HOST]:[PORT:80]"
+webui: "[PROTO:ssl]://[HOST]:[PORT:80]"
 map:
   - share:rw
   - ssl
@@ -19,11 +19,11 @@ init: false
 panel_icon: mdi:controller
 options:
   password: ""
-  ssl: true
+  ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
   log_level: info
-  app_url: "https://pterodactyl.local"
+  app_url: "http://pterodactyl.local"
 schema:
   password: password
   ssl: bool

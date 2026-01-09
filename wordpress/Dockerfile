@@ -52,12 +52,8 @@ RUN \
     && chmod +x /usr/local/bin/wp \
     \
     # Create PHP symlinks
-    && ln -s /usr/bin/php84 /usr/bin/php \
-    && ln -s /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
-    \
-    # Create PHP symlinks
-    && ln -s /usr/bin/php84 /usr/bin/php \
-    && ln -s /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
+    && ln -sf /usr/bin/php84 /usr/bin/php \
+    && ln -sf /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
     \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \

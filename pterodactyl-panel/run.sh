@@ -172,8 +172,9 @@ set -e
 
 # Get Addon Version
 
-export SSL_CERT=/ssl/$(bashio::config 'certfile')
-export SSL_CERT_KEY=/ssl/$(bashio::config 'keyfile')
+SSL_CERT="/ssl/$(bashio::config 'certfile')"
+SSL_CERT_KEY="/ssl/$(bashio::config 'keyfile')"
+export SSL_CERT SSL_CERT_KEY
 password_mariadb=$(bashio::config 'password')
 db=panel
 
@@ -405,12 +406,26 @@ fi
 
 # Checks if SSL certificate and key exists, otherwise default to http traffic
 if bashio::config.true 'ssl'; then
-	echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT} and ${SSL_CERT_KEY}."
-	envsubst '${SSL_CERT} ${SSL_CERT_KEY}' \
-		</etc/nginx/templates/https.conf >/etc/nginx/conf.d/default.conf
+	if [ ! -f "${SSL_CERT}" ] || [ ! -f "${SSL_CERT_KEY}" ]; then
+		bashio::log.error "SSL disabled: Certificate or key file not found!"
+		bashio::log.error "Make sure ${SSL_CERT} and ${SSL_CERT_KEY} exist."
+		bashio::log.error "Reverting to HTTP."
+		cat /etc/nginx/templates/http.conf >/etc/nginx/conf.d/default.conf
+	else
+		echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT} and ${SSL_CERT_KEY}."
+		envsubst '${SSL_CERT} ${SSL_CERT_KEY}' \
+			</etc/nginx/templates/https.conf >/etc/nginx/conf.d/default.conf
+	fi
 else
-	echo "[setup] Warning: SSL Certificate was not specified or doesn't exist, using HTTP."
+	echo "[setup] SSL is disabled, using HTTP."
 	cat /etc/nginx/templates/http.conf >/etc/nginx/conf.d/default.conf
+fi
+
+# Warning if APP_URL doesn't match SSL setting
+if bashio::config.true 'ssl' && [[ "${APP_URL}" == http://* ]]; then
+	bashio::log.warning "SSL is enabled, but APP_URL starts with http://. Consider changing it to https://."
+elif ! bashio::config.true 'ssl' && [[ "${APP_URL}" == https://* ]]; then
+	bashio::log.warning "SSL is disabled, but APP_URL starts with https://. Consider changing it to http://."
 fi
 
 if [ "$setup_user" = "true" ]; then

@@ -12,6 +12,18 @@ Docker containers while exposing a beautiful and intuitive UI to end users.
 > For me I am unable to login until now. Seems to have something to do with redis,
 > but I dont get what exactly.
 
+## 🚀 First Login
+
+After the first start, you can log in with the following default credentials:
+
+- **Email:** `admin@example.com`
+- **Password:** The value you set in the **password** field of the add-on configuration.
+
+> [!NOTE]
+> If you did not set a password in the configuration, a random one was generated and printed in the add-on logs during the first startup. You can also find it in `/share/pterodactyl/.env` as `DB_PASSWORD`.
+
+Please change the password and email address in the panel settings immediately after your first login.
+
 ## ⚙️ Configuration
 
 Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
