@@ -137,7 +137,7 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
     WORDPRESS_URL=$(bashio::config 'wordpress_url')
 
     if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
-        WORDPRESS_URL="http://localhost"
+        bashio::exit.nok "The configuration 'wordpress_url' is missing! Please set your external URL (e.g. https://example.com) in the add-on configuration."
     fi
 
     # Validate required configuration
@@ -169,6 +169,8 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
 
         bashio::log.info "Wordpress installed successfully!"
         bashio::log.warning "------------------------------------------------"
+        # Security Note: We are intentionally logging the password here for user convenience
+        # during the initial setup, as requested by the user.
         bashio::log.warning "Wordpress Admin Password: ${ADMIN_PASS}"
         bashio::log.warning "PLEASE SAVE THIS PASSWORD NOW!"
         bashio::log.warning "This password will NOT be shown again."

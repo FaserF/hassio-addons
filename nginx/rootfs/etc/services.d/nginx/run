@@ -21,7 +21,10 @@ _show_startup_banner() {
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
     if [[ "$VERSION" == *"-dev+"* ]]; then
+        # Extract last part (commit), remove non-hex chars, take first 7
         DEV_COMMIT="${VERSION##*+}"
+        DEV_COMMIT="${DEV_COMMIT//[^0-9a-fA-F]/}"
+        DEV_COMMIT="${DEV_COMMIT:0:7}"
     fi
 
     # Status indicator
@@ -56,8 +59,8 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Simple sanitization: remove anything not a digit (Pure Bash)
-            local n1="${ver1[i]//[!0-9]/}"
-            local n2="${ver2[i]//[!0-9]/}"
+            local n1="${ver1[i]%%[^0-9]*}"
+            local n2="${ver2[i]%%[^0-9]*}"
 
             # Empty string -> 0
             [ -z "$n1" ] && n1=0
@@ -151,7 +154,7 @@ _show_startup_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null; then
+if type bashio::log.info &>/dev/null; then
     _show_startup_banner
 fi
 

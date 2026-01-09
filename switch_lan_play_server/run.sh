@@ -8,7 +8,6 @@ _show_startup_banner() {
     local VERSION
     if ! VERSION=$(bashio::addon.version 2>/dev/null); then
         VERSION="unknown"
-        bashio::log.warning "Could not determine addon version"
     fi
     [ -z "$VERSION" ] && VERSION="unknown"
     # shellcheck disable=SC2034

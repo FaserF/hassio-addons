@@ -164,7 +164,7 @@ fi
 
 # Enable strict mode
 set -e
-# shellcheck disable=SC1091,SC2034
+# shellcheck disable=SC1091
 
 # Get Addon Version
 
@@ -288,25 +288,24 @@ if bashio::config.true 'dev_use_main_branch'; then
 	download_branch() {
 		local BRANCH=$1
 		local URL="https://github.com/FaserF/Solumati/archive/refs/heads/$BRANCH.tar.gz"
-		local HEADER_ARGS=""
+		local CURL_ARGS=("-fL" "-s" "-S")
 
 		# Check for GitHub Token
 		if bashio::config.has_value 'github_token' && [ -n "$(bashio::config 'github_token')" ]; then
 			bashio::log.info "Using GitHub Token for authentication..."
-			HEADER_ARGS="-H \"Authorization: token $(bashio::config 'github_token')\""
+			# Use a temporary file for the header to avoid exposing token in process list
+			echo "Authorization: token $(bashio::config 'github_token')" > /tmp/github_token_header
+			CURL_ARGS+=("-H" "@/tmp/github_token_header")
 		fi
 
 		bashio::log.info "Attempting to download branch: $BRANCH"
 
-		# Use eval to properly handle quoted arguments in HEADER_ARGS
-		# -f: Fail silently (no output at all) on server errors
-		# -L: Follow redirects
-		# -s: Silent mode
-		# -S: Show error message if it fails
-		# shellcheck disable=SC2086
-		if eval curl -fL -s -S $HEADER_ARGS "$URL" -o main.tar.gz; then
+		# Use array expansion instead of eval
+		if curl "${CURL_ARGS[@]}" "$URL" -o main.tar.gz; then
+			rm -f /tmp/github_token_header
 			return 0
 		else
+			rm -f /tmp/github_token_header
 			return 1
 		fi
 	}

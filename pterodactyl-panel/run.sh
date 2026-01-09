@@ -57,8 +57,8 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Simple sanitization: remove anything not a digit (Pure Bash)
-            local n1="${ver1[i]//[!0-9]/}"
-            local n2="${ver2[i]//[!0-9]/}"
+            local n1="${ver1[i]//[^0-9]/}"
+            local n2="${ver2[i]//[^0-9]/}"
 
             # Empty string -> 0
             [ -z "$n1" ] && n1=0

@@ -12,7 +12,6 @@ _show_startup_banner() {
     if ! VERSION=$(bashio::addon.version 2>/dev/null); then
         VERSION="unknown"
     fi
-    [ -z "$VERSION" ] && VERSION="unknown"
     local NAME="Home Assistant Test Instance"
     local SLUG="homeassistant-test-instance"
     local UNSUPPORTED="false"

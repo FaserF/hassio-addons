@@ -9,7 +9,10 @@
 _show_startup_banner() {
 	# shellcheck disable=SC2034,SC2155
 	local VERSION
-	VERSION="$(bashio::addon.version)"
+	if ! VERSION=$(bashio::addon.version 2>/dev/null); then
+		VERSION="unknown"
+	fi
+	[ -z "$VERSION" ] && VERSION="unknown"
 	local SLUG="matterbridge"
 	local UNSUPPORTED="false"
 	local REPO="FaserF/hassio-addons"

@@ -22,7 +22,7 @@ _show_startup_banner() {
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${VERSION%%-dev*}"
     local DEV_COMMIT=""
-    if [[ "$VERSION" == *"+""*" ]]; then
+    if [[ "$VERSION" == *"-dev+"* ]]; then
         DEV_COMMIT="${VERSION##*+}"
     fi
 
@@ -58,8 +58,7 @@ _show_startup_banner() {
 
         for ((i=0; i<${#ver1[@]}; i++)); do
             # Handle non-numeric (e.g. dev versions) by treating as 0
-            local n1="${ver1[i] preg_replace '[^0-9]' ''}"
-            local n2="${ver2[i] preg_replace '[^0-9]' ''}"
+
             # Simple sanitization: remove anything not a digit (Pure Bash)
             local n1="${ver1[i]//[^0-9]/}"
             local n2="${ver2[i]//[^0-9]/}"

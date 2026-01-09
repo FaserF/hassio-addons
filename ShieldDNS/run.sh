@@ -453,7 +453,7 @@ if [ -n "${ACTUAL_COREDNS_PORT}" ]; then
 	if [ -n "${DOH_PORT}" ]; then
 		bashio::log.info "  Exposing DoH CoreDNS on Port: ${ACTUAL_COREDNS_PORT}"
 		# Add health endpoint if DoT is not configured (DoT already has one)
-		local DOH_HEALTH_CONFIG=""
+		DOH_HEALTH_CONFIG=""
 		if [ -z "${DOT_PORT}" ] || [ "${DOT_PORT}" = "null" ]; then
 			DOH_HEALTH_CONFIG="    health :8080 {
         lameduck 5s

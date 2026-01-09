@@ -9,10 +9,7 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    if ! VERSION=$(bashio::addon.version 2>/dev/null); then
-        VERSION="unknown"
-    fi
-    if [ -z "$VERSION" ]; then
+    if ! VERSION=$(bashio::addon.version 2>/dev/null) || [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
     local NAME="Apache2 Minimal with MariaDB Client"

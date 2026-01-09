@@ -8,7 +8,9 @@
 # ============================================================================
 _show_startup_banner() {
     local VERSION
-    VERSION=$(bashio::addon.version)
+    if ! VERSION=$(bashio::addon.version 2>/dev/null) || [ -z "$VERSION" ]; then
+        VERSION="unknown"
+    fi
     local SLUG="aegisbot"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -415,6 +417,72 @@ download_file() {
 	fi
 }
 
+# Helper: Extract, Install Backend, Build Frontend
+install_from_archive() {
+	local archive_path="$1"
+	local extract_dir="$2"
+
+	bashio::log.info "Extracting archive..."
+	rm -rf "$extract_dir"
+	mkdir -p "$extract_dir"
+	tar -xzf "$archive_path" -C "$extract_dir" --strip-components=1
+
+	# Install Backend
+	bashio::log.info "Installing Backend..."
+	if [ -d "$extract_dir/backend" ]; then
+		# cp -r works for both initial (empty dest) and update (overwrite)
+		cp -r "$extract_dir/backend/"* /app/backend/
+
+		if [ -f "/app/backend/requirements.txt" ]; then
+			bashio::log.info "Installing Python dependencies from requirements.txt..."
+			pip3 install --no-cache-dir -r /app/backend/requirements.txt ||
+				bashio::log.warning "Some Python dependencies failed to install"
+		fi
+	else
+		bashio::log.error "Backend directory not found in repository!"
+		return 1
+	fi
+
+	# Build Frontend
+	bashio::log.info "Building Frontend (this may take several minutes)..."
+	if [ -d "$extract_dir/frontend" ]; then
+		cd "$extract_dir/frontend" || return 1
+
+		bashio::log.info "Running 'npm install'..."
+		if npm install; then
+			bashio::log.info "Configuring relative paths for Ingress..."
+			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
+			sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts
+			bashio::log.info "Running 'npm run build'..."
+			if npm run build; then
+				bashio::log.info "Frontend build successful. Installing..."
+				if [ -d "dist" ]; then
+					# Safety clear for updates
+					rm -rf /app/frontend/*
+					cp -r dist/* /app/frontend/
+				else
+					bashio::log.error "'dist' directory not found after build!"
+					return 1
+				fi
+			else
+				bashio::log.error "Frontend build failed!"
+				return 1
+			fi
+		else
+			bashio::log.error "npm install failed!"
+			return 1
+		fi
+	else
+		bashio::log.error "Frontend directory not found in repository!"
+		return 1
+	fi
+
+	# Cleanup extraction dir
+	cd / || return 1
+	rm -rf "$extract_dir"
+	return 0
+}
+
 # --- INITIAL CODE DOWNLOAD ---
 # Check if code has been downloaded yet
 if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; then
@@ -503,67 +571,18 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 	# Download
 	cd /tmp || exit 1
 	if download_file "$DOWNLOAD_URL" "aegisbot.tar.gz" "$GITHUB_TOKEN"; then
-		bashio::log.info "Extracting archive..."
-		rm -rf /tmp/aegisbot-src
-		mkdir -p /tmp/aegisbot-src
-		tar -xzf aegisbot.tar.gz -C /tmp/aegisbot-src --strip-components=1
+		if install_from_archive "aegisbot.tar.gz" "/tmp/aegisbot-src"; then
+			rm -f /tmp/aegisbot.tar.gz
 
-		# Install Backend
-		bashio::log.info "Installing Backend..."
-		if [ -d "/tmp/aegisbot-src/backend" ]; then
-			cp -r /tmp/aegisbot-src/backend/* /app/backend/
-
-			if [ -f "/app/backend/requirements.txt" ]; then
-				bashio::log.info "Installing Python dependencies from requirements.txt..."
-				pip3 install --no-cache-dir -r /app/backend/requirements.txt ||
-					bashio::log.warning "Some Python dependencies failed to install"
-			fi
+			bashio::log.info "==================================================="
+			bashio::log.info "   ✅ CODE DOWNLOAD COMPLETE"
+			bashio::log.info "==================================================="
+			# Mark that we just did initial download - skip developer_mode re-download
+			INITIAL_DOWNLOAD_DONE="true"
 		else
-			bashio::log.error "Backend directory not found in repository!"
+			bashio::log.error "Installation failed!"
 			exit 1
 		fi
-
-		# Build Frontend
-		bashio::log.info "Building Frontend (this may take several minutes)..."
-		if [ -d "/tmp/aegisbot-src/frontend" ]; then
-			cd /tmp/aegisbot-src/frontend || exit 1
-
-			bashio::log.info "Running 'npm install'..."
-			if npm install; then
-				bashio::log.info "Configuring relative paths for Ingress..."
-				sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-				sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts
-				bashio::log.info "Running 'npm run build'..."
-				if npm run build; then
-					bashio::log.info "Frontend build successful. Installing..."
-					if [ -d "dist" ]; then
-						cp -r dist/* /app/frontend/
-					else
-						bashio::log.error "'dist' directory not found after build!"
-						exit 1
-					fi
-				else
-					bashio::log.error "Frontend build failed!"
-					exit 1
-				fi
-			else
-				bashio::log.error "npm install failed!"
-				exit 1
-			fi
-		else
-			bashio::log.error "Frontend directory not found in repository!"
-			exit 1
-		fi
-
-		# Cleanup
-		cd / || exit 1
-		rm -rf /tmp/aegisbot.tar.gz /tmp/aegisbot-src
-
-		bashio::log.info "==================================================="
-		bashio::log.info "   ✅ CODE DOWNLOAD COMPLETE"
-		bashio::log.info "==================================================="
-		# Mark that we just did initial download - skip developer_mode re-download
-		INITIAL_DOWNLOAD_DONE="true"
 	else
 		bashio::log.error "Download failed! Please check your network or token settings."
 		# If a specific version was requested and failed, try falling back to main branch
@@ -573,68 +592,18 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 			DOWNLOAD_URL="https://api.github.com/repos/${GITHUB_REPO_CONFIG}/tarball/main"
 			if download_file "$DOWNLOAD_URL" "aegisbot.tar.gz" "$GITHUB_TOKEN"; then
 				bashio::log.info "✅ Fallback to main branch successful."
-				# Continue with extraction and build (same as above)
-				bashio::log.info "Extracting archive..."
-				rm -rf /tmp/aegisbot-src
-				mkdir -p /tmp/aegisbot-src
-				tar -xzf aegisbot.tar.gz -C /tmp/aegisbot-src --strip-components=1
+				if install_from_archive "aegisbot.tar.gz" "/tmp/aegisbot-src"; then
+					rm -f /tmp/aegisbot.tar.gz
 
-				# Install Backend
-				bashio::log.info "Installing Backend..."
-				if [ -d "/tmp/aegisbot-src/backend" ]; then
-					cp -r /tmp/aegisbot-src/backend/* /app/backend/
-
-					if [ -f "/app/backend/requirements.txt" ]; then
-						bashio::log.info "Installing Python dependencies from requirements.txt..."
-						pip3 install --no-cache-dir -r /app/backend/requirements.txt ||
-							bashio::log.warning "Some Python dependencies failed to install"
-					fi
+					bashio::log.info "==================================================="
+					bashio::log.info "   ✅ CODE DOWNLOAD COMPLETE (MAIN BRANCH)"
+					bashio::log.info "==================================================="
+					# Mark that we just did initial download - skip developer_mode re-download
+					INITIAL_DOWNLOAD_DONE="true"
 				else
-					bashio::log.error "Backend directory not found in repository!"
+					bashio::log.error "Installation failed during fallback!"
 					exit 1
 				fi
-
-				# Build Frontend
-				bashio::log.info "Building Frontend (this may take several minutes)..."
-				if [ -d "/tmp/aegisbot-src/frontend" ]; then
-					cd /tmp/aegisbot-src/frontend || exit 1
-
-					bashio::log.info "Running 'npm install'..."
-					if npm install; then
-						bashio::log.info "Configuring relative paths for Ingress..."
-						sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-						sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts
-						bashio::log.info "Running 'npm run build'..."
-						if npm run build; then
-							bashio::log.info "Frontend build successful. Installing..."
-							if [ -d "dist" ]; then
-								cp -r dist/* /app/frontend/
-							else
-								bashio::log.error "'dist' directory not found after build!"
-								exit 1
-							fi
-						else
-							bashio::log.error "Frontend build failed!"
-							exit 1
-						fi
-					else
-						bashio::log.error "npm install failed!"
-						exit 1
-					fi
-				else
-					bashio::log.error "Frontend directory not found in repository!"
-					exit 1
-				fi
-
-				# Cleanup
-				cd / || exit 1
-				rm -rf /tmp/aegisbot.tar.gz /tmp/aegisbot-src
-
-				bashio::log.info "==================================================="
-				bashio::log.info "   ✅ CODE DOWNLOAD COMPLETE (MAIN BRANCH)"
-				bashio::log.info "==================================================="
-				# Mark that we just did initial download - skip developer_mode re-download
-				INITIAL_DOWNLOAD_DONE="true"
 			else
 				bashio::log.error "❌ Fallback to main branch also failed!"
 				exit 1
@@ -670,67 +639,15 @@ if bashio::config.true 'developer_mode' && [ "${INITIAL_DOWNLOAD_DONE:-false}" !
 	DOWNLOAD_URL="https://api.github.com/repos/${GITHUB_REPO_CONFIG}/tarball/main"
 
 	if download_file "$DOWNLOAD_URL" "main.tar.gz" "$GITHUB_TOKEN"; then
-		bashio::log.info "Extracting..."
-		rm -rf /tmp/aegisbot-main
-		mkdir -p /tmp/aegisbot-main
-		tar -xzf main.tar.gz -C /tmp/aegisbot-main --strip-components=1
+		if install_from_archive "main.tar.gz" "/tmp/aegisbot-main"; then
+			rm -f /tmp/main.tar.gz
 
-		# Update Backend
-		bashio::log.info "Updating Backend code..."
-		if [ -d "/tmp/aegisbot-main/backend" ]; then
-			cp -r /tmp/aegisbot-main/backend/* /app/backend/
-
-			# Install potentially new python requirements
-			if [ -f "/app/backend/requirements.txt" ]; then
-				bashio::log.info "Installing Python dependencies..."
-				pip3 install --no-cache-dir -r /app/backend/requirements.txt
-			fi
+			bashio::log.info "=================================================="
+			bashio::log.info "   ✅ DEV MODE UPDATE COMPLETE"
+			bashio::log.info "=================================================="
 		else
-			bashio::log.error "Backend directory not found in main branch!"
+			bashio::log.error "Dev mode update failed!"
 		fi
-
-		# Rebuild Frontend
-		bashio::log.info "Rebuilding Frontend..."
-		if [ -d "/tmp/aegisbot-main/frontend" ]; then
-			# Create temp build dir
-			rm -rf /tmp/frontend_build
-			mkdir -p /tmp/frontend_build
-			cp -r /tmp/aegisbot-main/frontend/* /tmp/frontend_build/
-
-			cd /tmp/frontend_build || exit 1
-
-			bashio::log.info "Running 'npm install'..."
-			if npm install; then
-				bashio::log.info "Configuring relative paths for Ingress..."
-				sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-				sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts
-				bashio::log.info "Running 'npm run build'..."
-				if npm run build; then
-					bashio::log.info "Frontend build successful. Updating files..."
-					# Remove old frontend files
-					rm -rf /app/frontend/*
-					if [ -d "dist" ]; then
-						cp -r dist/* /app/frontend/
-					else
-						bashio::log.error "'dist' directory not found after build!"
-					fi
-				else
-					bashio::log.error "Frontend build failed! Keeping old frontend."
-				fi
-			else
-				bashio::log.error "npm install failed! Keeping old frontend."
-			fi
-		else
-			bashio::log.error "Frontend directory not found in main branch!"
-		fi
-
-		# Cleanup
-		rm -rf /tmp/main.tar.gz /tmp/aegisbot-main /tmp/frontend_build
-		cd / || exit 1
-
-		bashio::log.info "=================================================="
-		bashio::log.info "   ✅ DEV MODE UPDATE COMPLETE"
-		bashio::log.info "=================================================="
 	else
 		bashio::log.error "Failed to download main branch from GitHub!"
 	fi
