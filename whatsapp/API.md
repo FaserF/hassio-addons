@@ -166,7 +166,7 @@ Sets the chat presence/status.
 }
 ```
 
-_Values: `composing`, `recording`, `paused`, `available`_
+**Values:** `composing`, `recording`, `paused`, `available`
 
 ### 4. Events & Logs
 

@@ -22,7 +22,7 @@
 ## 📖 About
 
 > Self-hosted, privacy-first PDF toolkit
-
+<!-- separator -->
 > [!CAUTION]
 > **Experimental / Beta Status**
 >
