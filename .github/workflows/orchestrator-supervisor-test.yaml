@@ -171,6 +171,10 @@ jobs:
             -keyout /tmp/ha-data/ssl/privkey.pem \
             -out /tmp/ha-data/ssl/fullchain.pem
 
+          # Generate dummy Pterodactyl config to prevent startup hang in CI
+          mkdir -p /tmp/ha-data/share/pterodactyl
+          echo 'token: "example"' > /tmp/ha-data/share/pterodactyl/config.yml
+
           # Copy add-ons to local addons directory
           # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
           IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
