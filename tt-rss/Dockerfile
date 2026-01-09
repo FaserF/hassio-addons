@@ -5,40 +5,40 @@ FROM $BUILD_FROM
 # hadolint ignore=DL3003
 RUN \
     apk add --no-cache \
-        nginx=1.26.2-r4 \
+        nginx \
         postgresql \
         postgresql-contrib \
-        php83=8.3.23-r0 \
-        php83-curl=8.3.23-r0 \
-        php83-dom=8.3.23-r0 \
-        php83-fileinfo=8.3.23-r0 \
-        php83-fpm=8.3.23-r0 \
-        php83-gd=8.3.23-r0 \
-        php83-iconv=8.3.23-r0 \
-        php83-intl=8.3.23-r0 \
-        php83-json=8.3.23-r0 \
-        php83-mbstring=8.3.23-r0 \
-        php83-mysqlnd=8.3.23-r0 \
-        php83-opcache=8.3.23-r0 \
-        php83-openssl=8.3.23-r0 \
-        php83-pdo=8.3.23-r0 \
-        php83-pdo_mysql=8.3.23-r0 \
-        php83-pdo_pgsql=8.3.23-r0 \
-        php83-pdo_sqlite=8.3.23-r0 \
-        php83-pecl-apcu=5.1.24-r0 \
-        php83-pgsql=8.3.23-r0 \
-        php83-phar=8.3.23-r0 \
-        php83-posix=8.3.23-r0 \
-        php83-session=8.3.23-r0 \
-        php83-simplexml=8.3.23-r0 \
-        php83-sqlite3=8.3.23-r0 \
-        php83-tokenizer=8.3.23-r0 \
-        php83-xml=8.3.23-r0 \
-        php83-xmlwriter=8.3.23-r0 \
-        php83-zip=8.3.23-r0 \
-        git=2.47.1-r0 \
+        php84 \
+        php84-curl \
+        php84-dom \
+        php84-fileinfo \
+        php84-fpm \
+        php84-gd \
+        php84-iconv \
+        php84-intl \
+        php84-json \
+        php84-mbstring \
+        php84-mysqlnd \
+        php84-opcache \
+        php84-openssl \
+        php84-pdo \
+        php84-pdo_mysql \
+        php84-pdo_pgsql \
+        php84-pdo_sqlite \
+        php84-pecl-apcu \
+        php84-pgsql \
+        php84-phar \
+        php84-posix \
+        php84-session \
+        php84-simplexml \
+        php84-sqlite3 \
+        php84-tokenizer \
+        php84-xml \
+        php84-xmlwriter \
+        php84-zip \
+        git \
     \
-    && ln -s /usr/bin/php83 /usr/bin/php \
+    && ln -s /usr/bin/php84 /usr/bin/php \
     \
     && git clone --depth=1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
     \
@@ -46,6 +46,9 @@ RUN \
 
 # Copy root filesystem
 COPY rootfs /
+
+# Move custom PHP config to correct location for PHP 8.4
+RUN if [ -d /etc/php ]; then cp -r /etc/php/* /etc/php84/ && rm -rf /etc/php; fi
 
 # Build arguments
 ARG BUILD_ARCH

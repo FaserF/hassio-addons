@@ -24,14 +24,30 @@ fi
 
 # Set Postgres Superuser Password
 if ! bashio::fs.file_exists "/data/postgres_password"; then
-    openssl rand -base64 32 > /data/postgres_password
+    (
+        umask 077
+        openssl rand -base64 32 > /data/postgres_password
+    )
 fi
 POSTGRES_PASSWORD=$(cat /data/postgres_password)
 
 # Start Postgres temporarily to set password
-su-exec postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start
+if ! su-exec postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start; then
+    bashio::exit.nok "Failed to start PostgreSQL for initialization"
+fi
 
-su-exec postgres psql -v ON_ERROR_STOP=1 --username=postgres --no-password -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';"
+# Securely set password using PGPASSWORD to avoid log warnings or leaks
+export PGPASSWORD="${POSTGRES_PASSWORD}"
+if ! su-exec postgres psql -v ON_ERROR_STOP=1 --username=postgres -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';" > /dev/null; then
+    bashio::log.error "Failed to set postgres superuser password"
+    # Don't exit here to try to cleanup, or exit immediately?
+    # Better to fail fast.
+    su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop
+    bashio::exit.nok "Failed to set postgres superuser password"
+fi
+unset PGPASSWORD
 
 # Stop Postgres so s6 can manage it
-su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop
+if ! su-exec postgres pg_ctl -D "${DATA_DIR}" -m fast -w stop; then
+    bashio::log.warning "Failed to stop temporary PostgreSQL instance"
+fi

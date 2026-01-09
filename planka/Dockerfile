@@ -7,6 +7,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
+# hadolint ignore=DL3013
 RUN \
     apk add --no-cache \
         nodejs \
@@ -16,18 +17,13 @@ RUN \
         postgresql \
         postgresql-contrib \
         nginx \
+        curl \
     # hadolint ignore=DL3013
     && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
 WORKDIR /opt/planka
 COPY --from=planka /app/ .
-
-# Rebuild dependencies for Alpine compatibility if needed
-RUN \
-    if [ -d ".venv" ]; then rm -rf .venv; fi \
-    && python3 -m venv .venv \
-    && .venv/bin/pip3 install -r requirements.txt --no-cache-dir
 
 # Copy rootfs
 COPY rootfs /

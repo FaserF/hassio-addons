@@ -24,7 +24,11 @@ fi
 
 # Set Postgres Superuser Password
 if ! bashio::fs.file_exists "/data/postgres_password"; then
-    openssl rand -base64 32 > /data/postgres_password
+    # Generate securely
+    (
+        umask 077
+        openssl rand -base64 32 > /data/postgres_password
+    )
 fi
 POSTGRES_PASSWORD=$(cat /data/postgres_password)
 

@@ -2,4 +2,4 @@
 # shellcheck shell=bash
 
 bashio::log.info "Starting PHP-FPM..."
-exec php-fpm83 -F
+exec php-fpm84 -F

@@ -1,20 +1,27 @@
 #!/command/with-contenv bashio
 
+# Set strict error handling
+set -o pipefail
+
 bashio::log.info "Starting Planka..."
 
 # Configure environment variables
 # DB Password
 if bashio::fs.file_exists "/data/planka_db_password"; then
-    PLANKA_DB_PASSWORD=$(cat /data/planka_db_password)
+    # Read without trailing newline
+    PLANKA_DB_PASSWORD=$(tr -d '\n' < /data/planka_db_password)
 else
-    PLANKA_DB_PASSWORD="planka" # Fallback if init didn't run (should not happen)
+    # Should not happen if init-planka ran
+    PLANKA_DB_PASSWORD="planka"
 fi
 
-export DATABASE_URL="postgresql://planka:${PLANKA_DB_PASSWORD}@localhost:5432/planka"
+# URL Encode Password (simple python oneliner as we have python)
+ENCODED_PASS=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PLANKA_DB_PASSWORD}'))")
+
+export DATABASE_URL="postgresql://planka:${ENCODED_PASS}@localhost:5432/planka"
 export PORT=1337
-# Generate secret key if not set in config (or use config options)
-# Config has 'secret_key'. if empty, generate one?
-# Planka requires SECRET_KEY.
+
+# Secret Key
 SECRET=$(bashio::config 'secret_key')
 if [ -z "$SECRET" ]; then
     if ! bashio::fs.file_exists "/data/secret_key"; then
@@ -27,37 +34,13 @@ export SECRET_KEY="$SECRET"
 export TRUST_PROXY=1
 
 # BASE_URL handling for Ingress
-# Planka runs at root usually?
-# Ingress access: /api/hassio_ingress/slug/...
-# Planka needs to know its base URL if it constructs absolute links.
-# If config ingress is true, bashio provides bashio::addon.ingress_entry
-# We construct the full URL including scheme and host if possible, but bashio::addon.ingress_entry is usually a path.
-# However, user requested "include scheme and host".
-# bashio::addon.ingress_url provides the full URL? No, strictly there isn't a guaranteed one inside the container.
-# We will use the standard pattern of relative URL if possible, or construct best guess.
-# Actually, modern HA ingress usually works with relative paths, but user asked for "include scheme and host".
-# We can try to use X-Forwarded headers or just stick to the path if Planka handles it.
-# BUT USER SPECIFICALLY ASKED: "build a complete URL (include scheme and host) ... use available bashio helpers"
-# bashio currently doesn't easily give external scheme/host.
-# We'll use a placeholder or try to infer.
-# Wait, `bashio::addon.ingress_entry` returns `/api/hassio_ingress/...`.
-# Does Planka NEED absolute URL?
-# Let's try to grab it from `bashio::info.hostname` and `bashio::info.port`? No.
-# We will use the Ingress Entry which determines the path.
-# Note: "combine the ingress path with the addon's external host/port" -> impossible to know external reliably from inside.
-# We will assume request headers handle it, but update export to be robust.
-# Actually, let's just use `bashio::addon.ingress_entry` as the path, and if Planka supports relative `BASE_URL`, that's best.
-# If not, we might be stuck.
-# User instruction: "combine the ingress path with the addon's external host/port or use available bashio helpers to get the host and protocol".
-# There is no standard bashio helper for "external protocol".
-# I will use `http://homeassistant.local:8123` as a fallback or similar? No, that's bad.
-# Let's assume the user implies we should try our best.
-# We will just ensure `TRUST_PROXY=1` is set as requested, and use `bashio::addon.ingress_entry` which is the best we have.
-# The user might be mistaken about "scheme and host" being easily available.
-export BASE_URL="$(bashio::addon.ingress_entry)"
+if bashio::addon.ingress_is_enabled; then
+    export BASE_URL="$(bashio::addon.ingress_entry)"
+fi
 
-cd /opt/planka
+if ! cd /opt/planka; then
+    bashio::exit.nok "Failed to change directory to /opt/planka"
+fi
 
 # Start Planka
-# Official image CMD is ./start.sh which runs node index.js
 exec ./start.sh
