@@ -61,6 +61,13 @@ jobs:
             fi
           fi
 
+          # Final validation: ensure we have a valid author
+          if [ -z "$PR_AUTHOR" ] || [ "$PR_AUTHOR" = "null" ]; then
+            echo "⚠️ Unable to determine PR author. Skipping auto-merge."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           echo "Found PR #$PR_NUMBER by $PR_AUTHOR"
           {
             echo "pr_number=$PR_NUMBER"
@@ -77,6 +84,8 @@ jobs:
       - name: 👤 Check if author is allowed
         id: check-author
         if: steps.find-pr.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
           ALLOWED_AUTHORS="dependabot[bot] renovate[bot] github-actions[bot] github-actions FaserF"

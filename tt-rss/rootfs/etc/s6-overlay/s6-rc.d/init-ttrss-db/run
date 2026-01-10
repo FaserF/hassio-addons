@@ -41,6 +41,7 @@ if [ "$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_database WHER
 fi
 
 # Create User if missing and Grant Privileges
+<<<<<<< Updated upstream
 # Use psql with escaped password (avoid embedding quotes in -v)
 USER_EXISTS=$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'" 2>/dev/null || echo "0")
 if [ "$USER_EXISTS" != "1" ]; then
@@ -53,6 +54,26 @@ else
 fi
 
 psql -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE ttrss TO ttrss;"
+=======
+# Use psql with escaped password (avoid embedding quotes incorrectly)
+USER_EXISTS=$(psql -h localhost -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'" 2>/dev/null || echo "0")
+if [ "$USER_EXISTS" != "1" ]; then
+    bashio::log.info "Creating ttrss database user..."
+    psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE USER ttrss WITH PASSWORD '${TTRSS_DB_PASSWORD//\'/\'\'}'"
+else
+    # User exists - update password to ensure it matches the password file
+    bashio::log.info "Updating ttrss database user password..."
+    psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "ALTER USER ttrss WITH PASSWORD '${TTRSS_DB_PASSWORD//\'/\'\'}'"
+fi
+
+# Grant privileges on database
+psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE ttrss TO ttrss;"
+>>>>>>> Stashed changes
+
+# PostgreSQL 15+ requires explicit schema permissions
+# Grant permissions on public schema and make ttrss the owner of objects
+psql -h localhost -U postgres -d ttrss -v ON_ERROR_STOP=1 -c "GRANT ALL ON SCHEMA public TO ttrss;"
+psql -h localhost -U postgres -d ttrss -v ON_ERROR_STOP=1 -c "ALTER SCHEMA public OWNER TO ttrss;"
 
 # Schema Update
 bashio::log.info "Updating TT-RSS schema..."
