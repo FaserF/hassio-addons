@@ -44,6 +44,7 @@ RUN \
         php84-xmlwriter \
         php84-zip \
         git \
+        openssl \
     \
     && ln -s /usr/bin/php84 /usr/bin/php \
     \

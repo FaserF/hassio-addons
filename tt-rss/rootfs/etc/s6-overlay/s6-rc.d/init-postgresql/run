@@ -3,6 +3,11 @@
 # Initialize PostgreSQL data directory
 DATA_DIR="/data/database"
 
+if ! bashio::fs.directory_exists "/run/postgresql"; then
+    mkdir -p /run/postgresql
+    chown postgres:postgres /run/postgresql
+fi
+
 if ! bashio::fs.directory_exists "${DATA_DIR}"; then
     bashio::log.info "Initializing PostgreSQL database..."
     mkdir -p "${DATA_DIR}"
