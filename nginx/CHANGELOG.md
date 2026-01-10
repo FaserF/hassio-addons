@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5 (2026-01-10)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v19 [skip-tests] (#570) ([`d88f413`](https://github.com/FaserF/hassio-addons/commit/d88f4135478d4f590536c80863200a37e0e49f58))
+
+### 📌 Release Note
+- general background fixes and stability improvements
+
+
 ## 0.1.4 (2026-01-10)
 
 ### 🎨 Style

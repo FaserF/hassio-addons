@@ -1,6 +1,6 @@
 ---
 name: NGINX
-version: 0.1.4
+version: 0.1.5
 slug: nginx
 description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/nginx
