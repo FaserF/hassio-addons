@@ -13,8 +13,10 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.1.1"
+ENV ADDON_VERSION="2.1.2"
 ENV ADDON_NAME="Netboot.xyz"
 ENV ADDON_SLUG="netboot-xyz"
 ENV ADDON_UNSUPPORTED="false"
