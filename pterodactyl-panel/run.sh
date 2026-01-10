@@ -244,7 +244,6 @@ EOF
 	unset ADMIN_PASS
 }
 
-
 # Get Addon Version
 
 SSL_CERT="/ssl/$(bashio::config 'certfile')"
@@ -571,7 +570,6 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 		unset MYSQL_PWD
 	fi
 
-
 	# Function to ensure admin user exists and has a valid password
 	if [ "$setup_user" != "true" ]; then
 		ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
@@ -884,9 +882,8 @@ elif ! bashio::config.true 'ssl' && [[ "${APP_URL}" == https://* ]]; then
 	bashio::log.warning "SSL is disabled, but APP_URL starts with https://. Consider changing it to http://."
 fi
 
-	# Ensure admin user exists (replaces duplicate block)
-	ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
-
+# Ensure admin user exists (replaces duplicate block)
+ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
 
 echo "[start] Starting nginx and php"
 # PHP-FPM is configured to run as nginx user in pool config
