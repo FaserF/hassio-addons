@@ -225,11 +225,10 @@ ensure_admin_user() {
 	fi
 
 	if [ "$action" = "create" ]; then
-		if mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" <<EOF 2>&1
+		if mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" <<EOF 2>&1; then
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${external_id}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${hashed_pass}', '${uuid}', NOW(), NOW());
 EOF
-		then
 			bashio::log.info "✓ Admin user created successfully."
 			echo "For the first login use admin@example.com / admin as user and your database password to sign in."
 		else
