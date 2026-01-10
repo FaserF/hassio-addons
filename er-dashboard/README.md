@@ -1,10 +1,10 @@
 # Home Assistant Add-on: ER-Startseite (Dashboard)
 
-A modern, highly customizable dashboard with a neon aesthetic, video backgrounds, and robust app integration.
+A modern, highly customizable dashboard with a neon aesthetic,
+video backgrounds, and robust app integration.
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
-![Supports armv7 Architecture][armv7-shield]
 
 ## About
 
@@ -23,7 +23,8 @@ ER-Startseite is a self-hosted dashboard application featuring:
 
 ## Configuration
 
-**Note**: The database is embedded. No external database configuration is required by default.
+**Note**: The database is embedded.
+No external database configuration is required by default.
 
 ## Support
 
@@ -36,4 +37,3 @@ Join us on Discord!
 [discord]: https://discord.gg/tTwtfPZ
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg

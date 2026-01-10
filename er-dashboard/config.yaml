@@ -6,10 +6,9 @@ url: "https://github.com/Eidolf/ER-Startseite"
 arch:
   - aarch64
   - amd64
-  - armv7
 init: false
 map:
-  - config:rw
+  - homeassistant_config:rw
   - share:rw
   - media:rw
   - ssl:rw
@@ -22,9 +21,7 @@ schema:
   certfile: str
   keyfile: str
 ingress: true
-ingress_port: 8099
 ingress_stream: true
 panel_icon: mdi:view-dashboard-variant
-startup: application
 ports:
   9123/tcp: 9123

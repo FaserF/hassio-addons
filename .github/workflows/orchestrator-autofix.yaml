@@ -249,8 +249,8 @@ jobs:
 
           # 2. Rebase on top of upstream to resolve non-fast-forward
           echo "Rebasing on top of origin/${{ github.ref_name }}..."
-          git config --global user.email "${{ inputs.commit_user_email }}"
-          git config --global user.name "${{ inputs.commit_user_name }}"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           # Explicitly set rebase strategy to avoid issues
           if ! git pull --rebase origin ${{ github.ref_name }}; then
             echo "Rebase failed. Conflict likely. Aborting."
