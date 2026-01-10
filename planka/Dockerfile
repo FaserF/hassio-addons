@@ -25,6 +25,7 @@ RUN \
         postgresql-contrib \
         nginx \
         curl \
+        su-exec \
     # hadolint ignore=DL3013
     && pip3 install --no-cache-dir --break-system-packages setuptools
 
