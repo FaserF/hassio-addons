@@ -172,11 +172,6 @@ source /usr/lib/bashio/bashio.sh
 # Enable strict mode
 set -e
 
-source /usr/lib/bashio/bashio.sh
-# shellcheck disable=SC1091
-
-# Get Addon Version
-
 # Define local paths
 COREFILE_PATH="/etc/Corefile"
 CERT_DIR="/ssl"
