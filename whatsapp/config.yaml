@@ -15,7 +15,8 @@ options:
   log_level: info
 schema:
   log_level: str
-host_network: true
+ports:
+  8066/tcp: 8066
 hassio_api: true
 ingress: true
 ingress_entry: /
