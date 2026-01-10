@@ -1,0 +1,5 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting PostgreSQL..."
+exec su-exec postgres postgres -D /var/lib/postgresql/data

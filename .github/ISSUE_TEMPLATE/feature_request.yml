@@ -43,6 +43,7 @@ body:
         - apache2-minimal-mariadb
         - bash_script_executer
         - bentopdf
+        - er-dashboard
         - homeassistant-test-instance
         - matterbridge
         - n8n

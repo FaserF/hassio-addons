@@ -1,0 +1,10 @@
+configuration:
+  ssl:
+    name: SSL
+    description: "Enable SSL for external access."
+  certfile:
+    name: SSL Certificate File
+    description: "Path to the SSL certificate file."
+  keyfile:
+    name: SSL Key File
+    description: "Path to the SSL private key file."

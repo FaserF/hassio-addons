@@ -60,6 +60,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)                 | ✅     | 2023-03 |
 | **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP              | ✅     | 2023-03 |
 | **[BentoPDF](bentopdf)**                                        | Self-hosted PDF toolkit (Privacy-First)     | ⚠️     | 2026-01 |
+| **[ER-Startseite (Dashboard)](er-dashboard)**                   | Modern Dashboard with Neon Aesthetic        | ⚠️     | 2026-01 |
 | **[NGINX](nginx)**                                              | NGINX Webserver with PHP and MariaDB        | ⚠️     | 2026-01 |
 | **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS               | ✅     | 2023-05 |
 | **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)        | ❌     | 2023-05 |

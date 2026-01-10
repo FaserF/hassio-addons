@@ -1,0 +1,34 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting Nginx..."
+
+# Generate nginx config from template
+if ! bashio::var.json \
+    ssl "$(bashio::config 'ssl')" \
+    certfile "$(bashio::config 'certfile')" \
+    keyfile "$(bashio::config 'keyfile')" \
+    | tempio \
+        -template /etc/nginx/templates/direct.gtpl \
+        -out /etc/nginx/http.d/direct.conf; then
+    bashio::log.error "Failed to generate nginx configuration from template!"
+    exit 1
+fi
+
+# Validate SSL files if SSL is enabled
+if bashio::config.true 'ssl'; then
+    certfile="/ssl/$(bashio::config 'certfile')"
+    keyfile="/ssl/$(bashio::config 'keyfile')"
+
+    if [[ ! -f "$certfile" ]]; then
+        bashio::log.error "SSL certificate not found: $certfile"
+        exit 1
+    fi
+    if [[ ! -f "$keyfile" ]]; then
+        bashio::log.error "SSL key not found: $keyfile"
+        exit 1
+    fi
+    bashio::log.info "SSL certificates validated."
+fi
+
+exec nginx -g "daemon off;"
