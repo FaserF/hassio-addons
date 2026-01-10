@@ -1,10 +1,28 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
+set -e
 
 bashio::log.info "Initializing Backend..."
 
-bashio::net.wait_for 5432 localhost 30
+# Wait for PostgreSQL to be ready
+if ! bashio::net.wait_for 5432 localhost 30; then
+    bashio::log.error "PostgreSQL not available on port 5432 after 30s timeout"
+    exit 1
+fi
 
-cd /app
+# Validate POSTGRES_PASSWORD is set (from init-secrets)
+if ! bashio::env.has_value 'POSTGRES_PASSWORD' && [ ! -f /var/run/s6/container_environment/POSTGRES_PASSWORD ]; then
+    bashio::log.error "POSTGRES_PASSWORD environment variable is not set. init-secrets might have failed."
+    exit 1
+fi
+
+# Navigate to app directory
+if ! cd /app; then
+    bashio::log.error "Failed to change directory to /app"
+    exit 1
+fi
+
+# Run migrations if necessary (currently just logging)
+# su-exec postgres /app/.venv/bin/alembic upgrade head
 
 bashio::log.info "Backend initialization complete."

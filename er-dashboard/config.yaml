@@ -8,10 +8,9 @@ arch:
   - amd64
 init: false
 map:
-  - homeassistant_config:rw
+  - config:rw
   - share:rw
-  - media:rw
-  - ssl:rw
+  - ssl:ro
 options:
   ssl: false
   certfile: fullchain.pem
@@ -24,4 +23,4 @@ ingress: true
 ingress_stream: true
 panel_icon: mdi:view-dashboard-variant
 ports:
-  9123/tcp: 9123
+  9123/tcp: 9123 # Web UI (direct access)

@@ -5,7 +5,8 @@
 
 bashio::addon.print_banner() {
 	local addon_version
-	addon_version=$(bashio::addon.version)
+	addon_version=$(bashio::addon.version 2>/dev/null) || addon_version="unknown"
+	[[ -z "$addon_version" ]] && addon_version="unknown"
 
 	bashio::log.blue " \n"
 	bashio::log.blue "-----------------------------------------------------------"
