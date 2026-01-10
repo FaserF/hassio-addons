@@ -2,7 +2,7 @@
 
 # Generate password if not exists
 if ! bashio::fs.file_exists "/data/planka_db_password"; then
-    openssl rand -base64 32 > /data/planka_db_password
+    openssl rand -hex 32 > /data/planka_db_password
 fi
 PLANKA_DB_PASSWORD=$(cat /data/planka_db_password)
 POSTGRES_PASSWORD=$(cat /data/postgres_password)

@@ -4,7 +4,7 @@
 bashio::log.info "Waiting for PostgreSQL to be ready..."
 max_retries=30
 count=0
-until pg_isready -h localhost -U postgres; do
+until pg_isready -U postgres; do
     if [ $count -ge $max_retries ]; then
         bashio::exit.nok "PostgreSQL not ready after ${max_retries} attempts."
     fi
@@ -36,19 +36,19 @@ done
 bashio::log.info "Ensuring TT-RSS database and user exist..."
 
 # Create DB if missing
-if [ "$(psql -h localhost -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_database WHERE datname = 'ttrss'")" != "1" ]; then
-    psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE ttrss;"
+if [ "$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_database WHERE datname = 'ttrss'")" != "1" ]; then
+    psql -U postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE ttrss;"
 fi
 
 # Create User if missing and Grant Privileges
 # Use idempotent DO block to create user
 # Note: DO block cannot run CREATE USER directly inside because it's a utility command.
 # We stick to the check-then-create pattern but use safe variable passing.
-if [ "$(psql -h localhost -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'")" != "1" ]; then
-    psql -h localhost -U postgres -v ON_ERROR_STOP=1 -v pw="'${TTRSS_DB_PASSWORD}'" -c "CREATE USER ttrss WITH PASSWORD :pw;"
+if [ "$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'")" != "1" ]; then
+    psql -U postgres -v ON_ERROR_STOP=1 -v pw="'${TTRSS_DB_PASSWORD}'" -c "CREATE USER ttrss WITH PASSWORD :pw;"
 fi
 
-psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE ttrss TO ttrss;"
+psql -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE ttrss TO ttrss;"
 
 # Schema Update
 bashio::log.info "Updating TT-RSS schema..."
