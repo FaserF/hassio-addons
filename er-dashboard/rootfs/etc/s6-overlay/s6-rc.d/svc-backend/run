@@ -1,0 +1,13 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting Backend..."
+
+export PROJECT_NAME="ER-Startseite"
+export BACKEND_CORS_ORIGINS='["http://localhost","http://127.0.0.1"]'
+export POSTGRES_SERVER="localhost"
+export POSTGRES_USER="postgres"
+export POSTGRES_DB="er_startseite"
+
+cd /app
+exec python3 -m uvicorn app.main:app --host 0.0.0.0 --port 13000

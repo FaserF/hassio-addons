@@ -64,6 +64,7 @@ env:
     wiki.js
     wiki.js3
     bentopdf
+    er-dashboard
     matterbridge
     pterodactyl-wings
     AegisBot

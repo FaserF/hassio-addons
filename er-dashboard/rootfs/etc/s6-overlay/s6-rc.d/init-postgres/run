@@ -1,0 +1,23 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Initializing PostgreSQL..."
+
+# Create runtime directory for PostgreSQL lock files
+mkdir -p /run/postgresql
+chown postgres:postgres /run/postgresql
+
+if [ ! -d "/var/lib/postgresql/data" ] || [ -z "$(ls -A "/var/lib/postgresql/data")" ]; then
+    bashio::log.info "Creating new database cluster..."
+    mkdir -p /var/lib/postgresql/data
+    chown -R postgres:postgres /var/lib/postgresql/data
+
+    echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
+    chown postgres:postgres /tmp/pgpass
+
+    su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass
+
+    rm -f /tmp/pgpass
+else
+    bashio::log.info "Database cluster exists."
+fi

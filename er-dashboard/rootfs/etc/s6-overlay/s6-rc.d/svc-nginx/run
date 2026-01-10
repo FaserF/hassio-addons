@@ -1,0 +1,16 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting Nginx..."
+
+export INGRESS_PORT=$(bashio::addon.ingress_port)
+
+bashio::var.json \
+    ssl "$(bashio::config 'ssl')" \
+    certfile "$(bashio::config 'certfile')" \
+    keyfile "$(bashio::config 'keyfile')" \
+    | tempio \
+        -template /etc/nginx/templates/direct.gtpl \
+        -out /etc/nginx/http.d/direct.conf
+
+exec nginx -g "daemon off;"

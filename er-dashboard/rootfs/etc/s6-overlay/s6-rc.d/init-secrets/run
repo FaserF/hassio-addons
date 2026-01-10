@@ -1,0 +1,32 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Checking for secrets..."
+
+SECRETS_FILE="/data/secrets.json"
+
+# Check if secrets file exists
+if ! bashio::fs.file_exists "${SECRETS_FILE}"; then
+    bashio::log.info "Generating new secrets..."
+
+    # Generate secrets
+    SECRET_KEY=$(openssl rand -hex 32)
+    POSTGRES_PASSWORD=$(openssl rand -hex 16)
+
+    # Save to file
+    bashio::var.json \
+        SECRET_KEY "${SECRET_KEY}" \
+        POSTGRES_PASSWORD "${POSTGRES_PASSWORD}" \
+        > "${SECRETS_FILE}"
+
+    bashio::log.info "Secrets generated and saved."
+else
+    bashio::log.info "Loading existing secrets."
+fi
+
+# Export to S6 environment for other services
+SECRET_KEY=$(bashio::jq "${SECRETS_FILE}" ".SECRET_KEY")
+POSTGRES_PASSWORD=$(bashio::jq "${SECRETS_FILE}" ".POSTGRES_PASSWORD")
+
+printf "%s" "${SECRET_KEY}" > /var/run/s6/container_environment/SECRET_KEY
+printf "%s" "${POSTGRES_PASSWORD}" > /var/run/s6/container_environment/POSTGRES_PASSWORD
