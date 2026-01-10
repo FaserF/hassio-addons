@@ -1,5 +1,5 @@
 name: Tiny Tiny RSS
-version: 0.1.0
+version: 0.1.1
 slug: tt-rss
 description: A web-based news feed (RSS/Atom) reader and aggregator
 url: https://tt-rss.org
@@ -15,4 +15,4 @@ schema:
 ingress: true
 ingress_port: 80
 panel_icon: mdi:rss
-image: ghcr.io/hassio-addons/tt-rss/{arch}
+image: ghcr.io/faserf/hassio-addons-tt-rss-{arch}
