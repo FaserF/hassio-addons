@@ -184,7 +184,8 @@ ensure_admin_user() {
 	export MYSQL_PWD="$db_pass"
 
 	# Check if admin user exists
-	local user_exists=$(mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -N -e "SELECT COUNT(*) FROM users WHERE email = 'admin@example.com';" 2>/dev/null || echo "0")
+	local user_exists
+	user_exists=$(mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -N -e "SELECT COUNT(*) FROM users WHERE email = 'admin@example.com';" 2>/dev/null || echo "0")
 
 	# Check if existing password hash is valid (BCrypt)
 	local current_hash=""
@@ -207,33 +208,34 @@ ensure_admin_user() {
 
 	# Generate Hash safely using PHP and Environment Variable
 	export ADMIN_PASS="$admin_pass"
-	local hashed_pass=$(cd /var/www/html && su-exec nginx php -r 'echo password_hash(getenv("ADMIN_PASS"), PASSWORD_BCRYPT);' 2>/dev/null || echo "")
+	local hashed_pass
+	hashed_pass=$(cd /var/www/html && su-exec nginx php -r 'echo password_hash(getenv("ADMIN_PASS"), PASSWORD_BCRYPT);' 2>/dev/null || echo "")
 
 	if [ -z "$hashed_pass" ]; then
 		bashio::log.error "Failed to generate password hash! Admin user cannot be configured."
 		return 1
 	fi
 
-	local external_id=$(openssl rand -hex 16)
-	local uuid=$(cd /var/www/html && su-exec nginx php -r "require '/var/www/html/vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
+	local external_id
+	external_id=$(openssl rand -hex 16)
+	local uuid
+	uuid=$(cd /var/www/html && su-exec nginx php -r "require '/var/www/html/vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
 	if [ -z "$uuid" ]; then
 		uuid=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
 	fi
 
 	if [ "$action" = "create" ]; then
-		mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" <<EOF 2>&1
+		if mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" <<EOF 2>&1; then
 INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
 VALUES ('${external_id}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${hashed_pass}', '${uuid}', NOW(), NOW());
 EOF
-		if [ $? -eq 0 ]; then
 			bashio::log.info "✓ Admin user created successfully."
 			echo "For the first login use admin@example.com / admin as user and your database password to sign in."
 		else
 			bashio::log.error "Failed to create admin user."
 		fi
 	elif [ "$action" = "update" ]; then
-		mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -e "UPDATE users SET password = '${hashed_pass}' WHERE email = 'admin@example.com';" 2>/dev/null
-		if [ $? -eq 0 ]; then
+		if mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -e "UPDATE users SET password = '${hashed_pass}' WHERE email = 'admin@example.com';" 2>/dev/null; then
 			bashio::log.info "✓ Admin user password reset successfully."
 		else
 			bashio::log.error "Failed to reset admin password."
@@ -243,7 +245,6 @@ EOF
 	unset MYSQL_PWD
 	unset ADMIN_PASS
 }
-
 
 # Get Addon Version
 
@@ -571,7 +572,6 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 		unset MYSQL_PWD
 	fi
 
-
 	# Function to ensure admin user exists and has a valid password
 	if [ "$setup_user" != "true" ]; then
 		ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
@@ -741,9 +741,9 @@ try {
             'location_id' => \$location->id,
             'fqdn' => '${WINGS_FQDN}',
             'scheme' => '${SCHEME}',
-            'memory' => 0,
+            'memory' => 1024,
             'memory_overallocate' => 0,
-            'disk' => 0,
+            'disk' => 10240,
             'disk_overallocate' => 0,
             'upload_size' => 100,
             'daemon_sftp' => ${DAEMON_SFTP},
@@ -884,9 +884,8 @@ elif ! bashio::config.true 'ssl' && [[ "${APP_URL}" == https://* ]]; then
 	bashio::log.warning "SSL is disabled, but APP_URL starts with https://. Consider changing it to http://."
 fi
 
-	# Ensure admin user exists (replaces duplicate block)
-	ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
-
+# Ensure admin user exists (replaces duplicate block)
+ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
 
 echo "[start] Starting nginx and php"
 # PHP-FPM is configured to run as nginx user in pool config

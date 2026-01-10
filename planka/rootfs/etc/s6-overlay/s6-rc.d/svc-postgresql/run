@@ -1,4 +1,10 @@
 #!/usr/bin/env bashio
 
 bashio::log.info "Starting PostgreSQL..."
+
+if ! bashio::fs.directory_exists "/run/postgresql"; then
+    mkdir -p /run/postgresql
+    chown postgres:postgres /run/postgresql
+fi
+
 exec su-exec postgres postgres -D /data/database

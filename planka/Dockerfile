@@ -8,7 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
 
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.0"
 ENV ADDON_NAME="Planka"

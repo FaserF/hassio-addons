@@ -13,10 +13,9 @@ map:
 init: false
 ingress: true
 ingress_port: 1337
-
 panel_icon: mdi:kanban
 options:
-  ssl: true
+  ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
   log_level: info

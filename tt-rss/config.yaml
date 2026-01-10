@@ -8,12 +8,27 @@ arch:
   - amd64
 startup: services
 
+map:
+  - ssl:rw
+
 options:
   self_url: ""
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+
 schema:
   self_url: str?
+  ssl: bool
+  certfile: str
+  keyfile: str
+
 init: false
+hassio_api: true
+ports:
+  8280/tcp: 8280
+  8281/tcp: 8281
 ingress: true
-ingress_port: 80
+ingress_port: 8280
 panel_icon: mdi:rss
 image: ghcr.io/faserf/hassio-addons-tt-rss-{arch}

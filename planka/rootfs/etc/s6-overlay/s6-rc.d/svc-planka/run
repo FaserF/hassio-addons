@@ -15,8 +15,8 @@ else
     PLANKA_DB_PASSWORD="planka"
 fi
 
-# URL Encode Password (simple python oneliner as we have python)
-ENCODED_PASS=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PLANKA_DB_PASSWORD}'))")
+export PLANKA_DB_PASSWORD
+ENCODED_PASS=$(python3 -c "import urllib.parse, os; print(urllib.parse.quote(os.environ.get('PLANKA_DB_PASSWORD', ''), safe=''))")
 
 export DATABASE_URL="postgresql://planka:${ENCODED_PASS}@localhost:5432/planka"
 export PORT=1337
@@ -25,7 +25,7 @@ export PORT=1337
 SECRET=$(bashio::config 'secret_key')
 if [ -z "$SECRET" ]; then
     if ! bashio::fs.file_exists "/data/secret_key"; then
-        bashio::log.warn "No secret_key provided. Generating a persistent one."
+        bashio::log.warning "No secret_key provided. Generating a persistent one."
         openssl rand -hex 32 > /data/secret_key
     fi
     SECRET=$(cat /data/secret_key)
@@ -34,7 +34,7 @@ export SECRET_KEY="$SECRET"
 export TRUST_PROXY=1
 
 # BASE_URL handling for Ingress
-if bashio::addon.ingress_is_enabled; then
+if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
     export BASE_URL="$(bashio::addon.ingress_entry)"
 fi
 

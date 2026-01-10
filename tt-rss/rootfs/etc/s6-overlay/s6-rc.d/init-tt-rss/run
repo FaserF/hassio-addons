@@ -17,9 +17,18 @@ fi
 
 # Generate config.php
 bashio::log.info "Generating config.php..."
-SELF_URL_PATH=$(bashio::addon.ingress_entry)
+# Fetch Ingress Entry (Fallback to / if API fails)
+if ! SELF_URL_PATH=$(bashio::addon.ingress_entry); then
+    bashio::log.warning "Failed to fetch ingress entry from Supervisor API. Defaulting to /."
+    SELF_URL_PATH="/"
+fi
+
 # If self_url is set in options, use it, else default to ingress path
-CONFIG_SELF_URL=$(bashio::config 'self_url')
+if ! CONFIG_SELF_URL=$(bashio::config 'self_url'); then
+    bashio::log.warning "Failed to fetch configuration via bashio::config. Ignoring."
+    CONFIG_SELF_URL=""
+fi
+
 if [ -z "$CONFIG_SELF_URL" ] || [ "$CONFIG_SELF_URL" = "null" ]; then
     CONFIG_SELF_URL="${SELF_URL_PATH}/"
 fi
@@ -27,7 +36,7 @@ fi
 cat > /var/www/tt-rss/config.php <<EOF
 <?php
     putenv('TTRSS_DB_TYPE=pgsql');
-    putenv('TTRSS_DB_HOST=localhost');
+    putenv('TTRSS_DB_HOST=127.0.0.1');
     putenv('TTRSS_DB_USER=ttrss');
     putenv('TTRSS_DB_NAME=ttrss');
     putenv('TTRSS_DB_PASS=${TTRSS_DB_PASSWORD}');
@@ -46,7 +55,7 @@ cat > /var/www/tt-rss/config.php <<EOF
     // However, docker-compose setups often use env vars.
     // We can define constants here.
     define('DB_TYPE', 'pgsql');
-    define('DB_HOST', 'localhost');
+    define('DB_HOST', '127.0.0.1');
     define('DB_USER', 'ttrss');
     define('DB_NAME', 'ttrss');
     define('DB_PASS', '${TTRSS_DB_PASSWORD}');
@@ -70,3 +79,68 @@ EOF
 
 # Permission fix
 chown -R nginx:nginx /var/www/tt-rss
+
+# Generate Nginx Config
+bashio::log.info "Generating Nginx configuration..."
+# Use || true to prevent exit if config fails (though it shouldn't if defaults provided)
+# Actually bashio::config errors are handled above for strict mode, here we just read.
+SSL_ENABLED=$(bashio::config 'ssl' || echo 'false')
+CERTFILE=$(bashio::config 'certfile' || echo 'fullchain.pem')
+KEYFILE=$(bashio::config 'keyfile' || echo 'privkey.pem')
+
+# Prepare main Nginx config (HTTP 8280)
+cat > /etc/nginx/servers/ingress.conf <<EOF
+server {
+    listen 8280 default_server;
+    root /var/www/tt-rss;
+    index index.php index.html index.htm;
+    server_name _;
+    client_max_body_size 64m;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    }
+}
+EOF
+
+# Add SSL Server Block (HTTPS 8281) if enabled
+if [ "$SSL_ENABLED" = "true" ]; then
+    bashio::log.info "SSL is enabled. Configuring HTTPS on port 8281..."
+    if bashio::fs.file_exists "/ssl/${CERTFILE}" && bashio::fs.file_exists "/ssl/${KEYFILE}"; then
+        cat >> /etc/nginx/servers/ingress.conf <<EOF
+
+server {
+    listen 8281 ssl;
+    root /var/www/tt-rss;
+    index index.php index.html index.htm;
+    server_name _;
+    client_max_body_size 64m;
+
+    ssl_certificate /ssl/${CERTFILE};
+    ssl_certificate_key /ssl/${KEYFILE};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    }
+}
+EOF
+    else
+        bashio::log.error "SSL enabled but certificates not found at /ssl/${CERTFILE} or /ssl/${KEYFILE}. HTTPS will not be available."
+    fi
+fi

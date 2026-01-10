@@ -239,22 +239,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
       # If commit failed due to workflow files, remove them and commit again
-      - name: 🔄 Retry Commit Without Workflow Files
+      - name: 🔄 Fix Push & Retry
         if: steps.commit_changes.outcome == 'failure'
         run: |
-          # Reset the last commit if it contains workflow files
-          if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "\.github/workflows/"; then
-            echo "Last commit contains workflow files, amending it..."
-            git reset --soft HEAD~1
-            git reset HEAD .github/workflows/*.yaml
-            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
-            git push origin ${{ github.ref_name }} --force-with-lease || echo "Nothing to push"
-          elif git diff --cached --name-only | grep -q "\.github/workflows/"; then
-            echo "Removing workflow files from staging and committing other changes..."
-            git reset HEAD .github/workflows/*.yaml
-            git commit -m "${{ steps.commit_msg.outputs.message }}" || echo "No changes to commit"
-            git push origin ${{ github.ref_name }} || echo "Nothing to push"
-          else
-            echo "Commit failed for other reasons, exiting..."
+          echo "Previous commit/push failed. Attempting to recover..."
+
+          # 1. Fetch latest
+          git fetch origin ${{ github.ref_name }}
+
+          # 2. Rebase on top of upstream to resolve non-fast-forward
+          echo "Rebasing on top of origin/${{ github.ref_name }}..."
+          git config --global user.email "${{ inputs.commit_user_email }}"
+          git config --global user.name "${{ inputs.commit_user_name }}"
+          # Explicitly set rebase strategy to avoid issues
+          if ! git pull --rebase origin ${{ github.ref_name }}; then
+            echo "Rebase failed. Conflict likely. Aborting."
             exit 1
           fi
+
+          # 3. Safety check: Ensure no workflow files are in the commit
+          # (This handles the case where workflow files might have slipped in)
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "\.github/workflows/"; then
+             echo "Detected workflow files in commit. Removing them..."
+             git reset --soft HEAD~1
+             git reset HEAD .github/workflows/*.yaml
+             git commit -m "${{ steps.commit_msg.outputs.message }}"
+          fi
+
+          # 4. Push
+          echo "Pushing changes..."
+          git push origin ${{ github.ref_name }}
