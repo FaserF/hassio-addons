@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:18.2.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 
 # Stage 1: Get Frontend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/frontend
