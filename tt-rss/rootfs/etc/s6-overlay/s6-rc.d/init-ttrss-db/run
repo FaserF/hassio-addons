@@ -41,11 +41,15 @@ if [ "$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_database WHER
 fi
 
 # Create User if missing and Grant Privileges
-# Use idempotent DO block to create user
-# Note: DO block cannot run CREATE USER directly inside because it's a utility command.
-# We stick to the check-then-create pattern but use safe variable passing.
-if [ "$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'")" != "1" ]; then
-    psql -U postgres -v ON_ERROR_STOP=1 -v pw="'${TTRSS_DB_PASSWORD}'" -c "CREATE USER ttrss WITH PASSWORD :pw;"
+# Use psql with escaped password (avoid embedding quotes in -v)
+USER_EXISTS=$(psql -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'ttrss'" 2>/dev/null || echo "0")
+if [ "$USER_EXISTS" != "1" ]; then
+    bashio::log.info "Creating ttrss database user..."
+    psql -U postgres -v ON_ERROR_STOP=1 -c "CREATE USER ttrss WITH PASSWORD '${TTRSS_DB_PASSWORD//\'/\'\'}'"
+else
+    # User exists - update password to ensure it matches the password file
+    bashio::log.info "Updating ttrss database user password..."
+    psql -U postgres -v ON_ERROR_STOP=1 -c "ALTER USER ttrss WITH PASSWORD '${TTRSS_DB_PASSWORD//\'/\'\'}'"
 fi
 
 psql -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE ttrss TO ttrss;"
