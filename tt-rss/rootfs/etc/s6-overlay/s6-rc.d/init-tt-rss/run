@@ -17,7 +17,12 @@ fi
 
 # Generate config.php
 bashio::log.info "Generating config.php..."
-SELF_URL_PATH=$(bashio::addon.ingress_entry)
+# Fetch Ingress Entry (Fallback to / if API fails)
+if ! SELF_URL_PATH=$(bashio::addon.ingress_entry); then
+    bashio::log.warning "Failed to fetch ingress entry from Supervisor API. Defaulting to /."
+    SELF_URL_PATH="/"
+fi
+
 # If self_url is set in options, use it, else default to ingress path
 CONFIG_SELF_URL=$(bashio::config 'self_url')
 if [ -z "$CONFIG_SELF_URL" ] || [ "$CONFIG_SELF_URL" = "null" ]; then
