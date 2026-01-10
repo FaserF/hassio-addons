@@ -77,6 +77,8 @@ env:
     n8n
     tado_aa
     bash_script_executer
+    planka
+    tt-rss
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge
