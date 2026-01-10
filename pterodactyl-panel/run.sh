@@ -170,6 +170,81 @@ fi
 set -e
 # shellcheck disable=SC1091
 
+# Function to ensure admin user exists and has a valid password
+ensure_admin_user() {
+	local db_host="$1"
+	local db_port="$2"
+	local db_user="$3"
+	local db_name="$4"
+	local db_pass="$5"
+	local admin_pass="$6"
+
+	bashio::log.info "Checking admin user status..."
+
+	export MYSQL_PWD="$db_pass"
+
+	# Check if admin user exists
+	local user_exists=$(mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -N -e "SELECT COUNT(*) FROM users WHERE email = 'admin@example.com';" 2>/dev/null || echo "0")
+
+	# Check if existing password hash is valid (BCrypt)
+	local current_hash=""
+	if [ "$user_exists" != "0" ]; then
+		current_hash=$(mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -N -e "SELECT password FROM users WHERE email = 'admin@example.com';" 2>/dev/null)
+	fi
+
+	# Determine if we need to create or update
+	local action="none"
+	if [ "$user_exists" = "0" ]; then
+		action="create"
+		bashio::log.info "Admin user not found. Creating..."
+	elif [[ ! "$current_hash" =~ ^\$2y\$ ]]; then
+		action="update"
+		bashio::log.warning "Admin user exists but has invalid/legacy password hash. Resetting password..."
+	else
+		bashio::log.info "Admin user exists with valid password hash. Skipping modification."
+		return 0
+	fi
+
+	# Generate Hash safely using PHP and Environment Variable
+	export ADMIN_PASS="$admin_pass"
+	local hashed_pass=$(cd /var/www/html && su-exec nginx php -r 'echo password_hash(getenv("ADMIN_PASS"), PASSWORD_BCRYPT);' 2>/dev/null || echo "")
+
+	if [ -z "$hashed_pass" ]; then
+		bashio::log.error "Failed to generate password hash! Admin user cannot be configured."
+		return 1
+	fi
+
+	local external_id=$(openssl rand -hex 16)
+	local uuid=$(cd /var/www/html && su-exec nginx php -r "require '/var/www/html/vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
+	if [ -z "$uuid" ]; then
+		uuid=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
+	fi
+
+	if [ "$action" = "create" ]; then
+		mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" <<EOF 2>&1
+INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
+VALUES ('${external_id}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${hashed_pass}', '${uuid}', NOW(), NOW());
+EOF
+		if [ $? -eq 0 ]; then
+			bashio::log.info "✓ Admin user created successfully."
+			echo "For the first login use admin@example.com / admin as user and your database password to sign in."
+		else
+			bashio::log.error "Failed to create admin user."
+		fi
+	elif [ "$action" = "update" ]; then
+		mariadb -h "$db_host" -P "$db_port" -u "$db_user" "$db_name" -e "UPDATE users SET password = '${hashed_pass}' WHERE email = 'admin@example.com';" 2>/dev/null
+		if [ $? -eq 0 ]; then
+			bashio::log.info "✓ Admin user password reset successfully."
+		else
+			bashio::log.error "Failed to reset admin password."
+		fi
+	fi
+
+	unset MYSQL_PWD
+	unset ADMIN_PASS
+}
+
+
 # Get Addon Version
 
 SSL_CERT="/ssl/$(bashio::config 'certfile')"
@@ -496,53 +571,10 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
 		unset MYSQL_PWD
 	fi
 
+
+	# Function to ensure admin user exists and has a valid password
 	if [ "$setup_user" != "true" ]; then
-		bashio::log.info "Database migrated. Creating default admin user..."
-		echo "[setup] Creating default user..."
-
-		# Generate a unique external_id for the user (required field, cannot be null)
-		EXTERNAL_ID=$(openssl rand -hex 16)
-
-		# Note: php artisan p:user:make doesn't support --external-id option and will fail
-		# because external_id cannot be null. We create the user directly in the database instead.
-		bashio::log.info "Creating admin user directly in database (artisan command doesn't support external_id)..."
-		export MYSQL_PWD="${password_mariadb}"
-
-		# Generate password hash using PHP (Laravel uses bcrypt)
-		HASHED_PASSWORD=$(cd /var/www/html && su-exec nginx php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);" 2>/dev/null || echo "")
-		if [ -z "$HASHED_PASSWORD" ]; then
-			bashio::log.warning "PHP password_hash failed, using openssl fallback..."
-			# Fallback: use openssl if PHP fails (note: this creates md5 hash, not bcrypt)
-			HASHED_PASSWORD=$(openssl passwd -1 "${password_mariadb}" 2>/dev/null || echo "")
-		fi
-
-		# Generate UUID
-		UUID=$(cd /var/www/html && su-exec nginx php -r "require 'vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
-		if [ -z "$UUID" ]; then
-			# Fallback: generate UUID-like string
-			UUID=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
-		fi
-
-		# Insert user directly into database
-		RESULT=$(
-			mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
-INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
-VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
-ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
-SELECT ROW_COUNT();
-EOF
-		)
-		unset MYSQL_PWD
-
-		if echo "$RESULT" | grep -q "ERROR"; then
-			bashio::log.error "Failed to create user in database:"
-			echo "$RESULT" | grep "ERROR" || true
-		else
-			bashio::log.info "✓ Admin user created successfully in database with external_id: ${EXTERNAL_ID}"
-		fi
-
-		echo "For the first login use admin@example.com / admin as user and your database password to sign in."
-		echo "Please ensure to change these credentials as soon as possible."
+		ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
 	fi
 elif [ "$setup_user" = "true" ]; then
 	echo "[setup] Migrating/Seeding database..."
@@ -585,6 +617,10 @@ else
 	su-exec nginx php artisan migrate --no-interaction --force || {
 		bashio::log.warning "Some migrations may have failed, but continuing..."
 	}
+
+	# Ensure admin user exists (check/create even if not first run)
+	ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
+
 fi
 
 # Check if default location and node should be created
@@ -677,8 +713,8 @@ if [ "$LOCATIONS_TABLE_EXISTS" != "0" ] && [ "$NODES_TABLE_EXISTS" != "0" ] && {
 
 	cat <<EOF >/tmp/setup_location_node.php
 <?php
-require __DIR__ . '/vendor/autoload.php';
-\$app = require __DIR__ . '/bootstrap/app.php';
+require '/var/www/html/vendor/autoload.php';
+\$app = require '/var/www/html/bootstrap/app.php';
 \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Pterodactyl\Models\Location;
@@ -776,8 +812,8 @@ elif [ ! -f /share/pterodactyl/config.yml ]; then
 	cat <<'EOF' >/tmp/generate_config.php
 <?php
 try {
-    require __DIR__ . '/vendor/autoload.php';
-    $app = require __DIR__ . '/bootstrap/app.php';
+    require '/var/www/html/vendor/autoload.php';
+    $app = require '/var/www/html/bootstrap/app.php';
     $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
     use Pterodactyl\Models\Node;
@@ -848,53 +884,9 @@ elif ! bashio::config.true 'ssl' && [[ "${APP_URL}" == https://* ]]; then
 	bashio::log.warning "SSL is disabled, but APP_URL starts with https://. Consider changing it to http://."
 fi
 
-if [ "$setup_user" = "true" ]; then
-	echo "[setup] Creating default user..."
+	# Ensure admin user exists (replaces duplicate block)
+	ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}" "${password_mariadb}"
 
-	# Generate a unique external_id for the user (required field, cannot be null)
-	EXTERNAL_ID=$(openssl rand -hex 16)
-
-	# Note: php artisan p:user:make doesn't support --external-id option and will fail
-	# because external_id cannot be null. We create the user directly in the database instead.
-	bashio::log.info "Creating admin user directly in database (artisan command doesn't support external_id)..."
-	export MYSQL_PWD="${password_mariadb}"
-
-	# Generate password hash using PHP (Laravel uses bcrypt)
-	HASHED_PASSWORD=$(cd /var/www/html && su-exec nginx php -r "echo password_hash('${password_mariadb}', PASSWORD_BCRYPT);" 2>/dev/null || echo "")
-	if [ -z "$HASHED_PASSWORD" ]; then
-		bashio::log.warning "PHP password_hash failed, using openssl fallback..."
-		# Fallback: use openssl if PHP fails (note: this creates md5 hash, not bcrypt)
-		HASHED_PASSWORD=$(openssl passwd -1 "${password_mariadb}" 2>/dev/null || echo "")
-	fi
-
-	# Generate UUID
-	UUID=$(cd /var/www/html && su-exec nginx php -r "require 'vendor/autoload.php'; echo Ramsey\Uuid\Uuid::uuid4()->toString();" 2>/dev/null || echo "")
-	if [ -z "$UUID" ]; then
-		# Fallback: generate UUID-like string
-		UUID=$(openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/')
-	fi
-
-	# Insert user directly into database
-	RESULT=$(
-		mariadb -h "${host}" -P "${port}" -u "pterodactyl" "${db}" <<EOF 2>&1
-INSERT INTO users (external_id, root_admin, language, use_totp, totp_secret, email, username, name_first, name_last, password, uuid, updated_at, created_at)
-VALUES ('${EXTERNAL_ID}', 1, 'en', 0, NULL, 'admin@example.com', 'admin', 'Default', 'Admin', '${HASHED_PASSWORD}', '${UUID}', NOW(), NOW())
-ON DUPLICATE KEY UPDATE external_id = '${EXTERNAL_ID}';
-SELECT ROW_COUNT();
-EOF
-	)
-	unset MYSQL_PWD
-
-	if echo "$RESULT" | grep -q "ERROR"; then
-		bashio::log.error "Failed to create user in database:"
-		echo "$RESULT" | grep "ERROR" || true
-	else
-		bashio::log.info "✓ Admin user created successfully in database with external_id: ${EXTERNAL_ID}"
-	fi
-
-	echo "For the first login use admin@example.com / admin as user and your database password to sign in."
-	echo "Please ensure to change these credentials as soon as possible."
-fi
 
 echo "[start] Starting nginx and php"
 # PHP-FPM is configured to run as nginx user in pool config
