@@ -19,4 +19,5 @@ ports:
   8066/tcp: 8066
 hassio_api: true
 ingress: true
+ingress_port: 8066
 ingress_entry: /

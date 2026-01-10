@@ -9,6 +9,7 @@ arch:
   - aarch64
   - amd64
 ingress: true
+ingress_port: 5678
 init: false
 panel_icon: mdi:sitemap
 options:

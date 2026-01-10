@@ -11,4 +11,6 @@ ports:
   8123/tcp: 8124
 map:
   - homeassistant_config:rw
+ingress: true
+ingress_port: 8123
 init: false

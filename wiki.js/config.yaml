@@ -13,6 +13,7 @@ services:
 map:
   - ssl
 ingress: true
+ingress_port: 3010
 init: false
 panel_icon: mdi:wikipedia
 options:

@@ -10,6 +10,7 @@ arch:
   - amd64
 map:
   - ssl
+init: false
 ingress: true
 ingress_port: 1337
 

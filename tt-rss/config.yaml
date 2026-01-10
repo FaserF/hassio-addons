@@ -12,6 +12,7 @@ options:
   self_url: ""
 schema:
   self_url: str?
+init: false
 ingress: true
 ingress_port: 80
 panel_icon: mdi:rss

@@ -12,6 +12,7 @@ arch:
 map:
   - ssl
 ingress: true
+ingress_port: 3011
 init: false
 panel_icon: mdi:wikipedia
 options:
