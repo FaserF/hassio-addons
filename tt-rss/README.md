@@ -1,19 +1,29 @@
-# Home Assistant Add-on: Tiny Tiny RSS
+# Tiny Tiny RSS
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_tt-rss)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/ghcr.io/hassio-addons/tt-rss/{arch})
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> A web-based news feed (RSS/Atom) reader and aggregator
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 [![GitHub Release][releases-shield]][releases]
-[![Project Stage][project-stage-shield]][project-stage]
-[![License][license-shield]][license]
-![Project Maintenance][maintenance-shield]
-[![GitHub Activity][commits-shield]][commits]
-
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
 
 Tiny Tiny RSS is a free and open-source web-based news feed (RSS/Atom) reader and aggregator.
-
-## About
-
-![Addon Logo](logo.png)
 
 This add-on provides a self-hosted instance of Tiny Tiny RSS (TT-RSS). It is designed to be lightweight and fast, using Alpine Linux, Nginx, and PHP 8.3.
 
@@ -21,33 +31,26 @@ This add-on provides a self-hosted instance of Tiny Tiny RSS (TT-RSS). It is des
 
 ## Installation
 
-1.  Search for "Tiny Tiny RSS" in the Home Assistant Add-on Store.
-2.  Install the add-on.
-3.  Configure the database connection settings (see Configuration below).
-4.  Start the add-on.
+1. Search for "Tiny Tiny RSS" in the Home Assistant Add-on Store.
+2. Install the add-on.
+3. Configure the database connection settings (see Configuration below).
+4. Start the add-on.
 
-## Configuration
+---
 
-**Note**: Configuration logic is currently minimal. You may need to manually edit `config.php` if advanced customization is required, or rely on environment variables passed via `s6-overlay` if verified supported by the upstream docker logic (though this is a custom build, so we need to ensure config mapping).
+## ⚙️ Configuration
 
-*Ideally, future versions will expose all key TT-RSS config options here.*
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-## Support
+### Options
 
-If you run into issues, please report them on the GitHub repository issue tracker.
+```yaml
+self_url: ''
+```
 
-## License
+---
 
-MIT License
+## 👨‍💻 Credits & License
 
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[commits-shield]: https://img.shields.io/github/commit-activity/y/faserf/hassio-addons.svg
-[commits]: https://github.com/faserf/hassio-addons/commits/master
-[license-shield]: https://img.shields.io/github/license/faserf/hassio-addons.svg
-[license]: https://github.com/faserf/hassio-addons/blob/master/LICENSE.md
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
-[project-stage]: https://github.com/faserf/hassio-addons/blob/master/ACKNOWLEDGEMENTS.md
-[releases-shield]: https://img.shields.io/github/release/faserf/hassio-addons.svg
-[releases]: https://github.com/faserf/hassio-addons/releases
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

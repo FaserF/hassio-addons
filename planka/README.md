@@ -1,22 +1,30 @@
-# Home Assistant Add-on: Planka
+# Planka
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_planka)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-planka)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> The elegant open source project tracking tool
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 Planka is an elegant, open-source project tracking tool (Kanban board) that helps you organize your projects and tasks.
 
-[![GitHub Release][releases-shield]][releases]
-[![Project Stage][project-stage-shield]][project-stage]
-[![License][license-shield]][license]
-![Project Maintenance][maintenance-shield]
-[![GitHub Activity][commits-shield]][commits]
-
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
-![Alpine Linux][alpine-shield]
-
-## About
-
-![Addon Logo](logo.png)
-
 Planka provides a modern, collaborative way to manage tasks with features like:
+
 - Kanban boards
 - Real-time updates
 - Project management
@@ -30,33 +38,25 @@ This add-on bundles PostgreSQL to provide a complete, self-hosted solution.
 2. Install the add-on.
 3. Start the add-on.
 
-## Configuration
+---
 
-**Note**: This add-on uses Ingress by default. You can access the interface directly from the Home Assistant sidebar.
+## ⚙️ Configuration
 
-### Option: `ssl`
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-Enables/disables SSL on the ingress port (internal communication). Default is `true`.
+### Options
 
-### Option: `secret_key`
+```yaml
+certfile: fullchain.pem
+keyfile: privkey.pem
+log_level: info
+secret_key: ''
+ssl: true
+```
 
-Secret key used for session signing. If left empty, one will be generated on startup (but sessions may be lost on restart). It is recommended to generate a strong random string and set it here.
+---
 
-## Support
+## 👨‍💻 Credits & License
 
-Got questions?
-You can open an issue here: [GitHub Issues][issue]
-
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[alpine-shield]: https://img.shields.io/badge/os-Alpine-blue.svg
-[commits-shield]: https://img.shields.io/github/commit-activity/y/faserf/hassio-addons.svg
-[commits]: https://github.com/faserf/hassio-addons/commits/master
-[license-shield]: https://img.shields.io/github/license/faserf/hassio-addons.svg
-[license]: https://github.com/faserf/hassio-addons/blob/master/LICENSE.md
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
-[project-stage]: https://github.com/faserf/hassio-addons/blob/master/ACKNOWLEDGEMENTS.md
-[releases-shield]: https://img.shields.io/github/release/faserf/hassio-addons.svg
-[releases]: https://github.com/faserf/hassio-addons/releases
-[issue]: https://github.com/faserf/hassio-addons/issues
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
