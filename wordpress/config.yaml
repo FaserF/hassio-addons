@@ -1,6 +1,6 @@
 ---
 name: Wordpress
-version: 0.1.3
+version: 0.1.4
 slug: wordpress
 description: "The most popular publication platform on the Web."
 url: "https://github.com/FaserF/hassio-addons/tree/master/wordpress"
