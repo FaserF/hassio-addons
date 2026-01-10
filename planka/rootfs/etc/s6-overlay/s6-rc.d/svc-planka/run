@@ -15,7 +15,10 @@ else
     PLANKA_DB_PASSWORD="planka"
 fi
 
-export DATABASE_URL="postgresql://planka:${PLANKA_DB_PASSWORD}@localhost:5432/planka"
+export PLANKA_DB_PASSWORD
+ENCODED_PASS=$(python3 -c "import urllib.parse, os; print(urllib.parse.quote(os.environ.get('PLANKA_DB_PASSWORD', '')))")
+
+export DATABASE_URL="postgresql://planka:${ENCODED_PASS}@localhost:5432/planka"
 export PORT=1337
 
 # Secret Key
