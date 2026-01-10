@@ -3,8 +3,6 @@
 
 bashio::log.info "Starting Nginx..."
 
-export INGRESS_PORT=$(bashio::addon.ingress_port)
-
 bashio::var.json \
     ssl "$(bashio::config 'ssl')" \
     certfile "$(bashio::config 'certfile')" \

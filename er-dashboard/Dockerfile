@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:18.2.1
 
 # Stage 1: Get Frontend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/frontend
@@ -28,7 +28,6 @@ RUN \
         python3 \
         py3-pip \
         py3-greenlet \
-        py3-sqlalchemy \
         su-exec \
     \
     && pip3 install --upgrade pip
@@ -62,9 +61,9 @@ RUN pip3 install --no-cache-dir --break-system-packages \
 COPY rootfs /
 
 # Fix S6 Overlay line endings and force correct type definitions
-# We use tr to strip \r from all files, ensuring no partial edits
-RUN find /etc/s6-overlay/s6-rc.d -type f -exec sh -c 'cat "{}" | tr -d "\r" > "{}.tmp" && mv "{}.tmp" "{}"' \; && \
-    find /etc/services.d -type f -exec sh -c 'cat "{}" | tr -d "\r" > "{}.tmp" && mv "{}.tmp" "{}"' \; || true && \
+# We use sed -i to safely strip \r from all files
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec sed -i 's/\r$//' {} \; && \
+    find /etc/services.d -type f -exec sed -i 's/\r$//' {} \; 2>/dev/null || true && \
     echo "oneshot" > /etc/s6-overlay/s6-rc.d/init-secrets/type && \
     echo "oneshot" > /etc/s6-overlay/s6-rc.d/init-postgres/type && \
     echo "longrun" > /etc/s6-overlay/s6-rc.d/svc-postgres/type && \
@@ -73,10 +72,11 @@ RUN find /etc/s6-overlay/s6-rc.d -type f -exec sh -c 'cat "{}" | tr -d "\r" > "{
     echo "longrun" > /etc/s6-overlay/s6-rc.d/svc-nginx/type
 
 # Fix permissions
-RUN \
-    chmod a+x /etc/s6-overlay/s6-rc.d/*/run \
-    && chmod a+x /etc/s6-overlay/s6-rc.d/*/up \
-    && chmod a+x /etc/s6-overlay/s6-rc.d/*/finish || true
+# hadolint ignore=DL3059
+RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run 2>/dev/null; \
+    chmod a+x /etc/s6-overlay/s6-rc.d/*/up 2>/dev/null; \
+    chmod a+x /etc/s6-overlay/s6-rc.d/*/finish 2>/dev/null; \
+    true
 
 # Build arguments
 ARG BUILD_ARCH

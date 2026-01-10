@@ -3,17 +3,8 @@
 
 bashio::log.info "Initializing Backend..."
 
-bashio::net.wait_for 5432 localhost
+bashio::net.wait_for 5432 localhost 30
 
 cd /app
 
-if [ -f "alembic.ini" ]; then
-    bashio::log.info "Running database migrations..."
-
-    export POSTGRES_SERVER="localhost"
-    export POSTGRES_USER="postgres"
-    export POSTGRES_DB="er_startseite"
-    export POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
-
-    # alembic upgrade head || bashio::log.warning "Migrations failed (optional)"
-fi
+bashio::log.info "Backend initialization complete."

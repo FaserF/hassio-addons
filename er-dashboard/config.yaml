@@ -21,6 +21,7 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
+ingress: true
 ingress_port: 8099
 ingress_stream: true
 panel_icon: mdi:view-dashboard-variant

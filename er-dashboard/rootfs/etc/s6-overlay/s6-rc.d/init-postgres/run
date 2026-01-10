@@ -15,7 +15,11 @@ if [ ! -d "/var/lib/postgresql/data" ] || [ -z "$(ls -A "/var/lib/postgresql/dat
     echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
     chown postgres:postgres /tmp/pgpass
 
-    su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass
+    if ! su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
+        bashio::log.error "initdb failed! Command: su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass"
+        rm -f /tmp/pgpass
+        exit 1
+    fi
 
     rm -f /tmp/pgpass
 else
