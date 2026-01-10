@@ -21,8 +21,6 @@
 
 ## 📖 About
 
-[![GitHub Release][releases-shield]][releases]
-
 Tiny Tiny RSS is a free and open-source web-based news feed (RSS/Atom) reader and aggregator.
 
 This add-on provides a self-hosted instance of Tiny Tiny RSS (TT-RSS). It is designed to be lightweight and fast, using Alpine Linux, Nginx, and PHP 8.3.
