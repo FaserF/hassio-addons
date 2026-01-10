@@ -1,6 +1,6 @@
 ---
 name: Netboot.xyz
-version: 2.1.3
+version: 2.1.4
 slug: netboot-xyz
 description: PXE-Server to deploy a OS inside your local network
 url: https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz
