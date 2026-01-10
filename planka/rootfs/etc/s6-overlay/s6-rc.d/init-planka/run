@@ -16,10 +16,15 @@ if ! bashio::fs.file_exists "/data/planka_db_password"; then
     openssl rand -base64 32 > /data/planka_db_password
 fi
 PLANKA_DB_PASSWORD=$(cat /data/planka_db_password)
+POSTGRES_PASSWORD=$(cat /data/postgres_password)
 
-psql -h localhost -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = 'planka'" | grep -q 1 || \
-    psql -h localhost -U postgres -c "CREATE USER planka WITH PASSWORD '${PLANKA_DB_PASSWORD}';"
+# Check if user exists (role)
+export PGPASSWORD="${POSTGRES_PASSWORD}"
+if [ "$(psql -h localhost -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'planka'")" != "1" ]; then
+    psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE USER planka WITH PASSWORD '${PLANKA_DB_PASSWORD}';"
+fi
 
-psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE planka TO planka;"
+psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE planka TO planka;"
+unset PGPASSWORD
 # Grant schema privileges if needed (public schema usually open)
 # Planka needs to create tables.

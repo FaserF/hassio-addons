@@ -25,7 +25,7 @@ export PORT=1337
 SECRET=$(bashio::config 'secret_key')
 if [ -z "$SECRET" ]; then
     if ! bashio::fs.file_exists "/data/secret_key"; then
-        bashio::log.warn "No secret_key provided. Generating a persistent one."
+        bashio::log.warning "No secret_key provided. Generating a persistent one."
         openssl rand -hex 32 > /data/secret_key
     fi
     SECRET=$(cat /data/secret_key)

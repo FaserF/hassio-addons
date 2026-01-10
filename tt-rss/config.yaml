@@ -13,7 +13,10 @@ options:
 schema:
   self_url: str?
 init: false
+hassio_api: true
+ports:
+  8280/tcp: 8280
 ingress: true
-ingress_port: 80
+ingress_port: 8280
 panel_icon: mdi:rss
 image: ghcr.io/faserf/hassio-addons-tt-rss-{arch}

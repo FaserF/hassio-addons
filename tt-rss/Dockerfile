@@ -93,4 +93,4 @@ LABEL \
     org.opencontainers.image.version="${BUILD_VERSION}"
 
 HEALTHCHECK \
-    CMD curl --fail http://127.0.0.1:80/ || exit 1
+    CMD curl --fail http://127.0.0.1:8280/ || exit 1

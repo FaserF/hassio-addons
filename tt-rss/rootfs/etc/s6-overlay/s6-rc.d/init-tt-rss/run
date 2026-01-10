@@ -27,7 +27,7 @@ fi
 cat > /var/www/tt-rss/config.php <<EOF
 <?php
     putenv('TTRSS_DB_TYPE=pgsql');
-    putenv('TTRSS_DB_HOST=localhost');
+    putenv('TTRSS_DB_HOST=127.0.0.1');
     putenv('TTRSS_DB_USER=ttrss');
     putenv('TTRSS_DB_NAME=ttrss');
     putenv('TTRSS_DB_PASS=${TTRSS_DB_PASSWORD}');
@@ -46,7 +46,7 @@ cat > /var/www/tt-rss/config.php <<EOF
     // However, docker-compose setups often use env vars.
     // We can define constants here.
     define('DB_TYPE', 'pgsql');
-    define('DB_HOST', 'localhost');
+    define('DB_HOST', '127.0.0.1');
     define('DB_USER', 'ttrss');
     define('DB_NAME', 'ttrss');
     define('DB_PASS', '${TTRSS_DB_PASSWORD}');
