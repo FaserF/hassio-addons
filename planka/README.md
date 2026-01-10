@@ -51,7 +51,7 @@ certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
 secret_key: ''
-ssl: true
+ssl: false
 ```
 
 ---
