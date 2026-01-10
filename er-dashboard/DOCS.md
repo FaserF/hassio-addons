@@ -6,16 +6,16 @@ ER-Startseite is a modern, highly customizable dashboard with a neon aesthetic.
 
 The add-on can be accessed in two ways:
 
-1.  **Ingress (Recommended)**: Accessible directly via the Home Assistant sidebar. This use port `8099` internally and is proxied through Home Assistant (HTTPS).
-2.  **Direct Access**: Accessible via `http://<your-ip>:9123`. This port can be configured to use SSL in the add-on options.
+1. **Ingress (Recommended)**: Accessible directly via the Home Assistant sidebar. This use port `8099` internally and is proxied through Home Assistant (HTTPS).
+2. **Direct Access**: Accessible via `http://<your-ip>:9123`. This port can be configured to use SSL in the add-on options.
 
 ## Configuration
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `ssl` | boolean | `false` | Enable SSL for direct access on port 9123. |
-| `certfile` | string | `fullchain.pem` | SSL certificate file (stored in `/ssl/`). |
-| `keyfile` | string | `privkey.pem` | SSL key file (stored in `/ssl/`). |
+| Option     | Type    | Default         | Description                                |
+| ---------- | ------- | --------------- | ------------------------------------------ |
+| `ssl`      | boolean | `false`         | Enable SSL for direct access on port 9123. |
+| `certfile` | string  | `fullchain.pem` | SSL certificate file (stored in `/ssl/`).  |
+| `keyfile`  | string  | `privkey.pem`   | SSL key file (stored in `/ssl/`).          |
 
 ## Advanced Configuration
 

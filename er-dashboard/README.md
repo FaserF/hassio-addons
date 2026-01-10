@@ -1,12 +1,28 @@
-# Home Assistant Add-on: ER-Startseite (Dashboard)
+# ER-Startseite (Dashboard)
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_er-dashboard)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.0.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-er-dashboard)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> A modern, highly customizable dashboard with a neon aesthetic.
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 A modern, highly customizable dashboard with a neon aesthetic,
 video backgrounds, and robust app integration.
-
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
-
-## About
 
 ER-Startseite is a self-hosted dashboard application featuring:
 
@@ -21,19 +37,23 @@ ER-Startseite is a self-hosted dashboard application featuring:
 3. Start the add-on.
 4. Click **Open Web UI**.
 
-## Configuration
+---
 
-**Note**: The database is embedded.
-No external database configuration is required by default.
+## ⚙️ Configuration
 
-## Support
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-Got questions? Need help? Or maybe just want to chat?
-Join us on Discord!
+### Options
 
-[![Discord][discord-shield]][discord]
+```yaml
+certfile: fullchain.pem
+keyfile: privkey.pem
+ssl: false
+```
 
-[discord-shield]: https://img.shields.io/discord/478094546322030592.svg?color=7289da&label=Discord&logo=discord&style=flat-square
-[discord]: https://discord.gg/tTwtfPZ
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
