@@ -152,6 +152,7 @@ def categorize_commits(commits, repo_url):
         msg = commit["message"]
         full_hash = commit["full_hash"]
         short_hash = commit["short_hash"]
+        msg_lower = msg.lower()
 
         # Skip merge commits and CI commits
         if msg_lower.startswith("merge ") or "[skip ci]" in msg_lower:
