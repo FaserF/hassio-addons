@@ -1,6 +1,6 @@
 ---
 name: Planka
-version: 0.1.1
+version: 0.1.2
 slug: planka
 image: ghcr.io/faserf/hassio-addons-planka-{arch}
 description: The elegant open source project tracking tool
