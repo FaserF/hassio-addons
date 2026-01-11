@@ -25,9 +25,11 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: list(error|warn|info|http|verbose|debug|silly)
   secret_key: str?
   base_url: str?
+  reset_database: bool?
+  reset_database_confirm: bool?
 ports:
   1337/tcp: 1337
 ports_description:

@@ -9,5 +9,5 @@ configuration:
     name: "DHCP-Bereich"
     description: "DHCP-Bereich für den PXE-Server."
   log_level:
-    name: "Log Level"
+    name: "Log-Ebene"
     description: "Steuert die Detailgenauigkeit der Protokolle."

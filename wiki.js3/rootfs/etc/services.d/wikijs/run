@@ -98,8 +98,11 @@ echo "Starting Wiki.JS V3"
 cd /wiki
 # Configure Log Level
 if bashio::config.has_value 'log_level'; then
-    LOG_LEVEL=$(bashio::config 'log_level')
-    case "${LOG_LEVEL}" in
+    ADDON_LOG_LEVEL=$(bashio::config 'log_level')
+    # Map log levels to Wiki.js compatible values
+    # Backward compatibility: handle deprecated 'warn' value
+    case "${ADDON_LOG_LEVEL}" in
+        warn)        WIKI_LOG_LEVEL="warn" ;;  # Backward compat: accept old 'warn' value
         trace|debug) WIKI_LOG_LEVEL="debug" ;;
         info|notice) WIKI_LOG_LEVEL="info" ;;
         warning)     WIKI_LOG_LEVEL="warn" ;;

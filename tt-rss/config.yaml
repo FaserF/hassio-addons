@@ -24,6 +24,8 @@ schema:
   certfile: str
   keyfile: str
   log_level: list(trace|debug|info|notice|warning|error|fatal)
+  reset_database: bool?
+  reset_database_confirm: bool?
 
 init: false
 hassio_api: true

@@ -173,7 +173,7 @@ set -e
 ssl=$(bashio::config 'ssl')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
-keyfile=$(bashio::config 'keyfile')
+
 log_level=$(bashio::config 'log_level')
 
 # Map Bashio log_level to Wiki.js log_level
@@ -308,10 +308,10 @@ ssl:
   cert: /ssl/${certfile}
 pool:
 bindIP: 0.0.0.0
-bindIP: 0.0.0.0
+
 logLevel: ${wiki_log_level}
 offline: false
-offline: false
+
 ha: false
 dataPath: ./data
 EOF

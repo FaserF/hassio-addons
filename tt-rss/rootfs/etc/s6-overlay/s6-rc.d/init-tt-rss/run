@@ -27,8 +27,13 @@ SELF_URL_PATH="/"
 # If self_url is set in options, use it, else default to ingress path
 if ! CONFIG_SELF_URL=$(bashio::config 'self_url'); then
     bashio::log.warning "Failed to fetch configuration via bashio::config. Ignoring."
+fi
+
 # Log Level Configuration
-LOG_LEVEL=$(bashio::config 'log_level')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
 bashio::log.level "${LOG_LEVEL}"
 bashio::log.info "Log level set to ${LOG_LEVEL}"
 
@@ -188,6 +193,7 @@ server {
     index index.php index.html index.htm;
     server_name _;
     client_max_body_size 64m;
+    error_log stderr ${NGINX_LOG_LEVEL};
 
     ssl_certificate /ssl/${CERTFILE};
     ssl_certificate_key /ssl/${KEYFILE};

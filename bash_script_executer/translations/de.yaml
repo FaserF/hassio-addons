@@ -36,5 +36,5 @@ configuration:
     name: "Argument 3 (3)"
     description: "Drittes Argument für das dritte Skript."
   log_level:
-    name: "Log Level"
+    name: "Log-Ebene"
     description: "Steuert die Detailgenauigkeit der Protokolle."

@@ -35,7 +35,11 @@ case "${log_level}" in
 esac
 
 echo "Setting Apache log level to: ${apache_log_level}"
-sed -i -E "s/^LogLevel .*/LogLevel ${apache_log_level}/I" /etc/apache2/httpd.conf || echo "LogLevel ${apache_log_level}" >> /etc/apache2/httpd.conf
+if grep -q '^LogLevel ' /etc/apache2/httpd.conf; then
+    sed -i -E "s/^LogLevel .*/LogLevel ${apache_log_level}/I" /etc/apache2/httpd.conf
+else
+    echo "LogLevel ${apache_log_level}" >> /etc/apache2/httpd.conf
+fi
 
 # WARNING: The init_commands option uses `eval`.
 # This executes arbitrary shell commands as the container user/root.

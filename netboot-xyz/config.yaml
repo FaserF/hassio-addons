@@ -28,7 +28,7 @@ schema:
   path: str
   path_config: str
   dhcp_range: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level?: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   "85": 85
   "3000": 3000

@@ -69,6 +69,7 @@ bashio::log.info "SAP License agreement accepted by user."
 # ------------------------------------------------------------------------------
 bashio::log.info "Checking system requirements..."
 export LOG_LEVEL=$(bashio::config 'log_level')
+bashio::log.level "${LOG_LEVEL}"
 
 IGNORE_REQUIREMENTS=$(bashio::config 'ignore_requirements')
 

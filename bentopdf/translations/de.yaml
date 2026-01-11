@@ -9,5 +9,5 @@ configuration:
     name: "Schlüsseldatei"
     description: "Der Name der privaten Schlüsseldatei für SSL/TLS."
   log_level:
-    name: "Log Level"
+    name: "Log-Ebene"
     description: "Steuert die Detailgenauigkeit der Protokolle."

@@ -66,6 +66,10 @@ EOF
 
 bashio::log.info "Starting BentoPDF application..."
 
-# Start Nginx
-sed -i "s|error_log /var/log/nginx/error.log warn;|error_log /var/log/nginx/error.log $nginx_log_level;|" /etc/nginx/nginx.conf
+# Start Nginx with configured log level
+# Replace any existing log level with configured level
+sed -i "s|error_log /dev/stderr .*;|error_log /dev/stderr $nginx_log_level;|" /etc/nginx/nginx.conf || {
+    bashio::log.error "Failed to update nginx log level"
+    bashio::exit.nok
+}
 exec nginx -c /etc/nginx/nginx.conf

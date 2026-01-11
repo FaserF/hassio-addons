@@ -127,8 +127,10 @@ def check_addon(addon_path):
             if not has_log_level_schema:
                 warnings.append("Missing 'log_level' in config.yaml schema")
 
-        except Exception as e:
+        except (yaml.YAMLError, KeyError) as e:
             errors.append(f"Failed to parse config.yaml for log_level check: {e}")
+        except Exception as e:
+            errors.append(f"Unexpected error parsing config.yaml: {e}")
 
     if errors or warnings:
         print(f"🔍 Compliance Report for {addon_path}:")

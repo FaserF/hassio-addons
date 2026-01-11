@@ -14,5 +14,14 @@ configuration:
   secret_key:
     name: Geheimer Schlüssel
     description: Geheimer Schlüssel zum Signieren von Sitzungen.
+  base_url:
+    name: Basis-URL
+    description: Benutzerdefinierte Basis-URL für Planka (optional).
+  reset_database:
+    name: Datenbank zurücksetzen
+    description: Aktivieren Sie diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
+  reset_database_confirm:
+    name: Datenbank-Reset bestätigen
+    description: Bestätigen Sie den Datenbank-Reset. Beide Optionen müssen aktiviert sein.
 network:
   3000/tcp: Weboberfläche

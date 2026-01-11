@@ -167,6 +167,11 @@ fi
 # Enable strict mode
 set -e
 
+# Configure log level
+log_level=$(bashio::config 'log_level')
+bashio::log.level "${log_level}"
+bashio::log.info "Log level set to ${log_level}"
+
 # Configuration
 website_name=$(bashio::config 'website_name')
 key_file=/ssl/key_openssl.pem

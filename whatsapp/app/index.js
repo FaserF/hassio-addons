@@ -44,8 +44,19 @@ console.log(API_TOKEN);
 console.log('---------------------------------------------------');
 
 // --- Log Level ---
-const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-console.log(`📝 Log Level set to: ${LOG_LEVEL}`);
+// Map addon log levels to pino-compatible levels
+const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVEL_MAP = {
+  'trace': 'trace',
+  'debug': 'debug',
+  'info': 'info',
+  'notice': 'info',  // pino doesn't have 'notice', map to info
+  'warning': 'warn',
+  'error': 'error',
+  'fatal': 'fatal'
+};
+const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
+console.log(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -162,7 +173,7 @@ async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    logger: pino({ level: LOG_LEVEL }),
+    logger: pino({ level: NORMALIZED_LOG_LEVEL }),
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
   });

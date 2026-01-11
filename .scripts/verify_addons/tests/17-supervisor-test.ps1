@@ -49,7 +49,7 @@ if ($hasLargeAddon) {
 }
 else {
     $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 600
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 600
+    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 200
 }
 
 # Get skip list
@@ -251,7 +251,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${dataDirUnix}/config:/mnt/supervisor/homeassistant",
         "-v", "${dataDirUnix}/share:/mnt/supervisor/share:rw,rslave",
         "-v", "${dataDirUnix}/ssl:/mnt/supervisor/ssl",
-        "-v", "${dataDirUnix}/media:/mnt/supervisor/media:rw,rslave",
+        "-v", "${dataDirUnix}/media:/mnt/supervisor/media:rw,shared",
         "-v", "${logFileUnix}:/tmp/supervisor.log",
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",

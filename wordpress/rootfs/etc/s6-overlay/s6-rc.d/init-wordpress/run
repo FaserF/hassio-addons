@@ -75,6 +75,61 @@ fi
     # Cleanup
     rm -f "$temp_config"
 
+# Database Reset Check (Two-Step)
+if bashio::config.true 'reset_database'; then
+	if ! bashio::config.true 'reset_database_confirm'; then
+		bashio::log.error "Database reset requires both 'reset_database' and 'reset_database_confirm' to be enabled!"
+		bashio::log.error "This is a DESTRUCTIVE operation that will DELETE ALL DATA!"
+		bashio::log.error "Set 'reset_database_confirm: true' in your configuration to proceed."
+		exit 1
+	fi
+
+	bashio::log.warning "=========================================="
+	bashio::log.warning "   ⚠️  DATABASE RESET ENABLED  ⚠️"
+	bashio::log.warning "=========================================="
+	bashio::log.warning "ALL WORDPRESS DATA WILL BE PERMANENTLY DELETED!"
+	bashio::log.warning "=========================================="
+
+	# Create backup
+	BACKUP_DIR="/data/backups"
+	mkdir -p "$BACKUP_DIR"
+	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+	BACKUP_FILE="$BACKUP_DIR/wordpress_backup_${TIMESTAMP}.sql"
+
+	bashio::log.info "Creating backup: $BACKUP_FILE"
+
+	# Create temporary config file for backup
+	temp_config2=$(mktemp)
+	trap 'rm -f "$temp_config2"' EXIT
+	install -m 600 /dev/null "$temp_config2"
+	printf '[client]\\npassword=%s\\n' "$DB_PASS" > "$temp_config2"
+
+	# Backup if database exists
+	if mariadb --defaults-extra-file="$temp_config2" --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "USE \`$DB_NAME\`" 2>/dev/null; then
+		if mariadb-dump --defaults-extra-file="$temp_config2" --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" > "$BACKUP_FILE" 2>/dev/null; then
+			bashio::log.info "Backup created successfully"
+		else
+			bashio::log.warning "Backup failed, continuing with reset..."
+		fi
+	else
+		bashio::log.info "Database does not exist yet, skipping backup..."
+	fi
+
+	bashio::log.warning "Starting reset in 3 seconds..."
+	sleep 3
+
+	# Drop database
+	mariadb --defaults-extra-file="$temp_config2" --protocol=tcp --skip-ssl -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -e "DROP DATABASE IF EXISTS \`$DB_NAME\`;" || bashio::log.warning "Failed to drop database"
+
+	rm -f "$temp_config2"
+
+	bashio::log.info "✅ DATABASE RESET COMPLETE"
+	bashio::log.warning "IMPORTANT: Disable reset options in add-on settings!"
+
+	bashio::addon.option 'reset_database'
+	bashio::addon.option 'reset_database_confirm'
+fi
+
 # Check if Wordpress is installed
 if [ ! -d /var/www/wordpress/wp-admin ]; then
     bashio::log.info "Installing Wordpress..."
@@ -374,7 +429,10 @@ mkdir -p /var/www/wordpress/.well-known
 # Map Bashio log_level to Nginx log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal
 # Nginx: debug, info, notice, warn, error, crit, alert, emerg
-BASHIO_LOG_LEVEL=$(bashio::config 'log_level')
+if ! BASHIO_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$BASHIO_LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    BASHIO_LOG_LEVEL="info"
+fi
 NGINX_LOG_LEVEL="warn"
 
 case "${BASHIO_LOG_LEVEL}" in

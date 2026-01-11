@@ -180,12 +180,13 @@ else
 fi
 
 # Log Level Configuration
-LOG_LEVEL="info"
-if bashio::config.has_value 'log_level'; then
-    LOG_LEVEL=$(bashio::config 'log_level')
-    # Map Bashio levels to FileBrowser levels (debug, info, warning, error)
-    # Bashio: trace, debug, info, notice, warning, error, fatal
-    case "${LOG_LEVEL}" in
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
+# Map Bashio levels to FileBrowser levels (debug, info, warning, error)
+# Bashio: trace, debug, info, notice, warning, error, fatal
+case "${LOG_LEVEL}" in
         trace|debug) LOG_LEVEL="debug" ;;
         info|notice) LOG_LEVEL="info" ;;
         warning)     LOG_LEVEL="warning" ;;

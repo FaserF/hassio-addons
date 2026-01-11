@@ -13,7 +13,7 @@ cd /app
 # This port must remain 3000 to avoid conflicts with other services
 WEB_APP_PORT=3000
 export WEB_APP_PORT
-export LOG_LEVEL=$(bashio::config 'log_level')
+
 
 bashio::log.info "Using fixed port 3000 for webapp (required for host_network mode)"
 

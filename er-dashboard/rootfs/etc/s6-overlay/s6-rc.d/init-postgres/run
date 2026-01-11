@@ -7,6 +7,49 @@ bashio::log.info "Initializing PostgreSQL..."
 mkdir -p /run/postgresql
 chown postgres:postgres /run/postgresql
 
+# Database Reset Check (Two-Step)
+if bashio::config.true 'reset_database'; then
+	if ! bashio::config.true 'reset_database_confirm'; then
+		bashio::log.error "Database reset requires both 'reset_database' and 'reset_database_confirm' to be enabled!"
+		bashio::log.error "This is a DESTRUCTIVE operation that will DELETE ALL DATA!"
+		bashio::log.error "Set 'reset_database_confirm: true' in your configuration to proceed."
+		exit 1
+	fi
+
+	bashio::log.warning "=========================================="
+	bashio::log.warning "   ⚠️  DATABASE RESET ENABLED  ⚠️"
+	bashio::log.warning "=========================================="
+	bashio::log.warning "ALL ER-DASHBOARD DATA WILL BE PERMANENTLY DELETED!"
+	bashio::log.warning "=========================================="
+
+	# Backup directory
+	BACKUP_DIR="/data/backups"
+	mkdir -p "$BACKUP_DIR"
+	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+	# Only backup if database directory exists and has data
+	if [ -d "/data/database" ] && [ -n "$(ls -A "/data/database" 2>/dev/null)" ]; then
+		BACKUP_FILE="$BACKUP_DIR/er_dashboard_backup_${TIMESTAMP}.tar.gz"
+		bashio::log.info "Creating backup: $BACKUP_FILE"
+		tar -czf "$BACKUP_FILE" -C /data database 2>/dev/null || bashio::log.warning "Backup failed"
+	fi
+
+	bashio::log.warning "Starting reset in 3 seconds..."
+	sleep 3
+
+	# Remove database directory
+	if [ -d "/data/database" ]; then
+		rm -rf "/data/database"
+		bashio::log.info "Database directory removed"
+	fi
+
+	bashio::log.info "✅ DATABASE RESET COMPLETE"
+	bashio::log.warning "IMPORTANT: Disable reset options in add-on settings!"
+
+	bashio::addon.option 'reset_database'
+	bashio::addon.option 'reset_database_confirm'
+fi
+
 if [ ! -d "/data/database" ] || [ -z "$(ls -A "/data/database")" ]; then
     bashio::log.info "Creating new database cluster in /data/database..."
     mkdir -p /data/database
