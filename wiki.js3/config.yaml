@@ -1,6 +1,6 @@
 ---
 name: Wiki.JS V3 (Beta)
-version: 0.3.4
+version: 0.4.0
 slug: wiki.js3
 image: ghcr.io/faserf/hassio-addons-wiki-{arch}
 
