@@ -25,7 +25,7 @@ schema:
 
 init: false
 hassio_api: true
-hassio_role: default
+
 ports:
   8280/tcp: 8280
   8281/tcp: 8281

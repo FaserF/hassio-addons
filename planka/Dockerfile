@@ -28,7 +28,7 @@ RUN \
         curl \
         su-exec \
         openssl \
-    && pip3 install --no-cache-dir --break-system-packages setuptools
+    && pip3 install --no-cache-dir --break-system-packages setuptools==80.9.0
 
 # Copy Planka
 WORKDIR /opt/planka
