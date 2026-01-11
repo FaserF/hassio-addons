@@ -10,8 +10,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3013
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.0.0"
 ENV ADDON_NAME="Planka"

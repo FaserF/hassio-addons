@@ -4,8 +4,6 @@ FROM $BUILD_FROM
 # Setup base
 # hadolint ignore=DL3003
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.0.0"
 ENV ADDON_NAME="Tiny Tiny RSS"
