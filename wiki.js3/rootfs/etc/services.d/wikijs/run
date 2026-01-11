@@ -97,11 +97,13 @@ try {
 echo "Starting Wiki.JS V3"
 cd /wiki
 # Configure Log Level
-if bashio::config.has_value 'log_level'; then
-    ADDON_LOG_LEVEL=$(bashio::config 'log_level')
-    # Map log levels to Wiki.js compatible values
-    # Backward compatibility: handle deprecated 'warn' value
-    case "${ADDON_LOG_LEVEL}" in
+if ! ADDON_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$ADDON_LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    ADDON_LOG_LEVEL="info"
+fi
+# Map log levels to Wiki.js compatible values
+# Backward compatibility: handle deprecated 'warn' value
+case "${ADDON_LOG_LEVEL}" in
         warn)        WIKI_LOG_LEVEL="warn" ;;  # Backward compat: accept old 'warn' value
         trace|debug) WIKI_LOG_LEVEL="debug" ;;
         info|notice) WIKI_LOG_LEVEL="info" ;;

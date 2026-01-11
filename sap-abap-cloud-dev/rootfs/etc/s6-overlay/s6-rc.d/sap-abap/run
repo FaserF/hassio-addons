@@ -68,7 +68,11 @@ bashio::log.info "SAP License agreement accepted by user."
 # System Requirements Check
 # ------------------------------------------------------------------------------
 bashio::log.info "Checking system requirements..."
-export LOG_LEVEL=$(bashio::config 'log_level')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
+export LOG_LEVEL
 bashio::log.level "${LOG_LEVEL}"
 
 IGNORE_REQUIREMENTS=$(bashio::config 'ignore_requirements')

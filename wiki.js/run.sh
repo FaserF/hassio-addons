@@ -174,7 +174,10 @@ ssl=$(bashio::config 'ssl')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    log_level="info"
+fi
 
 # Map Bashio log_level to Wiki.js log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal

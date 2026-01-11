@@ -228,19 +228,20 @@ fi
 bashio::log.info "Reading configuration from Home Assistant..."
 
 # Log Level (convert to uppercase for Python logging)
-if bashio::config.has_value 'log_level'; then
-	LOG_LEVEL=$(bashio::config 'log_level' | tr '[:lower:]' '[:upper:]')
-	# Map HA log levels to Python log levels
-	case "$LOG_LEVEL" in
+if ! LOG_LEVEL=$(bashio::config 'log_level' | tr '[:lower:]' '[:upper:]') || [ -z "$LOG_LEVEL" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: INFO"
+	LOG_LEVEL="INFO"
+fi
+# Map HA log levels to Python log levels
+case "$LOG_LEVEL" in
 	TRACE | DEBUG) LOG_LEVEL="DEBUG" ;;
 	NOTICE | INFO) LOG_LEVEL="INFO" ;;
 	WARNING) LOG_LEVEL="WARNING" ;;
 	ERROR | FATAL) LOG_LEVEL="ERROR" ;;
 	*) LOG_LEVEL="INFO" ;;
-	esac
-	export LOG_LEVEL
-	bashio::log.info "Log level set to: $LOG_LEVEL"
-fi
+esac
+export LOG_LEVEL
+bashio::log.info "Log level set to: $LOG_LEVEL"
 
 # Test Mode
 if bashio::config.true 'test_mode'; then

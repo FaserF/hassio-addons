@@ -180,8 +180,11 @@ script_path3=$(bashio::config 'script_path3')
 script3_argument1=$(bashio::config 'script3_argument1')
 script3_argument2=$(bashio::config 'script3_argument2')
 script3_argument3=$(bashio::config 'script3_argument3')
+if ! LOG_LEVEL="$(bashio::config 'log_level')" || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
 export LOG_LEVEL
-LOG_LEVEL="$(bashio::config 'log_level')"
 
 if [ "$script_path" != "false" ]; then
 	if [ ! -f "$script_path" ]; then
