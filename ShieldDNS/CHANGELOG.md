@@ -3,11 +3,12 @@
 ## 2.1.5 (2026-01-11)
 
 ### 📦 Dependencies
+
 - Update orchestrator-automerge.yaml ([`31a962a`](https://github.com/FaserF/hassio-addons/commit/31a962a940f6c057d1ac040ec99d62608470dfbc))
 
 ### 📌 Release Note
-- Addon startup fixes
 
+- Addon startup fixes
 
 ## 2.1.4 (2026-01-10)
 

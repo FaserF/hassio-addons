@@ -47,6 +47,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
+base_url: ''
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
