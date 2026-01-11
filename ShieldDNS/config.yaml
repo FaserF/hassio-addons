@@ -31,7 +31,7 @@ schema:
   keyfile: str
   cloudflare_tunnel_token: str?
   enable_info_page: bool?
-  log_level: list(debug|info|error|warning)
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   dot_port: port?
   doh_port: port?
   fallback_dns: bool?

@@ -11,5 +11,11 @@ configuration:
   keyfile:
     name: SSL Schlüsseldatei
     description: Der Name der SSL-Schlüsseldatei.
+  reset_database:
+    name: Datenbank zurücksetzen
+    description: Aktivieren Sie diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
+  reset_database_confirm:
+    name: Datenbank-Reset bestätigen
+    description: Bestätigen Sie den Datenbank-Reset. Beide Optionen müssen aktiviert sein.
 network:
   80/tcp: Weboberfläche

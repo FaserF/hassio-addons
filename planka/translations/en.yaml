@@ -10,9 +10,18 @@ configuration:
     description: The name of the SSL key file.
   log_level:
     name: Log Level
-    description: Controls the level of log verbosity.
+    description: "Controls the verbosity of the add-on logs."
   secret_key:
     name: Secret Key
     description: Secret key used for session signing.
+  base_url:
+    name: Base URL
+    description: Custom base URL for Planka (optional).
+  reset_database:
+    name: Reset Database
+    description: Enable this option to reset the database. WARNING - Deletes all data!
+  reset_database_confirm:
+    name: Confirm Database Reset
+    description: Confirm the database reset. Both options must be enabled.
 network:
   3000/tcp: Web Interface

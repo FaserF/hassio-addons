@@ -13,7 +13,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Switch LAN Play Client"
+
 	local SLUG="switch-lan-play"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -205,12 +205,16 @@ export PYTHONUNBUFFERED=1
 
 # Use exec to replace shell process with lan-play
 # If log level is not debug, filter out [DEBUG]: lines
-if [ "$log_level" = "debug" ]; then
-	bashio::log.info "Debug logging enabled - all debug messages will be shown"
+# Use exec to replace shell process with lan-play
+# Map log_level to behavior
+# Debug/Trace: Show all output
+# Info/Notice/Warn/Error: Filter debug output
+if [[ "$log_level" == "debug" || "$log_level" == "trace" ]]; then
+	bashio::log.info "Debug/Trace logging enabled - all output will be shown"
 	# Show all output including debug
 	exec /usr/local/bin/lan-play "${LAN_PLAY_ARGS[@]}" 2>&1
 else
-	bashio::log.info "Info logging enabled - debug messages will be filtered"
+	bashio::log.info "Standard logging enabled - debug messages will be filtered"
 	# Filter out [DEBUG]: lines
 	# Note: grep becomes the main process, but healthcheck still works as it checks for lan-play process
 	exec /usr/local/bin/lan-play "${LAN_PLAY_ARGS[@]}" 2>&1 | grep -v "^\[DEBUG\]:"

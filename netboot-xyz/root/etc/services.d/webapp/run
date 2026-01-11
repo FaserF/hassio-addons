@@ -14,6 +14,7 @@ cd /app
 WEB_APP_PORT=3000
 export WEB_APP_PORT
 
+
 bashio::log.info "Using fixed port 3000 for webapp (required for host_network mode)"
 
 # Kill any existing node processes that might be using the port

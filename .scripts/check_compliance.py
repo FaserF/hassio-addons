@@ -111,6 +111,27 @@ def check_addon(addon_path):
     if not os.path.exists(logo_path):
         errors.append("Missing logo.png")
 
+    # Check 7: Log Level Configuration
+    config_path = os.path.join(addon_path, "config.yaml")
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = yaml.safe_load(f)
+
+            has_log_level_option = "options" in config and "log_level" in config["options"]
+            has_log_level_schema = "schema" in config and "log_level" in config["schema"]
+
+            if not has_log_level_option:
+                warnings.append("Missing 'log_level' in config.yaml options")
+
+            if not has_log_level_schema:
+                warnings.append("Missing 'log_level' in config.yaml schema")
+
+        except (yaml.YAMLError, KeyError) as e:
+            errors.append(f"Failed to parse config.yaml for log_level check: {e}")
+        except Exception as e:
+            errors.append(f"Unexpected error parsing config.yaml: {e}")
+
     if errors or warnings:
         print(f"🔍 Compliance Report for {addon_path}:")
         if errors:

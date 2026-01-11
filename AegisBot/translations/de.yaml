@@ -36,7 +36,7 @@ configuration:
       Zusätzliche Bestätigung für den Datenbank-Reset. Muss zusammen mit 'reset_database' aktiviert werden.
 
   log_level:
-    name: Log-Level
+    name: "Log Level"
     description: Steuert die Ausführlichkeit der Log-Ausgabe.
 
   database:

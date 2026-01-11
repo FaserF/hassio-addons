@@ -13,5 +13,7 @@ map:
 init: false
 options:
   website_name:
+  log_level: info
 schema:
   website_name: str
+  log_level: list(trace|debug|info|notice|warning|error|fatal)

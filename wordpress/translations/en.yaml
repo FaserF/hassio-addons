@@ -23,5 +23,14 @@ configuration:
   wordpress_admin_email:
     name: Admin Email
     description: Email address for the generic admin account.
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."
+  reset_database:
+    name: Reset Database
+    description: Enable this option to reset the database. WARNING - Deletes all data!
+  reset_database_confirm:
+    name: Confirm Database Reset
+    description: Confirm the database reset. Both options must be enabled.
 network:
   80/tcp: Web Interface

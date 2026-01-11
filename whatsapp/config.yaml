@@ -14,7 +14,7 @@ panel_icon: mdi:whatsapp
 options:
   log_level: info
 schema:
-  log_level: str
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   8066/tcp: 8066
 hassio_api: true

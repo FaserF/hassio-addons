@@ -40,7 +40,7 @@ schema:
   developer_mode: bool
   reset_database: bool
   reset_database_confirm: bool?
-  log_level: list(trace|debug|info|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   database:
     type: list(sqlite|postgresql)
     postgresql_host: str?

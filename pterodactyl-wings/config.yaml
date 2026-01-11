@@ -21,5 +21,7 @@ privileged:
 panel_icon: mdi:controller
 options:
   config_file: /share/pterodactyl/config.yml
+  log_level: info
 schema:
   config_file: str
+  log_level: list(debug|info)

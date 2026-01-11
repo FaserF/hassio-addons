@@ -15,10 +15,14 @@ options:
   ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
+  log_level: info
 schema:
   ssl: bool
   certfile: str
   keyfile: str
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  reset_database: bool?
+  reset_database_confirm: bool?
 ingress: true
 ingress_stream: true
 panel_icon: mdi:view-dashboard-variant

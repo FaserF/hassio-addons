@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="pterodactyl Panel Gameserver"
+
 	local SLUG="pterodactyl_panel"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -440,13 +440,20 @@ if ! grep -q "^SESSION_DRIVER=" .env; then
 fi
 
 sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
-# Temporarily enable debug to see detailed error messages (can be disabled later)
-if ! grep -q "^APP_DEBUG=" .env; then
-	echo "APP_DEBUG=true" >>.env
-	bashio::log.warning "APP_DEBUG enabled for troubleshooting. Disable in production after fixing issues."
+
+# Map log_level to APP_DEBUG
+log_level=$(bashio::config 'log_level')
+if [ "$log_level" = "trace" ] || [ "$log_level" = "debug" ]; then
+    app_debug="true"
+    bashio::log.warning "APP_DEBUG enabled (log_level: $log_level)"
 else
-	sed -i "s|^APP_DEBUG=.*|APP_DEBUG=true|" .env
-	bashio::log.warning "APP_DEBUG enabled for troubleshooting. Disable in production after fixing issues."
+    app_debug="false"
+fi
+
+if ! grep -q "^APP_DEBUG=" .env; then
+    echo "APP_DEBUG=$app_debug" >>.env
+else
+    sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$app_debug|" .env
 fi
 
 echo ""

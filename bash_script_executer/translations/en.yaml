@@ -35,3 +35,6 @@ configuration:
   script3_argument3:
     name: "Argument 3 (3)"
     description: "Third argument for the third script."
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."

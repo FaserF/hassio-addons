@@ -8,3 +8,12 @@ configuration:
   keyfile:
     name: SSL-Schlüsseldatei
     description: "Pfad zur privaten SSL-Schlüsseldatei."
+  log_level:
+    name: Log Level
+    description: "Steuert die Detailgenauigkeit der Protokolle."
+  reset_database:
+    name: Datenbank zurücksetzen
+    description: Aktivieren Sie diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
+  reset_database_confirm:
+    name: Datenbank-Reset bestätigen
+    description: Bestätigen Sie den Datenbank-Reset. Beide Optionen müssen aktiviert sein.

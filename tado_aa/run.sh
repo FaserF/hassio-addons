@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Tado Auto Assist"
+
 	local SLUG="tado_aa"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -201,7 +201,22 @@ export TADO_USERNAME="${username}"
 export TADO_PASSWORD="${password}"
 export TADO_MIN_TEMP="${minTemp:-5}"
 export TADO_MAX_TEMP="${maxTemp:-25}"
+
 source /venv/bin/activate
+
+if python3 -c "import logging" 2>/dev/null; then
+    # Map Bashio log levels to Python logging levels
+    case "${log_level}" in
+        trace|debug) export LOG_LEVEL="DEBUG" ;;
+        info|notice) export LOG_LEVEL="INFO" ;;
+        warning)     export LOG_LEVEL="WARNING" ;;
+        error)       export LOG_LEVEL="ERROR" ;;
+        fatal)       export LOG_LEVEL="CRITICAL" ;;
+        minimal)     export LOG_LEVEL="WARNING" ;;
+        *)           export LOG_LEVEL="INFO" ;;
+    esac
+    bashio::log.info "Setting Python LOG_LEVEL to ${LOG_LEVEL}"
+fi
 
 bashio::log.info "Starting Tado Auto Assist python script from adrianslabu/tado_aa"
 bashio::log.info "Using username: ${username}"

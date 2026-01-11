@@ -13,7 +13,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="OpenSSL"
+
 	local SLUG="openssl"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -166,6 +166,11 @@ fi
 
 # Enable strict mode
 set -e
+
+# Configure log level
+log_level=$(bashio::config 'log_level')
+bashio::log.level "${log_level}"
+bashio::log.info "Log level set to ${log_level}"
 
 # Configuration
 website_name=$(bashio::config 'website_name')

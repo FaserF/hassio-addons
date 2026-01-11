@@ -23,10 +23,12 @@ options:
   path: "/media/netboot/image"
   path_config: "/media/netboot/config"
   dhcp_range: 192.168.1.200
+  log_level: info
 schema:
   path: str
   path_config: str
   dhcp_range: str
+  log_level?: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   "85": 85
   "3000": 3000

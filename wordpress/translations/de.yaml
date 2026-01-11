@@ -23,5 +23,14 @@ configuration:
   wordpress_admin_email:
     name: Admin E-Mail
     description: E-Mail-Adresse für das generische Admin-Konto.
+  log_level:
+    name: "Log Level"
+    description: "Steuert die Detailgenauigkeit der Protokolle."
+  reset_database:
+    name: Datenbank zur\u00fccksetzen
+    description: Aktivieren Sie diese Option, um die Datenbank zur\u00fcckzusetzen. WARNUNG - L\u00f6scht alle Daten!
+  reset_database_confirm:
+    name: Datenbank-Reset best\u00e4tigen
+    description: Best\u00e4tigen Sie den Datenbank-Reset. Beide Optionen m\u00fcssen aktiviert sein.
 network:
   80/tcp: Webinterface

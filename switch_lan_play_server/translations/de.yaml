@@ -5,3 +5,6 @@ configuration:
   password:
     name: "Passwort"
     description: "Passwort für den Server."
+  log_level:
+    name: "Log Level"
+    description: "Steuert die Detailgenauigkeit der Protokolle."

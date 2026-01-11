@@ -9,8 +9,8 @@ configuration:
     name: "Schlüsseldatei"
     description: "Pfad zur privaten Schlüsseldatei."
   log_level:
-    name: "Log-Level"
-    description: "Legt die Detailstufe der Protokollierung fest (z.B. error, warn, info, debug)."
+    name: "Log-Ebene"
+    description: "Steuert die Detailgenauigkeit der Protokolle."
   reset_database:
     name: "Datenbank zurücksetzen"
     description: "Setzt die Datenbank zurück. VORSICHT! Erfordert zusätzlich 'reset_database_confirm'."

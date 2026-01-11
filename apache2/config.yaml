@@ -26,6 +26,7 @@ options:
   ssl: true
   certfile: fullchain.pem
   keyfile: privkey.pem
+  log_level: info
   init_commands: []
 schema:
   document_root: str
@@ -38,6 +39,7 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   init_commands:
     - str?
 ports:

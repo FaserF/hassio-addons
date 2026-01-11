@@ -16,7 +16,7 @@ configuration:
     description: "Show a secure 'ShieldDNS Endpoint' landing page on the HTTPS port (instead of 404/Error) when accessed via browser."
   log_level:
     name: Log Level
-    description: "Control the verbosity of logs."
+    description: "Controls the verbosity of the add-on logs."
   dot_port:
     name: DoT Port
     description: "Port to listen on for DNS-over-TLS (Default: 8853)."

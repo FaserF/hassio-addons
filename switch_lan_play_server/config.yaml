@@ -9,9 +9,12 @@ arch:
 image: ghcr.io/faserf/hassio-addons-switch-lan-play-server-{arch}
 panel_icon: mdi:local-area-network
 init: false
+options:
+  log_level: info
 schema:
   username: str?
   password: str?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
 ports:
   "11451": 11451
 ports_description:

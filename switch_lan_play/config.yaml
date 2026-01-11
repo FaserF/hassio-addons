@@ -17,5 +17,5 @@ options:
   log_level: info
 schema:
   server: str
-  log_level: list(info|debug)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
 ports: {}

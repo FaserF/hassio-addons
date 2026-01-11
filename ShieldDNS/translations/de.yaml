@@ -16,7 +16,7 @@ configuration:
     description: "Zeigt eine 'ShieldDNS Endpoint' Infoseite auf dem HTTPS Port (statt 404/Fehler), wenn man ihn im Browser aufruft."
   log_level:
     name: Log Level
-    description: "Steuert die Detailgenauigkeit der Logs."
+    description: "Steuert die Detailgenauigkeit der Protokolle."
   dot_port:
     name: DoT Port
     description: "Port für DNS-over-TLS (Standard: 8853)."

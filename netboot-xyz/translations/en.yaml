@@ -8,3 +8,6 @@ configuration:
   dhcp_range:
     name: "DHCP Range"
     description: "DHCP range for the PXE server."
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."

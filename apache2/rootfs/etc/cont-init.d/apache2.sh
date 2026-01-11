@@ -11,7 +11,29 @@ username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
+log_level=$(bashio::config 'log_level')
 webrootdocker=/var/www/localhost/htdocs/
+
+# Map Bashio log_level to Apache log_level
+# Bashio: trace, debug, info, notice, warning, error, fatal
+# Apache: debug, info, notice, warn, error, crit, alert, emerg
+apache_log_level="warn"
+case "${log_level}" in
+    trace|debug) apache_log_level="debug" ;;
+    info)        apache_log_level="info" ;;
+    notice)      apache_log_level="notice" ;;
+    warning)     apache_log_level="warn" ;;
+    error)       apache_log_level="error" ;;
+    fatal)       apache_log_level="crit" ;;
+    *)           apache_log_level="warn" ;;
+esac
+
+echo "Setting Apache log level to: ${apache_log_level}"
+if grep -i -q "^LogLevel " /etc/apache2/httpd.conf 2>/dev/null; then
+    sed -i -E "s/^LogLevel .*/LogLevel ${apache_log_level}/I" /etc/apache2/httpd.conf
+else
+    echo "LogLevel ${apache_log_level}" >> /etc/apache2/httpd.conf
+fi
 phppath=/etc/php84/php.ini
 
 if [ "$phpini" = "get_file" ]; then

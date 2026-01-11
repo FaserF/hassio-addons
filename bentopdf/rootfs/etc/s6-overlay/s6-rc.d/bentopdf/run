@@ -4,6 +4,19 @@
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
 ssl=$(bashio::config 'ssl')
+log_level=$(bashio::config 'log_level')
+
+# Map Bashio log level to Nginx log level
+case "${log_level}" in
+    trace) nginx_log_level="debug" ;;
+    debug) nginx_log_level="debug" ;;
+    info)  nginx_log_level="info" ;;
+    notice) nginx_log_level="notice" ;;
+    warning) nginx_log_level="warn" ;;
+    error) nginx_log_level="error" ;;
+    fatal) nginx_log_level="crit" ;;
+    *)     nginx_log_level="error" ;;
+esac
 
 # SSL Validation
 if bashio::var.true "${ssl}"; then
@@ -53,5 +66,10 @@ EOF
 
 bashio::log.info "Starting BentoPDF application..."
 
-# Start Nginx
+# Start Nginx with configured log level
+# Replace any existing log level with configured level
+sed -i "s|error_log /dev/stderr .*;|error_log /dev/stderr $nginx_log_level;|" /etc/nginx/nginx.conf || {
+    bashio::log.error "Failed to update nginx log level"
+    bashio::exit.nok
+}
 exec nginx -c /etc/nginx/nginx.conf

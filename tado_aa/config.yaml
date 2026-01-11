@@ -20,4 +20,4 @@ schema:
   password: password
   minTemp: int
   maxTemp: int
-  log_level: list(info|minimal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?

@@ -13,9 +13,29 @@ export POSTGRES_DB="er_startseite"
 # Production settings for Uvicorn
 # We use a single worker since we're using an embedded PostgreSQL instance
 # which might not handle multiple connections from multiple processes well without a pooler.
-LOG_LEVEL="info"
-if bashio::config.has_value 'log_level'; then
-    LOG_LEVEL=$(bashio::config 'log_level')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
+
+# Map schema log levels to Uvicorn levels
+# Schema supports: trace, debug, info, notice, warning, error, fatal
+# Uvicorn supports: trace, debug, info, warning, error, critical
+case "$LOG_LEVEL" in
+    trace)   LOG_LEVEL="trace" ;;
+    debug)   LOG_LEVEL="debug" ;;
+    info)    LOG_LEVEL="info" ;;
+    notice)  LOG_LEVEL="info" ;;   # Map notice → info
+    warning) LOG_LEVEL="warning" ;;
+    error)   LOG_LEVEL="error" ;;
+    fatal)   LOG_LEVEL="critical" ;; # Map fatal → critical
+    *)       LOG_LEVEL="info" ;;
+esac
+
+# Validate result
+if [[ ! "$LOG_LEVEL" =~ ^(trace|debug|info|warning|error|critical)$ ]]; then
+    bashio::log.error "Invalid log level '$LOG_LEVEL' for Uvicorn"
+    bashio::exit.nok
 fi
 
 cd /app

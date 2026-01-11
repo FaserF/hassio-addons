@@ -46,4 +46,8 @@ server {
         proxy_read_timeout 90;
         proxy_buffering off;
     }
+
+    # Logging
+    error_log /dev/stderr {{ .log_level }};
+    access_log /dev/stdout;
 }

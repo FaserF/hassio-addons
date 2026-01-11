@@ -29,3 +29,6 @@ configuration:
   init_commands:
     name: "Startbefehle"
     description: "Liste benutzerdefinierter Befehle, die beim Start ausgeführt werden sollen."
+  log_level:
+    name: "Log-Ebene"
+    description: "Steuert die Detailgenauigkeit der Protokolle."

@@ -3,11 +3,25 @@
 
 bashio::log.info "Starting Nginx..."
 
+# Map Bashio log_level to Nginx log_level
+log_level=$(bashio::config 'log_level')
+nginx_log_level="warn"
+case "${log_level}" in
+    trace|debug) nginx_log_level="debug" ;;
+    info)        nginx_log_level="info" ;;
+    notice)      nginx_log_level="notice" ;;
+    warning)     nginx_log_level="warn" ;;
+    error)       nginx_log_level="error" ;;
+    fatal)       nginx_log_level="crit" ;;
+    *)           nginx_log_level="warn" ;;
+esac
+
 # Generate nginx config from template
 if ! bashio::var.json \
     ssl "$(bashio::config 'ssl')" \
     certfile "$(bashio::config 'certfile')" \
     keyfile "$(bashio::config 'keyfile')" \
+    log_level "${nginx_log_level}" \
     | tempio \
         -template /etc/nginx/templates/direct.gtpl \
         -out /etc/nginx/http.d/direct.conf; then

@@ -11,5 +11,11 @@ configuration:
   keyfile:
     name: SSL Key File
     description: The name of the SSL key file.
+  reset_database:
+    name: Reset Database
+    description: Enable this option to reset the database. WARNING - Deletes all data!
+  reset_database_confirm:
+    name: Confirm Database Reset
+    description: Confirm the database reset. Both options must be enabled.
 network:
   80/tcp: Web Interface

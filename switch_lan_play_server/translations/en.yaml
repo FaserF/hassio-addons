@@ -5,3 +5,6 @@ configuration:
   password:
     name: "Password"
     description: "Password for the server."
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."

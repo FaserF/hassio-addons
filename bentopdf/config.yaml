@@ -15,10 +15,12 @@ options:
   ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
+  log_level: info
 schema:
   ssl: bool
   certfile: str?
   keyfile: str?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   8035/tcp: 8035
 ports_description:

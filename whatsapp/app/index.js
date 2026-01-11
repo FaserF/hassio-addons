@@ -43,6 +43,21 @@ console.log('🔒 Secure API Token generated/loaded:');
 console.log(API_TOKEN);
 console.log('---------------------------------------------------');
 
+// --- Log Level ---
+// Map addon log levels to pino-compatible levels
+const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVEL_MAP = {
+  'trace': 'trace',
+  'debug': 'debug',
+  'info': 'info',
+  'notice': 'info',  // pino doesn't have 'notice', map to info
+  'warning': 'warn',
+  'error': 'error',
+  'fatal': 'fatal'
+};
+const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
+console.log(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
+
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
   fs.mkdirSync(AUTH_DIR, { recursive: true });
@@ -127,8 +142,9 @@ function addLog(msg, type = 'info') {
 const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
-    addLog(`Unauthorized API access attempt from ${req.ip}`, 'error');
-    console.warn(`[AUTH] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+    addLog(`Unauthorized API access attempt from ${req.ip} to ${req.originalUrl}`, 'error');
+    console.warn(`[AUTH] Unauthorized access attempt from ${req.ip} to ${req.originalUrl}`);
+    console.warn(`[AUTH] Token Mismatch - Expected: "${API_TOKEN.substring(0, 5)}...", Received: "${providedToken ? providedToken.substring(0, 5) + '...' : 'None'}"`);
     return res.status(401).json({
       error: 'Unauthorized',
       detail: 'Invalid or missing X-Auth-Token',
@@ -157,7 +173,7 @@ async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    logger: pino({ level: 'info' }),
+    logger: pino({ level: NORMALIZED_LOG_LEVEL }),
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
   });
@@ -518,19 +534,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -538,8 +552,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
