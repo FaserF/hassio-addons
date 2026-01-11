@@ -8,3 +8,6 @@ configuration:
   keyfile:
     name: "Schlüsseldatei"
     description: "Der Name der privaten Schlüsseldatei für SSL/TLS."
+  log_level:
+    name: "Log Level"
+    description: "Steuert die Detailgenauigkeit der Protokolle."

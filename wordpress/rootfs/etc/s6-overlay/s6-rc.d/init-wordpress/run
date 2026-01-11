@@ -371,6 +371,40 @@ fi
 # Create .well-known directory for Let's Encrypt if using HTTPS
 mkdir -p /var/www/wordpress/.well-known
 
+# Map Bashio log_level to Nginx log_level
+# Bashio: trace, debug, info, notice, warning, error, fatal
+# Nginx: debug, info, notice, warn, error, crit, alert, emerg
+BASHIO_LOG_LEVEL=$(bashio::config 'log_level')
+NGINX_LOG_LEVEL="warn"
+
+case "${BASHIO_LOG_LEVEL}" in
+    trace|debug)
+        NGINX_LOG_LEVEL="debug"
+        ;;
+    info)
+        NGINX_LOG_LEVEL="info"
+        ;;
+    notice)
+        NGINX_LOG_LEVEL="notice"
+        ;;
+    warning)
+        NGINX_LOG_LEVEL="warn"
+        ;;
+    error)
+        NGINX_LOG_LEVEL="error"
+        ;;
+    fatal)
+        NGINX_LOG_LEVEL="crit"
+        ;;
+    *)
+        NGINX_LOG_LEVEL="warn"
+        ;;
+esac
+
+bashio::log.info "Setting Nginx log level to: ${NGINX_LOG_LEVEL}"
+# Updates the error_log directive in nginx.conf
+sed -i "s/error_log \/var\/log\/nginx\/error.log .*/error_log \/var\/log\/nginx\/error.log ${NGINX_LOG_LEVEL};/" /etc/nginx/nginx.conf
+
 # Checks if SSL certificate and key exists, otherwise default to http traffic
 if bashio::config.true 'ssl'; then
 	if [ ! -f "${SSL_CERT}" ] || [ ! -f "${SSL_CERT_KEY}" ]; then

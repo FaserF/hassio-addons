@@ -23,5 +23,8 @@ configuration:
   wordpress_admin_email:
     name: Admin Email
     description: Email address for the generic admin account.
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."
 network:
   80/tcp: Web Interface

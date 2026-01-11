@@ -179,6 +179,21 @@ else
     INGRESS_ENTRY="/"
 fi
 
+# Log Level Configuration
+LOG_LEVEL="info"
+if bashio::config.has_value 'log_level'; then
+    LOG_LEVEL=$(bashio::config 'log_level')
+    # Map Bashio levels to FileBrowser levels (debug, info, warning, error)
+    # Bashio: trace, debug, info, notice, warning, error, fatal
+    case "${LOG_LEVEL}" in
+        trace|debug) LOG_LEVEL="debug" ;;
+        info|notice) LOG_LEVEL="info" ;;
+        warning)     LOG_LEVEL="warning" ;;
+        error|fatal) LOG_LEVEL="error" ;;
+        *)           LOG_LEVEL="info" ;;
+    esac
+fi
+
 bashio::log.info "🚀 Starting FileBrowser backend on 127.0.0.1:8080..."
 exec filebrowser \
     --address "127.0.0.1" \
@@ -186,4 +201,4 @@ exec filebrowser \
     --database "$DB_PATH" \
     --root "$BASE_DIR" \
     --baseURL "$INGRESS_ENTRY" \
-    --log stdout
+    --log "${LOG_LEVEL}"

@@ -9,8 +9,8 @@ configuration:
     name: "Key File"
     description: "Path to the private key file."
   log_level:
-    name: "Log Level"
-    description: "Sets the detail level of logging (e.g., error, warn, info, debug)."
+    name: Log Level
+    description: "Controls the verbosity of the add-on logs."
   reset_database:
     name: "Reset Database"
     description: "Resets the database. CAUTION! Requires 'reset_database_confirm' to be enabled as well."

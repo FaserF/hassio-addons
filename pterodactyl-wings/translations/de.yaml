@@ -2,3 +2,6 @@ configuration:
   config_file:
     name: "Konfigurationsdatei"
     description: "Pfad zur Konfigurationsdatei."
+  log_level:
+    name: "Log Level"
+    description: "Steuert die Detailgenauigkeit der Protokolle."

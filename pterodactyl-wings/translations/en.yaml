@@ -2,3 +2,6 @@ configuration:
   config_file:
     name: "Configuration File"
     description: "Path to the configuration file."
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the add-on logs."

@@ -173,6 +173,7 @@ set -e
 #VARIABLES
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
+export LOG_LEVEL=$(bashio::config 'log_level')
 
 bashio::log.info "For more information or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
 

@@ -180,6 +180,7 @@ script_path3=$(bashio::config 'script_path3')
 script3_argument1=$(bashio::config 'script3_argument1')
 script3_argument2=$(bashio::config 'script3_argument2')
 script3_argument3=$(bashio::config 'script3_argument3')
+export LOG_LEVEL=$(bashio::config 'log_level')
 
 if [ "$script_path" != "false" ]; then
 	if [ ! -f "$script_path" ]; then

@@ -246,9 +246,16 @@ else
     export N8N_PROTOCOL="http"
 fi
 
-# Set Log Level from config (with fallback)
+# Set Log Level from config (with fallback and mapping)
 if bashio::config.has_value 'log_level'; then
-    N8N_LOG_LEVEL="$(bashio::config 'log_level')"
+    LOG_LEVEL="$(bashio::config 'log_level')"
+    case "${LOG_LEVEL}" in
+        trace|debug) N8N_LOG_LEVEL="debug" ;;
+        info|notice) N8N_LOG_LEVEL="info" ;;
+        warning)     N8N_LOG_LEVEL="warn" ;;
+        error|fatal) N8N_LOG_LEVEL="error" ;;
+        *)           N8N_LOG_LEVEL="info" ;;
+    esac
     export N8N_LOG_LEVEL
 else
     export N8N_LOG_LEVEL="info"

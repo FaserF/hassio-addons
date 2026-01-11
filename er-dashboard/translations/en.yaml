@@ -8,3 +8,6 @@ configuration:
   keyfile:
     name: SSL Key File
     description: "Path to the SSL private key file."
+  log_level:
+    name: Log Level
+    description: "Controls the verbosity of the add-on logs."

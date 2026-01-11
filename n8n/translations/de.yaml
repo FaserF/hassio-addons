@@ -1,5 +1,5 @@
 ---
 configuration:
   log_level:
-    name: Log-Level
+    name: "Log Level"
     description: Das Log-Level für die N8n Ausgabe.

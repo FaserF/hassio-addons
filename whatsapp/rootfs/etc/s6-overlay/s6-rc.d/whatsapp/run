@@ -3,6 +3,13 @@
 bashio::log.info "Starting WhatsApp Addon (Baileys)..."
 
 export PORT=8066
+# Map Bashio log level to Pino log level (used by Baileys/WhatsApp)
+LOG_LEVEL=$(bashio::config 'log_level')
+case "${LOG_LEVEL}" in
+    warning) LOG_LEVEL="warn" ;;
+    notice)  LOG_LEVEL="info" ;;
+esac
+export LOG_LEVEL
 
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""

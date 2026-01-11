@@ -14,9 +14,11 @@ map:
 options:
   agree_to_license: false
   ignore_requirements: false
+  log_level: info
 schema:
   agree_to_license: bool
   ignore_requirements: bool
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   3200/tcp: 3200
   3300/tcp: 3300

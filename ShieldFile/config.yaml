@@ -38,5 +38,5 @@ schema:
       password: str
   base_directory: str
   port: port
-  log_level: list(debug|info|error|warning)
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}

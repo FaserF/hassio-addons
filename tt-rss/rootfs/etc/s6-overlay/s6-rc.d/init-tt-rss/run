@@ -27,8 +27,39 @@ SELF_URL_PATH="/"
 # If self_url is set in options, use it, else default to ingress path
 if ! CONFIG_SELF_URL=$(bashio::config 'self_url'); then
     bashio::log.warning "Failed to fetch configuration via bashio::config. Ignoring."
-    CONFIG_SELF_URL=""
-fi
+# Log Level Configuration
+LOG_LEVEL=$(bashio::config 'log_level')
+bashio::log.level "${LOG_LEVEL}"
+bashio::log.info "Log level set to ${LOG_LEVEL}"
+
+# Map Bashio log level to PHP-FPM and Nginx levels
+case "${LOG_LEVEL}" in
+    trace|debug)
+        PHP_LOG_LEVEL="debug"
+        NGINX_LOG_LEVEL="debug"
+        PHP_ERROR_REPORTING="E_ALL"
+        ;;
+    info|notice)
+        PHP_LOG_LEVEL="notice"
+        NGINX_LOG_LEVEL="info"
+        PHP_ERROR_REPORTING="E_ERROR | E_WARNING | E_PARSE"
+        ;;
+    warning)
+        PHP_LOG_LEVEL="warning"
+        NGINX_LOG_LEVEL="warn"
+        PHP_ERROR_REPORTING="E_ERROR | E_WARNING"
+        ;;
+    error|fatal)
+        PHP_LOG_LEVEL="error"
+        NGINX_LOG_LEVEL="error"
+        PHP_ERROR_REPORTING="E_ERROR"
+        ;;
+    *)
+        PHP_LOG_LEVEL="notice"
+        NGINX_LOG_LEVEL="info"
+        PHP_ERROR_REPORTING="E_ERROR | E_WARNING | E_PARSE"
+        ;;
+esac
 
 # We will handle the fallback dynamically in PHP now
 # But we pass the bashio config value if it exists
@@ -38,6 +69,7 @@ bashio::log.info "Configuring PHP-FPM..."
 cat > /etc/php84/php-fpm.d/www.conf <<EOF
 [global]
 error_log = /proc/self/fd/2
+log_level = ${PHP_LOG_LEVEL}
 
 [www]
 user = nginx
@@ -82,7 +114,9 @@ cat > /var/www/tt-rss/config.php <<EOF
     putenv('TTRSS_SINGLE_USER_MODE=true');
     putenv('TTRSS_SIMPLE_UPDATE_MODE=true');
 
-    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+    error_log("DEBUG: Auto-detected SELF_URL_PATH: " . \$self_url);
+
+    error_reporting(${PHP_ERROR_REPORTING});
 
     define('DB_TYPE', 'pgsql');
     define('DB_HOST', '127.0.0.1');
@@ -124,6 +158,7 @@ server {
     index index.php index.html index.htm;
     server_name _;
     client_max_body_size 64m;
+    error_log stderr ${NGINX_LOG_LEVEL};
 
     location / {
         try_files \$uri \$uri/ /index.php;

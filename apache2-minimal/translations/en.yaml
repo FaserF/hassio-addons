@@ -29,3 +29,6 @@ configuration:
   init_commands:
     name: "Init Commands"
     description: "List of custom commands to run at startup."
+  log_level:
+    name: Log Level
+    description: "Controls the verbosity of the add-on logs."

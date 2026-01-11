@@ -175,4 +175,23 @@ fi
 
 
 bashio::log.info "🚀 Starting Nginx..."
+
+# Configure Nginx log level
+if bashio::config.has_value 'log_level'; then
+    LOG_LEVEL=$(bashio::config 'log_level')
+    # Map Bashio levels to Nginx levels (debug, info, notice, warn, error, crit, alert, emerg)
+    case "${LOG_LEVEL}" in
+        trace|debug) NGINX_LOG_LEVEL="debug" ;;
+        info)        NGINX_LOG_LEVEL="info" ;;
+        notice)      NGINX_LOG_LEVEL="notice" ;;
+        warning)     NGINX_LOG_LEVEL="warn" ;;
+        error)       NGINX_LOG_LEVEL="error" ;;
+        fatal)       NGINX_LOG_LEVEL="crit" ;;
+        *)           NGINX_LOG_LEVEL="warn" ;;
+    esac
+    sed -i -E "s/error_log .*/error_log \/dev\/stderr ${NGINX_LOG_LEVEL};/g" /etc/nginx/nginx.conf
+else
+    sed -i -E "s/error_log .*/error_log \/dev\/stderr info;/g" /etc/nginx/nginx.conf
+fi
+
 exec nginx -g 'daemon off;'

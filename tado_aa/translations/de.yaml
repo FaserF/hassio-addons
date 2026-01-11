@@ -12,5 +12,5 @@ configuration:
     name: "Maximale Temperatur"
     description: "Maximale Temperatur."
   log_level:
-    name: "Log-Level"
+    name: "Log Level"
     description: "Protokollierungsstufe."

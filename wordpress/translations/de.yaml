@@ -23,5 +23,8 @@ configuration:
   wordpress_admin_email:
     name: Admin E-Mail
     description: E-Mail-Adresse für das generische Admin-Konto.
+  log_level:
+    name: "Log Level"
+    description: "Steuert die Detailgenauigkeit der Protokolle."
 network:
   80/tcp: Webinterface

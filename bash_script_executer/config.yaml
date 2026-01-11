@@ -17,6 +17,7 @@ options:
   script_path: "/share/scripts/mycoolscript.sh"
   script_path2: "false"
   script_path3: "false"
+  log_level: info
 schema:
   script_path: str
   script_argument1: str?
@@ -30,3 +31,4 @@ schema:
   script3_argument1: str?
   script3_argument2: str?
   script3_argument3: str?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?

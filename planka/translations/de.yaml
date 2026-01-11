@@ -10,7 +10,7 @@ configuration:
     description: Der Name der SSL-Schlüsseldatei.
   log_level:
     name: Log Level
-    description: Steuert den Grad der Protokollausführlichkeit.
+    description: "Steuert die Detailgenauigkeit der Protokolle."
   secret_key:
     name: Geheimer Schlüssel
     description: Geheimer Schlüssel zum Signieren von Sitzungen.

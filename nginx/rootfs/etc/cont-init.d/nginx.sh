@@ -12,8 +12,33 @@ username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
+log_level=$(bashio::config 'log_level')
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php84/php.ini
+
+# Map Bashio log_level to Nginx log_level
+# Bashio: trace, debug, info, notice, warning, error, fatal
+# Nginx: debug, info, notice, warn, error, crit, alert, emerg
+nginx_log_level="warn"
+case "${log_level}" in
+    trace|debug) nginx_log_level="debug" ;;
+    info)        nginx_log_level="info" ;;
+    notice)      nginx_log_level="notice" ;;
+    warning)     nginx_log_level="warn" ;;
+    error)       nginx_log_level="error" ;;
+    fatal)       nginx_log_level="crit" ;;
+    *)           nginx_log_level="warn" ;;
+esac
+
+echo "Setting Nginx log level to: ${nginx_log_level}"
+# Update error_log in nginx.conf
+# Assuming the Dockerfile set it to /dev/stderr
+if grep -q "error_log /dev/stderr" /etc/nginx/nginx.conf; then
+    sed -i "s|error_log /dev/stderr.*|error_log /dev/stderr ${nginx_log_level};|" /etc/nginx/nginx.conf
+else
+    # Fallback if not found or different path
+    sed -i "s|error_log .*|error_log /dev/stderr ${nginx_log_level};|" /etc/nginx/nginx.conf
+fi
 
 if [ -z "$website_name" ] || [ "$website_name" = "null" ]; then
 	website_name="web.local"

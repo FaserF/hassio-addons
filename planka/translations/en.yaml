@@ -10,7 +10,7 @@ configuration:
     description: The name of the SSL key file.
   log_level:
     name: Log Level
-    description: Controls the level of log verbosity.
+    description: "Controls the verbosity of the add-on logs."
   secret_key:
     name: Secret Key
     description: Secret key used for session signing.

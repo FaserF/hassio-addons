@@ -23,7 +23,7 @@ schema:
   ssl: bool?
   certfile: str?
   keyfile: str?
-  log_level: list(trace|debug|info|warning|error)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   port: int?
   listen_address: str?
 ports:
