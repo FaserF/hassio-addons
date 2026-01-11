@@ -2,4 +2,4 @@
 # shellcheck shell=bash
 
 bashio::log.info "Starting PostgreSQL..."
-exec su-exec postgres postgres -D /var/lib/postgresql/data
+exec su-exec postgres postgres -D /data/database

@@ -7,21 +7,25 @@ bashio::log.info "Initializing PostgreSQL..."
 mkdir -p /run/postgresql
 chown postgres:postgres /run/postgresql
 
-if [ ! -d "/var/lib/postgresql/data" ] || [ -z "$(ls -A "/var/lib/postgresql/data")" ]; then
-    bashio::log.info "Creating new database cluster..."
-    mkdir -p /var/lib/postgresql/data
-    chown -R postgres:postgres /var/lib/postgresql/data
+if [ ! -d "/data/database" ] || [ -z "$(ls -A "/data/database")" ]; then
+    bashio::log.info "Creating new database cluster in /data/database..."
+    mkdir -p /data/database
+    chown -R postgres:postgres /data/database
+    chmod 700 /data/database
 
     echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
     chown postgres:postgres /tmp/pgpass
 
-    if ! su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
-        bashio::log.error "initdb failed! Command: su-exec postgres initdb -D /var/lib/postgresql/data --username=postgres --auth=md5 --pwfile=/tmp/pgpass"
+    if ! su-exec postgres initdb -D /data/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
+        bashio::log.error "initdb failed! Command: su-exec postgres initdb -D /data/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass"
         rm -f /tmp/pgpass
         exit 1
     fi
 
     rm -f /tmp/pgpass
 else
-    bashio::log.info "Database cluster exists."
+    bashio::log.info "Database cluster exists in /data/database."
+    # Ensure permissions are correct even if it exists
+    chown -R postgres:postgres /data/database
+    chmod 700 /data/database
 fi

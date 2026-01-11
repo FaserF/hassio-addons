@@ -41,6 +41,7 @@ elif bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
 else
     export BASE_URL="http://localhost:1337"
 fi
+export SAILS_SECURITY_CORS_ALLOW_ORIGINS='*'
 
 if ! cd /opt/planka; then
     bashio::exit.nok "Failed to change directory to /opt/planka"

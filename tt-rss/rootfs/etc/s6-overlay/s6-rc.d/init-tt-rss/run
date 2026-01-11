@@ -4,6 +4,10 @@
 bashio::log.info "Configuring Tiny Tiny RSS..."
 
 # Retrieve DB Password
+bashio::log.info "Debugging: Checking /data/options.json"
+ls -l /data/options.json || bashio::log.warning "/data/options.json not found!"
+cat /data/options.json || bashio::log.warning "Could not read /data/options.json"
+
 # Retrieve or Generate DB Password
 if ! bashio::fs.file_exists "/data/ttrss_db_password"; then
     (
@@ -17,11 +21,8 @@ fi
 
 # Generate config.php
 bashio::log.info "Generating config.php..."
-# Fetch Ingress Entry (Fallback to / if API fails)
-if ! SELF_URL_PATH=$(bashio::addon.ingress_entry); then
-    bashio::log.warning "Failed to fetch ingress entry from Supervisor API. Defaulting to /."
-    SELF_URL_PATH="/"
-fi
+# Default Ingress Entry to / to avoid API call errors
+SELF_URL_PATH="/"
 
 # If self_url is set in options, use it, else default to ingress path
 if ! CONFIG_SELF_URL=$(bashio::config 'self_url'); then
@@ -29,43 +30,71 @@ if ! CONFIG_SELF_URL=$(bashio::config 'self_url'); then
     CONFIG_SELF_URL=""
 fi
 
-if [ -z "$CONFIG_SELF_URL" ] || [ "$CONFIG_SELF_URL" = "null" ]; then
-    CONFIG_SELF_URL="${SELF_URL_PATH}/"
-fi
+# We will handle the fallback dynamically in PHP now
+# But we pass the bashio config value if it exists
+
+# Ensure PHP-FPM listens on 127.0.0.1:9000
+bashio::log.info "Configuring PHP-FPM..."
+cat > /etc/php84/php-fpm.d/www.conf <<EOF
+[global]
+error_log = /proc/self/fd/2
+
+[www]
+user = nginx
+group = nginx
+listen = 127.0.0.1:9000
+pm = dynamic
+pm.max_children = 10
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+clear_env = no
+catch_workers_output = yes
+decorate_workers_output = no
+EOF
 
 cat > /var/www/tt-rss/config.php <<EOF
 <?php
+    // Dynamically determine SELF_URL_PATH
+    // Priority:
+    // 1. Config option 'self_url' (if set and not empty)
+    // 2. HTTP_X_INGRESS_PATH (if accessing via Ingress)
+    // 3. Root '/' (fallback)
+
+    \$configured_url = '${CONFIG_SELF_URL}';
+
+    if (!empty(\$configured_url)) {
+        \$self_url = \$configured_url;
+    } elseif (isset(\$_SERVER['HTTP_X_INGRESS_PATH'])) {
+        \$self_url = \$_SERVER['HTTP_X_INGRESS_PATH'] . '/';
+    } else {
+        \$self_url = '/';
+    }
+
     putenv('TTRSS_DB_TYPE=pgsql');
     putenv('TTRSS_DB_HOST=127.0.0.1');
     putenv('TTRSS_DB_USER=ttrss');
     putenv('TTRSS_DB_NAME=ttrss');
     putenv('TTRSS_DB_PASS=${TTRSS_DB_PASSWORD}');
     putenv('TTRSS_DB_PORT=5432');
-    putenv('TTRSS_SELF_URL_PATH=${CONFIG_SELF_URL}');
+    putenv('TTRSS_SELF_URL_PATH=' . \$self_url);
     putenv('TTRSS_PHP_EXECUTABLE=/usr/bin/php');
     putenv('TTRSS_SINGLE_USER_MODE=true');
     putenv('TTRSS_SIMPLE_UPDATE_MODE=true');
-    // Ensure we handle reverse proxy headers if needed
-    // TTRSS uses HTTP_X_FORWARDED_PROTO etc automatically if configured?
-    // We might need TTRSS_ENABLE_GZIP...
-    // For now, minimal env injection via config.php wrapper.
+
     error_reporting(E_ERROR | E_WARNING | E_PARSE);
-    // Include default config? No, config.php replaces it usually or we define constants.
-    // TT-RSS usually expects config.php to define constants.
-    // However, docker-compose setups often use env vars.
-    // We can define constants here.
+
     define('DB_TYPE', 'pgsql');
     define('DB_HOST', '127.0.0.1');
     define('DB_USER', 'ttrss');
     define('DB_NAME', 'ttrss');
     define('DB_PASS', '${TTRSS_DB_PASSWORD}');
     define('DB_PORT', '5432');
-    define('SELF_URL_PATH', '${CONFIG_SELF_URL}');
+    define('SELF_URL_PATH', \$self_url);
     define('PHP_EXECUTABLE', '/usr/bin/php');
     define('SINGLE_USER_MODE', true);
     define('SIMPLE_UPDATE_MODE', true);
     define('auth_internal', true);
-    // Allow plugins if needed
     define('PLUGINS', 'auth_internal, note');
     define('LOG_DESTINATION', '');
     define('CHECK_FOR_UPDATES', false);
@@ -79,11 +108,10 @@ EOF
 
 # Permission fix
 chown -R nginx:nginx /var/www/tt-rss
+chmod -R 755 /var/www/tt-rss
 
 # Generate Nginx Config
 bashio::log.info "Generating Nginx configuration..."
-# Use || true to prevent exit if config fails (though it shouldn't if defaults provided)
-# Actually bashio::config errors are handled above for strict mode, here we just read.
 SSL_ENABLED=$(bashio::config 'ssl' || echo 'false')
 CERTFILE=$(bashio::config 'certfile' || echo 'fullchain.pem')
 KEYFILE=$(bashio::config 'keyfile' || echo 'privkey.pem')
@@ -98,7 +126,7 @@ server {
     client_max_body_size 64m;
 
     location / {
-        try_files \$uri \$uri/ =404;
+        try_files \$uri \$uri/ /index.php;
     }
 
     location ~ \.php$ {
@@ -106,6 +134,9 @@ server {
         fastcgi_index index.php;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        # Pass Ingress headers to PHP
+        fastcgi_param HTTP_X_INGRESS_PATH \$http_x_ingress_path;
+        fastcgi_param HTTP_X_FORWARDED_PROTO \$http_x_forwarded_proto;
     }
 }
 EOF
@@ -129,7 +160,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        try_files \$uri \$uri/ =404;
+        try_files \$uri \$uri/ /index.php;
     }
 
     location ~ \.php$ {
