@@ -17,7 +17,7 @@ _show_startup_banner() {
     if [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
-    local NAME="N8n"
+
     local SLUG="n8n"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"

@@ -11,7 +11,7 @@ _show_startup_banner() {
     if ! VERSION="$(bashio::addon.version 2>/dev/null)" || [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
-    local NAME="ShieldFile"
+
     local SLUG="shieldfile"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"

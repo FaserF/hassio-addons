@@ -15,9 +15,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install dependencies for NoVNC and VNC server
 # Install dependencies and tools
 
-# hadolint ignore=DL3008,SC1091
 
-# hadolint ignore=DL3008,SC1091
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.0.1"
@@ -25,6 +23,7 @@ ENV ADDON_NAME="Antigravity-Server"
 ENV ADDON_SLUG="antigravity-server"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008,SC1091
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

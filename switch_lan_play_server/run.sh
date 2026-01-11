@@ -14,7 +14,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Switch LAN Play Server"
+
 	local SLUG="switch-lan-play-server"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -173,7 +173,8 @@ set -e
 #VARIABLES
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
-export LOG_LEVEL=$(bashio::config 'log_level')
+export LOG_LEVEL
+LOG_LEVEL=$(bashio::config 'log_level')
 
 bashio::log.info "For more information or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
 

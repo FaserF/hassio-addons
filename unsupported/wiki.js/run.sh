@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Wiki.JS"
+
 	local SLUG="wiki.js"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

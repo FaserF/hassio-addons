@@ -13,7 +13,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="OpenSSL"
+
 	local SLUG="openssl"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
