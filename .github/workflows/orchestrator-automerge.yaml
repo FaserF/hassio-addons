@@ -88,7 +88,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
-          ALLOWED_AUTHORS="dependabot[bot] renovate[bot] github-actions[bot] github-actions FaserF"
+          ALLOWED_AUTHORS="dependabot[bot] renovate[bot] app/renovate github-actions[bot] github-actions FaserF"
 
           echo "Checking if '$AUTHOR' is in allowed list..."
 
