@@ -52,42 +52,42 @@ The table below shows **all add-ons** in this repository, including unsupported 
 
 <!-- markdownlint-disable MD060 -->
 
-| Name                                                            | Description                                 | Status | Added   |
-| :-------------------------------------------------------------- | :------------------------------------------ | :----- | :------ |
-| **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server              | ✅     | 2026-01 |
-| **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC                | ⚠️     | 2026-01 |
-| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB              | ✅     | 2023-03 |
-| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)                 | ✅     | 2023-03 |
-| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP              | ✅     | 2023-03 |
-| **[BentoPDF](bentopdf)**                                        | Self-hosted PDF toolkit (Privacy-First)     | ⚠️     | 2026-01 |
-| **[ER-Startseite (Dashboard)](er-dashboard)**                   | Modern Dashboard with Neon Aesthetic        | ⚠️     | 2026-01 |
-| **[NGINX](nginx)**                                              | NGINX Webserver with PHP and MariaDB        | ⚠️     | 2026-01 |
-| **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS               | ✅     | 2023-05 |
-| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)        | ❌     | 2023-05 |
-| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)           | ❌     | 2023-05 |
-| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing           | ⚠️     | 2026-01 |
-| **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)            | ❌     | 2023-05 |
-| **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant | ⚠️     | 2026-01 |
-| **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                         | ✅     | 2023-05 |
-| **[OpenSSL](openssl)**                                          | Self-signed certificate generator           | ✅     | 2023-05 |
-| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                     | ⚠️     | 2023-05 |
-| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                     | ✅     | 2023-05 |
-| **[Planka](planka)**                                            | Project Tracking Tool                       | ⚠️     | 2026-01 |
-| **[SAP ABAP Cloud Dev](sap-abap-cloud-dev)**                    | SAP ABAP Platform Trial                     | ⚠️     | 2026-01 |
-| **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server                 | ✅     | 2026-01 |
-| **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                         | ✅     | 2026-01 |
-| **[Solumati](solumati)**                                        | Solar Panel Monitoring                      | ✅     | 2026-01 |
-| **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client             | ✅     | 2023-05 |
-| **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server             | ✅     | 2023-05 |
-| **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence       | ✅     | 2023-05 |
-| **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                         | ⚠️     | 2026-01 |
-| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)   | ❌     | 2023-05 |
-| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)      | ⚠️     | 2026-01 |
-| **[Wiki.js](unsupported/wiki.js)**                              | Wiki.js (Stable)                            | ✅     | 2023-05 |
-| **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                           | ⚠️     | 2026-01 |
-| **[Wordpress](wordpress)**                                      | The most popular publication platform       | ⚠️     | 2026-01 |
-| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)      | ❌     | 2023-05 |
-| [Wiki.JS](wiki.js) | The most powerful and extensible open source Wiki software |
+| Name                                                            | Description                                                | Status | Added   |
+| :-------------------------------------------------------------- | :--------------------------------------------------------- | :----- | :------ |
+| **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server                             | ✅     | 2026-01 |
+| **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC                               | ⚠️     | 2026-01 |
+| **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB                             | ✅     | 2023-03 |
+| **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)                                | ✅     | 2023-03 |
+| **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP                             | ✅     | 2023-03 |
+| **[BentoPDF](bentopdf)**                                        | Self-hosted PDF toolkit (Privacy-First)                    | ⚠️     | 2026-01 |
+| **[ER-Startseite (Dashboard)](er-dashboard)**                   | Modern Dashboard with Neon Aesthetic                       | ⚠️     | 2026-01 |
+| **[NGINX](nginx)**                                              | NGINX Webserver with PHP and MariaDB                       | ⚠️     | 2026-01 |
+| **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS                              | ✅     | 2023-05 |
+| **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)                       | ❌     | 2023-05 |
+| **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)                          | ❌     | 2023-05 |
+| **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing                          | ⚠️     | 2026-01 |
+| **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)                           | ❌     | 2023-05 |
+| **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant                | ⚠️     | 2026-01 |
+| **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                                        | ✅     | 2023-05 |
+| **[OpenSSL](openssl)**                                          | Self-signed certificate generator                          | ✅     | 2023-05 |
+| **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                                    | ⚠️     | 2023-05 |
+| **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                                    | ✅     | 2023-05 |
+| **[Planka](planka)**                                            | Project Tracking Tool                                      | ⚠️     | 2026-01 |
+| **[SAP ABAP Cloud Dev](sap-abap-cloud-dev)**                    | SAP ABAP Platform Trial                                    | ⚠️     | 2026-01 |
+| **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server                                | ✅     | 2026-01 |
+| **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                                        | ✅     | 2026-01 |
+| **[Solumati](solumati)**                                        | Solar Panel Monitoring                                     | ✅     | 2026-01 |
+| **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client                            | ✅     | 2023-05 |
+| **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server                            | ✅     | 2023-05 |
+| **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence                      | ✅     | 2023-05 |
+| **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                                        | ⚠️     | 2026-01 |
+| **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)                  | ❌     | 2023-05 |
+| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)                     | ⚠️     | 2026-01 |
+| **[Wiki.js](unsupported/wiki.js)**                              | Wiki.js (Stable)                                           | ✅     | 2023-05 |
+| **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                                          | ⚠️     | 2026-01 |
+| **[Wordpress](wordpress)**                                      | The most popular publication platform                      | ⚠️     | 2026-01 |
+| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)                     | ❌     | 2023-05 |
+| [Wiki.JS](wiki.js)                                              | The most powerful and extensible open source Wiki software |
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
