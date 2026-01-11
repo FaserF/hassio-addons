@@ -69,30 +69,12 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 certfile: fullchain.pem
 keyfile: privkey.pem
-log_level: info
 ssl: false
 wordpress_admin_email: admin@example.com
 wordpress_admin_user: admin
 wordpress_title: My Blog
 wordpress_url: http://wordpress.local
 ```
-
-#### Option: `ssl`
-Enables Nginx SSL support. Requires valid certificate files.
-
-#### Option: `certfile` & `keyfile`
-The names of your certificate and key files located in the `/ssl/` directory of your Home Assistant.
-
-#### Option: `log_level`
-The level of logging to output.
--   Values: `trace`, `debug`, `info`, `notice`, `warning`, `error`, `fatal`
--   Default: `info`
--   This improves troubleshooting when set to `debug` or `trace`.
-
-#### Option: `wordpress_url`
-The public URL of your WordPress site.
--   **Must** start with `http://` or `https://`.
--   This setting controls how WordPress generates links and how the add-on handles redirects.
 
 ---
 
