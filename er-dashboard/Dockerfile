@@ -37,7 +37,7 @@ RUN \
         py3-greenlet \
         su-exec \
     \
-    && pip3 install --upgrade pip
+    && pip3 install --no-cache-dir --upgrade pip==25.3
 
 # Copy Frontend
 COPY --from=frontend /usr/share/nginx/html /app/dist
