@@ -8,8 +8,10 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # shellcheck disable=SC2015
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.1.3"
+ENV ADDON_VERSION="3.1.4"
 ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"
