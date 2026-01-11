@@ -25,15 +25,7 @@ if [ "$(psql -h localhost -U postgres -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM pg_
     psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE USER planka WITH PASSWORD '${PLANKA_DB_PASSWORD}';"
 fi
 
-<<<<<<< Updated upstream
 psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE planka TO planka;"
-# Grant schema privileges if needed (public schema usually open)
-# Planka needs to create tables.
-=======
-psql -h localhost -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = 'planka'" | grep -q 1 || \
-    psql -h localhost -U postgres -c "CREATE USER planka WITH PASSWORD '${PLANKA_DB_PASSWORD}';"
-
-psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE planka TO planka;"
 
 # PostgreSQL 15+ revoked default CREATE on public schema - grant it explicitly
 psql -h localhost -U postgres -d planka -c "GRANT ALL ON SCHEMA public TO planka;"
@@ -41,4 +33,3 @@ psql -h localhost -U postgres -d planka -c "GRANT ALL PRIVILEGES ON ALL TABLES I
 psql -h localhost -U postgres -d planka -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO planka;"
 psql -h localhost -U postgres -d planka -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO planka;"
 psql -h localhost -U postgres -d planka -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO planka;"
->>>>>>> Stashed changes

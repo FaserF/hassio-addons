@@ -11,7 +11,7 @@ if ! bashio::net.wait_for 5432 localhost 30; then
 fi
 
 # Validate POSTGRES_PASSWORD is set (from init-secrets)
-if ! bashio::env.has_value 'POSTGRES_PASSWORD' && [ ! -f /var/run/s6/container_environment/POSTGRES_PASSWORD ]; then
+if ! bashio::var.has_value "${POSTGRES_PASSWORD}" && [ ! -f /var/run/s6/container_environment/POSTGRES_PASSWORD ]; then
     bashio::log.error "POSTGRES_PASSWORD environment variable is not set. init-secrets might have failed."
     exit 1
 fi
