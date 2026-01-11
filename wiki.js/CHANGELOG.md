@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.0 (2026-01-11)
+
+### 🎨 Style
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`5e6ebbf`](https://github.com/FaserF/hassio-addons/commit/5e6ebbf2398fcf8db79dea411c701782712868c5))
+
+### 📌 Release Note
+- new db reset option & log level improved/added
+
+
 ## 3.1.5 (2026-01-10)
 
 ### 📦 Dependencies
