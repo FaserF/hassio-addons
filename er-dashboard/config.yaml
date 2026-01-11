@@ -1,5 +1,5 @@
 name: "ER-Startseite (Dashboard)"
-version: "1.0.0"
+version: "1.0.1"
 slug: er-dashboard
 image: ghcr.io/faserf/hassio-addons-er-dashboard-{arch}
 description: "A modern, highly customizable dashboard with a neon aesthetic."
