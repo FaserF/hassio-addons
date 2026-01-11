@@ -380,9 +380,17 @@ if bashio::config.true 'ssl'; then
 		cat /etc/nginx/templates/http.conf >/etc/nginx/http.d/default.conf
 	else
 		bashio::log.info "SSL has been enabled. Setting nginx settings for SSL usage with ${SSL_CERT} and ${SSL_CERT_KEY}."
-		# Use envsubst to replace SSL_CERT and SSL_CERT_KEY variables
-		export SSL_CERT SSL_CERT_KEY
-		envsubst '${SSL_CERT} ${SSL_CERT_KEY}' </etc/nginx/templates/https.conf >/etc/nginx/http.d/default.conf
+
+        # Prepare redirect target for HTTP -> HTTPS redirection
+        # We need to extract scheme://host:port from WORDPRESS_URL to ensure redirects go to the correct port
+        REDIRECT_URIPART="${WORDPRESS_URL#*://}"
+        REDIRECT_HOSTPORT="${REDIRECT_URIPART%%/*}"
+        REDIRECT_SCHEME="${WORDPRESS_URL%%://*}"
+        WORDPRESS_HTTP_REDIRECT_TARGET="${REDIRECT_SCHEME}://${REDIRECT_HOSTPORT}"
+
+		# Use envsubst to replace SSL_CERT, SSL_CERT_KEY and WORDPRESS_HTTP_REDIRECT_TARGET variables
+		export SSL_CERT SSL_CERT_KEY WORDPRESS_HTTP_REDIRECT_TARGET
+		envsubst '${SSL_CERT} ${SSL_CERT_KEY} ${WORDPRESS_HTTP_REDIRECT_TARGET}' </etc/nginx/templates/https.conf >/etc/nginx/http.d/default.conf
 	fi
 else
 	bashio::log.info "SSL is disabled, using HTTP."

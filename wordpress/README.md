@@ -30,6 +30,37 @@ on your Home Assistant instance.
 
 ---
 
+## 🌐 How to Access
+
+The add-on exposes two ports for accessing your WordPress site:
+
+-   **HTTP**: Port `8099` => `http://homeassistant.local:8099`
+-   **HTTPS**: Port `8449` => `https://homeassistant.local:8449`
+
+**Important**:
+1.  If you enable **SSL** (`ssl: true`), requests to the HTTP port will strictly redirect to the HTTPS port.
+2.  Make sure your `wordpress_url` configuration matches the protocol you intend to use (e.g., start with `https://` if using SSL).
+
+---
+
+## 🔐 First Run & Login
+
+### Initial Credentials
+On the **very first startup**, the add-on will install WordPress and automatically generate a secure **Admin Password**.
+
+1.  Start the add-on.
+2.  Check the **Log** tab of the add-on immediately.
+3.  Look for a message box containing **"Wordpress Admin Password"**.
+4.  **Copy and save this password!** It will only be shown once.
+
+The default **Username** is `admin` (unless changed in configuration).
+
+### Database & Config
+-   A `wp-config.php` file is automatically generated and maintained by the add-on.
+-   The database connection is handled automatically.
+
+---
+
 ## ⚙️ Configuration
 
 Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
@@ -45,6 +76,17 @@ wordpress_admin_user: admin
 wordpress_title: My Blog
 wordpress_url: http://wordpress.local
 ```
+
+#### Option: `ssl`
+Enables Nginx SSL support. Requires valid certificate files.
+
+#### Option: `certfile` & `keyfile`
+The names of your certificate and key files located in the `/ssl/` directory of your Home Assistant.
+
+#### Option: `wordpress_url`
+The public URL of your WordPress site.
+-   **Must** start with `http://` or `https://`.
+-   This setting controls how WordPress generates links and how the add-on handles redirects.
 
 ---
 

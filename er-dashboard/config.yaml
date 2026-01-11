@@ -9,7 +9,6 @@ arch:
   - amd64
 init: false
 map:
-  - config:rw
   - share:rw
   - ssl:ro
 options:

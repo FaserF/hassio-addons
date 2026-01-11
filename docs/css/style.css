@@ -230,6 +230,15 @@ h1 {
   font-size: 28px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  /* Ensure image doesn't overflow rounded corners */
+}
+
+.addon-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* or cover, depending on preference. Contain is safer for logos */
 }
 
 .addon-title {
@@ -278,6 +287,18 @@ h1 {
   color: var(--text-secondary);
   opacity: 0.8;
   margin-left: 4px;
+}
+
+.version-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(139, 148, 158, 0.4);
+  transition: all 0.2s;
+}
+
+.version-link:hover {
+  border-bottom-style: solid;
+  color: var(--ha-primary);
 }
 
 .addon-footer {

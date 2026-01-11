@@ -81,11 +81,17 @@ ADDON_CARD_TEMPLATE = """
                 <div class="addon-meta">
                     <div class="version-row">
                         <span class="version-label">Stable</span>
-                        <span class="version-value">v{version} <span class="version-date">({stable_date})</span></span>
+                        <span class="version-value">
+                            <a href="{stable_url}" class="version-link" target="_blank">v{version}</a>
+                            <span class="version-date">({stable_date})</span>
+                        </span>
                     </div>
                     <div class="version-row">
                         <span class="version-label">Edge</span>
-                        <span class="version-value">{edge_hash} <span class="version-date">({edge_date})</span></span>
+                        <span class="version-value">
+                            <a href="{edge_url}" class="version-link" target="_blank">{edge_hash}</a>
+                            <span class="version-date">({edge_date})</span>
+                        </span>
                     </div>
                 </div>
                 <div class="addon-footer">
@@ -126,6 +132,19 @@ ICON_MAP = {
     "matterbridge": "🌉",
     "tuya": "🔌",
     "xqrepack": "📦",
+    "bash": "🐚",
+    "script": "📜",
+    "bento": "🍱",
+    "pdf": "📄",
+    "dashboard": "📊",
+    "er-startseite": "📊",
+    "n8n": "⚡",
+    "planka": "📋",
+    "solumati": "❤️",
+    "tt-rss": "📰",
+    "rss": "📰",
+    "homeassistant": "🏠",
+    "test": "🧪",
 }
 
 
@@ -214,6 +233,11 @@ def extract_metadata(
             f"https://github.com/FaserF/hassio-addons/tree/master/{relative_path}",
         )
 
+        # Calculate Branch URLs
+        base_repo_url = "https://github.com/FaserF/hassio-addons"
+        stable_url = f"{base_repo_url}/tree/master/{relative_path}"
+        edge_url = f"{base_repo_url}/tree/edge/{relative_path}"
+
         # Get Git Info
         addon_dir = config_path.parent
         git_info = get_git_info(addon_dir)
@@ -236,6 +260,8 @@ def extract_metadata(
             "description": description,
             "version": version,
             "url": url,
+            "stable_url": stable_url,
+            "edge_url": edge_url,
             "status_text": status_text,
             "status_class": status_class,
             "icon": get_icon(slug, name),
@@ -300,6 +326,8 @@ def main():
             description=addon["description"],
             version=addon["version"],
             url=addon["url"],
+            stable_url=addon["stable_url"],
+            edge_url=addon["edge_url"],
             status_text=addon["status_text"],
             status_class=addon["status_class"],
             icon=addon["icon"],
