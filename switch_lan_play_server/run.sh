@@ -174,7 +174,6 @@ set -e
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 
-
 bashio::log.info "For more information or bugs with lan-play itself please visit: https://github.com/spacemeowx2/switch-lan-play"
 
 bashio::log.info "Starting lan-play server - To Connect your switch with this server have a look at https://github.com/spacemeowx2/switch-lan-play#2-switch"

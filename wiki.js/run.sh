@@ -182,14 +182,14 @@ log_level=$(bashio::config 'log_level')
 # We map loosely:
 wiki_log_level="info"
 case "${log_level}" in
-    trace)   wiki_log_level="silly" ;;
-    debug)   wiki_log_level="debug" ;;
-    info)    wiki_log_level="info" ;;
-    notice)  wiki_log_level="info" ;;
-    warning) wiki_log_level="warn" ;;
-    error)   wiki_log_level="error" ;;
-    fatal)   wiki_log_level="error" ;;
-    *)       wiki_log_level="info" ;;
+trace) wiki_log_level="silly" ;;
+debug) wiki_log_level="debug" ;;
+info) wiki_log_level="info" ;;
+notice) wiki_log_level="info" ;;
+warning) wiki_log_level="warn" ;;
+error) wiki_log_level="error" ;;
+fatal) wiki_log_level="error" ;;
+*) wiki_log_level="info" ;;
 esac
 
 declare host

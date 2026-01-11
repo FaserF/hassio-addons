@@ -25,20 +25,20 @@ phppath=/etc/php84/php.ini
 # Apache: debug, info, notice, warn, error, crit, alert, emerg
 apache_log_level="warn"
 case "${log_level}" in
-    trace|debug) apache_log_level="debug" ;;
-    info)        apache_log_level="info" ;;
-    notice)      apache_log_level="notice" ;;
-    warning)     apache_log_level="warn" ;;
-    error)       apache_log_level="error" ;;
-    fatal)       apache_log_level="crit" ;;
-    *)           apache_log_level="warn" ;;
+trace | debug) apache_log_level="debug" ;;
+info) apache_log_level="info" ;;
+notice) apache_log_level="notice" ;;
+warning) apache_log_level="warn" ;;
+error) apache_log_level="error" ;;
+fatal) apache_log_level="crit" ;;
+*) apache_log_level="warn" ;;
 esac
 
 echo "Setting Apache log level to: ${apache_log_level}"
 if grep -q '^LogLevel ' /etc/apache2/httpd.conf; then
-    sed -i -E "s/^LogLevel .*/LogLevel ${apache_log_level}/I" /etc/apache2/httpd.conf
+	sed -i -E "s/^LogLevel .*/LogLevel ${apache_log_level}/I" /etc/apache2/httpd.conf
 else
-    echo "LogLevel ${apache_log_level}" >> /etc/apache2/httpd.conf
+	echo "LogLevel ${apache_log_level}" >>/etc/apache2/httpd.conf
 fi
 
 # WARNING: The init_commands option uses `eval`.

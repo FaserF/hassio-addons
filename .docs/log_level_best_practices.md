@@ -1,11 +1,13 @@
 # Log Level Configuration - Best Practices
 
 ## Overview
+
 This document provides standardized patterns for implementing robust `log_level` configuration in Home Assistant add-ons.
 
 ## Standard Pattern
 
 ### 1. Basic Error Handling (Recommended)
+
 ```bash
 # Fetch log_level with explicit error handling and default fallback
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
@@ -15,12 +17,14 @@ fi
 ```
 
 **Why?**
+
 - Explicit error detection if `bashio::config` fails
 - Warning log informs user of the fallback
 - Ensures `LOG_LEVEL` is never empty
 - Consistent fallback behavior across all add-ons
 
 ### 2. Alternative: has_value Check
+
 ```bash
 # Alternative pattern using has_value (also acceptable)
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ - "$LOG_LEVEL" ]; then
@@ -32,15 +36,17 @@ fi
 ## Configuration Schema
 
 ### config.yaml
+
 ```yaml
 options:
-  log_level: info  # Default value
+  log_level: info # Default value
 
 schema:
   log_level?: list(trace|debug|info|notice|warning|error|fatal)
 ```
 
 **Important:**
+
 - Use `?` suffix to mark as optional (`log_level?:`)
 - Use `list()` for dropdown selection, NOT `match()`
 - Provide sensible default (`info` recommended)
@@ -48,6 +54,7 @@ schema:
 ## Common Log Level Mappings
 
 ### Nginx
+
 ```bash
 # Bashio: trace, debug, info, notice, warning, error, fatal
 # Nginx: debug, info, notice, warn, error, crit, alert, emerg
@@ -64,6 +71,7 @@ esac
 ```
 
 ### Python (Uvicorn/FastAPI)
+
 ```bash
 # Bashio: trace, debug, info, notice, warning, error, fatal
 # Python: trace, debug, info, warning, error, critical
@@ -80,17 +88,18 @@ esac
 ```
 
 ### Node.js (Pino)
+
 ```javascript
 // Map addon log levels to pino-compatible levels
 const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 const LOG_LEVEL_MAP = {
-  'trace': 'trace',
-  'debug': 'debug',
-  'info': 'info',
-  'notice': 'info',  // pino doesn't have 'notice'
-  'warning': 'warn',
-  'error': 'error',
-  'fatal': 'fatal'
+  trace: 'trace',
+  debug: 'debug',
+  info: 'info',
+  notice: 'info', // pino doesn't have 'notice'
+  warning: 'warn',
+  error: 'error',
+  fatal: 'fatal',
 };
 const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
 ```

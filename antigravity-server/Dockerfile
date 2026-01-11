@@ -15,8 +15,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install dependencies for NoVNC and VNC server
 # Install dependencies and tools
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.0.1"
 ENV ADDON_NAME="Antigravity-Server"

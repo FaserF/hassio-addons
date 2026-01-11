@@ -55,6 +55,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 dhcp_range: 192.168.1.200
+log_level: info
 path: /media/netboot/image
 path_config: /media/netboot/config
 ```

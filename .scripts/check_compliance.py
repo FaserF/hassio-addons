@@ -118,8 +118,12 @@ def check_addon(addon_path):
             with open(config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
-            has_log_level_option = "options" in config and "log_level" in config["options"]
-            has_log_level_schema = "schema" in config and "log_level" in config["schema"]
+            has_log_level_option = (
+                "options" in config and "log_level" in config["options"]
+            )
+            has_log_level_schema = (
+                "schema" in config and "log_level" in config["schema"]
+            )
 
             if not has_log_level_option:
                 warnings.append("Missing 'log_level' in config.yaml options")

@@ -48,6 +48,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 config_file: /share/pterodactyl/config.yml
+log_level: info
 ```
 
 ---

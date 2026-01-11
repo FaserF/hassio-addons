@@ -75,6 +75,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 agree_to_license: false
 ignore_requirements: false
+log_level: info
 ```
 
 ---

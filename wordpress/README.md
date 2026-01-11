@@ -69,6 +69,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 certfile: fullchain.pem
 keyfile: privkey.pem
+log_level: info
 ssl: false
 wordpress_admin_email: admin@example.com
 wordpress_admin_user: admin

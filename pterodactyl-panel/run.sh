@@ -444,16 +444,16 @@ sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
 # Map log_level to APP_DEBUG
 log_level=$(bashio::config 'log_level')
 if [ "$log_level" = "trace" ] || [ "$log_level" = "debug" ]; then
-    app_debug="true"
-    bashio::log.warning "APP_DEBUG enabled (log_level: $log_level)"
+	app_debug="true"
+	bashio::log.warning "APP_DEBUG enabled (log_level: $log_level)"
 else
-    app_debug="false"
+	app_debug="false"
 fi
 
 if ! grep -q "^APP_DEBUG=" .env; then
-    echo "APP_DEBUG=$app_debug" >>.env
+	echo "APP_DEBUG=$app_debug" >>.env
 else
-    sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$app_debug|" .env
+	sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$app_debug|" .env
 fi
 
 echo ""

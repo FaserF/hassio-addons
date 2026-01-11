@@ -53,6 +53,7 @@ default_ssl_conf: default
 document_root: /share/htdocs
 init_commands: []
 keyfile: privkey.pem
+log_level: info
 php_ini: default
 ssl: true
 website_name: web.local

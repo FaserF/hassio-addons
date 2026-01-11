@@ -184,21 +184,21 @@ CERT_FILE=$(bashio::config 'certfile')
 KEY_FILE=$(bashio::config 'keyfile')
 TUNNEL_TOKEN=$(bashio::config 'cloudflare_tunnel_token')
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
-    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
-    LOG_LEVEL="info"
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	LOG_LEVEL="info"
 fi
 ENABLE_INFO_PAGE=$(bashio::config 'enable_info_page')
 
 # Map Bashio log_level to Nginx log_level
 nginx_log_level="warn"
 case "${LOG_LEVEL}" in
-    trace|debug) nginx_log_level="debug" ;;
-    info)        nginx_log_level="info" ;;
-    notice)      nginx_log_level="notice" ;;
-    warning)     nginx_log_level="warn" ;;
-    error)       nginx_log_level="error" ;;
-    fatal)       nginx_log_level="crit" ;;
-    *)           nginx_log_level="warn" ;;
+trace | debug) nginx_log_level="debug" ;;
+info) nginx_log_level="info" ;;
+notice) nginx_log_level="notice" ;;
+warning) nginx_log_level="warn" ;;
+error) nginx_log_level="error" ;;
+fatal) nginx_log_level="crit" ;;
+*) nginx_log_level="warn" ;;
 esac
 
 # Default for Info Page
@@ -405,7 +405,6 @@ server {
 
     error_log /dev/stderr ${nginx_log_level};
     access_log /dev/stdout;
-
 
     # 1. Info Page (Root)
     location / {

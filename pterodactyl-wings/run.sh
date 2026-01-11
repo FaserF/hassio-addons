@@ -210,14 +210,14 @@ ln -sf "$config_file" /etc/pterodactyl/config.yml
 # Map log level to debug flag in config.yml
 log_level=$(bashio::config 'log_level')
 if [ "$log_level" = "trace" ] || [ "$log_level" = "debug" ]; then
-    # Enable debug in config.yml if it exists
-    if [ -f "$config_file" ]; then
-        sed -i 's/debug: false/debug: true/' "$config_file"
-    fi
+	# Enable debug in config.yml if it exists
+	if [ -f "$config_file" ]; then
+		sed -i 's/debug: false/debug: true/' "$config_file"
+	fi
 else
-    if [ -f "$config_file" ]; then
-        sed -i 's/debug: true/debug: false/' "$config_file"
-    fi
+	if [ -f "$config_file" ]; then
+		sed -i 's/debug: true/debug: false/' "$config_file"
+	fi
 fi
 
 echo "Starting Pterodactyl Daemon..."
