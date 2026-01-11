@@ -89,6 +89,7 @@ body:
         - netboot-xyz
         - nginx
         - openssl
+        - planka
         - pterodactyl-panel
         - pterodactyl-wings
         - sap-abap-cloud-dev
@@ -96,6 +97,7 @@ body:
         - switch_lan_play
         - switch_lan_play_server
         - tado_aa
+        - tt-rss
         - whatsapp
         - wiki.js
         - wiki.js3
