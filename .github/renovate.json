@@ -273,6 +273,14 @@
       "automerge": true
     },
     {
+      "groupName": "ER-Startseite",
+      "matchDepNames": [
+        "ghcr.io/eidolf/er-startseite/backend",
+        "ghcr.io/eidolf/er-startseite/frontend"
+      ],
+      "automerge": true
+    },
+    {
       "groupName": "Add-on Softwares",
       "matchDepNames": [
         "42wim/matterbridge",

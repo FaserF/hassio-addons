@@ -20,12 +20,14 @@ options:
   keyfile: privkey.pem
   log_level: info
   secret_key: ""
+  base_url: ""
 schema:
   ssl: bool
   certfile: str
   keyfile: str
   log_level: list(error|warn|info|debug)
   secret_key: str?
+  base_url: str?
 ports:
   1337/tcp: 1337
 ports_description:

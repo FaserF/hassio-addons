@@ -33,6 +33,7 @@ RUN \
         php84-pdo_pgsql \
         php84-pdo_sqlite \
         php84-pecl-apcu \
+        php84-pcntl \
         php84-pgsql \
         php84-phar \
         php84-posix \
