@@ -288,7 +288,31 @@ if bashio::config.true 'reset_database'; then
 	#Remove reset_database options
 	bashio::addon.option 'reset_database'
 	bashio::addon.option 'reset_database_confirm'
+
+	bashio::log.warning "Cleaning up Git storage and SSH keys..."
+	# shellcheck disable=SC2115
+	rm -rf "$GIT_DATA_DIR/ssh/"*
+	# shellcheck disable=SC2115
+	rm -rf "$GIT_DATA_DIR/repo/"*
 fi
+
+# Git Support Setup
+GIT_DATA_DIR="/addon_configs/wiki.js/git"
+GIT_SSH_DIR="$GIT_DATA_DIR/ssh"
+GIT_REPO_DIR="$GIT_DATA_DIR/repo"
+
+# Create directories for Git storage
+mkdir -p "$GIT_SSH_DIR" "$GIT_REPO_DIR"
+chmod 700 "$GIT_SSH_DIR"
+
+# Configure SSH to use custom key location
+if [ -f "$GIT_SSH_DIR/id_rsa" ]; then
+	bashio::log.info "Git SSH key found at $GIT_SSH_DIR/id_rsa"
+	export GIT_SSH_COMMAND="ssh -i $GIT_SSH_DIR/id_rsa -o StrictHostKeyChecking=accept-new"
+fi
+
+bashio::log.info "Git support enabled. SSH keys can be placed in $GIT_SSH_DIR"
+bashio::log.info "Local repository path for Wiki.js: $GIT_REPO_DIR"
 
 # Ensure /config directory exists
 mkdir -p /config

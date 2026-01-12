@@ -1,16 +1,17 @@
 ---
-name: Wiki.JS V3 (Beta)
+name: Wiki.JS (Version 3 - Alpha)
 version: 0.4.0
 slug: wiki.js3
 image: ghcr.io/faserf/hassio-addons-wiki-{arch}
 
-description: The most powerful and extensible open source Wiki software (Version 3 - Beta)
+description: The most powerful and extensible open source Wiki software (Version 3 - Alpha)
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js3
 arch:
   # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
   - amd64
 map:
   - ssl
+  - addon_config:rw
 ingress: true
 ingress_port: 3011
 init: false
