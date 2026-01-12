@@ -9,19 +9,22 @@ Usage:
     python fix_readme_images.py [--dry-run]
 """
 
+import argparse
 import os
 import re
-import argparse
 from pathlib import Path
 
 
 def get_repo_info():
     """Get repository owner/name from git remote."""
     import subprocess
+
     try:
         result = subprocess.run(
             ["git", "config", "--get", "remote.origin.url"],
-            capture_output=True, text=True, check=True
+            capture_output=True,
+            text=True,
+            check=True,
         )
         url = result.stdout.strip()
         # Handle both HTTPS and SSH URLs
@@ -36,17 +39,22 @@ def get_repo_info():
 def get_default_branch():
     """Get the default branch name."""
     import subprocess
+
     try:
         result = subprocess.run(
             ["git", "symbolic-ref", "refs/remotes/origin/HEAD"],
-            capture_output=True, text=True, check=True
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return result.stdout.strip().split("/")[-1]
     except Exception:
         return "master"  # Fallback
 
 
-def fix_readme_images(addon_path: Path, owner: str, repo: str, branch: str, dry_run: bool = False):
+def fix_readme_images(
+    addon_path: Path, owner: str, repo: str, branch: str, dry_run: bool = False
+):
     """Fix relative image paths in a README file."""
     readme_path = addon_path / "README.md"
     if not readme_path.exists():
@@ -57,7 +65,7 @@ def fix_readme_images(addon_path: Path, owner: str, repo: str, branch: str, dry_
 
     # Pattern to match relative image references: ![alt](filename.ext)
     # Excludes URLs (http/https) and absolute paths
-    pattern = r'!\[([^\]]*)\]\((?!https?://|/)([^)]+\.(png|jpg|jpeg|gif|svg|webp))\)'
+    pattern = r"!\[([^\]]*)\]\((?!https?://|/)([^)]+\.(png|jpg|jpeg|gif|svg|webp))\)"
 
     addon_name = addon_path.name
 
@@ -79,8 +87,14 @@ def fix_readme_images(addon_path: Path, owner: str, repo: str, branch: str, dry_
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fix relative image paths in README files")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be changed without making changes")
+    parser = argparse.ArgumentParser(
+        description="Fix relative image paths in README files"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be changed without making changes",
+    )
     args = parser.parse_args()
 
     # Get repo info
@@ -102,7 +116,9 @@ def main():
         if addon_path.name.startswith("."):
             continue
 
-        changed, message = fix_readme_images(addon_path, owner, repo, branch, args.dry_run)
+        changed, message = fix_readme_images(
+            addon_path, owner, repo, branch, args.dry_run
+        )
 
         if changed:
             print(f"✅ {addon_path.name}: {message}")
@@ -111,7 +127,9 @@ def main():
             print(f"⏭️  {addon_path.name}: {message}")
 
     print("-" * 50)
-    print(f"Total: {fixed_count} README(s) {'would be ' if args.dry_run else ''}updated")
+    print(
+        f"Total: {fixed_count} README(s) {'would be ' if args.dry_run else ''}updated"
+    )
 
 
 if __name__ == "__main__":

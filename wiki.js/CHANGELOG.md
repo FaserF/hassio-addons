@@ -3,15 +3,16 @@
 ## 3.3.0 (2026-01-12)
 
 ### 📦 Dependencies
+
 - auto-update documentation standards ([`39f34409`](https://github.com/FaserF/hassio-addons/commit/39f34409fbdcbd69318f2dac6da3f31047126e4e))
 
 ### 🚀 Other
+
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - Add git support to wiki.js (#577) [skip-tests] ([`26d63775`](https://github.com/FaserF/hassio-addons/commit/26d63775544a3971fcd0ed8dfb43a981fa27b323))
 - handle empty log level variable ([`568bbe5b`](https://github.com/FaserF/hassio-addons/commit/568bbe5bce289563264d87f55e8da35b9d508041))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
-
 
 ## 3.2.0 (2026-01-11)
 

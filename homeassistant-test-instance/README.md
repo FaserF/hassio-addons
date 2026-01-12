@@ -1,6 +1,6 @@
 # Home Assistant Test Instance
 
-![Logo](https://raw.githubusercontent.com/FaserF/hassio-addons/master/homeassistant-test-instance/logo.png)
+![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_homeassistant-test-instance)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
