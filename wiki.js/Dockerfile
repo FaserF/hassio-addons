@@ -9,12 +9,14 @@ ARG BUILD_DATE="unknown"
 # Install Node.js, Yarn and MariaDB client via APK
 # hadolint ignore=DL3018
 
+ENV S6_CMD_WAIT_FOR_SERVICES=1
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.1.5"
+ENV ADDON_VERSION="3.2.0"
 ENV ADDON_NAME="Wiki.JS"
 ENV ADDON_SLUG="wiki.js"
 ENV ADDON_UNSUPPORTED="false"
-ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 
