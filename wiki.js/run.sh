@@ -166,8 +166,6 @@ fi
 
 # </ADDON_BANNER_INJECTION>
 
-
-
 # Enable strict mode
 set -e
 # shellcheck disable=SC1091
@@ -322,7 +320,6 @@ if [ ! -f "$GIT_SSH_DIR/known_hosts" ]; then
 	touch "$GIT_SSH_DIR/known_hosts"
 	ssh-keyscan github.com gitlab.com bitbucket.org >>"$GIT_SSH_DIR/known_hosts" 2>/dev/null || true
 	chmod 644 "$GIT_SSH_DIR/known_hosts"
-fi
 fi
 
 bashio::log.info "Git support enabled. SSH keys can be placed in $GIT_SSH_DIR"
