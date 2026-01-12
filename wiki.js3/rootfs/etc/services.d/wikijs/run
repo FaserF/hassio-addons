@@ -124,4 +124,7 @@ case "${ADDON_LOG_LEVEL}" in
     export LOG_LEVEL="$WIKI_LOG_LEVEL"
     bashio::log.info "Setting LOG_LEVEL to $WIKI_LOG_LEVEL"
 
+    export NODE_ENV="production"
+    export CONFIG_FILE="/config/wikijs-config.yml"
+
 exec node server

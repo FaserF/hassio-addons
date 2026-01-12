@@ -13,7 +13,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Switch LAN Play Client"
+	local _NAME="Switch LAN Play Client"
 	local SLUG="switch-lan-play"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

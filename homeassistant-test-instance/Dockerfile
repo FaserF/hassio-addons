@@ -1,27 +1,54 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2026.1.0
+ARG HA_VERSION=2026.1.0
+ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
+# hadolint ignore=DL3006
+FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
+
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-ARG BUILD_DATE="unknown"
-ENV HA_VERSION="2025.12.5"
-EXPOSE 8123
 
-# Copy and setup the run script
+ARG HA_VERSION
+ARG BUILD_DATE="unknown"
+ENV HA_VERSION="${HA_VERSION}"
+ENV TERM="xterm-256color"
+
+# Install dependencies for Bashio (use default shell for Alpine)
+RUN apk add --no-cache \
+    bash \
+    curl \
+    jq \
+    sed
+
+# Set shell to bash after installation
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Copy Bashio and Tempio
+COPY --from=addon-base /usr/bin/bashio /usr/bin/bashio
+COPY --from=addon-base /usr/lib/bashio /usr/lib/bashio
+COPY --from=addon-base /usr/bin/tempio /usr/bin/tempio
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.1"
-ENV ADDON_NAME="Home Assistant Test Instance"
-ENV ADDON_SLUG="ha_test_instance"
-ENV ADDON_UNSUPPORTED="false"
+ARG ADDON_VERSION="0.2.1"
+ARG ADDON_NAME="Home Assistant Test Instance"
+ARG ADDON_SLUG="ha_test_instance"
+ARG ADDON_UNSUPPORTED="false"
+
+ENV \
+    ADDON_VERSION="${ADDON_VERSION}" \
+    ADDON_NAME="${ADDON_NAME}" \
+    ADDON_SLUG="${ADDON_SLUG}" \
+    ADDON_UNSUPPORTED="${ADDON_UNSUPPORTED}"
 
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
+
+EXPOSE 8123
 
 # Persist data in the add-on data directory
 CMD [ "/run.sh" ]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8123')" || exit 1
+    CMD curl --fail --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 || exit 1
 
 # Labels
 LABEL \

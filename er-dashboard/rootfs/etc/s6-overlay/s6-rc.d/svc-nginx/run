@@ -29,6 +29,19 @@ if ! bashio::var.json \
     exit 1
 fi
 
+# Generate Ingress config
+if bashio::config.true 'ingress'; then
+    bashio::log.info "Generating Ingress configuration..."
+    if ! bashio::var.json \
+        log_level "${nginx_log_level}" \
+        | tempio \
+            -template /etc/nginx/templates/ingress.gtpl \
+            -out /etc/nginx/http.d/ingress.conf; then
+        bashio::log.error "Failed to generate ingress configuration!"
+        exit 1
+    fi
+fi
+
 # Validate SSL files if SSL is enabled
 if bashio::config.true 'ssl'; then
     certfile="/ssl/$(bashio::config 'certfile')"

@@ -14,7 +14,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="AegisBot"
+	local _NAME="AegisBot"
 	local SLUG="aegisbot"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

@@ -50,22 +50,18 @@ RUN \
         nginx \
         fonts-noto \
         fonts-noto-color-emoji \
-        \
         # Python
         python3 \
         python3-pip \
         python3-numpy \
         python3-venv \
-    \
     # Install Node.js v22
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
-    \
     # Install Google Chrome Stable
     && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update && apt-get install -y --no-install-recommends google-chrome-stable \
-    \
     # Install Docker CLI (Adapted for Debian)
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
@@ -74,18 +70,15 @@ RUN \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list \
     && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
-    \
     # Install Google AntiGravity
     && curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | gpg --dearmor --yes -o /etc/apt/keyrings/antigravity-repo-key.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" > /etc/apt/sources.list.d/antigravity.list \
     && apt-get update && apt-get install -y --no-install-recommends antigravity \
-    \
     # Install LazyGit
     && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
     && tar xf lazygit.tar.gz lazygit \
     && install lazygit /usr/local/bin \
     && rm lazygit.tar.gz lazygit \
-    \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \

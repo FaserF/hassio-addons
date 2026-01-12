@@ -39,7 +39,6 @@ RUN \
         php84-iconv \
         php84-zip \
         php84-fileinfo \
-    \
     && curl -J -L -o /tmp/wordpress.tar.gz \
         "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \
     # SHA256 from https://wordpress.org/wordpress-6.8.tar.gz.sha256 (verified 2026-01)
@@ -47,15 +46,12 @@ RUN \
     && mkdir -p /usr/src/wordpress \
     && tar zxvf /tmp/wordpress.tar.gz -C /usr/src/wordpress --strip-components=1 \
     && rm -f /tmp/wordpress.tar.gz \
-    \
     && curl -L -o /usr/local/bin/wp "https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar" \
     && echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  /usr/local/bin/wp" | sha256sum -c - \
     && chmod +x /usr/local/bin/wp \
-    \
     # Create PHP symlinks
     && ln -sf /usr/bin/php84 /usr/bin/php \
     && ln -sf /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
-    \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \
     && rm -rf /var/cache/apk/*

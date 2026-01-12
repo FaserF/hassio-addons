@@ -15,7 +15,7 @@
 
 ## Example Configuration
 
-An example `menu.ipxe` configuration file can be found [here](examples/menu.ipxe).
+An example `menu.ipxe` configuration file can be found [in the examples directory](examples/menu.ipxe).
 This file demonstrates how to configure custom boot entries for Windows 11, Linux Mint, and SystemRescue.
 
 > PXE-Server to deploy a OS inside your local network

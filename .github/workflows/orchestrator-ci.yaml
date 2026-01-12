@@ -139,20 +139,42 @@ jobs:
       docs_only: ${{ steps.change-type.outputs.docs_only }}
       needs_build: ${{ steps.change-type.outputs.needs_build }}
       force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
+      skip_supervisor: ${{ steps.change-type.outputs.skip_supervisor }}
+      is_stale: ${{ steps.check-stale.outputs.is_stale }}
     steps:
+      - name: 🔍 Check for newer commits
+        id: check-stale
+        if: github.event_name == 'pull_request'
+        run: |
+          # Use API to get current head SHA to avoid git dependency before checkout
+          LATEST_SHA=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.head.sha' 2>/dev/null || echo "")
+          CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
+
+          if [ -n "$LATEST_SHA" ] && [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
+            echo "::warning title=Stale Build::Skipping build for $CURRENT_SHA because a newer commit ($LATEST_SHA) is available."
+            echo "is_stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_stale=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: ⤵️ Check out code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        if: steps.check-stale.outputs.is_stale != 'true'
         with:
           fetch-depth: 0
 
       - name: 📂 Run Paths Filter
         id: filter
+        if: steps.check-stale.outputs.is_stale != 'true'
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: ${{ needs.generate-config.outputs.filters }}
 
       - name: 🔎 Analyze Change Types
         id: change-type
+        if: steps.check-stale.outputs.is_stale != 'true'
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
@@ -215,12 +237,22 @@ jobs:
              needs_build="true"
           fi
 
+          # Determine if we should skip heavy supervisor tests based on change volume vs complexity
+          # Threshold: more than 5 addons, and all changes are minor (doc/changelog/formatting)
+          ADDON_COUNT=$(echo "${{ steps.filter.outputs.changes }}" | jq '. | length' 2>/dev/null || echo "0")
+          skip_supervisor="false"
+          if [ "$ADDON_COUNT" -gt 5 ] && [ "$docs_only" == "true" ]; then
+             echo "🚀 Large docs-only PR detected ($ADDON_COUNT addons). Skipping heavy tests."
+             skip_supervisor="true"
+          fi
+
           {
             echo "docs_only=$docs_only"
             echo "needs_build=$needs_build"
             echo "force_supervisor=$force_supervisor"
+            echo "skip_supervisor=$skip_supervisor"
           } >> "$GITHUB_OUTPUT"
-          echo "Results: docs_only=$docs_only, needs_build=$needs_build"
+          echo "Results: docs_only=$docs_only, needs_build=$needs_build, skip_supervisor=$skip_supervisor"
 
   # --------------------------------------------------------------------------------
   # LINT: Static Analysis (Fail Fast)
@@ -228,7 +260,10 @@ jobs:
   lint:
     name: 🧹 Lint & Validate
     needs: filter
-    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    if: |
+      needs.filter.outputs.addons != '[]' &&
+      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -357,7 +392,8 @@ jobs:
       always() &&
       needs.filter.outputs.addons != '[]' &&
       needs.filter.outputs.addons != '' &&
-      needs.filter.outputs.needs_build == 'true'
+      needs.filter.outputs.needs_build == 'true' &&
+      needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -1080,10 +1116,12 @@ jobs:
         (
           needs.filter.outputs.addons != '[]' &&
           needs.filter.outputs.addons != '' &&
-          needs.filter.outputs.docs_only != 'true'
+          needs.filter.outputs.docs_only != 'true' &&
+          needs.filter.outputs.skip_supervisor != 'true'
         ) ||
         needs.filter.outputs.force_supervisor == 'true'
-      )
+      ) &&
+      needs.filter.outputs.is_stale != 'true'
     uses: ./.github/workflows/orchestrator-supervisor-test.yaml
     with:
       addons: ${{ needs.filter.outputs.addons }}

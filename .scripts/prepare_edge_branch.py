@@ -88,7 +88,7 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
             rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
         )
         # Pattern 3: name: Value (no quotes)
-        pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE)
+        pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})\s*$", re.MULTILINE)
 
         new_content = content
         updated = False
@@ -200,7 +200,6 @@ def add_edge_notice_to_readme(readme_path: str) -> bool:
             f.write("\n".join(lines))
 
         return True
-        return True
     except (OSError, ValueError) as e:
         print(f"⚠️ Error processing {readme_path}: {e}")
         return False
@@ -237,7 +236,6 @@ def update_repository_json() -> bool:
             json.dump(data, f, indent=2)
             f.write("\n")
 
-        return True
         return True
     except (OSError, ValueError, json.JSONDecodeError) as e:
         print(f"⚠️ Error updating repository.json: {e}")

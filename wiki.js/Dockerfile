@@ -14,11 +14,22 @@ ENV ADDON_VERSION="3.1.5"
 ENV ADDON_NAME="Wiki.JS"
 ENV ADDON_SLUG="wiki.js"
 ENV ADDON_UNSUPPORTED="false"
+ENV S6_CMD_WAIT_FOR_SERVICES=1
 
-RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc
+RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
+
+# Rebuild dependencies for aarch64 compatibility
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        apk add --no-cache --virtual .build-deps build-base python3 && \
+        rm -rf node_modules && \
+        yarn install --production && \
+        yarn cache clean && \
+        apk del .build-deps; \
+    fi
 # Extract and persist Wiki.js version for runtime banner
 RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown") && \
     echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \

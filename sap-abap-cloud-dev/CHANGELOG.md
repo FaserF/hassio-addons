@@ -4,7 +4,14 @@
 
 ### 🎨 Style
 
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`5e6ebbf`](https://github.com/FaserF/hassio-addons/commit/5e6ebbf2398fcf8db79dea411c701782712868c5))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`1838d16f`](https://github.com/FaserF/hassio-addons/commit/1838d16fd800bde467c70b033ad03e9e600e2891))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`cdc7143c`](https://github.com/FaserF/hassio-addons/commit/cdc7143ca2531fdf41778e43e852faee4cd49880))
+
+### 🚀 Other
+
+- handle empty log level variable ([`568bbe5b`](https://github.com/FaserF/hassio-addons/commit/568bbe5bce289563264d87f55e8da35b9d508041))
+- more CI fixes & addon db reset improvements ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
+- New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 
 ### 📌 Release Note
 
@@ -12,9 +19,13 @@
 
 ## 0.0.5 (2026-01-10)
 
-### 📦 Dependencies
+### 🎨 Style
 
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v19 [skip-tests] (#570) ([`d88f413`](https://github.com/FaserF/hassio-addons/commit/d88f4135478d4f590536c80863200a37e0e49f58))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`2c3529ab`](https://github.com/FaserF/hassio-addons/commit/2c3529ab100f0fa360060efe4972af308fd92d52))
+
+### 🚀 Other
+
+- small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
 ### 📌 Release Note
 
@@ -24,7 +35,7 @@
 
 ### 🎨 Style
 
-- auto-fix (prettier,markdownlint) ([`9d0bb13`](https://github.com/FaserF/hassio-addons/commit/9d0bb134235785ead2aeaee2553b8011acd52478))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`33ae28f8`](https://github.com/FaserF/hassio-addons/commit/33ae28f8207916318cc9a4e306c6b460e771c809))
 
 ### 📌 Release Note
 

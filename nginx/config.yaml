@@ -11,7 +11,6 @@ image: ghcr.io/faserf/hassio-addons-nginx-{arch}
 # webui: http://[HOST]:[PORT:80]
 map:
   - ssl:rw
-  - media:rw
   - share:rw
 ingress: true
 ingress_port: 80

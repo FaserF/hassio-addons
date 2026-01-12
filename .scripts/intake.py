@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 import yaml
 
@@ -20,7 +21,7 @@ def get_config_info(addon_path):
 
 def detect_new_addons(fix=False):
     if not os.path.exists(README_PATH):
-        print("❌ README.md not found.")
+        print("❌ README.md not found.", file=sys.stderr)
         return []
 
     with open(README_PATH, "r", encoding="utf-8") as f:
@@ -43,15 +44,15 @@ def detect_new_addons(fix=False):
     for d in all_dirs:
         # Check if linked
         if f"]({d})" not in readme_content and f"](./{d})" not in readme_content:
-            print(f"🆕 Detected new add-on: {d}")
+            print(f"🆕 Detected new add-on: {d}", file=sys.stderr)
             new_addons.append(d)
 
     if not new_addons:
-        print("✅ No new add-ons detected.")
+        print("✅ No new add-ons detected.", file=sys.stderr)
         return []
 
     if fix:
-        print("🔧 Remediating README.md...")
+        print("🔧 Remediating README.md...", file=sys.stderr)
         # Find the table. Assuming a standard markdown table.
         # We append to the end of the table or a generic list.
         # Find last pipe '|' line?
@@ -94,10 +95,11 @@ def detect_new_addons(fix=False):
 
             with open(README_PATH, "w", encoding="utf-8") as f:
                 f.write("\n".join(lines))
-            print("✅ README.md updated.")
+            print("✅ README.md updated.", file=sys.stderr)
         else:
             print(
-                "❌ Could not find Add-ons table in README.md. Please check the table format."
+                "❌ Could not find Add-ons table in README.md. Please check the table format.",
+                file=sys.stderr
             )
 
     return new_addons
@@ -110,6 +112,10 @@ if __name__ == "__main__":
     parser.add_argument("--fix", action="store_true", help="Add to README")
     parser.add_argument("--list", action="store_true", help="Output only slugs")
     args = parser.parse_args()
+
+    if not os.path.exists(README_PATH):
+        print("❌ README.md not found.", file=sys.stderr)
+        sys.exit(1)
 
     new = detect_new_addons(fix=args.fix)
     if args.list:
