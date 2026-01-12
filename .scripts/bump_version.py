@@ -173,7 +173,7 @@ def categorize_commits(commits, repo_url):
                 continue
 
         # Skip version bump commits, auto-fix commits and CI fixes
-        if any(x in msg_lower for x in ["version bump", "auto-fix", "ci fix"]):
+        if any(x in msg_lower for x in ["version bump", "auto-fix", "ci fix", "auto-update documentation standards"]):
             continue
 
         # Create clickable commit reference
