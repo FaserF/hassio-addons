@@ -6,7 +6,7 @@ image: ghcr.io/faserf/hassio-addons-wiki-{arch}
 description: The most powerful and extensible open source Wiki software
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
 arch:
-  # - aarch64 (nodejs does support aarch64, but nodejs musl not?)
+  - aarch64
   - amd64
 services:
   - mysql:need

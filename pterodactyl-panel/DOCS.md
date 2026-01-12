@@ -8,7 +8,6 @@ Docker containers while exposing a beautiful and intuitive UI to end users.
 
 > [!WARNING]
 > Currently only limited working. Right now it can be considered beta and unstable. Don't blame me if your gameservers would be lost etc.
->
 > For me I am unable to login until now. Seems to have something to do with redis,
 > but I dont get what exactly.
 
@@ -21,7 +20,6 @@ After the first start, you can log in with the following default credentials:
 
 > [!IMPORTANT]
 > **How to get your password:**
->
 > 1. **If you set a password in the configuration:**
 >    - Use the exact password you entered in the `password` field of the add-on configuration.
 > 2. **If you left the password field empty:**
@@ -32,10 +30,9 @@ After the first start, you can log in with the following default credentials:
 
 > [!NOTE]
 > The `password` field in the configuration serves **two purposes**:
->
 > - It's used as the database password for the `pterodactyl` database user
 > - It's also used as the initial admin login password for the panel
->
+
 > If you don't set a password, a random one is generated and shown in the logs. **Make sure to save it!**
 
 Please change the password and email address in the panel settings immediately after your first login.

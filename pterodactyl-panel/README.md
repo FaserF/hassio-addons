@@ -22,7 +22,6 @@
 
 > [!TIP]
 > **Login Information:**
->
 > - **Email:** `admin@example.com`
 > - **Password:** The value you set in the `password` field (or check the logs if you left it empty)
 
@@ -30,7 +29,6 @@
 
 > [!CAUTION]
 > **Experimental / Beta Status**
->
 > This add-on is still in development and/or primarily developed for personal use.
 > It is not extensively tested yet, but is expected to work fundamentally.
 

@@ -190,9 +190,11 @@
         "/homeassistant-test-instance/Dockerfile$/"
       ],
       "matchStrings": [
-        "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)"
+        "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)",
+        "ENV HA_VERSION=\"(?<currentValue>[\\d.]+)\""
       ],
-      "datasourceTemplate": "docker"
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/home-assistant/home-assistant"
     },
     {
       "customType": "regex",

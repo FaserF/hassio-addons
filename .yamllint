@@ -7,6 +7,8 @@ ignore: |
   .*
   !.github/
   node_modules/
+  tmp_tuya/
+  .scripts/verify_addons/logs/
 
 rules:
   line-length: disable

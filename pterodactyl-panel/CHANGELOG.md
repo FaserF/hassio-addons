@@ -6,7 +6,13 @@
 
 ### 🎨 Style
 
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`5e6ebbf`](https://github.com/FaserF/hassio-addons/commit/5e6ebbf2398fcf8db79dea411c701782712868c5))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`1838d16f`](https://github.com/FaserF/hassio-addons/commit/1838d16fd800bde467c70b033ad03e9e600e2891))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`cdc7143c`](https://github.com/FaserF/hassio-addons/commit/cdc7143ca2531fdf41778e43e852faee4cd49880))
+
+### 🚀 Other
+
+- CI fixes ([`4e31bcdc`](https://github.com/FaserF/hassio-addons/commit/4e31bcdc3025f30797b5ce1f0b220d06b22db35f))
+- New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 
 ### 📌 Release Note
 
@@ -14,9 +20,18 @@
 
 ## 1.0.2 (2026-01-10)
 
-### 📦 Dependencies
+### 🎨 Style
 
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v19 [skip-tests] (#570) ([`d88f413`](https://github.com/FaserF/hassio-addons/commit/d88f4135478d4f590536c80863200a37e0e49f58))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`a1cc3c4f`](https://github.com/FaserF/hassio-addons/commit/a1cc3c4f4353fe90aba0b2fb4b289539cbf779b6))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`3e86002f`](https://github.com/FaserF/hassio-addons/commit/3e86002f2c0992cf33dab29ae0fdb476987dc35e))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`b8c86b04`](https://github.com/FaserF/hassio-addons/commit/b8c86b04f6c1aa1763bf7c7c57072bd2b7591b10))
+
+### 🚀 Other
+
+- CI fixes ([`8c423579`](https://github.com/FaserF/hassio-addons/commit/8c423579c7194b731ed8813d74642beace674e76))
+- addon startup fixes ([`3f17abce`](https://github.com/FaserF/hassio-addons/commit/3f17abce25eaf5099af9685ef7eba2a0eb00f205))
+- small fixes ([`e0b5c15b`](https://github.com/FaserF/hassio-addons/commit/e0b5c15b8023b8aef42b24f77f42bd8d64b0e00b))
+- small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
 ### 📌 Release Note
 
@@ -26,7 +41,12 @@
 
 ### 🎨 Style
 
-- auto-fix (prettier,markdownlint) ([`9d0bb13`](https://github.com/FaserF/hassio-addons/commit/9d0bb134235785ead2aeaee2553b8011acd52478))
+- auto-fix (prettier,markdownlint) ([`3eed2153`](https://github.com/FaserF/hassio-addons/commit/3eed21535864d68becd92ba311bbf7e9a3d333e3))
+
+### 🚀 Other
+
+- last panel fixes ([`90f4bc6c`](https://github.com/FaserF/hassio-addons/commit/90f4bc6c9bbabf8c717bd2d18e3e4f15d6a6c066))
+- small fixes ([`2fba1d9f`](https://github.com/FaserF/hassio-addons/commit/2fba1d9f8434d00c4cf2bf9f7c383f4dd587c11e))
 
 ### 📌 Release Note
 

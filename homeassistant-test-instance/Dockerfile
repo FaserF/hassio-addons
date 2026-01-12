@@ -1,11 +1,28 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2026.1.0
 # hadolint ignore=DL3006
-FROM ${BUILD_FROM}
-ARG BUILD_DATE="unknown"
-ENV HA_VERSION="2025.12.5"
-EXPOSE 8123
+FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
 
-# Copy and setup the run script
+# hadolint ignore=DL3006
+FROM ${BUILD_FROM}
+
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG BUILD_DATE="unknown"
+ENV HA_VERSION="2026.1.0"
+ENV TERM="xterm-256color"
+
+# Install dependencies for Bashio
+RUN apk add --no-cache \
+    bash \
+    curl \
+    jq \
+    sed
+
+# Copy Bashio and Tempio
+COPY --from=addon-base /usr/bin/bashio /usr/bin/bashio
+COPY --from=addon-base /usr/lib/bashio /usr/lib/bashio
+COPY --from=addon-base /usr/bin/tempio /usr/bin/tempio
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.1"
@@ -15,6 +32,8 @@ ENV ADDON_UNSUPPORTED="false"
 
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
+
+EXPOSE 8123
 
 # Persist data in the add-on data directory
 CMD [ "/run.sh" ]
