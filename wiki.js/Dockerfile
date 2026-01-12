@@ -17,7 +17,7 @@ ENV ADDON_NAME="Wiki.JS"
 ENV ADDON_SLUG="wiki.js"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client
+RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

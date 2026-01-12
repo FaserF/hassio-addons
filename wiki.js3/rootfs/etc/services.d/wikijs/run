@@ -59,6 +59,16 @@ if bashio::config.true 'reset_database'; then
 		bashio::addon.option 'reset_database'
 		bashio::addon.option 'reset_database_confirm'
 	fi
+
+	# Reset Git Storage
+	GIT_DATA_DIR="/addon_configs/wiki.js3/git"
+	if [ -d "$GIT_DATA_DIR" ]; then
+		bashio::log.warning "Cleaning up Git storage and SSH keys..."
+		# shellcheck disable=SC2115
+		rm -rf "$GIT_DATA_DIR/ssh/"*
+		# shellcheck disable=SC2115
+		rm -rf "$GIT_DATA_DIR/repo/"*
+	fi
 fi
 
 # Create database if not exists

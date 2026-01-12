@@ -1,4 +1,4 @@
-# Wiki.JS V3 (Beta)
+# Wiki.js (Version 3 - Alpha)
 
 ![Logo](logo.png)
 
@@ -7,15 +7,16 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.4.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-wiki)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> The most powerful and extensible open source Wiki software (Version 3 - Beta)
+> The most powerful and extensible open source Wiki software (Version 3 - Alpha)
 
 ---
 
 > [!CAUTION]
-> **Experimental / Beta Status**
+> **Experimental / Alpha Status**
 >
-> This add-on is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+> The upstream **Wiki.js Version 3 is currently in Alpha stage** and is not yet released as stable by the developers.
+> While this addon is functional, the underlying software is **NOT intended for production use**.
+> Please use this for testing and development purposes only.
 
 ---
 
