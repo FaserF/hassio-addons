@@ -10,8 +10,16 @@
 
 ### 🚀 Other
 
-- Refined startup sequence and enhanced error diagnostic reporting ([`8062782c`](https://github.com/FaserF/hassio-addons/commit/8062782c4ed5b434a09662082c08252ead79cea3), [`449ec11b`](https://github.com/FaserF/hassio-addons/commit/449ec11b22864f8e55c35d9ed01e5b373b1d401e), [`3f17abce`](https://github.com/FaserF/hassio-addons/commit/3f17abce25eaf5099af9685ef7eba2a0eb00f205), [`c04e360e`](https://github.com/FaserF/hassio-addons/commit/c04e360e3bf7530edd36673138d448fb056378ad))
-- Consolidated stability improvements and minor configuration fixes ([`c381a231`](https://github.com/FaserF/hassio-addons/commit/c381a231cae101aeabf1137efe837ed6cdb28ab3), [`5725dfae`](https://github.com/FaserF/hassio-addons/commit/5725dfae4bc9502cc341749612b03a88c05d53b9), [`e0b5c15b`](https://github.com/FaserF/hassio-addons/commit/e0b5c15b8023b8aef42b24f77f42bd8d64b0e00b), [`8d72281f`](https://github.com/FaserF/hassio-addons/commit/8d72281f6ceff1ef2f86b1a23c64c8f073519b6b), [`efda9c48`](https://github.com/FaserF/hassio-addons/commit/efda9c48ee937ce67bf3eeab0b505bfefa111b32), [`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
+- Fixed startup environment variable initialization ([`8062782c`](https://github.com/FaserF/hassio-addons/commit/8062782c4ed5b434a09662082c08252ead79cea3))
+- Improved container logging and diagnostics ([`449ec11b`](https://github.com/FaserF/hassio-addons/commit/449ec11b22864f8e55c35d9ed01e5b373b1d401e))
+- Enhanced s6-overlay service startup sequence ([`3f17abce`](https://github.com/FaserF/hassio-addons/commit/3f17abce25eaf5099af9685ef7eba2a0eb00f205))
+- Refined error handling in run.sh ([`c04e360e`](https://github.com/FaserF/hassio-addons/commit/c04e360e3bf7530edd36673138d448fb056378ad))
+- Standardized addon configuration handling ([`c381a231`](https://github.com/FaserF/hassio-addons/commit/c381a231cae101aeabf1137efe837ed6cdb28ab3))
+- Minor configuration and metadata fixes ([`5725dfae`](https://github.com/FaserF/hassio-addons/commit/5725dfae4bc9502cc341749612b03a88c05d53b9))
+- Improved Dockerfile maintainability ([`e0b5c15b`](https://github.com/FaserF/hassio-addons/commit/e0b5c15b8023b8aef42b24f77f42bd8d64b0e00b))
+- Repository structure cleanup ([`8d72281f`](https://github.com/FaserF/hassio-addons/commit/8d72281f6ceff1ef2f86b1a23c64c8f073519b6b))
+- CI workflow improvements ([`efda9c48`](https://github.com/FaserF/hassio-addons/commit/efda9c48ee937ce67bf3eeab0b505bfefa111b32))
+- General stability fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
 ### 📌 Release Note
 

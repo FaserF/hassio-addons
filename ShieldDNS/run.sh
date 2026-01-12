@@ -15,6 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
+	# shellcheck disable=SC2034 # NAME is used for informational purposes
 	local NAME="ShieldDNS"
 	local SLUG="shielddns"
 	local UNSUPPORTED="false"

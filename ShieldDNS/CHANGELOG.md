@@ -8,9 +8,13 @@
 - auto-fix (shfmt,black,isort,prettier,markdownlint) ([`45cce6a5`](https://github.com/FaserF/hassio-addons/commit/45cce6a58c18be63d2954957542c8c12e3d05280))
 
 ### ✨ Features
+
+- New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
+
+### 🐛 Bug Fixes
+
 - Improved database initialization and resolved CI pipeline issues ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
 - Resolved CI workflow deployment errors ([`4e31bcdc`](https://github.com/FaserF/hassio-addons/commit/4e31bcdc3025f30797b5ce1f0b220d06b22db35f))
-- New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 
 ### 📌 Release Note
 
@@ -18,9 +22,9 @@
 
 ## 2.1.5 (2026-01-11)
 
-### 📦 Dependencies
+### 🐛 Bug Fixes
 
-- Addon startup fixes ([`7eda3968`](https://github.com/FaserF/hassio-addons/commit/7eda3968f00c7dbfec6f8d138035f2a34566ebb5))
+- Add-on startup fixes ([`7eda3968`](https://github.com/FaserF/hassio-addons/commit/7eda3968f00c7dbfec6f8d138035f2a34566ebb5))
 
 ### 🎨 Style
 
@@ -32,7 +36,7 @@
 
 ## 2.1.4 (2026-01-10)
 
-### 📦 Dependencies
+### 🔧 Changes
 
 - Update run.sh ([`ed34685e`](https://github.com/FaserF/hassio-addons/commit/ed34685e4ac13e67c17008ce0399a664b5e5457c))
 

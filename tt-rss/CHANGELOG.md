@@ -2,13 +2,11 @@
 
 ## 1.1.0 (2026-01-11)
 
-
 ### 📌 Release Note
 
 - new db reset option & log level improved/added
 
 ## 0.1.2 (2026-01-10)
-
 
 ### 🚀 Other
 
@@ -20,7 +18,6 @@
 - general background fixes and stability improvements
 
 ## 0.1.1 (2026-01-10)
-
 
 ### 🚀 Other
 

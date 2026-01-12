@@ -113,6 +113,10 @@ if __name__ == "__main__":
     parser.add_argument("--list", action="store_true", help="Output only slugs")
     args = parser.parse_args()
 
+    if not os.path.exists(README_PATH):
+        print("❌ README.md not found.", file=sys.stderr)
+        sys.exit(1)
+
     new = detect_new_addons(fix=args.fix)
     if args.list:
         for a in new:

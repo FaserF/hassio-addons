@@ -7,19 +7,19 @@ FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
 FROM ${BUILD_FROM}
 
 ARG HA_VERSION
-# Set shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 ARG BUILD_DATE="unknown"
 ENV HA_VERSION="${HA_VERSION}"
 ENV TERM="xterm-256color"
 
-# Install dependencies for Bashio
+# Install dependencies for Bashio (use default shell for Alpine)
 RUN apk add --no-cache \
     bash \
     curl \
     jq \
     sed
+
+# Set shell to bash after installation
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy Bashio and Tempio
 COPY --from=addon-base /usr/bin/bashio /usr/bin/bashio
@@ -48,7 +48,7 @@ CMD [ "/run.sh" ]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8123 || exit 1
+    CMD curl --fail --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 || exit 1
 
 # Labels
 LABEL \

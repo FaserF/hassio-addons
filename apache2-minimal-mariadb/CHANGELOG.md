@@ -2,8 +2,8 @@
 
 ## 3.2.0 (2026-01-11)
 
-
 ### ✨ Features
+
 - Improved database reset logic and resolved CI pipeline issues ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
 - Resolved CI workflow deployment errors ([`4e31bcdc`](https://github.com/FaserF/hassio-addons/commit/4e31bcdc3025f30797b5ce1f0b220d06b22db35f))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
@@ -14,7 +14,6 @@
 
 ## 3.1.4 (2026-01-10)
 
-
 ### 🚀 Other
 
 - General maintenance and configuration refinements ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
@@ -24,7 +23,6 @@
 - general background fixes and stability improvements
 
 ## 3.1.3 (2026-01-10)
-
 
 ### 🚀 Other
 
@@ -38,13 +36,11 @@
 
 ### 📦 Dependencies
 
-
 ### 📌 Release Note
 
 - bug fixes and startup improvements
 
 ## 3.1.1 (2026-01-09)
-
 
 ### 📌 Release Note
 

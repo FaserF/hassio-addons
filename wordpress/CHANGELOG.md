@@ -4,7 +4,6 @@
 
 ### 🎨 Style
 
-
 ### 🚀 Other
 
 - more CI fixes & addon db reset improvements ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
@@ -19,7 +18,6 @@
 
 ### 🎨 Style
 
-
 ### 🚀 Other
 
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
@@ -31,7 +29,6 @@
 ## 0.1.3 (2026-01-10)
 
 ### 🎨 Style
-
 
 ### 🚀 Other
 
@@ -47,7 +44,6 @@
 
 ### 📦 Dependencies
 
-
 ### 📌 Release Note
 
 - bug fixes and startup improvements
@@ -55,7 +51,6 @@
 ## 0.1.1 (2026-01-09)
 
 ### 🎨 Style
-
 
 ### 📌 Release Note
 

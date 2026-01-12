@@ -22,6 +22,7 @@
 
 > [!TIP]
 > **Login Information:**
+>
 > - **Email:** `admin@example.com`
 > - **Password:** The value you set in the `password` field (or check the logs if you left it empty)
 

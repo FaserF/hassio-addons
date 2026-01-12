@@ -2,7 +2,6 @@
 
 ## 2.2.0 (2026-01-11)
 
-
 ### 🚀 Other
 
 - ✨ Feature: New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
@@ -15,13 +14,11 @@
 
 ## 2.1.4 (2026-01-10)
 
-
 ### 📌 Release Note
 
 - general background fixes and stability improvements
 
 ## 2.1.3 (2026-01-10)
-
 
 ### 🚀 Other
 
@@ -35,13 +32,11 @@
 
 ### 📦 Dependencies
 
-
 ### 📌 Release Note
 
 - bug fixes and startup improvements
 
 ## 2.1.1 (2026-01-09)
-
 
 ### 📌 Release Note
 
