@@ -109,7 +109,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${signature}\n### 🛡️ Add-on Compliance Check\n\n${output}`
+              body: `${signature}\n## 🛡️ Add-on Compliance Check\n\nThe following new add-ons were detected and checked for compliance:\n\n<details open>\n<summary>🔍 <strong>Compliance Report</strong></summary>\n\n\`\`\`\n${output}\n\`\`\`\n\n</details>`
             })
 
       - name: 🛑 Fail if Non-Compliant

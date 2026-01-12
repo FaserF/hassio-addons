@@ -2,8 +2,6 @@
 
 ## 2.2.0 (2026-01-11)
 
-### 🎨 Style
-
 
 ### 🚀 Other
 
@@ -17,16 +15,12 @@
 
 ## 2.1.4 (2026-01-10)
 
-### 🎨 Style
-
 
 ### 📌 Release Note
 
 - general background fixes and stability improvements
 
 ## 2.1.3 (2026-01-10)
-
-### 🎨 Style
 
 
 ### 🚀 Other
@@ -47,8 +41,6 @@
 - bug fixes and startup improvements
 
 ## 2.1.1 (2026-01-09)
-
-### 🎨 Style
 
 
 ### 📌 Release Note

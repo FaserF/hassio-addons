@@ -43,11 +43,11 @@ def detect_new_addons(fix=False):
     for d in all_dirs:
         # Check if linked
         if f"]({d})" not in readme_content and f"](./{d})" not in readme_content:
-            print(f"🆕 Detected new add-on: {d}")
+            print(f"🆕 Detected new add-on: {d}", file=sys.stderr)
             new_addons.append(d)
 
     if not new_addons:
-        print("✅ No new add-ons detected.")
+        print("✅ No new add-ons detected.", file=sys.stderr)
         return []
 
     if fix:

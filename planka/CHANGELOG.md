@@ -2,17 +2,11 @@
 
 ## 1.1.0 (2026-01-11)
 
-### 🎨 Style
-
-
 ### 📌 Release Note
 
 - new db reset option & log level improved/added
 
 ## 0.1.2 (2026-01-10)
-
-### 🎨 Style
-
 
 ### 🚀 Other
 
@@ -28,9 +22,6 @@
 ### 📦 Dependencies
 
 - ⬆️ Update ghcr.io/plankanban/planka Docker tag to v1.26.3 [skip-tests] ([`460e909e`](https://github.com/FaserF/hassio-addons/commit/460e909e1d98fc65198cd185b3b8f84a537aca10))
-
-### 🎨 Style
-
 
 ### 🚀 Other
 

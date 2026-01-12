@@ -137,16 +137,16 @@ def check_addon(addon_path):
             errors.append(f"Unexpected error parsing config.yaml: {e}")
 
     if errors or warnings:
-        print(f"🔍 Compliance Report for {addon_path}:")
+        print(f"🔍 **Compliance Report for {addon_path}**:")
         if errors:
-            print("  ❌ Errors:")
+            print("\n  ❌ **Errors**:")
             for err in errors:
-                print(f"     - {err}")
+                print(f"  - {err}")
         if warnings:
-            print("  ⚠️ Warnings:")
+            print("\n  ⚠️ **Warnings**:")
             for warn in warnings:
-                print(f"     - {warn}")
-        print("--------------------------------------------------")
+                print(f"  - {warn}")
+        print("\n" + "-" * 50 + "\n")
 
         if errors:
             return False, errors, warnings
@@ -158,7 +158,7 @@ def check_addon(addon_path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python check_compliance.py <addon_dir> [addon_dir2 ...]")
+        print("Usage: python check_compliance.py <addon_dir> [addon_dir2 ...]", file=sys.stderr)
         sys.exit(0)  # Don't error if no args, just exit (simplifies workflow)
 
     failed = False

@@ -6,6 +6,7 @@ FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
+ARG HA_VERSION
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -26,10 +27,16 @@ COPY --from=addon-base /usr/lib/bashio /usr/lib/bashio
 COPY --from=addon-base /usr/bin/tempio /usr/bin/tempio
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.1"
-ENV ADDON_NAME="Home Assistant Test Instance"
-ENV ADDON_SLUG="ha_test_instance"
-ENV ADDON_UNSUPPORTED="false"
+ARG ADDON_VERSION="0.2.1"
+ARG ADDON_NAME="Home Assistant Test Instance"
+ARG ADDON_SLUG="ha_test_instance"
+ARG ADDON_UNSUPPORTED="false"
+
+ENV \
+    ADDON_VERSION="${ADDON_VERSION}" \
+    ADDON_NAME="${ADDON_NAME}" \
+    ADDON_SLUG="${ADDON_SLUG}" \
+    ADDON_UNSUPPORTED="${ADDON_UNSUPPORTED}"
 
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh

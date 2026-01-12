@@ -311,6 +311,8 @@ jobs:
       - name: "🔍 Test Add-ons"
         if: steps.supervisor.outputs.supervisor_ready == 'true'
         id: test
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # shellcheck disable=SC2086,SC2129,SC2034
           RESULTS=""
@@ -323,6 +325,16 @@ jobs:
           for addon in "${ADDON_ARRAY[@]}"; do
             addon=$(echo "$addon" | xargs)  # trim whitespace
             if [ -z "$addon" ]; then continue; fi
+
+            # Check for newer commit before starting this addon test
+            # This allows cancelling long-running test sequences if a newer PR version is available
+            LATEST_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq '.headRefOid' 2>/dev/null || echo "")
+            CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
+            if [ -n "$LATEST_SHA" ] && [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
+               echo "::warning title=Skipped for newer commit::Stopping tests because a newer commit ($LATEST_SHA) is available for this PR."
+               RESULTS="$RESULTS\n⏭️ Remaining addons: SKIPPED (Newer commit available)"
+               break
+            fi
 
             if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel|wordpress"; then
                  echo "⏭️ $addon dependency failed - skipping"

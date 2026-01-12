@@ -2,8 +2,6 @@
 
 ## 3.2.0 (2026-01-11)
 
-### 🎨 Style
-
 
 ### 🚀 Other
 
@@ -17,8 +15,6 @@
 
 ## 3.1.4 (2026-01-10)
 
-### 🎨 Style
-
 
 ### 🚀 Other
 
@@ -29,8 +25,6 @@
 - general background fixes and stability improvements
 
 ## 3.1.3 (2026-01-10)
-
-### 🎨 Style
 
 
 ### 🚀 Other
@@ -51,8 +45,6 @@
 - bug fixes and startup improvements
 
 ## 3.1.1 (2026-01-09)
-
-### 🎨 Style
 
 
 ### 📌 Release Note
