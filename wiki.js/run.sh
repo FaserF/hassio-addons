@@ -297,6 +297,12 @@ if bashio::config.true 'reset_database'; then
 	#Remove reset_database options
 	bashio::addon.option 'reset_database'
 	bashio::addon.option 'reset_database_confirm'
+
+	bashio::log.warning "Cleaning up Git storage and SSH keys..."
+	# shellcheck disable=SC2115
+	rm -rf "$GIT_DATA_DIR/ssh/"*
+	# shellcheck disable=SC2115
+	rm -rf "$GIT_DATA_DIR/repo/"*
 fi
 
 
@@ -316,6 +322,7 @@ if [ ! -f "$GIT_SSH_DIR/known_hosts" ]; then
 	touch "$GIT_SSH_DIR/known_hosts"
 	ssh-keyscan github.com gitlab.com bitbucket.org >>"$GIT_SSH_DIR/known_hosts" 2>/dev/null || true
 	chmod 644 "$GIT_SSH_DIR/known_hosts"
+fi
 fi
 
 bashio::log.info "Git support enabled. SSH keys can be placed in $GIT_SSH_DIR"

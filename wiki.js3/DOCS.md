@@ -1,10 +1,10 @@
-# Wiki.js V3 (Beta) Documentation
+# Wiki.js (Version 3 - Alpha) Documentation
 
-Wiki.js V3 (Beta) for Homeassistant OS
+Wiki.js (Version 3 - Alpha) for Homeassistant OS
 
 The most powerful and extensible open source Wiki software. Make documentation a joy to write using Wiki.js's beautiful and intuitive interface!
 
-**⚠️ Important:** This is the Beta version of Wiki.js. For production environments, please use the stable [Wiki.js V2 addon](../wiki.js/DOCS.md) instead.
+**⚠️ Important:** This is the **Alpha** version of Wiki.js. Specifically, the upstream Wiki.js V3 is currently in Alpha stage by the developer. While this addon itself is functional, the underlying software is **NOT intended for production environments** yet. For stable production use, please use the [Wiki.js V2 addon](../wiki.js/DOCS.md).
 
 ## ⚙️ Configuration
 
@@ -32,7 +32,6 @@ This addon supports Wiki.js Git storage for syncing your wiki content with a Git
 ### Setup Steps
 
 1. **Generate SSH Key** (optional, for SSH authentication):
-
    Supported key types: `id_rsa`, `id_ecdsa`, `id_ed25519`.
 
    Example (Ed25519):

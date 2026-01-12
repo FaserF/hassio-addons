@@ -15,14 +15,14 @@ ARG BUILD_DATE="unknown"
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.3.4"
-ENV ADDON_NAME="Wiki.JS V3 (Beta)"
+ENV ADDON_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV ADDON_SLUG="wiki.js3"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec \
+    nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec git openssh-client pandoc \
     && mkdir -p /var/lib/postgresql/data /run/postgresql \
     && chown -R postgres:postgres /var/lib/postgresql /run/postgresql
 
@@ -50,8 +50,8 @@ HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
 
 # Labels
 LABEL \
-    org.opencontainers.image.title="Wiki.JS V3 (Beta)" \
-    org.opencontainers.image.description="The most powerful and extensible open source Wiki software (Version 3 - Beta)" \
+    org.opencontainers.image.title="Wiki.JS (Version 3 - Alpha)" \
+    org.opencontainers.image.description="The most powerful and extensible open source Wiki software (Version 3 - Alpha)" \
     org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
