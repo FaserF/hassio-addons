@@ -21,7 +21,7 @@ def get_config_info(addon_path):
 
 def detect_new_addons(fix=False):
     if not os.path.exists(README_PATH):
-        print("❌ README.md not found.")
+        print("❌ README.md not found.", file=sys.stderr)
         return []
 
     with open(README_PATH, "r", encoding="utf-8") as f:
@@ -52,7 +52,7 @@ def detect_new_addons(fix=False):
         return []
 
     if fix:
-        print("🔧 Remediating README.md...")
+        print("🔧 Remediating README.md...", file=sys.stderr)
         # Find the table. Assuming a standard markdown table.
         # We append to the end of the table or a generic list.
         # Find last pipe '|' line?
@@ -95,10 +95,11 @@ def detect_new_addons(fix=False):
 
             with open(README_PATH, "w", encoding="utf-8") as f:
                 f.write("\n".join(lines))
-            print("✅ README.md updated.")
+            print("✅ README.md updated.", file=sys.stderr)
         else:
             print(
-                "❌ Could not find Add-ons table in README.md. Please check the table format."
+                "❌ Could not find Add-ons table in README.md. Please check the table format.",
+                file=sys.stderr
             )
 
     return new_addons

@@ -146,10 +146,12 @@ jobs:
         id: check-stale
         if: github.event_name == 'pull_request'
         run: |
-          LATEST_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq '.headRefOid')
-          CURRENT_SHA=${{ github.event.pull_request.head.sha }}
-          if [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
-            echo "::warning title=Stale Build::Skipping build for ${{ github.sha }} because a newer commit ($LATEST_SHA) is available."
+          # Use API to get current head SHA to avoid git dependency before checkout
+          LATEST_SHA=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.head.sha' 2>/dev/null || echo "")
+          CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
+
+          if [ -n "$LATEST_SHA" ] && [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
+            echo "::warning title=Stale Build::Skipping build for $CURRENT_SHA because a newer commit ($LATEST_SHA) is available."
             echo "is_stale=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_stale=false" >> "$GITHUB_OUTPUT"
@@ -165,12 +167,14 @@ jobs:
 
       - name: 📂 Run Paths Filter
         id: filter
+        if: steps.check-stale.outputs.is_stale != 'true'
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: ${{ needs.generate-config.outputs.filters }}
 
       - name: 🔎 Analyze Change Types
         id: change-type
+        if: steps.check-stale.outputs.is_stale != 'true'
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
@@ -256,7 +260,10 @@ jobs:
   lint:
     name: 🧹 Lint & Validate
     needs: filter
-    if: needs.filter.outputs.addons != '[]' && needs.filter.outputs.addons != ''
+    if: |
+      needs.filter.outputs.addons != '[]' &&
+      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -385,7 +392,8 @@ jobs:
       always() &&
       needs.filter.outputs.addons != '[]' &&
       needs.filter.outputs.addons != '' &&
-      needs.filter.outputs.needs_build == 'true'
+      needs.filter.outputs.needs_build == 'true' &&
+      needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

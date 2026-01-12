@@ -5,9 +5,9 @@
 ### 🎨 Style
 
 
-### 🚀 Other
-
-- more CI fixes & addon db reset improvements ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
+### ✨ Features
+- Improved database reset logic and resolved CI pipeline issues ([`fc27cc3b`](https://github.com/FaserF/hassio-addons/commit/fc27cc3bee4a9a34fd573f38e870ff921b3f7d3d))
+- Resolved CI workflow deployment errors ([`4e31bcdc`](https://github.com/FaserF/hassio-addons/commit/4e31bcdc3025f30797b5ce1f0b220d06b22db35f))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 
 ### 📌 Release Note
@@ -32,7 +32,7 @@
 
 - General addon fixes and stability improvements ([`200cf2ac`](https://github.com/FaserF/hassio-addons/commit/200cf2acd876f6498f462218e15964d04dd55e32), [`86f854df`](https://github.com/FaserF/hassio-addons/commit/86f854dfb61087009493592c00f7ccc20f850b46), [`10a0d863`](https://github.com/FaserF/hassio-addons/commit/10a0d86384d4af5450b3302f7552c2323ddc4d30))
 - Startup process improvements ([`38002764`](https://github.com/FaserF/hassio-addons/commit/38002764e048111700743eae38c3c3a27b7a0620), [`92067a90`](https://github.com/FaserF/hassio-addons/commit/92067a90eaa77d3ffd5cb8db868e49ced7c2c203), [`4ffa13df`](https://github.com/FaserF/hassio-addons/commit/4ffa13df8920353d8951d45925c9556c3da2d9ea))
-- CI and maintenance fixes ([`97345da9`](https://github.com/FaserF/hassio-addons/commit/97345da944580528955f6e0d0263cd86e2c27cc4), [`4caaec4b`](https://github.com/FaserF/hassio-addons/commit/4caaec4b6ea5d3eb5be2829e0d2f941c37b8e7f3))
+- General maintenance and configuration refinements ([`97345da9`](https://github.com/FaserF/hassio-addons/commit/97345da944580528955f6e0d0263cd86e2c27cc4), [`4caaec4b`](https://github.com/FaserF/hassio-addons/commit/4caaec4b6ea5d3eb5be2829e0d2f941c37b8e7f3), [`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 - Miscellaneous fixes and improvements ([`070c421a`](https://github.com/FaserF/hassio-addons/commit/070c421a5d01917939f6b0a37eb7e62a1e0c5c17), [`eee371bd`](https://github.com/FaserF/hassio-addons/commit/eee371bd2cdd4bdd588b7bdb88b88da8440bd50b), [`71225476`](https://github.com/FaserF/hassio-addons/commit/712254766409609febf6ab80d451bc580216d990), [`eb6972f0`](https://github.com/FaserF/hassio-addons/commit/eb6972f0a45892c750d7b187e54e94215f6dd284))
 
 ### 📌 Release Note
