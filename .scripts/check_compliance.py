@@ -158,7 +158,10 @@ def check_addon(addon_path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python check_compliance.py <addon_dir> [addon_dir2 ...]", file=sys.stderr)
+        print(
+            "Usage: python check_compliance.py <addon_dir> [addon_dir2 ...]",
+            file=sys.stderr,
+        )
         sys.exit(0)  # Don't error if no args, just exit (simplifies workflow)
 
     failed = False

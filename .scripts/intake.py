@@ -99,7 +99,7 @@ def detect_new_addons(fix=False):
         else:
             print(
                 "❌ Could not find Add-ons table in README.md. Please check the table format.",
-                file=sys.stderr
+                file=sys.stderr,
             )
 
     return new_addons

@@ -88,7 +88,9 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
             rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
         )
         # Pattern 3: name: Value (no quotes)
-        pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})\s*$", re.MULTILINE)
+        pattern_nq = re.compile(
+            rf"^name:\s+({re.escape(current_name)})\s*$", re.MULTILINE
+        )
 
         new_content = content
         updated = False
