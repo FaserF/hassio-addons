@@ -16,6 +16,7 @@ ENV ADDON_VERSION="0.3.4"
 ENV ADDON_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV ADDON_SLUG="wiki.js3"
 ENV ADDON_UNSUPPORTED="false"
+ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \

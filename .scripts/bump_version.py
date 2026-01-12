@@ -172,6 +172,10 @@ def categorize_commits(commits, repo_url):
             if trigger_addon != target_addon and trigger_addon != "all":
                 continue
 
+        # Skip version bump commits and auto-fix commits
+        if "version bump" in msg_lower or "auto-fix" in msg_lower:
+            continue
+
         # Create clickable commit reference
         commit_link = f"[`{short_hash}`]({repo_url}/commit/{full_hash})"
 

@@ -21,7 +21,7 @@
 
 ### 🎨 Style
 
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`b8c86b04`](https://github.com/FaserF/hassio-addons/commit/b8c86b04f6c1aa1763bf7c7c57072bd2b7591b10))
+- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`2c3529ab`](https://github.com/FaserF/hassio-addons/commit/2c3529ab100f0fa360060efe4972af308fd92d52))
 
 ### 🚀 Other
 

@@ -14,7 +14,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="pterodactyl Wings Gameserver"
+	local _NAME="pterodactyl Wings Gameserver"
 	local SLUG="pterodactyl_wings"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

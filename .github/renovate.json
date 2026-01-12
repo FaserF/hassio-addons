@@ -190,8 +190,7 @@
         "/homeassistant-test-instance/Dockerfile$/"
       ],
       "matchStrings": [
-        "ARG BUILD_FROM=(?<depName>ghcr\\.io/home-assistant/home-assistant):(?<currentValue>[\\d.]+)",
-        "ENV HA_VERSION=\"(?<currentValue>[\\d.]+)\""
+        "ARG HA_VERSION=(?<currentValue>[\\d.]+)"
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/home-assistant/home-assistant"

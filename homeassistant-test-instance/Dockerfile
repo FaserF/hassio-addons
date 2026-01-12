@@ -1,4 +1,5 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:2026.1.0
+ARG HA_VERSION=2026.1.0
+ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
 FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
 
@@ -9,7 +10,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG BUILD_DATE="unknown"
-ENV HA_VERSION="2026.1.0"
+ENV HA_VERSION="${HA_VERSION}"
 ENV TERM="xterm-256color"
 
 # Install dependencies for Bashio

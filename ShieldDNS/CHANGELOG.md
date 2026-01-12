@@ -19,6 +19,10 @@
 
 ## 2.1.5 (2026-01-11)
 
+### 🚀 Other
+
+- Addon startup fixes ([`7eda3968`](https://github.com/FaserF/hassio-addons/commit/7eda3968f00c7dbfec6f8d138035f2a34566ebb5))
+
 ### 🎨 Style
 
 - auto-fix (shfmt,black,isort,prettier,markdownlint) ([`cdc7143c`](https://github.com/FaserF/hassio-addons/commit/cdc7143ca2531fdf41778e43e852faee4cd49880))

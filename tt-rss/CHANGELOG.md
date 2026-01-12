@@ -4,7 +4,6 @@
 
 ### 🎨 Style
 
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`5e6ebbf2`](https://github.com/FaserF/hassio-addons/commit/5e6ebbf2398fcf8db79dea411c701782712868c5))
 
 ### 📌 Release Note
 
@@ -14,21 +13,11 @@
 
 ### 🎨 Style
 
-- auto-fix (prettier,markdownlint) ([`58975b18`](https://github.com/FaserF/hassio-addons/commit/58975b189066e8b1cf5489ae818e329b949fb0f3))
-- auto-fix (shfmt,black,isort,prettier,markdownlint) ([`b8c86b04`](https://github.com/FaserF/hassio-addons/commit/b8c86b04f6c1aa1763bf7c7c57072bd2b7591b10))
 
 ### 🚀 Other
 
-- Small fixes ([`c381a231`](https://github.com/FaserF/hassio-addons/commit/c381a231cae101aeabf1137efe837ed6cdb28ab3))
-- small improvements on error handling ([`c04e360e`](https://github.com/FaserF/hassio-addons/commit/c04e360e3bf7530edd36673138d448fb056378ad))
-- small fixes ([`5725dfae`](https://github.com/FaserF/hassio-addons/commit/5725dfae4bc9502cc341749612b03a88c05d53b9))
-- startup fixes ([`8062782c`](https://github.com/FaserF/hassio-addons/commit/8062782c4ed5b434a09662082c08252ead79cea3))
-- more startup fixes ([`449ec11b`](https://github.com/FaserF/hassio-addons/commit/449ec11b22864f8e55c35d9ed01e5b373b1d401e))
-- addon startup fixes ([`3f17abce`](https://github.com/FaserF/hassio-addons/commit/3f17abce25eaf5099af9685ef7eba2a0eb00f205))
-- small fixes ([`e0b5c15b`](https://github.com/FaserF/hassio-addons/commit/e0b5c15b8023b8aef42b24f77f42bd8d64b0e00b))
-- small fixes ([`8d72281f`](https://github.com/FaserF/hassio-addons/commit/8d72281f6ceff1ef2f86b1a23c64c8f073519b6b))
-- small fix ([`efda9c48`](https://github.com/FaserF/hassio-addons/commit/efda9c48ee937ce67bf3eeab0b505bfefa111b32))
-- small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
+- Startup process and error handling improvements ([`8062782c`](https://github.com/FaserF/hassio-addons/commit/8062782c4ed5b434a09662082c08252ead79cea3), [`449ec11b`](https://github.com/FaserF/hassio-addons/commit/449ec11b22864f8e55c35d9ed01e5b373b1d401e), [`3f17abce`](https://github.com/FaserF/hassio-addons/commit/3f17abce25eaf5099af9685ef7eba2a0eb00f205), [`c04e360e`](https://github.com/FaserF/hassio-addons/commit/c04e360e3bf7530edd36673138d448fb056378ad))
+- General addon fixes and improvements ([`c381a231`](https://github.com/FaserF/hassio-addons/commit/c381a231cae101aeabf1137efe837ed6cdb28ab3), [`5725dfae`](https://github.com/FaserF/hassio-addons/commit/5725dfae4bc9502cc341749612b03a88c05d53b9), [`e0b5c15b`](https://github.com/FaserF/hassio-addons/commit/e0b5c15b8023b8aef42b24f77f42bd8d64b0e00b), [`8d72281f`](https://github.com/FaserF/hassio-addons/commit/8d72281f6ceff1ef2f86b1a23c64c8f073519b6b), [`efda9c48`](https://github.com/FaserF/hassio-addons/commit/efda9c48ee937ce67bf3eeab0b505bfefa111b32), [`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
 ### 📌 Release Note
 
@@ -38,8 +27,6 @@
 
 ### 🎨 Style
 
-- auto-fix (prettier,markdownlint) ([`9d0bb134`](https://github.com/FaserF/hassio-addons/commit/9d0bb134235785ead2aeaee2553b8011acd52478))
-- auto-fix (prettier,markdownlint) ([`ee20b79a`](https://github.com/FaserF/hassio-addons/commit/ee20b79ab7178d4b7dd7d74834256089da2b5f21))
 
 ### 🚀 Other
 
