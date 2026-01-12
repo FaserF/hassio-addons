@@ -24,7 +24,6 @@ website_name: null
 
 - `/share`: Used to store your website files. The default location is `/share/htdocs`. This allows you to easily edit your website files from outside the add-on container.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
-- `/media`: Mapped for general use, e.g., for serving media files from your `/media` folder.
 - `/data`: Used for persistent storage of the MariaDB database and internal configurations.
 
 ## Support
