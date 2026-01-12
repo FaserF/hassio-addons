@@ -13,18 +13,18 @@ chmod 700 "$GIT_SSH_DIR"
 # Configure SSH to use custom key location and permissions
 # Support multiple key types: RSA, ECDSA, Ed25519
 for key_type in id_rsa id_ecdsa id_ed25519; do
-    if [ -f "$GIT_SSH_DIR/$key_type" ]; then
-        bashio::log.info "Git SSH key found: $key_type"
-        chmod 600 "$GIT_SSH_DIR/$key_type"
-    fi
+	if [ -f "$GIT_SSH_DIR/$key_type" ]; then
+		bashio::log.info "Git SSH key found: $key_type"
+		chmod 600 "$GIT_SSH_DIR/$key_type"
+	fi
 done
 
 # Populate known_hosts to avoid first-connect errors
 if [ ! -f "$GIT_SSH_DIR/known_hosts" ]; then
-    bashio::log.info "Populating known_hosts for common git providers..."
-    touch "$GIT_SSH_DIR/known_hosts"
-    ssh-keyscan github.com gitlab.com bitbucket.org >>"$GIT_SSH_DIR/known_hosts" 2>/dev/null || true
-    chmod 644 "$GIT_SSH_DIR/known_hosts"
+	bashio::log.info "Populating known_hosts for common git providers..."
+	touch "$GIT_SSH_DIR/known_hosts"
+	ssh-keyscan github.com gitlab.com bitbucket.org >>"$GIT_SSH_DIR/known_hosts" 2>/dev/null || true
+	chmod 644 "$GIT_SSH_DIR/known_hosts"
 fi
 
 bashio::log.info "Git support enabled."

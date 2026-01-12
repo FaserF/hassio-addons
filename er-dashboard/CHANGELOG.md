@@ -3,11 +3,12 @@
 ## 1.1.1 (2026-01-12)
 
 ### 📦 Dependencies
+
 - ⬆️ Update ER-Startseite to v2026.1.6 [skip-tests] (#574) [skip-tests] ([`6f73c9c`](https://github.com/FaserF/hassio-addons/commit/6f73c9c853a650cb6b3200f8209bd6b34d0fee58))
 
 ### 📌 Release Note
-- Update ER-Startseite to v2026.1.6
 
+- Update ER-Startseite to v2026.1.6
 
 ## 1.1.0 (2026-01-11)
 

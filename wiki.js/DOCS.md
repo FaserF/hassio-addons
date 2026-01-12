@@ -34,11 +34,13 @@ This addon supports Wiki.js Git storage for syncing your wiki content with a Git
    Supported key types: `id_rsa`, `id_ecdsa`, `id_ed25519`.
 
    Example (Ed25519):
+
    ```bash
    ssh-keygen -t ed25519 -f /addon_configs/wiki.js/git/ssh/id_ed25519 -N ""
    ```
 
    Example (RSA):
+
    ```bash
    ssh-keygen -t rsa -b 4096 -f /addon_configs/wiki.js/git/ssh/id_rsa -N ""
    ```

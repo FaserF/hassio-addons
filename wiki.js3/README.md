@@ -1,4 +1,4 @@
-# Wiki.js (Version 3 - Alpha)
+# Wiki.JS (Version 3 - Alpha)
 
 ![Logo](logo.png)
 
@@ -12,11 +12,10 @@
 ---
 
 > [!CAUTION]
-> **Experimental / Alpha Status**
+> **Experimental / Beta Status**
 >
-> The upstream **Wiki.js Version 3 is currently in Alpha stage** and is not yet released as stable by the developers.
-> While this addon is functional, the underlying software is **NOT intended for production use**.
-> Please use this for testing and development purposes only.
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
 
 ---
 
