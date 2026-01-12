@@ -247,6 +247,15 @@ if [ -z "$host" ]; then
 	username=$(bashio::services "mysql" "username")
 fi
 
+# Git Support Setup - Define variables early for potential cleanup
+GIT_DATA_DIR="/addon_configs/wiki.js/git"
+GIT_SSH_DIR="$GIT_DATA_DIR/ssh"
+GIT_REPO_DIR="$GIT_DATA_DIR/repo"
+
+# Create directories for Git storage
+mkdir -p "$GIT_SSH_DIR" "$GIT_REPO_DIR"
+chmod 700 "$GIT_SSH_DIR"
+
 #Drop database based on config flag (with safeguards)
 if bashio::config.true 'reset_database'; then
 	if ! bashio::config.true 'reset_database_confirm'; then
@@ -290,6 +299,27 @@ if bashio::config.true 'reset_database'; then
 	bashio::addon.option 'reset_database_confirm'
 fi
 
+
+# Configure SSH to use custom key location
+# Support multiple key types: RSA, ECDSA, Ed25519
+for key_type in id_rsa id_ecdsa id_ed25519; do
+	if [ -f "$GIT_SSH_DIR/$key_type" ]; then
+		bashio::log.info "Git SSH key found: $key_type"
+		export GIT_SSH_COMMAND="ssh -i $GIT_SSH_DIR/$key_type -o StrictHostKeyChecking=no"
+		break
+	fi
+done
+
+# Populate known_hosts to avoid first-connect errors
+if [ ! -f "$GIT_SSH_DIR/known_hosts" ]; then
+	bashio::log.info "Populating known_hosts for common git providers..."
+	touch "$GIT_SSH_DIR/known_hosts"
+	ssh-keyscan github.com gitlab.com bitbucket.org >>"$GIT_SSH_DIR/known_hosts" 2>/dev/null || true
+	chmod 644 "$GIT_SSH_DIR/known_hosts"
+fi
+
+bashio::log.info "Git support enabled. SSH keys can be placed in $GIT_SSH_DIR"
+bashio::log.info "Local repository path for Wiki.js: $GIT_REPO_DIR"
 # Ensure /config directory exists
 mkdir -p /config
 

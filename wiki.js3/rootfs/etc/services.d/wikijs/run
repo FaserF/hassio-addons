@@ -113,6 +113,5 @@ case "${ADDON_LOG_LEVEL}" in
     esac
     export LOG_LEVEL="$WIKI_LOG_LEVEL"
     bashio::log.info "Setting LOG_LEVEL to $WIKI_LOG_LEVEL"
-fi
 
 exec node server
