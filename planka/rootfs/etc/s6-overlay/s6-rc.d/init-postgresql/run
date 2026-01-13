@@ -1,7 +1,9 @@
 #!/usr/bin/env bashio
 
 # Initialize PostgreSQL data directory
-DATA_DIR="/data/database"
+PLANKA_DATA_DIR="/data/planka"
+mkdir -p "${PLANKA_DATA_DIR}"
+DATA_DIR="${PLANKA_DATA_DIR}/database"
 
 if ! bashio::fs.directory_exists "/run/postgresql"; then
     mkdir -p /run/postgresql
@@ -28,14 +30,14 @@ if ! bashio::fs.directory_exists "${DATA_DIR}"; then
 fi
 
 # Set Postgres Superuser Password
-if ! bashio::fs.file_exists "/data/postgres_password"; then
+if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/postgres_password"; then
     # Generate securely
     (
         umask 077
-        openssl rand -base64 32 > /data/postgres_password
+        openssl rand -base64 32 > "${PLANKA_DATA_DIR}/postgres_password"
     )
 fi
-POSTGRES_PASSWORD=$(cat /data/postgres_password)
+POSTGRES_PASSWORD=$(cat "${PLANKA_DATA_DIR}/postgres_password")
 
 # Start Postgres temporarily to set password
 su-exec postgres pg_ctl -D "${DATA_DIR}" -o "-c listen_addresses='localhost'" -w start

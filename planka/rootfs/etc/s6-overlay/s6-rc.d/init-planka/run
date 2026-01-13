@@ -1,11 +1,15 @@
 #!/usr/bin/env bashio
 
+# Ensure namespaced data directory exists
+PLANKA_DATA_DIR="/data/planka"
+mkdir -p "${PLANKA_DATA_DIR}"
+
 # Generate password if not exists
-if ! bashio::fs.file_exists "/data/planka_db_password"; then
-    openssl rand -hex 32 > /data/planka_db_password
+if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/db_password"; then
+    openssl rand -hex 32 > "${PLANKA_DATA_DIR}/db_password"
 fi
-PLANKA_DB_PASSWORD=$(cat /data/planka_db_password)
-POSTGRES_PASSWORD=$(cat /data/postgres_password)
+PLANKA_DB_PASSWORD=$(cat "${PLANKA_DATA_DIR}/db_password")
+POSTGRES_PASSWORD=$(cat "${PLANKA_DATA_DIR}/postgres_password")
 
 export PGPASSWORD="${POSTGRES_PASSWORD}"
 
@@ -64,7 +68,7 @@ if bashio::config.true 'reset_database'; then
 	psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS planka;" || bashio::log.warning "Failed to drop database"
 
 	# Remove admin created marker so it will be recreated
-	rm -f /data/planka_admin_created
+	rm -f "${PLANKA_DATA_DIR}/admin_created"
 
 	bashio::log.info "=========================================="
 	bashio::log.info "   ✅ DATABASE RESET COMPLETE"
@@ -100,22 +104,22 @@ psql -h localhost -U postgres -d planka -c "ALTER DEFAULT PRIVILEGES IN SCHEMA p
 psql -h localhost -U postgres -d planka -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO planka;"
 
 # Create default admin user on first start
-if ! bashio::fs.file_exists "/data/planka_admin_created"; then
+if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
     bashio::log.info "First start detected - admin user will be created after Planka starts..."
 
     # Generate secure password
     ADMIN_PASSWORD=$(openssl rand -base64 24)
-    echo -n "$ADMIN_PASSWORD" > /data/planka_admin_password
-    chmod 600 /data/planka_admin_password
+    echo -n "$ADMIN_PASSWORD" > "${PLANKA_DATA_DIR}/admin_password"
+    chmod 600 "${PLANKA_DATA_DIR}/admin_password"
 
     # Store credentials for later (after Planka service is running)
-    cat > /data/create_admin_user.sh << 'EOFSCRIPT'
+    cat > /data/planka/create_admin_user.sh << 'EOFSCRIPT'
 #!/bin/bash
 # Wait for Planka to be fully ready
 sleep 10
 
 # Read saved password
-ADMIN_PASSWORD=$(cat /data/planka_admin_password)
+ADMIN_PASSWORD=$(cat /data/planka/admin_password)
 
 # Check if Planka is responding
 for i in {1..30}; do
@@ -138,7 +142,7 @@ RESPONSE=$(curl -s -X POST http://localhost:1337/api/users \
 
 if echo "$RESPONSE" | grep -q "id"; then
     # Mark as created
-    touch /data/planka_admin_created
+    touch /data/planka/admin_created
 
     # Display credentials prominently
     bashio::log.warning "=========================================="
@@ -150,7 +154,7 @@ if echo "$RESPONSE" | grep -q "id"; then
     bashio::log.warning "=========================================="
     bashio::log.warning "⚠️  SAVE THIS PASSWORD NOW!"
     bashio::log.warning "It will not be shown again."
-    bashio::log.warning "Password saved to: /addon_configs/c1e285b7_planka/planka_admin_password"
+    bashio::log.warning "Password saved to: /data/planka/admin_password"
     bashio::log.warning "=========================================="
 else
     bashio::log.error "Failed to create admin user. You may need to register manually."
@@ -158,11 +162,11 @@ else
 fi
 
 # Cleanup
-rm -f /data/create_admin_user.sh
+rm -f /data/planka/create_admin_user.sh
 EOFSCRIPT
 
-    chmod +x /data/create_admin_user.sh
+    chmod +x /data/planka/create_admin_user.sh
 
     # Run in background after this script completes
-    nohup /data/create_admin_user.sh > /proc/1/fd/1 2>&1 &
+    nohup /data/planka/create_admin_user.sh > /proc/1/fd/1 2>&1 &
 fi

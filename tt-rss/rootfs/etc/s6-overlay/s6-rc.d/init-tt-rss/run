@@ -9,14 +9,16 @@ ls -l /data/options.json || bashio::log.warning "/data/options.json not found!"
 cat /data/options.json || bashio::log.warning "Could not read /data/options.json"
 
 # Retrieve or Generate DB Password
-if ! bashio::fs.file_exists "/data/ttrss_db_password"; then
+TTRSS_DATA_DIR="/data/ttrss"
+mkdir -p "${TTRSS_DATA_DIR}"
+if ! bashio::fs.file_exists "${TTRSS_DATA_DIR}/db_password"; then
     (
         umask 077
-        openssl rand -base64 32 > /data/ttrss_db_password
+        openssl rand -base64 32 > "${TTRSS_DATA_DIR}/db_password"
     )
 fi
-if ! TTRSS_DB_PASSWORD=$(cat /data/ttrss_db_password) || [ -z "$TTRSS_DB_PASSWORD" ]; then
-    bashio::exit.nok "Failed to read database password from /data/ttrss_db_password"
+if ! TTRSS_DB_PASSWORD=$(cat "${TTRSS_DATA_DIR}/db_password") || [ -z "$TTRSS_DB_PASSWORD" ]; then
+    bashio::exit.nok "Failed to read database password from ${TTRSS_DATA_DIR}/db_password"
 fi
 
 # Generate config.php

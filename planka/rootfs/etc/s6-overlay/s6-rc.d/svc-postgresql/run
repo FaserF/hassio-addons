@@ -7,4 +7,4 @@ if ! bashio::fs.directory_exists "/run/postgresql"; then
     chown postgres:postgres /run/postgresql
 fi
 
-exec su-exec postgres postgres -D /data/database
+exec su-exec postgres postgres -D /data/planka/database

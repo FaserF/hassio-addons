@@ -22,24 +22,24 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.warning "ALL ER-DASHBOARD DATA WILL BE PERMANENTLY DELETED!"
 	bashio::log.warning "=========================================="
 
-	# Backup directory
-	BACKUP_DIR="/data/backups"
+	# Backup directory (namespaced)
+	BACKUP_DIR="/data/er_dashboard/backups"
 	mkdir -p "$BACKUP_DIR"
 	TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 	# Only backup if database directory exists and has data
-	if [ -d "/data/database" ] && [ -n "$(ls -A "/data/database" 2>/dev/null)" ]; then
+	if [ -d "/data/er_dashboard/database" ] && [ -n "$(ls -A "/data/er_dashboard/database" 2>/dev/null)" ]; then
 		BACKUP_FILE="$BACKUP_DIR/er_dashboard_backup_${TIMESTAMP}.tar.gz"
 		bashio::log.info "Creating backup: $BACKUP_FILE"
-		tar -czf "$BACKUP_FILE" -C /data database 2>/dev/null || bashio::log.warning "Backup failed"
+		tar -czf "$BACKUP_FILE" -C /data/er_dashboard database 2>/dev/null || bashio::log.warning "Backup failed"
 	fi
 
 	bashio::log.warning "Starting reset in 3 seconds..."
 	sleep 3
 
 	# Remove database directory
-	if [ -d "/data/database" ]; then
-		rm -rf "/data/database"
+	if [ -d "/data/er_dashboard/database" ]; then
+		rm -rf "/data/er_dashboard/database"
 		bashio::log.info "Database directory removed"
 	fi
 
@@ -50,25 +50,25 @@ if bashio::config.true 'reset_database'; then
 	bashio::addon.option 'reset_database_confirm'
 fi
 
-if [ ! -d "/data/database" ] || [ -z "$(ls -A "/data/database")" ]; then
-    bashio::log.info "Creating new database cluster in /data/database..."
-    mkdir -p /data/database
-    chown -R postgres:postgres /data/database
-    chmod 700 /data/database
+if [ ! -d "/data/er_dashboard/database" ] || [ -z "$(ls -A "/data/er_dashboard/database")" ]; then
+    bashio::log.info "Creating new database cluster in /data/er_dashboard/database..."
+    mkdir -p /data/er_dashboard/database
+    chown -R postgres:postgres /data/er_dashboard/database
+    chmod 700 /data/er_dashboard/database
 
     echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
     chown postgres:postgres /tmp/pgpass
 
-    if ! su-exec postgres initdb -D /data/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
-        bashio::log.error "initdb failed! Command: su-exec postgres initdb -D /data/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass"
+    if ! su-exec postgres initdb -D /data/er_dashboard/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
+        bashio::log.error "initdb failed! Command: su-exec postgres initdb -D /data/er_dashboard/database --username=postgres --auth=md5 --pwfile=/tmp/pgpass"
         rm -f /tmp/pgpass
         exit 1
     fi
 
     rm -f /tmp/pgpass
 else
-    bashio::log.info "Database cluster exists in /data/database."
+    bashio::log.info "Database cluster exists in /data/er_dashboard/database."
     # Ensure permissions are correct even if it exists
-    chown -R postgres:postgres /data/database
-    chmod 700 /data/database
+    chown -R postgres:postgres /data/er_dashboard/database
+    chmod 700 /data/er_dashboard/database
 fi
