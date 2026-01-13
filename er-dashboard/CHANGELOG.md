@@ -3,18 +3,19 @@
 ## 1.2.0 (2026-01-12)
 
 ### 📦 Dependencies
+
 - ⬆️ Update ER-Startseite to v2026.1.7 [skip-tests] (#579) [skip-tests] ([`a5a2fd18`](https://github.com/FaserF/hassio-addons/commit/a5a2fd184e5ea1fbc9e43e40a8634688fe8099ee))
 - ⬆️ Update ER-Startseite to v2026.1.6 [skip-tests] (#574) [skip-tests] ([`6f73c9c8`](https://github.com/FaserF/hassio-addons/commit/6f73c9c853a650cb6b3200f8209bd6b34d0fee58))
 - ⬆️ Update ghcr.io/eidolf/er-startseite/frontend Docker tag to v2026.1.5 [skip-tests] (#572) [skip-tests] ([`c65d2b4c`](https://github.com/FaserF/hassio-addons/commit/c65d2b4c56f2550fc4aa60b6a58d84eb230a9ab1))
 - ⬆️ Update ghcr.io/eidolf/er-startseite/backend Docker tag to v2026.1.5 [skip-tests] ([`d6ecac3b`](https://github.com/FaserF/hassio-addons/commit/d6ecac3b5f13d3304e912bd5c8e18ef9237f9a19))
 
 ### 🚀 Other
+
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 - more small improvements ([`c6795db7`](https://github.com/FaserF/hassio-addons/commit/c6795db72e0c61bf187781ae186f53eb0bc8a108))
 - small fixes ([`bd1e9e4e`](https://github.com/FaserF/hassio-addons/commit/bd1e9e4e6d5f4a366cc97f20f17a22c157295c4d))
-
 
 ## 1.1.1 (2026-01-12)
 
