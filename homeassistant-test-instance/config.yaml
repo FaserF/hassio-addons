@@ -1,5 +1,5 @@
 name: "Home Assistant Test Instance"
-version: "0.2.2"
+version: "0.2.3"
 slug: "ha_test_instance"
 image: ghcr.io/faserf/hassio-addons-homeassistant-test-instance-{arch}
 description: "A standalone Home Assistant Core instance for testing purposes."
