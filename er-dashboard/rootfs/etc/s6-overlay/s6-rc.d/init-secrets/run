@@ -3,7 +3,9 @@
 
 bashio::log.info "Checking for secrets..."
 
-SECRETS_FILE="/data/secrets.json"
+SECRETS_DIR="/data/er_dashboard"
+mkdir -p "${SECRETS_DIR}"
+SECRETS_FILE="${SECRETS_DIR}/secrets.json"
 
 # Check if secrets file exists
 if ! bashio::fs.file_exists "${SECRETS_FILE}"; then

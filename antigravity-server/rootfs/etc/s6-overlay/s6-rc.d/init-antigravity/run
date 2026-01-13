@@ -14,27 +14,47 @@ chmod 1777 /tmp/.X11-unix
 
 # Setup VNC password
 if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_password')" ]; then
+    bashio::log.info "Using configured VNC password from addon options."
     VNC_PASSWORD=$(bashio::config 'vnc_password')
     if [ ${#VNC_PASSWORD} -gt 8 ]; then
         bashio::log.warning "User provided VNC password is longer than 8 characters. Truncating to the first 8 characters due to VNC protocol limitations."
         VNC_PASSWORD=$(echo "$VNC_PASSWORD" | head -c 8)
     fi
-    bashio::log.info "Setting custom VNC password..."
 else
-    if [ -f "/data/vnc_password" ]; then
-        VNC_PASSWORD=$(cat "/data/vnc_password")
-        bashio::log.info "Using persisted random VNC password..."
-    else
-        VNC_PASSWORD=$(python3 -c 'import secrets,string; print("".join(secrets.choice(string.ascii_letters + string.digits) for i in range(8)))')
-        # atomic write with strict permissions
-        echo "${VNC_PASSWORD}" > /data/vnc_password.tmp
-        chmod 600 /data/vnc_password.tmp
-        mv /data/vnc_password.tmp /data/vnc_password
-        bashio::log.info "Generated and persisted new random VNC password."
+    # Ensure namespaced directory exists
+    mkdir -p /data/antigravity_server
+
+    if [ -f "/data/antigravity_server/vnc_password" ]; then
+        bashio::log.info "Found existing VNC password in /data/antigravity_server/vnc_password."
+        VNC_PASSWORD=$(cat "/data/antigravity_server/vnc_password")
+        if [ -z "$VNC_PASSWORD" ]; then
+             bashio::log.warning "Existing password file was empty. Generating new one."
+             rm -f /data/antigravity_server/vnc_password
+        else
+             bashio::log.info "Using persisted random VNC password."
+        fi
     fi
-    bashio::log.info "---------------------------------------------------"
-    bashio::log.info " VNC PASSWORD: ${VNC_PASSWORD}"
-    bashio::log.info "---------------------------------------------------"
+
+    if [ ! -f "/data/antigravity_server/vnc_password" ]; then
+        bashio::log.info "Generating new random VNC password..."
+        VNC_PASSWORD=$(python3 -c 'import secrets,string; print("".join(secrets.choice(string.ascii_letters + string.digits) for i in range(8)))')
+
+        # atomic write with strict permissions
+        echo "${VNC_PASSWORD}" > /data/antigravity_server/vnc_password.tmp
+        chmod 600 /data/antigravity_server/vnc_password.tmp
+        mv /data/antigravity_server/vnc_password.tmp /data/antigravity_server/vnc_password
+
+        if [ -f "/data/antigravity_server/vnc_password" ]; then
+            bashio::log.info "Successfully generated and persisted new random VNC password."
+            bashio::log.info "---------------------------------------------------"
+            bashio::log.info " VNC PASSWORD: ${VNC_PASSWORD}"
+            bashio::log.info "---------------------------------------------------"
+        else
+            bashio::log.error "Failed to persist VNC password!"
+        fi
+    else
+        bashio::log.info "VNC password already set. Find it in: /data/antigravity_server/vnc_password"
+    fi
 fi
 
 # Set VNC password
@@ -61,8 +81,8 @@ chmod 600 /root/.config/tigervnc/passwd
 bashio::log.info "VNC password set successfully."
 
 # Create xstartup script for XFCE4
-# Also create Antigravity data directory
-mkdir -p /data/antigravity
+# Also create Antigravity data directory (namespaced)
+mkdir -p /data/antigravity_server/antigravity
 
 mkdir -p /root/.config/autostart
 
@@ -101,7 +121,7 @@ Type=Application
 Name=Antigravity
 # --no-sandbox is required because the desktop session runs as root.
 # Electron applications (like VS Code/Antigravity) refuse to run as root without this flag.
-Exec=antigravity --kiosk --no-sandbox --user-data-dir=/data/antigravity --log ${ANTIGRAVITY_LOG_LEVEL}
+Exec=antigravity --kiosk --no-sandbox --user-data-dir=/data/antigravity_server/antigravity --log ${ANTIGRAVITY_LOG_LEVEL}
 StartupNotify=false
 Terminal=false
 Hidden=false

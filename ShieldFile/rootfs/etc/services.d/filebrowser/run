@@ -168,7 +168,7 @@ fi
 
 
 # Retrieve variables passed from init script or config
-DB_PATH="/data/database.db"
+DB_PATH="/data/shieldfile/database.db"
 BASE_DIR=$(bashio::config 'base_directory')
 
 # Read Ingress Entry from file created by init script

@@ -22,6 +22,53 @@ if ! cd /app; then
     exit 1
 fi
 
+# ------------------------------------------------------------------------------
+# PERSISTENCE SETUP
+# ------------------------------------------------------------------------------
+bashio::log.info "Ensuring persistence for data and uploads..."
+
+# 1. persist: /app/data (Database/Settings)
+if [ ! -d "/data/er_dashboard/app_data" ]; then
+    bashio::log.info "Creating persistent storage for app data..."
+    mkdir -p /data/er_dashboard/app_data
+    # If the container has default data, copy it to persistence (migration)
+    if [ -d "/app/data" ] && [ "$(ls -A /app/data)" ]; then
+         bashio::log.info "Migrating existing default data to persistent storage..."
+         cp -r /app/data/* /data/er_dashboard/app_data/
+    fi
+fi
+
+# Relink /app/data -> /data/er_dashboard/app_data
+if [ -d "/app/data" ] && [ ! -L "/app/data" ]; then
+    rm -rf /app/data
+fi
+if [ ! -L "/app/data" ]; then
+    ln -s /data/er_dashboard/app_data /app/data
+    bashio::log.info "Linked /app/data to /data/er_dashboard/app_data"
+fi
+
+
+# 2. persist: /app/uploads (Logos/Images)
+if [ ! -d "/data/er_dashboard/uploads" ]; then
+    bashio::log.info "Creating persistent storage for uploads..."
+    mkdir -p /data/er_dashboard/uploads
+    # If the container has default uploads, copy it (migration)
+    if [ -d "/app/uploads" ] && [ "$(ls -A /app/uploads)" ]; then
+         bashio::log.info "Migrating existing default uploads to persistent storage..."
+         cp -r /app/uploads/* /data/er_dashboard/uploads/
+    fi
+fi
+
+# Relink /app/uploads -> /data/er_dashboard/uploads
+if [ -d "/app/uploads" ] && [ ! -L "/app/uploads" ]; then
+    rm -rf /app/uploads
+fi
+if [ ! -L "/app/uploads" ]; then
+    ln -s /data/er_dashboard/uploads /app/uploads
+    bashio::log.info "Linked /app/uploads to /data/er_dashboard/uploads"
+fi
+# ------------------------------------------------------------------------------
+
 # Run migrations if necessary (currently just logging)
 # su-exec postgres /app/.venv/bin/alembic upgrade head
 

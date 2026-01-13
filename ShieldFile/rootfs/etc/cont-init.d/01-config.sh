@@ -4,7 +4,9 @@
 bashio::log.info "🛡️ Initializing ShieldFile..."
 
 # Define paths
-DB_PATH="/data/database.db"
+DB_DIR="/data/shieldfile"
+mkdir -p "${DB_DIR}"
+DB_PATH="${DB_DIR}/database.db"
 CERT_DIR="/ssl"
 
 # Read Config
