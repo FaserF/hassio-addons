@@ -45,6 +45,18 @@ RUN \
         tigervnc-standalone-server \
         tigervnc-common \
         tigervnc-tools \
+        xdg-utils \
+        # Common Dev Tools
+        ripgrep \
+        fd-find \
+        zip \
+        unzip \
+        nano \
+        vim \
+        htop \
+        jq \
+        build-essential \
+        openssh-client \
         novnc \
         websockify \
         nginx \
@@ -82,7 +94,13 @@ RUN \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /run/nginx /root/.vnc
+    && mkdir -p /run/nginx /root/.vnc \
+    # Symlink fdfind to fd
+    && ln -s $(which fdfind) /usr/local/bin/fd \
+    # Create a wrapper for Chrome to run with --no-sandbox
+    && echo '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox "$@"' > /usr/local/bin/google-chrome \
+    && chmod +x /usr/local/bin/google-chrome \
+    && ln -s /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable
 
 # Setup NoVNC
 RUN ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html

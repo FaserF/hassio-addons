@@ -113,4 +113,32 @@ else
     bashio::log.info "Antigravity autostart entry already exists. Scaling back (idempotent)."
 fi
 
+# 3. Set Google Chrome as default browser
+bashio::log.info "Setting Google Chrome as default browser..."
+mkdir -p /root/.config
+# We manually create mimeapps.list because xdg-settings might fail without active X session
+mkdir -p /root/.config
+cat >> /root/.config/mimeapps.list <<EOF
+[Default Applications]
+text/html=google-chrome.desktop
+x-scheme-handler/http=google-chrome.desktop
+x-scheme-handler/https=google-chrome.desktop
+x-scheme-handler/about=google-chrome.desktop
+x-scheme-handler/unknown=google-chrome.desktop
+EOF
+
+# 4. Verify Tools
+bashio::log.info "Verifying installed tools..."
+if command -v git &> /dev/null; then
+    bashio::log.info "Git version: $(git --version)"
+else
+    bashio::log.error "Git NOT found. Please check Dockerfile."
+fi
+
+if command -v docker &> /dev/null; then
+    bashio::log.info "Docker version: $(docker --version)"
+else
+    bashio::log.error "Docker NOT found. Please check Dockerfile."
+fi
+
 bashio::log.info "VNC environment initialized"
