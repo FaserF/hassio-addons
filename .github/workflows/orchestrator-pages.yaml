@@ -14,8 +14,13 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
+    if: "!contains(github.event.head_commit.message, '[skip-pages]') && !contains(github.event.head_commit.message, '[start-autofix]')"
     runs-on: ubuntu-latest
     environment:
       name: github-pages
