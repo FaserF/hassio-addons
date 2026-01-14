@@ -12,11 +12,6 @@
   ],
   "commitMessagePrefix": "⬆️",
   "commitMessageSuffix": " [skip-tests]",
-  "allowedCommands": [
-    "^curl",
-    "^sed",
-    "^bash"
-  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -329,20 +324,11 @@
       }
     },
     {
-      "description": "Pterodactyl Wings - auto-update checksums via postUpgradeTasks",
+      "description": "Pterodactyl Wings - automerge enabled",
       "matchDepNames": [
         "pterodactyl/wings"
       ],
-      "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "pterodactyl-wings/Dockerfile"
-        ],
-        "executionMode": "branch"
-      }
+      "automerge": true
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
