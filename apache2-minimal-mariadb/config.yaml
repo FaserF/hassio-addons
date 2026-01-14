@@ -10,6 +10,7 @@ arch:
 image: ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}
 map:
   - ssl:rw
+  - media:rw
   - share:rw
 ingress: true
 ingress_port: 80

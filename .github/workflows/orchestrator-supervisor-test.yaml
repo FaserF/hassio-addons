@@ -163,6 +163,7 @@ jobs:
           mkdir -p /tmp/ha-data/addons/local
           mkdir -p /tmp/ha-data/config
           mkdir -p /tmp/ha-data/share
+          mkdir -p /tmp/ha-data/media
           mkdir -p /tmp/ha-data/ssl
 
           # Generate dummy SSL certs for universal support
@@ -227,6 +228,7 @@ jobs:
             -v /tmp/ha-data/addons:/mnt/supervisor/addons \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
+            --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
             -v ha-supervisor-storage:/var/lib/docker \
