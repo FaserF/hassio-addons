@@ -22,14 +22,12 @@ fi
 # Schema supports: trace, debug, info, notice, warning, error, fatal
 # Uvicorn supports: trace, debug, info, warning, error, critical
 case "$LOG_LEVEL" in
-    trace)   LOG_LEVEL="trace" ;;
-    debug)   LOG_LEVEL="debug" ;;
-    info)    LOG_LEVEL="info" ;;
-    notice)  LOG_LEVEL="info" ;;   # Map notice → info
-    warning) LOG_LEVEL="warning" ;;
-    error)   LOG_LEVEL="error" ;;
-    fatal)   LOG_LEVEL="critical" ;; # Map fatal → critical
-    *)       LOG_LEVEL="info" ;;
+trace) LOG_LEVEL="trace" ;;
+debug) LOG_LEVEL="debug" ;;
+info | notice) LOG_LEVEL="info" ;;
+warning | warn) LOG_LEVEL="warning" ;;
+error | fatal) LOG_LEVEL="error" ;;
+*) LOG_LEVEL="info" ;;
 esac
 
 # Validate result

@@ -209,10 +209,8 @@ if python3 -c "import logging" 2>/dev/null; then
 	case "${log_level}" in
 	trace | debug) export LOG_LEVEL="DEBUG" ;;
 	info | notice) export LOG_LEVEL="INFO" ;;
-	warning) export LOG_LEVEL="WARNING" ;;
-	error) export LOG_LEVEL="ERROR" ;;
-	fatal) export LOG_LEVEL="CRITICAL" ;;
-	minimal) export LOG_LEVEL="WARNING" ;;
+	warning | warn | minimal) export LOG_LEVEL="WARNING" ;;
+	error | fatal) export LOG_LEVEL="ERROR" ;;
 	*) export LOG_LEVEL="INFO" ;;
 	esac
 	bashio::log.info "Setting Python LOG_LEVEL to ${LOG_LEVEL}"

@@ -439,13 +439,10 @@ case "${BASHIO_LOG_LEVEL}" in
     trace|debug)
         NGINX_LOG_LEVEL="debug"
         ;;
-    info)
+    info|notice)
         NGINX_LOG_LEVEL="info"
         ;;
-    notice)
-        NGINX_LOG_LEVEL="notice"
-        ;;
-    warning)
+    warning|warn)
         NGINX_LOG_LEVEL="warn"
         ;;
     error)

@@ -8,14 +8,12 @@ log_level=$(bashio::config 'log_level')
 
 # Map Bashio log level to Nginx log level
 case "${log_level}" in
-    trace) nginx_log_level="debug" ;;
-    debug) nginx_log_level="debug" ;;
-    info)  nginx_log_level="info" ;;
-    notice) nginx_log_level="notice" ;;
-    warning) nginx_log_level="warn" ;;
-    error) nginx_log_level="error" ;;
-    fatal) nginx_log_level="crit" ;;
-    *)     nginx_log_level="error" ;;
+trace | debug) nginx_log_level="debug" ;;
+info | notice) nginx_log_level="info" ;;
+warning | warn) nginx_log_level="warn" ;;
+error) nginx_log_level="error" ;;
+fatal) nginx_log_level="crit" ;;
+*) nginx_log_level="warn" ;;
 esac
 
 # SSL Validation

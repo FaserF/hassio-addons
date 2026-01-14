@@ -195,9 +195,8 @@ case "${LOG_LEVEL}" in
 trace | debug) nginx_log_level="debug" ;;
 info) nginx_log_level="info" ;;
 notice) nginx_log_level="notice" ;;
-warning) nginx_log_level="warn" ;;
-error) nginx_log_level="error" ;;
-fatal) nginx_log_level="crit" ;;
+warning | warn) nginx_log_level="warn" ;;
+error | fatal) nginx_log_level="error" ;;
 *) nginx_log_level="warn" ;;
 esac
 

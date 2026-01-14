@@ -51,7 +51,7 @@ case "${LOG_LEVEL}" in
         NGINX_LOG_LEVEL="info"
         PHP_ERROR_REPORTING="E_ERROR | E_WARNING | E_PARSE"
         ;;
-    warning)
+    warning|warn)
         PHP_LOG_LEVEL="warning"
         NGINX_LOG_LEVEL="warn"
         PHP_ERROR_REPORTING="E_ERROR | E_WARNING"

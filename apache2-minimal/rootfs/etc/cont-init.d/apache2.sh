@@ -27,9 +27,8 @@ webrootdocker=/var/www/localhost/htdocs/
 apache_log_level="warn"
 case "${log_level}" in
 trace | debug) apache_log_level="debug" ;;
-info) apache_log_level="info" ;;
-notice) apache_log_level="notice" ;;
-warning) apache_log_level="warn" ;;
+info | notice) apache_log_level="info" ;;
+warning | warn) apache_log_level="warn" ;;
 error) apache_log_level="error" ;;
 fatal) apache_log_level="crit" ;;
 *) apache_log_level="warn" ;;

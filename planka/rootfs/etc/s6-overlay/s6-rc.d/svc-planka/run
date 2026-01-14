@@ -44,11 +44,18 @@ fi
 export SAILS_SECURITY_CORS_ALLOW_ORIGINS='*'
 # Log level - schema now uses Winston-compatible levels
 # Winston supports: error, warn, info, http, verbose, debug, silly
-if bashio::config.has_value 'log_level'; then
-    export LOG_LEVEL="$(bashio::config 'log_level')"
-else
-    export LOG_LEVEL="info"
+if ! ADDON_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$ADDON_LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    ADDON_LOG_LEVEL="info"
 fi
+case "$ADDON_LOG_LEVEL" in
+    trace)        export LOG_LEVEL="silly"   ;;
+    debug)        export LOG_LEVEL="debug"   ;;
+    info|notice)  export LOG_LEVEL="info"    ;;
+    warning|warn) export LOG_LEVEL="warn"    ;;
+    error|fatal)  export LOG_LEVEL="error"   ;;
+    *)            export LOG_LEVEL="info"    ;;
+esac
 
 if ! cd /opt/planka; then
     bashio::exit.nok "Failed to change directory to /opt/planka"

@@ -263,8 +263,8 @@ if bashio::config.has_value 'log_level'; then
 	LOG_LEVEL=$(echo "$LOG_LEVEL" | tr '[:lower:]' '[:upper:]')
 	case "$LOG_LEVEL" in
 	TRACE | DEBUG) LOG_LEVEL="DEBUG" ;;
-	NOTICE | INFO) LOG_LEVEL="INFO" ;;
-	WARNING) LOG_LEVEL="WARNING" ;;
+	INFO | NOTICE) LOG_LEVEL="INFO" ;;
+	WARNING | WARN) LOG_LEVEL="WARNING" ;;
 	ERROR | FATAL) LOG_LEVEL="ERROR" ;;
 	*) LOG_LEVEL="INFO" ;;
 	esac

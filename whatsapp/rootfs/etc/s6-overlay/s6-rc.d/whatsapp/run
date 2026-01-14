@@ -9,8 +9,12 @@ if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
     LOG_LEVEL="info"
 fi
 case "${LOG_LEVEL}" in
-    warning) LOG_LEVEL="warn" ;;
-    notice)  LOG_LEVEL="info" ;;
+    trace)        LOG_LEVEL="silly" ;;
+    debug)        LOG_LEVEL="debug" ;;
+    info|notice)  LOG_LEVEL="info"  ;;
+    warning|warn) LOG_LEVEL="warn"  ;;
+    error|fatal)  LOG_LEVEL="error" ;;
+    *)            LOG_LEVEL="info"  ;;
 esac
 export LOG_LEVEL
 
