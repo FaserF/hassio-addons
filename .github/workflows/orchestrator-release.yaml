@@ -321,8 +321,26 @@ jobs:
               exit 0
             fi
 
-            # Get changed files
-            CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' || echo "")
+            # Get changed files using PR API as primary source
+            echo "🔍 Fetching changed files via GitHub API..."
+            if CHANGED=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path' 2>/dev/null); then
+              echo "✅ Successfully fetched changed files from PR API"
+            else
+              echo "⚠️ Failed to fetch changed files from PR API (Branch might be deleted). Using git diff fallback..."
+              # HEAD is the merge commit. HEAD^ is the state before the PR merge.
+              CHANGED=$(git diff --name-only HEAD^ HEAD)
+            fi
+
+            if [ -z "$CHANGED" ]; then
+              echo "❌ Error: Could not detect any changed files for verification."
+              {
+                echo "should_release=false"
+                echo "addons=[]"
+                echo "is_auto=true"
+                echo "version_type=patch"
+              } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
 
             # Check if this is a base image update by checking PR title/description
             IS_BASE_IMAGE_UPDATE="false"
@@ -333,6 +351,9 @@ jobs:
               echo "🔍 Base image update detected from PR title/description"
             fi
 
+            # ----------------------------------------------------------------
+            # Identify affected addons
+            # ----------------------------------------------------------------
             # If base image update, release ALL affected addons (not just AUTO_RELEASE_ADDONS)
             # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
             if [ "$IS_BASE_IMAGE_UPDATE" == "true" ]; then
@@ -365,65 +386,54 @@ jobs:
               # ----------------------------------------------------------------
               # Detect NEW Add-ons (config.yaml added)
               # ----------------------------------------------------------------
-              echo "🔍 Checking for newly added add-ons..."
-              # Check for added config.yaml files using git diff
-              # HEAD is the merge commit. HEAD^ is the previous commit on master (first parent).
-              ADDED_FILES=$(git diff --name-status HEAD^ HEAD 2>/dev/null || echo "")
+              echo "🔍 Checking for newly or modified add-ons..."
+              CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
 
-              # Filter for Added (A) config.yaml files
-              ADDED_CONFIGS=$(echo "$ADDED_FILES" | grep "^A" | grep "config.yaml" | awk '{print $2}' || echo "")
-
-              for file in $ADDED_CONFIGS; do
+              # Loop through changed files to detect affected addons
+              for file in $CHANGED; do
                  # Skip .unsupported
                  if [[ "$file" == .unsupported/* ]]; then
                     continue
                  fi
 
-                 # Check if it matches pattern: addon_slug/config.yaml
-                 if [[ "$file" =~ ^([^/]+)/config.yaml$ ]]; then
+                 # Extract addon slug (first directory level)
+                 if [[ "$file" =~ ^([^/]+)/ ]]; then
                     addon_dir="${BASH_REMATCH[1]}"
-                    echo "  🚀 Detected NEW add-on: $addon_dir"
-                    # Add to ADDONS if not already there
-                    if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+
+                    # 1. Detect NEW addons (config.yaml added)
+                    if [[ "$file" == "${addon_dir}/config.yaml" ]] && git diff --name-status HEAD^ HEAD | grep -qE "^A.*${file}"; then
+                        echo "  🚀 Detected NEW add-on: $addon_dir"
+                        if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                           [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                        fi
+                    fi
+
+                    # 2. Detect updates for AUTO_RELEASE_ADDONS
+                    # If any file in an AUTO_RELEASE_ADDON changed, prepare it for release
+                    if [[ " $CLEAN_AUTO_ADDONS " == *" $addon_dir "* ]]; then
+                       if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                          echo "  ✅ Added $addon_dir (Changed file: $file)"
+                          [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                       fi
                     fi
                  fi
-              done
-
-              # Normal dependency update - only release addons in AUTO_RELEASE_ADDONS list
-              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
-              echo "🔍 Normal dependency update - checking AUTO_RELEASE_ADDONS list (excluding .unsupported)"
-              CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
-              for addon in $CLEAN_AUTO_ADDONS; do
-                # Only check regular addons, skip .unsupported
-                if echo "$CHANGED" | grep -Fq "${addon}/" && ! echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
-                  [ -z "$ADDONS" ] && ADDONS="$addon" || ADDONS="$ADDONS,$addon"
-                fi
-                # Explicitly skip .unsupported addons
-                if echo "$CHANGED" | grep -Fq ".unsupported/${addon}/"; then
-                  echo "  ⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
-                fi
               done
             fi
 
             # ----------------------------------------------------------------
             # Check for Manual Version Bumps in PR (Manifest Version Change)
             # ----------------------------------------------------------------
-            echo "🔍 Checking for version bumps in merged PR..."
-            # Get list of changed files in the merge commit
-            CHANGED_FILES_DIFF=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
-
-            for file in $CHANGED_FILES_DIFF; do
-              # Skip .unsupported addons
-              if [[ "$file" == .unsupported/* ]]; then
-                continue
-              fi
-
+            echo "🔍 Checking for explicit version bumps in config.yaml..."
+            # Check for version changes in any config.yaml
+            for file in $CHANGED; do
               if [[ "$file" == *"/config.yaml" ]]; then
                 addon_dir=$(dirname "$file")
-                addon_name=$(basename "$addon_dir")
+                addon_slug=$(basename "$addon_dir")
 
-                # Check if version changed
+                # Skip .unsupported
+                if [[ "$addon_dir" == .unsupported/* ]]; then continue; fi
+
+                # Check if version field actually changed
                 if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
                     OLD_VERSION=$(git show HEAD^:"$file" | grep "^version:" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
                 else
@@ -432,18 +442,14 @@ jobs:
                 NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
                 if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
-                   echo "🚀 Detected version bump in $addon_name (via PR): $OLD_VERSION -> $NEW_VERSION"
+                   echo "🚀 Detected explicit version bump in $addon_slug: $OLD_VERSION -> $NEW_VERSION"
                    # Add to ADDONS if not already there
-                   if [[ ! ",$ADDONS," =~ ,"$addon_name", ]]; then
-                     [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                   if [[ ! ",$ADDONS," =~ ,"$addon_slug", ]]; then
+                     [ -z "$ADDONS" ] && ADDONS="$addon_slug" || ADDONS="$ADDONS,$addon_slug"
                    fi
-                   # Set Manual Bump flags (treat as manual bump to respect the version in file)
-                   SHOULD_RELEASE="true"
-                   # If it's a manual bump in PR, we usually want to respect that version,
-                   # but the workflow logic later relies on VERSION_TYPE.
-                   # If we want to use the version FROM the file, we can set VERSION_TYPE to that version string.
+                   # Use this version instead of patch bump
                    VERSION_TYPE="$NEW_VERSION"
-                   IS_MANUAL_BUMP="true" # This flag prevents double-bumping if logic allows
+                   IS_MANUAL_BUMP="true"
                 fi
               fi
             done
