@@ -3,6 +3,7 @@
 ## 1.1.1 (2026-01-14)
 
 ### 🚀 Other
+
 - fix data not being persistent ([`6c82ed03`](https://github.com/FaserF/hassio-addons/commit/6c82ed037bb028cc2aec435e32e97a8c2e763629))
 - Integrate Chrome into Antigravity Addon ([`4d2a8f43`](https://github.com/FaserF/hassio-addons/commit/4d2a8f431d3ec4adde1c9b6eda38c76f8e285592))
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
@@ -10,7 +11,6 @@
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 - small improvements ([`71225476`](https://github.com/FaserF/hassio-addons/commit/712254766409609febf6ab80d451bc580216d990))
-
 
 ## 1.1.0 (2026-01-11)
 

@@ -3,9 +3,11 @@
 ## 2.2.1 (2026-01-14)
 
 ### 📦 Dependencies
+
 - ⬆️ Update filebrowser/filebrowser Docker tag to v2.54.0 [skip-tests] ([`e23174b9`](https://github.com/FaserF/hassio-addons/commit/e23174b9433955ca37383959a10c0415c6c4e883))
 
 ### 🚀 Other
+
 - fix data not being persistent ([`6c82ed03`](https://github.com/FaserF/hassio-addons/commit/6c82ed037bb028cc2aec435e32e97a8c2e763629))
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
@@ -13,7 +15,6 @@
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 - small fixes ([`eee371bd`](https://github.com/FaserF/hassio-addons/commit/eee371bd2cdd4bdd588b7bdb88b88da8440bd50b))
-
 
 ## 2.2.0 (2026-01-11)
 

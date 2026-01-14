@@ -3,6 +3,7 @@
 ## 2.2.1 (2026-01-14)
 
 ### 🚀 Other
+
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
@@ -10,7 +11,6 @@
 - and more fixes ([`86f854df`](https://github.com/FaserF/hassio-addons/commit/86f854dfb61087009493592c00f7ccc20f850b46))
 - more fixes ([`10a0d863`](https://github.com/FaserF/hassio-addons/commit/10a0d86384d4af5450b3302f7552c2323ddc4d30))
 - more startup fixes ([`38002764`](https://github.com/FaserF/hassio-addons/commit/38002764e048111700743eae38c3c3a27b7a0620))
-
 
 ## 2.2.0 (2026-01-11)
 

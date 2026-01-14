@@ -3,6 +3,7 @@
 ## 1.1.1 (2026-01-14)
 
 ### 🚀 Other
+
 - use addon name in data path ([`77dfa357`](https://github.com/FaserF/hassio-addons/commit/77dfa3575c7d7ed6bfac1cb2181fe0025a937f60))
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
@@ -12,7 +13,6 @@
 - small fixes ([`2185251d`](https://github.com/FaserF/hassio-addons/commit/2185251ddd7e00958119e17df6c695717220ab3e))
 - Small fixes ([`09acbb9c`](https://github.com/FaserF/hassio-addons/commit/09acbb9c7d8bae3f82ae5193b3676ab2c3bace03))
 - small addon startup fixes ([`8126e3ac`](https://github.com/FaserF/hassio-addons/commit/8126e3ac0bf3f01f0fb87eda90f52231280dafc8))
-
 
 ## 1.1.0 (2026-01-11)
 
