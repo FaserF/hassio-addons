@@ -176,6 +176,8 @@ fi
 
 
 
+
+
 bashio::log.info "🚀 Starting Nginx..."
 
 # Configure Nginx log level
