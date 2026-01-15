@@ -1,0 +1,5 @@
+#!/usr/command/with-contenv bashio
+# shellcheck shell=bash
+
+bashio::log.info "Starting Redis..."
+exec redis-server --save "" --appendonly no

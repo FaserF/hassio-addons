@@ -1,0 +1,20 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -e
+
+# Wait for MongoDB
+bashio::log.info "Waiting for MongoDB..."
+while ! nc -z localhost 27017; do
+  sleep 1
+done
+bashio::log.info "MongoDB is ready."
+
+# Prepare configuration
+export KOMODO_DATABASE_URI="mongodb://localhost:27017/komodo"
+export KOMODO_PORT="9120"
+# Add other env vars as needed
+
+bashio::log.info "Starting Komodo..."
+exec /usr/bin/komodo \
+    --port "${KOMODO_PORT}" \
+    --mongo-uri "${KOMODO_DATABASE_URI}"

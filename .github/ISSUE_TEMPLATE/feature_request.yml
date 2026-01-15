@@ -45,11 +45,13 @@ body:
         - bentopdf
         - er-dashboard
         - homeassistant-test-instance
+        - komodo
         - matterbridge
         - n8n
         - netboot-xyz
         - nginx
         - openssl
+        - paperless-ngx
         - pterodactyl-panel
         - pterodactyl-wings
         - sap-abap-cloud-dev

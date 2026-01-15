@@ -199,7 +199,19 @@
         "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
+      "datasourceTemplate": "github-releases",
       "depNameTemplate": "Eidolf/Docker-AntiGravity"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)build.yaml$"
+      ],
+      "matchStrings": [
+        "KOMODO_VERSION: (?<currentValue>.+?)\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "moghtech/komodo"
     },
     {
       "customType": "regex",
@@ -237,6 +249,20 @@
       ],
       "datasourceTemplate": "npm",
       "depNameTemplate": "n8n"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Paperless-ngx version in Dockerfile and build.yaml",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/",
+        "/(^|/)build.yaml$"
+      ],
+      "matchStrings": [
+        "ARG PAPERLESS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+",
+        "PAPERLESS_VERSION: [\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "paperless-ngx/paperless-ngx"
     }
   ],
   "packageRules": [

@@ -1,0 +1,25 @@
+#!/usr/command/with-contenv bashio
+# shellcheck shell=bash
+
+export PAPERLESS_DATA_DIR=/site/data
+export PAPERLESS_MEDIA_ROOT=/site/media
+export PAPERLESS_CONSUMPTION_DIR=/site/consume
+export PAPERLESS_REDIS="redis://localhost:6379"
+
+# Create directories if they don't exist
+mkdir -p "$PAPERLESS_DATA_DIR" "$PAPERLESS_MEDIA_ROOT" "$PAPERLESS_CONSUMPTION_DIR"
+
+bashio::log.info "Running database migrations..."
+python3 /usr/src/paperless/manage.py migrate
+
+# Create superuser if configured
+if bashio::config.has_value 'admin_user' && bashio::config.has_value 'admin_password'; then
+    USERNAME=$(bashio::config 'admin_user')
+    PASSWORD=$(bashio::config 'admin_password')
+    EMAIL="${USERNAME}@example.com"
+
+    bashio::log.info "Creating/Updating admin user: $USERNAME"
+    python3 /usr/src/paperless/manage.py manage_superuser --username "$USERNAME" --password "$PASSWORD" --email "$EMAIL" || true
+fi
+
+bashio::log.info "Paperless-ngx initialization complete."
