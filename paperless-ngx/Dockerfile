@@ -99,8 +99,8 @@ RUN \
         fribidi-dev \
         xcb-util-image-dev \
         mariadb-dev \
-        libpq-dev \
-    && find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} +
+        libpq-dev
+RUN find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} + || true
 
 # Copy root filesystem
 COPY rootfs /
