@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+
+export PAPERLESS_DATA_DIR=/site/data
+export PAPERLESS_MEDIA_ROOT=/site/media
+export PAPERLESS_CONSUMPTION_DIR=/site/consume
+export PAPERLESS_REDIS="redis://localhost:6379"
+export PAPERLESS_URL="$(bashio::config 'url')"
+export PAPERLESS_SECRET_KEY="$(bashio::config 'secret_key')"
+export PAPERLESS_TIME_ZONE="$(bashio::config 'time_zone')"
+export PAPERLESS_OCR_LANGUAGE="$(bashio::config 'ocr_language')"
+export PAPERLESS_FILENAME_FORMAT="$(bashio::config 'filename_format')"
+
+bashio::log.info "Starting Paperless Document Consumer..."
+exec python3 /usr/src/paperless/manage.py document_consumer

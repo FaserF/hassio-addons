@@ -18,7 +18,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3008,SC1091
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.0"
+ENV ADDON_VERSION="1.1.2"
 ENV ADDON_NAME="Antigravity-Server"
 ENV ADDON_SLUG="antigravity-server"
 ENV ADDON_UNSUPPORTED="false"
@@ -78,8 +78,7 @@ RUN \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && chmod a+r /etc/apt/keyrings/docker.gpg \
-    && echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+    && echo "deb [arch=$(dpkg --print-architecture | xargs echo) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list \
     && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
     # Install Google AntiGravity
@@ -96,9 +95,9 @@ RUN \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /run/nginx /root/.vnc \
     # Symlink fdfind to fd
-    && ln -s $(which fdfind) /usr/local/bin/fd \
+    && ln -s "$(which fdfind)" /usr/local/bin/fd \
     # Create a wrapper for Chrome to run with --no-sandbox
-    && echo '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox "$@"' > /usr/local/bin/google-chrome \
+    && printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox "$@"' > /usr/local/bin/google-chrome \
     && chmod +x /usr/local/bin/google-chrome \
     && ln -s /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable
 

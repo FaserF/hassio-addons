@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -e
+
+# Copy default config if needed or setup directories
+mkdir -p /data/komodo

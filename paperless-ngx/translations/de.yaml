@@ -1,0 +1,22 @@
+configuration:
+  admin_user:
+    name: "Administrator-Benutzername"
+    description: "Der Benutzername für den ersten Admin-Benutzer."
+  admin_password:
+    name: "Administrator-Passwort"
+    description: "Das Passwort für den ersten Admin-Benutzer."
+  ocr_language:
+    name: "OCR-Sprache"
+    description: "Die Standardsprache für OCR (z.B. deu, eng)."
+  url:
+    name: "URL"
+    description: "Externe URL, unter der Paperless erreichbar ist (optional)."
+  secret_key:
+    name: "Geheimer Schlüssel"
+    description: "Geheimer Schlüssel für kryptographische Signaturen."
+  time_zone:
+    name: "Zeitzone"
+    description: "Zeitzone für die Anwendung."
+  filename_format:
+    name: "Dateinamenformat"
+    description: "Format für gespeicherte Dateinamen."

@@ -85,10 +85,12 @@ body:
         - bentopdf
         - er-dashboard
         - homeassistant-test-instance
+        - komodo
         - n8n
         - netboot-xyz
         - nginx
         - openssl
+        - paperless-ngx
         - planka
         - pterodactyl-panel
         - pterodactyl-wings

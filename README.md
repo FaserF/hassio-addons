@@ -66,10 +66,12 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)        | ❌     | 2023-05 |
 | **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)           | ❌     | 2023-05 |
 | **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing           | ⚠️     | 2026-01 |
+| **[Komodo](komodo)**                                            | Build and deploy software on many servers   | ⚠️     | 2026-01 |
 | **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)            | ❌     | 2023-05 |
 | **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant | ⚠️     | 2026-01 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                         | ✅     | 2023-05 |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator           | ✅     | 2023-05 |
+| **[Paperless-ngx](paperless-ngx)**                              | Document Management System                  | ⚠️     | 2026-01 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                     | ⚠️     | 2023-05 |
 | **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                     | ✅     | 2023-05 |
 | **[Planka](planka)**                                            | Project Tracking Tool                       | ⚠️     | 2026-01 |
