@@ -8,9 +8,20 @@ param(
 
 Write-Host "    [Custom] verifying Paperless-ngx specific functionality..." -ForegroundColor Cyan
 
-# 1. Check if the login page is accessible
+# 1. Check if the login page is accessible (with retry)
 Write-Host "    [Custom] Checking web interface access (internal curl)..." -ForegroundColor Gray
-$httpCode = docker exec $ContainerName curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/
+$maxRetries = 10
+$retryCount = 0
+$httpCode = "000"
+
+while ($retryCount -lt $maxRetries -and $httpCode -eq "000") {
+    $httpCode = docker exec $ContainerName curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/
+    if ($httpCode -eq "000") {
+        $retryCount++
+        Write-Host "    [Custom] Waiting for web server ($retryCount/$maxRetries)..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 5
+    }
+}
 
 if ($httpCode -eq "200" -or $httpCode -eq "302") {
     Write-Host "    [Custom] ✅ Web interface reachable (HTTP $httpCode)" -ForegroundColor Green

@@ -62,7 +62,7 @@ RUN \
     && pip3 install --no-cache-dir --upgrade pip
 
 # Arguments
-ARG PAPERLESS_VERSION="2.20.4"
+ARG PAPERLESS_VERSION
 
 # Install Paperless-ngx
 WORKDIR /usr/src/paperless
@@ -100,7 +100,7 @@ RUN \
         xcb-util-image-dev \
         mariadb-dev \
         libpq-dev \
-    && find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} + || true
+    && find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} +
 
 # Copy root filesystem
 COPY rootfs /

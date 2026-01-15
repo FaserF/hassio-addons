@@ -1,5 +1,6 @@
 ARG BUILD_FROM
-FROM ghcr.io/moghtech/komodo-core:1.19.5 AS komodo
+ARG KOMODO_VERSION
+FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
 FROM ${BUILD_FROM}
 
 # Set shell
