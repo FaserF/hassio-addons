@@ -22,7 +22,6 @@ RUN \
         git \
         ghostscript \
         gnupg \
-        icc-profiles-free \
         imagemagick \
         jq \
         libffi-dev \
@@ -30,7 +29,7 @@ RUN \
         libpq-dev \
         libxml2-dev \
         libxslt-dev \
-        mariadb-connector-c-dev \
+        mariadb-dev \
         postgresql-client \
         python3 \
         python3-dev \
@@ -89,7 +88,19 @@ RUN \
         libxslt-dev \
         zlib-dev \
         jpeg-dev \
-    && find /usr/local/lib/python3* -name '__pycache__' -exec rm -rf {} +
+        openjpeg-dev \
+        tiff-dev \
+        freetype-dev \
+        lcms2-dev \
+        libwebp-dev \
+        tcl-dev \
+        tk-dev \
+        harfbuzz-dev \
+        fribidi-dev \
+        xcb-util-image-dev \
+        mariadb-dev \
+        libpq-dev \
+    && find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} + || true
 
 # Copy root filesystem
 COPY rootfs /

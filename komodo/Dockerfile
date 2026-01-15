@@ -30,7 +30,7 @@ RUN \
 COPY rootfs /
 
 # Copy Komodo binary
-COPY --from=komodo /usr/bin/komodo /usr/bin/komodo
+COPY --from=komodo /usr/local/bin/core /usr/bin/komodo
 
 # Build arguments
 ARG BUILD_ARCH

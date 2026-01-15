@@ -1,4 +1,10 @@
-param($Addon, $Config, $OutputDir, $RepoRoot, $ContainerName)
+param(
+    [Parameter(Mandatory)]$Addon,
+    [Parameter(Mandatory)]$Config,
+    [Parameter(Mandatory)]$OutputDir,
+    [Parameter(Mandatory)]$RepoRoot,
+    [Parameter(Mandatory)]$ContainerName
+)
 
 Write-Host "    [Custom] verifying Paperless-ngx specific functionality..." -ForegroundColor Cyan
 
@@ -21,6 +27,7 @@ if ($content -match "Paperless-ngx" -or $content -match "Django") {
     Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "PASS" -Message "Functionality Verified"
 } else {
     Write-Host "    [Custom] ❌ Content verification failed. Output sample:" -ForegroundColor Red
-    Write-Host ($content | Select-Object -First 5)
+    $sample = $content -split "`r`n" | Select-Object -First 5
+    Write-Host $sample
     Add-Result -Addon $Addon.Name -Check "CustomTests" -Status "FAIL" -Message "Content verification failed"
 }

@@ -1,4 +1,4 @@
-#!/usr/command/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
 export PAPERLESS_DATA_DIR=/site/data

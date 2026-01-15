@@ -4,8 +4,16 @@ set -e
 
 # Wait for MongoDB
 bashio::log.info "Waiting for MongoDB..."
+MAX_RETRIES=30
+COUNT=0
 while ! nc -z localhost 27017; do
+  if [ "$COUNT" -ge "$MAX_RETRIES" ]; then
+      bashio::log.error "MongoDB failed to start within timeout."
+      exit 1
+  fi
+  bashio::log.info "Waiting for MongoDB... (Attempt $((COUNT+1))/$MAX_RETRIES)"
   sleep 1
+  COUNT=$((COUNT+1))
 done
 bashio::log.info "MongoDB is ready."
 
@@ -16,5 +24,4 @@ export KOMODO_PORT="9120"
 
 bashio::log.info "Starting Komodo..."
 exec /usr/bin/komodo \
-    --port "${KOMODO_PORT}" \
-    --mongo-uri "${KOMODO_DATABASE_URI}"
+    --port "${KOMODO_PORT}"

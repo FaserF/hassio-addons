@@ -1,4 +1,4 @@
-#!/usr/command/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
 export PAPERLESS_DATA_DIR=/site/data
@@ -14,12 +14,14 @@ python3 /usr/src/paperless/manage.py migrate
 
 # Create superuser if configured
 if bashio::config.has_value 'admin_user' && bashio::config.has_value 'admin_password'; then
-    USERNAME=$(bashio::config 'admin_user')
-    PASSWORD=$(bashio::config 'admin_password')
-    EMAIL="${USERNAME}@example.com"
+    export DJANGO_SUPERUSER_USERNAME=$(bashio::config 'admin_user')
+    export DJANGO_SUPERUSER_PASSWORD=$(bashio::config 'admin_password')
+    export DJANGO_SUPERUSER_EMAIL="${DJANGO_SUPERUSER_USERNAME}@example.com"
 
-    bashio::log.info "Creating/Updating admin user: $USERNAME"
-    python3 /usr/src/paperless/manage.py manage_superuser --username "$USERNAME" --password "$PASSWORD" --email "$EMAIL" || true
+    bashio::log.info "Creating admin user: $DJANGO_SUPERUSER_USERNAME"
+    if ! python3 /usr/src/paperless/manage.py createsuperuser --noinput; then
+        bashio::log.warning "Failed to create superuser (it usually means it already exists)."
+    fi
 fi
 
 bashio::log.info "Paperless-ngx initialization complete."

@@ -5,9 +5,10 @@ set -e
 bashio::log.info "Starting MongoDB..."
 
 # Ensure data directory exists
+# Ensure data directory exists and has correct permissions
 if [ ! -d /data/db ]; then
     mkdir -p /data/db
-    chown mongodb:mongodb /data/db
 fi
+chown -R mongodb:mongodb /data/db
 
 exec sudo -u mongodb mongod --dbpath /data/db --bind_ip 127.0.0.1

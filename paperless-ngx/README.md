@@ -36,6 +36,9 @@ The username for the initial superuser. Default: `admin`.
 
 The password for the initial superuser. Default: `password`.
 
+> [!WARNING]
+> Change this password immediately after installation!
+
 ### Option: `ocr_language`
 
 The default language for OCR. Default: `deu` (German). You can also use `eng` (English).

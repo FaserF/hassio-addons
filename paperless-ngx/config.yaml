@@ -25,15 +25,13 @@ options:
   time_zone: "Europe/Berlin"
   ocr_language: "deu"
   admin_user: "admin"
-  admin_password: "password"
-  secret_key: "change_me_to_something_secure"
   log_level: info
 schema:
   url: url?
   filename_format: str
   time_zone: str
   ocr_language: str
-  admin_user: str
+  admin_user: str?
   admin_password: password
   secret_key: password
   log_level: list(trace|debug|info|notice|warning|error|fatal)

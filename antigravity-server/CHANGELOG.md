@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 (2026-01-15)
+
+### 🐛 Bug Fixes
+
+- Fix Google Chrome wrapper script generation in Dockerfile (fix "Failed to execute default Web Browser")
+
 ## 1.1.1 (2026-01-14)
 
 ### 🚀 Other

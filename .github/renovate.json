@@ -199,13 +199,12 @@
         "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
-      "datasourceTemplate": "github-releases",
       "depNameTemplate": "Eidolf/Docker-AntiGravity"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/(^|/)build.yaml$"
+        "/(^|/)build.yaml$/"
       ],
       "matchStrings": [
         "KOMODO_VERSION: (?<currentValue>.+?)\\s+"
@@ -255,7 +254,7 @@
       "description": "Track Paperless-ngx version in Dockerfile and build.yaml",
       "managerFilePatterns": [
         "/(^|/)Dockerfile$/",
-        "/(^|/)build.yaml$"
+        "/(^|/)build.yaml$/"
       ],
       "matchStrings": [
         "ARG PAPERLESS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+",
