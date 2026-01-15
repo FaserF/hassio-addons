@@ -1,10 +1,27 @@
-# Home Assistant Add-on: Paperless-ngx
+# Paperless-ngx
+
+![Logo](logo.png)
+
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_paperless-ngx)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.0.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-paperless-ngx)
+![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
+
+> Community-supported Paperless-ngx Add-on for Home Assistant
+
+---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 Scan, index, and archive all of your physical documents.
-
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armv7 Architecture][armv7-shield]
-
-## About
 
 [Paperless-ngx][paperless-ngx] is a community-supported open-source document management system that transforms your physical documents into a searchable online archive so you can keep less paper.
 
@@ -24,31 +41,26 @@ This add-on brings Paperless-ngx to Home Assistant OS, fully integrated with Ing
 3. Configure your preferences in the `Configuration` tab (Time Zone, OCR Language, Admin User).
 4. Start the add-on.
 
-## Configuration
+---
 
-**Note**: The add-on creates a default admin user on first start if one does not exist.
+## ⚙️ Configuration
 
-### Option: `admin_user`
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
-The username for the initial superuser. Default: `admin`.
+### Options
 
-### Option: `admin_password`
+```yaml
+admin_user: admin
+filename_format: '{created_year}/{correspondent}/{title}'
+log_level: info
+ocr_language: deu
+time_zone: Europe/Berlin
+url: ''
+```
 
-The password for the initial superuser. Default: `password`.
+---
 
-> [!WARNING]
-> Change this password immediately after installation!
+## 👨‍💻 Credits & License
 
-### Option: `ocr_language`
-
-The default language for OCR. Default: `deu` (German). You can also use `eng` (English).
-
-## Support
-
-Got questions?
-You can open an issue here on GitHub.
-
-[paperless-ngx]: https://github.com/paperless-ngx/paperless-ngx
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
