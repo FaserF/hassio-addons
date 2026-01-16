@@ -17,8 +17,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3008,SC1091
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.1.2"
 ENV ADDON_NAME="Antigravity-Server"
