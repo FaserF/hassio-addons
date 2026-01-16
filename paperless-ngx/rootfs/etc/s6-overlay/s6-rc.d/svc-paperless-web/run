@@ -12,6 +12,7 @@ export PAPERLESS_OCR_LANGUAGE="$(bashio::config 'ocr_language')"
 export PAPERLESS_FILENAME_FORMAT="$(bashio::config 'filename_format')"
 
 bashio::log.info "Starting Paperless Webserver..."
+cd /usr/src/paperless
 exec gunicorn \
     --bind 0.0.0.0:8000 \
     --workers 2 \

@@ -12,4 +12,5 @@ export PAPERLESS_OCR_LANGUAGE="$(bashio::config 'ocr_language')"
 export PAPERLESS_FILENAME_FORMAT="$(bashio::config 'filename_format')"
 
 bashio::log.info "Starting Paperless Document Consumer..."
+cd /usr/src/paperless
 exec python3 /usr/src/paperless/manage.py document_consumer
