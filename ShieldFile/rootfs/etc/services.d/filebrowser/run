@@ -193,7 +193,7 @@ case "${LOG_LEVEL}" in
         error|fatal) LOG_LEVEL="error" ;;
         *)           LOG_LEVEL="info" ;;
     esac
-fi
+
 
 bashio::log.info "🚀 Starting FileBrowser backend on 127.0.0.1:8080..."
 exec filebrowser \
