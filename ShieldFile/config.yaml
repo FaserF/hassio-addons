@@ -28,7 +28,7 @@ options:
     - username: "admin"
       password: "changeme1234"
   base_directory: "/share"
-  port: 8445
+  port: 8443
   log_level: "info"
 schema:
   certfile: str
