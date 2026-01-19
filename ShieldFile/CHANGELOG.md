@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2.2 (2026-01-19)
+
+### 📦 Dependencies
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.55.0 [skip-tests] ([`bda29b1d`](https://github.com/FaserF/hassio-addons/commit/bda29b1d264f0c095336a3010460eaeefc9b6d9a))
+- Update config.yaml ([`27d02ee0`](https://github.com/FaserF/hassio-addons/commit/27d02ee03585ec949cbd82b6112266e2282e8816))
+- Update run ([`baa022dc`](https://github.com/FaserF/hassio-addons/commit/baa022dc0350a7a15a5a00464f32a43c5ae8df1a))
+- Update config.yaml ([`9ee758a4`](https://github.com/FaserF/hassio-addons/commit/9ee758a4bacdc46fe5af5188b7fbbb1a9082a2d6))
+- Update 01-config.sh ([`c62363b6`](https://github.com/FaserF/hassio-addons/commit/c62363b632ce87660f801652d2815f88a06f816a))
+- Update 01-config.sh ([`2b3e0e49`](https://github.com/FaserF/hassio-addons/commit/2b3e0e495835d63268721aedaed4410fd174eb9d))
+- Update run ([`0cef4e26`](https://github.com/FaserF/hassio-addons/commit/0cef4e2650c4ab7044469e4a4c8aa2b94bcc0da3))
+
+### 🚀 Other
+- startup fixes ([`c2605eb4`](https://github.com/FaserF/hassio-addons/commit/c2605eb42df0ea94125946cfcb2cbaaff4b3b674))
+- startup fixes ([`5c1befe7`](https://github.com/FaserF/hassio-addons/commit/5c1befe7d74d5eb842ed654d8a9c7ae5a01fee22))
+- fix data not being persistent ([`6c82ed03`](https://github.com/FaserF/hassio-addons/commit/6c82ed037bb028cc2aec435e32e97a8c2e763629))
+- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
+
+
 ## 2.2.1 (2026-01-14)
 
 ### 📦 Dependencies
