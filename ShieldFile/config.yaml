@@ -8,11 +8,11 @@ arch:
   - amd64
 init: false
 ingress: true
-ingress_port: 8443
+ingress_port: 8099
 panel_icon: mdi:shield-lock
 ports:
 
-  8443/tcp: 8445
+  8443/tcp: 8443
 ports_description:
   8443/tcp: "Direct Secure Access (HTTPS)"
 map:
