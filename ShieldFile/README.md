@@ -51,7 +51,7 @@ base_directory: /share
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
-port: 8445
+port: 8443
 users:
 - password: changeme1234
   username: admin
