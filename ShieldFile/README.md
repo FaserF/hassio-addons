@@ -53,7 +53,7 @@ keyfile: privkey.pem
 log_level: info
 port: 8445
 users:
-- password: changeme
+- password: changeme1234
   username: admin
 ```
 
