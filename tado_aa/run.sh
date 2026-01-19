@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-	local NAME="Tado Auto Assist"
+
 	local SLUG="tado_aa"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

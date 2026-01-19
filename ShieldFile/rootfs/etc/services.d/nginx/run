@@ -14,7 +14,7 @@ _show_startup_banner() {
     if [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
-    local NAME="ShieldFile"
+
     local SLUG="shieldfile"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -196,8 +196,6 @@ case "${LOG_LEVEL}" in
         *)           NGINX_LOG_LEVEL="warn" ;;
     esac
     sed -i -E "s/error_log .*/error_log \/dev\/stderr ${NGINX_LOG_LEVEL};/g" /etc/nginx/nginx.conf
-else
-    sed -i -E "s/error_log .*/error_log \/dev\/stderr info;/g" /etc/nginx/nginx.conf
-fi
+
 
 exec nginx -g 'daemon off;'
