@@ -26,7 +26,7 @@ options:
   keyfile: "privkey.pem"
   users:
     - username: "admin"
-      password: "changeme"
+      password: "changeme1234"
   base_directory: "/share"
   port: 8445
   log_level: "info"
