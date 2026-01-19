@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.2 (2026-01-19)
+
+### 📦 Dependencies
+- ⬆️ Update dependency pino to v10.2.1 [skip-tests] ([`6ab7f202`](https://github.com/FaserF/hassio-addons/commit/6ab7f202fa17ec2f98c8432ea62f89950315c32d))
+- ⬆️ Update dependency pino to v10.2.0 [skip-tests] (#587) [skip-tests] ([`2ecca7d8`](https://github.com/FaserF/hassio-addons/commit/2ecca7d849914e77a067ad71322e18bf8b0697d7))
+
+### 🚀 Other
+- standardized log level handling between addons ([`cf4bc264`](https://github.com/FaserF/hassio-addons/commit/cf4bc264edca7956fb4ae13ae76b22c8c5afafac))
+- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
+- New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
+- small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
+
+
 ## 0.5.1 (2026-01-14)
 
 ### 📦 Dependencies
