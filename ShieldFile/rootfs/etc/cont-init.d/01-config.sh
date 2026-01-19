@@ -66,7 +66,7 @@ if bashio::config.has_value 'users'; then
 		fi
 
 		# Check if user already exists
-		if filebrowser users find "$USERNAME" --database "$DB_PATH"; then
+		if filebrowser users find "$USERNAME" --database "$DB_PATH" &>/dev/null; then
 			# User exists - update password
 			if filebrowser users update "$USERNAME" --password "$PASSWORD" --perm.admin --database "$DB_PATH"; then
 				bashio::log.info "  Updated user: $USERNAME"
@@ -90,12 +90,12 @@ if [ "$user_count" -eq 0 ]; then
 	bashio::log.warning "No users configured in addon settings!"
 
 	# Check if default admin already exists in database
-	if filebrowser users find "admin" --database "$DB_PATH"; then
+	if filebrowser users find "admin" --database "$DB_PATH" &>/dev/null; then
 		bashio::log.info "  Default 'admin' user already exists in database."
 	else
-		bashio::log.warning "  Creating default user: admin / changeme"
+		bashio::log.warning "  Creating default user: admin / changeme1234"
 		bashio::log.warning "  ⚠️  PLEASE CHANGE THE DEFAULT PASSWORD!"
-		if filebrowser users add "admin" "changeme" --perm.admin --database "$DB_PATH"; then
+		if filebrowser users add "admin" "changeme1234" --perm.admin --database "$DB_PATH"; then
 			bashio::log.info "  Default admin user created successfully."
 		else
 			bashio::log.error "  Failed to create default admin user!"
