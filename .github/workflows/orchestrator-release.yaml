@@ -58,28 +58,9 @@ permissions:
   pull-requests: read
 
 env:
-  # Addons that should get auto-releases on dependency updates
-  AUTO_RELEASE_ADDONS: |
-    homeassistant-test-instance
-    wiki.js
-    wiki.js3
-    bentopdf
-    er-dashboard
-    matterbridge
-    pterodactyl-wings
-    AegisBot
-    solumati
-    netboot-xyz
-    antigravity-server
-    whatsapp
-    switch_lan_play
-    nginx
-    wordpress
-    n8n
-    tado_aa
-    bash_script_executer
-    planka
-    tt-rss
+  # Addons to ignore for auto-releases (Blacklist)
+  AUTO_RELEASE_IGNORE: |
+    sap-abap-cloud-dev
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge
@@ -387,7 +368,7 @@ jobs:
               # Detect NEW Add-ons (config.yaml added)
               # ----------------------------------------------------------------
               echo "🔍 Checking for newly or modified add-ons..."
-              CLEAN_AUTO_ADDONS="$(echo "${{ env.AUTO_RELEASE_ADDONS }}" | tr '\n' ' ')"
+              CLEAN_IGNORE_ADDONS="$(echo "${{ env.AUTO_RELEASE_IGNORE }}" | tr '\n' ' ')"
 
               # Loop through changed files to detect affected addons
               for file in $CHANGED; do
@@ -408,13 +389,15 @@ jobs:
                         fi
                     fi
 
-                    # 2. Detect updates for AUTO_RELEASE_ADDONS
-                    # If any file in an AUTO_RELEASE_ADDON changed, prepare it for release
-                    if [[ " $CLEAN_AUTO_ADDONS " == *" $addon_dir "* ]]; then
+                    # 2. Detect updates for ALL addons (except ignored)
+                    # If any file changed, prepare it for release unless ignored
+                    if [[ " $CLEAN_IGNORE_ADDONS " != *" $addon_dir "* ]]; then
                        if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
                           echo "  ✅ Added $addon_dir (Changed file: $file)"
                           [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
                        fi
+                    else
+                       echo "  ⏭️ Skipping ignored addon: $addon_dir"
                     fi
                  fi
               done
