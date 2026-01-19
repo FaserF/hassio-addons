@@ -2,7 +2,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 
 # Define external images as build stages (fixes DL3022)
 # hadolint ignore=DL3007
-FROM coredns/coredns:1.14.0 AS coredns
+FROM coredns/coredns:1.14.1 AS coredns
 
 # hadolint ignore=DL3007
 FROM cloudflare/cloudflared:2025.11.1 AS cloudflared

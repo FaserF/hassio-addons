@@ -6,6 +6,7 @@ Prepare the unsupported branch.
 3. Updates addon names to include "(Unsupported)" suffix.
 4. Cleans config keys if needed (handled mostly by bump_version or prepare_edge).
 """
+
 import json
 import os
 import re
