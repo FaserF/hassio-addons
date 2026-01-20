@@ -299,8 +299,11 @@ jobs:
 
             if [ "$HAS_SAFE" != "true" ]; then
               # Check PR Title for safe patterns (Renovate)
-              # Matches: "⬆️ Update dependency..." and "⬆️ Update ... Docker tag..."
-              if [[ "$PR_TITLE" =~ ^⬆️\ Update\ dependency || "$PR_TITLE" =~ ^⬆️\ Update\ .*\ Docker\ tag ]]; then
+              echo "DEBUG: Checking PR Title: '$PR_TITLE'"
+              REGEX_DEP="^⬆️ Update dependency"
+              REGEX_TAG="^⬆️ Update .* Docker tag"
+
+              if [[ "$PR_TITLE" =~ $REGEX_DEP ]] || [[ "$PR_TITLE" =~ $REGEX_TAG ]]; then
                 echo "✅ Safe PR Title detected (Renovate): $PR_TITLE"
                 HAS_SAFE="true"
               else
