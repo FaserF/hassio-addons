@@ -1,5 +1,12 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+set -e
+
+bashio::log.info "Waiting for MySQL service..."
+if ! bashio::services.available 'mysql'; then
+    bashio::log.error "MySQL service is not available!"
+    bashio::exit.nok "MySQL service required"
+fi
 
 export PAPERLESS_DATA_DIR=/site/data
 export PAPERLESS_MEDIA_ROOT=/site/media
@@ -11,6 +18,13 @@ export PAPERLESS_DBPORT=$(bashio::services.mysql.port)
 export PAPERLESS_DBNAME=$(bashio::services.mysql.database)
 export PAPERLESS_DBUSER=$(bashio::services.mysql.username)
 export PAPERLESS_DBPASS=$(bashio::services.mysql.password)
+export PAPERLESS_URL="$(bashio::config 'url')"
+export PAPERLESS_SECRET_KEY="$(bashio::config 'secret_key')"
+export PAPERLESS_TIME_ZONE="$(bashio::config 'time_zone')"
+export PAPERLESS_OCR_LANGUAGE="$(bashio::config 'ocr_language')"
+export PAPERLESS_FILENAME_FORMAT="$(bashio::config 'filename_format')"
+
+bashio::log.info "MySQL connection: ${PAPERLESS_DBUSER}@${PAPERLESS_DBHOST}:${PAPERLESS_DBPORT}/${PAPERLESS_DBNAME}"
 
 # Create directories if they don't exist
 mkdir -p "$PAPERLESS_DATA_DIR" "$PAPERLESS_MEDIA_ROOT" "$PAPERLESS_CONSUMPTION_DIR"
@@ -39,14 +53,20 @@ if bashio::config.true 'reset_database'; then
 
     rm -f "$PAPERLESS_DATA_DIR/admin_created"
 
-    bashio::addon.option 'reset_database'
-    bashio::addon.option 'reset_database_confirm'
+    # Reset options after successful reset (non-fatal if function doesn't exist)
+    set +e
+    bashio::addon.option 'reset_database' 2>/dev/null || true
+    bashio::addon.option 'reset_database_confirm' 2>/dev/null || true
+    set -e
 
     bashio::log.info "Database reset complete."
 fi
 
 bashio::log.info "Running database migrations..."
-python3 /usr/src/paperless/manage.py migrate
+if ! python3 /usr/src/paperless/manage.py migrate; then
+    bashio::log.error "Database migrations failed!"
+    bashio::exit.nok "Failed to run database migrations"
+fi
 
 # Create superuser if configured
 if ! bashio::fs.file_exists "$PAPERLESS_DATA_DIR/admin_created"; then

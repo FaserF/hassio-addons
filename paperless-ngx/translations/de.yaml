@@ -20,3 +20,12 @@ configuration:
   filename_format:
     name: "Dateinamenformat"
     description: "Format für gespeicherte Dateinamen."
+  log_level:
+    name: "Protokollierungsstufe"
+    description: "Die Protokollierungsstufe für das Add-on festlegen."
+  reset_database:
+    name: "Datenbank zurücksetzen"
+    description: "Die Datenbank zurücksetzen (mit Vorsicht verwenden)."
+  reset_database_confirm:
+    name: "Datenbank-Reset bestätigen"
+    description: "Datenbank-Reset bestätigen (muss auf true gesetzt werden, um zurückzusetzen)."

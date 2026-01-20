@@ -20,3 +20,12 @@ configuration:
   filename_format:
     name: "Filename Format"
     description: "Format for stored filenames."
+  log_level:
+    name: "Log Level"
+    description: "Set the log level for the add-on."
+  reset_database:
+    name: "Reset Database"
+    description: "Reset the database (use with caution)."
+  reset_database_confirm:
+    name: "Reset Database Confirmation"
+    description: "Confirm database reset (must be true to reset)."
