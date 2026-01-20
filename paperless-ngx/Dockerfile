@@ -15,7 +15,6 @@ ENV \
 # Install Alpine dependencies
 # hadolint ignore=DL3018,DL3013
 
-
 # hadolint ignore=DL3013
 
 # Addon metadata (injected by CI)
