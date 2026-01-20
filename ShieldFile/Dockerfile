@@ -39,7 +39,7 @@ RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6
 
 # Healthcheck
 HEALTHCHECK \
-    --interval=30s --timeout=3s \
+    --start-period=60s --interval=30s --timeout=10s --retries=3 \
     CMD curl --fail http://127.0.0.1:8098/ || exit 1
 
 # Labels

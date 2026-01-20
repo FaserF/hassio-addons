@@ -20,7 +20,7 @@ ports_description:
 ingress: true
 ingress_port: 8000
 options:
-  url: ''
+  url:
   filename_format: '{created_year}/{correspondent}/{title}'
   time_zone: Europe/Berlin
   ocr_language: deu
