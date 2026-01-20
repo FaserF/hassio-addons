@@ -58,7 +58,7 @@ reset_database: false
 reset_database_confirm: false
 secret_key: changeme
 time_zone: Europe/Berlin
-url: ''
+url: null
 ```
 
 ---
