@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.2 (2026-01-20)
+
+### 📦 Dependencies
+- ⬆️ Update dependency paperless-ngx/paperless-ngx to v2.20.5 [skip-tests] ([`0b4f424c`](https://github.com/FaserF/hassio-addons/commit/0b4f424c304684b4ab5e91936349a10edf1fb4f6))
+
+### 🚀 Other
+- Paperless & ShieldFile startup fixes ([`159b13a1`](https://github.com/FaserF/hassio-addons/commit/159b13a1325ad6ccb66bce6fa309b17672a76d91))
+- Startup fixes ([`a1bf776d`](https://github.com/FaserF/hassio-addons/commit/a1bf776db4e62caba5a77eaa9737c7f391de29d3))
+- New Addons: Paperless-ngx & Komodo ([`72c3a1b2`](https://github.com/FaserF/hassio-addons/commit/72c3a1b29526ec52b2f7c8a0d33e43138cfbec62))
+
+
 ## 0.0.1
 
 - Initial release of Paperless-ngx Add-on

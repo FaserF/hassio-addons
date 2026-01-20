@@ -15,13 +15,15 @@ ENV \
 # Install Alpine dependencies
 # hadolint ignore=DL3018,DL3013
 
+
+# hadolint ignore=DL3013
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.0.1"
 ENV ADDON_NAME="Paperless-ngx"
 ENV ADDON_SLUG="paperless-ngx"
 ENV ADDON_UNSUPPORTED="false"
 
-# hadolint ignore=DL3013
 RUN \
     apk add --no-cache \
         build-base \
