@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -e
+
+bashio::log.info "Initializing Komodo..."
+
+# Setup directories
+mkdir -p /data/komodo
+
+bashio::log.info "Komodo initialization complete."
