@@ -103,7 +103,10 @@ jobs:
           INPUT_ADDON: ${{ github.event.inputs.addon }}
           INPUT_VERSION: ${{ github.event.inputs.version }}
           DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -e
           ADDONS=""
@@ -294,26 +297,22 @@ jobs:
               fi
             done
 
-            # If no safe labels, check if title matches dependency update pattern
-            # Pattern: "Update dependency ... to v..." or "Update dependency ... to ..."
             if [ "$HAS_SAFE" != "true" ]; then
-               if echo "$PR_TITLE" | grep -qE "Update dependency .* to v?.*"; then
-                  HAS_SAFE="true"
-                  echo "✅ Safe PR title detected: $PR_TITLE"
-               else
-                  echo "ℹ️ PR title does not match safe pattern: $PR_TITLE"
-               fi
-            fi
-
-            if [ "$HAS_SAFE" != "true" ]; then
-              echo "No safe labels or title pattern found"
-              {
-                echo "should_release=false"
-                echo "addons=[]"
-                echo "is_auto=true"
-                echo "version_type=patch"
-              } >> "$GITHUB_OUTPUT"
-              exit 0
+              # Check PR Title for safe patterns (Renovate)
+              # Matches: "⬆️ Update dependency..." and "⬆️ Update ... Docker tag..."
+              if [[ "$PR_TITLE" =~ ^⬆️\ Update\ dependency || "$PR_TITLE" =~ ^⬆️\ Update\ .*\ Docker\ tag ]]; then
+                echo "✅ Safe PR Title detected (Renovate): $PR_TITLE"
+                HAS_SAFE="true"
+              else
+                echo "No safe labels or safe title patterns found"
+                {
+                  echo "should_release=false"
+                  echo "addons=[]"
+                  echo "is_auto=true"
+                  echo "version_type=patch"
+                } >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
             fi
 
             # Get changed files using PR API as primary source

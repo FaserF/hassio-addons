@@ -42,7 +42,17 @@ jobs:
               --jq '.[0] | {number: .number, author: .user.login}' 2>/dev/null || echo "")
 
             if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
-              echo "No PR found for commit $HEAD_SHA"
+              echo "No PR found for commit $HEAD_SHA via SHA lookup. Trying branch fallback..."
+              HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
+              if [ -n "$HEAD_BRANCH" ]; then
+                 echo "Searching for open PRs with head branch: $HEAD_BRANCH"
+                 # Only look for open PRs from the same repo (forks might be tricky, but this handles the main use case)
+                 PR_DATA=$(gh pr list --head "$HEAD_BRANCH" --state open --json number,author --jq '.[0] | {number: .number, author: .author.login}')
+              fi
+            fi
+
+            if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
+              echo "No PR found for commit $HEAD_SHA or branch ${{ github.event.workflow_run.head_branch }}"
               echo "found=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
