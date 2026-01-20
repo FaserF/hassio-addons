@@ -64,3 +64,5 @@ url: ''
 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
+
+[paperless-ngx]: https://github.com/paperless-ngx/paperless-ngx

@@ -2,6 +2,8 @@
 # shellcheck disable=SC1091
 
 bashio::log.info "🛡️ Initializing ShieldFile..."
+echo "DEBUG: ShieldFile Init Script Starting..."
+
 
 # Define paths
 DB_DIR="/data/shieldfile"
@@ -126,7 +128,7 @@ mkdir -p /run/nginx /etc/nginx/http.d
 cat <<EOF >/etc/nginx/http.d/default.conf
 # Ingress Server
 server {
-    listen 8099;
+    listen 8098;
     server_name _;
 
     # Allow large file uploads

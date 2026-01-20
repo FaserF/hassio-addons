@@ -21,6 +21,7 @@ ENV ADDON_NAME="Paperless-ngx"
 ENV ADDON_SLUG="paperless-ngx"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3013
 RUN \
     apk add --no-cache \
         build-base \
@@ -106,8 +107,8 @@ RUN \
         fribidi-dev \
         xcb-util-image-dev \
         mariadb-dev \
-        libpq-dev
-RUN find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} + || true
+        libpq-dev \
+    && find /usr/lib/python3* -name '__pycache__' -exec rm -rf {} + || true
 
 # Copy root filesystem
 COPY rootfs /

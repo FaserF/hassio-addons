@@ -31,13 +31,16 @@ COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser
 # Copy rootfs
 COPY rootfs /
 
+# Set S6 behavior to fail the container if any service fails
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
 # Set executable permissions
-RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run
+RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down || true
 
 # Healthcheck
 HEALTHCHECK \
     --interval=30s --timeout=3s \
-    CMD curl --fail http://127.0.0.1:8099/ || exit 1
+    CMD curl --fail http://127.0.0.1:8098/ || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"
