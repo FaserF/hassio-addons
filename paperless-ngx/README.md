@@ -54,6 +54,9 @@ admin_user: admin
 filename_format: '{created_year}/{correspondent}/{title}'
 log_level: info
 ocr_language: deu
+reset_database: false
+reset_database_confirm: false
+secret_key: changeme
 time_zone: Europe/Berlin
 url: ''
 ```
@@ -64,5 +67,3 @@ url: ''
 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
-
-[paperless-ngx]: https://github.com/paperless-ngx/paperless-ngx
