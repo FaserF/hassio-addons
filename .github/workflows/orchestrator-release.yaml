@@ -281,6 +281,9 @@ jobs:
               fi
             done
 
+            # Get PR Title for safe check
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' || echo "")
+
             # Check for safe labels
             HAS_SAFE="false"
             CLEAN_SAFE_LABELS=$(echo "${{ env.SAFE_LABELS }}" | tr '\n' ' ')
@@ -291,8 +294,19 @@ jobs:
               fi
             done
 
+            # If no safe labels, check if title matches dependency update pattern
+            # Pattern: "Update dependency ... to v..." or "Update dependency ... to ..."
             if [ "$HAS_SAFE" != "true" ]; then
-              echo "No safe labels found"
+               if echo "$PR_TITLE" | grep -qE "Update dependency .* to v?.*"; then
+                  HAS_SAFE="true"
+                  echo "✅ Safe PR title detected: $PR_TITLE"
+               else
+                  echo "ℹ️ PR title does not match safe pattern: $PR_TITLE"
+               fi
+            fi
+
+            if [ "$HAS_SAFE" != "true" ]; then
+              echo "No safe labels or title pattern found"
               {
                 echo "should_release=false"
                 echo "addons=[]"
@@ -325,7 +339,7 @@ jobs:
 
             # Check if this is a base image update by checking PR title/description
             IS_BASE_IMAGE_UPDATE="false"
-            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' || echo "")
+            # PR_TITLE is already fetched above
             PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body' || echo "")
             if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images|Bailys|Homeassistant Addon Base|Important Update)"; then
               IS_BASE_IMAGE_UPDATE="true"
