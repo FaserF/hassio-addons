@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.4 (2026-01-21)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.1.2](https://github.com/home-assistant/core/releases/tag/2026.1.2) [skip-tests] (#592) [skip-tests] ([`c9ed70be`](https://github.com/FaserF/hassio-addons/commit/c9ed70be6470c84ad4a5f0aa01b8bf072d3a3841))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.1.1](https://github.com/home-assistant/core/releases/tag/2026.1.1) [skip-tests] (#575) [skip-tests] ([`1cc38ab9`](https://github.com/FaserF/hassio-addons/commit/1cc38ab9f9c484f8649f83dbdb3b63a707b27dd5))
+- Update run.sh ([`b7761cd2`](https://github.com/FaserF/hassio-addons/commit/b7761cd2d886837ee6cc86f6e8e6c588df27a567))
+
+### 🚀 Other
+- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
+- small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
+
+
 ## 0.2.3 (2026-01-13)
 
 ### 📦 Dependencies

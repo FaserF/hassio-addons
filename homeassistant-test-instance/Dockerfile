@@ -13,8 +13,10 @@ ENV TERM="xterm-256color"
 
 # Install dependencies for Bashio (use default shell for Alpine)
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.2"
+ENV ADDON_VERSION="0.2.3"
 ENV ADDON_NAME="Home Assistant Test Instance"
 ENV ADDON_SLUG="ha_test_instance"
 ENV ADDON_UNSUPPORTED="false"
