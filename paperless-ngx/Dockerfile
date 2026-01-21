@@ -17,8 +17,10 @@ ENV \
 
 # hadolint ignore=DL3013
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.0.1"
+ENV ADDON_VERSION="0.0.2"
 ENV ADDON_NAME="Paperless-ngx"
 ENV ADDON_SLUG="paperless-ngx"
 ENV ADDON_UNSUPPORTED="false"
