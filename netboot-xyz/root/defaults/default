@@ -1,0 +1,13 @@
+server {
+    listen 85 default_server;
+
+    root /assets;
+    index index.html index.htm;
+
+    server_name _;
+
+    location / {
+        autoindex on;
+        try_files $uri $uri/ =404;
+    }
+}

@@ -150,8 +150,8 @@ bashio::log.info "Port ${WEB_APP_PORT} is free, proceeding with startup..."
 # With host_network: true, we don't use Ingress, so SUBFOLDER should not be set
 # SUBFOLDER is only for Ingress mode, which doesn't work with host_network
 # Unset SUBFOLDER to ensure the app serves from root path "/"
-unset SUBFOLDER
-bashio::log.info "Using host_network mode - serving from root path (no SUBFOLDER)"
+# unset SUBFOLDER
+# bashio::log.info "Using host_network mode - serving from root path (no SUBFOLDER)"
 
 # Ensure the app listens on all interfaces (0.0.0.0) not just localhost
 # This is important when using host_network mode
