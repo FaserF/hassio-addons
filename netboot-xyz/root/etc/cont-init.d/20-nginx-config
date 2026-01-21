@@ -15,6 +15,14 @@ mkdir -p \
 [[ ! -f /config/nginx/site-confs/default ]] && \
   cp /defaults/default /config/nginx/site-confs/default
 
+# Check if the default nginx config listens on port 85 (to avoid conflict with webapp on 3000)
+# If it doesn't (or if it's the old default listening on 80/default), replace it
+if ! grep -q "listen 85" /config/nginx/site-confs/default; then
+    bashio::log.warning "Default nginx config does not listen on port 85. Updating to prevent conflict..."
+    mv /config/nginx/site-confs/default /config/nginx/site-confs/default.bak
+    cp /defaults/default /config/nginx/site-confs/default
+fi
+
 # Ownership
 chown -R abc:abc /assets
 chown -R abc:abc /config
