@@ -103,8 +103,6 @@ jobs:
           INPUT_ADDON: ${{ github.event.inputs.addon }}
           INPUT_VERSION: ${{ github.event.inputs.version }}
           DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
-          INPUT_VERSION: ${{ github.event.inputs.version }}
-          DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
