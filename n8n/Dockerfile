@@ -3,7 +3,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 FROM ${BUILD_FROM}
 
 # Redeclare ARG after FROM for use in build stage
-ARG N8N_VERSION=2.4.5
+ARG N8N_VERSION=2.4.6
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
