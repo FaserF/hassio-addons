@@ -13,8 +13,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.2"
+ENV ADDON_VERSION="1.1.3"
 ENV ADDON_NAME="N8n"
 ENV ADDON_SLUG="n8n"
 ENV ADDON_UNSUPPORTED="false"
