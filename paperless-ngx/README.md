@@ -50,6 +50,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
+admin_password: ''
 admin_user: admin
 filename_format: '{created_year}/{correspondent}/{title}'
 log_level: info
