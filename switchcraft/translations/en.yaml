@@ -1,0 +1,8 @@
+configuration:
+  log_level:
+    name: Log level
+    description: Control the verbosity of the log output.
+network:
+  8080/tcp:
+    name: Web Interface
+    description: Port for the SwitchCraft web interface.

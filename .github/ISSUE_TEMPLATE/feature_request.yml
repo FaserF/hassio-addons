@@ -56,6 +56,7 @@ body:
         - pterodactyl-wings
         - sap-abap-cloud-dev
         - solumati
+        - switchcraft
         - switch_lan_play
         - switch_lan_play_server
         - tado_aa
