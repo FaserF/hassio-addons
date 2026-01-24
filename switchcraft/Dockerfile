@@ -43,7 +43,7 @@ RUN curl -L -o /tmp/switchcraft.tar.gz https://github.com/FaserF/SwitchCraft/arc
     # Install bundled addons
     && mkdir -p /root/.switchcraft/addons \
     && for zip in /app/src/switchcraft/assets/addons/*.zip; do \
-        unzip -o "$zip" -d /root/.switchcraft/addons/$(basename "$zip" .zip); \
+        unzip -o "$zip" -d "/root/.switchcraft/addons/$(basename "$zip" .zip)"; \
     done
 
 # Environment variables
