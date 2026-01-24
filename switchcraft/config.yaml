@@ -16,10 +16,8 @@ map:
   - homeassistant_config:rw
 options:
   log_level: info
+  flet_secret: ""
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
-ports:
-  8080/tcp: 8080
-ports_description:
-  8080/tcp: Web interface
+  flet_secret: str?
 panel_icon: mdi:package-variant-closed

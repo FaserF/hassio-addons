@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64:7.8.3
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -50,7 +50,6 @@ RUN curl -L -o /tmp/switchcraft.tar.gz https://github.com/FaserF/SwitchCraft/arc
 ENV FLET_SERVER_IP=0.0.0.0
 ENV FLET_SERVER_PORT=8080
 ENV FLET_FORCE_WEB_SOCKET=true
-ENV FLET_SECRET=switchcraft_secure_session
 ENV FLET_REMOTE_ADDR_HEADER=X-Forwarded-For
 ENV FLET_WEB_URL=http://localhost:8080
 ENV FLET_ENTRY_URL=http://localhost:8080

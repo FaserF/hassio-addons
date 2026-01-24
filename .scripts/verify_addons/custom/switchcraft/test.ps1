@@ -21,7 +21,7 @@ for ($i = 1; $i -le $maxRetries; $i++) {
 
     # Connectivity Check
     # We use docker exec to run curl inside the container
-    $curlOutput = docker exec $ContainerName curl -s -v http://127.0.0.1:8080 2>&1
+    $curlOutput = docker exec $ContainerName curl -f -s -v http://127.0.0.1:8080 2>&1
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "    [PASS] Web interface responded successfully." -ForegroundColor Green

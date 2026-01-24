@@ -3,8 +3,25 @@
 # Home Assistant Add-on: SwitchCraft
 # Service definition
 # ==============================================================================
+LOG_LEVEL=$(bashio::config 'log_level')
+FLET_SECRET=$(bashio::config 'flet_secret')
+
+# Handle FLET_SECRET
+if [ -z "${FLET_SECRET}" ]; then
+    if [ -f "/data/flet_secret" ]; then
+        FLET_SECRET=$(cat /data/flet_secret)
+        bashio::log.info "Using persisted FLET_SECRET"
+    else
+        bashio::log.info "Generating new FLET_SECRET"
+        FLET_SECRET=$(tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
+        echo "${FLET_SECRET}" > /data/flet_secret
+    fi
+fi
+export FLET_SECRET
+
 exec uvicorn switchcraft.server.app:app \
     --host 0.0.0.0 \
     --port 8080 \
     --proxy-headers \
-    --forwarded-allow-ips='*'
+    --forwarded-allow-ips='127.0.0.1' \
+    --log-level "${LOG_LEVEL}"

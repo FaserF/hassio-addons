@@ -27,7 +27,7 @@ SwitchCraft goes beyond simple switch identification to streamline your entire a
 
 - Analyze application installers
 - Access packaging resources
-- utilize AI assistance for packaging tasks
+- Utilize AI assistance for packaging tasks
 
 ## Installation
 
