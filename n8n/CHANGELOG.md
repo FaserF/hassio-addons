@@ -3,6 +3,7 @@
 ## 1.1.4 (2026-01-23)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency n8n to v2.4.5 [skip-tests] ([`74b51c72`](https://github.com/FaserF/hassio-addons/commit/74b51c72a3e73af84901f382571bbe14a0343965))
 - ⬆️ Update dependency n8n to v2.4.4 [skip-tests] ([`253d47af`](https://github.com/FaserF/hassio-addons/commit/253d47af0dae6e73ba31aed5b5df73e446362969))
 - ⬆️ Update dependency n8n to v2.3.6 [skip-tests] (#590) [skip-tests] ([`62c96237`](https://github.com/FaserF/hassio-addons/commit/62c962377a787ca4f18532ad4185799103d14208))
@@ -11,14 +12,15 @@
 - ⬆️ Update dependency n8n to v2.3.3 [skip-tests] (#581) [skip-tests] ([`c8a218f4`](https://github.com/FaserF/hassio-addons/commit/c8a218f4bc41bccea928d094b04a66d09ea2ff3f))
 
 ### 🚀 Other
+
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
 
-
 ## 1.1.3 (2026-01-21)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency n8n to v2.4.4 [skip-tests] ([`253d47af`](https://github.com/FaserF/hassio-addons/commit/253d47af0dae6e73ba31aed5b5df73e446362969))
 - ⬆️ Update dependency n8n to v2.3.6 [skip-tests] (#590) [skip-tests] ([`62c96237`](https://github.com/FaserF/hassio-addons/commit/62c962377a787ca4f18532ad4185799103d14208))
 - ⬆️ Update dependency n8n to v2.3.5 [skip-tests] (#586) [skip-tests] ([`bb697cc9`](https://github.com/FaserF/hassio-addons/commit/bb697cc9057b38abb87c109cbabf812359739e90))
@@ -26,10 +28,10 @@
 - ⬆️ Update dependency n8n to v2.3.3 [skip-tests] (#581) [skip-tests] ([`c8a218f4`](https://github.com/FaserF/hassio-addons/commit/c8a218f4bc41bccea928d094b04a66d09ea2ff3f))
 
 ### 🚀 Other
+
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
-
 
 ## 1.1.2 (2026-01-14)
 

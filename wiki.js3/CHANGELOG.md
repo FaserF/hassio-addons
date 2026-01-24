@@ -3,13 +3,13 @@
 ## 0.5.2 (2026-01-21)
 
 ### 🚀 Other
+
 - standardized log level handling between addons ([`cf4bc264`](https://github.com/FaserF/hassio-addons/commit/cf4bc264edca7956fb4ae13ae76b22c8c5afafac))
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - Add git support to wiki.js (#577) [skip-tests] ([`26d63775`](https://github.com/FaserF/hassio-addons/commit/26d63775544a3971fcd0ed8dfb43a981fa27b323))
 - handle empty log level variable ([`568bbe5b`](https://github.com/FaserF/hassio-addons/commit/568bbe5bce289563264d87f55e8da35b9d508041))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
-
 
 ## 0.5.1 (2026-01-14)
 
