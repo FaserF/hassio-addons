@@ -135,23 +135,23 @@ server {
     client_max_body_size 0;
 
     location / {
-        proxy_pass http://127.0.0.1:8080\${INGRESS_ENTRY}/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:8080${INGRESS_ENTRY}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
     }
 }
 
 # Direct Access Server (HTTPS)
 server {
-    listen \${PORT} ssl;
+    listen ${PORT} ssl;
     server_name _;
 
-    ssl_certificate \${FULL_CERT_PATH};
-    ssl_certificate_key \${FULL_KEY_PATH};
+    ssl_certificate ${FULL_CERT_PATH};
+    ssl_certificate_key ${FULL_KEY_PATH};
     ssl_protocols TLSv1.2 TLSv1.3;
 
     # Allow large file uploads
@@ -160,17 +160,17 @@ server {
     # Redirect Root to BaseURL (Ingress Path)
     # This ensures directly accessing https://IP:PORT/ works by jumping to the correct path
     location = / {
-        return 301 \${INGRESS_ENTRY}/;
+        return 301 ${INGRESS_ENTRY}/;
     }
 
     # Handle the App Path
-    location \${INGRESS_ENTRY} {
+    location ${INGRESS_ENTRY} {
         proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
     }
 }

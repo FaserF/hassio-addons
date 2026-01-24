@@ -15,7 +15,6 @@ _show_startup_banner() {
     if [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
-    local NAME="Home Assistant Test Instance"
     local SLUG="ha_test_instance"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
