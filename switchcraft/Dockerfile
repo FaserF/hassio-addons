@@ -37,14 +37,16 @@ RUN curl -L -o /tmp/switchcraft.tar.gz https://github.com/FaserF/SwitchCraft/arc
     && tar xf /tmp/switchcraft.tar.gz -C /app --strip-components=1 \
     && rm /tmp/switchcraft.tar.gz \
     # Install dependencies (mirroring upstream Dockerfile)
-    && pip3 install --break-system-packages --no-cache-dir .[web-server] flet==0.80.4 flet-web==0.80.4 flet-charts==0.80.4 packaging \
+    && pip3 install --break-system-packages --no-cache-dir .[web-server] flet flet-web flet-charts packaging \
     # Generate Addons
     && python3 src/generate_addons.py \
     # Install bundled addons
     && mkdir -p /root/.switchcraft/addons \
+    && shopt -s nullglob \
     && for zip in /app/src/switchcraft/assets/addons/*.zip; do \
         unzip -o "$zip" -d "/root/.switchcraft/addons/$(basename "$zip" .zip)"; \
-    done
+    done \
+    && shopt -u nullglob
 
 # Environment variables
 ENV FLET_SERVER_IP=0.0.0.0

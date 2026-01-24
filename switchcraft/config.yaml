@@ -16,7 +16,6 @@ map:
   - homeassistant_config:rw
 options:
   log_level: info
-  flet_secret: ""
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   flet_secret: str?

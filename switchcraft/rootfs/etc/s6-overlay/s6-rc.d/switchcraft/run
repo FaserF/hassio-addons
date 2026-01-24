@@ -4,10 +4,10 @@
 # Service definition
 # ==============================================================================
 LOG_LEVEL=$(bashio::config 'log_level')
-FLET_SECRET=$(bashio::config 'flet_secret')
+FLET_SECRET=$(bashio::config 'flet_secret' 'null')
 
 # Handle FLET_SECRET
-if [ -z "${FLET_SECRET}" ]; then
+if [ "${FLET_SECRET}" = "null" ] || [ -z "${FLET_SECRET}" ]; then
     if [ -f "/data/flet_secret" ]; then
         FLET_SECRET=$(cat /data/flet_secret)
         bashio::log.info "Using persisted FLET_SECRET"
