@@ -25,7 +25,7 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   secret_key: str?
   base_url: str?
   reset_database: bool?

@@ -24,4 +24,4 @@ options:
   log_level: info
 schema:
   config_file: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)

@@ -15,7 +15,7 @@ panel_icon: mdi:lizard
 options:
   log_level: info
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
   9120/tcp: 9120
 ports_description:
