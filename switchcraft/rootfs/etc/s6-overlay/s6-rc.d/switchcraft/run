@@ -14,7 +14,7 @@ if [ "${FLET_SECRET}" = "null" ] || [ -z "${FLET_SECRET}" ]; then
     else
         bashio::log.info "Generating new FLET_SECRET"
         FLET_SECRET=$(tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
-        echo "${FLET_SECRET}" > /data/flet_secret
+        ( umask 077; echo "${FLET_SECRET}" > /data/flet_secret )
     fi
 fi
 export FLET_SECRET
