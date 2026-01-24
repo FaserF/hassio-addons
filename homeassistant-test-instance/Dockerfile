@@ -1,4 +1,4 @@
-ARG HA_VERSION=2026.1.2
+ARG HA_VERSION=2026.1.3
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
 FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
