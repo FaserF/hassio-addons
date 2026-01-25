@@ -557,11 +557,12 @@ try {
 
                 # Optimization: Skip redundant DockerBuild/Run if SupervisorTest handles it
                 if ("SupervisorTest" -in $activeTests) {
-                    $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { @{} }
+                    $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { $null }
 
                     $dockerAddons = $addons | Where-Object {
                         $isUnsupported = $_.FullName -match "\\.unsupported\\"
-                        $isSkipped = $skipList.ContainsKey($_.Name)
+                        $isSkipped = $false
+                        if ($skipList -and $skipList.PSObject.Properties[$_.Name]) { $isSkipped = $true }
                         return ($isUnsupported -or $isSkipped)
                     }
 

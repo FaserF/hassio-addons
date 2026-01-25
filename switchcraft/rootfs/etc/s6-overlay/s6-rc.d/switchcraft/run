@@ -3,9 +3,11 @@
 # Home Assistant Add-on: SwitchCraft
 # Service definition
 # ==============================================================================
+set -x
 LOG_LEVEL=$(bashio::config 'log_level')
 FLET_SECRET=$(bashio::config 'flet_secret' 'null')
 
+bashio::log.info "Starting secret handling..."
 # Handle FLET_SECRET
 if [ "${FLET_SECRET}" = "null" ] || [ -z "${FLET_SECRET}" ]; then
     if [ -f "/data/flet_secret" ]; then
@@ -20,8 +22,10 @@ fi
 export FLET_SECRET
 
 cd /app || bashio::exit.nok "Could not change to /app directory"
+bashio::log.info "Changed to /app"
 export PYTHONPATH="/app/src:${PYTHONPATH}"
 export HOME=/data
+bashio::log.info "Exported env vars"
 
 # SSO Environment Variables
 if bashio::config.has_value 'entra_client_id'; then

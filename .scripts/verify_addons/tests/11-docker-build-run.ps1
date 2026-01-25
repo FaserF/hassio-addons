@@ -123,10 +123,15 @@ try {
         # CONFIG: Force cleanup of the "GitHub Addon Image" if it exists, to ensure we never use it.
         # This addresses the user requirement: "never use the github addon image".
         if (Test-Path $configFile) {
-            $confObj = Get-Content $configFile | ConvertFrom-Yaml
-            if ($confObj.image) {
+            # Pure PS fallback for image extraction
+            $confContent = Get-Content $configFile
+            $img = $null
+            foreach ($l in $confContent) {
+                if ($l -match '^image:\s*["'']?([^"''\s]+)["'']?\s*$') { $img = $matches[1]; break }
+            }
+            if ($img) {
                 # Expand {arch}
-                $remoteImg = $confObj.image.Replace("{arch}", $arch)
+                $remoteImg = $img.Replace("{arch}", $arch)
                 if (docker images -q $remoteImg) {
                     Write-Host "    > Enforcing local build: Removing detected remote image '$remoteImg'..." -ForegroundColor DarkGray
                     docker rmi -f $remoteImg 2>&1 | Out-Null
