@@ -6,6 +6,13 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup application directory
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.0.1"
+ENV ADDON_NAME="SwitchCraft"
+ENV ADDON_SLUG="switchcraft"
+ENV ADDON_UNSUPPORTED="false"
+
 WORKDIR /app
 
 # Install dependencies (Python, Wine, Support)
