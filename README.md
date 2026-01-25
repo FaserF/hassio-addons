@@ -81,6 +81,7 @@ The table below shows **all add-ons** in this repository, including unsupported 
 | **[Solumati](solumati)**                                        | Solar Panel Monitoring                      | ✅     | 2026-01 |
 | **[Switch LAN Play](switch_lan_play)**                          | Nintendo Switch LAN Play Client             | ✅     | 2023-05 |
 | **[Switch LAN Play Server](switch_lan_play_server)**            | Nintendo Switch LAN Play Server             | ✅     | 2023-05 |
+| **[SwitchCraft](switchcraft)**                                  | Packaging assistant for IT Professionals    | ⚠️     | 2026-01 |
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence       | ✅     | 2023-05 |
 | **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                         | ⚠️     | 2026-01 |
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)   | ❌     | 2023-05 |

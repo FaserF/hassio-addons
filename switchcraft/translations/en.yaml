@@ -1,0 +1,29 @@
+configuration:
+  log_level:
+    name: Log level
+    description: Control the verbosity of the log output.
+  flet_secret:
+    name: Flet Secret
+    description: Private secret key for Flet sessions. Warning - changing this invalidates existing sessions.
+  base_url:
+    name: Base URL
+    description: The external URL where this add-on is accessible (required for OAuth).
+  entra_client_id:
+    name: Entra ID Client ID
+    description: Client ID for Microsoft Entra ID (Old Azure AD) authentication.
+  entra_client_secret:
+    name: Entra ID Client Secret
+    description: Client Secret for Microsoft Entra ID authentication.
+  entra_tenant_id:
+    name: Entra ID Tenant ID
+    description: Tenant ID for Microsoft Entra ID authentication.
+  github_client_id:
+    name: GitHub Client ID
+    description: Client ID for GitHub authentication.
+  github_client_secret:
+    name: GitHub Client Secret
+    description: Client Secret for GitHub authentication.
+network:
+  8080/tcp:
+    name: Web Interface
+    description: Port for the SwitchCraft web interface.

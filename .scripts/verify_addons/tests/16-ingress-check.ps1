@@ -25,48 +25,33 @@ Write-Header "16. Ingress Validation"
 function Get-IngressConfig {
     <#
     .SYNOPSIS
-        Extracts ingress-related configuration from config.yaml using Python.
-    .PARAMETER Path
-        Path to config.yaml file.
-    .OUTPUTS
-        Hashtable with ingress configuration or $null if not enabled.
+        Extracts ingress-related configuration from config.yaml (Pure PS).
     #>
     param([Parameter(Mandatory)][string]$Path)
 
-    $script = @'
-import sys, yaml, json
-try:
-    conf = yaml.safe_load(open(sys.argv[1]))
-    ingress = conf.get("ingress", False)
-    if ingress is True:
-        result = {
-            "enabled": True,
-            "ingress_port": conf.get("ingress_port"),
-            "ingress_entry": conf.get("ingress_entry"),
-            "ingress_stream": conf.get("ingress_stream", False),
-            "panel_icon": conf.get("panel_icon"),
-            "panel_title": conf.get("panel_title"),
-            "panel_admin": conf.get("panel_admin", True),
-            "ports": conf.get("ports", {})
+    if (-not (Test-Path $Path)) { return $null }
+    $content = Get-Content $Path
+    $res = @{ enabled = $false }
+    $ports = @{}
+    $inPorts = $false
+
+    foreach ($line in $content) {
+        if ($line -match '^ingress:\s*true\s*$') { $res.enabled = $true }
+        if ($line -match '^ingress_port:\s*(\d+)\s*$') { $res.ingress_port = [int]$matches[1] }
+        if ($line -match '^ingress_entry:\s*["'']?([^"''\s]+)["'']?\s*$') { $res.ingress_entry = $matches[1] }
+        if ($line -match '^ingress_stream:\s*true\s*$') { $res.ingress_stream = $true }
+        if ($line -match '^panel_icon:\s*["'']?([^"''\s]+)["'']?\s*$') { $res.panel_icon = $matches[1] }
+        if ($line -match '^panel_title:\s*["'']?([^"''\s]+)["'']?\s*$') { $res.panel_title = $matches[1] }
+
+        # Basic ports parsing
+        if ($line -match '^ports:\s*$') { $inPorts = $true; continue }
+        if ($inPorts -and $line -match '^\w+:') { $inPorts = $false }
+        if ($inPorts -and $line -match '^\s*["'']?(\d+/\w+)["'']?:\s*(\d+|null)\s*$') {
+            $ports[$matches[1]] = $matches[2]
         }
-        print(json.dumps(result))
-    else:
-        print(json.dumps({"enabled": False}))
-except Exception as e:
-    print(json.dumps({"error": str(e)}))
-'@
-    try {
-        $pathArg = $Path.Replace('\','/')
-        $json = python -c $script $pathArg 2>&1
-        $res = $json | Out-String
-        if ($LASTEXITCODE -eq 0 -and $res -match '^\s*\{.*\}\s*$') {
-            return $res.Trim() | ConvertFrom-Json
-        }
-        return $null
     }
-    catch {
-        return $null
-    }
+    $res.ports = $ports
+    return $res
 }
 
 foreach ($addon in $Addons) {

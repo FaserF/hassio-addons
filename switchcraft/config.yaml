@@ -1,0 +1,30 @@
+---
+name: SwitchCraft
+version: 0.0.1
+slug: switchcraft
+description: SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.
+url: https://github.com/FaserF/SwitchCraft
+arch:
+  - aarch64
+  - amd64
+image: ghcr.io/faserf/hassio-addons-switchcraft-{arch}
+ingress: true
+ingress_entry: "/"
+ingress_port: 8080
+ports:
+  8080/tcp: 8081
+init: false
+map:
+  - homeassistant_config:rw
+options:
+  log_level: info
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  flet_secret: str?
+  base_url: str?
+  entra_client_id: str?
+  entra_client_secret: str?
+  entra_tenant_id: str?
+  github_client_id: str?
+  github_client_secret: str?
+panel_icon: mdi:package-variant-closed

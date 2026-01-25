@@ -36,8 +36,17 @@ function Add-Result {
         [Parameter(Mandatory)][string]$Addon,
         [Parameter(Mandatory)][string]$Check,
         [Parameter(Mandatory)][string]$Status,
-        [string]$Message = ""
+        [object]$Message = ""
     )
+
+    if ($null -ne $Message -and $Message -isnot [string]) {
+        if ($Message -is [array]) {
+            $Message = $Message -join "`n"
+        } else {
+            $Message = Out-String -InputObject $Message
+        }
+    }
+    $Message = [string]$Message
 
     # Check if this addon is unsupported to give a hint
     $checkRoot = if (Get-Variable -Name RepoRoot -ValueOnly -ErrorAction SilentlyContinue) { $RepoRoot } else { "." }
@@ -344,116 +353,86 @@ function Get-AddonAttributes {
 function Get-BuildFrom {
     <#
     .SYNOPSIS
-        Extracts the amd64 base image from build.yaml.
-    .PARAMETER Path
-        Path to build.yaml file.
-    .OUTPUTS
-        Base image string or $null.
+        Extracts the amd64 base image from build.yaml (Pure PS).
     #>
     param([Parameter(Mandatory)][string]$Path)
-
-    $script = @'
-import sys, yaml
-try:
-  print(yaml.safe_load(open(sys.argv[1])).get("build_from", {}).get("amd64", ""))
-except:
-  print("")
-'@
-    try {
-        $pathArg = $Path.Replace('\','/')
-        $res = python -c $script $pathArg 2>&1
-        if ($LASTEXITCODE -eq 0) { return $res.Trim() }
-        return $null
+    if (-not (Test-Path $Path)) { return $null }
+    $content = Get-Content $Path
+    foreach ($line in $content) {
+        if ($line -match '^\s*amd64:\s*["'']?([^"''\s]+)["'']?\s*$') {
+            return $matches[1]
+        }
     }
-    catch { return $null }
+    return $null
 }
 
 function Get-DefaultOptions {
     <#
     .SYNOPSIS
-        Extracts the 'options' key from config.yaml as JSON.
-    .PARAMETER Path
-        Path to config.yaml file.
-    .OUTPUTS
-        JSON string of options or "{}".
+        Extracts the 'options' block from config.yaml as JSON (Pure PS).
     #>
     param([Parameter(Mandatory)][string]$Path)
+    if (-not (Test-Path $Path)) { return "{}" }
 
-    $script = @'
-import sys, yaml, json
-try:
-  print(json.dumps(yaml.safe_load(open(sys.argv[1])).get("options", {})))
-except:
-  print("{}")
-'@
-    try {
-        $pathArg = $Path.Replace('\','/')
-        $json = python -c $script $pathArg 2>&1
-        $res = $json | Out-String
-        if ($LASTEXITCODE -eq 0 -and $res -match '^\s*\{.*\}\s*$') { return $res.Trim() }
-        return "{}"
+    $content = Get-Content $Path
+    $options = @{}
+    $inOptions = $false
+
+    foreach ($line in $content) {
+        if ($line -match '^options:\s*$') { $inOptions = $true; continue }
+        if ($inOptions -and $line -match '^\w+:') { $inOptions = $false }
+
+        if ($inOptions -and $line -match '^\s+([\w\-]+):\s*(.*)$') {
+            $key = $matches[1]
+            $val = $matches[2].Trim()
+            # Basic type conversion
+            if ($val -eq "true") { $val = $true }
+            elseif ($val -eq "false") { $val = $false }
+            elseif ($val -match '^-?\d+$') { $val = [int]$val }
+            $options[$key] = $val
+        }
     }
-    catch { return "{}" }
+    return $options | ConvertTo-Json
 }
 
 function Get-RequiredSchemaKeys {
     <#
     .SYNOPSIS
-        Extracts required keys from schema (those NOT ending with ?).
-    .PARAMETER Path
-        Path to config.yaml file.
-    .OUTPUTS
-        Comma-separated string of required key names.
+        Extracts required keys from schema (Pure PS).
     #>
     param([Parameter(Mandatory)][string]$Path)
-
-    $script = @'
-import sys, yaml
-try:
-  conf = yaml.safe_load(open(sys.argv[1]))
-  keys = []
-  for k,v in conf.get("schema", {}).items():
-    if isinstance(v, str) and not v.endswith("?"):
-      keys.append(k)
-  print(",".join(keys))
-except:
-  print("")
-'@
-    try {
-        $pathArg = $Path.Replace('\','/')
-        $res = python -c $script $pathArg 2>&1
-        if ($LASTEXITCODE -eq 0) { return $res.Trim() }
-        return ""
+    if (-not (Test-Path $Path)) { return "" }
+    $content = Get-Content $Path
+    $keys = @()
+    $inSchema = $false
+    foreach ($line in $content) {
+        if ($line -match '^schema:\s*$') { $inSchema = $true; continue }
+        if ($inSchema -and $line -match '^\w+:') { $inSchema = $false }
+        if ($inSchema -and $line -match '^\s+([\w\-]+):\s*["'']?([^"''\?]+)["'']?\s*$') {
+            $keys += $matches[1]
+        }
     }
-    catch { return "" }
+    return $keys -join ","
 }
 
 function Get-AddonSchema {
     <#
     .SYNOPSIS
-        Extracts the 'schema' key from config.yaml as JSON.
-    .PARAMETER Path
-        Path to config.yaml file.
-    .OUTPUTS
-        JSON string of schema or "{}".
+        Extracts the 'schema' block from config.yaml as JSON (Pure PS).
     #>
     param([Parameter(Mandatory)][string]$Path)
-
-    $script = @'
-import sys, yaml, json
-try:
-  print(json.dumps(yaml.safe_load(open(sys.argv[1])).get("schema", {})))
-except:
-  print("{}")
-'@
-    try {
-        $pathArg = $Path.Replace('\','/')
-        $json = python -c $script $pathArg 2>&1
-        $res = $json | Out-String
-        if ($LASTEXITCODE -eq 0 -and $res -match '^\s*\{.*\}\s*$') { return $res.Trim() }
-        return "{}"
+    if (-not (Test-Path $Path)) { return "{}" }
+    $content = Get-Content $Path
+    $schema = @{}
+    $inSchema = $false
+    foreach ($line in $content) {
+        if ($line -match '^schema:\s*$') { $inSchema = $true; continue }
+        if ($inSchema -and $line -match '^\w+:') { $inSchema = $false }
+        if ($inSchema -and $line -match '^\s+([\w\-]+):\s*(.*)$') {
+            $schema[$matches[1]] = $matches[2].Trim()
+        }
     }
-    catch { return "{}" }
+    return $schema | ConvertTo-Json
 }
 
 # --- TEST FILTERING ---
@@ -530,27 +509,45 @@ function Get-TestConfig {
         return $defaults
     }
 
-    try {
-        # Try to use powershell-yaml module if available
-        if (Get-Module -ListAvailable -Name powershell-yaml) {
-            Import-Module powershell-yaml -ErrorAction Stop
-            try {
-                $config = Get-Content $ConfigPath -Raw | ConvertFrom-Yaml
-                # Merge with defaults for any missing keys
-                foreach ($key in $defaults.Keys) {
-                    if (-not $config.ContainsKey($key)) {
-                        $config[$key] = $defaults[$key]
-                    }
-                }
-                return $config
-            } catch {
-                Write-Warning "ConvertFrom-Yaml failed: $_"
-                # Fall through to regex parser
-            }
+    # Minimal robust pure-PS YAML parser for test-config.yaml
+    $config = @{}
+    $content = Get-Content $ConfigPath
+    $section = ""
+    foreach ($line in $content) {
+        if ($line -match '^(\w+):\s*$') {
+            $section = $matches[1]
+            # Initialize based on next line if possible, but default to array if we see a dash later
+            $config[$section] = @() # Start as array, we'll convert to hashtable if we see key:val
+            continue
         }
-    } catch {
-        Write-Warning "Failed to parse config file with YAML parser: $_"
+        if ($line -match '^(\w+):\s*["'']?([^"''\(\)\{\}\[\]]+)["'']?\s*$') {
+             $config[$matches[1]] = $matches[2].Trim()
+             $section = ""
+        }
+        elseif ($section) {
+             if ($line -match '^\s+-\s+(.*)$') {
+                 $val = $matches[1].Trim()
+                 if ($val -match '^["''](.*)["'']$') { $val = $matches[1] }
+                 $config[$section] += $val
+             }
+             elseif ($line -match '^\s+([\w\-]+):\s*(.*)$') {
+                 if ($config[$section] -is [array] -and $config[$section].Count -eq 0) {
+                     $config[$section] = @{} # Convert to hashtable
+                 }
+                 $val = $matches[2].Trim()
+                 if ($val -eq "true") { $val = $true } elseif ($val -eq "false") { $val = $false }
+                 $config[$section][$matches[1]] = $val
+             }
+        }
     }
+
+    # Merge with defaults
+    foreach ($key in $defaults.Keys) {
+        if (-not $config.ContainsKey($key)) {
+            $config[$key] = $defaults[$key]
+        }
+    }
+    return $config
 
     # Fallback: Parse YAML manually with Regex (Robust for simple key: value)
     Write-Host "Using regex fallback to parse config..." -ForegroundColor DarkGray

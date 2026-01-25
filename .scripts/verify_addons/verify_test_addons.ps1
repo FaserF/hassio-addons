@@ -46,7 +46,7 @@ function Show-Header {
     $version = if ($Config.scriptVersion) { "v$($Config.scriptVersion)" } else { "" }
     # Pad to ensure alignment if possible, roughly
     Write-Host "================================================================================" -ForegroundColor Cyan
-    Write-Host "   🏠  Home Assistant Add-on Verification Suite $version  ✅" -ForegroundColor White
+    Write-Host "   $([char]0xD83C)$([char]0xDFE0)  Home Assistant Add-on Verification Suite $version  $([char]0x2705)" -ForegroundColor White
     Write-Host "================================================================================" -ForegroundColor Cyan
     Write-Host ""
 }
@@ -557,11 +557,12 @@ try {
 
                 # Optimization: Skip redundant DockerBuild/Run if SupervisorTest handles it
                 if ("SupervisorTest" -in $activeTests) {
-                    $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { @{} }
+                    $skipList = if ($Config.supervisorTests -and $Config.supervisorTests.skipSupervisorTest) { $Config.supervisorTests.skipSupervisorTest } else { $null }
 
                     $dockerAddons = $addons | Where-Object {
                         $isUnsupported = $_.FullName -match "\\.unsupported\\"
-                        $isSkipped = $skipList.ContainsKey($_.Name)
+                        $isSkipped = $false
+                        if ($skipList -and $skipList.PSObject.Properties[$_.Name]) { $isSkipped = $true }
                         return ($isUnsupported -or $isSkipped)
                     }
 
@@ -778,42 +779,49 @@ finally {
         Write-Host "Writing GitHub Step Summary..." -ForegroundColor Gray
         try {
             $summaryLines = @()
-            $summaryLines += "# 📊 Verification Results"
+            $summaryLines += "# $([char]0xD83D)$([char]0xDCCA) Verification Results"
             $summaryLines += ""
 
             # Statistics
             $summaryLines += "### Statistics"
             $summaryLines += "| Status | Count |"
             $summaryLines += "| :--- | :---: |"
-            $summaryLines += "| ✅ Passed | $PassCount |"
-            $summaryLines += "| ❌ Failed | $FailCount |"
-            $summaryLines += "| ⚠️ Warning | $WarnCount |"
-            $summaryLines += "| ⏭️ Skipped | $SkipCount |"
+            $summaryLines += "| $([char]0x2705) Passed | $PassCount |"
+            $summaryLines += "| $([char]0x274C) Failed | $FailCount |"
+            $summaryLines += "| $([char]0x26A0)$([char]0xFE0F) Warning | $WarnCount |"
+            $summaryLines += "| $([char]0x23ED)$([char]0xFE0F) Skipped | $SkipCount |"
             $summaryLines += ""
 
             # Failed/Warn items details (Always visible)
             if ($FailCount -gt 0 -or $WarnCount -gt 0) {
-                $summaryLines += "### ⚠️ Issues Found"
+                $summaryLines += "### $([char]0x26A0)$([char]0xFE0F) Issues Found"
                 $summaryLines += "| Add-on | Check | Status | Message |"
                 $summaryLines += "| :--- | :--- | :--- | :--- |"
 
                 $issues = $global:Results | Where-Object { $_.Status -in @("FAIL", "WARN") }
                 foreach ($res in $issues) {
                     $sanitizedMsg = $res.Message -replace "\|", "\|" -replace "`r`n", " " -replace "`n", " "
-                    $icon = switch ($res.Status) { "FAIL" { "❌" } "WARN" { "⚠️" } default { "" } }
+                    $icon = switch ($res.Status) { "FAIL" { "$([char]0x274C)" } "WARN" { "$([char]0x26A0)$([char]0xFE0F)" } default { "" } }
                     $summaryLines += "| $($res.Addon) | $($res.Check) | $icon $($res.Status) | $sanitizedMsg |"
                 }
                 $summaryLines += ""
             }
 
              # Full Breakdown (Collapsible)
-            $summaryLines += "<details><summary><b>📂 Full Execution Breakdown</b></summary>"
+            $summaryLines += "<details><summary><b>$([char]0xD83D)$([char]0xDCC2) Full Execution Breakdown</b></summary>"
             $summaryLines += ""
             $summaryLines += "| Add-on | Check | Status | Message |"
             $summaryLines += "| :--- | :--- | :--- | :--- |"
             foreach ($res in $global:Results) {
                  $sanitizedMsg = $res.Message -replace "\|", "\|" -replace "`r`n", " " -replace "`n", " "
-                 $icon = switch ($res.Status) { "PASS" { "✅" } "FAIL" { "❌" } "WARN" { "⚠️" } "SKIP" { "⏭️" } "INFO" { "ℹ️" } }
+                 $icon = switch ($res.Status) {
+                    "PASS" { "$([char]0x2705)" }
+                    "FAIL" { "$([char]0x274C)" }
+                    "WARN" { "$([char]0x26A0)$([char]0xFE0F)" }
+                    "SKIP" { "$([char]0x23ED)$([char]0xFE0F)" }
+                    "INFO" { "$([char]0x2139)$([char]0xFE0F)" }
+                    default { "" }
+                 }
                  $summaryLines += "| $($res.Addon) | $($res.Check) | $icon $($res.Status) | $sanitizedMsg |"
             }
             $summaryLines += ""
@@ -879,27 +887,27 @@ finally {
     $durStr = $Duration.ToString("hh\:mm\:ss")
 
     if ($FailCount -eq 0 -and $WarnCount -eq 0 -and $GlobalFailed -eq $false) {
-        $notifTitle = "🎉 All Tests Passed!"
-        $notifMsg = "✅ $PassCount tests passed | ⏱ $durStr"
+        $notifTitle = "$([char]0xD83C)$([char]0xDF89) All Tests Passed!"
+        $notifMsg = "$([char]0x2705) $PassCount tests passed | $([char]0x23F1) $durStr"
     }
     elseif ($PassCount -eq 0 -and $FailCount -gt 0) {
-        $notifTitle = "❌ All Tests Failed!"
-        $notifMsg = "❌ $FailCount tests failed | ⏱ $durStr"
+        $notifTitle = "$([char]0x274C) All Tests Failed!"
+        $notifMsg = "$([char]0x274C) $FailCount tests failed | $([char]0x23F1) $durStr"
     }
     else {
         # Mixed results
-        $statusIcon = if ($global:GlobalFailed) { "❌" } else { "✅" }
+        $statusIcon = if ($global:GlobalFailed) { "$([char]0x274C)" } else { "$([char]0x2705)" }
         $statusText = if ($global:GlobalFailed) { "Failed" } else { "Passed" }
         $notifTitle = "$statusIcon Verification $statusText"
 
         # Build Stats String with Emojis
         $statsParts = @()
-        if ($PassCount -gt 0) { $statsParts += "✅ $PassCount" }
-        if ($FailCount -gt 0) { $statsParts += "❌ $FailCount" }
-        if ($WarnCount -gt 0) { $statsParts += "⚠ $WarnCount" }
-        if ($SkipCount -gt 0) { $statsParts += "⏭ $SkipCount" }
+        if ($PassCount -gt 0) { $statsParts += "$([char]0x2705) $PassCount" }
+        if ($FailCount -gt 0) { $statsParts += "$([char]0x274C) $FailCount" }
+        if ($WarnCount -gt 0) { $statsParts += "$([char]0x26A0)$([char]0xFE0F) $WarnCount" }
+        if ($SkipCount -gt 0) { $statsParts += "$([char]0x23ED)$([char]0xFE0F) $SkipCount" }
 
-        $notifMsg = "$($statsParts -join '  ') | ⏱ $durStr"
+        $notifMsg = "$($statsParts -join '  ') | $([char]0x23F1) $durStr"
     }
 
     Show-Notification -Title $notifTitle -Message $notifMsg -LogPath $LogFile
