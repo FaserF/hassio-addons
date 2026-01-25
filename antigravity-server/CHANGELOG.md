@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.3 (2026-01-25)
+
+### 📦 Dependencies
+- ⬆️ Update dependency Eidolf/Docker-AntiGravity to v2026 [skip-tests] (#602) [skip-tests] ([`a8468b24`](https://github.com/FaserF/hassio-addons/commit/a8468b24f8454aa192cb2361ac895d16aa2a88cd))
+
+### 🚀 Other
+- fix log level var ([`7f85096a`](https://github.com/FaserF/hassio-addons/commit/7f85096a73b11ea48fa87150def32425ea1e4807))
+- Small fixes for addon startup ([`ef457676`](https://github.com/FaserF/hassio-addons/commit/ef457676101f8bf022ddc9dc08bad0ce59bd3ee0))
+- fix data not being persistent ([`6c82ed03`](https://github.com/FaserF/hassio-addons/commit/6c82ed037bb028cc2aec435e32e97a8c2e763629))
+- Integrate Chrome into Antigravity Addon ([`4d2a8f43`](https://github.com/FaserF/hassio-addons/commit/4d2a8f431d3ec4adde1c9b6eda38c76f8e285592))
+- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
+
+
 ## 1.1.2 (2026-01-15)
 
 ### 🐛 Bug Fixes
