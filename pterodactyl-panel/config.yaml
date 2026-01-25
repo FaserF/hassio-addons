@@ -29,7 +29,7 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   app_url: str
   reset_database: bool?
   reset_database_confirm: bool?

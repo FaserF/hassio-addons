@@ -3,13 +3,13 @@
 ## 2.2.2 (2026-01-21)
 
 ### 🚀 Other
+
 - force port 3000 for webui ([`0a224271`](https://github.com/FaserF/hassio-addons/commit/0a2242712988cd7777b9a720a9f444c347ce138e))
 - fix netboot web ui missing #598 ([`60cc27c0`](https://github.com/FaserF/hassio-addons/commit/60cc27c028f63ba8cab735eb263ca994eaa6770d))
 - Small fixes for addon startup ([`ef457676`](https://github.com/FaserF/hassio-addons/commit/ef457676101f8bf022ddc9dc08bad0ce59bd3ee0))
 - fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - New/improved log level option ([`73d8e254`](https://github.com/FaserF/hassio-addons/commit/73d8e254b10e01aaffc474d22192d2b8deea4c79))
-
 
 ## 2.2.1 (2026-01-14)
 

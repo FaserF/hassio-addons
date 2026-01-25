@@ -17,4 +17,4 @@ options:
   log_level: info
 schema:
   config_path: str
-  log_level: list(info|debug)?
+  log_level: list(info|debug)

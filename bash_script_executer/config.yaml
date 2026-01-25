@@ -31,4 +31,4 @@ schema:
   script3_argument1: str?
   script3_argument2: str?
   script3_argument3: str?
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)

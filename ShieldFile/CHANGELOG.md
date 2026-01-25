@@ -3,6 +3,7 @@
 ## 2.2.3 (2026-01-21)
 
 ### 📦 Dependencies
+
 - ⬆️ Update filebrowser/filebrowser Docker tag to v2.55.0 [skip-tests] ([`bda29b1d`](https://github.com/FaserF/hassio-addons/commit/bda29b1d264f0c095336a3010460eaeefc9b6d9a))
 - Update config.yaml ([`27d02ee0`](https://github.com/FaserF/hassio-addons/commit/27d02ee03585ec949cbd82b6112266e2282e8816))
 - Update run ([`baa022dc`](https://github.com/FaserF/hassio-addons/commit/baa022dc0350a7a15a5a00464f32a43c5ae8df1a))
@@ -12,12 +13,12 @@
 - Update run ([`0cef4e26`](https://github.com/FaserF/hassio-addons/commit/0cef4e2650c4ab7044469e4a4c8aa2b94bcc0da3))
 
 ### 🚀 Other
+
 - small startup fixes ([`2b016551`](https://github.com/FaserF/hassio-addons/commit/2b016551c5bd3c895c9b07a86fdd9cd8ffd99259))
 - Paperless & ShieldFile startup fixes ([`159b13a1`](https://github.com/FaserF/hassio-addons/commit/159b13a1325ad6ccb66bce6fa309b17672a76d91))
 - small fixes ([`3c2e2123`](https://github.com/FaserF/hassio-addons/commit/3c2e2123127a0cdd48d2c16bdd8d71921d794643))
 - startup fixes ([`c2605eb4`](https://github.com/FaserF/hassio-addons/commit/c2605eb42df0ea94125946cfcb2cbaaff4b3b674))
 - startup fixes ([`5c1befe7`](https://github.com/FaserF/hassio-addons/commit/5c1befe7d74d5eb842ed654d8a9c7ae5a01fee22))
-
 
 ## 2.2.2 (2026-01-19)
 

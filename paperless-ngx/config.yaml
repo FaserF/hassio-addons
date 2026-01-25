@@ -25,6 +25,7 @@ options:
   time_zone: Europe/Berlin
   ocr_language: deu
   admin_user: admin
+  admin_password: ""
   secret_key: changeme
   log_level: info
   reset_database: false
@@ -35,6 +36,7 @@ schema:
   time_zone: str
   ocr_language: str
   admin_user: str?
+  admin_password: password?
   secret_key: password
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_database: bool?

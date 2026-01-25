@@ -29,7 +29,7 @@ options:
   dev_use_main_branch: false
   github_token: ""
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   test_mode: bool
   app_base_url: str?
   factory_reset: bool?

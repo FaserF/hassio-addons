@@ -73,7 +73,10 @@ if ! bashio::fs.file_exists "$PAPERLESS_DATA_DIR/admin_created"; then
     bashio::log.info "First start detected - creating admin user..."
 
     ADMIN_USER=$(bashio::config 'admin_user')
-    ADMIN_PASSWORD=$(openssl rand -base64 24)
+    ADMIN_PASSWORD=$(bashio::config 'admin_password' '')
+    if [ -z "${ADMIN_PASSWORD}" ]; then
+        ADMIN_PASSWORD=$(openssl rand -base64 24)
+    fi
     export DJANGO_SUPERUSER_USERNAME="$ADMIN_USER"
     export DJANGO_SUPERUSER_PASSWORD="$ADMIN_PASSWORD"
     export DJANGO_SUPERUSER_EMAIL="${ADMIN_USER}@example.com"
