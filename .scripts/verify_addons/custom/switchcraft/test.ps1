@@ -11,7 +11,7 @@ Write-Host "    [CustomTest] Verifying Web Interface on port 8080..." -Foregroun
 # Since we added a HEALTHCHECK to the Dockerfile, the container should be healthy when this runs.
 # However, the application might still be starting up.
 
-$maxRetries = 15
+$maxRetries = 30
 $retryDelay = 5
 $success = $false
 $curlOutput = ""

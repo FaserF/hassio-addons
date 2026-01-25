@@ -36,8 +36,17 @@ function Add-Result {
         [Parameter(Mandatory)][string]$Addon,
         [Parameter(Mandatory)][string]$Check,
         [Parameter(Mandatory)][string]$Status,
-        [string]$Message = ""
+        [object]$Message = ""
     )
+
+    if ($null -ne $Message -and $Message -isnot [string]) {
+        if ($Message -is [array]) {
+            $Message = $Message -join "`n"
+        } else {
+            $Message = Out-String -InputObject $Message
+        }
+    }
+    $Message = [string]$Message
 
     # Check if this addon is unsupported to give a hint
     $checkRoot = if (Get-Variable -Name RepoRoot -ValueOnly -ErrorAction SilentlyContinue) { $RepoRoot } else { "." }
