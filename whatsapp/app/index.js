@@ -287,13 +287,13 @@ async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    logger: pino({ level: LOG_LEVEL }),
-    browser: Browsers.ubuntu('Chrome'), // Changed to Ubuntu to better match HA OS environment
+    auth: state,
+    logger: pino({ level: 'warn' }), // Force cleaner logs, use 'warn' instead of global LOG_LEVEL
+    browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
     markOnlineOnConnect: true,
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
     connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
     retryRequestDelayMs: 5000,
     getMessage: async (key) => {
@@ -361,25 +361,31 @@ async function connectToWhatsApp() {
     if (m.messages && m.messages.length > 0) {
       stats.received += m.messages.length;
 
-      const events = m.messages.map((msg) => {
-        let text =
-          msg.message?.conversation ||
-          msg.message?.extendedTextMessage?.text ||
-          'Media/Special Message';
-        const sender = msg.key.remoteJid.split('@')[0];
-        const isGroup = msg.key.remoteJid.endsWith('@g.us');
+      const events = m.messages
+        .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
+        .map((msg) => {
+          let text =
+            msg.message?.conversation ||
+            msg.message?.extendedTextMessage?.text ||
+            msg.message?.buttonsResponseMessage?.selectedDisplayText ||
+            msg.message?.templateButtonReplyMessage?.selectedId ||
+            'Media/Special Message';
+          const senderJid = msg.key.remoteJid;
+          const senderNumber = senderJid.split('@')[0];
+          const isGroup = senderJid.endsWith('@g.us');
 
-        // Update global stats with the latest message detail
-        stats.last_received_message = maskData(text);
-        stats.last_received_sender = maskData(sender);
+          // Update global stats with the latest message detail
+          stats.last_received_message = maskData(text);
+          stats.last_received_sender = maskData(senderNumber);
 
-        return {
-          text,
-          sender,
-          is_group: isGroup,
-          raw: msg, // Keep raw for power users
-        };
-      });
+          return {
+            content: text,
+            sender: senderJid,
+            sender_number: senderNumber,
+            is_group: isGroup,
+            raw: msg, // Keep raw for power users
+          };
+        });
       eventQueue.push(...events);
     }
   });
@@ -764,19 +770,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -784,8 +788,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
