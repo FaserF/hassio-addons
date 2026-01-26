@@ -278,8 +278,9 @@ async function connectToWhatsApp() {
   sock = makeWASocket({
     auth: state,
     logger: pino({ level: LOG_LEVEL }),
-    browser: Browsers.macOS('Chrome'),
+    browser: Browsers.ubuntu('Chrome'), // Changed to Ubuntu to better match HA OS environment
     syncFullHistory: false,
+    markOnlineOnConnect: true,
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
@@ -477,6 +478,14 @@ app.post('/send_message', async (req, res) => {
     if (!sock) {
       throw new Error('Socket not initialized');
     }
+
+    if (!sock) {
+      throw new Error('Socket not initialized');
+    }
+
+    // Try to wake up connection with presence update
+    await sock.sendPresenceUpdate('composing', jid);
+    await delay(250);
 
     await Promise.race([
       sock.sendMessage(jid, { text: message }),
@@ -745,19 +754,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -765,8 +772,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
