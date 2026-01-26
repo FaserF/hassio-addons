@@ -1,12 +1,10 @@
 import express from 'express';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
-import {
-  makeWASocket,
+makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
   delay,
-  makeInMemoryStore,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
@@ -258,9 +256,19 @@ app.use('/set_presence', authMiddleware);
 app.use('/logs', authMiddleware);
 
 // --- Store Initialization ---
-// Store is required for message retries and correct protocol handling in Baileys v7+
-const store = makeInMemoryStore({ logger: pino({ level: 'silent' }) });
-// We could persistence store here if needed, but for now in-memory is enough for runtime retries
+// Custom In-Memory Store to handle message retries
+const messageStore = new Map();
+
+// Helper to bind store to events
+function bindStore(ev) {
+  ev.on('messages.upsert', ({ messages }) => {
+    for (const msg of messages) {
+      if (msg.key.id) {
+        messageStore.set(msg.key.id, msg);
+      }
+    }
+  });
+}
 
 async function connectToWhatsApp() {
   addLog('Starting request for new session...', 'info');
@@ -277,18 +285,16 @@ async function connectToWhatsApp() {
     defaultQueryTimeoutMs: 60000,
     retryRequestDelayMs: 5000,
     getMessage: async (key) => {
-      if (store) {
-        const msg = await store.loadMessage(key.remoteJid, key.id);
-        return msg?.message || undefined;
+      // Check our custom store
+      if (messageStore.has(key.id)) {
+        return messageStore.get(key.id).message;
       }
-      return {
-        conversation: 'hello',
-      };
+      return undefined;
     },
   });
 
-  // Bind store to events
-  store.bind(sock.ev);
+  // Bind custom store to events
+  bindStore(sock.ev);
 
   sock.ev.on('creds.update', saveCreds);
 
