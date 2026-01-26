@@ -43,6 +43,7 @@ def get_git_remote_url():
             ["git", "remote", "get-url", "origin"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         if result.returncode == 0:
             url = result.stdout.strip()
@@ -69,6 +70,7 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
                 ["git", "tag", "--sort=-creatordate"],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
                 cwd=os.path.dirname(addon_path) or ".",
             )
             tags = result.stdout.strip().split("\n")
@@ -85,6 +87,49 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
                 != ignore_tag  # Ignore specific tag (e.g. current version if it exists)
             ]
             tag = addon_tags[0] if addon_tags else None
+
+        # Fallback: If no tag found, search for the last "release(slug)" commit
+        if not tag and not since_tag:
+            try:
+                # Search for "release(addon_name)" in commit messages
+                result = subprocess.run(
+                    [
+                        "git",
+                        "log",
+                        "-n",
+                        "1",
+                        "--pretty=format:%H",
+                        f"--grep=release({addon_name})",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    cwd=os.path.dirname(addon_path) or ".",
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    tag = result.stdout.strip()
+                    print(f"ℹ️ Found previous release commit for {addon_name}: {tag}")
+                else:
+                    # Fallback for "release(all)" or generic releases
+                    result = subprocess.run(
+                        [
+                            "git",
+                            "log",
+                            "-n",
+                            "1",
+                            "--pretty=format:%H",
+                            "--grep=release(",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        cwd=os.path.dirname(addon_path) or ".",
+                    )
+                    if result.returncode == 0 and result.stdout.strip():
+                        tag = result.stdout.strip()
+                        print(f"ℹ️ Found generic previous release commit: {tag}")
+            except Exception as e:
+                print(f"⚠️ Could not search for release commits: {e}")
 
         # Get full hash for commit links
         if tag:
@@ -103,6 +148,7 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
             cmd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             cwd=os.path.dirname(addon_path) or ".",
         )
 
@@ -437,7 +483,7 @@ def bump_version(
 
     print(f"📄 Processing {config_path}...")
 
-    with open(config_path, "r") as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Regex to find version (supports -dev and -dev+commit suffix)
@@ -486,6 +532,7 @@ def bump_version(
                         ["git", "log", "-1", "--format=%h", "--", addon_path],
                         capture_output=True,
                         text=True,
+                        encoding="utf-8",
                     )
                     commit_sha = (
                         result.stdout.strip()[:7] if result.returncode == 0 else ""
@@ -513,7 +560,7 @@ def bump_version(
         # Update image tag logic
         new_content = update_image_tag(new_content, addon_path, is_dev=set_dev)
 
-        with open(config_path, "w") as f:
+        with open(config_path, "w", encoding="utf-8") as f:
             f.write(new_content)
     else:
         print("ℹ️ Skipping config.yaml update (changelog-only mode)")
@@ -526,7 +573,7 @@ def bump_version(
         skip_auto_generation = False
 
         if os.path.exists(changelog_path):
-            with open(changelog_path, "r") as f:
+            with open(changelog_path, "r", encoding="utf-8") as f:
                 existing_changelog = f.read()
 
             # Check if entry for new version already exists and extract it
@@ -737,12 +784,12 @@ def bump_version(
                 else:
                     changelog = f"# Changelog\n\n{new_entry}{existing_changelog}"
 
-            with open(changelog_path, "w") as f:
+            with open(changelog_path, "w", encoding="utf-8") as f:
                 f.write(changelog)
         elif not skip_auto_generation:
             # Only create new changelog if we're not skipping auto-generation
             print("⚠️ CHANGELOG.md not found, creating one.")
-            with open(changelog_path, "w") as f:
+            with open(changelog_path, "w", encoding="utf-8") as f:
                 f.write(f"# Changelog\n\n{new_entry}")
         else:
             # skip_auto_generation is True but CHANGELOG.md doesn't exist - this shouldn't happen

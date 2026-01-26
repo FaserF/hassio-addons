@@ -202,6 +202,8 @@ const stats = {
   failed: 0,
   last_sent_message: 'None',
   last_sent_target: 'None',
+  last_received_message: 'None',
+  last_received_sender: 'None',
   start_time: Date.now(),
   my_number: 'Unknown',
   version: 'Unknown',
@@ -303,11 +305,29 @@ async function connectToWhatsApp() {
 
   // Handle Incoming Messages
   sock.ev.on('messages.upsert', async (m) => {
-    // Add simplified event to queue
-    // The integration expects a list of event objects
     if (m.messages && m.messages.length > 0) {
       stats.received += m.messages.length;
-      eventQueue.push(...m.messages);
+
+      const events = m.messages.map((msg) => {
+        let text =
+          msg.message?.conversation ||
+          msg.message?.extendedTextMessage?.text ||
+          'Media/Special Message';
+        const sender = msg.key.remoteJid.split('@')[0];
+        const isGroup = msg.key.remoteJid.endsWith('@g.us');
+
+        // Update global stats with the latest message detail
+        stats.last_received_message = text;
+        stats.last_received_sender = sender;
+
+        return {
+          text,
+          sender,
+          is_group: isGroup,
+          raw: msg, // Keep raw for power users
+        };
+      });
+      eventQueue.push(...events);
     }
   });
 }
