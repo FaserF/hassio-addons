@@ -3,6 +3,7 @@
 ## 1.0.0 (2026-01-26)
 
 ### 📦 Dependencies
+
 - Update index.js ([`b43ea6c2`](https://github.com/FaserF/hassio-addons/commit/b43ea6c260ddc62566523008cd31b450a088bf8c))
 - Update index.js ([`3e421c66`](https://github.com/FaserF/hassio-addons/commit/3e421c66210efb77b33d7e64c66aeb9bca4fb28a))
 - Update index.js ([`4ed7fce3`](https://github.com/FaserF/hassio-addons/commit/4ed7fce3bae3da13f9badb048231d72d35f9af79))
@@ -13,6 +14,7 @@
 - ⬆️ Update dependency pino to v10.3.0 [skip-tests] (#603) [skip-tests] ([`4fc9249f`](https://github.com/FaserF/hassio-addons/commit/4fc9249f729277273dafa3fb7887b4fe3400384d))
 
 ### 🚀 Other
+
 - docs improvements ([`07edbf9d`](https://github.com/FaserF/hassio-addons/commit/07edbf9d0bdef70ebb18c3b29ba78ffaf219c2bd))
 - fixed connection issues ([`7ce4cf49`](https://github.com/FaserF/hassio-addons/commit/7ce4cf49977e46229125b2a76bab191921f84ef6))
 - new option: mask_sensitive_data ([`157f095e`](https://github.com/FaserF/hassio-addons/commit/157f095e3d7bcd393b0d101d9819cf75145d6ef9))
@@ -30,8 +32,8 @@
 - docs improvements ([`08550881`](https://github.com/FaserF/hassio-addons/commit/08550881a52ec8ecef4caf4dec8d9ee33cca40c6))
 
 ### 📌 Release Note
-- First fully functional and stable version
 
+- First fully functional and stable version
 
 ## 0.5.3 (2026-01-21)
 
