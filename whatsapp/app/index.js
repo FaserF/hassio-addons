@@ -132,6 +132,17 @@ publishMDNS(baseMDNSName);
 
 // --- Status & Logs ---
 let connectionLogs = [];
+const stats = {
+  sent: 0,
+  received: 0,
+  failed: 0,
+  last_sent_message: 'None',
+  last_sent_target: 'None',
+  start_time: Date.now(),
+  my_number: 'Unknown',
+  version: 'Unknown',
+};
+
 function addLog(msg, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   connectionLogs.unshift({ timestamp, msg, type });
@@ -217,6 +228,10 @@ async function connectToWhatsApp() {
       addLog('WhatsApp Connection Established! 🟢', 'success');
       isConnected = true;
       currentQR = null;
+      if (sock && sock.user) {
+        stats.my_number = sock.user.id.split(':')[0]; // Extract number from JID
+        stats.version = BAILEYS_VERSION;
+      }
     } else if (connection === 'connecting') {
       addLog('Connecting to WhatsApp...', 'info');
     }
@@ -227,6 +242,7 @@ async function connectToWhatsApp() {
     // Add simplified event to queue
     // The integration expects a list of event objects
     if (m.messages && m.messages.length > 0) {
+      stats.received += m.messages.length;
       eventQueue.push(...m.messages);
     }
   });
@@ -308,6 +324,14 @@ app.get('/logs', (req, res) => {
   res.json(connectionLogs);
 });
 
+// GET /stats
+app.get('/stats', (req, res) => {
+  res.json({
+    ...stats,
+    uptime: Math.floor((Date.now() - stats.start_time) / 1000),
+  });
+});
+
 // POST /send_message
 app.post('/send_message', async (req, res) => {
   const { number, message } = req.body;
@@ -316,8 +340,12 @@ app.post('/send_message', async (req, res) => {
   try {
     const jid = getJid(number);
     await sock.sendMessage(jid, { text: message });
+    stats.sent += 1;
+    stats.last_sent_message = message;
+    stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
     addLog(`Failed to send message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -335,8 +363,12 @@ app.post('/send_image', async (req, res) => {
       image: { url: url },
       caption: caption,
     });
+    stats.sent += 1;
+    stats.last_sent_message = 'Image';
+    stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
     addLog(`Failed to send image: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -356,8 +388,12 @@ app.post('/send_poll', async (req, res) => {
         selectableCount: 1, // Single select by default, maybe expose this?
       },
     });
+    stats.sent += 1;
+    stats.last_sent_message = `Poll: ${question}`;
+    stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
     addLog(`Failed to send poll: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -378,8 +414,12 @@ app.post('/send_location', async (req, res) => {
         address: description,
       },
     });
+    stats.sent += 1;
+    stats.last_sent_message = `Location: ${title || 'Pinned'}`;
+    stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
     addLog(`Failed to send location: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -431,8 +471,12 @@ app.post('/send_buttons', async (req, res) => {
       buttons: buttons,
       headerType: 1,
     });
+    stats.sent += 1;
+    stats.last_sent_message = `Buttons: ${message}`;
+    stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
     addLog(`Failed to send buttons: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -536,19 +580,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -556,8 +598,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
