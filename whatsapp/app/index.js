@@ -175,7 +175,7 @@ async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    logger: pino({ level: NORMALIZED_LOG_LEVEL }),
+    logger: pino({ level: LOG_LEVEL }),
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
   });
