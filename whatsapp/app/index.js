@@ -1,6 +1,7 @@
 import express from 'express';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
-makeWASocket,
+import {
+  makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
