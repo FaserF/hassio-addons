@@ -9,6 +9,12 @@ This add-on is a "bridge". It does **not** communicate with Home Assistant direc
 **Flow:**
 `Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
+## 🚀 Getting Started with Automations
+
+Once the addon and integration are configured, check out the following resource to start building:
+
+- **[Detailed Examples & Guide](https://github.com/FaserF/ha-whatsapp/blob/main/EXAMPLES.md)** (Buttons, Polls, Reactions, etc.)
+
 ## ⚙️ Configuration
 
 Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
