@@ -66,12 +66,25 @@ if [ ! -d "$INTEGRATION_DIR" ]; then
     bashio::log.info "Fetching latest release information..."
 
     # Determine Version to install
-    RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
-    TAG_NAME=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name')
+    if RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases"); then
+        # Check if response is valid array JSON (avoid rate limit errors parsing)
+        if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
+             TAG_NAME=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name')
+        else
+             bashio::log.warning "GitHub API returned unexpected response (likely rate limit). Skipping version check."
+             TAG_NAME=""
+        fi
+    else
+        bashio::log.warning "Failed to fetch releases from GitHub."
+        TAG_NAME=""
+    fi
 
     if [ "$TAG_NAME" == "null" ] || [ -z "$TAG_NAME" ]; then
         # Check for pre-release fallback
-        TAG_NAME=$(echo "$RELEASES" | jq -r '.[0].tag_name')
+        if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
+             TAG_NAME=$(echo "$RELEASES" | jq -r '.[0].tag_name')
+        fi
+
         if [ "$TAG_NAME" != "null" ] && [ -n "$TAG_NAME" ]; then
              bashio::log.info "No stable release found, using latest pre-release: $TAG_NAME"
              CLONE_ARGS=("--branch" "$TAG_NAME")
