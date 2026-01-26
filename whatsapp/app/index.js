@@ -649,7 +649,11 @@ app.post('/send_reaction', async (req, res) => {
     await sock.sendMessage(jid, {
       react: {
         text: reaction, // use empty string to remove reaction
-        key: { id: messageId }, // Assuming remoteJid is implicit if not provided, or better provided?
+        key: {
+          remoteJid: jid,
+          fromMe: false, // We're reacting to an incoming message
+          id: messageId,
+        },
       },
     });
     res.json({ status: 'sent' });
@@ -790,19 +794,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -810,8 +812,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
