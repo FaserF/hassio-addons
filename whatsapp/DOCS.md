@@ -2,6 +2,13 @@
 
 Home Assistant WhatsApp Backend (Baileys/Node.js)
 
+> [!WARNING]
+> **Legal Disclaimer / Haftungsausschluss**
+>
+> This project is **not** affiliated with WhatsApp or Meta. Using automated messaging on a WhatsApp account may lead to its permanent ban. The developers assume no responsibility for any such damage.
+>
+> Official WhatsApp Policy: **[Unauthorized Messaging](https://faq.whatsapp.com/583411470476406/)**
+
 ## Architecture
 
 This add-on is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
