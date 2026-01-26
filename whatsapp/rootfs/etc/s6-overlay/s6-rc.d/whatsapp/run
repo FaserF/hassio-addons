@@ -17,6 +17,14 @@ case "${LOG_LEVEL}" in
     *)            LOG_LEVEL="info"  ;;
 esac
 export LOG_LEVEL
+if bashio::config.true 'reset_session'; then
+    bashio::log.warning "⚠️  RESET_SESSION toggle is ENABLED."
+    bashio::log.warning "Clearing authentication data in /data/auth_info_baileys..."
+    rm -rf /data/auth_info_baileys
+    export RESET_SESSION="true"
+else
+    export RESET_SESSION="false"
+fi
 
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
