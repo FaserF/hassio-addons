@@ -426,7 +426,10 @@ app.post('/send_message', async (req, res) => {
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, { text: message });
+    await Promise.race([
+      sock.sendMessage(jid, { text: message }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Send message timeout (25s)')), 25000))
+    ]);
     stats.sent += 1;
     stats.last_sent_message = message;
     stats.last_sent_target = number;

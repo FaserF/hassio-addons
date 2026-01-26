@@ -16,6 +16,29 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/(^|/)_config\\.yml$"
+      ],
+      "matchStrings": [
+        "mermaid:\\s*\\n\\s*latest_version:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s*"
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "mermaid",
+      "description": "Track Mermaid version in Jekyll config"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)_config\\.yml$"
+      ],
+      "matchStrings": [
+        "remote_theme:\\s*(?<depName>pmarsceill/just-the-docs)"
+      ],
+      "datasourceTemplate": "github-tags",
+      "description": "Monitor Jekyll theme repository for tags"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/(^|/)Dockerfile$/",
         "/(^|/)build.yaml$/"
       ],
@@ -419,6 +442,13 @@
       "description": "Allow pre-releases for Antigravity-Server",
       "matchDepNames": [
         "Eidolf/Docker-AntiGravity"
+      ],
+      "ignoreUnstable": false
+    },
+    {
+      "description": "Allow pre-releases for Baileys (WhatsApp Addon)",
+      "matchDepNames": [
+        "@whiskeysockets/baileys"
       ],
       "ignoreUnstable": false
     }
