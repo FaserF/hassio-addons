@@ -691,19 +691,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -711,8 +709,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -771,4 +769,13 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`WhatsApp API listening on 0.0.0.0:${PORT}`);
   // Log that service is ready for health checks
   console.log('✅ Service ready - Health check available at /health');
+
+  // Auto-start session if credentials exist
+  const credsFile = path.join(AUTH_DIR, 'creds.json');
+  if (fs.existsSync(credsFile)) {
+    console.log('📦 Existing authentication found, auto-starting session...');
+    connectToWhatsApp().catch((err) => {
+      console.error('❌ Failed to auto-start session:', err);
+    });
+  }
 });
