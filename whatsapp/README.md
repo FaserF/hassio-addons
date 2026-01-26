@@ -46,8 +46,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
 
----
-
 ## 🛠️ Usage & Integration
 
 To actually send messages and automate WhatsApp, you need the **WhatsApp Custom Integration** for Home Assistant.
