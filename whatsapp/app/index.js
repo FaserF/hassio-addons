@@ -204,6 +204,9 @@ const stats = {
   last_sent_target: 'None',
   last_received_message: 'None',
   last_received_sender: 'None',
+  last_failed_message: 'None',
+  last_failed_target: 'None',
+  last_error_reason: 'None',
   start_time: Date.now(),
   my_number: 'Unknown',
   version: 'Unknown',
@@ -430,6 +433,9 @@ app.post('/send_message', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
+    stats.last_failed_message = message;
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -453,6 +459,9 @@ app.post('/send_image', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
+    stats.last_failed_message = caption ? `Image: ${caption}` : 'Image';
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send image: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -478,6 +487,9 @@ app.post('/send_poll', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
+    stats.last_failed_message = `Poll: ${question}`;
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send poll: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -504,6 +516,9 @@ app.post('/send_location', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
+    stats.last_failed_message = `Location: ${title || 'Pinned'}`;
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send location: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -535,6 +550,10 @@ app.post('/send_reaction', async (req, res) => {
 
     res.json({ status: 'sent' });
   } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Reaction: ${reaction}`;
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send reaction: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -561,6 +580,9 @@ app.post('/send_buttons', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
+    stats.last_failed_message = `Buttons: ${message}`;
+    stats.last_failed_target = number;
+    stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send buttons: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
@@ -664,19 +686,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -684,8 +704,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
