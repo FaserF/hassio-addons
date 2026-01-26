@@ -1,11 +1,11 @@
 import express from 'express';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
-import {
-  makeWASocket,
+makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
   delay,
+  makeInMemoryStore,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
@@ -256,6 +256,11 @@ app.use('/send_buttons', authMiddleware);
 app.use('/set_presence', authMiddleware);
 app.use('/logs', authMiddleware);
 
+// --- Store Initialization ---
+// Store is required for message retries and correct protocol handling in Baileys v7+
+const store = makeInMemoryStore({ logger: pino({ level: 'silent' }) });
+// We could persistence store here if needed, but for now in-memory is enough for runtime retries
+
 async function connectToWhatsApp() {
   addLog('Starting request for new session...', 'info');
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
@@ -268,8 +273,21 @@ async function connectToWhatsApp() {
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
     retryRequestDelayMs: 5000,
+    getMessage: async (key) => {
+      if (store) {
+        const msg = await store.loadMessage(key.remoteJid, key.id);
+        return msg?.message || undefined;
+      }
+      return {
+        conversation: 'hello',
+      };
+    },
   });
+
+  // Bind store to events
+  store.bind(sock.ev);
 
   sock.ev.on('creds.update', saveCreds);
 
@@ -717,19 +735,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -737,8 +753,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
