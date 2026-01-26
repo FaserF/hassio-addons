@@ -26,6 +26,18 @@ else
     export RESET_SESSION="false"
 fi
 
+# Send Message Timeout (Default 25s)
+if ! SEND_MESSAGE_TIMEOUT=$(bashio::config 'send_message_timeout') || [ -z "$SEND_MESSAGE_TIMEOUT" ]; then
+    SEND_MESSAGE_TIMEOUT=25000
+fi
+export SEND_MESSAGE_TIMEOUT
+
+# Keep Alive Interval (Default 30s)
+if ! KEEP_ALIVE_INTERVAL=$(bashio::config 'keep_alive_interval') || [ -z "$KEEP_ALIVE_INTERVAL" ]; then
+    KEEP_ALIVE_INTERVAL=30000
+fi
+export KEEP_ALIVE_INTERVAL
+
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
 for path in "/config" "/homeassistant"; do

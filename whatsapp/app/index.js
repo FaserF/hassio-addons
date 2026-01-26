@@ -122,6 +122,13 @@ const LOG_LEVEL_MAP = {
 const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
 console.log(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
 
+// --- Configuration ---
+const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
+const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
+
+console.log(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
+console.log(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
+
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
   fs.mkdirSync(AUTH_DIR, { recursive: true });
@@ -258,6 +265,10 @@ async function connectToWhatsApp() {
     logger: pino({ level: LOG_LEVEL }),
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
+    keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    retryRequestDelayMs: 5000,
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -447,9 +458,9 @@ app.post('/send_message', async (req, res) => {
             `[SendMessage] Timeout reached for ${number}. Triggering forced reconnect.`
           );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
-          sock.end(new Error('Send message timeout (25s) - Connection stale'));
-          reject(new Error('Send message timeout (25s) - Connection stale, reconnecting...'));
-        }, 25000)
+          sock.end(new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale`));
+          reject(new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale, reconnecting...`));
+        }, SEND_MESSAGE_TIMEOUT)
       ),
     ]);
     stats.sent += 1;
@@ -700,19 +711,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -720,8 +729,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
