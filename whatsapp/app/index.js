@@ -154,7 +154,9 @@ let eventQueue = []; // Queue for polling events
 // --- Helper Functions ---
 function getJid(number) {
   if (number.includes('@')) return number;
-  return `${number}@s.whatsapp.net`;
+  // Strip all non-numeric characters (e.g. +, spaces, dashes)
+  const cleanNumber = number.replace(/\D/g, '');
+  return `${cleanNumber}@s.whatsapp.net`;
 }
 
 // --- mDNS / Bonjour ---
