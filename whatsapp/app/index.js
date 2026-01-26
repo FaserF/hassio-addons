@@ -426,10 +426,20 @@ app.post('/send_message', async (req, res) => {
 
   try {
     const jid = getJid(number);
+    console.debug(`[SendMessage] Attempting to send to ${number}. Socket state: ${sock ? 'exists' : 'null'}, Connected: ${isConnected}`);
+
+    if (!sock) {
+      throw new Error('Socket not initialized');
+    }
+
     await Promise.race([
       sock.sendMessage(jid, { text: message }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Send message timeout (25s)')), 25000)
+        setTimeout(() => {
+          const state = sock?.ws?.readyState;
+          console.error(`[SendMessage] Timeout reached for ${number}. WS State: ${state}`);
+          reject(new Error(`Send message timeout (25s) - WS State: ${state}`));
+        }, 25000)
       ),
     ]);
     stats.sent += 1;
@@ -540,19 +550,8 @@ app.post('/send_reaction', async (req, res) => {
       react: {
         text: reaction, // use empty string to remove reaction
         key: { id: messageId }, // Assuming remoteJid is implicit if not provided, or better provided?
-        // Baileys needs `remoteJid` in `key` usually?
-        // `sock.sendMessage(jid, { react: { text: "👍", key: { remoteJid: jid, fromMe: false, id: "..." } } })`
       },
     });
-    // Note: For a precise reaction, we might need `fromMe` or the full key object.
-    // But Baileys docs say `key` only usually needs `id` if passing to `sendMessage(jid, ...)`
-    // However, it's safer if we knew if it was fromMe or not.
-    // For now, we try with just ID. If it fails, we might need more info from integration (which it doesn't send).
-    // Actually, integration only sends `message_id`.
-
-    // Wait, correct usage is:
-    // await sock.sendMessage(jid, { react: { text: reaction, key: { remoteJid: jid, id: messageId } } })
-
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
@@ -691,19 +690,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -711,8 +708,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
