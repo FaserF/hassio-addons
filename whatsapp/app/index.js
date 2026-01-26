@@ -458,8 +458,14 @@ app.post('/send_message', async (req, res) => {
             `[SendMessage] Timeout reached for ${number}. Triggering forced reconnect.`
           );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
-          sock.end(new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale`));
-          reject(new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale, reconnecting...`));
+          sock.end(
+            new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale`)
+          );
+          reject(
+            new Error(
+              `Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale, reconnecting...`
+            )
+          );
         }, SEND_MESSAGE_TIMEOUT)
       ),
     ]);
@@ -711,17 +717,19 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -729,8 +737,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
