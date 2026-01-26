@@ -141,17 +141,15 @@ else
 
         # 2. Fetch remote data
         if RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases"); then
-             # Check if response is valid array JSON (avoid rate limit errors parsing)
              if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
                   LATEST_STABLE=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name' | sed 's/^v//')
                   LATEST_BETA=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == true)) | .[0].tag_name' | sed 's/^v//')
              else
-                  bashio::log.warning "GitHub API returned unexpected response (likely rate limit). Skipping update check."
+                  # Fallback or invalid JSON
                   LATEST_STABLE="null"
                   LATEST_BETA="null"
              fi
         else
-             bashio::log.warning "Failed to fetch releases from GitHub for update check."
              LATEST_STABLE="null"
              LATEST_BETA="null"
         fi
