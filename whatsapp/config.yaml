@@ -13,8 +13,10 @@ map:
 panel_icon: mdi:whatsapp
 options:
   log_level: info
+  reset_session: false
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
+  reset_session: bool
 ports:
   8066/tcp: 8066
 hassio_api: true

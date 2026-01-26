@@ -12,6 +12,7 @@ import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import http from 'http';
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,67 @@ const IS_WIN = process.platform === 'win32';
 const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
 const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
 const TOKEN_FILE = path.join(DATA_DIR, 'api_token.txt');
+
+// --- Startup Reset ---
+const SHOULD_RESET = process.env.RESET_SESSION === 'true';
+if (SHOULD_RESET) {
+  console.log('⚠️ RESET_SESSION ENABLED - Clearing authentication data...');
+  if (fs.existsSync(AUTH_DIR)) {
+    fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+    console.log('✅ Authentication directory cleared.');
+  }
+
+  // Automatically disable the toggle in Addon Config
+  disableResetSession();
+}
+
+/**
+ * Calls the Home Assistant Supervisor API to set reset_session to false.
+ */
+async function disableResetSession() {
+  const token = process.env.SUPERVISOR_TOKEN;
+  if (!token) {
+    console.debug('No SUPERVISOR_TOKEN found, skipping auto-disable of reset_session.');
+    return;
+  }
+
+  const data = JSON.stringify({
+    options: {
+      reset_session: false,
+    },
+  });
+
+  const options = {
+    hostname: 'supervisor',
+    port: 80,
+    path: '/addons/self/options',
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
+    },
+  };
+
+  return new Promise((resolve) => {
+    const req = http.request(options, (res) => {
+      if (res.statusCode === 200) {
+        console.log('✅ Successfully disabled reset_session via Supervisor API.');
+      } else {
+        console.error(`❌ Failed to disable reset_session via Supervisor API. Status: ${res.statusCode}`);
+      }
+      resolve();
+    });
+
+    req.on('error', (error) => {
+      console.error('❌ Error calling Supervisor API:', error);
+      resolve();
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
 
 // Ensure data root exists
 if (IS_WIN && !fs.existsSync(DATA_DIR)) {
@@ -580,19 +642,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -600,8 +660,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

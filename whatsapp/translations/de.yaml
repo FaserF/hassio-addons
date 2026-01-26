@@ -1,6 +1,9 @@
 configuration:
   log_level:
-    name: "Log Level"
+    name: "Logging-Stufe"
     description: Steuert die Ausführlichkeit der Protokolle.
+  reset_session:
+    name: "Sitzung zurücksetzen"
+    description: "⚠️ GEFAHR: Aktiviert das Löschen deiner WhatsApp-Sitzung beim nächsten Start. Der Schalter deaktiviert sich nach dem Zurücksetzen automatisch."
 network:
-  8099/tcp: Interner API-Port, zu dem sich die Integration verbindet.
+  8066/tcp: Interner API-Port, über den sich die Integration verbindet.

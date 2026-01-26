@@ -2,5 +2,8 @@ configuration:
   log_level:
     name: Log Level
     description: Controls the verbosity of the logs.
+  reset_session:
+    name: Reset Session
+    description: "⚠️ DANGER: Enabling this will delete your WhatsApp session data on the next startup. The toggle will automatically disable itself after reset."
 network:
-  8099/tcp: Internal API Port for the Integration to connect to.
+  8066/tcp: Internal API Port for the Integration to connect to.
