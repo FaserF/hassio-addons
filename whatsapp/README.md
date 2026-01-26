@@ -63,6 +63,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 keep_alive_interval: 30000
 log_level: info
+mask_sensitive_data: false
 reset_session: false
 send_message_timeout: 25000
 ```
