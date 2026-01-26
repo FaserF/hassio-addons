@@ -155,9 +155,29 @@ let eventQueue = []; // Queue for polling events
 
 // --- Helper Functions ---
 function getJid(number) {
+  if (!number) return '';
+  if (typeof number !== 'string') number = String(number);
+
+  // 1. If it already has a domain, return it as is.
   if (number.includes('@')) return number;
-  // Strip all non-numeric characters (e.g. +, spaces, dashes)
+
+  // 2. If it has a dash, it's an old-style group ID (creator-timestamp)
+  if (number.includes('-')) {
+    const cleanGroup = number.replace(/[^\d-]/g, '');
+    return `${cleanGroup}@g.us`;
+  }
+
+  // 3. Clean all non-numeric characters (e.g. + for phone numbers)
   const cleanNumber = number.replace(/\D/g, '');
+
+  // 4. Heuristic for Group IDs vs Personal Numbers
+  // Modern Group IDs (numeric only) are typically much longer than E.164 phone numbers (max 15 digits).
+  // Most group IDs are 16-20 digits.
+  if (cleanNumber.length >= 16) {
+    return `${cleanNumber}@g.us`;
+  }
+
+  // 5. Default to the standard WhatsApp user domain
   return `${cleanNumber}@s.whatsapp.net`;
 }
 
