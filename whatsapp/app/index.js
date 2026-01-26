@@ -363,8 +363,8 @@ app.delete('/session', async (req, res) => {
       // Baileys logout can sometimes hang if connection is bad
       await Promise.race([
         sock.logout(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000))
-      ]).catch(e => console.warn('Logout failed or timed out:', e.message));
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000)),
+      ]).catch((e) => console.warn('Logout failed or timed out:', e.message));
 
       sock.end(undefined);
       sock = undefined;
@@ -443,7 +443,9 @@ app.post('/send_message', async (req, res) => {
       sock.sendMessage(jid, { text: message }),
       new Promise((_, reject) =>
         setTimeout(() => {
-          console.error(`[SendMessage] Timeout reached for ${number}. Triggering forced reconnect.`);
+          console.error(
+            `[SendMessage] Timeout reached for ${number}. Triggering forced reconnect.`
+          );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
           sock.end(new Error('Send message timeout (25s) - Connection stale'));
           reject(new Error('Send message timeout (25s) - Connection stale, reconnecting...'));
