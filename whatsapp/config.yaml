@@ -16,11 +16,13 @@ options:
   reset_session: false
   send_message_timeout: 25000
   keep_alive_interval: 30000
+  mask_sensitive_data: false
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_session: bool
   send_message_timeout: int
   keep_alive_interval: int
+  mask_sensitive_data: bool
 ports:
   8066/tcp: 8066
 hassio_api: true

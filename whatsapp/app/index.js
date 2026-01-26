@@ -125,9 +125,11 @@ console.log(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
 // --- Configuration ---
 const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
 const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
+const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 
 console.log(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 console.log(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
+console.log(`🔒 Mask Sensitive Data: ${MASK_SENSITIVE_DATA ? 'ENABLED' : 'DISABLED'}`);
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -157,6 +159,12 @@ function getJid(number) {
   // Strip all non-numeric characters (e.g. +, spaces, dashes)
   const cleanNumber = number.replace(/\D/g, '');
   return `${cleanNumber}@s.whatsapp.net`;
+}
+
+function maskData(str) {
+  if (!MASK_SENSITIVE_DATA || !str) return str;
+  if (str.length <= 4) return '****';
+  return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
 
 // --- mDNS / Bonjour ---
@@ -362,8 +370,8 @@ async function connectToWhatsApp() {
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // Update global stats with the latest message detail
-        stats.last_received_message = text;
-        stats.last_received_sender = sender;
+        stats.last_received_message = maskData(text);
+        stats.last_received_sender = maskData(sender);
 
         return {
           text,
@@ -474,7 +482,7 @@ app.post('/send_message', async (req, res) => {
   try {
     const jid = getJid(number);
     console.debug(
-      `[SendMessage] Attempting to send to ${number}. Socket state: ${sock ? 'exists' : 'null'}, Connected: ${isConnected}`
+      `[SendMessage] Input: ${maskData(number)} -> JID: ${maskData(jid)}. Socket state: ${sock ? 'exists' : 'null'}, Connected: ${isConnected}`
     );
 
     if (!sock) {
@@ -494,7 +502,7 @@ app.post('/send_message', async (req, res) => {
       new Promise((_, reject) =>
         setTimeout(() => {
           console.error(
-            `[SendMessage] Timeout reached for ${number}. Triggering forced reconnect.`
+            `[SendMessage] Timeout reached for ${maskData(number)}. Triggering forced reconnect.`
           );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
           sock.end(
@@ -509,13 +517,13 @@ app.post('/send_message', async (req, res) => {
       ),
     ]);
     stats.sent += 1;
-    stats.last_sent_message = message;
-    stats.last_sent_target = number;
+    stats.last_sent_message = maskData(message);
+    stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = message;
-    stats.last_failed_target = number;
+    stats.last_failed_message = maskData(message);
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -540,8 +548,8 @@ app.post('/send_image', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = caption ? `Image: ${caption}` : 'Image';
-    stats.last_failed_target = number;
+    stats.last_failed_message = caption ? `Image: ${maskData(caption)}` : 'Image';
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send image: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -568,8 +576,8 @@ app.post('/send_poll', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = `Poll: ${question}`;
-    stats.last_failed_target = number;
+    stats.last_failed_message = `Poll: ${maskData(question)}`;
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send poll: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -597,8 +605,8 @@ app.post('/send_location', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = `Location: ${title || 'Pinned'}`;
-    stats.last_failed_target = number;
+    stats.last_failed_message = `Location: ${maskData(title) || 'Pinned'}`;
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send location: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -621,8 +629,8 @@ app.post('/send_reaction', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = `Reaction: ${reaction}`;
-    stats.last_failed_target = number;
+    stats.last_failed_message = `Reaction: ${maskData(reaction)}`;
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send reaction: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -650,8 +658,8 @@ app.post('/send_buttons', async (req, res) => {
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
-    stats.last_failed_message = `Buttons: ${message}`;
-    stats.last_failed_target = number;
+    stats.last_failed_message = `Buttons: ${maskData(message)}`;
+    stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send buttons: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -756,19 +764,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -776,8 +782,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

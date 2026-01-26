@@ -5,5 +5,14 @@ configuration:
   reset_session:
     name: "Sitzung zurücksetzen"
     description: "⚠️ GEFAHR: Aktiviert das Löschen deiner WhatsApp-Sitzung beim nächsten Start. Der Schalter deaktiviert sich nach dem Zurücksetzen automatisch."
+  mask_sensitive_data:
+    name: "Sensible Daten maskieren"
+    description: "Wenn aktiviert, werden Telefonnummern in den Logs teilweise unkenntlich gemacht (z.B. 4917*****123). Hilfreich beim Teilen von Logs."
+  send_message_timeout:
+    name: "Sende-Timeout (ms)"
+    description: "Zeit in Millisekunden, die auf eine Bestätigung von WhatsApp gewartet wird, bevor abgebrochen wird (Standard: 25000)."
+  keep_alive_interval:
+    name: "Keep-Alive Intervall (ms)"
+    description: "Wie oft (in ms) die Verbindung geprüft werden soll, um 'stale' Verbindungen zu erkennen (Standard: 30000)."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.

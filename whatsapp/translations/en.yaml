@@ -5,5 +5,14 @@ configuration:
   reset_session:
     name: Reset Session
     description: "⚠️ DANGER: Enabling this will delete your WhatsApp session data on the next startup. The toggle will automatically disable itself after reset."
+  mask_sensitive_data:
+    name: "Mask Sensitive Data"
+    description: "If enabled, phone numbers in logs will be partially hidden (e.g. 4917*****123). Useful when sharing logs."
+  send_message_timeout:
+    name: "Send Timeout (ms)"
+    description: "Time in milliseconds to wait for a WhatsApp acknowledgement before timing out (Default: 25000)."
+  keep_alive_interval:
+    name: "Keep-Alive Interval (ms)"
+    description: "How often (in ms) to check the connection to detect stale connections (Default: 30000)."
 network:
-  8066/tcp: Internal API Port for the Integration to connect to.
+  8066/tcp: Internal API port the integration connects to.

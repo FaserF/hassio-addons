@@ -38,6 +38,13 @@ if ! KEEP_ALIVE_INTERVAL=$(bashio::config 'keep_alive_interval') || [ -z "$KEEP_
 fi
 export KEEP_ALIVE_INTERVAL
 
+# Mask Sensitive Data (Default false)
+if bashio::config.true 'mask_sensitive_data'; then
+    export MASK_SENSITIVE_DATA="true"
+else
+    export MASK_SENSITIVE_DATA="false"
+fi
+
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
 for path in "/config" "/homeassistant"; do

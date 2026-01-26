@@ -23,8 +23,20 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ```yaml
 log_level: info
-mdns_name: 'WhatsApp Addon'
+send_message_timeout: 25000
+keep_alive_interval: 30000
+mask_sensitive_data: false
 ```
+
+### Configuration Options
+
+- `log_level`: Level of logs to output (trace, debug, info, warning, error, fatal).
+- `send_message_timeout`: Time (in ms) to wait for WhatsApp acknowledgement before timing out. Increase if you have slow network.
+- `keep_alive_interval`: Time (in ms) between connection checks to prevent "Stale Connection".
+- `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
+
+> [!WARNING]
+> **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
 
 ## 📂 Folder Usage
 
