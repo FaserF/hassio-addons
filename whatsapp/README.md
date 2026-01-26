@@ -50,7 +50,7 @@ Maintained by **FaserF**.
 
 To actually send messages and automate WhatsApp, you need the **WhatsApp Custom Integration** for Home Assistant.
 
-- **[Integration Documentation & Examples](https://github.com/FaserF/ha-whatsapp/blob/main/EXAMPLES.md)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
+- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
 
 ---
 

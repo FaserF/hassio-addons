@@ -13,7 +13,7 @@ This add-on is a "bridge". It does **not** communicate with Home Assistant direc
 
 Once the addon and integration are configured, check out the following resource to start building:
 
-- **[Detailed Examples & Guide](https://github.com/FaserF/ha-whatsapp/blob/main/EXAMPLES.md)** (Buttons, Polls, Reactions, etc.)
+- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)** (Buttons, Polls, Reactions, etc.)
 
 ## ⚙️ Configuration
 
