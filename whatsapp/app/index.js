@@ -426,7 +426,9 @@ app.post('/send_message', async (req, res) => {
 
   try {
     const jid = getJid(number);
-    console.debug(`[SendMessage] Attempting to send to ${number}. Socket state: ${sock ? 'exists' : 'null'}, Connected: ${isConnected}`);
+    console.debug(
+      `[SendMessage] Attempting to send to ${number}. Socket state: ${sock ? 'exists' : 'null'}, Connected: ${isConnected}`
+    );
 
     if (!sock) {
       throw new Error('Socket not initialized');
@@ -690,17 +692,19 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -708,8 +712,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
