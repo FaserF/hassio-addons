@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.0.0 (2026-01-26)
+
+### 📦 Dependencies
+- Update index.js ([`b43ea6c2`](https://github.com/FaserF/hassio-addons/commit/b43ea6c260ddc62566523008cd31b450a088bf8c))
+- Update index.js ([`3e421c66`](https://github.com/FaserF/hassio-addons/commit/3e421c66210efb77b33d7e64c66aeb9bca4fb28a))
+- Update index.js ([`4ed7fce3`](https://github.com/FaserF/hassio-addons/commit/4ed7fce3bae3da13f9badb048231d72d35f9af79))
+- Update index.js ([`ceb4a4be`](https://github.com/FaserF/hassio-addons/commit/ceb4a4bec950eccbcc6409c0cd4948c14fd52e87))
+- Update run ([`29120e88`](https://github.com/FaserF/hassio-addons/commit/29120e88fb5435f5720b6f10f9363f067dbe1ebe))
+- Update index.js ([`5defdc3a`](https://github.com/FaserF/hassio-addons/commit/5defdc3ab75697af0d7c9f7e7a0106e8ccdf3f42))
+- Update index.js ([`a8ccb343`](https://github.com/FaserF/hassio-addons/commit/a8ccb3434c6fac8355a8180e3b2742fa1f6ddfa0))
+- ⬆️ Update dependency pino to v10.3.0 [skip-tests] (#603) [skip-tests] ([`4fc9249f`](https://github.com/FaserF/hassio-addons/commit/4fc9249f729277273dafa3fb7887b4fe3400384d))
+
+### 🚀 Other
+- docs improvements ([`07edbf9d`](https://github.com/FaserF/hassio-addons/commit/07edbf9d0bdef70ebb18c3b29ba78ffaf219c2bd))
+- fixed connection issues ([`7ce4cf49`](https://github.com/FaserF/hassio-addons/commit/7ce4cf49977e46229125b2a76bab191921f84ef6))
+- new option: mask_sensitive_data ([`157f095e`](https://github.com/FaserF/hassio-addons/commit/157f095e3d7bcd393b0d101d9819cf75145d6ef9))
+- connection send fixes ([`933d41bd`](https://github.com/FaserF/hassio-addons/commit/933d41bd02e80f066bd95aad6af83a81dfd4bff9))
+- startup fix ([`cf4e6904`](https://github.com/FaserF/hassio-addons/commit/cf4e6904aaabe494d9718ddd871c88130095b5bb))
+- typo fix ([`807551e3`](https://github.com/FaserF/hassio-addons/commit/807551e3c2fbacc0c0ec76ea98b73d3642a2cf02))
+- timeout fix ([`b81a1c1a`](https://github.com/FaserF/hassio-addons/commit/b81a1c1a759daefa37790a171f368d512561eee4))
+- connection fixes ([`29a26eac`](https://github.com/FaserF/hassio-addons/commit/29a26eacaa35717f8172777cdf897b3db0bc5e51))
+- connection fixes ([`bf3961d2`](https://github.com/FaserF/hassio-addons/commit/bf3961d2d14c1a32990c5ebca8b8b9dbeea92704))
+- fixed timeout to integration ([`ec14b525`](https://github.com/FaserF/hassio-addons/commit/ec14b525a820cb8be7cb5497eadb2a8241b793ff))
+- timeout improvements ([`782c89b3`](https://github.com/FaserF/hassio-addons/commit/782c89b38a9ae261ce2979b4847ab2cbb9fd44c6))
+- add timeout ([`c99fcf6d`](https://github.com/FaserF/hassio-addons/commit/c99fcf6df81aa0bfecbca5112bb4aa2789151c96))
+- api fixes ([`3f536a7c`](https://github.com/FaserF/hassio-addons/commit/3f536a7ce4278f18c0f75897d1134f249291fb00))
+- fixed reset option ([`a531e6e9`](https://github.com/FaserF/hassio-addons/commit/a531e6e984b252310e3840e9f3790cf10164b28a))
+- docs improvements ([`08550881`](https://github.com/FaserF/hassio-addons/commit/08550881a52ec8ecef4caf4dec8d9ee33cca40c6))
+
+### 📌 Release Note
+- First fully functional and stable version
+
+
 ## 0.5.3 (2026-01-21)
 
 ### 📦 Dependencies
