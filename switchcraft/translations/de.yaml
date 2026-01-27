@@ -3,6 +3,4 @@ configuration:
     name: Log Level
     description: Steuert die Ausführlichkeit der Protokollausgabe.
 network:
-  8080/tcp:
-    name: Web-Oberfläche
-    description: Port für die SwitchCraft Web-Schnittstelle.
+  8080/tcp: Web-Oberfläche
