@@ -1,4 +1,5 @@
 param(
+    # The following parameters are intentionally kept for the test harness interface
     $Addon,
     $Config,
     $OutputDir,

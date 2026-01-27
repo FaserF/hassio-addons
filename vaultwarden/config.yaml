@@ -3,7 +3,6 @@ version: dev
 slug: vaultwarden
 description: Open source password management solution (Custom Build)
 url: https://github.com/faserf/hassio-addons
-webui: "[PROTO:ssl]://[HOST]:[PORT:7277]"
 init: false
 arch:
   - aarch64
@@ -12,8 +11,7 @@ ports:
   7277/tcp: 7277
 ports_description:
   7277/tcp: Vaultwarden Web interface
-map:
-  - ssl
+map: ["ssl"]
 options:
   log_level: info
   ssl: true
@@ -27,6 +25,7 @@ schema:
   keyfile: str
   request_size_limit: int?
 ingress: true
+ingress_entry: "/"
 ingress_port: 7277
 panel_icon: mdi:shield-key
 image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}

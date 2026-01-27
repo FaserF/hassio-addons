@@ -3,12 +3,12 @@
 Bitwarden is an open-source password manager that can store sensitive
 information such as website credentials in an encrypted vault.
 
-The Bitwarden platform offers a variety of client applications including
+The Bitwarden platform offers various client applications including
 a web interface, desktop applications, browser extensions and mobile apps.
 
 This add-on is based upon the lightweight and opensource
 [Vaultwarden][vaultwarden] implementation, allowing you to self-host
-this amazing password manager.
+this powerful password manager.
 
 Password theft is a serious problem. The websites and apps that you use are
 under attack every day. Security breaches occur and your passwords are stolen.
@@ -43,7 +43,7 @@ Example add-on configuration:
 
 ```yaml
 log_level: info
-ssl: false
+ssl: true
 certfile: fullchain.pem
 keyfile: privkey.pem
 request_size_limit: 10485760
@@ -60,6 +60,7 @@ dealing with an unknown issue. Possible values are:
 - `trace`: Show every detail, like all called internal functions.
 - `debug`: Shows detailed debug information.
 - `info`: Normal (usually) interesting events.
+- `notice`: Mid-level informational message (more significant than `info` but not a `warning`).
 - `warning`: Exceptional occurrences that are not errors.
 - `error`: Runtime errors that do not require immediate action.
 - `fatal`: Something went terribly wrong. Add-on becomes unusable.
@@ -73,8 +74,8 @@ you are troubleshooting.
 
 Enables/Disables SSL (HTTPS). Set it `true` to enable it, `false` otherwise.
 
-**Note**: _The SSL settings only apply to direct access and has no effect
-on the Ingress service._
+**Note**: _The SSL settings only apply to direct access. Home Assistant
+Ingress is fully supported and recommended for general use._
 
 ### Option: `certfile`
 
@@ -104,8 +105,6 @@ If you are switching from the official add-on to this custom version (or vice ve
 
 ## Known issues and limitations
 
-- This add-on cannot support Ingress at this time due to technical limitations
-  of the Bitwarden Vault web interface.
 - Some web browsers, like Chrome, disallow the use of Web Crypto APIs in
   insecure contexts. In this case, you might get an error like
   `Cannot read property 'importKey'`. To solve this problem, you need to enable
@@ -137,7 +136,7 @@ You have several options to get them answered:
 - The Home Assistant [Community Forum][forum].
 - Join the [Reddit subreddit][reddit] in [/r/homeassistant][reddit]
 
-You could also [open an issue here][issue] GitHub.
+You could also [open an issue here][issue] on GitHub.
 
 ## Authors & contributors
 
