@@ -49,6 +49,7 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 COPY rootfs /
 
 # Set executable permissions and fix line endings
+# Also create symlink for legacy base image compatibility
 RUN mkdir -p /run/s6/container_environment \
     && echo "info" > /run/s6/container_environment/LOG_LEVEL \
     && mkdir -p /var/run/s6 \

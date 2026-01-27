@@ -2,29 +2,18 @@
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
-# Runs the Vaultwarden server
+# Vaultwarden main service
 # ==============================================================================
 
-# Set environment from persistent files
-export DATA_FOLDER=/data
-export ROCKET_PORT=80
-export ROCKET_WORKERS=2
+# Bind to localhost as Nginx proxies to it
+export ROCKET_ADDRESS=127.0.0.1
+export ROCKET_PORT=7277
+export ROCKET_DATA_DIR=/data
 
-if [ -f "/data/rocket_secret" ]; then
-    export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
-fi
-
-if [ -f "/data/admin_token" ]; then
-    export ADMIN_TOKEN=$(cat /data/admin_token)
-fi
-
-# API request size limit
+# Check and set Request Size Limit
 if bashio::config.has_value 'request_size_limit'; then
-    request_size_limit=$(bashio::config 'request_size_limit')
-    export ROCKET_LIMITS="{json=${request_size_limit}}"
+    export ROCKET_LIMITS="{json=$(bashio::config 'request_size_limit')}"
 fi
 
-# Run the Bitwarden server
-bashio::log.info 'Starting the Vaultwarden server...'
-cd /opt || bashio::exit.nok
-exec ./vaultwarden
+bashio::log.info "Starting Vaultwarden..."
+exec /opt/vaultwarden/vaultwarden
