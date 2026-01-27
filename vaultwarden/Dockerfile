@@ -54,9 +54,7 @@ RUN \
     && mkdir -p /var/run/s6 \
     && ln -sf /run/s6/container_environment /var/run/s6/container_environment \
     && find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
-    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} + \
-    && find /etc/cont-init.d -type f -name "*.sh" -exec dos2unix {} + \
-    && find /etc/cont-init.d -type f -name "*.sh" -exec chmod +x {} +
+    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
 
 # Build arguments
 ARG BUILD_ARCH
