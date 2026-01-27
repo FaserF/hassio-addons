@@ -128,8 +128,11 @@ install_integration() {
 }
 
 # Determine Channel (Edge vs Stable)
-# We assume Edge addons might have 'edge' in their slug or explicitly set env var
-if [[ "$ADDON_SLUG" == *"edge"* ]]; then
+# We check the actual addon slug from supervisor
+SLUG=$(bashio::addon.slug)
+bashio::log.info "Detected Addon Slug: ${SLUG}"
+
+if [[ "${SLUG}" == *"edge"* ]]; then
     CHANNEL="edge"
     bashio::log.info "Edge Addon detected. Will prefer Pre-releases."
 else
