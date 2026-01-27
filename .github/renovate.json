@@ -443,6 +443,13 @@
       "matchDepNames": [
         "Eidolf/Docker-AntiGravity"
       ],
+      "ignoreUnstable": true
+    },
+    {
+      "description": "Allow pre-releases for SwitchCraft",
+      "matchDepNames": [
+        "FaserF/SwitchCraft"
+      ],
       "ignoreUnstable": false
     },
     {
