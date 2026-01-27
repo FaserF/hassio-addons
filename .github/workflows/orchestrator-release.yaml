@@ -21,6 +21,10 @@ on:
           - patch
           - minor
           - major
+      custom_version:
+        description: "Specific target version (e.g. 1.2.3). Overrides 'version' input."
+        required: false
+        type: string
       skip_verification:
         description: "Skip lint/build verification"
         required: false
@@ -87,6 +91,7 @@ jobs:
       version_type: ${{ steps.detect.outputs.version_type }}
       is_manual_bump: ${{ steps.detect.outputs.is_manual_bump }}
       is_all: ${{ steps.detect.outputs.is_all }}
+      target_version: ${{ steps.detect.outputs.target_version }}
     steps:
       - name: ⤵️ Checkout code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -102,6 +107,7 @@ jobs:
           PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
           INPUT_ADDON: ${{ github.event.inputs.addon }}
           INPUT_VERSION: ${{ github.event.inputs.version }}
+          INPUT_CUSTOM_VERSION: ${{ github.event.inputs.custom_version }}
           DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -111,6 +117,7 @@ jobs:
           SHOULD_RELEASE="false"
           IS_AUTO="false"
           VERSION_TYPE="patch"
+          TARGET_VERSION=""
           IS_ALL="false"
 
           # ----------------------------------------------------------------
@@ -119,6 +126,12 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             IS_AUTO="false"
             VERSION_TYPE="${INPUT_VERSION:-patch}"
+            TARGET_VERSION="${INPUT_CUSTOM_VERSION}"
+
+            if [ -n "$TARGET_VERSION" ]; then
+                echo "🔍 Custom target version provided: $TARGET_VERSION"
+                VERSION_TYPE="patch" # Dummy value for increment arg
+            fi
 
             echo "🔍 Manual dispatch detected"
             echo "  INPUT_ADDON: '$INPUT_ADDON'"
@@ -223,7 +236,10 @@ jobs:
                      [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
                      SHOULD_RELEASE="true"
                      IS_MANUAL_BUMP="true"
-                     VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                     SHOULD_RELEASE="true"
+                     IS_MANUAL_BUMP="true"
+                     TARGET_VERSION="$NEW_VERSION"
+                     VERSION_TYPE="patch" # Dummy value
                   fi
                 fi
               done
@@ -310,7 +326,9 @@ jobs:
                   echo "should_release=false"
                   echo "addons=[]"
                   echo "is_auto=true"
+                  echo "is_auto=true"
                   echo "version_type=patch"
+                  echo "target_version="
                 } >> "$GITHUB_OUTPUT"
                 exit 0
               fi
@@ -445,7 +463,8 @@ jobs:
                      [ -z "$ADDONS" ] && ADDONS="$addon_slug" || ADDONS="$ADDONS,$addon_slug"
                    fi
                    # Use this version instead of patch bump
-                   VERSION_TYPE="$NEW_VERSION"
+                   TARGET_VERSION="$NEW_VERSION"
+                   VERSION_TYPE="patch" # Dummy value
                    IS_MANUAL_BUMP="true"
                 fi
               fi
@@ -523,7 +542,8 @@ jobs:
                       [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
                       SHOULD_RELEASE="true"
                       IS_MANUAL_BUMP="true"
-                      VERSION_TYPE="$NEW_VERSION" # Pass exact version
+                      TARGET_VERSION="$NEW_VERSION"
+                      VERSION_TYPE="patch" # Dummy value
                    fi
                  fi
                done
@@ -624,6 +644,8 @@ jobs:
           printf "should_release=%s\n" "$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
           printf "is_auto=%s\n" "$IS_AUTO" >> "$GITHUB_OUTPUT"
           printf "version_type=%s\n" "$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+          # shellcheck disable=SC2154
+          printf "target_version=%s\n" "$TARGET_VERSION" >> "$GITHUB_OUTPUT"
           # shellcheck disable=SC2154
           printf "is_manual_bump=%s\n" "${IS_MANUAL_BUMP:-false}" >> "$GITHUB_OUTPUT"
           printf "is_all=%s\n" "${IS_ALL:-false}" >> "$GITHUB_OUTPUT"
@@ -773,6 +795,7 @@ jobs:
       - name: 📝 Bump Version & Changelog
         run: |
           VERSION_TYPE="${{ needs.detect.outputs.version_type }}"
+          TARGET_VERSION="${{ needs.detect.outputs.target_version }}"
           IS_AUTO="${{ needs.detect.outputs.is_auto }}"
           IS_MANUAL_BUMP="${{ needs.detect.outputs.is_manual_bump }}"
           CHANGELOG_ONLY="${{ github.event.inputs.changelog_only || 'false' }}"
@@ -794,7 +817,13 @@ jobs:
              CURRENT_VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
              python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$CURRENT_VERSION" --changelog-only --message "$MSG"
           else
-             python3 .scripts/bump_version.py "${{ matrix.addon }}" "$VERSION_TYPE" --message "$MSG"
+             PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.addon }}\" \"$VERSION_TYPE\" --message \"$MSG\""
+
+             if [ -n "$TARGET_VERSION" ] && [ "$TARGET_VERSION" != "null" ]; then
+                PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.addon }}\" patch --target-version \"$TARGET_VERSION\" --message \"$MSG\""
+             fi
+
+             eval "$PYTHON_CMD"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

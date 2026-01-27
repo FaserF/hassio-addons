@@ -285,17 +285,6 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "paperless-ngx/paperless-ngx"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/switchcraft/Dockerfile$"
-      ],
-      "matchStrings": [
-        "ARG SWITCHCRAFT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "FaserF/SwitchCraft"
     }
   ],
   "packageRules": [
