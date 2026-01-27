@@ -282,6 +282,19 @@ Sends an interactive List Message (Action Menu).
 }
 ```
 
+#### `POST /send_contact`
+
+Sends a VCard contact.
+
+**Payload:**
+```json
+{
+  "number": "1234567890",
+  "contact_name": "Home Assistant",
+  "contact_number": "1234567890"
+}
+```
+
 ### 4. Native Commands
 
 The Addon supports the following native commands via WhatsApp messages (sent to the bot):

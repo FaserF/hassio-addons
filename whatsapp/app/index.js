@@ -418,6 +418,7 @@ app.use('/send_video', authMiddleware);
 app.use('/send_video', authMiddleware);
 app.use('/send_audio', authMiddleware);
 app.use('/send_list', authMiddleware);
+app.use('/send_contact', authMiddleware);
 app.use('/revoke_message', authMiddleware);
 app.use('/edit_message', authMiddleware);
 app.use('/set_presence', authMiddleware);
@@ -1266,6 +1267,43 @@ app.post('/send_list', async (req, res) => {
     stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send list: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /send_contact
+app.post('/send_contact', async (req, res) => {
+  const { number, contact_name, contact_number } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+
+    // Construct VCard v3.0
+    const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
+      + 'VERSION:3.0\n'
+      + `FN:${contact_name}\n` // full name
+      + `ORG:Home Assistant;\n` // organization (optional)
+      + `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` // WhatsApp ID and number
+      + 'END:VCARD';
+
+    await sock.sendMessage(jid, {
+      contacts: {
+        displayName: contact_name,
+        contacts: [{ vcard }]
+      }
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Contact: ${contact_name}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Contact: ${contact_name}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send contact: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
