@@ -398,6 +398,7 @@ app.use('/send_poll', authMiddleware);
 app.use('/send_location', authMiddleware);
 app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
+app.use('/send_document', authMiddleware);
 app.use('/set_presence', authMiddleware);
 app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
@@ -810,6 +811,33 @@ app.post('/send_buttons', async (req, res) => {
   }
 });
 
+// POST /send_document
+app.post('/send_document', async (req, res) => {
+  const { number, url, fileName, caption } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      document: { url: url },
+      fileName: fileName,
+      caption: caption,
+      mimetype: 'application/octet-stream',
+    });
+    stats.sent += 1;
+    stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Document: ${maskData(fileName) || 'unnamed'}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send document: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
 // POST /set_presence
 app.post('/set_presence', async (req, res) => {
   const { number, presence } = req.body;
@@ -950,19 +978,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -970,8 +996,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

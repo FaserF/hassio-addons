@@ -137,6 +137,21 @@ _Note: Button support varies by device and WhatsApp version._
 }
 ```
 
+#### `POST /send_document`
+
+Sends a document (PDF, Zip, Doc, etc.).
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/file.pdf",
+  "fileName": "document.pdf",
+  "caption": "Here is the document you requested"
+}
+```
+
 #### `POST /send_reaction`
 
 Reacts to a specific message.
