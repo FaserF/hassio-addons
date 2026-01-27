@@ -284,6 +284,7 @@ app.use('/send_location', authMiddleware);
 app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/set_presence', authMiddleware);
+app.use('/groups', authMiddleware);
 app.use('/logs', authMiddleware);
 
 // --- Store Initialization ---
@@ -712,6 +713,27 @@ app.post('/set_presence', async (req, res) => {
   }
 });
 
+// GET /groups
+app.get('/groups', async (req, res) => {
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    if (!sock) throw new Error('Socket not initialized');
+
+    const groups = await sock.groupFetchAllParticipating();
+    const result = Object.values(groups).map((g) => ({
+      id: g.id,
+      name: g.subject,
+      participants: g.participants.length,
+    }));
+
+    res.json(result);
+  } catch (e) {
+    console.error('Failed to fetch groups:', e);
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
 // GET /health - Simple health check endpoint for ingress readiness
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'whatsapp-addon' });
@@ -794,19 +816,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -814,8 +834,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

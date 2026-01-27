@@ -16,6 +16,19 @@ This add-on is a "bridge". It does **not** communicate with Home Assistant direc
 **Flow:**
 `Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
+## 🌐 Network & Discovery
+
+By default, this add-on uses **Isolated Network Mode** (`host_network: false`).
+
+### Why use Host Network?
+- **Auto-Discovery:** If you enable **Host Network** in the add-on's network configuration, it can broadcast its presence via **mDNS/Zeroconf** (`_ha-whatsapp._tcp.local`).
+- **Ease of Use:** With Host Network enabled, Home Assistant will automatically find the add-on and prompt you to configure it ("New devices found"), pre-filling the URL and Port.
+
+### Can I use it without Host Network?
+Yes! This is the default. If you keep the isolated network:
+1.  **No Auto-Discovery:** Home Assistant will not "see" the add-on automatically.
+2.  **Manual Config:** You must manually enter the URL (e.g., `http://<your-ha-ip>:8066`) when setting up the integration.
+
 ## 🚀 Getting Started with Automations
 
 Once the addon and integration are configured, check out the following resource to start building:
