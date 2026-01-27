@@ -285,6 +285,7 @@ app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/set_presence', authMiddleware);
 app.use('/groups', authMiddleware);
+app.use('/mark_as_read', authMiddleware);
 app.use('/logs', authMiddleware);
 
 // --- Store Initialization ---
@@ -734,6 +735,27 @@ app.get('/groups', async (req, res) => {
   }
 });
 
+// POST /mark_as_read
+app.post('/mark_as_read', async (req, res) => {
+  const { number, messageId } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    await sock.readMessages([
+      {
+        remoteJid: jid,
+        id: messageId,
+        // participant: ... // Needed if we want to mark specific participant in group, but usually just id+jid is enough
+      },
+    ]);
+    res.json({ status: 'success' });
+  } catch (e) {
+    addLog(`Failed to mark read: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
 // GET /health - Simple health check endpoint for ingress readiness
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'whatsapp-addon' });
@@ -816,19 +838,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -836,8 +856,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
