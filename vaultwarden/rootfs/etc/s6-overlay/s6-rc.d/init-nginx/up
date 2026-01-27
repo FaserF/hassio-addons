@@ -1,11 +1,9 @@
-#!/command/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
 # This file configures NGINX
 # ==============================================================================
-declare certfile
-declare keyfile
 
 bashio::config.require.ssl
 

@@ -1,13 +1,9 @@
-#!/command/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
 # Runs the Vaultwarden server
 # ==============================================================================
-declare admin_token
-declare log_level
-declare request_size_limit
-declare secret_key
 
 # Set defaults
 export DATA_FOLDER=/data
@@ -76,12 +72,6 @@ if bashio::fs.file_exists '/data/admin_token'; then
     bashio::log.info "the add-on will NOT generate a new token on each start"
     bashio::log.info "and stops showing this message."
     bashio::log.info
-fi
-
-# API request size limit
-if bashio::config.has_value 'request_size_limit'; then
-    request_size_limit=$(bashio::config 'request_size_limit')
-    export ROCKET_LIMITS="{json=${request_size_limit}}"
 fi
 
 # API request size limit

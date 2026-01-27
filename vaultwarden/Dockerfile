@@ -26,6 +26,7 @@ RUN \
     \
     && apt-get install -y --no-install-recommends \
         curl \
+        dos2unix \
         libmariadb-dev-compat \
         libpq5 \
         nginx \
@@ -45,8 +46,10 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Copy root filesystem
 COPY rootfs /
 
-# Set executable permissions
-RUN chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up
+# Set executable permissions and fix line endings
+RUN \
+    find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
+    && chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down 2>/dev/null || true
 
 # Build arguments
 ARG BUILD_ARCH
