@@ -3,8 +3,8 @@
 ## 1.0.4 (2026-01-27)
 
 ### 🚀 Other
-- Addon startup fixes ([`eb9bdab9`](https://github.com/FaserF/hassio-addons/commit/eb9bdab96fe890d2da644eda261463a74fada494))
 
+- Addon startup fixes ([`eb9bdab9`](https://github.com/FaserF/hassio-addons/commit/eb9bdab96fe890d2da644eda261463a74fada494))
 
 ## 1.0.3 (2026-01-27)
 
