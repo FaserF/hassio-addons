@@ -114,20 +114,6 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// --- Authorization Logic ---
-let API_TOKEN = '';
-
-if (fs.existsSync(TOKEN_FILE)) {
-  API_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
-} else {
-  API_TOKEN = crypto.randomBytes(32).toString('hex');
-  fs.writeFileSync(TOKEN_FILE, API_TOKEN);
-}
-
-logger.info('---------------------------------------------------');
-logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
-logger.info('---------------------------------------------------');
-
 // --- Configuration ---
 const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
 const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
@@ -151,6 +137,20 @@ if (UI_AUTH_ENABLED) {
 } else {
   logger.info('🔓 UI Authentication: DISABLED');
 }
+
+// --- Authorization Logic ---
+let API_TOKEN = '';
+
+if (fs.existsSync(TOKEN_FILE)) {
+  API_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
+} else {
+  API_TOKEN = crypto.randomBytes(32).toString('hex');
+  fs.writeFileSync(TOKEN_FILE, API_TOKEN);
+}
+
+logger.info('---------------------------------------------------');
+logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
+logger.info('---------------------------------------------------');
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -330,8 +330,9 @@ const ipFilterMiddleware = (req, res, next) => {
   // 172.16.0.0/12
   // 192.168.0.0/16
   // fc00::/7 (Unique Local Address IPv6)
-  const isPrivate =
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
+  const isPrivate = /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(
+    ip
+  );
 
   if (isPrivate) return next();
 
@@ -341,7 +342,9 @@ const ipFilterMiddleware = (req, res, next) => {
 
   addLog(`Blocked external access attempt from ${ip}`, 'warning');
   logger.warn({ ip }, '[SECURITY] Blocked external access attempt (UI Auth Disabled)');
-  return res.status(403).send('Forbidden: External access is disabled when UI Authentication is off.');
+  return res
+    .status(403)
+    .send('Forbidden: External access is disabled when UI Authentication is off.');
 };
 
 const authMiddleware = (req, res, next) => {
@@ -629,10 +632,6 @@ app.post('/send_message', async (req, res) => {
       throw new Error('Socket not initialized');
     }
 
-    if (!sock) {
-      throw new Error('Socket not initialized');
-    }
-
     // Try to wake up connection with presence update
     await sock.sendPresenceUpdate('composing', jid);
     await delay(250);
@@ -893,7 +892,6 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     return res.status(404).send('Not Found');
   }
 
-
   // Determine current state
   const statusClass = isConnected ? 'connected' : currentQR ? 'waiting' : 'disconnected';
   const statusText = isConnected
@@ -952,17 +950,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -970,8 +970,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1011,7 +1011,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             </script>
 
             <div class="footer">
-                Addon v0.3.0 • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
+                Addon v${process.env.ADDON_VERSION || '1.0.3'} • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
             </div>
 
             <div class="refresh-hint">
