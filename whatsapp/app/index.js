@@ -152,28 +152,6 @@ logger.info('---------------------------------------------------');
 logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
 logger.info('---------------------------------------------------');
 
-// Ensure auth dir exists
-if (!fs.existsSync(AUTH_DIR)) {
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
-}
-
-// --- Version Check ---
-let BAILEYS_VERSION = 'Unknown';
-try {
-  const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
-  if (fs.existsSync(pkgPath)) {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    BAILEYS_VERSION = pkg.version;
-  }
-} catch (e) {
-  logger.warn({ error: e.message }, 'Could not read Baileys version');
-}
-
-let sock;
-let currentQR = null;
-let isConnected = false;
-let eventQueue = []; // Queue for polling events
-
 // --- Helper Functions ---
 function getJid(number) {
   if (!number) return '';
@@ -244,6 +222,52 @@ function maskData(str) {
   return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
 
+// --- Global State ---
+let sock;
+let currentQR = null;
+let isConnected = false;
+let eventQueue = []; // Queue for polling events
+let connectionLogs = [];
+const stats = {
+  sent: 0,
+  received: 0,
+  failed: 0,
+  last_sent_message: 'None',
+  last_sent_target: 'None',
+  last_received_message: 'None',
+  last_received_sender: 'None',
+  last_failed_message: 'None',
+  last_failed_target: 'None',
+  last_error_reason: 'None',
+  start_time: Date.now(),
+  my_number: 'Unknown',
+  version: 'Unknown',
+};
+
+function addLog(msg, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  connectionLogs.unshift({ timestamp, msg, type });
+  if (connectionLogs.length > 50) connectionLogs.pop();
+}
+
+// Ensure auth dir exists
+if (!fs.existsSync(AUTH_DIR)) {
+  fs.mkdirSync(AUTH_DIR, { recursive: true });
+}
+
+// --- Version Check ---
+let BAILEYS_VERSION = 'Unknown';
+try {
+  const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    BAILEYS_VERSION = pkg.version;
+    stats.version = BAILEYS_VERSION; // Update stats object with early version info
+  }
+} catch (e) {
+  logger.warn({ error: e.message }, 'Could not read Baileys version');
+}
+
 // --- mDNS / Bonjour ---
 // Advertise service for Home Assistant Discovery
 async function publishMDNS(name, attempt = 0) {
@@ -285,30 +309,6 @@ async function publishMDNS(name, attempt = 0) {
 
 const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Addon';
 publishMDNS(baseMDNSName);
-
-// --- Status & Logs ---
-let connectionLogs = [];
-const stats = {
-  sent: 0,
-  received: 0,
-  failed: 0,
-  last_sent_message: 'None',
-  last_sent_target: 'None',
-  last_received_message: 'None',
-  last_received_sender: 'None',
-  last_failed_message: 'None',
-  last_failed_target: 'None',
-  last_error_reason: 'None',
-  start_time: Date.now(),
-  my_number: 'Unknown',
-  version: 'Unknown',
-};
-
-function addLog(msg, type = 'info') {
-  const timestamp = new Date().toLocaleTimeString();
-  connectionLogs.unshift({ timestamp, msg, type });
-  if (connectionLogs.length > 50) connectionLogs.pop();
-}
 
 // --- Middleware ---
 const ipFilterMiddleware = (req, res, next) => {
@@ -950,19 +950,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -970,8 +968,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
