@@ -45,6 +45,35 @@ else
     export MASK_SENSITIVE_DATA="false"
 fi
 
+# Webhook Configuration
+if bashio::config.true 'webhook_enabled'; then
+    export WEBHOOK_ENABLED="true"
+else
+    export WEBHOOK_ENABLED="false"
+fi
+
+if ! WEBHOOK_URL=$(bashio::config 'webhook_url') || [ -z "$WEBHOOK_URL" ]; then
+    WEBHOOK_URL=""
+fi
+export WEBHOOK_URL
+
+if ! WEBHOOK_TOKEN=$(bashio::config 'webhook_token') || [ -z "$WEBHOOK_TOKEN" ]; then
+    WEBHOOK_TOKEN=""
+fi
+export WEBHOOK_TOKEN
+
+# UI Authentication
+if bashio::config.true 'ui_auth_enabled'; then
+    export UI_AUTH_ENABLED="true"
+else
+    export UI_AUTH_ENABLED="false"
+fi
+
+if ! UI_AUTH_PASSWORD=$(bashio::config 'ui_auth_password') || [ -z "$UI_AUTH_PASSWORD" ]; then
+    UI_AUTH_PASSWORD=""
+fi
+export UI_AUTH_PASSWORD
+
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
 for path in "/config" "/homeassistant"; do

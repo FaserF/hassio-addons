@@ -114,20 +114,6 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// --- Authorization Logic ---
-let API_TOKEN = '';
-
-if (fs.existsSync(TOKEN_FILE)) {
-  API_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
-} else {
-  API_TOKEN = crypto.randomBytes(32).toString('hex');
-  fs.writeFileSync(TOKEN_FILE, API_TOKEN);
-}
-
-logger.info('---------------------------------------------------');
-logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
-logger.info('---------------------------------------------------');
-
 // --- Configuration ---
 const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
 const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
@@ -151,6 +137,20 @@ if (UI_AUTH_ENABLED) {
 } else {
   logger.info('🔓 UI Authentication: DISABLED');
 }
+
+// --- Authorization Logic ---
+let API_TOKEN = '';
+
+if (fs.existsSync(TOKEN_FILE)) {
+  API_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
+} else {
+  API_TOKEN = crypto.randomBytes(32).toString('hex');
+  fs.writeFileSync(TOKEN_FILE, API_TOKEN);
+}
+
+logger.info('---------------------------------------------------');
+logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
+logger.info('---------------------------------------------------');
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -632,10 +632,6 @@ app.post('/send_message', async (req, res) => {
       throw new Error('Socket not initialized');
     }
 
-    if (!sock) {
-      throw new Error('Socket not initialized');
-    }
-
     // Try to wake up connection with presence update
     await sock.sendPresenceUpdate('composing', jid);
     await delay(250);
@@ -1015,7 +1011,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             </script>
 
             <div class="footer">
-                Addon v0.3.0 • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
+                Addon v${process.env.ADDON_VERSION || '1.0.3'} • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
             </div>
 
             <div class="refresh-hint">
