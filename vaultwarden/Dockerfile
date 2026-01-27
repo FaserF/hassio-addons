@@ -47,9 +47,8 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 COPY rootfs /
 
 # Set executable permissions and fix line endings
-RUN \
-    find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
-    && chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down 2>/dev/null || true
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} +
+RUN find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
 
 # Build arguments
 ARG BUILD_ARCH

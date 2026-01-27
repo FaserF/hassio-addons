@@ -5,73 +5,17 @@
 # Runs the Vaultwarden server
 # ==============================================================================
 
-# Set defaults
+# Set environment from persistent files
 export DATA_FOLDER=/data
 export ROCKET_PORT=80
 export ROCKET_WORKERS=2
 
-# Persist a random secret, to avoid session invalidation on restart.
 if [ -f "/data/rocket_secret" ]; then
-    secret_key=$(cat /data/rocket_secret)
-else
-    secret_key=$(openssl rand -base64 32)
-    echo "${secret_key}" > /data/rocket_secret
-fi
-export ROCKET_SECRET_KEY="${secret_key}"
-
-# Find the matching log level
-if bashio::config.has_value 'log_level'; then
-    case "$(bashio::string.lower "$(bashio::config 'log_level')")" in
-        all|trace)
-            log_level="trace"
-            ;;
-        debug)
-            log_level="debug"
-            ;;
-        info|notice)
-            log_level="info"
-            ;;
-        warning)
-            log_level="warn"
-            ;;
-        error|fatal)
-            log_level="error"
-            ;;
-        off)
-            log_level="off"
-            ;;
-    esac
-
-    export LOG_LEVEL="${log_level}"
+    export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
 fi
 
-# Show admin token in the log, if config does not exist.
-if ! bashio::fs.file_exists '/data/config.json' && ! bashio::fs.file_exists '/data/admin_token'; then
-    admin_token=$(openssl rand -base64 48)
-    echo "${admin_token}" > /data/admin_token
-    chmod 600 /data/admin_token
-fi
-
-if bashio::fs.file_exists '/data/admin_token'; then
-    admin_token=$(cat /data/admin_token)
-    export ADMIN_TOKEN="${admin_token}"
-
-    bashio::log.info
-    bashio::log.info
-    bashio::log.info "READ THIS CAREFULLY! READ THIS CAREFULLY!"
-    bashio::log.info
-    bashio::log.info
-    bashio::log.info "Your admin token/password is:"
-    bashio::log.info
-    bashio::log.info "${admin_token}"
-    bashio::log.info
-    bashio::log.info "To change the token, set the ADMIN_TOKEN environment variable"
-    bashio::log.info "or edit /data/config.json and delete /data/admin_token."
-    bashio::log.info
-    bashio::log.info "After you have changed ANY setting in the admin panel,"
-    bashio::log.info "the add-on will NOT generate a new token on each start"
-    bashio::log.info "and stops showing this message."
-    bashio::log.info
+if [ -f "/data/admin_token" ]; then
+    export ADMIN_TOKEN=$(cat /data/admin_token)
 fi
 
 # API request size limit

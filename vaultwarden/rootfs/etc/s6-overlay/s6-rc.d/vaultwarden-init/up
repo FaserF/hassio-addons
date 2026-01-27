@@ -1,0 +1,38 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community Add-on: Vaultwarden
+# Initialization oneshot for setup and logging
+# ==============================================================================
+
+# 1. Setup Data Directory
+mkdir -p /data
+
+# 2. Persist a random secret, to avoid session invalidation on restart.
+if [ ! -f "/data/rocket_secret" ]; then
+    openssl rand -base64 32 > /data/rocket_secret
+fi
+
+# 3. Handle Admin Token
+if ! bashio::fs.file_exists '/data/config.json' && ! bashio::fs.file_exists '/data/admin_token'; then
+    openssl rand -base64 48 > /data/admin_token
+    chmod 600 /data/admin_token
+fi
+
+if bashio::fs.file_exists '/data/admin_token'; then
+    admin_token=$(cat /data/admin_token)
+
+    bashio::log.info ""
+    bashio::log.info "-----------------------------------------------------------"
+    bashio::log.info "READ THIS CAREFULLY! READ THIS CAREFULLY!"
+    bashio::log.info "Your admin token/password is:"
+    bashio::log.info ""
+    bashio::log.info "${admin_token}"
+    bashio::log.info ""
+    bashio::log.info "To change the token, set the ADMIN_TOKEN environment variable"
+    bashio::log.info "or edit /data/config.json and delete /data/admin_token."
+    bashio::log.info "-----------------------------------------------------------"
+    bashio::log.info ""
+fi
+
+exit 0
