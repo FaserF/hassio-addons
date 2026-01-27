@@ -544,6 +544,31 @@ async function connectToWhatsApp() {
       // --- Webhook Integration ---
       for (const event of events) {
         triggerWebhook(event);
+
+        // --- Native Command Handling ---
+        if (event.content && typeof event.content === 'string' && event.content.startsWith('/')) {
+          const body = event.content.trim();
+          const sender = event.sender;
+
+          try {
+            if (body === '/ping') {
+              await sock.sendMessage(sender, { text: 'Pong! 🏓' });
+              addLog(`Processed command /ping from ${maskData(sender)}`, 'info');
+            } else if (body === '/id') {
+              await sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
+              addLog(`Processed command /id from ${maskData(sender)}`, 'info');
+            } else if (body === '/restart') {
+              await sock.sendMessage(sender, { text: '🔄 Restarting WhatsApp connection...' });
+              addLog(`Processed command /restart from ${maskData(sender)}`, 'warning');
+              // Graceful restart
+              setTimeout(() => {
+                sock.end(new Error('User requested restart'));
+              }, 1000);
+            }
+          } catch (cmdErr) {
+            logger.error({ error: cmdErr.message }, 'Failed to process native command');
+          }
+        }
       }
     }
   });

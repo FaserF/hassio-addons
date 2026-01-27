@@ -282,7 +282,15 @@ Sends an interactive List Message (Action Menu).
 }
 ```
 
-### 4. Events & Logs
+### 4. Native Commands
+
+The Addon supports the following native commands via WhatsApp messages (sent to the bot):
+
+- **`/ping`**: Returns "Pong! 🏓" (useful for checking connection).
+- **`/id`**: Returns the current Chat ID (useful for finding Group IDs).
+- **`/restart`**: Restarts the WhatsApp connection.
+
+### 5. Events & Logs
 
 #### `GET /events`
 
