@@ -1143,17 +1143,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1161,8 +1163,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1280,18 +1282,19 @@ app.post('/send_contact', async (req, res) => {
     const jid = getJid(number);
 
     // Construct VCard v3.0
-    const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
-      + 'VERSION:3.0\n'
-      + `FN:${contact_name}\n` // full name
-      + `ORG:Home Assistant;\n` // organization (optional)
-      + `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` // WhatsApp ID and number
-      + 'END:VCARD';
+    const vcard =
+      'BEGIN:VCARD\n' + // metadata of the contact card
+      'VERSION:3.0\n' +
+      `FN:${contact_name}\n` + // full name
+      `ORG:Home Assistant;\n` + // organization (optional)
+      `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` + // WhatsApp ID and number
+      'END:VCARD';
 
     await sock.sendMessage(jid, {
       contacts: {
         displayName: contact_name,
-        contacts: [{ vcard }]
-      }
+        contacts: [{ vcard }],
+      },
     });
 
     stats.sent += 1;

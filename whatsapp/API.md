@@ -152,9 +152,10 @@ Sends a document (PDF, Zip, Doc, etc.).
 }
 ```
 
-  "caption": "Here is the document you requested"
+"caption": "Here is the document you requested"
 }
-```
+
+````
 
 #### `POST /send_video`
 
@@ -168,7 +169,7 @@ Sends a video file.
   "url": "https://example.com/video.mp4",
   "caption": "Watch this!"
 }
-```
+````
 
 #### `POST /send_audio`
 
@@ -183,6 +184,7 @@ Sends an audio file or voice note.
   "ptt": true
 }
 ```
+
 **Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
 
 **Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
@@ -250,6 +252,7 @@ Sets the chat presence/status.
 Update webhook configuration dynamically (persisted to disk).
 
 **Payload:**
+
 ```json
 {
   "url": "http://homeassistant:8123/api/webhook/...",
@@ -287,6 +290,7 @@ Sends an interactive List Message (Action Menu).
 Sends a VCard contact.
 
 **Payload:**
+
 ```json
 {
   "number": "1234567890",
