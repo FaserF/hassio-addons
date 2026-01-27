@@ -135,7 +135,9 @@ def remap_ports_in_config(config_path: str) -> bool:
 
         # If host_network is enabled, we cannot remap ports
         if data.get("host_network") is True:
-            print(f"   ℹ️  Skipping port remapping for {config_path} (host_network enabled)")
+            print(
+                f"   ℹ️  Skipping port remapping for {config_path} (host_network enabled)"
+            )
             return False
 
         new_content = content

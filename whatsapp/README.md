@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-1.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Home Assistant WhatsApp Backend (Baileys/Node.js)
+> Home Assistant WhatsApp Backend (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed).
 
 ---
 
