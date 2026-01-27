@@ -45,6 +45,9 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Copy root filesystem
 COPY rootfs /
 
+# Set executable permissions
+RUN chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up
+
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE
