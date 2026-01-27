@@ -67,63 +67,53 @@ version_gt() {
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
 }
 
-# Automatic Integration Installation & Update Check
-if [ ! -d "$INTEGRATION_DIR" ]; then
-    bashio::log.warning "Integration not found in $INTEGRATION_DIR"
-    bashio::log.info "Fetching latest release information..."
+# Function to install/update integration
+install_integration() {
+    local TAG_NAME=$1
+    local IS_UPDATE=$2
 
-    # Determine Version to install
-    if RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases"); then
-        # Check if response is valid array JSON (avoid rate limit errors parsing)
-        if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
-             TAG_NAME=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name')
-        else
-             bashio::log.warning "GitHub API returned unexpected response (likely rate limit). Skipping version check."
-             TAG_NAME=""
-        fi
-    else
-        bashio::log.warning "Failed to fetch releases from GitHub."
-        TAG_NAME=""
-    fi
+    bashio::log.info "Installing integration version: ${TAG_NAME:-Default Branch}..."
 
-    if [ "$TAG_NAME" == "null" ] || [ -z "$TAG_NAME" ]; then
-        # Check for pre-release fallback
-        if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
-             TAG_NAME=$(echo "$RELEASES" | jq -r '.[0].tag_name')
-        fi
-
-        if [ "$TAG_NAME" != "null" ] && [ -n "$TAG_NAME" ]; then
-             bashio::log.info "No stable release found, using latest pre-release: $TAG_NAME"
-             CLONE_ARGS=("--branch" "$TAG_NAME")
-        else
-             bashio::log.info "No releases found, falling back to default branch"
-             CLONE_ARGS=()
-        fi
-    else
-        bashio::log.info "Installing latest stable release: $TAG_NAME"
+    if [ -n "$TAG_NAME" ]; then
         CLONE_ARGS=("--branch" "$TAG_NAME")
+    else
+        CLONE_ARGS=()
     fi
-
-    bashio::log.info "Attempting to install FaserF/ha-whatsapp integration..."
 
     mkdir -p "/tmp/ha-whatsapp_install"
+    rm -rf "/tmp/ha-whatsapp_install" # Ensure clean state
+
     if git clone --depth 1 "${CLONE_ARGS[@]}" https://github.com/FaserF/ha-whatsapp.git "/tmp/ha-whatsapp_install" > /dev/null 2>&1; then
         if [ -d "/tmp/ha-whatsapp_install/custom_components/whatsapp" ]; then
+            # Check if we are updating, if so remove old
+            if [ -d "$INTEGRATION_DIR" ]; then
+                 bashio::log.info "Removing old integration version..."
+                 rm -rf "$INTEGRATION_DIR"
+            fi
+
             mkdir -p "${HA_CONFIG_ROOT}/custom_components"
             # Use cp -rf for forceful copy
             cp -rf "/tmp/ha-whatsapp_install/custom_components/whatsapp" "${HA_CONFIG_ROOT}/custom_components/"
 
             # Double check installation
             if [ -d "$INTEGRATION_DIR" ]; then
-                bashio::log.info "✅ Integration installed successfully to $INTEGRATION_DIR"
-                bashio::log.warning "RESTART HOME ASSISTANT to load the new integration!"
+                bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
 
-                # Create a "Repair" (Persistent Notification) in HA
-                bashio::log.info "Publishing repair notification to Home Assistant..."
+                if [ "$IS_UPDATE" == "true" ]; then
+                    MSG="The WhatsApp integration has been updated to $TAG_NAME. Please restart Home Assistant."
+                    TITLE="WhatsApp Integration Updated"
+                else
+                    MSG="The WhatsApp integration has been installed. Please restart Home Assistant."
+                    TITLE="WhatsApp Integration Installed"
+                fi
+
+                bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
+                bashio::log.info "Publishing notification to Home Assistant..."
+
                 curl -s -X POST \
                     -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
                     -H "Content-Type: application/json" \
-                    -d '{"title": "WhatsApp Integration: Restart Required", "message": "The WhatsApp integration has been automatically installed. Please restart Home Assistant to load and use the integration.", "notification_id": "whatsapp_restart_required"}' \
+                    -d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"whatsapp_restart_required\"}" \
                     http://supervisor/core/api/services/persistent_notification/create > /dev/null
             else
                 bashio::log.error "❌ Copy failed: $INTEGRATION_DIR still does not exist."
@@ -135,78 +125,115 @@ if [ ! -d "$INTEGRATION_DIR" ]; then
         bashio::log.error "❌ Failed to clone repository."
     fi
     rm -rf "/tmp/ha-whatsapp_install"
+}
+
+# Determine Channel (Edge vs Stable)
+# We assume Edge addons might have 'edge' in their slug or explicitly set env var
+if [[ "$ADDON_SLUG" == *"edge"* ]]; then
+    CHANNEL="edge"
+    bashio::log.info "Edge Addon detected. Will prefer Pre-releases."
+else
+    CHANNEL="stable"
+fi
+
+# Fetch Releases once
+bashio::log.info "Fetching release information..."
+RELEASES_JSON=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
+
+# Valid JSON check
+if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
+    bashio::log.warning "Failed to fetch valid releases from GitHub. Skipping checks."
+    RELEASES_JSON="[]"
+fi
+
+# Determine Latest Versions based on channel
+if [ "$CHANNEL" == "edge" ]; then
+    # Edge: Latest release (whether stable or beta)
+    TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+else
+    # Stable: Latest non-prerelease
+    TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
+fi
+
+# Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
+# (Though generally for stable channel we strictly want stable releases)
+if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
+     # Use latest pre-release as fallback if NO stable exists at all?
+     # User requested "not from main branch", so tags are preferred.
+     # Let's check if array is not empty
+     if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
+         fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
+         bashio::log.warning "No stable release found, falling back to latest tag: $fallback"
+         TARGET_TAG="$fallback"
+     fi
+fi
+
+
+# Manage Integration
+if [ ! -d "$INTEGRATION_DIR" ]; then
+    bashio::log.warning "Integration not found in $INTEGRATION_DIR"
+
+    if [ -n "$TARGET_TAG" ]; then
+        bashio::log.info "Target version (Initial Install): $TARGET_TAG"
+        install_integration "$TARGET_TAG" "false"
+    else
+        bashio::log.info "No releases found. Installing from Main branch..."
+        install_integration "" "false"
+    fi
 else
     bashio::log.info "✅ Integration found at $INTEGRATION_DIR"
+    bashio::log.info "Checking for updates..."
 
-    # Update Check Logic
-    bashio::log.info "Checking for integration updates..."
-
-    # 1. Get current version
     if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
         CURRENT_VERSION=$(jq -r '.version' "$INTEGRATION_DIR/manifest.json")
-        bashio::log.info "Current Integration Version: $CURRENT_VERSION"
+        bashio::log.info "Current Version: $CURRENT_VERSION"
 
-        # 2. Fetch remote data
-        if RELEASES=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases"); then
-             if echo "$RELEASES" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
-                  LATEST_STABLE=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name' | sed 's/^v//')
-                  LATEST_BETA=$(echo "$RELEASES" | jq -r 'map(select(.prerelease == true)) | .[0].tag_name' | sed 's/^v//')
+        UPDATE_NEEDED="false"
+
+        # Comparison Logic
+        if [ -n "$TARGET_TAG" ]; then
+             # Remove 'v' for comparison
+             CLEAN_TARGET=$(echo "$TARGET_TAG" | sed 's/^v//')
+             CLEAN_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/^v//')
+             CLEAN_CURRENT="${CLEAN_CURRENT%%-*}" # Simple comparison on base version often safer, but let's try semantic
+
+             # Re-read raw cleaning for exact match
+             # Use the version_gt function
+             # Note: version_gt compares $1 vs $2. Returns true if $1 > $2??
+             # Original function: test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+             # if $1 is smallest, then head -1 is $1. so "$1" != "$1" is false.
+             # So if $1 is > $2, head -1 is $2. $2 != $1 is true.
+             # So version_gt A B returns true if A > B.
+
+             # We should compare full strings, but often manifests are 0.0.1 and tags are v0.0.1
+             # Let's normalize
+             curr=$(echo "$CURRENT_VERSION" | sed 's/^v//')
+             targ=$(echo "$TARGET_TAG" | sed 's/^v//')
+
+             if [ "$curr" != "$targ" ]; then
+                 # If strings differ, check semantic
+                 if version_gt "$targ" "$curr"; then
+                     bashio::log.info "Update Available: $targ > $curr"
+                     UPDATE_NEEDED="true"
+                 else
+                     bashio::log.info "Current version ($curr) is equal or newer than target ($targ)."
+                 fi
              else
-                  # Fallback or invalid JSON
-                  LATEST_STABLE="null"
-                  LATEST_BETA="null"
+                 bashio::log.info "Versions match ($curr)."
              fi
         else
-             LATEST_STABLE="null"
-             LATEST_BETA="null"
+             bashio::log.warning "Could not determine target tag from GitHub."
         fi
 
-        # Clean current version for comparison (remove 'v' prefix if present)
-        CLEAN_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/^v//')
-
-        UPDATE_AVAILABLE=false
-        UPDATE_VERSION=""
-
-        # 3. Decision Logic based on version type
-        if [[ "$CLEAN_CURRENT" == *"-dev"* ]] || [[ "$CLEAN_CURRENT" == *"dev"* ]]; then
-            # DEV VERSION: Compare against main branch manifest
-            bashio::log.info "Development version detected. Checking main branch manifest..."
-            REMOTE_MANIFEST=$(curl -s "https://raw.githubusercontent.com/FaserF/ha-whatsapp/master/custom_components/whatsapp/manifest.json")
-            REMOTE_VERSION=$(echo "$REMOTE_MANIFEST" | jq -r '.version' | sed 's/^v//')
-
-            if version_gt "$REMOTE_VERSION" "$CLEAN_CURRENT"; then
-                UPDATE_AVAILABLE=true
-                UPDATE_VERSION="$REMOTE_VERSION (Main Branch)"
-            fi
-        elif [[ "$CLEAN_CURRENT" == *"-beta"* ]] || [[ "$CLEAN_CURRENT" == *"-rc"* ]]; then
-            # BETA VERSION: Notify about newer Stable OR newer Beta
-            if [ "$LATEST_STABLE" != "null" ] && version_gt "$LATEST_STABLE" "$CLEAN_CURRENT"; then
-                UPDATE_AVAILABLE=true
-                UPDATE_VERSION="$LATEST_STABLE (Stable Upgrade)"
-            elif [ "$LATEST_BETA" != "null" ] && version_gt "$LATEST_BETA" "$CLEAN_CURRENT"; then
-                UPDATE_AVAILABLE=true
-                UPDATE_VERSION="$LATEST_BETA (Beta Update)"
-            fi
+        if [ "$UPDATE_NEEDED" == "true" ]; then
+             bashio::log.info "⬆️  Auto-updating to $TARGET_TAG..."
+             install_integration "$TARGET_TAG" "true"
         else
-            # STABLE VERSION: Only notify about newer Stable
-            if [ "$LATEST_STABLE" != "null" ] && version_gt "$LATEST_STABLE" "$CLEAN_CURRENT"; then
-                UPDATE_AVAILABLE=true
-                UPDATE_VERSION="$LATEST_STABLE"
-            fi
-        fi
-
-        if [ "$UPDATE_AVAILABLE" = true ]; then
-            bashio::log.yellow "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            bashio::log.yellow "⬆️  INTEGRATION UPDATE AVAILABLE: $UPDATE_VERSION"
-            bashio::log.yellow "   Current: $CURRENT_VERSION"
-            bashio::log.yellow "   Note: Preferably use HACS for integration"
-            bashio::log.yellow "   update management."
-            bashio::log.yellow "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        else
-            bashio::log.info "✨ Integration is up to date."
+             bashio::log.info "✨ Integration is up to date."
         fi
     else
-        bashio::log.warning "Could not find manifest.json for version check."
+        bashio::log.warning "Manifest not found. Cannot check version. Reinstalling..."
+        install_integration "$TARGET_TAG" "true"
     fi
 fi
 
