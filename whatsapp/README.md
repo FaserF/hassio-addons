@@ -1,14 +1,10 @@
 # WhatsApp
 
-<a href="https://github.com/FaserF/ha-whatsapp">
-  <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/whatsapp/logo.png" alt="WhatsApp Logo" width="200">
-</a>
+![Logo](logo.png)
 
-<a href="https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp" target="_blank">
-  <img src="https://my.home-assistant.io/badges/supervisor_addon.svg" alt="Open your Home Assistant instance and show the add-on dashboard.">
-</a>
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![Docker Image](https://img.shields.io/badge/docker-1.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
+[![Docker Image](https://img.shields.io/badge/docker-1.0.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Home Assistant WhatsApp Backend (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed).
@@ -16,6 +12,14 @@
 ---
 
 ## 📖 About
+
+<a href="https://github.com/FaserF/ha-whatsapp">
+</a>
+
+<a href="https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp" target="_blank">
+</a>
+
+> Home Assistant WhatsApp Backend (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed).
 
 If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
 
