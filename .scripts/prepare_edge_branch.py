@@ -133,6 +133,11 @@ def remap_ports_in_config(config_path: str) -> bool:
         if not data or "ports" not in data or not isinstance(data["ports"], dict):
             return False
 
+        # If host_network is enabled, we cannot remap ports
+        if data.get("host_network") is True:
+            print(f"   ℹ️  Skipping port remapping for {config_path} (host_network enabled)")
+            return False
+
         new_content = content
         changes_made = False
 
