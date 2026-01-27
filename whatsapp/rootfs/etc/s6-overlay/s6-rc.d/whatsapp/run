@@ -129,9 +129,12 @@ install_integration() {
 
 # Determine Channel (Edge vs Stable)
 # We check slug, name, and version to be sure
-SLUG=$(bashio::addon.slug)
-NAME=$(bashio::addon.name)
-VERSION=$(bashio::addon.version)
+# Fetch Addon Info from Supervisor API directly check
+# (bashio::addon.* commands were failing, likely due to older bashio version in base or context)
+ADDON_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
+SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
+NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
+VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
