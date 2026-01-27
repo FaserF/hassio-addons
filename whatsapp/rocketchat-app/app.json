@@ -1,5 +1,5 @@
 {
-  "id": "whatsapp-bridge-addon",
+  "id": "9b900d73-2062-43d9-a09c-703c7348421c",
   "name": "WhatsApp Bridge",
   "version": "1.0.0",
   "description": "Bridge between Rocket.Chat and WhatsApp via the WhatsApp Addon.",
@@ -24,9 +24,6 @@
     },
     {
       "name": "room.read"
-    },
-    {
-      "name": "room.write"
     }
   ]
 }

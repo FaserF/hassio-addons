@@ -39,6 +39,24 @@ Yes. If you prefer strictly isolated networking, you can disable the **"Use Host
 1. **No Auto-Discovery:** Home Assistant will not "see" the add-on automatically.
 2. **Manual Config:** You must manually enter the URL (e.g., `http://<your-ha-ip>:8066`) when setting up the integration.
 
+## 🔒 Security & Public Access
+
+Requires Home Assistant 2024.12+ (or newer) to expose ports via the addon configuration.
+
+If you plan to use **Webhooks** or the **Rocket.Chat integration**, you may need to expose **Port 8066** to the internet (or at least to your Rocket.Chat instance).
+
+> [!CAUTION]
+> **Risk of Unauthorized Access**
+> Exposing Port 8066 publicly makes the Web UI (containing your API Token and Logs) accessible to anyone.
+>
+> You **MUST** enable **UI Authentication** if you expose this port!
+
+To enable password protection for the Web UI:
+1. Set `ui_auth_enabled` to `true`.
+2. Set a strong password in `ui_auth_password`.
+3. When accessing the Web UI, use username: `admin` and your chosen password.
+
+
 ## 🚀 Getting Started with Automations
 
 Once the addon and integration are configured, check out the following resources to start building:
@@ -59,6 +77,8 @@ log_level: info
 send_message_timeout: 25000
 keep_alive_interval: 30000
 mask_sensitive_data: false
+ui_auth_enabled: false
+ui_auth_password: ""
 ```
 
 ### Configuration Options
@@ -67,6 +87,8 @@ mask_sensitive_data: false
 - `send_message_timeout`: Time (in ms) to wait for WhatsApp acknowledgement before timing out. Increase if you have slow network.
 - `keep_alive_interval`: Time (in ms) between connection checks to prevent "Stale Connection".
 - `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
+- `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
+- `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
@@ -89,3 +111,28 @@ If you lose your session, you may need to re-scan the QR code. You can trigger a
 ## Support
 
 For issues and feature requests, please use the GitHub repository issues.
+
+---
+
+## 🎣 Webhook Support
+
+You can configure this add-on to forward all incoming messages to a webhook URL. This is useful for custom integrations, logging, or bridging to other chat systems.
+
+**Configuration:**
+- `webhook_enabled`: Set to `true`
+- `webhook_url`: The full URL to POST data to (e.g., `https://my-webhook.com/whatsapp`)
+- `webhook_token`: (Optional) A secret token sent in the `X-Webhook-Token` header.
+
+**Payload Format:**
+The webhook will receive a JSON payload for every incoming message. See [Webhook Guide](https://faserf.github.io/ha-whatsapp/docs/webhooks/) for details.
+
+## 🚀 Rocket.Chat Support
+
+This add-on can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps** framework.
+
+**Setup:**
+1. Install the Rocket.Chat App (Apps > Marketplace > Private App).
+2. Configure the App settings in Rocket.Chat with your Add-on URL and API Token.
+3. Enable Webhooks in this Add-on and point them to your Rocket.Chat instance.
+
+See the full **[Rocket.Chat Integration Guide](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)** for step-by-step instructions.

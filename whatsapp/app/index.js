@@ -14,6 +14,27 @@ import path from 'path';
 import crypto from 'crypto';
 import http from 'http';
 
+// --- Log Level ---
+const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVEL_MAP = {
+  trace: 'trace',
+  debug: 'debug',
+  info: 'info',
+  notice: 'info',
+  warning: 'warn',
+  error: 'error',
+  fatal: 'fatal',
+};
+const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
+
+// --- Global Logger ---
+const logger = pino({
+  level: LOG_LEVEL,
+  base: null, // Remove pid/hostname for cleaner logs
+});
+
+logger.info(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
+
 const app = express();
 app.use(express.json());
 
@@ -107,26 +128,6 @@ logger.info('---------------------------------------------------');
 logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
 logger.info('---------------------------------------------------');
 
-// --- Log Level ---
-const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-const LOG_LEVEL_MAP = {
-  trace: 'trace',
-  debug: 'debug',
-  info: 'info',
-  notice: 'info',
-  warning: 'warn',
-  error: 'error',
-  fatal: 'fatal',
-};
-const LOG_LEVEL = LOG_LEVEL_MAP[RAW_LOG_LEVEL.toLowerCase()] || 'info';
-
-// --- Global Logger ---
-const logger = pino({
-  level: LOG_LEVEL,
-  base: null, // Remove pid/hostname for cleaner logs
-});
-
-logger.info(`📝 Log Level set to: ${LOG_LEVEL} (from: ${RAW_LOG_LEVEL})`);
 // --- Configuration ---
 const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
 const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
@@ -136,6 +137,8 @@ const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 const WEBHOOK_ENABLED = process.env.WEBHOOK_ENABLED === 'true';
 const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
+const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
@@ -143,6 +146,11 @@ logger.info(`🔒 Mask Sensitive Data: ${MASK_SENSITIVE_DATA ? 'ENABLED' : 'DISA
 logger.info(
   `🔗 Webhook: ${WEBHOOK_ENABLED ? 'ENABLED' : 'DISABLED'} ${WEBHOOK_URL ? `(${WEBHOOK_URL})` : ''}`
 );
+if (UI_AUTH_ENABLED) {
+  logger.info('🔒 UI Authentication: ENABLED');
+} else {
+  logger.info('🔓 UI Authentication: DISABLED');
+}
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -303,6 +311,39 @@ function addLog(msg, type = 'info') {
 }
 
 // --- Middleware ---
+const ipFilterMiddleware = (req, res, next) => {
+  // If UI Auth is enabled, we allow access from everywhere (protected by password)
+  if (UI_AUTH_ENABLED) return next();
+
+  let ip = req.ip || req.connection.remoteAddress;
+
+  // Normalize IPv6 mapped IPv4 addresses
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substr(7);
+  }
+
+  // Allow Localhost
+  if (ip === '127.0.0.1' || ip === '::1') return next();
+
+  // Allow Private Networks
+  // 10.0.0.0/8
+  // 172.16.0.0/12
+  // 192.168.0.0/16
+  // fc00::/7 (Unique Local Address IPv6)
+  const isPrivate =
+    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
+
+  if (isPrivate) return next();
+
+  // Allow Docker internal ranges (often 172.x but covered above) or Hassio specific
+  // For standard "Host Network" addons, requests from other containers might appear as public IP or gateway?
+  // But usually Home Assistant Addons on Host Network see the real modification IP.
+
+  addLog(`Blocked external access attempt from ${ip}`, 'warning');
+  logger.warn({ ip }, '[SECURITY] Blocked external access attempt (UI Auth Disabled)');
+  return res.status(403).send('Forbidden: External access is disabled when UI Authentication is off.');
+};
+
 const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
@@ -318,6 +359,30 @@ const authMiddleware = (req, res, next) => {
   }
   next();
 };
+
+const uiAuthMiddleware = (req, res, next) => {
+  if (!UI_AUTH_ENABLED) return next();
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="WhatsApp Addon"');
+    return res.status(401).send('Unauthorized');
+  }
+
+  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  const user = auth[0];
+  const pass = auth[1];
+
+  if (user === 'admin' && pass === UI_AUTH_PASSWORD) {
+    next();
+  } else {
+    res.setHeader('WWW-Authenticate', 'Basic realm="WhatsApp Addon"');
+    return res.status(401).send('Unauthorized');
+  }
+};
+
+// Global IP Filter
+app.use(ipFilterMiddleware);
 
 // Protect API routes exclusively
 app.use('/session', authMiddleware);
@@ -811,7 +876,7 @@ app.get('/health', (req, res) => {
 
 // --- Dashboard (Server-Side Rendered) ---
 // Root endpoint (/) is handled by the catch-all below
-app.get(/(.*)/, (req, res) => {
+app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
   if (
     req.path.startsWith('/api') ||
     req.path === '/qr' ||
@@ -827,6 +892,7 @@ app.get(/(.*)/, (req, res) => {
   ) {
     return res.status(404).send('Not Found');
   }
+
 
   // Determine current state
   const statusClass = isConnected ? 'connected' : currentQR ? 'waiting' : 'disconnected';
@@ -886,19 +952,17 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -906,8 +970,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

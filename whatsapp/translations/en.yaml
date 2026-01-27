@@ -23,5 +23,11 @@ configuration:
   webhook_token:
     name: "Webhook Token"
     description: "A secret token sent with the webhook request (X-Webhook-Token header) to secure the communication."
+  ui_auth_enabled:
+    name: "UI Authentication"
+    description: "Enables Basic Authentication for the Web UI (Port 8066). Recommeded if exposed to the internet."
+  ui_auth_password:
+    name: "UI Password"
+    description: "The password for the Web UI (Username is always 'admin')."
 network:
   8066/tcp: Internal API port the integration connects to.
