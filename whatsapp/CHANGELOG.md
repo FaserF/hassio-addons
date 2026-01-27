@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 (2026-01-27)
+
+### 📦 Dependencies
+- api update check fixes ([`8f655571`](https://github.com/FaserF/hassio-addons/commit/8f655571b67397358509ee481ee2b38c86f731d4))
+- Update index.js ([`ab1af570`](https://github.com/FaserF/hassio-addons/commit/ab1af5706ab350ab948fb43bcab315245d0b93d5))
+
+
 ## 1.0.4 (2026-01-27)
 
 ### 🚀 Other
