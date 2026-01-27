@@ -185,6 +185,35 @@ Sends an audio file or voice note.
 ```
 **Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
 
+**Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
+
+#### `POST /revoke_message`
+
+Revokes (deletes) a sent message for everyone.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "message_id": "BAE5CCF5A..."
+}
+```
+
+#### `POST /edit_message`
+
+Edits the text of a sent message.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "message_id": "BAE5CCF5A...",
+  "new_content": "Corrected text"
+}
+```
+
 #### `POST /send_reaction`
 
 Reacts to a specific message.

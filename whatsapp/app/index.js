@@ -400,7 +400,10 @@ app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/send_document', authMiddleware);
 app.use('/send_video', authMiddleware);
+app.use('/send_video', authMiddleware);
 app.use('/send_audio', authMiddleware);
+app.use('/revoke_message', authMiddleware);
+app.use('/edit_message', authMiddleware);
 app.use('/set_presence', authMiddleware);
 app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
@@ -887,6 +890,73 @@ app.post('/send_audio', async (req, res) => {
     stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send audio: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /revoke_message
+app.post('/revoke_message', async (req, res) => {
+  const { number, message_id } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    // Deleting for everyone requires the key including remoteJid, id, and fromMe=true (usually)
+    // However, Baileys usually handles this if we pass the key structure.
+    // For sending a delete, we need to send a protocol message.
+    // sock.sendMessage(jid, { delete: key })
+
+    // We assume we are deleting our OWN message, so fromMe is true.
+    const key = {
+      remoteJid: jid,
+      fromMe: true,
+      id: message_id,
+    };
+
+    await sock.sendMessage(jid, { delete: key });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Revoke: ${message_id}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Revoke: ${message_id}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to revoke message: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /edit_message
+app.post('/edit_message', async (req, res) => {
+  const { number, message_id, new_content } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    const key = {
+      remoteJid: jid,
+      fromMe: true,
+      id: message_id,
+    };
+
+    await sock.sendMessage(jid, {
+      text: new_content,
+      edit: key,
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Edit: ${message_id}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Edit: ${message_id}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to edit message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
