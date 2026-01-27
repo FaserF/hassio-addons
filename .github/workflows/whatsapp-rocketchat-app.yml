@@ -22,7 +22,7 @@ jobs:
 
       - name: Create Zip File
         run: |
-          git config --global --add safe.directory /github/workspace
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cd whatsapp/rocketchat-app
           # Remove any old zip if exists locally before zipping
           rm -f ../../whatsapp-rocketchat-bridge.zip
