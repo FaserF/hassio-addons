@@ -60,9 +60,6 @@ reset_session: false
 send_message_timeout: 25000
 ```
 
-> [!TIP]
-> **Network Mode:** For **Auto-Discovery** ("New devices found"), you can enable `host_network: true` in the add-on configuration. This allows Home Assistant to find the add-on automatically via mDNS. By default, it runs in isolated mode.
-
 ---
 
 ## 👨‍💻 Credits & License
