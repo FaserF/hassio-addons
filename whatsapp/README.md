@@ -1,5 +1,9 @@
-# WhatsApp
+# 📱 WhatsApp Addon
 
+> [!TIP]
+> **Rocket.Chat & Webhook Support**: This Addon supports real-time message forwarding! Connect it to **Rocket.Chat** or your own services via Webhooks. Check the **[Official Documentation](https://faserf.github.io/ha-whatsapp/docs/webhooks/)** for setup guides.
+
+---
 ![Logo](logo.png)
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp)

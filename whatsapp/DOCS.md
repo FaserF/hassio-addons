@@ -1,5 +1,10 @@
 # WhatsApp Documentation
 
+> [!TIP]
+> **Rocket.Chat & Webhook Support**: Did you know? You can bridge WhatsApp to **Rocket.Chat** or use **Webhooks** for custom integrations. See the **[Rocket.Chat Guide](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)** and **[Webhook Guide](https://faserf.github.io/ha-whatsapp/docs/webhooks/)** for more.
+
+---
+
 Home Assistant WhatsApp Backend (Baileys/Node.js)
 
 > [!WARNING]
