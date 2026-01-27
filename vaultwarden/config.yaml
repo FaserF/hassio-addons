@@ -29,4 +29,4 @@ ingress_port: 7277
 panel_icon: mdi:shield-key
 map:
   - ssl
-image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}
+# image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}
