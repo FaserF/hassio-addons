@@ -128,15 +128,27 @@ install_integration() {
 }
 
 # Determine Channel (Edge vs Stable)
-# We check the actual addon slug from supervisor
+# We check slug, name, and version to be sure
 SLUG=$(bashio::addon.slug)
-bashio::log.info "Detected Addon Slug: ${SLUG}"
+NAME=$(bashio::addon.name)
+VERSION=$(bashio::addon.version)
 
-if [[ "${SLUG}" == *"edge"* ]]; then
+bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
+
+# Check if any indicator points to Edge/Dev channel
+# 1. Slug contains edge
+# 2. Name contains Edge (case-insensitive)
+# 3. Version contains 'dev', 'git', or a commit-like hash (e.g. 7+ characters)
+if [[ "${SLUG}" == *"edge"* ]] || \
+   [[ "${NAME,,}" == *"edge"* ]] || \
+   [[ "${VERSION}" == *"dev"* ]] || \
+   [[ "${VERSION}" == *"git"* ]] || \
+   [[ "${VERSION}" =~ [0-9a-f]{7,40} ]]; then
     CHANNEL="edge"
-    bashio::log.info "Edge Addon detected. Will prefer Pre-releases."
+    bashio::log.info "🟢 Edge/Dev channel detected. Will prefer Pre-releases."
 else
     CHANNEL="stable"
+    bashio::log.info "🔵 Stable channel detected."
 fi
 
 # Fetch Releases once
