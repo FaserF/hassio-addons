@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.2 (2026-01-27)
+
+### 📦 Dependencies
+- Update README.md ([`46d775f5`](https://github.com/FaserF/hassio-addons/commit/46d775f5349c467451112f26b43ea49ce8eb27b8))
+
+### 🚀 Other
+- docs improvements for new webhook ([`f4c7081e`](https://github.com/FaserF/hassio-addons/commit/f4c7081e67ee91ca187819b7bc89436dee9b86ce))
+- logging improvements & webhook support ([`13c29dd0`](https://github.com/FaserF/hassio-addons/commit/13c29dd024c5b445b89364ab980e5b6f11feb85c))
+- fix auto mark as read ([`a6839b9a`](https://github.com/FaserF/hassio-addons/commit/a6839b9a14338df4b7507570cd5593bb04585a92))
+
+### 📌 Release Note
+- Add Webhook (& Rocketchat) Bridge Support
+
+
 ## 1.0.1 (2026-01-27)
 
 ### ✨ Features
