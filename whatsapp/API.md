@@ -258,6 +258,30 @@ Update webhook configuration dynamically (persisted to disk).
 }
 ```
 
+#### `POST /send_list`
+
+Sends an interactive List Message (Action Menu).
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "title": "Menu Title",
+  "text": "Menu Body Text",
+  "button_text": "Click View",
+  "sections": [
+    {
+      "title": "Section 1",
+      "rows": [
+        { "title": "Option 1", "rowId": "opt1" },
+        { "title": "Option 2", "rowId": "opt2", "description": "Subtext" }
+      ]
+    }
+  ]
+}
+```
+
 ### 4. Events & Logs
 
 #### `GET /events`

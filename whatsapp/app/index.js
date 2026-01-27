@@ -417,6 +417,7 @@ app.use('/send_document', authMiddleware);
 app.use('/send_video', authMiddleware);
 app.use('/send_video', authMiddleware);
 app.use('/send_audio', authMiddleware);
+app.use('/send_list', authMiddleware);
 app.use('/revoke_message', authMiddleware);
 app.use('/edit_message', authMiddleware);
 app.use('/set_presence', authMiddleware);
@@ -1209,6 +1210,38 @@ app.post('/settings/webhook', authMiddleware, (req, res) => {
   } catch (e) {
     logger.error({ error: e.message }, '❌ Failed to save webhook config');
     res.status(500).json({ error: 'Failed to save configuration' });
+  }
+});
+
+// POST /send_list
+app.post('/send_list', async (req, res) => {
+  const { number, title, text, button_text, sections } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+
+    // Construct List Message
+    // Note: 'sections' must be an array of objects { title, rows: [ { title, rowId, description? } ] }
+    await sock.sendMessage(jid, {
+      text: text || title || 'Menu', // Required content
+      footer: title ? text : undefined, // WhatsApp UI quirk logic
+      title: title,
+      buttonText: button_text || 'Menu',
+      sections: sections,
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `List: ${title || text}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `List: ${title || text}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send list: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
   }
 });
 
