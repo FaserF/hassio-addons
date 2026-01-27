@@ -192,19 +192,6 @@ else
 
         # Comparison Logic
         if [ -n "$TARGET_TAG" ]; then
-             # Remove 'v' for comparison
-             CLEAN_TARGET=$(echo "$TARGET_TAG" | sed 's/^v//')
-             CLEAN_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/^v//')
-             CLEAN_CURRENT="${CLEAN_CURRENT%%-*}" # Simple comparison on base version often safer, but let's try semantic
-
-             # Re-read raw cleaning for exact match
-             # Use the version_gt function
-             # Note: version_gt compares $1 vs $2. Returns true if $1 > $2??
-             # Original function: test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
-             # if $1 is smallest, then head -1 is $1. so "$1" != "$1" is false.
-             # So if $1 is > $2, head -1 is $2. $2 != $1 is true.
-             # So version_gt A B returns true if A > B.
-
              # We should compare full strings, but often manifests are 0.0.1 and tags are v0.0.1
              # Let's normalize
              curr=$(echo "$CURRENT_VERSION" | sed 's/^v//')
