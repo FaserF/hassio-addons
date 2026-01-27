@@ -285,6 +285,18 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "paperless-ngx/paperless-ngx"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Vaultwarden version in Dockerfile (FROM vaultwarden/server:X.X.X)",
+      "managerFilePatterns": [
+        "/vaultwarden/Dockerfile$"
+      ],
+      "matchStrings": [
+        "FROM [\"']?vaultwarden/server:(?<currentValue>[\\d.]+)[\"']?"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "vaultwarden/server"
     }
   ],
   "packageRules": [
@@ -447,6 +459,14 @@
         "@whiskeysockets/baileys"
       ],
       "ignoreUnstable": false
+    },
+    {
+      "description": "Allow pre-releases for Vaultwarden",
+      "matchDepNames": [
+        "vaultwarden/server"
+      ],
+      "ignoreUnstable": false,
+      "automerge": true
     }
   ]
 }
