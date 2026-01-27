@@ -137,6 +137,54 @@ _Note: Button support varies by device and WhatsApp version._
 }
 ```
 
+#### `POST /send_document`
+
+Sends a document (PDF, Zip, Doc, etc.).
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/file.pdf",
+  "fileName": "document.pdf",
+  "caption": "Here is the document you requested"
+}
+```
+
+  "caption": "Here is the document you requested"
+}
+```
+
+#### `POST /send_video`
+
+Sends a video file.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/video.mp4",
+  "caption": "Watch this!"
+}
+```
+
+#### `POST /send_audio`
+
+Sends an audio file or voice note.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/audio.mp3",
+  "ptt": true
+}
+```
+**Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
+
 #### `POST /send_reaction`
 
 Reacts to a specific message.
