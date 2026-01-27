@@ -11,7 +11,8 @@ ports:
   7277/tcp: 7277
 ports_description:
   7277/tcp: Vaultwarden Web interface
-map: ["ssl"]
+map:
+  - ssl
 options:
   log_level: info
   ssl: true
@@ -28,4 +29,3 @@ ingress: true
 ingress_entry: "/"
 ingress_port: 7277
 panel_icon: mdi:shield-key
-image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}
