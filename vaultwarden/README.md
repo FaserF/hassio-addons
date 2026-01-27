@@ -1,4 +1,4 @@
-# Home Assistant Community Add-on: Vaultwarden (Custom)
+# Home Assistant Community Add-on: Vaultwarden (Bitwarden) (Custom)
 
 > [!IMPORTANT]
 > **Please prefer the official Vaultwarden add-on.**

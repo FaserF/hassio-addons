@@ -1,4 +1,4 @@
-name: Vaultwarden
+name: "Vaultwarden (Bitwarden) (Custom)"
 version: "0.1.0"
 slug: vaultwarden
 description: "Open source password management solution (Custom Build)"

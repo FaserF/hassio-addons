@@ -5,7 +5,7 @@
 
 ### Added
 
-- Initial release of the Vaultwarden add-on in this repo
+- Initial release of the Vaultwarden (Bitwarden) (Custom) add-on in this repo
 - Support for Ingress for seamless UI integration.
 - Support for direct port access (default 7277).
 - SSL/TLS support for direct access.

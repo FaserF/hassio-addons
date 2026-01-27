@@ -23,7 +23,7 @@ This method involves exporting your vault content to a JSON file and importing i
 
 ### Step 2: Switch Add-ons
 1. Stop the old add-on.
-2. Install the new "Vaultwarden (Custom)" add-on.
+2. Install the new "Vaultwarden (Bitwarden) (Custom)" add-on.
 3. Start the new add-on.
 4. Create a new account (you can use the same email and master password as before).
 

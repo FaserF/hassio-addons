@@ -1,4 +1,4 @@
-# Home Assistant Community Add-on: Vaultwarden (Bitwarden)
+# Home Assistant Community Add-on: Vaultwarden (Bitwarden) (Custom)
 
 Bitwarden is an open-source password manager that can store sensitive
 information such as website credentials in an encrypted vault.
@@ -20,10 +20,10 @@ email, bank, and other important accounts. USE A PASSWORD MANAGER!
 The installation of this add-on is pretty straightforward and not different in
 comparison to installing any other Home Assistant add-on.
 
-1. Search for the "Vaultwarden (Custom)" add-on in the Supervisor add-on store.
+1. Search for the "Vaultwarden (Bitwarden) (Custom)" add-on in the Supervisor add-on store.
 2. Install the add-on.
-3. Start the "Vaultwarden (Custom)" add-on.
-4. Check the logs of the "Vaultwarden (Custom)" add-on to see if everything
+3. Start the "Vaultwarden (Bitwarden) (Custom)" add-on.
+4. Check the logs of the "Vaultwarden (Bitwarden) (Custom)" add-on to see if everything
    went well and to get the admin token/password.
 5. Click the "OPEN WEB UI" button to open Vaultwarden.
 6. Add `/admin` to the URL to access the admin panel, e.g.,
