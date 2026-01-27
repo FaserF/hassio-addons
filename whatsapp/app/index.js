@@ -70,7 +70,10 @@ async function disableResetSession() {
       if (res.statusCode === 200) {
         logger.info('✅ Successfully disabled reset_session via Supervisor API.');
       } else {
-        logger.error({ statusCode: res.statusCode }, '❌ Failed to disable reset_session via Supervisor API.');
+        logger.error(
+          { statusCode: res.statusCode },
+          '❌ Failed to disable reset_session via Supervisor API.'
+        );
       }
       resolve();
     });
@@ -137,7 +140,9 @@ const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
 logger.info(`🔒 Mask Sensitive Data: ${MASK_SENSITIVE_DATA ? 'ENABLED' : 'DISABLED'}`);
-logger.info(`🔗 Webhook: ${WEBHOOK_ENABLED ? 'ENABLED' : 'DISABLED'} ${WEBHOOK_URL ? `(${WEBHOOK_URL})` : ''}`);
+logger.info(
+  `🔗 Webhook: ${WEBHOOK_ENABLED ? 'ENABLED' : 'DISABLED'} ${WEBHOOK_URL ? `(${WEBHOOK_URL})` : ''}`
+);
 
 // Ensure auth dir exists
 if (!fs.existsSync(AUTH_DIR)) {
@@ -209,7 +214,7 @@ async function triggerWebhook(data) {
       },
     };
 
-    const protocol = url.protocol === 'https:' ? (await import('https')) : http;
+    const protocol = url.protocol === 'https:' ? await import('https') : http;
     const req = protocol.request(options, (res) => {
       logger.debug({ statusCode: res.statusCode }, '[Webhook] Message forwarded');
     });
@@ -302,7 +307,10 @@ const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
     addLog(`Unauthorized API access attempt from ${req.ip}`, 'error');
-    logger.warn({ ip: req.ip, path: req.originalUrl, tokenProvided: !!providedToken }, '[AUTH] Unauthorized access attempt');
+    logger.warn(
+      { ip: req.ip, path: req.originalUrl, tokenProvided: !!providedToken },
+      '[AUTH] Unauthorized access attempt'
+    );
     return res.status(401).json({
       error: 'Unauthorized',
       detail: 'Invalid or missing X-Auth-Token',
@@ -568,7 +576,10 @@ app.post('/send_message', async (req, res) => {
       sock.sendMessage(jid, { text: message }),
       new Promise((_, reject) =>
         setTimeout(() => {
-          logger.error({ target: maskData(number) }, 'Send message timeout reached. Triggering forced reconnect.');
+          logger.error(
+            { target: maskData(number) },
+            'Send message timeout reached. Triggering forced reconnect.'
+          );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
           sock.end(
             new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale`)
@@ -875,17 +886,19 @@ app.get(/(.*)/, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -893,8 +906,8 @@ app.get(/(.*)/, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}

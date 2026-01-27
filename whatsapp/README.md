@@ -66,6 +66,9 @@ log_level: info
 mask_sensitive_data: false
 reset_session: false
 send_message_timeout: 25000
+webhook_enabled: false
+webhook_token: ''
+webhook_url: ''
 ```
 
 ---

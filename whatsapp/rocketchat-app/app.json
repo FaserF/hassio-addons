@@ -1,32 +1,32 @@
 {
-    "id": "whatsapp-bridge-addon",
-    "name": "WhatsApp Bridge",
-    "version": "1.0.0",
-    "description": "Bridge between Rocket.Chat and WhatsApp via the WhatsApp Addon.",
-    "iconFile": "icon.png",
-    "author": {
-        "name": "FaserF",
-        "homepage": "https://github.com/FaserF/ha-whatsapp"
+  "id": "whatsapp-bridge-addon",
+  "name": "WhatsApp Bridge",
+  "version": "1.0.0",
+  "description": "Bridge between Rocket.Chat and WhatsApp via the WhatsApp Addon.",
+  "iconFile": "icon.png",
+  "author": {
+    "name": "FaserF",
+    "homepage": "https://github.com/FaserF/ha-whatsapp"
+  },
+  "requiredApiVersion": "^1.19.0",
+  "permissions": [
+    {
+      "name": "networking.fetch"
     },
-    "requiredApiVersion": "^1.19.0",
-    "permissions": [
-        {
-            "name": "networking.fetch"
-        },
-        {
-            "name": "user.read"
-        },
-        {
-            "name": "message.read"
-        },
-        {
-            "name": "message.write"
-        },
-        {
-            "name": "room.read"
-        },
-        {
-            "name": "room.write"
-        }
-    ]
+    {
+      "name": "user.read"
+    },
+    {
+      "name": "message.read"
+    },
+    {
+      "name": "message.write"
+    },
+    {
+      "name": "room.read"
+    },
+    {
+      "name": "room.write"
+    }
+  ]
 }
