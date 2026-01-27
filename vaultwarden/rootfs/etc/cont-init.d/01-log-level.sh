@@ -14,4 +14,4 @@ else
 fi
 
 # Export to s6-overlay environment
-printf "%s" "${log_level}" > /var/run/s6/container_environment/LOG_LEVEL
+printf "%s" "${log_level}" > /run/s6/container_environment/LOG_LEVEL
