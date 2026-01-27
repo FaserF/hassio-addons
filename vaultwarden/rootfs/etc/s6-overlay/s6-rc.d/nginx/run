@@ -1,0 +1,16 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community Add-on: Vaultwarden
+# Runs the NGINX server
+# ==============================================================================
+declare certfile
+declare keyfile
+declare ssl
+
+# Generate Nginx configuration
+/usr/bin/python3 /usr/local/bin/render-nginx.py
+
+# Run NGINX
+bashio::log.info "Starting NGINX..."
+exec /usr/sbin/nginx -c /etc/nginx/nginx.conf

@@ -13,6 +13,9 @@ FROM ${BUILD_FROM}
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Environment variables
+ENV S6_KEEP_ENV=1
+
 # Get the Bitwarden from official images
 COPY --from=vaultwarden /vaultwarden /opt/vaultwarden
 COPY --from=vaultwarden /web-vault /opt/web-vault
@@ -33,6 +36,10 @@ RUN \
     \
     && mkdir -p /var/log/nginx \
     && touch /var/log/nginx/error.log
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl --fail http://localhost:7277 || exit 1
 
 # Copy root filesystem
 COPY rootfs /
