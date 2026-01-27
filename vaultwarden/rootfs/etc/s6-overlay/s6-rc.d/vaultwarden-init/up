@@ -5,6 +5,13 @@
 # Initialization oneshot for setup and logging
 # ==============================================================================
 
+# 0. Handle Log Level immediately
+if bashio::config.has_value 'log_level'; then
+    log_level=$(bashio::config 'log_level')
+    mkdir -p /run/s6/container_environment
+    printf "%s" "${log_level}" > /run/s6/container_environment/LOG_LEVEL
+fi
+
 # 1. Setup Data Directory
 mkdir -p /data
 
