@@ -14,5 +14,14 @@ configuration:
   keep_alive_interval:
     name: "Keep-Alive Intervall (ms)"
     description: "Wie oft (in ms) die Verbindung geprüft werden soll, um 'stale' Verbindungen zu erkennen (Standard: 30000)."
+  webhook_enabled:
+    name: "Webhook Aktiviert"
+    description: "Wenn aktiviert, werden eingehende WhatsApp-Nachrichten an die angegebene Webhook-URL weitergeleitet."
+  webhook_url:
+    name: "Webhook-URL"
+    description: "Die Ziel-URL für weitergeleitete Nachrichten (z.B. der Endpunkt deiner Rocket.Chat-App)."
+  webhook_token:
+    name: "Webhook-Token"
+    description: "Ein geheimer Token, der mit der Webhook-Anfrage gesendet wird (X-Webhook-Token Header), um die Kommunikation abzusichern."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.

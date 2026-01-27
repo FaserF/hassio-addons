@@ -18,12 +18,18 @@ options:
   send_message_timeout: 25000
   keep_alive_interval: 30000
   mask_sensitive_data: false
+  webhook_enabled: false
+  webhook_url: ""
+  webhook_token: ""
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_session: bool
   send_message_timeout: int
   keep_alive_interval: int
   mask_sensitive_data: bool
+  webhook_enabled: bool
+  webhook_url: str?
+  webhook_token: str?
 ports:
   8066/tcp: 8066
 hassio_api: true

@@ -36,9 +36,12 @@ Yes. If you prefer strictly isolated networking, you can disable the **"Use Host
 
 ## 🚀 Getting Started with Automations
 
-Once the addon and integration are configured, check out the following resource to start building:
+Once the addon and integration are configured, check out the following resources to start building:
 
-- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)** (Buttons, Polls, Reactions, etc.)
+- [Installation](https://faserf.github.io/ha-whatsapp/docs/installation/)
+- [Automations](https://faserf.github.io/ha-whatsapp/docs/automations/)
+- [Rocket.Chat Integration](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)
+- [API Reference](https://faserf.github.io/ha-whatsapp/docs/SERVICES/)
 
 ## ⚙️ Configuration
 
