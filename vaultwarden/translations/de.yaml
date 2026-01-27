@@ -15,6 +15,4 @@ configuration:
     name: Anforderungsgrößenbeschränkung
     description: Maximal zulässige Größe für API-Anfragen in Bytes.
 network:
-  7277/tcp:
-    name: Web-Oberfläche
-    description: Port für die Vaultwarden Web-Oberfläche.
+  7277/tcp: Web-Oberfläche
