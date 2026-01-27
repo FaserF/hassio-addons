@@ -21,16 +21,17 @@ COPY --from=vaultwarden /vaultwarden /opt/vaultwarden
 COPY --from=vaultwarden /web-vault /opt/web-vault
 
 # add Nginx
-# hadolint ignore=DL3009
 RUN \
     apt-get update \
     \
     && apt-get install -y --no-install-recommends \
-        libmariadb-dev-compat=1:11.8.3-0+deb13u1 \
-        libpq5=17.6-0+deb13u1 \
-        nginx=1.26.3-3+deb13u1 \
-        sqlite3=3.46.1-7 \
+        curl \
+        libmariadb-dev-compat \
+        libpq5 \
+        nginx \
+        sqlite3 \
     && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && rm -f -r \
         /etc/nginx \
     \

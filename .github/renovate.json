@@ -293,7 +293,7 @@
         "/vaultwarden/Dockerfile$"
       ],
       "matchStrings": [
-        "FROM [\"']?vaultwarden/server:(?<currentValue>[\\d.]+)[\"']?"
+        "FROM [\"']?vaultwarden/server:(?<currentValue>[^\"']+)[\"']?"
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "vaultwarden/server"
@@ -461,11 +461,21 @@
       "ignoreUnstable": false
     },
     {
-      "description": "Allow pre-releases for Vaultwarden",
+      "description": "Vaultwarden - track all tags, but only automerge stable releases",
       "matchDepNames": [
         "vaultwarden/server"
       ],
-      "ignoreUnstable": false,
+      "ignoreUnstable": false
+    },
+    {
+      "matchDepNames": [
+        "vaultwarden/server"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchUnstable": false,
       "automerge": true
     }
   ]

@@ -98,8 +98,6 @@ especially if running with limited resources.
 
 To set the limit, you can use this setting: 10MB would be `10485760`.
 
-To set the limit, you can use this setting: 10MB would be `10485760`.
-
 ## Migration
 
 If you are switching from the official add-on to this custom version (or vice versa), please read the [Migration Guide](MIGRATION.md).
@@ -152,7 +150,7 @@ check [the contributor's page][contributors].
 
 MIT License
 
-Copyright (c) 2019-2025 Franck Nijhof
+Copyright (c) 2019-2026 Franck Nijhof
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

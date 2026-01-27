@@ -1,6 +1,6 @@
 configuration:
   log_level:
-    name: Log Level
+    name: Log level
     description: Steuert die Ausführlichkeit der Protokollausgabe.
   ssl:
     name: SSL

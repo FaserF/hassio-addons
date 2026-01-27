@@ -65,7 +65,7 @@ This method involves manually copying the database files. This requires SSH acce
 
 ## Switching Back to Official
 
-The process is exactly the same, just reversed:
+The process is identical, just reversed:
 1. Export from Custom Add-on.
 2. Install/Start Official Add-on.
 3. Import to Official Add-on.
