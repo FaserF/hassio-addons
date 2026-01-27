@@ -25,5 +25,8 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
-  request_size_limit: str?
+  request_size_limit: int?
+ingress: true
+ingress_port: 7277
+panel_icon: mdi:shield-key
 image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}

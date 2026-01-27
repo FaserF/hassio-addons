@@ -40,7 +40,7 @@ RUN \
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl --fail http://localhost:7277 || exit 1
+    CMD curl --fail --insecure https://localhost:7277 || exit 1
 
 # Copy root filesystem
 COPY rootfs /

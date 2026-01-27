@@ -53,7 +53,7 @@ request_size_limit: 10485760
 
 ### Option: `log_level`
 
-The `log_level` option controls the level of log output by the addon and can
+The `log_level` option controls the level of log output by the add-on and can
 be changed to be more or less verbose, which might be useful when you are
 dealing with an unknown issue. Possible values are:
 
@@ -170,13 +170,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-[contributors]: https://github.com/hassio-addons/addon-bitwarden/graphs/contributors
+[contributors]: https://github.com/FaserF/hassio-addons/graphs/contributors
 [discord-ha]: https://discord.gg/c5DvZ4e
 [discord]: https://discord.me/hassioaddons
 [forum]: https://community.home-assistant.io/t/home-assistant-community-add-on-bitwarden-rs/115573?u=frenck
 [frenck]: https://github.com/frenck
-[issue]: https://github.com/hassio-addons/addon-bitwarden/issues
+[issue]: https://github.com/FaserF/hassio-addons/issues
 [reddit]: https://reddit.com/r/homeassistant
-[releases]: https://github.com/hassio-addons/addon-bitwarden/releases
+[releases]: https://github.com/FaserF/hassio-addons/releases
 [semver]: https://semver.org/spec/v2.0.0.html
 [vaultwarden]: https://github.com/dani-garcia/vaultwarden
