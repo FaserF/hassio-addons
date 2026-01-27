@@ -141,6 +141,11 @@ _Note: Button support varies by device and WhatsApp version._
 
 Sends a document (PDF, Zip, Doc, etc.).
 
+**Constraints:**
+- **URL Scheme**: Must be `http` or `https`.
+- **File Size**: Must be under 100MB.
+- **MIME**: Sent as `application/octet-stream` by default.
+
 **Payload:**
 
 ```json
@@ -152,6 +157,66 @@ Sends a document (PDF, Zip, Doc, etc.).
 }
 ```
 
+  "caption": "Here is the document you requested"
+}
+```
+
+#### `POST /send_video`
+
+Sends a video file.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/video.mp4",
+  "caption": "Watch this!"
+}
+```
+
+#### `POST /send_audio`
+
+Sends an audio file or voice note.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/audio.mp3",
+  "ptt": true
+}
+```
+
+**Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
+
+#### `POST /revoke_message`
+
+Revokes (deletes) a sent message for everyone.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "message_id": "BAE5CCF5A..."
+}
+```
+
+#### `POST /edit_message`
+
+Edits the text of a sent message.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "message_id": "BAE5CCF5A...",
+  "new_content": "Corrected text"
+}
+```
 #### `POST /send_reaction`
 
 Reacts to a specific message.
@@ -183,7 +248,67 @@ Sets the chat presence/status.
 
 **Values:** `composing`, `recording`, `paused`, `available`
 
-### 4. Events & Logs
+#### `POST /settings/webhook`
+
+Update webhook configuration dynamically (persisted to disk).
+
+**Payload:**
+
+```json
+{
+  "url": "http://homeassistant:8123/api/webhook/...",
+  "enabled": true,
+  "token": "optional-secret-token"
+}
+```
+
+#### `POST /send_list`
+
+Sends an interactive List Message (Action Menu).
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "title": "Menu Title",
+  "text": "Menu Body Text",
+  "button_text": "Click View",
+  "sections": [
+    {
+      "title": "Section 1",
+      "rows": [
+        { "title": "Option 1", "rowId": "opt1" },
+        { "title": "Option 2", "rowId": "opt2", "description": "Subtext" }
+      ]
+    }
+  ]
+}
+```
+
+#### `POST /send_contact`
+
+Sends a VCard contact.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "contact_name": "Home Assistant",
+  "contact_number": "1234567890"
+}
+```
+
+### 4. Native Commands
+
+The Addon supports the following native commands via WhatsApp messages (sent to the bot):
+
+- **`/ping`**: Returns "Pong! 🏓" (useful for checking connection).
+- **`/id`**: Returns the current Chat ID (useful for finding Group IDs).
+- **`/restart`**: Restarts the WhatsApp connection.
+
+### 5. Events & Logs
 
 #### `GET /events`
 

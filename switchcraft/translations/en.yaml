@@ -24,6 +24,4 @@ configuration:
     name: GitHub Client Secret
     description: Client Secret for GitHub authentication.
 network:
-  8080/tcp:
-    name: Web Interface
-    description: Port for the SwitchCraft web interface.
+  8080/tcp: Web Interface

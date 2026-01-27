@@ -185,34 +185,33 @@ fi
 
 # Fetch Releases once
 bashio::log.info "Fetching release information..."
-RELEASES_JSON=$(curl -s "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
+RELEASES_JSON=$(curl -s -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
 
 # Valid JSON check
 if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
-    bashio::log.warning "Failed to fetch valid releases from GitHub. Skipping checks."
+    bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
     RELEASES_JSON="[]"
 fi
 
 # Determine Latest Versions based on channel
-if [ "$CHANNEL" == "edge" ]; then
-    # Edge: Latest release (whether stable or beta)
-    TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
-else
-    # Stable: Latest non-prerelease
-    TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
-fi
+TARGET_TAG=""
+if [ "$RELEASES_JSON" != "[]" ]; then
+    if [ "$CHANNEL" == "edge" ]; then
+        # Edge: Latest release (whether stable or beta)
+        TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+    else
+        # Stable: Latest non-prerelease
+        TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
+    fi
 
-# Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
-# (Though generally for stable channel we strictly want stable releases)
-if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
-     # Use latest pre-release as fallback if NO stable exists at all?
-     # User requested "not from main branch", so tags are preferred.
-     # Let's check if array is not empty
-     if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
-         fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
-         bashio::log.warning "No stable release found, falling back to latest tag: $fallback"
-         TARGET_TAG="$fallback"
-     fi
+    # Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
+    if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
+        if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
+            fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
+            bashio::log.info "No stable release found, falling back to latest tag: $fallback"
+            TARGET_TAG="$fallback"
+        fi
+    fi
 fi
 
 
@@ -255,8 +254,8 @@ else
              else
                  bashio::log.info "Versions match ($curr)."
              fi
-        else
-             bashio::log.warning "Could not determine target tag from GitHub."
+        elif [ "$RELEASES_JSON" != "[]" ]; then
+             bashio::log.warning "Could not determine target tag from GitHub releases."
         fi
 
         if [ "$UPDATE_NEEDED" == "true" ]; then

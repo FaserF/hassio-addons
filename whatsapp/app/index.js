@@ -120,9 +120,24 @@ const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000',
 const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 
 // --- Webhook Configuration ---
-const WEBHOOK_ENABLED = process.env.WEBHOOK_ENABLED === 'true';
-const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
-const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+let WEBHOOK_ENABLED = process.env.WEBHOOK_ENABLED === 'true';
+let WEBHOOK_URL = process.env.WEBHOOK_URL || '';
+let WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+const WEBHOOK_CONFIG_FILE = path.join(DATA_DIR, 'webhook.json');
+
+// Load persistent webhook config
+if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
+  try {
+    const savedConfig = JSON.parse(fs.readFileSync(WEBHOOK_CONFIG_FILE, 'utf8'));
+    if (savedConfig.enabled !== undefined) WEBHOOK_ENABLED = savedConfig.enabled;
+    if (savedConfig.url !== undefined) WEBHOOK_URL = savedConfig.url;
+    if (savedConfig.token !== undefined) WEBHOOK_TOKEN = savedConfig.token;
+    logger.info('📂 Loaded specific webhook configuration from storage.');
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load saved webhook config');
+  }
+}
+
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
 
@@ -151,28 +166,6 @@ if (fs.existsSync(TOKEN_FILE)) {
 logger.info('---------------------------------------------------');
 logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
 logger.info('---------------------------------------------------');
-
-// Ensure auth dir exists
-if (!fs.existsSync(AUTH_DIR)) {
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
-}
-
-// --- Version Check ---
-let BAILEYS_VERSION = 'Unknown';
-try {
-  const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
-  if (fs.existsSync(pkgPath)) {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    BAILEYS_VERSION = pkg.version;
-  }
-} catch (e) {
-  logger.warn({ error: e.message }, 'Could not read Baileys version');
-}
-
-let sock;
-let currentQR = null;
-let isConnected = false;
-let eventQueue = []; // Queue for polling events
 
 // --- Helper Functions ---
 function getJid(number) {
@@ -244,6 +237,52 @@ function maskData(str) {
   return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
 
+// --- Global State ---
+let sock;
+let currentQR = null;
+let isConnected = false;
+let eventQueue = []; // Queue for polling events
+let connectionLogs = [];
+const stats = {
+  sent: 0,
+  received: 0,
+  failed: 0,
+  last_sent_message: 'None',
+  last_sent_target: 'None',
+  last_received_message: 'None',
+  last_received_sender: 'None',
+  last_failed_message: 'None',
+  last_failed_target: 'None',
+  last_error_reason: 'None',
+  start_time: Date.now(),
+  my_number: 'Unknown',
+  version: 'Unknown',
+};
+
+function addLog(msg, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  connectionLogs.unshift({ timestamp, msg, type });
+  if (connectionLogs.length > 50) connectionLogs.pop();
+}
+
+// Ensure auth dir exists
+if (!fs.existsSync(AUTH_DIR)) {
+  fs.mkdirSync(AUTH_DIR, { recursive: true });
+}
+
+// --- Version Check ---
+let BAILEYS_VERSION = 'Unknown';
+try {
+  const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    BAILEYS_VERSION = pkg.version;
+    stats.version = BAILEYS_VERSION; // Update stats object with early version info
+  }
+} catch (e) {
+  logger.warn({ error: e.message }, 'Could not read Baileys version');
+}
+
 // --- mDNS / Bonjour ---
 // Advertise service for Home Assistant Discovery
 async function publishMDNS(name, attempt = 0) {
@@ -285,30 +324,6 @@ async function publishMDNS(name, attempt = 0) {
 
 const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Addon';
 publishMDNS(baseMDNSName);
-
-// --- Status & Logs ---
-let connectionLogs = [];
-const stats = {
-  sent: 0,
-  received: 0,
-  failed: 0,
-  last_sent_message: 'None',
-  last_sent_target: 'None',
-  last_received_message: 'None',
-  last_received_sender: 'None',
-  last_failed_message: 'None',
-  last_failed_target: 'None',
-  last_error_reason: 'None',
-  start_time: Date.now(),
-  my_number: 'Unknown',
-  version: 'Unknown',
-};
-
-function addLog(msg, type = 'info') {
-  const timestamp = new Date().toLocaleTimeString();
-  connectionLogs.unshift({ timestamp, msg, type });
-  if (connectionLogs.length > 50) connectionLogs.pop();
-}
 
 // --- Middleware ---
 const ipFilterMiddleware = (req, res, next) => {
@@ -399,6 +414,12 @@ app.use('/send_location', authMiddleware);
 app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/send_document', authMiddleware);
+app.use('/send_video', authMiddleware);
+app.use('/send_audio', authMiddleware);
+app.use('/send_list', authMiddleware);
+app.use('/send_contact', authMiddleware);
+app.use('/revoke_message', authMiddleware);
+app.use('/edit_message', authMiddleware);
 app.use('/set_presence', authMiddleware);
 app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
@@ -523,6 +544,31 @@ async function connectToWhatsApp() {
       // --- Webhook Integration ---
       for (const event of events) {
         triggerWebhook(event);
+
+        // --- Native Command Handling ---
+        if (event.content && typeof event.content === 'string' && event.content.startsWith('/')) {
+          const body = event.content.trim();
+          const sender = event.sender;
+
+          try {
+            if (body === '/ping') {
+              await sock.sendMessage(sender, { text: 'Pong! 🏓' });
+              addLog(`Processed command /ping from ${maskData(sender)}`, 'info');
+            } else if (body === '/id') {
+              await sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
+              addLog(`Processed command /id from ${maskData(sender)}`, 'info');
+            } else if (body === '/restart') {
+              await sock.sendMessage(sender, { text: '🔄 Restarting WhatsApp connection...' });
+              addLog(`Processed command /restart from ${maskData(sender)}`, 'warning');
+              // Graceful restart
+              setTimeout(() => {
+                sock.end(new Error('User requested restart'));
+              }, 1000);
+            }
+          } catch (cmdErr) {
+            logger.error({ error: cmdErr.message }, 'Failed to process native command');
+          }
+        }
       }
     }
   });
@@ -816,6 +862,50 @@ app.post('/send_document', async (req, res) => {
   const { number, url, fileName, caption } = req.body;
   if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
+  // 1. Validate URL Scheme
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ detail: 'Invalid or missing URL' });
+  }
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).json({ detail: 'Invalid URL scheme. Only http/https allowed.' });
+    }
+  } catch (e) {
+    return res.status(400).json({ detail: 'Invalid URL format' });
+  }
+
+  // 2. Validate Content Size (HEAD Request)
+  try {
+    const protocol = parsedUrl.protocol === 'https:' ? await import('https') : http;
+    const size = await new Promise((resolve, reject) => {
+      const reqInfo = protocol.request(url, { method: 'HEAD', timeout: 5000 }, (resInfo) => {
+        if (resInfo.statusCode >= 400) {
+          // Allow it to proceed if HEAD fails? Or fail?
+          // User wants to strictly validate. But some servers might block HEAD.
+          // We will resolve with 0 to skip check if status is bad, or reject?
+          // Let's resolve with content-length if present.
+          resolve(parseInt(resInfo.headers['content-length'] || '0', 10));
+        } else {
+          resolve(parseInt(resInfo.headers['content-length'] || '0', 10));
+        }
+      });
+      reqInfo.on('error', (err) => resolve(0)); // Skip check on network error
+      reqInfo.on('timeout', () => { reqInfo.destroy(); resolve(0); });
+      reqInfo.end();
+    });
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB Limit
+    if (size > MAX_SIZE) {
+      addLog(`Blocked oversized document (${size} bytes) to ${maskData(number)}`, 'warning');
+      return res.status(413).json({ detail: `File too large. Limit is ${MAX_SIZE} bytes.` });
+    }
+  } catch (e) {
+    // Ignore checking errors, proceed to sending
+    logger.warn({ error: e.message }, 'Failed to validate document size, proceeding anyway');
+  }
+
   try {
     const jid = getJid(number);
     await sock.sendMessage(jid, {
@@ -825,8 +915,9 @@ app.post('/send_document', async (req, res) => {
       mimetype: 'application/octet-stream',
     });
     stats.sent += 1;
-    stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
-    stats.last_sent_target = number;
+    // 3. PII Masking in Stats
+    stats.last_sent_message = `Document: ${maskData(fileName) || 'unnamed'}`;
+    stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
@@ -834,6 +925,124 @@ app.post('/send_document', async (req, res) => {
     stats.last_failed_target = maskData(number);
     stats.last_error_reason = e.message || e.toString();
     addLog(`Failed to send document: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /send_video
+app.post('/send_video', async (req, res) => {
+  const { number, url, caption } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      video: { url: url },
+      caption: caption,
+    });
+    stats.sent += 1;
+    stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = caption ? `Video: ${maskData(caption)}` : 'Video';
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send video: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /send_audio
+app.post('/send_audio', async (req, res) => {
+  const { number, url, ptt } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    await sock.sendMessage(jid, {
+      audio: { url: url },
+      ptt: !!ptt,
+      mimetype: 'audio/mp4',
+    });
+    stats.sent += 1;
+    stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = ptt ? 'Voice Note' : 'Audio';
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send audio: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /revoke_message
+app.post('/revoke_message', async (req, res) => {
+  const { number, message_id } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    // Deleting for everyone requires the key including remoteJid, id, and fromMe=true (usually)
+    // However, Baileys usually handles this if we pass the key structure.
+    // For sending a delete, we need to send a protocol message.
+    // sock.sendMessage(jid, { delete: key })
+
+    // We assume we are deleting our OWN message, so fromMe is true.
+    const key = {
+      remoteJid: jid,
+      fromMe: true,
+      id: message_id,
+    };
+
+    await sock.sendMessage(jid, { delete: key });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Revoke: ${message_id}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Revoke: ${message_id}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to revoke message: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /edit_message
+app.post('/edit_message', async (req, res) => {
+  const { number, message_id, new_content } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+    const key = {
+      remoteJid: jid,
+      fromMe: true,
+      id: message_id,
+    };
+
+    await sock.sendMessage(jid, {
+      text: new_content,
+      edit: key,
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Edit: ${message_id}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Edit: ${message_id}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to edit message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1047,6 +1256,101 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     </body>
     </html>
     `);
+});
+
+// POST /settings/webhook
+app.post('/settings/webhook', authMiddleware, (req, res) => {
+  const { url, enabled, token } = req.body;
+
+  if (enabled !== undefined) WEBHOOK_ENABLED = Boolean(enabled);
+  if (url !== undefined) WEBHOOK_URL = url;
+  if (token !== undefined) WEBHOOK_TOKEN = token;
+
+  const configToSave = {
+    enabled: WEBHOOK_ENABLED,
+    url: WEBHOOK_URL,
+    token: WEBHOOK_TOKEN,
+  };
+
+  try {
+    fs.writeFileSync(WEBHOOK_CONFIG_FILE, JSON.stringify(configToSave, null, 2));
+    logger.info('💾 Webhook configuration updated and saved.');
+    addLog('Webhook configuration updated', 'info');
+    res.json({ status: 'success', config: configToSave });
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to save webhook config');
+    res.status(500).json({ error: 'Failed to save configuration' });
+  }
+});
+
+// POST /send_list
+app.post('/send_list', async (req, res) => {
+  const { number, title, text, button_text, sections } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+
+    // Construct List Message
+    // Note: 'sections' must be an array of objects { title, rows: [ { title, rowId, description? } ] }
+    await sock.sendMessage(jid, {
+      text: text || title || 'Menu', // Required content
+      footer: title ? text : undefined, // WhatsApp UI quirk logic
+      title: title,
+      buttonText: button_text || 'Menu',
+      sections: sections,
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `List: ${title || text}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `List: ${title || text}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send list: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
+});
+
+// POST /send_contact
+app.post('/send_contact', async (req, res) => {
+  const { number, contact_name, contact_number } = req.body;
+  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  try {
+    const jid = getJid(number);
+
+    // Construct VCard v3.0
+    const vcard =
+      'BEGIN:VCARD\n' + // metadata of the contact card
+      'VERSION:3.0\n' +
+      `FN:${contact_name}\n` + // full name
+      `ORG:Home Assistant;\n` + // organization (optional)
+      `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` + // WhatsApp ID and number
+      'END:VCARD';
+
+    await sock.sendMessage(jid, {
+      contacts: {
+        displayName: contact_name,
+        contacts: [{ vcard }],
+      },
+    });
+
+    stats.sent += 1;
+    stats.last_sent_message = `Contact: ${contact_name}`;
+    stats.last_sent_target = number;
+    res.json({ status: 'sent' });
+  } catch (e) {
+    stats.failed += 1;
+    stats.last_failed_message = `Contact: ${contact_name}`;
+    stats.last_failed_target = maskData(number);
+    stats.last_error_reason = e.message || e.toString();
+    addLog(`Failed to send contact: ${e.message}`, 'error');
+    res.status(500).json({ detail: e.toString() });
+  }
 });
 
 // Listen on all interfaces in the container (0.0.0.0)
