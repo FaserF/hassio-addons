@@ -4,7 +4,6 @@
 
 - Same as V1.0.2, only re-released due to release issues
 
-
 ## 1.0.2 (2026-01-27)
 
 ### 📦 Dependencies
