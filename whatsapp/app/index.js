@@ -330,8 +330,9 @@ const ipFilterMiddleware = (req, res, next) => {
   // 172.16.0.0/12
   // 192.168.0.0/16
   // fc00::/7 (Unique Local Address IPv6)
-  const isPrivate =
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
+  const isPrivate = /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(
+    ip
+  );
 
   if (isPrivate) return next();
 
@@ -341,7 +342,9 @@ const ipFilterMiddleware = (req, res, next) => {
 
   addLog(`Blocked external access attempt from ${ip}`, 'warning');
   logger.warn({ ip }, '[SECURITY] Blocked external access attempt (UI Auth Disabled)');
-  return res.status(403).send('Forbidden: External access is disabled when UI Authentication is off.');
+  return res
+    .status(403)
+    .send('Forbidden: External access is disabled when UI Authentication is off.');
 };
 
 const authMiddleware = (req, res, next) => {
@@ -893,7 +896,6 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     return res.status(404).send('Not Found');
   }
 
-
   // Determine current state
   const statusClass = isConnected ? 'connected' : currentQR ? 'waiting' : 'disconnected';
   const statusText = isConnected
@@ -952,17 +954,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -970,8 +974,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}

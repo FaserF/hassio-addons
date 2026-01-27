@@ -52,10 +52,10 @@ If you plan to use **Webhooks** or the **Rocket.Chat integration**, you may need
 > You **MUST** enable **UI Authentication** if you expose this port!
 
 To enable password protection for the Web UI:
+
 1. Set `ui_auth_enabled` to `true`.
 2. Set a strong password in `ui_auth_password`.
 3. When accessing the Web UI, use username: `admin` and your chosen password.
-
 
 ## 🚀 Getting Started with Automations
 
@@ -78,7 +78,7 @@ send_message_timeout: 25000
 keep_alive_interval: 30000
 mask_sensitive_data: false
 ui_auth_enabled: false
-ui_auth_password: ""
+ui_auth_password: ''
 ```
 
 ### Configuration Options
@@ -119,6 +119,7 @@ For issues and feature requests, please use the GitHub repository issues.
 You can configure this add-on to forward all incoming messages to a webhook URL. This is useful for custom integrations, logging, or bridging to other chat systems.
 
 **Configuration:**
+
 - `webhook_enabled`: Set to `true`
 - `webhook_url`: The full URL to POST data to (e.g., `https://my-webhook.com/whatsapp`)
 - `webhook_token`: (Optional) A secret token sent in the `X-Webhook-Token` header.
@@ -131,6 +132,7 @@ The webhook will receive a JSON payload for every incoming message. See [Webhook
 This add-on can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps** framework.
 
 **Setup:**
+
 1. Install the Rocket.Chat App (Apps > Marketplace > Private App).
 2. Configure the App settings in Rocket.Chat with your Add-on URL and API Token.
 3. Enable Webhooks in this Add-on and point them to your Rocket.Chat instance.
