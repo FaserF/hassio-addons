@@ -245,6 +245,19 @@ Sets the chat presence/status.
 
 **Values:** `composing`, `recording`, `paused`, `available`
 
+#### `POST /settings/webhook`
+
+Update webhook configuration dynamically (persisted to disk).
+
+**Payload:**
+```json
+{
+  "url": "http://homeassistant:8123/api/webhook/...",
+  "enabled": true,
+  "token": "optional-secret-token"
+}
+```
+
 ### 4. Events & Logs
 
 #### `GET /events`

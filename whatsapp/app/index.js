@@ -120,9 +120,24 @@ const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000',
 const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 
 // --- Webhook Configuration ---
-const WEBHOOK_ENABLED = process.env.WEBHOOK_ENABLED === 'true';
-const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
-const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+let WEBHOOK_ENABLED = process.env.WEBHOOK_ENABLED === 'true';
+let WEBHOOK_URL = process.env.WEBHOOK_URL || '';
+let WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+const WEBHOOK_CONFIG_FILE = path.join(DATA_DIR, 'webhook.json');
+
+// Load persistent webhook config
+if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
+  try {
+    const savedConfig = JSON.parse(fs.readFileSync(WEBHOOK_CONFIG_FILE, 'utf8'));
+    if (savedConfig.enabled !== undefined) WEBHOOK_ENABLED = savedConfig.enabled;
+    if (savedConfig.url !== undefined) WEBHOOK_URL = savedConfig.url;
+    if (savedConfig.token !== undefined) WEBHOOK_TOKEN = savedConfig.token;
+    logger.info('📂 Loaded specific webhook configuration from storage.');
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load saved webhook config');
+  }
+}
+
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
 
@@ -1170,6 +1185,31 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     </body>
     </html>
     `);
+});
+
+// POST /settings/webhook
+app.post('/settings/webhook', authMiddleware, (req, res) => {
+  const { url, enabled, token } = req.body;
+
+  if (enabled !== undefined) WEBHOOK_ENABLED = Boolean(enabled);
+  if (url !== undefined) WEBHOOK_URL = url;
+  if (token !== undefined) WEBHOOK_TOKEN = token;
+
+  const configToSave = {
+    enabled: WEBHOOK_ENABLED,
+    url: WEBHOOK_URL,
+    token: WEBHOOK_TOKEN,
+  };
+
+  try {
+    fs.writeFileSync(WEBHOOK_CONFIG_FILE, JSON.stringify(configToSave, null, 2));
+    logger.info('💾 Webhook configuration updated and saved.');
+    addLog('Webhook configuration updated', 'info');
+    res.json({ status: 'success', config: configToSave });
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to save webhook config');
+    res.status(500).json({ error: 'Failed to save configuration' });
+  }
 });
 
 // Listen on all interfaces in the container (0.0.0.0)
