@@ -84,6 +84,12 @@ if bashio::config.has_value 'request_size_limit'; then
     export ROCKET_LIMITS="{json=${request_size_limit}}"
 fi
 
+# API request size limit
+if bashio::config.has_value 'request_size_limit'; then
+    request_size_limit=$(bashio::config 'request_size_limit')
+    export ROCKET_LIMITS="{json=${request_size_limit}}"
+fi
+
 # Run the Bitwarden server
 bashio::log.info 'Starting the Vaultwarden server...'
 cd /opt || bashio::exit.nok

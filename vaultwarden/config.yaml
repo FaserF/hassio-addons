@@ -1,18 +1,12 @@
-name: Vaultwarden (Custom)
-version: dev
+name: Vaultwarden
+version: "0.1.0"
 slug: vaultwarden
-description: Open source password management solution (Custom Build)
-url: https://github.com/faserf/hassio-addons
+description: "Open source password management solution (Custom Build)"
+url: "https://github.com/faserf/hassio-addons"
 init: false
 arch:
   - aarch64
   - amd64
-ports:
-  7277/tcp: 7277
-ports_description:
-  7277/tcp: Vaultwarden Web interface
-map:
-  - ssl
 options:
   log_level: info
   ssl: true
@@ -20,12 +14,19 @@ options:
   keyfile: privkey.pem
   request_size_limit: 10485760
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   ssl: bool
   certfile: str
   keyfile: str
-  request_size_limit: int?
+  request_size_limit: int
+ports:
+  7277/tcp: 7277
+ports_description:
+  7277/tcp: Vaultwarden Web interface
 ingress: true
 ingress_entry: "/"
 ingress_port: 7277
 panel_icon: mdi:shield-key
+map:
+  - ssl
+image: ghcr.io/faserf/hassio-addons-vaultwarden-{arch}
