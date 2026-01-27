@@ -15,6 +15,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Environment variables
 ENV S6_KEEP_ENV=1
+ENV LOG_LEVEL="info"
 
 # Get the Bitwarden from official images
 COPY --from=vaultwarden /vaultwarden /opt/vaultwarden
@@ -49,6 +50,7 @@ COPY rootfs /
 # Set executable permissions and fix line endings
 RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} +
 RUN find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
+RUN dos2unix /etc/cont-init.d/*.sh && chmod +x /etc/cont-init.d/*.sh
 
 # Build arguments
 ARG BUILD_ARCH
