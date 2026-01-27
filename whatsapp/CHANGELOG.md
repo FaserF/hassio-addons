@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.1 (2026-01-27)
+
+### ✨ Features
+- New feat: mark as read ([`ccb7481a`](https://github.com/FaserF/hassio-addons/commit/ccb7481a3b76973abd494435973c8a84ded6a0d1))
+
+### 📦 Dependencies
+- Update run ([`7543f689`](https://github.com/FaserF/hassio-addons/commit/7543f689d54a597a5e2b23a758559fc457757300))
+- Update run ([`6beffe22`](https://github.com/FaserF/hassio-addons/commit/6beffe22f6fe2c7eedf45d09aa6466464f89ef6d))
+- Update run ([`04632824`](https://github.com/FaserF/hassio-addons/commit/04632824c299ba8242d31e8b1b2771007a1e6931))
+- Update check fix ([`6f7e4167`](https://github.com/FaserF/hassio-addons/commit/6f7e4167439ae0c58395718f31591f3340ddba00))
+- improved auto integration update ([`fd5b6a6e`](https://github.com/FaserF/hassio-addons/commit/fd5b6a6ecece07a3099b86cba1234dec3a07c511))
+- update docs ([`d7566a39`](https://github.com/FaserF/hassio-addons/commit/d7566a39491efa3d78604939e60cace6a630e3f1))
+
+### 🚀 Other
+- small fix ([`69a6062c`](https://github.com/FaserF/hassio-addons/commit/69a6062cab8f624d33a8c6ec7c82cf7e595d3bb7))
+- host network improvements ([`b7634534`](https://github.com/FaserF/hassio-addons/commit/b7634534132c08d2bdcade772feff3bd79543feb))
+- improved auto-discovery ([`f91a18da`](https://github.com/FaserF/hassio-addons/commit/f91a18daf0e75e2e6d0b3a4882f20391c73abf2a))
+
+
 ## 1.0.0 (2026-01-26)
 
 ### 📦 Dependencies
