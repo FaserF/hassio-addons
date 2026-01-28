@@ -1047,13 +1047,24 @@ app.post('/mark_as_read', async (req, res) => {
 
   try {
     const jid = getJid(number);
-    await sock.readMessages([
-      {
-        remoteJid: jid,
-        id: messageId,
-        fromMe: false, // Mark incoming messages
-      },
-    ]);
+
+    if (messageId) {
+      // Mark specific message as read
+      await sock.readMessages([
+        {
+          remoteJid: jid,
+          id: messageId,
+          fromMe: false, // Mark incoming messages
+        },
+      ]);
+    } else {
+      // Mark all unread messages in this chat as read
+      // Use chatModify with markRead action
+      await sock.chatModify(
+        { markRead: true, lastMessages: [] },
+        jid
+      );
+    }
     res.json({ status: 'success' });
   } catch (e) {
     addLog(`Failed to mark read: ${e.message}`, 'error');
