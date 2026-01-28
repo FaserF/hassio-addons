@@ -1,5 +1,5 @@
 name: "Vaultwarden (Bitwarden) (Custom)"
-version: "0.3.1"
+version: "0.3.2"
 slug: vaultwarden
 description: "Open source password management solution (Custom Build)"
 url: "https://github.com/faserf/hassio-addons"
