@@ -1,1 +1,19 @@
-/etc/s6-overlay/s6-rc.d/init-nginx/run
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community Add-on: Vaultwarden
+# This file configures NGINX
+# ==============================================================================
+
+bashio::config.require.ssl
+
+if bashio::config.true 'ssl'; then
+    certfile=$(bashio::config 'certfile')
+    keyfile=$(bashio::config 'keyfile')
+
+    cp /etc/nginx/servers/direct-ssl.disabled /etc/nginx/servers/direct.conf
+    sed -i "s#%%certfile%%#${certfile}#g" /etc/nginx/servers/direct.conf
+    sed -i "s#%%keyfile%%#${keyfile}#g" /etc/nginx/servers/direct.conf
+else
+    cp /etc/nginx/servers/direct.disabled /etc/nginx/servers/direct.conf
+fi

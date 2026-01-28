@@ -47,7 +47,9 @@ COPY rootfs /
 # Set executable permissions and fix line endings
 # Also create symlink for legacy base image compatibility
 RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
-    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
+    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} + \
+    && find /etc/cont-init.d -type f -exec dos2unix {} + \
+    && find /etc/cont-init.d -type f -exec chmod +x {} +
 
 # Build arguments
 ARG BUILD_ARCH
