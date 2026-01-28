@@ -28,7 +28,7 @@ COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache bind-tools openssl libssl3 nginx netcat-openbsd net-tools dos2unix curl \
+RUN apk add --no-cache bind-tools openssl libssl3 libcrypto3 nginx netcat-openbsd net-tools dos2unix curl \
     && mkdir -p /var/www/html /run/nginx /etc/services.d/shielddns
 
 # Copy Web Assets
