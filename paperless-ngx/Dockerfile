@@ -23,6 +23,7 @@ ENV ADDON_NAME="Paperless-ngx"
 ENV ADDON_SLUG="paperless-ngx"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3013
 RUN \
     apk add libssl3 libcrypto3 --no-cache -u \
         build-base \

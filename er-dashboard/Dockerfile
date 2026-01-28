@@ -24,6 +24,7 @@ ENV ADDON_NAME="ER-Startseite (Dashboard)"
 ENV ADDON_SLUG="er-dashboard"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008,DL3013,DL3018,DL3042
 RUN \
  apk add --no-cache libssl3 libcrypto3 -u \
         curl \

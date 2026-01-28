@@ -16,6 +16,7 @@ ENV ADDON_NAME="Planka"
 ENV ADDON_SLUG="planka"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3013
 RUN \
     apk add libssl3 libcrypto3 --no-cache -u \
         nodejs \

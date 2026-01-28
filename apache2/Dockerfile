@@ -15,6 +15,7 @@ ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
 # Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
+# hadolint ignore=DL3003,DL3018,DL3047
 RUN mkdir /run/apache2 \
     && apk --no-cache -u add libcrypto3 libssl3 \
     libssl3 \

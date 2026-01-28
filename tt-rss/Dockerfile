@@ -49,7 +49,7 @@ RUN \
     \
     && ln -s /usr/bin/php84 /usr/bin/php \
     \
-    && git clone --depth https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
+    && git clone --depth 1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
     \
     && rm -rf /var/www/tt-rss/.git
 

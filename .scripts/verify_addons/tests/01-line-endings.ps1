@@ -22,7 +22,7 @@ foreach ($a in $Addons) {
     Write-Progress -Id 1 -Activity "Checking Add-ons" -Status "[$i / $($Addons.Count)] $($a.Name)" -PercentComplete (($i / $Addons.Count) * 100)
     if (-not (Should-RunTest -AddonName $a.Name -TestName "LineEndings" -ChangedOnly $ChangedOnly -ChangedAddons $ChangedAddons -DocsOnlyTests $Config.docsOnlyTests)) { continue }
 
-    $files = Get-ChildItem $a.FullName -Recurse -Include "*.sh", "*.md", "*.yaml"
+    $files = Get-ChildItem $a.FullName -Recurse -Include "*.sh", "*.md", "*.yaml" | Where-Object { $_.FullName -notmatch "node_modules" -and $_.FullName -notmatch "\.pytest_cache" }
     $crlfFound = $false
 
     foreach ($f in $files) {

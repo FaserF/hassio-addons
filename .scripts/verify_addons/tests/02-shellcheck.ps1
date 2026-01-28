@@ -44,7 +44,7 @@ foreach ($a in $Addons) {
         continue
     }
 
-    $sh = Get-ChildItem $a.FullName -Recurse -Filter "*.sh"
+    $sh = Get-ChildItem $a.FullName -Recurse -Filter "*.sh" | Where-Object { $_.FullName -notmatch "node_modules" }
     $failed = $false
 
     foreach ($s in $sh) {
