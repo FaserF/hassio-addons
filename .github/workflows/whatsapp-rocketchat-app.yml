@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: apk add --no-cache zip git openssh-client
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
