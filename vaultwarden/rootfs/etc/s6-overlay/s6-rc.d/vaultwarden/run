@@ -3,7 +3,6 @@
 # Home Assistant Community Add-on: Vaultwarden
 # Runs Vaultwarden
 # ==============================================================================
-declare -a options
 
 bashio::log.info "Starting Vaultwarden..."
 
