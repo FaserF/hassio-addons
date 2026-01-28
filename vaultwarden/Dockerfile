@@ -31,6 +31,8 @@ RUN \
         nginx \
         sqlite \
         openssl \
+        libssl3 \
+        libcrypto3 \
     \
     && mkdir -p /var/log/nginx \
     && touch /var/log/nginx/error.log
