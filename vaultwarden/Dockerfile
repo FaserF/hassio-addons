@@ -50,11 +50,7 @@ COPY rootfs /
 
 # Set executable permissions and fix line endings
 # Also create symlink for legacy base image compatibility
-RUN mkdir -p /run/s6/container_environment \
-    && echo "info" > /run/s6/container_environment/LOG_LEVEL \
-    && mkdir -p /var/run/s6 \
-    && ln -s /run/s6/container_environment /var/run/s6/container_environment \
-    && find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
     && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
 
 # Build arguments

@@ -18,7 +18,7 @@ if bashio::config.has_value 'log_level'; then
 fi
 
 # 1. Setup Data Directory
-mkdir -p /data
+/bin/mkdir -p /data
 
 # 2. Persist a random secret, to avoid session invalidation on restart.
 if [ ! -f "/data/rocket_secret" ]; then
