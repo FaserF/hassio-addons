@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.0
 
 # Define external images as build stages (fixes DL3022)
 # hadolint ignore=DL3007
