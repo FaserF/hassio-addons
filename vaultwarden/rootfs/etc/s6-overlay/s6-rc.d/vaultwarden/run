@@ -16,17 +16,23 @@ mkdir -p /data
 # Persist a random secret
 if [ ! -f "/data/rocket_secret" ]; then
     openssl rand -base64 32 > /data/rocket_secret
+    chmod 600 /data/rocket_secret
 fi
 
 # Handle Admin Token
 if [ ! -f "/data/config.json" ] && [ ! -f "/data/admin_token" ]; then
     openssl rand -base64 48 > /data/admin_token
     chmod 600 /data/admin_token
+
+    admin_token=$(cat /data/admin_token)
+    bashio::log.info "-----------------------------------------------------------"
+    bashio::log.info "Your admin token has been generated and saved to /data/admin_token:"
+    bashio::log.info "${admin_token}"
+    bashio::log.info "-----------------------------------------------------------"
 fi
 
 if [ -f "/data/admin_token" ]; then
-    admin_token=$(cat /data/admin_token)
-    bashio::log.info "Your admin token: ${admin_token}"
+    bashio::log.info "Admin token is configured and secured in /data/admin_token"
 fi
 
 bashio::log.info "Starting Vaultwarden..."
