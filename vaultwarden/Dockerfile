@@ -22,7 +22,7 @@ COPY --from=vaultwarden /web-vault /opt/web-vault
 
 # add Nginx
 RUN \
-    apk add --no-cache \
+    apk add --no-cache --upgrade \
         curl \
         jq \
         dos2unix \
