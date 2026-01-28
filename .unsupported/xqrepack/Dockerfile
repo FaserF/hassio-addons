@@ -12,15 +12,15 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG XQREPACK_RELEASE="v1.1"
 
 # hadolint ignore=DL3018,DL3013,DL3042
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3 python3-dev py3-pip && \
     python3 -m venv $VIRTUAL_ENV && \
     pip install --no-cache-dir python-lzo ubi_reader && \
     mkdir /xqrepack && \
     wget -q -O /xqrepack/repack-squashfs.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/repack-squashfs.sh" && \
     wget -q -O /xqrepack/ubinize.sh "https://raw.githubusercontent.com/geekman/xqrepack/${XQREPACK_RELEASE}/ubinize.sh" && \
-    echo "2bbc5b552519dda4cde9c2b65728ac049836b2a1c000f2a87112d346ea1be615  /xqrepack/repack-squashfs.sh" > /xqrepack/checksums.txt && \
-    echo "0fc2d057545ebf58d79eb680c0b1cc618122f310121fbe67de6babeb34719c8a  /xqrepack/ubinize.sh" >> /xqrepack/checksums.txt && \
+    echo "2bbc5b552519dda4cde9c2b65728ac049836b2a1c000f2a87112d346ea1be615 /xqrepack/repack-squashfs.sh" > /xqrepack/checksums.txt && \
+    echo "0fc2d057545ebf58d79eb680c0b1cc618122f310121fbe67de6babeb34719c8a /xqrepack/ubinize.sh" >> /xqrepack/checksums.txt && \
     sha256sum -c /xqrepack/checksums.txt && \
     chmod a+x /xqrepack/*.sh
 

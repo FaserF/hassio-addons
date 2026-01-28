@@ -24,7 +24,7 @@ ENV ADDON_SLUG="paperless-ngx"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add libssl3 libcrypto3 --no-cache -u \
         build-base \
         curl \
         file \

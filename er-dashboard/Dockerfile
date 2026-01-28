@@ -25,7 +25,7 @@ ENV ADDON_SLUG="er-dashboard"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache -u \
+ apk add --no-cache libssl3 libcrypto3 -u \
         curl \
         nginx \
         openssl \
@@ -37,7 +37,7 @@ RUN \
         py3-greenlet \
         su-exec \
     \
-    && pip3 install --no-cache-dir --upgrade pip==25.3
+    && pip3 install --no-cache-dir --upgrade pip
 
 # Copy Frontend
 COPY --from=frontend /usr/share/nginx/html /app/dist

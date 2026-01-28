@@ -16,7 +16,7 @@ ENV ADDON_SLUG="whatsapp"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \
         npm \
         git \
@@ -31,7 +31,7 @@ COPY . .
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
 # hadolint ignore=DL3018
     RUN \
-    apk add --no-cache dos2unix~=7.5 && \
+ apk add --no-cache libssl3 libcrypto3 dos2unix && \
     if [ -d "rootfs" ]; then \
         cp -rv rootfs/* /; \
         # Fix potential Windows CRLF in s6 scripts

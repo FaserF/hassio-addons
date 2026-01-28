@@ -18,7 +18,7 @@ ENV ADDON_SLUG="wordpress"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
         nginx \
         mariadb-client \
         openssl \

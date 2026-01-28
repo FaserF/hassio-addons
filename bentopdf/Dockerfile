@@ -18,7 +18,7 @@ ENV ADDON_NAME="BentoPDF"
 ENV ADDON_SLUG="bentopdf"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN    apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
         nginx \
         curl \
     && rm -f /etc/nginx/http.d/default.conf

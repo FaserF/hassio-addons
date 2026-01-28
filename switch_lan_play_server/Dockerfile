@@ -11,7 +11,7 @@ ENV ADDON_NAME="Switch LAN Play Server"
 ENV ADDON_SLUG="switch-lan-play-server"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk -U --no-cache add \
+RUN apk -U --no-cache -u add libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \
     git \
@@ -39,7 +39,7 @@ ARG BUILD_DATE="unknown"
 
 # Install runtime requirements
 # hadolint ignore=DL3018
-RUN apk -U --no-cache add \
+RUN apk -U --no-cache -u add libssl3 libcrypto3 \
     libpcap \
     libuv \
     npm \

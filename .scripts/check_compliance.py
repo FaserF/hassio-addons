@@ -137,13 +137,13 @@ def check_addon(addon_path):
             errors.append(f"Unexpected error parsing config.yaml: {e}")
 
     if errors or warnings:
-        print(f"🔍 **Compliance Report for {addon_path}**:")
+        print(f"--- Compliance Report for {addon_path} ---")
         if errors:
-            print("\n  ❌ **Errors**:")
+            print("\n  [ERR] Errors:")
             for err in errors:
                 print(f"  - {err}")
         if warnings:
-            print("\n  ⚠️ **Warnings**:")
+            print("\n  [WARN] Warnings:")
             for warn in warnings:
                 print(f"  - {warn}")
         print("\n" + "-" * 50 + "\n")
@@ -152,7 +152,7 @@ def check_addon(addon_path):
             return False, errors, warnings
         return True, errors, warnings
 
-    print(f"✅ {addon_path} passed all basic compliance checks.")
+    print(f"OK: {addon_path} passed all basic compliance checks.")
     return True, [], []
 
 

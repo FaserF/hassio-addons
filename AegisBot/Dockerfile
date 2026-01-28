@@ -24,7 +24,7 @@ ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add libssl3 libcrypto3 --no-cache -u \
     musl \
     nginx \
     gcc \

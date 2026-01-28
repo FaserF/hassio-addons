@@ -13,8 +13,10 @@ ENV ADDON_SLUG="apache2-minimal"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN mkdir /run/apache2 \
-    && apk --no-cache add \
-        apache2 \
+ && apk --no-cache -u add libcrypto3 libssl3 \
+    libssl3 \
+    libcrypto3 \
+    apache2 \
         libxml2-dev \
         apache2-utils \
         apache2-mod-wsgi \

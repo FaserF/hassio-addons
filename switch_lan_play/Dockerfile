@@ -12,7 +12,7 @@ ENV ADDON_NAME="Switch LAN Play Client"
 ENV ADDON_SLUG="switch-lan-play"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \
     git \
@@ -27,7 +27,7 @@ RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && git checkout c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. \
     && make
 
 # Runtime stage
@@ -39,7 +39,7 @@ ENV SWITCH_LAN_PLAY_VERSION="v0.2.3"
 
 # Install runtime dependencies (procps for pgrep)
 # hadolint ignore=DL3018
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     libpcap \
     libuv \
     procps \

@@ -22,7 +22,7 @@ ENV ADDON_UNSUPPORTED="false"
 WORKDIR /tmp
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
-    && apk --no-cache add \
+ && apk --no-cache -u add libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
@@ -62,16 +62,16 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     cmake make musl-dev gcc gettext-dev libintl libxml2 git \
     && git clone --depth 1 --branch master https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-master \
     && cd musl-locales-master \
-    && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM -DLOCALE_PROFILE -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
     && cd .. && rm -rf musl-locales-master \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
-# shellcheck disable=SC2015
+# shellcheck disable
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
-    && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
-    && (addgroup -S www-data || true) \
-    && (adduser -S -G www-data www-data || true)
+ && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
+ && (addgroup -S www-data || true) \
+ && (adduser -S -G www-data www-data || true)
 
 # Copy data for add-on
 COPY rootfs /

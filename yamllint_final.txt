@@ -1,0 +1,5 @@
+.\whatsapp\integration\.github\workflows\ci-orchestrator.yml
+  12:16     error    too many spaces inside brackets  (brackets)
+  12:23     error    too many spaces inside brackets  (brackets)
+  26:9      error    wrong indentation: expected 10 but found 8  (indentation)
+

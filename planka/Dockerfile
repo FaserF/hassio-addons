@@ -17,7 +17,7 @@ ENV ADDON_SLUG="planka"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add libssl3 libcrypto3 --no-cache -u \
         nodejs \
         npm \
         python3 \
@@ -28,7 +28,7 @@ RUN \
         curl \
         su-exec \
         openssl \
-    && pip3 install --no-cache-dir --break-system-packages setuptools==80.9.0
+    && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
 WORKDIR /opt/planka
