@@ -639,7 +639,7 @@ async function connectToWhatsApp() {
             effectiveSenderJid = participant;
           }
 
-          const senderNumber = effectiveSenderJid.split('@')[0];
+          senderNumber = effectiveSenderJid.split('@')[0];
 
           return {
             content: text,
