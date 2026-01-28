@@ -1,5 +1,4 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
 # This file configures NGINX

@@ -1,17 +1,18 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
-# Initialization oneshot for setup and logging
+# Initialization script for setup and logging
 # ==============================================================================
 
 # 0. Handle Log Level immediately
 if bashio::config.has_value 'log_level'; then
     log_level=$(bashio::config 'log_level')
     # Update BOTH paths to be absolutely safe
+    mkdir -p /run/s6/container_environment
     if [ -d /run/s6/container_environment ]; then
         printf "%s" "${log_level}" > /run/s6/container_environment/LOG_LEVEL
     fi
+    mkdir -p /var/run/s6/container_environment
     if [ -d /var/run/s6/container_environment ]; then
         printf "%s" "${log_level}" > /var/run/s6/container_environment/LOG_LEVEL
     fi
@@ -46,5 +47,3 @@ if bashio::fs.file_exists '/data/admin_token'; then
     bashio::log.info "-----------------------------------------------------------"
     bashio::log.info ""
 fi
-
-exit 0

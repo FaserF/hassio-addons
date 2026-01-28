@@ -1,45 +1,34 @@
 # Home Assistant Community Add-on: Vaultwarden (Bitwarden) (Custom)
 
-Bitwarden is an open-source password manager that can store sensitive
-information such as website credentials in an encrypted vault.
+## 📖 Introduction
 
-The Bitwarden platform offers various client applications including
-a web interface, desktop applications, browser extensions and mobile apps.
+**Vaultwarden** (formerly Bitwarden_RS) is an open-source password manager backend that is compatible with the official Bitwarden clients (Desktop, Mobile, Browser Extension). It is lightweight and perfect for self-hosting on Home Assistant.
 
-This add-on is based upon the lightweight and opensource
-[Vaultwarden][vaultwarden] implementation, allowing you to self-host
-this powerful password manager.
+### Architecture
 
-Password theft is a serious problem. The websites and apps that you use are
-under attack every day. Security breaches occur and your passwords are stolen.
-When you reuse the same passwords everywhere hackers can easily access your
-email, bank, and other important accounts. USE A PASSWORD MANAGER!
+This add-on runs a single container composed of:
+1.  **Vaultwarden Server**: The Rust-based application handling the password manager logic.
+2.  **Nginx**: A high-performance web server acting as a reverse proxy to handle SSL and potential web-socket connections (for sync).
 
-## Installation
+---
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other Home Assistant add-on.
+## 🛠️ Installation
 
-1. Search for the "Vaultwarden (Bitwarden) (Custom)" add-on in the Supervisor add-on store.
-2. Install the add-on.
-3. Start the "Vaultwarden (Bitwarden) (Custom)" add-on.
-4. Check the logs of the "Vaultwarden (Bitwarden) (Custom)" add-on to see if everything
-   went well and to get the admin token/password.
-5. Click the "OPEN WEB UI" button to open Vaultwarden.
-6. Add `/admin` to the URL to access the admin panel, e.g.,
-   `http://hassio.local:7277/admin`. Log in using the admin token you got
-   in step 4.
-7. The admin/token in the logs is only shown until it is saved or changed.
-   Hit save in the admin panel to use the randomly generated password or
-   change it to one of your choosing.
-8. Be sure to store your admin token somewhere safe. **The add-on will never
-   show it again!**
+1.  Search for the **"Vaultwarden (Custom)"** add-on in the Supervisor add-on store.
+2.  Install the add-on.
+3.  Start the add-on.
+4.  **Important:** Check the **Log** tab immediately after starting!
+    - The add-on will generate an **Admin Token** on the first run.
+    - Copy this token! You will need it to access the `/admin` interface.
+5.  Click **"OPEN WEB UI"** to access your new password manager.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 **Note**: _Remember to restart the add-on when the configuration is changed._
 
-Example add-on configuration:
+### Example Configuration
 
 ```yaml
 log_level: info
@@ -49,101 +38,93 @@ keyfile: privkey.pem
 request_size_limit: 10485760
 ```
 
-**Note**: _This is just an example, don't copy and paste it! Create your own!_
-
 ### Option: `log_level`
 
-The `log_level` option controls the level of log output by the add-on and can
-be changed to be more or less verbose, which might be useful when you are
-dealing with an unknown issue. Possible values are:
-
-- `trace`: Show every detail, like all called internal functions.
-- `debug`: Shows detailed debug information.
-- `info`: Normal (usually) interesting events.
-- `notice`: Mid-level informational message (more significant than `info` but not a `warning`).
-- `warning`: Exceptional occurrences that are not errors.
-- `error`: Runtime errors that do not require immediate action.
-- `fatal`: Something went terribly wrong. Add-on becomes unusable.
-
-Please note that each level automatically includes log messages from a
-more severe level, e.g., `debug` also shows `info` messages. By default,
-the `log_level` is set to `info`, which is the recommended setting unless
-you are troubleshooting.
+Controls the verbosity of the logs.
+- `info` (Default): Standard operational logs.
+- `debug`: Detailed logs for troubleshooting.
+- `warning`: Only show warnings and errors.
 
 ### Option: `ssl`
 
-Enables/Disables SSL (HTTPS). Set it `true` to enable it, `false` otherwise.
+Enables/Disables SSL (HTTPS) for the internal Nginx server.
+- `true` (Default): Nginx will serve HTTPS. Requires `certfile` and `keyfile`.
+- `false`: Nginx will serve HTTP. Useful if you are behind another reverse proxy (like Nginx Proxy Manager) involving Home Assistant Ingress.
 
-**Note**: _The SSL settings only apply to direct access. Home Assistant
-Ingress is fully supported and recommended for general use._
+### Option: `certfile` & `keyfile`
 
-### Option: `certfile`
-
-The certificate file to use for SSL.
-
-**Note**: _The file MUST be stored in `/ssl/`, which is the default_
-
-### Option: `keyfile`
-
-The private key file to use for SSL.
-
-**Note**: _The file MUST be stored in `/ssl/`, which is the default_
+The certificate and private key files to use for SSL.
+- These files MUST be stored in your Home Assistant `/ssl/` directory.
+- Example: `fullchain.pem` and `privkey.pem`.
 
 ### Option: `request_size_limit`
 
-By default the API calls are limited to 10MB. This should be sufficient for
-most cases, however if you want to support large imports, this might be
-limiting you. On the other hand you might want to limit the request size to
-something smaller than that to prevent API abuse and possible DOS attack,
-especially if running with limited resources.
+Limits the maximum size of a request (e.g., for file attachments).
+- Default: `10485760` (10 MB).
 
-To set the limit, you can use this setting: 10MB would be `10485760`.
+---
 
-## Migration
+## 📂 Folder Usage
 
-If you are switching from the official add-on to this custom version (or vice versa), please read the [Migration Guide](MIGRATION.md).
+The add-on uses the persistent storage to keep your data safe across restarts and updates.
 
-## Known issues and limitations
+- **/data**: Stores the Vaultwarden SQLite database (`db.sqlite3`), config (`config.json`), and attachments.
+- **/ssl**: Read-only access to your SSL certificates.
 
-- Some web browsers, like Chrome, disallow the use of Web Crypto APIs in
-  insecure contexts. In this case, you might get an error like
-  `Cannot read property 'importKey'`. To solve this problem, you need to enable
-  SSL and access the web interface using HTTPS.
+> [!TIP]
+> **Backup:** Home Assistant Snapshots automatically back up the `/data` folder. You generally don't need to do anything manually.
 
-## Changelog & Releases
+---
 
-This repository keeps a change log using [GitHub's releases][releases]
-functionality.
+## 🌐 Network & Access
 
-Releases are based on [Semantic Versioning][semver], and use the format
-of `MAJOR.MINOR.PATCH`. In a nutshell, the version will be incremented
-based on the following:
+### Ingress (Recommended)
+This add-on supports **Home Assistant Ingress**. You can access it securely via the Home Assistant sidebar without opening extra ports.
+- **Note:** Bitwarden clients (Mobile/Desktop) might **NOT** work with Ingress URL. Ingress is best for the Web Vault management.
 
-- `MAJOR`: Incompatible or major changes.
-- `MINOR`: Backwards-compatible new features and enhancements.
-- `PATCH`: Backwards-compatible bugfixes and package updates.
+### Direct Access (Port 7277)
+To connect your **Bitwarden Apps** (Mobile/Desktop), you usually need direct access.
+1.  Map the container port `80` (or `7277`) to a host port (e.g., `7277`) in the add-on configuration "Network" section.
+2.  Your Server URL will be: `https://<your-ha-ip>:7277`.
+3.  **HTTPS is required** by Bitwarden clients for security. Ensure you have SSL configured!
+
+---
+
+## 🔧 Troubleshooting
+
+### "Browser Context Closed" / Startup Crash
+If the add-on crashes immediately, check if:
+1.  Structure issue: Ensure you are using the latest version of this add-on which fixes s6 execution errors.
+2.  Port conflict: Ensure port 7277 is not used by another service.
+
+### Admin Token Lost
+If you lost your admin token:
+1.  Check `/addon_configs/.../vaultwarden/config.json` (or look in `/data` inside the container).
+2.  Delete the token file or reset environment variable `ADMIN_TOKEN` if you set one.
+
+---
+
+## 🔄 Migration
+
+If you are switching from the official add-on to this custom version:
+1.  Stop the official add-on.
+2.  Copy your `db.sqlite3` and `attachments` folder from the official add-on's data folder to this add-on's data folder.
+3.  Start this add-on.
+4.  Vaultwarden is compatible with Bitwarden database format.
+
+---
 
 ## Support
 
 Got questions?
-
-You have several options to get them answered:
-
-- The [Home Assistant Community Add-ons Discord chat server][discord] for add-on
-  support and feature requests.
-- The [Home Assistant Discord chat server][discord-ha] for general Home
-  Assistant discussions and questions.
+- The [Home Assistant Community Add-ons Discord chat server][discord] for add-on support and feature requests.
+- The [Home Assistant Discord chat server][discord-ha] for general Home Assistant discussions and questions.
 - The Home Assistant [Community Forum][forum].
-- Join the [Reddit subreddit][reddit] in [/r/homeassistant][reddit]
-
-You could also [open an issue here][issue] on GitHub.
 
 ## Authors & contributors
 
 The original setup of this repository is by [Franck Nijhof][frenck].
-
-For a full list of all authors and contributors,
-check [the contributor's page][contributors].
+For a full list of all authors and contributors, check [the contributor's page][contributors].
 
 ## License
 
@@ -151,31 +132,8 @@ MIT License
 
 Copyright (c) 2019-2026 Franck Nijhof
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 [contributors]: https://github.com/FaserF/hassio-addons/graphs/contributors
 [discord-ha]: https://discord.gg/c5DvZ4e
 [discord]: https://discord.me/hassioaddons
 [forum]: https://community.home-assistant.io/t/home-assistant-community-add-on-bitwarden-rs/115573?u=frenck
 [frenck]: https://github.com/frenck
-[issue]: https://github.com/FaserF/hassio-addons/issues
-[reddit]: https://reddit.com/r/homeassistant
-[releases]: https://github.com/FaserF/hassio-addons/releases
-[semver]: https://semver.org/spec/v2.0.0.html
-[vaultwarden]: https://github.com/dani-garcia/vaultwarden
