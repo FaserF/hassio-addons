@@ -26,8 +26,9 @@ WORKDIR /switch-lan-play
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && git checkout c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 \
     && git submodule update --init --recursive \
-    && sed -i 's/cmake_minimum_required(VERSION 3.0)/cmake_minimum_required(VERSION 3.5)/' CMakeLists.txt \
-    && sed -i 's/cmake_minimum_required(VERSION 2.8)/cmake_minimum_required(VERSION 3.5)/' external/libuv/CMakeLists.txt \
+    && sed -i 's/execute_process(COMMAND git submodule update --init -- external\/libuv//g' external/external.cmake \
+    && sed -i 's/execute_process(COMMAND git submodule update --init -- external\/uvw//g' external/external.cmake \
+    && find . -name CMakeLists.txt -exec sed -i 's/cmake_minimum_required(VERSION [0-9\.]*)/cmake_minimum_required(VERSION 3.5)/' {} + \
     && mkdir build \
     && cd build \
     && cmake .. \
