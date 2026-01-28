@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 (2026-01-28)
+
+### 🚀 Other
+- add support for media download ([`e621eb57`](https://github.com/FaserF/hassio-addons/commit/e621eb57766925c548e0a8b9cf293560456de2ea))
+
+### 📌 Release Note
+- trigger event parameter improvements
+
+
 ## 1.1.0 (2026-01-28)
 
 ### ✨ Features
