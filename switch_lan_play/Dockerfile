@@ -27,7 +27,7 @@ RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && git checkout c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 \
     && mkdir build \
     && cd build \
-    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. \
+    && cmake .. \
     && make
 
 # Runtime stage

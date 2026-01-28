@@ -47,7 +47,7 @@ RUN \
         git \
         openssl \
     \
-    && ln -s /usr/bin/php84 /usr/bin/php \
+    && ln -sf /usr/bin/php84 /usr/bin/php \
     \
     && git clone --depth 1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
     \

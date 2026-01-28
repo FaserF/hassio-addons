@@ -16,7 +16,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
-# hadolint ignore=DL3008,DL3013,DL3018,DL3042
+# Setup base system
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.2.0"
@@ -26,7 +26,7 @@ ENV ADDON_UNSUPPORTED="false"
 
 # hadolint ignore=DL3008,DL3013,DL3018,DL3042
 RUN \
- apk add --no-cache libssl3 libcrypto3 -u \
+ apk add --no-cache -u libssl3 libcrypto3 \
         curl \
         nginx \
         openssl \

@@ -22,7 +22,7 @@ RUN \
         build-base \
         python3-dev \
     \
- && apk add --no-cache -u libssl3 libcrypto3 \
+ && apk add --no-cache -u \
         curl \
         nodejs \
         npm \

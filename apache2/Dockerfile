@@ -18,8 +18,6 @@ WORKDIR /tmp
 # hadolint ignore=DL3003,DL3018,DL3047
 RUN mkdir /run/apache2 \
     && apk --no-cache -u add libcrypto3 libssl3 \
-    libssl3 \
-    libcrypto3 \
     apache2 \
     curl \
     jq \
@@ -65,7 +63,7 @@ RUN mkdir /run/apache2 \
     && curl -L -o musl-locales-master.zip https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
     && unzip musl-locales-master.zip \
     && cd musl-locales-master \
-    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
     && cd .. && rm -r musl-locales-master \
     && apk del --no-cache cmake make gcc gettext-dev libintl
 

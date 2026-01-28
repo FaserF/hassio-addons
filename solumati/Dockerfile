@@ -20,7 +20,7 @@ ENV ADDON_SLUG="solumati"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add libssl3 libcrypto3 --no-cache -u \
+    apk add --no-cache -u libssl3 libcrypto3 \
     nodejs \
     npm \
     postgresql \
@@ -44,7 +44,7 @@ WORKDIR /tmp
 RUN mkdir src && \
     curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
     echo "${SOLUMATI_SHA256} solumati.tar.gz" | sha256sum -c - && \
-    tar xzf solumati.tar.gz -C src --strip-components && \
+    tar xzf solumati.tar.gz -C src --strip-components=1 && \
     rm solumati.tar.gz
 
 # --- FRONTEND BUILD STAGE ---

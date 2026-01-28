@@ -18,10 +18,10 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 RUN mkdir /application && \
  apk add --no-cache -u libssl3 libcrypto3 tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
- apk add --no-cache -u libssl3 libcrypto3 --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev python3-dev && \
- apk add --no-cache -u libssl3 libcrypto3 --update wget && \
+ apk add --no-cache -u --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev python3-dev && \
+ apk add --no-cache -u wget && \
     wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
-    echo "${BT_MQTT_SHA256} ${BT_MQTT_VERSION}.tar.gz" | sha256sum -c - && \
+    echo "${BT_MQTT_SHA256}  ${BT_MQTT_VERSION}.tar.gz" | sha256sum -c - && \
     tar xzf "${BT_MQTT_VERSION}.tar.gz" -C /tmp/ && \
     rm "${BT_MQTT_VERSION}.tar.gz" && \
     mv /tmp/bt-mqtt-gateway-*/* /application && \

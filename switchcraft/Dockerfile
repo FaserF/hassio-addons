@@ -43,7 +43,7 @@ ARG SWITCHCRAFT_VERSION="v2026.1.5b2"
 # shellcheck disable=SC2102
 # hadolint ignore=DL3013,SC2102
 RUN curl -L -o /tmp/switchcraft.tar.gz https://github.com/FaserF/SwitchCraft/archive/refs/tags/${SWITCHCRAFT_VERSION}.tar.gz \
-    && tar xf /tmp/switchcraft.tar.gz -C /app --strip-components \
+    && tar xf /tmp/switchcraft.tar.gz -C /app --strip-components=1 \
     && rm /tmp/switchcraft.tar.gz \
     # Install dependencies (mirroring upstream Dockerfile)
     && pip3 install --break-system-packages --no-cache-dir .[web-server,ai] flet==0.80.4 flet-web==0.80.4 flet-charts==0.80.4 packaging \

@@ -64,7 +64,7 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \
     && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
-    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename \
+    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm /tmp/composer-setup.php \
     && cp .env.example .env \
     && composer install --ansi --no-dev --optimize-autoloader \
