@@ -44,9 +44,11 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Copy root filesystem
 COPY rootfs /
 
-# Set executable permissions and fix line endings for S6-RC structure
+# Set executable permissions and fix line endings for S6 structure
 RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
-    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} +
+    && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} + \
+    && find /etc/cont-init.d -type f -exec dos2unix {} + \
+    && find /etc/cont-init.d -type f -exec chmod +x {} +
 
 # Build arguments
 ARG BUILD_ARCH

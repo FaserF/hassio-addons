@@ -1,57 +1,54 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/env bash
+source /usr/lib/bashio/bashio.sh
+
 # ==============================================================================
 # Home Assistant Community Add-on: Vaultwarden
-# Runs Vaultwarden
+# Initialization and Startup
 # ==============================================================================
+
+# 1. Setup Data Directory
+mkdir -p /data
+
+# 2. Persist a random secret
+if [ ! -f "/data/rocket_secret" ]; then
+    openssl rand -base64 32 > /data/rocket_secret
+fi
+
+# 3. Handle Admin Token
+if [ ! -f "/data/config.json" ] && [ ! -f "/data/admin_token" ]; then
+    openssl rand -base64 48 > /data/admin_token
+    chmod 600 /data/admin_token
+fi
+
+if [ -f "/data/admin_token" ]; then
+    admin_token=$(cat /data/admin_token)
+    bashio::log.info "Your admin token: ${admin_token}"
+fi
 
 bashio::log.info "Starting Vaultwarden..."
 
-# Set timezone
-if bashio::config.has_value 'timezone'; then
-    export TZ=$(bashio::config 'timezone')
-fi
-
-# Configure data directory
+# Environment variables
+[ -d /etc/s6-overlay/env ] && export $(cat /etc/s6-overlay/env/* | xargs)
+if bashio::config.has_value 'timezone'; then export TZ=$(bashio::config 'timezone'); fi
 export DATA_FOLDER=/data
-
-# Configure Web Vault location
 export WEB_VAULT_FOLDER=/opt/web-vault
-
-# Configure Websocket
 export WEBSOCKET_ENABLED=true
 export WEBSOCKET_ADDRESS=0.0.0.0
 export WEBSOCKET_PORT=3012
-
-# Configure server listener
 export ROCKET_ADDRESS=0.0.0.0
 export ROCKET_PORT=7277
-
-# Set secret for sessions (persisted to survive restart)
-if bashio::fs.file_exists "/data/rocket_secret"; then
-    export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
-fi
-
-# Admin token handling
-if bashio::fs.file_exists "/data/admin_token"; then
-    export ADMIN_TOKEN=$(cat /data/admin_token)
-fi
-
-# Request Size Limit
-if bashio::config.has_value 'request_size_limit'; then
-    export ROCKET_LIMITS="{json=$(bashio::config 'request_size_limit')}"
-fi
+[ -f "/data/rocket_secret" ] && export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
+[ -f "/data/admin_token" ] && export ADMIN_TOKEN=$(cat /data/admin_token)
+if bashio::config.has_value 'request_size_limit'; then export ROCKET_LIMITS="{json=$(bashio::config 'request_size_limit')}"; fi
 
 # Log level
 if bashio::config.has_value 'log_level'; then
     case "$(bashio::config 'log_level')" in
-        trace)      export LOG_LEVEL="trace" ;;
-        debug)      export LOG_LEVEL="debug" ;;
-        info)       export LOG_LEVEL="info" ;;
-        notice)     export LOG_LEVEL="info" ;;
-        warning)    export LOG_LEVEL="warn" ;;
-        error)      export LOG_LEVEL="error" ;;
-        fatal)      export LOG_LEVEL="error" ;;
-        *)          export LOG_LEVEL="info" ;;
+        trace) export LOG_LEVEL="trace" ;;
+        debug) export LOG_LEVEL="debug" ;;
+        warning) export LOG_LEVEL="warn" ;;
+        error|fatal) export LOG_LEVEL="error" ;;
+        *) export LOG_LEVEL="info" ;;
     esac
     export RUST_LOG="vaultwarden=${LOG_LEVEL}"
 fi
