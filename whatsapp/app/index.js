@@ -438,22 +438,25 @@ if (!fs.existsSync(MEDIA_DIR)) {
 app.use('/media', express.static(MEDIA_DIR));
 
 // Clean up old media files every hour (keep for 24h)
-setInterval(() => {
-  const now = Date.now();
-  const maxAge = 24 * 60 * 60 * 1000;
-  fs.readdir(MEDIA_DIR, (err, files) => {
-    if (err) return;
-    files.forEach((file) => {
-      const filePath = path.join(MEDIA_DIR, file);
-      fs.stat(filePath, (err, stats) => {
-        if (err) return;
-        if (now - stats.mtimeMs > maxAge) {
-          fs.unlink(filePath, () => { });
-        }
+setInterval(
+  () => {
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000;
+    fs.readdir(MEDIA_DIR, (err, files) => {
+      if (err) return;
+      files.forEach((file) => {
+        const filePath = path.join(MEDIA_DIR, file);
+        fs.stat(filePath, (err, stats) => {
+          if (err) return;
+          if (now - stats.mtimeMs > maxAge) {
+            fs.unlink(filePath, () => {});
+          }
+        });
       });
     });
-  });
-}, 60 * 60 * 1000);
+  },
+  60 * 60 * 1000
+);
 
 // --- Store Initialization ---
 // Custom In-Memory Store to handle message retries
@@ -628,7 +631,11 @@ async function connectToWhatsApp() {
           const participant = msg.key.participant || msg.participant;
           let effectiveSenderJid = senderJid;
 
-          if (participant && typeof participant === 'string' && participant.includes('@s.whatsapp.net')) {
+          if (
+            participant &&
+            typeof participant === 'string' &&
+            participant.includes('@s.whatsapp.net')
+          ) {
             effectiveSenderJid = participant;
           }
 
@@ -1260,17 +1267,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1278,8 +1287,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}

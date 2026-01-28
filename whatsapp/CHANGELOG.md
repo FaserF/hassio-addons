@@ -3,6 +3,7 @@
 ## 1.1.0 (2026-01-28)
 
 ### ✨ Features
+
 - add contact send support ([`005c344e`](https://github.com/FaserF/hassio-addons/commit/005c344ea2009213eaf0118bf1e1dfc2d299665d))
 - add native commands ([`194e5c7b`](https://github.com/FaserF/hassio-addons/commit/194e5c7b4b2cebefeceef66731ab977646ac5168))
 - add list message support ([`7f7ab731`](https://github.com/FaserF/hassio-addons/commit/7f7ab731e774ab62c22c3742cf9f01a1c7302d85))
@@ -11,11 +12,12 @@
 - new feat: send documents, video, audio ([`b95c0352`](https://github.com/FaserF/hassio-addons/commit/b95c03523daf8ee80e746e38f9ea99601bfc8a19))
 
 ### 📦 Dependencies
+
 - Update index.js ([`b0b08871`](https://github.com/FaserF/hassio-addons/commit/b0b088710726663649dc7c40621308625f3a262e))
 
 ### 📌 Release Note
-- Many new features implemented & docs improved
 
+- Many new features implemented & docs improved
 
 ## 1.0.5 (2026-01-27)
 
