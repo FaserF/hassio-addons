@@ -1060,10 +1060,7 @@ app.post('/mark_as_read', async (req, res) => {
     } else {
       // Mark all unread messages in this chat as read
       // Use chatModify with markRead action
-      await sock.chatModify(
-        { markRead: true, lastMessages: [] },
-        jid
-      );
+      await sock.chatModify({ markRead: true, lastMessages: [] }, jid);
     }
     res.json({ status: 'success' });
   } catch (e) {
