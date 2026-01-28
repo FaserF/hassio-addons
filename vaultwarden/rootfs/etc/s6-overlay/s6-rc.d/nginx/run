@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Disable strict mode
+set +u
+
+# Source bashio
 source /usr/lib/bashio/bashio.sh
 
 # ==============================================================================
@@ -9,6 +13,9 @@ source /usr/lib/bashio/bashio.sh
 if bashio::config.true 'ssl'; then
     certfile=$(bashio::config 'certfile')
     keyfile=$(bashio::config 'keyfile')
+    [ -z "${certfile}" ] && certfile="fullchain.pem"
+    [ -z "${keyfile}" ] && keyfile="privkey.pem"
+
     cp /etc/nginx/servers/direct-ssl.disabled /etc/nginx/servers/direct.conf
     sed -i "s#%%certfile%%#${certfile}#g" /etc/nginx/servers/direct.conf
     sed -i "s#%%keyfile%%#${keyfile}#g" /etc/nginx/servers/direct.conf

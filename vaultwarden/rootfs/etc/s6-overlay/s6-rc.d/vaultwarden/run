@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Disable strict mode to avoid unbound variable crashes
+set +u
+
+# Source bashio
 source /usr/lib/bashio/bashio.sh
 
 # ==============================================================================
@@ -6,15 +10,15 @@ source /usr/lib/bashio/bashio.sh
 # Initialization and Startup
 # ==============================================================================
 
-# 1. Setup Data Directory
+# Ensure data directory exists
 mkdir -p /data
 
-# 2. Persist a random secret
+# Persist a random secret
 if [ ! -f "/data/rocket_secret" ]; then
     openssl rand -base64 32 > /data/rocket_secret
 fi
 
-# 3. Handle Admin Token
+# Handle Admin Token
 if [ ! -f "/data/config.json" ] && [ ! -f "/data/admin_token" ]; then
     openssl rand -base64 48 > /data/admin_token
     chmod 600 /data/admin_token
@@ -28,8 +32,6 @@ fi
 bashio::log.info "Starting Vaultwarden..."
 
 # Environment variables
-[ -d /etc/s6-overlay/env ] && export $(cat /etc/s6-overlay/env/* | xargs)
-if bashio::config.has_value 'timezone'; then export TZ=$(bashio::config 'timezone'); fi
 export DATA_FOLDER=/data
 export WEB_VAULT_FOLDER=/opt/web-vault
 export WEBSOCKET_ENABLED=true
@@ -37,20 +39,25 @@ export WEBSOCKET_ADDRESS=0.0.0.0
 export WEBSOCKET_PORT=3012
 export ROCKET_ADDRESS=0.0.0.0
 export ROCKET_PORT=7277
+
+# Set secret for sessions
 [ -f "/data/rocket_secret" ] && export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
 [ -f "/data/admin_token" ] && export ADMIN_TOKEN=$(cat /data/admin_token)
-if bashio::config.has_value 'request_size_limit'; then export ROCKET_LIMITS="{json=$(bashio::config 'request_size_limit')}"; fi
 
-# Log level
+# Log level handling
+log_level="info"
 if bashio::config.has_value 'log_level'; then
-    case "$(bashio::config 'log_level')" in
-        trace) export LOG_LEVEL="trace" ;;
-        debug) export LOG_LEVEL="debug" ;;
-        warning) export LOG_LEVEL="warn" ;;
-        error|fatal) export LOG_LEVEL="error" ;;
-        *) export LOG_LEVEL="info" ;;
-    esac
-    export RUST_LOG="vaultwarden=${LOG_LEVEL}"
+    log_level=$(bashio::config 'log_level')
 fi
+export LOG_LEVEL="${log_level}"
+
+case "${log_level}" in
+    trace) export LVL="trace" ;;
+    debug) export LVL="debug" ;;
+    warning) export LVL="warn" ;;
+    error|fatal) export LVL="error" ;;
+    *) export LVL="info" ;;
+esac
+export RUST_LOG="vaultwarden=${LVL}"
 
 exec /opt/vaultwarden
