@@ -9,6 +9,17 @@
 
 Add-on for Home Assistant that runs a Vaultwarden (Bitwarden) server.
 
+## Comparison: Custom vs Official
+
+| Feature | Custom Add-on | Official Add-on |
+| :--- | :--- | :--- |
+| **Base Image** | **Alpine Linux** | Debian |
+| **Updates** | **Automated (Renovate)** | Manual |
+| **Release Speed** | **Fast** (Automated) | Slower |
+| **Size** | **Smaller** (Alpine) | Larger (Debian) |
+| **Database Libs** | MariaDB, PostgreSQL, SQLite (apk) | MariaDB, PostgreSQL, SQLite (apt) |
+| **Web Server** | Nginx (Alpine) | Nginx (Debian) |
+
 ## Documentation
 
 Please read the [documentation](DOCS.md) for installation and configuration instructions.
