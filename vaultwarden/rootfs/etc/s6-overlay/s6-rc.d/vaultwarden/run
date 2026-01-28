@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Disable strict mode to avoid unbound variable crashes
+set +u
+
+# Source bashio
+source /usr/lib/bashio/bashio.sh
+
+# ==============================================================================
+# Home Assistant Community Add-on: Vaultwarden
+# Initialization and Startup
+# ==============================================================================
+
+# Ensure data directory exists
+mkdir -p /data
+
+# Persist a random secret
+if [ ! -f "/data/rocket_secret" ]; then
+    openssl rand -base64 32 > /data/rocket_secret
+    chmod 600 /data/rocket_secret
+fi
+
+# Handle Admin Token
+if [ ! -f "/data/config.json" ] && [ ! -f "/data/admin_token" ]; then
+    openssl rand -base64 48 > /data/admin_token
+    chmod 600 /data/admin_token
+
+    admin_token=$(cat /data/admin_token)
+    bashio::log.info "-----------------------------------------------------------"
+    bashio::log.info "Your admin token has been generated and saved to /data/admin_token:"
+    bashio::log.info "${admin_token}"
+    bashio::log.info "-----------------------------------------------------------"
+fi
+
+if [ -f "/data/admin_token" ]; then
+    bashio::log.info "Admin token is configured and secured in /data/admin_token"
+fi
+
+bashio::log.info "Starting Vaultwarden..."
+
+# Environment variables
+export DATA_FOLDER=/data
+export WEB_VAULT_FOLDER=/opt/web-vault
+export WEBSOCKET_ENABLED=true
+export WEBSOCKET_ADDRESS=0.0.0.0
+export WEBSOCKET_PORT=3012
+export ROCKET_ADDRESS=0.0.0.0
+export ROCKET_PORT=7277
+
+# Set secret for sessions
+[ -f "/data/rocket_secret" ] && export ROCKET_SECRET_KEY=$(cat /data/rocket_secret)
+[ -f "/data/admin_token" ] && export ADMIN_TOKEN=$(cat /data/admin_token)
+
+# Log level handling
+log_level="info"
+if bashio::config.has_value 'log_level'; then
+    log_level=$(bashio::config 'log_level')
+fi
+export LOG_LEVEL="${log_level}"
+
+case "${log_level}" in
+    trace) export LVL="trace" ;;
+    debug) export LVL="debug" ;;
+    warning) export LVL="warn" ;;
+    error|fatal) export LVL="error" ;;
+    *) export LVL="info" ;;
+esac
+export RUST_LOG="vaultwarden=${LVL}"
+
+exec /opt/vaultwarden
