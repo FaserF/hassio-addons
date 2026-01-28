@@ -1,8 +1,8 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
 ###############################################################################
 # Get prebuild containers from Vaultwarden
 ###############################################################################
-FROM "vaultwarden/server:1.35.2" AS vaultwarden
+FROM "vaultwarden/server:1.35.2-alpine" AS vaultwarden
 
 ###############################################################################
 # Build the actual add-on.
@@ -22,20 +22,15 @@ COPY --from=vaultwarden /web-vault /opt/web-vault
 
 # add Nginx
 RUN \
-    apt-get update \
-    \
-    && apt-get install -y --no-install-recommends \
+    apk add --no-cache \
         curl \
         jq \
         dos2unix \
-        libmariadb-dev-compat \
-        libpq5 \
+        mariadb-connector-c \
+        libpq \
         nginx \
-        sqlite3 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f -r \
-        /etc/nginx \
+        sqlite \
+        openssl \
     \
     && mkdir -p /var/log/nginx \
     && touch /var/log/nginx/error.log
