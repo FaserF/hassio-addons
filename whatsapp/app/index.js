@@ -6,6 +6,7 @@ import {
   DisconnectReason,
   Browsers,
   delay,
+  downloadMediaMessage,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
@@ -13,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import http from 'http';
+import mime from 'mime-types';
 
 // --- Log Level ---
 const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
@@ -426,6 +428,33 @@ app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
 app.use('/logs', authMiddleware);
 
+// --- Media Support ---
+const MEDIA_DIR = path.join(process.cwd(), 'media');
+if (!fs.existsSync(MEDIA_DIR)) {
+  fs.mkdirSync(MEDIA_DIR, { recursive: true });
+}
+// Serve media files publicly (or protected if needed, but usually HA needs access)
+// We use a random token in the filename to provide obscure URLs instead of full auth complexity specific for HA
+app.use('/media', express.static(MEDIA_DIR));
+
+// Clean up old media files every hour (keep for 24h)
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000;
+  fs.readdir(MEDIA_DIR, (err, files) => {
+    if (err) return;
+    files.forEach((file) => {
+      const filePath = path.join(MEDIA_DIR, file);
+      fs.stat(filePath, (err, stats) => {
+        if (err) return;
+        if (now - stats.mtimeMs > maxAge) {
+          fs.unlink(filePath, () => { });
+        }
+      });
+    });
+  });
+}, 60 * 60 * 1000);
+
 // --- Store Initialization ---
 // Custom In-Memory Store to handle message retries
 const messageStore = new Map();
@@ -517,33 +546,113 @@ async function connectToWhatsApp() {
 
       const events = m.messages
         .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
-        .map((msg) => {
+        .map(async (msg) => {
           let text =
             msg.message?.conversation ||
             msg.message?.extendedTextMessage?.text ||
             msg.message?.buttonsResponseMessage?.selectedDisplayText ||
             msg.message?.templateButtonReplyMessage?.selectedId ||
-            'Media/Special Message';
+            '';
+
           const senderJid = msg.key.remoteJid;
           const senderNumber = senderJid.split('@')[0];
           const isGroup = senderJid.endsWith('@g.us');
+
+          // Check for media
+          const messageType = Object.keys(msg.message || {})[0];
+          let mediaUrl = null;
+          let mediaPath = null;
+          let mediaType = null;
+          let mimeType = null;
+          let caption = null;
+
+          const supportedMediaTypes = [
+            'imageMessage',
+            'videoMessage',
+            'audioMessage',
+            'documentMessage',
+            'stickerMessage',
+          ];
+
+          if (supportedMediaTypes.includes(messageType)) {
+            try {
+              const mediaContent = msg.message[messageType];
+              caption = mediaContent.caption || '';
+              text = text || caption || `[Media: ${messageType}]`;
+              mediaType = messageType.replace('Message', '');
+              mimeType = mediaContent.mimetype;
+
+              // Download media
+              const buffer = await downloadMediaMessage(
+                msg,
+                'buffer',
+                {},
+                {
+                  logger: logger.child({ module: 'media-dl' }),
+                  reuploadRequest: sock.updateMediaMessage,
+                }
+              );
+
+              if (buffer) {
+                const ext = mime.extension(mimeType) || 'bin';
+                const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+                const savePath = path.join(MEDIA_DIR, filename);
+
+                fs.writeFileSync(savePath, buffer);
+                mediaPath = savePath;
+
+                // Construct accessible URL
+                // Note: This relies on the container's hostname/IP visible to HA
+                // Since we don't know our own external IP easily, we provide a relative path
+                // that HA can reconstruct if they know the addon address or use the absolute path if mapped.
+                // Best effort: usage of relative path for webhook payload.
+                mediaUrl = `/media/${filename}`;
+              }
+            } catch (err) {
+              logger.error({ error: err.message }, 'Failed to download media');
+              text = `${text} (Media Download Failed)`;
+            }
+          }
+
+          if (!text && !mediaUrl) {
+            text = 'Unknown/Unsupported Message Type';
+          }
 
           // Update global stats with the latest message detail
           stats.last_received_message = maskData(text);
           stats.last_received_sender = maskData(senderNumber);
 
+          // Determine effective sender number (handle Groups and LIDs)
+          // For groups: remoteJid = group, participant = sender (phone JID typically)
+          // For 1:1 LID: remoteJid = LID, participant may be empty or phone JID
+          const participant = msg.key.participant || msg.participant;
+          let effectiveSenderJid = senderJid;
+
+          if (participant && typeof participant === 'string' && participant.includes('@s.whatsapp.net')) {
+            effectiveSenderJid = participant;
+          }
+
+          const senderNumber = effectiveSenderJid.split('@')[0];
+
           return {
             content: text,
-            sender: senderJid,
-            sender_number: senderNumber,
+            sender: senderJid, // origin (Group or User JID)
+            sender_number: senderNumber, // The actual user phone number (best effort)
             is_group: isGroup,
+            media_url: mediaUrl,
+            media_path: mediaPath,
+            media_type: mediaType,
+            media_mimetype: mimeType,
+            caption: caption,
             raw: msg, // Keep raw for power users
           };
         });
-      eventQueue.push(...events);
+
+      const resolvedEvents = await Promise.all(events);
+      eventQueue.push(...resolvedEvents);
 
       // --- Webhook Integration ---
-      for (const event of events) {
+      for (const event of resolvedEvents) {
         triggerWebhook(event);
 
         // --- Native Command Handling ---
@@ -1151,19 +1260,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1171,8 +1278,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
