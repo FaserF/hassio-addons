@@ -313,6 +313,31 @@ jobs:
           npm install -g prettier
           prettier --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
+      - name: 🧩 ESLint
+        continue-on-error: false # Fail on logic errors
+        run: |
+          # Find directory with package.json (root or app/)
+          LINT_DIR=""
+          if [ -f "./${{ matrix.addon }}/package.json" ]; then
+            LINT_DIR="./${{ matrix.addon }}"
+          elif [ -f "./${{ matrix.addon }}/app/package.json" ]; then
+            LINT_DIR="./${{ matrix.addon }}/app"
+          fi
+
+          if [ -n "$LINT_DIR" ]; then
+            echo "🔍 Running ESLint in $LINT_DIR"
+            cd "$LINT_DIR"
+            # Only run if lint script exists
+            if npm run | grep -q "lint"; then
+              npm install
+              npm run lint
+            else
+              echo "⏭️ No lint script found in package.json, skipping."
+            fi
+          else
+            echo "⏭️ No package.json found, skipping ESLint."
+          fi
+
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
         uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2
