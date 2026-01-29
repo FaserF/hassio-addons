@@ -47,8 +47,10 @@ COPY rootfs /
 # Set executable permissions and fix line endings for S6 structure
 RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
     && find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "down" \) -exec chmod +x {} + \
-    && find /etc/cont-init.d -type f -exec dos2unix {} + \
-    && find /etc/cont-init.d -type f -exec chmod +x {} +
+    && if [ -d "/etc/cont-init.d" ]; then \
+        find /etc/cont-init.d -type f -exec dos2unix {} + \
+        && find /etc/cont-init.d -type f -exec chmod +x {} +; \
+    fi
 
 # Build arguments
 ARG BUILD_ARCH
