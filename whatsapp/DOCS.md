@@ -91,7 +91,6 @@ ui_auth_password: ''
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 - `mark_online`: (Default: `false`) If set to `true`, the add-on will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 
-
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
 
