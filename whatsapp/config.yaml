@@ -23,6 +23,8 @@ options:
   webhook_token: ""
   ui_auth_enabled: false
   ui_auth_password: ""
+  mark_online: false
+
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_session: bool
@@ -34,6 +36,8 @@ schema:
   webhook_token: str?
   ui_auth_enabled: bool
   ui_auth_password: str?
+  mark_online: bool
+
 ports:
   8066/tcp: 8066
 hassio_api: true
