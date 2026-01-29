@@ -31,6 +31,8 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     jq \
     && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
     && apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     "php${PHP_V}-fpm" \
     "php${PHP_V}" \
     "php${PHP_V}-mysqli" \

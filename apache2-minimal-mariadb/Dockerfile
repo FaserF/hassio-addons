@@ -14,6 +14,9 @@ ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"
 
+# Set shell with pipefail for Alpine (busybox/ash)
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
@@ -24,6 +27,8 @@ RUN mkdir /run/apache2 \
     jq \
     && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
     && apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     "php${PHP_V}-apache2" \
     libxml2-dev \
     apache2-utils \
