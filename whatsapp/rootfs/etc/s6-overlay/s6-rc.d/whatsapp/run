@@ -74,6 +74,13 @@ if ! UI_AUTH_PASSWORD=$(bashio::config 'ui_auth_password') || [ -z "$UI_AUTH_PAS
 fi
 export UI_AUTH_PASSWORD
 
+# Mark Online (Default false)
+if bashio::config.true 'mark_online'; then
+    export MARK_ONLINE="true"
+else
+    export MARK_ONLINE="false"
+fi
+
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
 for path in "/config" "/homeassistant"; do

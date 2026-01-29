@@ -1,11 +1,11 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 
 # Define external images as build stages (fixes DL3022)
 # hadolint ignore=DL3007
 FROM coredns/coredns:1.14.1 AS coredns
 
 # hadolint ignore=DL3007
-FROM cloudflare/cloudflared:2026.1.1 AS cloudflared
+FROM cloudflare/cloudflared:2026.1.2 AS cloudflared
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -18,7 +18,7 @@ ENV CLOUDFLARED_VERSION="2025.11.1"
 # Setup CoreDNS and Cloudflared
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.0"
+ENV ADDON_VERSION="2.2.1"
 ENV ADDON_NAME="ShieldDNS"
 ENV ADDON_SLUG="shielddns"
 ENV ADDON_UNSUPPORTED="false"
@@ -28,7 +28,7 @@ COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl \
+RUN apk add --no-cache -u libssl3 libcrypto3 bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl \
     && mkdir -p /var/www/html /run/nginx /etc/services.d/shielddns
 
 # Copy Web Assets

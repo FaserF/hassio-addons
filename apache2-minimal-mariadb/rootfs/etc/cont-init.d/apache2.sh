@@ -18,7 +18,7 @@ default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 log_level=$(bashio::config 'log_level')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 # Map Bashio log_level to Apache log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal
@@ -56,28 +56,32 @@ fi
 
 rm -rf "$webrootdocker"
 
-if [ ! -d "$DocumentRoot" ]; then
-	echo "You haven't put your website to $DocumentRoot"
-	echo "Creating the folder for you."
-	mkdir -p "$DocumentRoot"
+if [ ! -d "$DocumentRoot" ] || [ -z "$(ls -A "$DocumentRoot")" ]; then
+	if [ ! -d "$DocumentRoot" ]; then
+		echo "You haven't put your website to $DocumentRoot"
+		echo "Creating the folder for you."
+		mkdir -p "$DocumentRoot"
+	fi
+	echo "A default website will now be used"
+	mkdir -p "$webrootdocker"
+	cp /index.html "$webrootdocker/index.html"
+else
+	# Create Shortcut to shared html folder
+	# Remove existing symlink or directory at target first
+	rm -rf /var/www/localhost/htdocs
+	mkdir -p /var/www/localhost
+	ln -s "$DocumentRoot" /var/www/localhost/htdocs
 fi
-
-# Create Shortcut to shared html folder
-# Remove existing symlink or directory at target first
-rm -rf /var/www/localhost/htdocs
-mkdir -p /var/www/localhost
-ln -s "$DocumentRoot" /var/www/localhost/htdocs
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} \;
+	find "$DocumentRoot" -type d -exec chmod 771 {} +
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		if ! id "$username" &>/dev/null; then
 			adduser "$username" -G www-data -D
 		fi
 		echo "$username:$password" | chpasswd
-		find "$DocumentRoot" -type d -exec chown "$username":www-data {} \;
-		find "$DocumentRoot" -type f -exec chown "$username":www-data {} \;
+		chown -R "$username":www-data "$DocumentRoot"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
 		if ! grep -q "^www-data:" /etc/group; then
@@ -86,8 +90,7 @@ if [ -d "$DocumentRoot" ]; then
 		if ! id www-data &>/dev/null; then
 			adduser -S -G www-data www-data
 		fi
-		find "$DocumentRoot" -type d -exec chown www-data:www-data {} \;
-		find "$DocumentRoot" -type f -exec chown www-data:www-data {} \;
+		chown -R www-data:www-data "$DocumentRoot"
 	fi
 fi
 
@@ -201,8 +204,6 @@ if [ "$default_ssl_conf" != "default" ]; then
 		exit 1
 	fi
 fi
-
-mkdir -p /usr/lib/php84/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"

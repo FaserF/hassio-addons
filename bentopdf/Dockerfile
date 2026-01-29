@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=bentopdf/bentopdf
 FROM bentopdf/bentopdf:v1.15.3 AS builder
@@ -13,12 +13,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.0"
+ENV ADDON_VERSION="1.1.1"
 ENV ADDON_NAME="BentoPDF"
 ENV ADDON_SLUG="bentopdf"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN    apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
         nginx \
         curl \
     && rm -f /etc/nginx/http.d/default.conf

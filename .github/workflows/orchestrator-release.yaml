@@ -111,6 +111,8 @@ jobs:
           DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           set -e
           ADDONS=""
@@ -123,7 +125,7 @@ jobs:
           # ----------------------------------------------------------------
           # MANUAL DISPATCH
           # ----------------------------------------------------------------
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "$EVENT_NAME" == "workflow_dispatch" ]; then
             IS_AUTO="false"
             VERSION_TYPE="${INPUT_VERSION:-patch}"
             TARGET_VERSION="${INPUT_CUSTOM_VERSION}"
@@ -256,7 +258,7 @@ jobs:
           # ----------------------------------------------------------------
           # REPOSITORY DISPATCH
           # ----------------------------------------------------------------
-          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+          elif [ "$EVENT_NAME" == "repository_dispatch" ]; then
             IS_AUTO="true"
             VERSION_TYPE="${DISPATCH_VERSION:-patch}"
 
@@ -268,7 +270,7 @@ jobs:
           # ----------------------------------------------------------------
           # MERGED PR (Auto-release)
           # ----------------------------------------------------------------
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+          elif [ "$EVENT_NAME" == "pull_request" ]; then
             IS_AUTO="true"
 
             # Check if PR was merged
@@ -284,7 +286,7 @@ jobs:
             fi
 
             # Check for blocking labels
-            CLEAN_BLOCK_LABELS=$(echo "${{ env.BLOCK_LABELS }}" | tr '\n' ' ')
+            CLEAN_BLOCK_LABELS=$(echo "$BLOCK_LABELS" | tr '\n' ' ')
             for label in $CLEAN_BLOCK_LABELS; do
               if echo "$PR_LABELS" | grep -qi "\"$label\""; then
                 echo "⛔ Found blocking label: $label"
@@ -303,7 +305,7 @@ jobs:
 
             # Check for safe labels
             HAS_SAFE="false"
-            CLEAN_SAFE_LABELS=$(echo "${{ env.SAFE_LABELS }}" | tr '\n' ' ')
+            CLEAN_SAFE_LABELS=$(echo "$SAFE_LABELS" | tr '\n' ' ')
             for label in $CLEAN_SAFE_LABELS; do
               if echo "$PR_LABELS" | grep -qi "\"$label\""; then
                 HAS_SAFE="true"
@@ -400,11 +402,11 @@ jobs:
               # Detect NEW Add-ons (config.yaml added)
               # ----------------------------------------------------------------
               echo "🔍 Checking for newly or modified add-ons..."
-              CLEAN_IGNORE_ADDONS="$(echo "${{ env.AUTO_RELEASE_IGNORE }}" | tr '\n' ' ')"
+              CLEAN_IGNORE_ADDONS="$(echo "$AUTO_RELEASE_IGNORE" | tr '\n' ' ')"
 
               # Loop through changed files to detect affected addons
               for file in $CHANGED; do
-                 # Skip .unsupported
+                 # Skip .unsupported (already handled at top level, but for safety in loop)
                  if [[ "$file" == .unsupported/* ]]; then
                     continue
                  fi
@@ -413,21 +415,32 @@ jobs:
                  if [[ "$file" =~ ^([^/]+)/ ]]; then
                     addon_dir="${BASH_REMATCH[1]}"
 
+                    # Skip hidden directories (like .github, .scripts), internal folders (_images), or docs
+                    if [[ "$addon_dir" == .* ]] || [[ "$addon_dir" == _* ]] || [[ "$addon_dir" == "docs" ]]; then
+                       continue
+                    fi
+
+                    # Skip if already identified as target
+                    if [[ ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                       continue
+                    fi
+
+                    # IMPORTANT: Verify it's actually an add-on directory by checking for config.yaml
+                    if [ ! -f "${addon_dir}/config.yaml" ]; then
+                       continue
+                    fi
+
                     # 1. Detect NEW addons (config.yaml added)
                     if [[ "$file" == "${addon_dir}/config.yaml" ]] && git diff --name-status HEAD^ HEAD | grep -qE "^A.*${file}"; then
                         echo "  🚀 Detected NEW add-on: $addon_dir"
-                        if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                           [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
-                        fi
+                        [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                        continue
                     fi
 
                     # 2. Detect updates for ALL addons (except ignored)
-                    # If any file changed, prepare it for release unless ignored
                     if [[ " $CLEAN_IGNORE_ADDONS " != *" $addon_dir "* ]]; then
-                       if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                          echo "  ✅ Added $addon_dir (Changed file: $file)"
-                          [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
-                       fi
+                       echo "  ✅ Added $addon_dir (Changed file: $file)"
+                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
                     else
                        echo "  ⏭️ Skipping ignored addon: $addon_dir"
                     fi
@@ -474,11 +487,11 @@ jobs:
           # ----------------------------------------------------------------
           # PUSH TO MASTER (Manual Version Bump Detection or release(all) trigger)
           # ----------------------------------------------------------------
-          elif [ "${{ github.event_name }}" == "push" ]; then
+          elif [ "$EVENT_NAME" == "push" ]; then
              IS_AUTO="false"
 
              # Check for "release(all)" in commit message
-             COMMIT_MSG="${github.event.head_commit.message}"
+             COMMIT_MSG="$HEAD_COMMIT_MSG"
              if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
                echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
                SKIP_ADDONS="homeassistant-test-instance sap-abap-cloud-dev"
@@ -768,7 +781,7 @@ jobs:
 
       - name: 🐋 Login to GitHub Container Registry
         if: matrix.addon != 'sap-abap-cloud-dev'
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -779,7 +792,7 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: 💾 Cache Docker layers (optimized for shared base image)
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
           path: /tmp/.buildx-cache-${{ matrix.addon }}
           # Primary key: addon-specific for precise cache hits

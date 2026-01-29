@@ -1,9 +1,9 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
 # Redeclare ARG after FROM for use in build stage
-ARG N8N_VERSION=2.4.6
+ARG N8N_VERSION=2.4.7
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -12,17 +12,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.3"
+ENV ADDON_VERSION="1.1.4"
 ENV ADDON_NAME="N8n"
 ENV ADDON_SLUG="n8n"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache --virtual .build-dependencies \
+ apk add --no-cache -u libssl3 libcrypto3 --virtual .build-dependencies \
         build-base \
         python3-dev \
     \
-    && apk add --no-cache \
+ && apk add --no-cache -u \
         curl \
         nodejs \
         npm \

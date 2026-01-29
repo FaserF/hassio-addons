@@ -1,6 +1,6 @@
 ---
 name: OpenSSL
-version: 2.2.1
+version: 2.3.0
 slug: openssl
 description: Generate self-signed certificates
 url: https://github.com/FaserF/hassio-addons/tree/master/openssl

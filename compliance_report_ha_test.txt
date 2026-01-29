@@ -1,0 +1,7 @@
+--- Compliance Report for homeassistant-test-instance ---
+
+  [WARN] Warnings:
+  - S6 Overlay not explicitly detected (checked for S6_ vars, s6-overlay string, or with-contenv)
+
+--------------------------------------------------
+

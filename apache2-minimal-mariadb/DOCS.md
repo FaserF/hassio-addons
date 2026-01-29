@@ -26,6 +26,21 @@ website_name: null
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
 - `/data`: Used internally by the add-on for persistent storage.
 
+<!-- PHP_INFO_START -->
+
+## 🐘 PHP Information
+
+**PHP Version**: 8.5
+
+**Available PHP Modules**:
+
+- curl
+- mbstring
+- mysqli
+- opcache
+- zip
+<!-- PHP_INFO_END -->
+
 ## Support
 
 For issues and feature requests, please use the GitHub repository issues.

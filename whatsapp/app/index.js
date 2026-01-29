@@ -140,6 +140,7 @@ if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
 
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
+const MARK_ONLINE = process.env.MARK_ONLINE === 'true';
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
@@ -147,6 +148,8 @@ logger.info(`🔒 Mask Sensitive Data: ${MASK_SENSITIVE_DATA ? 'ENABLED' : 'DISA
 logger.info(
   `🔗 Webhook: ${WEBHOOK_ENABLED ? 'ENABLED' : 'DISABLED'} ${WEBHOOK_URL ? `(${WEBHOOK_URL})` : ''}`
 );
+logger.info(`🌐 Mark Online on Connect: ${MARK_ONLINE ? 'ENABLED' : 'DISABLED'}`);
+
 if (UI_AUTH_ENABLED) {
   logger.info('🔒 UI Authentication: ENABLED');
 } else {
@@ -425,6 +428,35 @@ app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
 app.use('/logs', authMiddleware);
 
+// --- Media Support ---
+const MEDIA_DIR = path.join(process.cwd(), 'media');
+if (!fs.existsSync(MEDIA_DIR)) {
+  fs.mkdirSync(MEDIA_DIR, { recursive: true });
+}
+// Serve media files publicly (or protected if needed, but usually HA needs access)
+// We use a random token in the filename to provide obscure URLs instead of full auth complexity specific for HA
+app.use('/media', express.static(MEDIA_DIR));
+
+// Clean up old media files every hour (keep for 24h)
+setInterval(
+  () => {
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000;
+    fs.readdir(MEDIA_DIR, (err, files) => {
+      if (err) return;
+      files.forEach((file) => {
+        const filePath = path.join(MEDIA_DIR, file);
+        fs.stat(filePath, (err, stats) => {
+          if (err) return;
+          if (now - stats.mtimeMs > maxAge) {
+            fs.unlink(filePath, () => { });
+          }
+        });
+      });
+    });
+  },
+  60 * 60 * 1000
+);
 // --- Store Initialization ---
 // Custom In-Memory Store to handle message retries
 const messageStore = new Map();
@@ -449,7 +481,8 @@ async function connectToWhatsApp() {
     logger: logger.child({ module: 'baileys' }, { level: 'warn' }), // Use child logger, suppress Baileys noise
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
-    markOnlineOnConnect: true,
+    markOnlineOnConnect: MARK_ONLINE,
+
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
@@ -522,19 +555,99 @@ async function connectToWhatsApp() {
             msg.message?.extendedTextMessage?.text ||
             msg.message?.buttonsResponseMessage?.selectedDisplayText ||
             msg.message?.templateButtonReplyMessage?.selectedId ||
-            'Media/Special Message';
-          const senderJid = msg.key.remoteJid;
-          const senderNumber = senderJid.split('@')[0];
+            '';
+
+          // Check for alternative JID (useful when primary is LID but we want Phone JID)
+          const remoteJidAlt = msg.key.remoteJidAlt;
+
+          if (senderJid.endsWith('@lid') && remoteJidAlt && remoteJidAlt.endsWith('@s.whatsapp.net')) {
+            // Swap them: Use Phone JID as primary sender for HA compatibility
+            senderJid = remoteJidAlt;
+          }
+
+          let senderNumber = senderJid.split('@')[0];
           const isGroup = senderJid.endsWith('@g.us');
 
+          // Check for media
+          const messageType = Object.keys(msg.message || {})[0];
+          let mediaUrl = null;
+          let mediaPath = null;
+          let mediaType = null;
+          let mimeType = null;
+          let caption = null;
+
+          const supportedMediaTypes = [
+            'imageMessage',
+            'videoMessage',
+            'audioMessage',
+            'documentMessage',
+            'stickerMessage',
+          ];
+
+          if (supportedMediaTypes.includes(messageType)) {
+            try {
+              const mediaContent = msg.message[messageType];
+              caption = mediaContent.caption || '';
+              text = text || caption || `[Media: ${messageType}]`;
+              mediaType = messageType.replace('Message', '');
+              mimeType = mediaContent.mimetype;
+
+              // Download media
+              const buffer = await downloadMediaMessage(
+                msg,
+                'buffer',
+                {},
+                {
+                  logger: logger.child({ module: 'media-dl' }),
+                  reuploadRequest: sock.updateMediaMessage,
+                }
+              );
+
+              if (buffer) {
+                const ext = mime.extension(mimeType) || 'bin';
+                const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+                const savePath = path.join(MEDIA_DIR, filename);
+
+                fs.writeFileSync(savePath, buffer);
+                mediaPath = savePath;
+
+                // Construct accessible URL
+                mediaUrl = `/media/${filename}`;
+              }
+            } catch (err) {
+              logger.error({ error: err.message }, 'Failed to download media');
+              text = `${text} (Media Download Failed)`;
+            }
+          }
+
+          if (!text && !mediaUrl) {
+            text = 'Unknown/Unsupported Message Type';
+          }
           // Update global stats with the latest message detail
           stats.last_received_message = maskData(text);
           stats.last_received_sender = maskData(senderNumber);
 
+          // Determine effective sender number (handle Groups and LIDs)
+          // For groups: remoteJid = group, participant = sender (phone JID typically)
+          // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
+          const participant = msg.key.participant || msg.participant;
+          let effectiveSenderJid = senderJid;
+
+          if (
+            participant &&
+            typeof participant === 'string' &&
+            participant.includes('@s.whatsapp.net')
+          ) {
+            effectiveSenderJid = participant;
+          }
+
+          senderNumber = effectiveSenderJid.split('@')[0];
+
           return {
             content: text,
-            sender: senderJid,
-            sender_number: senderNumber,
+            sender: senderJid, // origin (Group or Phone JID, preferred over LID)
+            sender_number: senderNumber, // The actual user phone number (best effort)
+            sender_lid: msg.key.remoteJid.endsWith('@lid') ? msg.key.remoteJid : undefined, // Expose raw LID if available
             is_group: isGroup,
             raw: msg, // Keep raw for power users
           };

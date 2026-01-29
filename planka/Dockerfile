@@ -11,13 +11,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3013
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.0"
+ENV ADDON_VERSION="1.1.1"
 ENV ADDON_NAME="Planka"
 ENV ADDON_SLUG="planka"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \
         npm \
         python3 \
@@ -28,7 +28,7 @@ RUN \
         curl \
         su-exec \
         openssl \
-    && pip3 install --no-cache-dir --break-system-packages setuptools==80.9.0
+    && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
 WORKDIR /opt/planka

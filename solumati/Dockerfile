@@ -14,13 +14,13 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.0"
+ENV ADDON_VERSION="2.2.1"
 ENV ADDON_NAME="Solumati"
 ENV ADDON_SLUG="solumati"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add --no-cache -u libssl3 libcrypto3 \
     nodejs \
     npm \
     postgresql \
@@ -43,7 +43,7 @@ ARG SOLUMATI_SHA256="fd5be5ca00e1f00a6205f15517f5fb3bad15ac7183e51ae5a8fdae2cab3
 WORKDIR /tmp
 RUN mkdir src && \
     curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
-    echo "${SOLUMATI_SHA256}  solumati.tar.gz" | sha256sum -c - && \
+    echo "${SOLUMATI_SHA256} solumati.tar.gz" | sha256sum -c - && \
     tar xzf solumati.tar.gz -C src --strip-components=1 && \
     rm solumati.tar.gz
 

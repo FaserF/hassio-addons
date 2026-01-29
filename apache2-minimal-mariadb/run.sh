@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-
+	local NAME="Apache2 Minimal with MariaDB Client"
 	local SLUG="apache2-minimal-mariadb"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -186,7 +186,7 @@ password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."

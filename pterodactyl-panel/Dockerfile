@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
@@ -9,12 +9,12 @@ FROM ${BUILD_FROM} as base
 ENV PTERODACTYL_VERSION="v1.12.0"
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.0"
+ENV ADDON_VERSION="1.1.1"
 ENV ADDON_NAME="pterodactyl Panel Gameserver"
 ENV ADDON_SLUG="pterodactyl_panel"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     redis \
     curl \
     gettext \
@@ -55,14 +55,14 @@ FROM base as build
 WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
 # hadolint ignore=DL3018
-RUN apk add --no-cache \
+    # Safe Composer installation \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     yarn \
     git \
     && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch "release/${PTERODACTYL_VERSION}" \
     && rm -rf .git \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \
-    # Safe Composer installation \
     && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
     && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm /tmp/composer-setup.php \
@@ -71,7 +71,7 @@ RUN apk add --no-cache \
     && chown -R nginx:nginx . \
     && yarn install --production \
     && yarn add cross-env \
-    && export NODE_OPTIONS=--openssl-legacy-provider \
+    && export NODE_OPTIONS \
     && yarn run build:production \
     && rm -rf node_modules
 

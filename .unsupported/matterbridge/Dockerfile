@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS builder
 
@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
-RUN apk --no-cache add wget go tar
+RUN apk --no-cache -u add libssl3 libcrypto3 wget go tar
 # Version and checksum must be updated together
 # Find checksums at: https://github.com/42wim/matterbridge/releases
 ARG MATTERBRIDGE_VERSION="v1.26.0"
@@ -15,10 +15,10 @@ ARG MATTERBRIDGE_SHA256="00e1bbfe3b32f2feccf9a7f13a6f12b1ce28a5eb04cc7b922b344e3
 
 WORKDIR /matterbridge
 RUN wget -qO /tmp/matterbridge.tar.gz https://github.com/42wim/matterbridge/archive/refs/tags/${MATTERBRIDGE_VERSION}.tar.gz \
-  && echo "${MATTERBRIDGE_SHA256}  /tmp/matterbridge.tar.gz" | sha256sum -c - \
-  && tar xzf /tmp/matterbridge.tar.gz --strip-components=1 \
+  && echo "${MATTERBRIDGE_SHA256} /tmp/matterbridge.tar.gz" | sha256sum -c - \
+  && tar xzf /tmp/matterbridge.tar.gz --strip-components \
   && rm /tmp/matterbridge.tar.gz \
-  && CGO_ENABLED=0 go build -tags whatsappmulti -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=${MATTERBRIDGE_VERSION}" -o /bin/matterbridge
+  && CGO_ENABLED go build -tags whatsappmulti -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=${MATTERBRIDGE_VERSION}" -o /bin/matterbridge
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -26,7 +26,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 ARG MATTERBRIDGE_VERSION
 ENV MATTERBRIDGE_VERSION=${MATTERBRIDGE_VERSION}
 # hadolint ignore=DL3018
-RUN apk --no-cache add ca-certificates mailcap
+RUN apk --no-cache -u add libssl3 libcrypto3 ca-certificates mailcap
 
 COPY --from=builder /bin/matterbridge /bin/matterbridge
 RUN mkdir /etc/matterbridge \

@@ -1,7 +1,7 @@
 ARG HA_VERSION=2026.1.3
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
-FROM ghcr.io/hassio-addons/base:19.0.0 AS addon-base
+FROM ghcr.io/hassio-addons/base:20.0.1 AS addon-base
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -19,7 +19,7 @@ ENV ADDON_NAME="Home Assistant Test Instance"
 ENV ADDON_SLUG="ha_test_instance"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
     jq \

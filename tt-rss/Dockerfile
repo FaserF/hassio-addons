@@ -5,13 +5,13 @@ FROM $BUILD_FROM
 # hadolint ignore=DL3003
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.0"
+ENV ADDON_VERSION="1.1.1"
 ENV ADDON_NAME="Tiny Tiny RSS"
 ENV ADDON_SLUG="tt-rss"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+    apk add libssl3 libcrypto3 --no-cache -u \
         nginx \
         postgresql \
         postgresql-contrib \
@@ -47,9 +47,9 @@ RUN \
         git \
         openssl \
     \
-    && ln -s /usr/bin/php84 /usr/bin/php \
+    && ln -sf /usr/bin/php84 /usr/bin/php \
     \
-    && git clone --depth=1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
+    && git clone --depth 1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
     \
     && rm -rf /var/www/tt-rss/.git
 

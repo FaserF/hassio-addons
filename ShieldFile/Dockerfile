@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=filebrowser/filebrowser
 FROM filebrowser/filebrowser:v2.56.0 AS filebrowser
@@ -18,12 +18,12 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # hadolint ignore=DL3018,DL4006
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.3"
+ENV ADDON_VERSION="2.2.4"
 ENV ADDON_NAME="ShieldFile"
 ENV ADDON_SLUG="shieldfile"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache curl bash dos2unix openssl nginx \
+RUN apk add --no-cache -u libssl3 libcrypto3 curl bash dos2unix openssl nginx \
     && mkdir -p /data/database
 
 COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser

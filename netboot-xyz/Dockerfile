@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -14,14 +14,14 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.1"
+ENV ADDON_VERSION="2.2.2"
 ENV ADDON_NAME="Netboot.xyz"
 ENV ADDON_SLUG="netboot-xyz"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
   echo "**** install runtime packages ****" && \
-  apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
     dnsmasq \
@@ -30,11 +30,11 @@ RUN \
     procps \
     tftp-hpa && \
   echo "**** install build packages ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    npm && \
+ apk add --no-cache --virtual \
+    build-dependencies npm && \
   echo "**** install WebApp version ${NETBOOTXYZ_VERSION} ****" && \
   curl -o /tmp/webapp.tar.gz -L https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz && \
-  echo "${NETBOOTXYZ_SHA256}  /tmp/webapp.tar.gz" | sha256sum -c - && \
+  echo "${NETBOOTXYZ_SHA256} /tmp/webapp.tar.gz" | sha256sum -c - && \
   mkdir -p /app/ && tar xf /tmp/webapp.tar.gz -C \
     /app/ --strip-components=1 && \
   npm install --prefix /app && \

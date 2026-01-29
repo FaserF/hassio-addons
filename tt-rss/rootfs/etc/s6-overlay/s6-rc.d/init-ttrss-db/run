@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/usr/bin/with-contenv bashio
 
 # Wait for PostgreSQL to be ready
 bashio::log.info "Waiting for PostgreSQL to be ready..."

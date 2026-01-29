@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
 # Note: This uses Wiki.js V3 Beta/Alpha - Renovate tracks ARG WIKIJS_VERSION
 ARG WIKIJS_VERSION=3.0.0-alpha.413
@@ -14,14 +14,14 @@ ARG BUILD_DATE="unknown"
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.5.1"
+ENV ADDON_VERSION="0.5.2"
 ENV ADDON_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV ADDON_SLUG="wiki.js3"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
+    --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --repository https://dl-cdn.alpinelinux.org/alpine/edge/community \
     nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec git openssh-client pandoc \
     && mkdir -p /var/lib/postgresql/data /run/postgresql \
     && chown -R postgres:postgres /var/lib/postgresql /run/postgresql

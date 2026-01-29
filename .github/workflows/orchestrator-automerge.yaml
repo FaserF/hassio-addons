@@ -14,9 +14,8 @@ jobs:
   enable-auto-merge:
     name: 🤖 Enable Auto-Merge
     runs-on: ubuntu-latest
-    # Only run if CI succeeded and not from a fork
-    # Actor check and PR detection moved to steps for better reliability
-    if: github.event.workflow_run.conclusion == 'success'
+    # Job runs on both success and failure to provide feedback
+    # Only merges if CI succeeded (checked in steps)
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -93,6 +92,19 @@ jobs:
             echo "found=true"
           } >> "$GITHUB_OUTPUT"
 
+      - name: ❌ Report CI Failure
+        if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+        run: |
+          echo "CI failed. Minimizing previous comments..."
+          bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
+
+          echo "Posting comment and exiting..."
+          gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge skipped:** The associated CI run ([#${{ github.event.workflow_run.run_number }}](${{ github.event.workflow_run.html_url }})) did not complete successfully. Please resolve all CI issues to trigger auto-merge."
+          exit 0
+
       - name: 🚫 Skip if no PR found
         if: steps.find-pr.outputs.found != 'true'
         run: |
@@ -116,6 +128,7 @@ jobs:
           else
             echo "⏭️ Author '$AUTHOR' is not in auto-merge list. Skipping."
             echo "allowed=false" >> "$GITHUB_OUTPUT"
+            bash .github/scripts/minimize-comments.sh "${{ steps.find-pr.outputs.pr_number }}" "Auto-merge" || true
             gh issue comment "${{ steps.find-pr.outputs.pr_number }}" --body "⏭️ **Auto-merge skipped:** Author '$AUTHOR' is not in the allowed list for automated merging."
           fi
 
@@ -125,6 +138,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_ID: ${{ github.event.workflow_run.id }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
           echo "Checking if actual CI jobs ran in workflow run $RUN_ID..."
 
@@ -190,6 +204,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI jobs failed."
             exit 1
 
@@ -212,6 +227,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
              # Post comment and fail
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** All verification jobs were skipped."
             exit 1
           else
@@ -249,6 +265,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Inform user
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "ℹ️ **Auto-merge skipped:** New commits were detected on the PR."
             exit 0 # Exit 0 here might be okay as new CI will trigger another run, but let's be consistent. Keeping 0 is safer to avoid noise.
           fi
@@ -290,6 +307,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail workflow for visibility
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI workflows are still running."
             exit 1
           fi
@@ -302,6 +320,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail workflow
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI validation failed."
             exit 1
           fi
@@ -335,6 +354,7 @@ jobs:
           if echo "$labels" | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
             echo "skip=true" >> "$GITHUB_OUTPUT"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "🛑 **Auto-merge cancelled:** 'no-merge' label detected on the PR."
             exit 0
           else
@@ -376,6 +396,16 @@ jobs:
           script: |
             const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
             if (isNaN(prNumber)) return;
+
+            try {
+              // Minimize previous comments via script is hard in JS action context without exec
+              // But we can rely on the fact that if we got here, previous steps didn't fail/exit
+              // Actually, we should minimize here too to clean up previous "skipped" messages
+              const exec = require('@actions/exec');
+              await exec.exec('bash', ['.github/scripts/minimize-comments.sh', String(prNumber), 'Auto-merge']);
+            } catch (error) {
+              console.log('Failed to minimize comments: ' + error.message);
+            }
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,

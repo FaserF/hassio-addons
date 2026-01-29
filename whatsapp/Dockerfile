@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -10,13 +10,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.0.5"
+ENV ADDON_VERSION="1.2.1"
 ENV ADDON_NAME="WhatsApp"
 ENV ADDON_SLUG="whatsapp"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \
         npm \
         git \
@@ -31,7 +31,7 @@ COPY . .
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
 # hadolint ignore=DL3018
     RUN \
-    apk add --no-cache dos2unix~=7.5 && \
+ apk add --no-cache "dos2unix~=7.5" && \
     if [ -d "rootfs" ]; then \
         cp -rv rootfs/* /; \
         # Fix potential Windows CRLF in s6 scripts

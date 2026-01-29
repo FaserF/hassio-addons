@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
@@ -6,12 +6,12 @@ ARG BUILD_DATE="unknown"
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.0"
+ENV ADDON_VERSION="2.2.1"
 ENV ADDON_NAME="Bash Script Executer"
 ENV ADDON_SLUG="bashscriptexecuter"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash procps
+RUN apk --no-cache -u add libssl3 libcrypto3 busybox-extras curl grep coreutils sed xmlstarlet bash procps
 
 # Copy data for add-on
 COPY run.sh /

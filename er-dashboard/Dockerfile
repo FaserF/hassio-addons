@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 
 # Stage 1: Get Frontend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/frontend
@@ -16,16 +16,18 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
+# Setup base system
+
 # hadolint ignore=DL3008,DL3013,DL3018,DL3042
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.0"
+ENV ADDON_VERSION="1.2.1"
 ENV ADDON_NAME="ER-Startseite (Dashboard)"
 ENV ADDON_SLUG="er-dashboard"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache -u \
+ apk add --no-cache -u libssl3 libcrypto3 \
         curl \
         nginx \
         openssl \
@@ -37,7 +39,7 @@ RUN \
         py3-greenlet \
         su-exec \
     \
-    && pip3 install --no-cache-dir --upgrade pip==25.3
+    && pip3 install --no-cache-dir --upgrade pip
 
 # Copy Frontend
 COPY --from=frontend /usr/share/nginx/html /app/dist

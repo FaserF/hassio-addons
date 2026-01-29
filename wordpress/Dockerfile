@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -12,13 +12,13 @@ ARG WORDPRESS_VERSION="6.8"
 # hadolint ignore=DL3018,DL3003
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.0"
+ENV ADDON_VERSION="0.2.1"
 ENV ADDON_NAME="Wordpress"
 ENV ADDON_SLUG="wordpress"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
         nginx \
         mariadb-client \
         openssl \

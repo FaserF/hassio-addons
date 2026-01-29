@@ -15,7 +15,7 @@ _show_startup_banner() {
 	if [ -z "$VERSION" ]; then
 		VERSION="unknown"
 	fi
-
+	local NAME="Apache2"
 	local SLUG="apache2"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
@@ -184,7 +184,7 @@ password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 if [ "$phpini" = "get_file" ]; then
 	cp "$phppath" /share/apache2addon_php.ini
@@ -344,7 +344,7 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
-mkdir -p /usr/lib/php84/modules/opcache
+mkdir -p /usr/lib/php85/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"

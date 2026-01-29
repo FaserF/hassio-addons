@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -7,14 +7,14 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.2.0"
+ENV ADDON_VERSION="3.2.1"
 ENV ADDON_NAME="Apache2 Minimal"
 ENV ADDON_SLUG="apache2-minimal"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN mkdir /run/apache2 \
-    && apk --no-cache add \
-        apache2 \
+ && apk --no-cache add libcrypto3 libssl3 \
+    apache2 \
         libxml2-dev \
         apache2-utils \
         apache2-mod-wsgi \

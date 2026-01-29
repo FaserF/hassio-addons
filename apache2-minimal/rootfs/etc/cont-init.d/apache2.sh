@@ -57,9 +57,11 @@ fi
 
 rm -rf -- "$webrootdocker"
 
-if [ ! -d "$document_root" ]; then
-	echo "You haven't put your website to $document_root"
-	echo "DEBUGGING: $certfile $website_name $ssl"
+if [ ! -d "$document_root" ] || [ -z "$(ls -A "$document_root")" ]; then
+	if [ ! -d "$document_root" ]; then
+		echo "You haven't put your website to $document_root"
+		mkdir -p "$document_root"
+	fi
 	echo "A default website will now be used"
 	mkdir -p "$webrootdocker"
 	cp /index.html "$webrootdocker"

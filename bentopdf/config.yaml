@@ -1,5 +1,5 @@
 name: BentoPDF
-version: "1.1.1"
+version: "1.2.0"
 slug: bentopdf
 image: ghcr.io/faserf/hassio-addons-bentopdf-{arch}
 description: Self-hosted, privacy-first PDF toolkit

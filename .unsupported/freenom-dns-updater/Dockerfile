@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
@@ -11,8 +11,8 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 #WORKDIR /opt/freenom_dns_updater
 # hadolint ignore=DL3018,DL3013,DL3042
 
-RUN apk add --no-cache zlib openssl-dev binutils python3 py3-pip && \
-    pip install --no-cache-dir freenom-dns-updater==1.2.9
+RUN apk add --no-cache -u libssl3 libcrypto3 zlib openssl-dev binutils python3 py3-pip && \
+    pip install --no-cache-dir freenom-dns-updater
 #RUN rm -rf /opt/freenom_dns_updater
 
 # Copy data for add-on

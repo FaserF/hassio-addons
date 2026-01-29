@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
@@ -12,7 +12,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG XQREPACK_RELEASE="v1.1"
 
 # hadolint ignore=DL3018,DL3013,DL3042
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     wget lzo-dev mtd-utils-ubi squashfs-tools fakeroot make g++ coreutils python3 python3-dev py3-pip && \
     python3 -m venv $VIRTUAL_ENV && \
     pip install --no-cache-dir python-lzo ubi_reader && \

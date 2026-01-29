@@ -15,12 +15,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.0"
+ENV ADDON_VERSION="2.2.1"
 ENV ADDON_NAME="Tado Auto Assist"
 ENV ADDON_SLUG="tado_aa"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache curl
+RUN apk add libssl3 libcrypto3 --no-cache -u curl
 
 # Download and patch tado_aa.py to use environment variables
 # Latest commit from adrianslabu/tado_aa (archived repo)

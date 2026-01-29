@@ -34,7 +34,7 @@ if grep -i -q "^LogLevel " /etc/apache2/httpd.conf 2>/dev/null; then
 else
 	echo "LogLevel ${apache_log_level}" >>/etc/apache2/httpd.conf
 fi
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 if [ "$phpini" = "get_file" ]; then
 	cp "$phppath" /share/apache2addon_php.ini
@@ -63,10 +63,13 @@ fi
 
 rm -r "$webrootdocker"
 
-if [ ! -d "$DocumentRoot" ]; then
-	echo "You haven't put your website to $DocumentRoot"
+if [ ! -d "$DocumentRoot" ] || [ -z "$(ls -A "$DocumentRoot")" ]; then
+	if [ ! -d "$DocumentRoot" ]; then
+		echo "You haven't put your website to $DocumentRoot"
+		mkdir -p "$DocumentRoot"
+	fi
 	echo "A default website will now be used"
-	mkdir "$webrootdocker"
+	mkdir -p "$webrootdocker"
 	cp /index.html "$webrootdocker"
 else
 	#Create Shortcut to shared html folder
@@ -75,7 +78,7 @@ fi
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} \;
+	find "$DocumentRoot" -type d -exec chmod 771 {} +
 	if [ -n "$username" ] && [ -n "$password" ] && [ ! "$username" = "null" ] && [ ! "$password" = "null" ]; then
 		if ! id "$username" &>/dev/null; then
 			adduser -S "$username" -G www-data
@@ -211,8 +214,6 @@ if [ "$default_ssl_conf" != "default" ]; then
 		exit 1
 	fi
 fi
-
-mkdir /usr/lib/php84/modules/opcache
 
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"

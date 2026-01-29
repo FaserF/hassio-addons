@@ -128,7 +128,12 @@ def clean_existing_content(content):
                 continue
 
             # Detect Logo
-            if "![Logo]" in sline or "logo.png" in sline or "icon.png" in sline:
+            if (
+                "![Logo]" in sline
+                or "logo.png" in sline
+                or "icon.png" in sline
+                or "<img src=" in sline
+            ):
                 continue
 
             # Detect Quotes/Description (Common at top)
@@ -176,7 +181,7 @@ def clean_existing_content(content):
                 or "my.home-assistant.io" in sline
             ):
                 continue
-            if "![Logo]" in sline or "logo.png" in sline:
+            if "![Logo]" in sline or "logo.png" in sline or "<img src=" in sline:
                 continue
 
             # Filter headers that we RE-ADD (Duplicates)
@@ -293,9 +298,13 @@ def process_addon(addon_path):
 
     # 4. Construct New README
 
+    # Detect relative path for absolute raw URL
+    rel_path = os.path.relpath(addon_path, base_path).replace("\\", "/")
+    raw_logo_url = f"https://raw.githubusercontent.com/{MAINTAINER}/hassio-addons/master/{rel_path}/logo.png"
+
     # Header
     new_content = f"# {name}\n\n"
-    new_content += "![Logo](logo.png)\n\n"
+    new_content += f'<img src="{raw_logo_url}" width="100" />\n\n'
     new_content += generate_badges(slug, name, addon_path) + "\n\n"
     new_content += f"> {description}\n\n"
     new_content += "---\n\n"

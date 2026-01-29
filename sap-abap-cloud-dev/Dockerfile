@@ -22,7 +22,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # critical here as the SAP runtime is already pinned via the base image.
 
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.1.0"
+ENV ADDON_VERSION="0.1.1"
 ENV ADDON_NAME="SAP ABAP Cloud Developer Trial"
 ENV ADDON_SLUG="sap-abap-cloud-dev"
 ENV ADDON_UNSUPPORTED="false"

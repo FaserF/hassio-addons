@@ -1,7 +1,7 @@
 # WhatsApp Documentation
 
 > [!TIP]
-> **Rocket.Chat & Webhook Support**: Did you know? You can bridge WhatsApp to **Rocket.Chat** or use **Webhooks** for custom integrations. See the **[Rocket.Chat Guide](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)** and **[Webhook Guide](https://faserf.github.io/ha-whatsapp/docs/webhooks/)** for more.
+> **Rocket.Chat & Webhook Support**: Did you know? You can bridge WhatsApp to **Rocket.Chat** or use **Webhooks** for custom integrations. See the **[Rocket.Chat Guide](https://faserf.github.io/ha-whatsapp/rocketchat.html)** and **[Webhook Guide](https://faserf.github.io/ha-whatsapp/webhooks.html)** for more.
 
 ---
 
@@ -61,10 +61,10 @@ To enable password protection for the Web UI:
 
 Once the addon and integration are configured, check out the following resources to start building:
 
-- [Installation](https://faserf.github.io/ha-whatsapp/docs/installation/)
-- [Automations](https://faserf.github.io/ha-whatsapp/docs/automations/)
-- [Rocket.Chat Integration](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)
-- [API Reference](https://faserf.github.io/ha-whatsapp/docs/SERVICES/)
+- [Installation](https://faserf.github.io/ha-whatsapp/installation.html)
+- [Automations](https://faserf.github.io/ha-whatsapp/automations.html)
+- [Rocket.Chat Integration](https://faserf.github.io/ha-whatsapp/rocketchat.html)
+- [API Reference](https://faserf.github.io/ha-whatsapp/SERVICES.html)
 
 ## ⚙️ Configuration
 
@@ -89,6 +89,7 @@ ui_auth_password: ''
 - `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
+- `mark_online`: (Default: `false`) If set to `true`, the add-on will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
@@ -125,7 +126,7 @@ You can configure this add-on to forward all incoming messages to a webhook URL.
 - `webhook_token`: (Optional) A secret token sent in the `X-Webhook-Token` header.
 
 **Payload Format:**
-The webhook will receive a JSON payload for every incoming message. See [Webhook Guide](https://faserf.github.io/ha-whatsapp/docs/webhooks/) for details.
+The webhook will receive a JSON payload for every incoming message. See [Webhook Guide](https://faserf.github.io/ha-whatsapp/webhooks.html) for details.
 
 ## 🚀 Rocket.Chat Support
 
@@ -137,4 +138,4 @@ This add-on can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps
 2. Configure the App settings in Rocket.Chat with your Add-on URL and API Token.
 3. Enable Webhooks in this Add-on and point them to your Rocket.Chat instance.
 
-See the full **[Rocket.Chat Integration Guide](https://faserf.github.io/ha-whatsapp/docs/rocketchat/)** for step-by-step instructions.
+See the full **[Rocket.Chat Integration Guide](https://faserf.github.io/ha-whatsapp/rocketchat.html)** for step-by-step instructions.

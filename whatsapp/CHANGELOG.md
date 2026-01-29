@@ -1,5 +1,68 @@
 # Changelog
 
+## 1.2.2 (2026-01-29)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency globals to v17 [skip-tests] (#620) [skip-tests] ([`dd8268fa`](https://github.com/FaserF/hassio-addons/commit/dd8268fa9ef57754a337889a65121019ce94e281))
+
+### 🚀 Other
+
+- Fix notification marked as read wrongly ([`47fd27c5`](https://github.com/FaserF/hassio-addons/commit/47fd27c5e3974f8078812e5f2b1e79b873c39ae9))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+## 1.2.1 (2026-01-29)
+
+### 🚀 Other
+
+- startup hotfix #612 ([`7308f907`](https://github.com/FaserF/hassio-addons/commit/7308f9072c909e4b94eeaca049992cc8181ecf22))
+
+## 1.2.0 (2026-01-29)
+
+### 📦 Dependencies
+
+- fix addon startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v20 [skip-tests] (#616) ([`09e8340b`](https://github.com/FaserF/hassio-addons/commit/09e8340b06c4263037fab6cf6d90fc913c7f99d5))
+
+### 📝 Documentation
+
+- Readme improvements ([`8a12ebd4`](https://github.com/FaserF/hassio-addons/commit/8a12ebd40149adb39f056b7dc3e10f1dd02853cb))
+
+### 🚀 Other
+
+- fix crash on startup #612 ([`4adf7948`](https://github.com/FaserF/hassio-addons/commit/4adf7948df868a37885e3701cdb3620184624b8f))
+
+## 1.1.1 (2026-01-28)
+
+### 🚀 Other
+
+- add support for media download ([`e621eb57`](https://github.com/FaserF/hassio-addons/commit/e621eb57766925c548e0a8b9cf293560456de2ea))
+
+### 📌 Release Note
+
+- trigger event parameter improvements
+
+## 1.1.0 (2026-01-28)
+
+### ✨ Features
+
+- add contact send support ([`005c344e`](https://github.com/FaserF/hassio-addons/commit/005c344ea2009213eaf0118bf1e1dfc2d299665d))
+- add native commands ([`194e5c7b`](https://github.com/FaserF/hassio-addons/commit/194e5c7b4b2cebefeceef66731ab977646ac5168))
+- add list message support ([`7f7ab731`](https://github.com/FaserF/hassio-addons/commit/7f7ab731e774ab62c22c3742cf9f01a1c7302d85))
+- add dynamic webhook handling ([`3f19c158`](https://github.com/FaserF/hassio-addons/commit/3f19c1580ebfd8a227ba7f1a2652854f6cd22eed))
+- add delete and edit message support ([`8e0d56d5`](https://github.com/FaserF/hassio-addons/commit/8e0d56d504e98c1cf12de504a0cd27c87e7c4a68))
+- new feat: send documents, video, audio ([`b95c0352`](https://github.com/FaserF/hassio-addons/commit/b95c03523daf8ee80e746e38f9ea99601bfc8a19))
+
+### 📦 Dependencies
+
+- Update index.js ([`b0b08871`](https://github.com/FaserF/hassio-addons/commit/b0b088710726663649dc7c40621308625f3a262e))
+
+### 📌 Release Note
+
+- Many new features implemented & docs improved
+
+
 ## 1.0.5 (2026-01-27)
 
 ### 📦 Dependencies

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:19.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 ARG WIKIJS_VERSION=2.5.311
 FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
@@ -17,7 +17,7 @@ ENV ADDON_NAME="Wiki.JS"
 ENV ADDON_SLUG="wiki.js"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
+RUN apk add --no-cache -u libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
@@ -25,7 +25,7 @@ COPY --from=wiki_release /wiki .
 # Rebuild dependencies for aarch64 compatibility
 ARG TARGETARCH
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-        apk add --no-cache --virtual .build-deps build-base python3 && \
+ apk add --no-cache -u libssl3 libcrypto3 --virtual .build-deps build-base python3 && \
         rm -rf node_modules && \
         yarn install --production && \
         yarn cache clean && \

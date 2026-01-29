@@ -13,7 +13,7 @@ _show_startup_banner() {
     if [ -z "$VERSION" ]; then
         VERSION="unknown"
     fi
-
+    local NAME="NGINX"
     local SLUG="nginx"
     local UNSUPPORTED="false"
     local MAINTAINER="FaserF"
@@ -163,6 +163,8 @@ if type bashio::log.blue &>/dev/null 2>&1; then
 fi
 
 # </ADDON_BANNER_INJECTION>
+
+
 
 
 
