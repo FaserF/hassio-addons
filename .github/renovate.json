@@ -305,8 +305,7 @@
         "ghcr.io/hassio-addons/debian-base",
         "ghcr.io/hassio-addons/base-python"
       ],
-      "automerge": true,
-      "ignoreTests": true
+      "automerge": true
     },
     {
       "groupName": "Development Tools",
