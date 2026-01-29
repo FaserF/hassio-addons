@@ -13,14 +13,16 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3047
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.0"
-ENV ADDON_NAME="NGINX"
-ENV ADDON_SLUG="nginx"
-ENV ADDON_UNSUPPORTED="false"
 
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
+
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.2.1"
+ENV ADDON_NAME="NGINX"
+ENV ADDON_SLUG="nginx"
+ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
 # hadolint ignore=DL3018,DL3003
