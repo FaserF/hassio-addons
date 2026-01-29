@@ -3,12 +3,13 @@
 ## 1.2.2 (2026-01-29)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency globals to v17 [skip-tests] (#620) [skip-tests] ([`dd8268fa`](https://github.com/FaserF/hassio-addons/commit/dd8268fa9ef57754a337889a65121019ce94e281))
 
 ### 🚀 Other
+
 - Fix notification marked as read wrongly ([`47fd27c5`](https://github.com/FaserF/hassio-addons/commit/47fd27c5e3974f8078812e5f2b1e79b873c39ae9))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 1.2.1 (2026-01-29)
 
