@@ -1,7 +1,7 @@
 {
-  "name": "FaserF's Home Assistant Add-ons",
-  "url": "https://github.com/faserf/hassio-addons",
-  "maintainer": "FaserF",
+  "name": "FaserF's Unsupported Add-ons",
+  "url": "https://github.com/FaserF/hassio-addons/tree/unsupported",
+  "maintainer": "FaserF (Archive)",
   "channels": {
     "stable": {
       "name": "Stable",

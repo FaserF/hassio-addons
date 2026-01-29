@@ -1,9 +1,0 @@
-configuration:
-  server:
-    name: Server
-    description: "The server configuration."
-  network:
-    name: Network
-    description: "Network configuration."
-network:
-  8123/tcp: Web Interface

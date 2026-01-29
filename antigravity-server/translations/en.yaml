@@ -1,7 +1,0 @@
-configuration:
-  vnc_password:
-    name: "VNC Password"
-    description: "Optional password for VNC access. If empty, a random password is generated."
-  log_level:
-    name: "Log Level"
-    description: "Controls the verbosity of the logs (default is 'info')."

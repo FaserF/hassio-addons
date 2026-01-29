@@ -1,8 +1,0 @@
----
-configuration:
-  agree_to_license:
-    name: SAP-Lizenz akzeptieren
-    description: Sie müssen den SAP-Lizenzbedingungen zustimmen und die volle Verantwortung für Ihre Nutzung übernehmen
-  ignore_requirements:
-    name: Anforderungen ignorieren
-    description: Empfohlene Systemanforderungen umgehen (Minimum 4 CPUs, 8GB RAM, 50GB Speicher)

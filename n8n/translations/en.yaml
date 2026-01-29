@@ -1,5 +1,0 @@
----
-configuration:
-  log_level:
-    name: Log Level
-    description: The log level for N8n output.
