@@ -95,6 +95,8 @@ export XDG_CONFIG_DIRS=/etc/xdg:/etc/xfce4
 # Start clipboard sync (Primary -> Clipboard and vice versa)
 autocutsel -fork
 autocutsel -selection PRIMARY -fork
+# Bridge VNC clipboard to X11
+vncconfig -nowin &
 exec dbus-launch --exit-with-session startxfce4
 EOF
 
@@ -126,7 +128,7 @@ Type=Application
 Name=Antigravity
 # --no-sandbox is required because the desktop session runs as root.
 # Electron applications (like VS Code/Antigravity) refuse to run as root without this flag.
-Exec=antigravity --kiosk --no-sandbox --user-data-dir=/data/antigravity_server/antigravity --log ${ANTIGRAVITY_LOG_LEVEL}
+Exec=antigravity --kiosk --no-sandbox --test-type --disable-dev-shm-usage --user-data-dir=/data/antigravity_server/antigravity --log ${ANTIGRAVITY_LOG_LEVEL}
 StartupNotify=false
 Terminal=false
 Hidden=false

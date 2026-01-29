@@ -98,7 +98,7 @@ RUN \
     # Symlink fdfind to fd
     && ln -s "$(which fdfind)" /usr/local/bin/fd \
     # Create a wrapper for Chrome to run with --no-sandbox
-    && printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome \
+    && printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox --test-type --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome \
     && chmod +x /usr/local/bin/google-chrome \
     && ln -s /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable
 
