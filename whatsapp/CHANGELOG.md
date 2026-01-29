@@ -3,8 +3,8 @@
 ## 1.2.1 (2026-01-29)
 
 ### 🚀 Other
-- startup hotfix #612 ([`7308f907`](https://github.com/FaserF/hassio-addons/commit/7308f9072c909e4b94eeaca049992cc8181ecf22))
 
+- startup hotfix #612 ([`7308f907`](https://github.com/FaserF/hassio-addons/commit/7308f9072c909e4b94eeaca049992cc8181ecf22))
 
 ## 1.2.0 (2026-01-29)
 
