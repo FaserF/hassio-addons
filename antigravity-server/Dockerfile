@@ -59,7 +59,9 @@ RUN \
         nginx \
         fonts-noto \
         fonts-noto-color-emoji \
+        autocutsel \
         # Python
+
         python3 \
         python3-pip \
         python3-numpy \
@@ -94,9 +96,10 @@ RUN \
     # Symlink fdfind to fd
     && ln -s "$(which fdfind)" /usr/local/bin/fd \
     # Create a wrapper for Chrome to run with --no-sandbox
-    && printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox "$@"' > /usr/local/bin/google-chrome \
+    && printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome \
     && chmod +x /usr/local/bin/google-chrome \
     && ln -s /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable
+
 
 # Setup NoVNC
 RUN ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html

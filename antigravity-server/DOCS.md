@@ -11,7 +11,17 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ```yaml
 log_level: info
 vnc_password: ''
+autostart_antigravity: true
 ```
+
+- `log_level`: Level of logs to output.
+- `vnc_password`: (Optional) Set a custom password for VNC access (max 8 characters).
+- `autostart_antigravity`: (Default: `true`) If set to `true`, the Antigravity IDE will start automatically when the desktop session begins.
+
+## 📋 Features
+
+- **Google Chrome**: Pre-installed and configured as the default browser with first-run screens suppressed.
+- **Clipboard Sync**: Host-to-browser clipboard synchronization is enabled via `autocutsel`. Use the NoVNC sidebar to access the clipboard if direct sync isn't supported by your browser.
 
 ## 📂 Folder Usage
 
