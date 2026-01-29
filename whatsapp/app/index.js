@@ -450,7 +450,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => { });
+            fs.unlink(filePath, () => {});
           }
         });
       });
@@ -561,7 +561,14 @@ async function connectToWhatsApp() {
           msg.message?.templateButtonReplyMessage?.selectedId ||
           '';
 
-        let senderJid = msg.key.remoteJid;
+          if (
+            senderJid.endsWith('@lid') &&
+            remoteJidAlt &&
+            remoteJidAlt.endsWith('@s.whatsapp.net')
+          ) {
+            // Swap them: Use Phone JID as primary sender for HA compatibility
+            senderJid = remoteJidAlt;
+          }
 
         // Check for alternative JID (useful when primary is LID but we want Phone JID)
         const remoteJidAlt = msg.key.remoteJidAlt;
@@ -1312,17 +1319,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1330,8 +1339,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
