@@ -26,7 +26,7 @@ RUN mkdir /run/apache2 \
     apache2 \
     curl \
     jq \
-    && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
+    && PHP_V=$(echo "${PHP_VERSION}" | cut -d. -f1-2 | tr -d '.') \
     && apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \

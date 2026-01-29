@@ -305,6 +305,7 @@
       "matchDepNames": [
         "php/php-src"
       ],
+      "extractVersion": "^php-(?<version>\\d+\\.\\d+)",
       "postUpgradeTasks": {
         "commands": [
           "python3 .scripts/update_php_info.py"
