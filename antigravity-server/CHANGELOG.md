@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 (2026-01-29)
+
+### 🚀 Other
+- New Antigravity pre-configure options ([`a40709da`](https://github.com/FaserF/hassio-addons/commit/a40709da23373da7e0f02b34f15f9615ccf11ab1))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 1.2.0 (2026-01-29)
 
 ### 📦 Dependencies
