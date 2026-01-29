@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=bentopdf/bentopdf
 FROM bentopdf/bentopdf:v1.15.3 AS builder
