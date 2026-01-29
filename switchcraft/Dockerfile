@@ -7,6 +7,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup application directory
 
+
+
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.1.0"
 ENV ADDON_NAME="SwitchCraft"
