@@ -1,5 +1,5 @@
 name: "WhatsApp"
-version: "1.1.1"
+version: "1.2.0"
 slug: "whatsapp"
 image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
 description: "Home Assistant WhatsApp Backend (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed)."
