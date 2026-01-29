@@ -1,7 +1,6 @@
-name: "ER-Startseite (Dashboard)"
-version: "1.2.1"
+name: "ER-Startseite (Dashboard) (Edge)"
+version: "1.2.2-dev-8a12ebd"
 slug: er-dashboard
-image: ghcr.io/faserf/hassio-addons-er-dashboard-{arch}
 description: "A modern, highly customizable dashboard with a neon aesthetic."
 url: "https://github.com/Eidolf/ER-Startseite"
 arch:
