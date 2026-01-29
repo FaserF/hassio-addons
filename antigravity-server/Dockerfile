@@ -100,7 +100,6 @@ RUN \
     && chmod +x /usr/local/bin/google-chrome \
     && ln -s /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable
 
-
 # Setup NoVNC
 RUN ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
 

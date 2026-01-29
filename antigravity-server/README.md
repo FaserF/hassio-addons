@@ -47,6 +47,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 ### Options
 
 ```yaml
+autostart_antigravity: true
 log_level: info
 vnc_password: ''
 ```
