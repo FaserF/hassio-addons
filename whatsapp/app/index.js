@@ -452,7 +452,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => {});
+            fs.unlink(filePath, () => { });
           }
         });
       });
@@ -561,7 +561,14 @@ async function connectToWhatsApp() {
             msg.message?.templateButtonReplyMessage?.selectedId ||
             '';
 
-          const senderJid = msg.key.remoteJid;
+          // Check for alternative JID (useful when primary is LID but we want Phone JID)
+          const remoteJidAlt = msg.key.remoteJidAlt;
+
+          if (senderJid.endsWith('@lid') && remoteJidAlt && remoteJidAlt.endsWith('@s.whatsapp.net')) {
+            // Swap them: Use Phone JID as primary sender for HA compatibility
+            senderJid = remoteJidAlt;
+          }
+
           let senderNumber = senderJid.split('@')[0];
           const isGroup = senderJid.endsWith('@g.us');
 
@@ -609,10 +616,6 @@ async function connectToWhatsApp() {
                 mediaPath = savePath;
 
                 // Construct accessible URL
-                // Note: This relies on the container's hostname/IP visible to HA
-                // Since we don't know our own external IP easily, we provide a relative path
-                // that HA can reconstruct if they know the addon address or use the absolute path if mapped.
-                // Best effort: usage of relative path for webhook payload.
                 mediaUrl = `/media/${filename}`;
               }
             } catch (err) {
@@ -631,7 +634,7 @@ async function connectToWhatsApp() {
 
           // Determine effective sender number (handle Groups and LIDs)
           // For groups: remoteJid = group, participant = sender (phone JID typically)
-          // For 1:1 LID: remoteJid = LID, participant may be empty or phone JID
+          // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
           const participant = msg.key.participant || msg.participant;
           let effectiveSenderJid = senderJid;
 
@@ -647,8 +650,9 @@ async function connectToWhatsApp() {
 
           return {
             content: text,
-            sender: senderJid, // origin (Group or User JID)
+            sender: senderJid, // origin (Group or Phone JID, preferred over LID)
             sender_number: senderNumber, // The actual user phone number (best effort)
+            sender_lid: msg.key.remoteJid.endsWith('@lid') ? msg.key.remoteJid : undefined, // Expose raw LID if available
             is_group: isGroup,
             media_url: mediaUrl,
             media_path: mediaPath,
@@ -1271,19 +1275,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1291,8 +1293,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
