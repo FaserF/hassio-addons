@@ -302,7 +302,7 @@
       "customType": "regex",
       "description": "Track Vaultwarden version in Dockerfile (FROM vaultwarden/server:X.X.X)",
       "managerFilePatterns": [
-        "/vaultwarden/Dockerfile$"
+        "/vaultwarden/Dockerfile$/"
       ],
       "matchStrings": [
         "FROM [\"']?vaultwarden/server:(?<currentValue>[^\"']+)[\"']?"
@@ -502,7 +502,7 @@
         "minor",
         "patch"
       ],
-      "matchUnstable": false,
+      "ignoreUnstable": true,
       "automerge": true
     }
   ]

@@ -1,12 +1,13 @@
 import express from 'express';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
-import {
-  makeWASocket,
+makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
   delay,
+  downloadMediaMessage,
 } from '@whiskeysockets/baileys';
+import mime from 'mime-types';
 import pino from 'pino';
 import QRCode from 'qrcode';
 import fs from 'fs';
@@ -547,113 +548,122 @@ async function connectToWhatsApp() {
     if (m.messages && m.messages.length > 0) {
       stats.received += m.messages.length;
 
-      const events = m.messages
-        .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
-        .map((msg) => {
-          let text =
-            msg.message?.conversation ||
-            msg.message?.extendedTextMessage?.text ||
-            msg.message?.buttonsResponseMessage?.selectedDisplayText ||
-            msg.message?.templateButtonReplyMessage?.selectedId ||
-            '';
+      const events = [];
+      const messagesToProcess = m.messages.filter(
+        (msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast'
+      );
 
-          let senderJid = msg.key.remoteJid;
+      for (const msg of messagesToProcess) {
+        let text =
+          msg.message?.conversation ||
+          msg.message?.extendedTextMessage?.text ||
+          msg.message?.buttonsResponseMessage?.selectedDisplayText ||
+          msg.message?.templateButtonReplyMessage?.selectedId ||
+          '';
 
-          // Check for alternative JID (useful when primary is LID but we want Phone JID)
-          const remoteJidAlt = msg.key.remoteJidAlt;
+        let senderJid = msg.key.remoteJid;
 
-          if (senderJid.endsWith('@lid') && remoteJidAlt && remoteJidAlt.endsWith('@s.whatsapp.net')) {
-            // Swap them: Use Phone JID as primary sender for HA compatibility
-            senderJid = remoteJidAlt;
-          }
+        // Check for alternative JID (useful when primary is LID but we want Phone JID)
+        const remoteJidAlt = msg.key.remoteJidAlt;
 
-          let senderNumber = senderJid.split('@')[0];
-          const isGroup = senderJid.endsWith('@g.us');
+        if (
+          senderJid.endsWith('@lid') &&
+          remoteJidAlt &&
+          remoteJidAlt.endsWith('@s.whatsapp.net')
+        ) {
+          // Swap them: Use Phone JID as primary sender for HA compatibility
+          senderJid = remoteJidAlt;
+        }
 
-          // Check for media
-          const messageType = Object.keys(msg.message || {})[0];
-          let mediaUrl = null;
-          let mediaPath = null;
-          let mediaType = null;
-          let mimeType = null;
-          let caption = null;
+        let senderNumber = senderJid.split('@')[0];
+        const isGroup = senderJid.endsWith('@g.us');
 
-          const supportedMediaTypes = [
-            'imageMessage',
-            'videoMessage',
-            'audioMessage',
-            'documentMessage',
-            'stickerMessage',
-          ];
+        // Check for media
+        const messageType = Object.keys(msg.message || {})[0];
+        let mediaUrl = null;
+        let mediaPath = null;
+        let mediaType = null;
+        let mimeType = null;
+        let caption = null;
 
-          if (supportedMediaTypes.includes(messageType)) {
-            try {
-              const mediaContent = msg.message[messageType];
-              caption = mediaContent.caption || '';
-              text = text || caption || `[Media: ${messageType}]`;
-              mediaType = messageType.replace('Message', '');
-              mimeType = mediaContent.mimetype;
+        const supportedMediaTypes = [
+          'imageMessage',
+          'videoMessage',
+          'audioMessage',
+          'documentMessage',
+          'stickerMessage',
+        ];
 
-              // Download media
-              const buffer = await downloadMediaMessage(
-                msg,
-                'buffer',
-                {},
-                {
-                  logger: logger.child({ module: 'media-dl' }),
-                  reuploadRequest: sock.updateMediaMessage,
-                }
-              );
+        if (supportedMediaTypes.includes(messageType)) {
+          try {
+            const mediaContent = msg.message[messageType];
+            caption = mediaContent.caption || '';
+            text = text || caption || `[Media: ${messageType}]`;
+            mediaType = messageType.replace('Message', '');
+            mimeType = mediaContent.mimetype;
 
-              if (buffer) {
-                const ext = mime.extension(mimeType) || 'bin';
-                const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
-                const savePath = path.join(MEDIA_DIR, filename);
-
-                fs.writeFileSync(savePath, buffer);
-                mediaPath = savePath;
-
-                // Construct accessible URL
-                mediaUrl = `/media/${filename}`;
+            // Download media
+            const buffer = await downloadMediaMessage(
+              msg,
+              'buffer',
+              {},
+              {
+                logger: logger.child({ module: 'media-dl' }),
+                reuploadRequest: sock.updateMediaMessage,
               }
-            } catch (err) {
-              logger.error({ error: err.message }, 'Failed to download media');
-              text = `${text} (Media Download Failed)`;
+            );
+
+            if (buffer) {
+              const ext = mime.extension(mimeType) || 'bin';
+              const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+              const savePath = path.join(MEDIA_DIR, filename);
+
+              fs.writeFileSync(savePath, buffer);
+              mediaPath = savePath;
+
+              // Construct accessible URL
+              mediaUrl = `/media/${filename}`;
             }
+          } catch (err) {
+            logger.error({ error: err.message }, 'Failed to download media');
+            text = `${text} (Media Download Failed)`;
           }
+        }
 
-          if (!text && !mediaUrl) {
-            text = 'Unknown/Unsupported Message Type';
-          }
-          // Update global stats with the latest message detail
-          stats.last_received_message = maskData(text);
-          stats.last_received_sender = maskData(senderNumber);
+        if (!text && !mediaUrl) {
+          text = 'Unknown/Unsupported Message Type';
+        }
+        // Update global stats with the latest message detail
+        stats.last_received_message = maskData(text);
+        stats.last_received_sender = maskData(senderNumber);
 
-          // Determine effective sender number (handle Groups and LIDs)
-          // For groups: remoteJid = group, participant = sender (phone JID typically)
-          // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
-          const participant = msg.key.participant || msg.participant;
-          let effectiveSenderJid = senderJid;
+        // Determine effective sender number (handle Groups and LIDs)
+        // For groups: remoteJid = group, participant = sender (phone JID typically)
+        // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
+        const participant = msg.key.participant || msg.participant;
+        let effectiveSenderJid = senderJid;
 
-          if (
-            participant &&
-            typeof participant === 'string' &&
-            participant.includes('@s.whatsapp.net')
-          ) {
-            effectiveSenderJid = participant;
-          }
+        if (
+          participant &&
+          typeof participant === 'string' &&
+          participant.includes('@s.whatsapp.net')
+        ) {
+          effectiveSenderJid = participant;
+        }
 
-          senderNumber = effectiveSenderJid.split('@')[0];
+        senderNumber = effectiveSenderJid.split('@')[0];
 
-          return {
-            content: text,
-            sender: senderJid, // origin (Group or Phone JID, preferred over LID)
-            sender_number: senderNumber, // The actual user phone number (best effort)
-            sender_lid: msg.key.remoteJid.endsWith('@lid') ? msg.key.remoteJid : undefined, // Expose raw LID if available
-            is_group: isGroup,
-            raw: msg, // Keep raw for power users
-          };
+        events.push({
+          content: text,
+          sender: senderJid, // origin (Group or Phone JID, preferred over LID)
+          sender_number: senderNumber, // The actual user phone number (best effort)
+          sender_lid: msg.key.remoteJid.endsWith('@lid')
+            ? msg.key.remoteJid
+            : undefined, // Expose raw LID if available
+          is_group: isGroup,
+          raw: msg, // Keep raw for power users
         });
+      }
       eventQueue.push(...events);
 
       // --- Webhook Integration ---
