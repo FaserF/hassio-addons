@@ -70,14 +70,13 @@ ln -s "$DocumentRoot" /var/www/localhost/htdocs
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} \;
+	find "$DocumentRoot" -type d -exec chmod 771 {} +
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
 		if ! id "$username" &>/dev/null; then
 			adduser "$username" -G www-data -D
 		fi
 		echo "$username:$password" | chpasswd
-		find "$DocumentRoot" -type d -exec chown "$username":www-data {} \;
-		find "$DocumentRoot" -type f -exec chown "$username":www-data {} \;
+		chown -R "$username":www-data "$DocumentRoot"
 	else
 		echo "No username and/or password was provided. Skipping account set up."
 		if ! grep -q "^www-data:" /etc/group; then
@@ -86,8 +85,7 @@ if [ -d "$DocumentRoot" ]; then
 		if ! id www-data &>/dev/null; then
 			adduser -S -G www-data www-data
 		fi
-		find "$DocumentRoot" -type d -exec chown www-data:www-data {} \;
-		find "$DocumentRoot" -type f -exec chown www-data:www-data {} \;
+		chown -R www-data:www-data "$DocumentRoot"
 	fi
 fi
 

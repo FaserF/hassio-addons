@@ -193,15 +193,15 @@ jobs:
               echo "Copying $addon to local addons..."
               cp -r "./$addon" "/tmp/ha-data/addons/local/"
 
-              # Strip 'image' key to force local build
-              # The CI passes the folder to Supervisor, but if 'image' exists in config,
-              # Supervisor tries to pull it from GHCR (which fails for new/local versions).
-              # Removing it forces Supervisor to build from local Dockerfile.
-              DEST_DIR="/tmp/ha-data/addons/local/$(basename "$addon")"
-              if [ -f "$DEST_DIR/config.yaml" ]; then
-                echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
-                sed -i '/^\s*image:/d' "$DEST_DIR/config.yaml"
-              fi
+                # Strip 'image' key to force local build
+                # Use tr to remove potential carriage returns from CRLF files
+                DEST_DIR="/tmp/ha-data/addons/local/$(basename "$addon")"
+                if [ -f "$DEST_DIR/config.yaml" ]; then
+                  echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
+                  # Robust line removal that handles CRLF
+                  sed -i '/^[[:space:]]*image:/d' "$DEST_DIR/config.yaml"
+                  tr -d '\r' < "$DEST_DIR/config.yaml" > "$DEST_DIR/config.yaml.tmp" && mv "$DEST_DIR/config.yaml.tmp" "$DEST_DIR/config.yaml"
+                fi
 
               # Remap common ports that might conflict in CI (Pterodactyl Wings)
               if [ -f "$DEST_DIR/config.yaml" ]; then
@@ -365,7 +365,8 @@ jobs:
             fi
 
             # Extract slug using grep/sed (avoids yq dependency)
-            SLUG_VAL=$(grep "^slug:" "$CONFIG_FILE" | head -n 1 | cut -d':' -f2 | tr -d ' "' | xargs)
+            # tr -d '\r' is critical for files with CRLF line endings
+            SLUG_VAL=$(grep "^slug:" "$CONFIG_FILE" | head -n 1 | cut -d':' -f2 | tr -d ' "' | tr -d '\r' | xargs)
             if [ -z "$SLUG_VAL" ]; then
               SLUG_VAL="$addon"
             fi
@@ -376,11 +377,11 @@ jobs:
             echo "Refreshing add-on store..."
             docker exec ha-supervisor-test ha addons reload || true
             echo "Waiting for supervisor to scan add-ons..."
-            sleep 10
+            sleep 15
 
-            # Check supervisor logs for any validation errors
-            echo "Checking supervisor logs for errors..."
-            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -50 | grep -iE "(error|warn|$addon|$SLUG)" || echo "No relevant errors found in logs"
+            # Check supervisor logs for discovery errors
+            echo "Checking supervisor logs for discovery/validation errors..."
+            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|warn|validation|failed to load|invalid|$addon|$SLUG)" || echo "No discovery errors found in logs"
 
             # Verify add-on is detected
             echo "Checking if add-on is detected..."
@@ -481,8 +482,9 @@ jobs:
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
                 # Create the update script if it doesn't exist
+                # Create it in /tmp/ha-data/ to avoid breaking add-on discovery in /addons/local/
                 # shellcheck disable=SC2016
-                cat << 'EOF' > /tmp/ha-data/addons/local/update_config.sh
+                cat << 'EOF' > /tmp/ha-data/update_config.sh
           #!/bin/sh
           slug="$1"
           opts="$2"
@@ -494,7 +496,7 @@ jobs:
             .user[$slug].options = $opts
           ' "$file" > "$tmp" && mv "$tmp" "$file"
           EOF
-                docker exec ha-supervisor-test sh /mnt/supervisor/addons/local/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
+                docker exec ha-supervisor-test sh /mnt/supervisor/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
               fi
 
               # Start add-on
