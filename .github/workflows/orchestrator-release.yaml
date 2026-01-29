@@ -404,7 +404,7 @@ jobs:
 
               # Loop through changed files to detect affected addons
               for file in $CHANGED; do
-                 # Skip .unsupported
+                 # Skip .unsupported (already handled at top level, but for safety in loop)
                  if [[ "$file" == .unsupported/* ]]; then
                     continue
                  fi
@@ -413,21 +413,32 @@ jobs:
                  if [[ "$file" =~ ^([^/]+)/ ]]; then
                     addon_dir="${BASH_REMATCH[1]}"
 
+                    # Skip hidden directories (like .github, .scripts), internal folders (_images), or docs
+                    if [[ "$addon_dir" == .* ]] || [[ "$addon_dir" == _* ]] || [[ "$addon_dir" == "docs" ]]; then
+                       continue
+                    fi
+
+                    # Skip if already identified as target
+                    if [[ ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                       continue
+                    fi
+
+                    # IMPORTANT: Verify it's actually an add-on directory by checking for config.yaml
+                    if [ ! -f "${addon_dir}/config.yaml" ]; then
+                       continue
+                    fi
+
                     # 1. Detect NEW addons (config.yaml added)
                     if [[ "$file" == "${addon_dir}/config.yaml" ]] && git diff --name-status HEAD^ HEAD | grep -qE "^A.*${file}"; then
                         echo "  🚀 Detected NEW add-on: $addon_dir"
-                        if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                           [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
-                        fi
+                        [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                        continue
                     fi
 
                     # 2. Detect updates for ALL addons (except ignored)
-                    # If any file changed, prepare it for release unless ignored
                     if [[ " $CLEAN_IGNORE_ADDONS " != *" $addon_dir "* ]]; then
-                       if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                          echo "  ✅ Added $addon_dir (Changed file: $file)"
-                          [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
-                       fi
+                       echo "  ✅ Added $addon_dir (Changed file: $file)"
+                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
                     else
                        echo "  ⏭️ Skipping ignored addon: $addon_dir"
                     fi
