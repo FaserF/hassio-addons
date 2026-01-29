@@ -10,8 +10,10 @@ ENV ADDON_NAME="pterodactyl Wings Gameserver"
 ENV ADDON_SLUG="pterodactyl_wings"
 ENV ADDON_UNSUPPORTED="false"
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.2.0"
+ENV ADDON_VERSION="2.2.1"
 ENV ADDON_NAME="pterodactyl Wings Gameserver"
 ENV ADDON_SLUG="pterodactyl_wings"
 ENV ADDON_UNSUPPORTED="false"
