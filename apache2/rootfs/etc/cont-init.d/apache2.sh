@@ -63,10 +63,13 @@ fi
 
 rm -r "$webrootdocker"
 
-if [ ! -d "$DocumentRoot" ]; then
-	echo "You haven't put your website to $DocumentRoot"
+if [ ! -d "$DocumentRoot" ] || [ -z "$(ls -A "$DocumentRoot")" ]; then
+	if [ ! -d "$DocumentRoot" ]; then
+		echo "You haven't put your website to $DocumentRoot"
+		mkdir -p "$DocumentRoot"
+	fi
 	echo "A default website will now be used"
-	mkdir "$webrootdocker"
+	mkdir -p "$webrootdocker"
 	cp /index.html "$webrootdocker"
 else
 	#Create Shortcut to shared html folder

@@ -1,6 +1,6 @@
 # SwitchCraft
 
-![Logo](logo.png)
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/switchcraft/logo.png" width="100" />
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_switchcraft)
 [![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)

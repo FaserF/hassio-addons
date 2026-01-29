@@ -56,17 +56,22 @@ fi
 
 rm -rf "$webrootdocker"
 
-if [ ! -d "$DocumentRoot" ]; then
-	echo "You haven't put your website to $DocumentRoot"
-	echo "Creating the folder for you."
-	mkdir -p "$DocumentRoot"
+if [ ! -d "$DocumentRoot" ] || [ -z "$(ls -A "$DocumentRoot")" ]; then
+	if [ ! -d "$DocumentRoot" ]; then
+		echo "You haven't put your website to $DocumentRoot"
+		echo "Creating the folder for you."
+		mkdir -p "$DocumentRoot"
+	fi
+	echo "A default website will now be used"
+	mkdir -p "$webrootdocker"
+	cp /index.html "$webrootdocker/index.html"
+else
+	# Create Shortcut to shared html folder
+	# Remove existing symlink or directory at target first
+	rm -rf /var/www/localhost/htdocs
+	mkdir -p /var/www/localhost
+	ln -s "$DocumentRoot" /var/www/localhost/htdocs
 fi
-
-# Create Shortcut to shared html folder
-# Remove existing symlink or directory at target first
-rm -rf /var/www/localhost/htdocs
-mkdir -p /var/www/localhost
-ln -s "$DocumentRoot" /var/www/localhost/htdocs
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
