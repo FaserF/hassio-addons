@@ -186,7 +186,7 @@ password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."

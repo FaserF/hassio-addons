@@ -274,6 +274,18 @@
     },
     {
       "customType": "regex",
+      "description": "Track PHP version in Dockerfiles",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\nARG PHP_VERSION=\"(?<currentValue>.*)\""
+      ],
+      "extractVersionTemplate": "^(?<version>\\d+\\.\\d+)",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)$"
+    },
+    {
+      "customType": "regex",
       "description": "Track Paperless-ngx version in Dockerfile and build.yaml",
       "managerFilePatterns": [
         "/(^|/)Dockerfile$/",
@@ -288,6 +300,21 @@
     }
   ],
   "packageRules": [
+    {
+      "description": "PHP Version Update - update docs",
+      "matchDepNames": [
+        "php/php-src"
+      ],
+      "postUpgradeTasks": {
+        "commands": [
+          "python3 .scripts/update_php_info.py"
+        ],
+        "fileFilters": [
+          "**/DOCS.md"
+        ],
+        "executionMode": "branch"
+      }
+    },
     {
       "matchManagers": [
         "github-actions"

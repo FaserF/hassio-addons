@@ -34,7 +34,7 @@ if grep -i -q "^LogLevel " /etc/apache2/httpd.conf 2>/dev/null; then
 else
 	echo "LogLevel ${apache_log_level}" >>/etc/apache2/httpd.conf
 fi
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 if [ "$phpini" = "get_file" ]; then
 	cp "$phppath" /share/apache2addon_php.ini

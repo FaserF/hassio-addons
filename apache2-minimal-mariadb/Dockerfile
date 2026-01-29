@@ -14,22 +14,27 @@ ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"
 
+# renovate: datasource=github-releases depName=php/php-src
+ARG PHP_VERSION="8.5"
+
 RUN mkdir /run/apache2 \
  && apk --no-cache -u add libcrypto3 libssl3 \
     apache2 \
     curl \
     jq \
-    php84-apache2 \
+    && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
+    && apk add --no-cache \
+    "php${PHP_V}-apache2" \
     libxml2-dev \
     apache2-utils \
     apache2-mod-wsgi \
     apache2-ssl \
-    php84 \
-    php84-mysqli \
-    php84-opcache \
-    php84-curl \
-    php84-mbstring \
-    php84-zip \
+    "php${PHP_V}" \
+    "php${PHP_V}-mysqli" \
+    "php${PHP_V}-opcache" \
+    "php${PHP_V}-curl" \
+    "php${PHP_V}-mbstring" \
+    "php${PHP_V}-zip" \
     mariadb-client \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf \

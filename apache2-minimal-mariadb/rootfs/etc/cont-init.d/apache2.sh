@@ -18,7 +18,7 @@ default_conf=$(bashio::config 'default_conf')
 default_ssl_conf=$(bashio::config 'default_ssl_conf')
 log_level=$(bashio::config 'log_level')
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 # Map Bashio log_level to Apache log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal

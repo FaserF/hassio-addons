@@ -14,48 +14,52 @@ ENV ADDON_SLUG="apache2"
 ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
-# Excluded due to low usage but high increase of image size: libxml2-dev, php84-dev, php84-pecl-xdebug, mosquitto-dev
+# renovate: datasource=github-releases depName=php/php-src
+ARG PHP_VERSION="8.5"
+# Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
 # hadolint ignore=DL3003,DL3018,DL3047
 RUN mkdir /run/apache2 \
     && apk --no-cache -u add libcrypto3 libssl3 \
     apache2 \
     curl \
     jq \
-    php84-apache2 \
+    && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
+    && apk add --no-cache \
+    "php${PHP_V}-apache2" \
     apache2-utils \
     apache2-mod-wsgi \
     apache2-ssl \
     apache2-proxy \
-    php84 \
-    php84-fpm \
-    php84-mysqli \
-    php84-opcache \
-    php84-gd \
+    "php${PHP_V}" \
+    "php${PHP_V}-fpm" \
+    "php${PHP_V}-mysqli" \
+    "php${PHP_V}-opcache" \
+    "php${PHP_V}-gd" \
     zlib \
-    php84-curl \
-    php84-phar \
-    php84-mbstring \
-    php84-zip \
-    php84-pdo \
-    php84-pdo_mysql \
-    php84-iconv \
-    php84-dom \
-    php84-session \
-    php84-intl \
-    php84-soap \
-    php84-fileinfo \
-    php84-xml \
-    php84-ctype \
-    php84-pdo_sqlite \
-    php84-tokenizer \
-    php84-exif \
-    php84-xmlwriter \
-    php84-cgi \
-    php84-simplexml \
-    php84-sockets \
-    php84-json \
-    php84-imap \
-    php84-apcu \
+    "php${PHP_V}-curl" \
+    "php${PHP_V}-phar" \
+    "php${PHP_V}-mbstring" \
+    "php${PHP_V}-zip" \
+    "php${PHP_V}-pdo" \
+    "php${PHP_V}-pdo_mysql" \
+    "php${PHP_V}-iconv" \
+    "php${PHP_V}-dom" \
+    "php${PHP_V}-session" \
+    "php${PHP_V}-intl" \
+    "php${PHP_V}-soap" \
+    "php${PHP_V}-fileinfo" \
+    "php${PHP_V}-xml" \
+    "php${PHP_V}-ctype" \
+    "php${PHP_V}-pdo_sqlite" \
+    "php${PHP_V}-tokenizer" \
+    "php${PHP_V}-exif" \
+    "php${PHP_V}-xmlwriter" \
+    "php${PHP_V}-cgi" \
+    "php${PHP_V}-simplexml" \
+    "php${PHP_V}-sockets" \
+    "php${PHP_V}-json" \
+    "php${PHP_V}-imap" \
+    "php${PHP_V}-apcu" \
     mosquitto \
     mariadb-client \
     ffmpeg \
