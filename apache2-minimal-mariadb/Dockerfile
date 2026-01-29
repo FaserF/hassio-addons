@@ -38,7 +38,6 @@ RUN mkdir /run/apache2 \
     apache2-ssl \
     "php${PHP_V}" \
     "php${PHP_V}-mysqli" \
-    "php${PHP_V}-opcache" \
     "php${PHP_V}-curl" \
     "php${PHP_V}-mbstring" \
     "php${PHP_V}-zip" \

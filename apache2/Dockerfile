@@ -39,7 +39,6 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}" \
     "php${PHP_V}-fpm" \
     "php${PHP_V}-mysqli" \
-    "php${PHP_V}-opcache" \
     "php${PHP_V}-gd" \
     zlib \
     "php${PHP_V}-curl" \
@@ -63,7 +62,6 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-cgi" \
     "php${PHP_V}-simplexml" \
     "php${PHP_V}-sockets" \
-    "php${PHP_V}-json" \
     "php${PHP_V}-imap" \
     "php${PHP_V}-apcu" \
     mosquitto \
