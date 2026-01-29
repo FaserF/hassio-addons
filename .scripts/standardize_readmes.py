@@ -181,11 +181,7 @@ def clean_existing_content(content):
                 or "my.home-assistant.io" in sline
             ):
                 continue
-            if (
-                "![Logo]" in sline
-                or "logo.png" in sline
-                or "<img src=" in sline
-            ):
+            if "![Logo]" in sline or "logo.png" in sline or "<img src=" in sline:
                 continue
 
             # Filter headers that we RE-ADD (Duplicates)
