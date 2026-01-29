@@ -19,7 +19,7 @@ ENV ADDON_NAME="Home Assistant Test Instance"
 ENV ADDON_SLUG="ha_test_instance"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
+RUN apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
     jq \

@@ -43,6 +43,7 @@ shellcheck_*.txt
 verification_report*.txt
 *log.txt
 compliance_report.txt
+compliance_final.txt
 report.json
 temp_*.yaml
 temp_*.txt

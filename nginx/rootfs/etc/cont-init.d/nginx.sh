@@ -16,7 +16,7 @@ if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
 	log_level="warning"
 fi
 webrootdocker=/var/www/localhost/htdocs/
-phppath=/etc/php84/php.ini
+phppath=/etc/php85/php.ini
 
 # Map Bashio log_level to Nginx log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal
@@ -282,26 +282,26 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
-mkdir -p /usr/lib/php84/modules/opcache
+mkdir -p /usr/lib/php85/modules/opcache
 
 # Configure PHP-FPM
-mkdir -p /etc/php84/php-fpm.d
+mkdir -p /etc/php85/php-fpm.d
 
 # Ensure PHP-FPM listens on TCP socket (needed for nginx)
-if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
+if [ ! -f /etc/php85/php-fpm.d/www.conf ]; then
 	# Create minimal www.conf if it doesn't exist
-	cat >/etc/php84/php-fpm.d/www.conf <<'PHPFPM_EOF'
+	cat >/etc/php85/php-fpm.d/www.conf <<'PHPFPM_EOF'
 [www]
 listen = 127.0.0.1:9000
 PHPFPM_EOF
 else
 	# File exists - check if listen directive is present
-	if grep -q "^listen\s*=" /etc/php84/php-fpm.d/www.conf; then
+	if grep -q "^listen\s*=" /etc/php85/php-fpm.d/www.conf; then
 		# Replace existing listen directive
-		sed -i 's/^listen\s*=.*/listen = 127.0.0.1:9000/' /etc/php84/php-fpm.d/www.conf
+		sed -i 's/^listen\s*=.*/listen = 127.0.0.1:9000/' /etc/php85/php-fpm.d/www.conf
 	else
 		# Append listen directive if not present
-		echo "listen = 127.0.0.1:9000" >>/etc/php84/php-fpm.d/www.conf
+		echo "listen = 127.0.0.1:9000" >>/etc/php85/php-fpm.d/www.conf
 	fi
 fi
 

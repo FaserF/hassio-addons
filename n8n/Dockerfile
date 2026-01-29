@@ -18,11 +18,11 @@ ENV ADDON_SLUG="n8n"
 ENV ADDON_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache --virtual .build-dependencies \
+ apk add --no-cache -u libssl3 libcrypto3 --virtual .build-dependencies \
         build-base \
         python3-dev \
     \
-    && apk add --no-cache \
+ && apk add --no-cache -u \
         curl \
         nodejs \
         npm \

@@ -16,7 +16,7 @@ ENV ADDON_NAME="pterodactyl Wings Gameserver"
 ENV ADDON_SLUG="pterodactyl_wings"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache ca-certificates curl tini tzdata && \
+RUN apk add --no-cache -u libssl3 libcrypto3 ca-certificates curl tini tzdata && \
     mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl
 
 # Download wings binary with multi-arch support
@@ -31,7 +31,7 @@ ARG WINGS_SHA256_ARM64=d4cb31482be751a5242f1107feab6c6c4b1fff9626945c574f481f0c3
 RUN set -o pipefail && \
     if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \
     curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/download/${WINGS_VERSION}/wings_linux_${ARCH}" && \
-    echo "${CHECKSUM}  /usr/local/bin/wings" | sha256sum -c - && \
+    echo "${CHECKSUM} /usr/local/bin/wings" | sha256sum -c - && \
     chmod u+x /usr/local/bin/wings
 
 # Copy rootfs

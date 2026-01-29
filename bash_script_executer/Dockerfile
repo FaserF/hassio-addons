@@ -11,7 +11,7 @@ ENV ADDON_NAME="Bash Script Executer"
 ENV ADDON_SLUG="bashscriptexecuter"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk --no-cache add busybox-extras curl grep coreutils sed xmlstarlet bash procps
+RUN apk --no-cache -u add libssl3 libcrypto3 busybox-extras curl grep coreutils sed xmlstarlet bash procps
 
 # Copy data for add-on
 COPY run.sh /

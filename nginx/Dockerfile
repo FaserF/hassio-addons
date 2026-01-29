@@ -19,59 +19,65 @@ ENV ADDON_NAME="NGINX"
 ENV ADDON_SLUG="nginx"
 ENV ADDON_UNSUPPORTED="false"
 
+# renovate: datasource=github-releases depName=php/php-src
+ARG PHP_VERSION="8.5"
+
 WORKDIR /tmp
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
-    && apk --no-cache add \
+  && apk --no-cache -u add libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
-    php84-fpm \
-    php84 \
-    php84-mysqli \
-    php84-opcache \
-    php84-gd \
+    && PHP_V=$(echo "${PHP_VERSION}" | awk -F. '{print $1$2}') \
+    && apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+    "php${PHP_V}-fpm" \
+    "php${PHP_V}" \
+    "php${PHP_V}-mysqli" \
+    "php${PHP_V}-gd" \
     zlib \
-    php84-curl \
-    php84-phar \
-    php84-mbstring \
-    php84-zip \
-    php84-pdo \
-    php84-pdo_mysql \
-    php84-iconv \
-    php84-dom \
-    php84-session \
-    php84-intl \
-    php84-soap \
-    php84-fileinfo \
-    php84-xml \
-    php84-ctype \
-    php84-pdo_sqlite \
-    php84-tokenizer \
-    php84-exif \
-    php84-xmlwriter \
-    php84-cgi \
-    php84-simplexml \
-    php84-sockets \
-    php84-json \
-    php84-imap \
-    php84-apcu \
+    "php${PHP_V}-curl" \
+    "php${PHP_V}-phar" \
+    "php${PHP_V}-mbstring" \
+    "php${PHP_V}-zip" \
+    "php${PHP_V}-pdo" \
+    "php${PHP_V}-pdo_mysql" \
+    "php${PHP_V}-iconv" \
+    "php${PHP_V}-dom" \
+    "php${PHP_V}-session" \
+    "php${PHP_V}-intl" \
+    "php${PHP_V}-soap" \
+    "php${PHP_V}-fileinfo" \
+    "php${PHP_V}-xml" \
+    "php${PHP_V}-ctype" \
+    "php${PHP_V}-pdo_sqlite" \
+    "php${PHP_V}-tokenizer" \
+    "php${PHP_V}-exif" \
+    "php${PHP_V}-xmlwriter" \
+    "php${PHP_V}-cgi" \
+    "php${PHP_V}-simplexml" \
+    "php${PHP_V}-sockets" \
+    "php${PHP_V}-imap" \
+    "php${PHP_V}-apcu" \
     mosquitto \
     mariadb-client \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 git \
     && git clone --depth 1 --branch master https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-master \
     && cd musl-locales-master \
-    && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
     && cd .. && rm -rf musl-locales-master \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
 # shellcheck disable=SC2015
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
-    && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
-    && (addgroup -S www-data || true) \
-    && (adduser -S -G www-data www-data || true)
+ && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
+ && (addgroup -S www-data || true) \
+ && (adduser -S -G www-data www-data || true)
 
 # Copy data for add-on
 COPY rootfs /

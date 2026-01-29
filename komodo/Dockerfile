@@ -15,6 +15,7 @@ ENV ADDON_NAME="Komodo"
 ENV ADDON_SLUG="komodo"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

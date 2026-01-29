@@ -7,6 +7,15 @@ permissions:
 on:
   schedule:
     - cron: "0 0 * * 1" # Weekly check
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "apache2/Dockerfile"
+      - "apache2-minimal-mariadb/Dockerfile"
+      - "nginx/Dockerfile"
+      - ".scripts/update_php_info.py"
   workflow_dispatch:
 
 jobs:
@@ -28,6 +37,10 @@ jobs:
       - name: 📖 Badge & Style Audit (Auto-Fix)
         run: |
           python3 .scripts/check_docs.py --fix
+
+      - name: 🐘 Update PHP Info
+        run: |
+          python3 .scripts/update_php_info.py
 
       - name: 💾 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0

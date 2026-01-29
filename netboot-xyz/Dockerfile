@@ -21,7 +21,7 @@ ENV ADDON_UNSUPPORTED="false"
 
 RUN \
   echo "**** install runtime packages ****" && \
-  apk add --no-cache \
+ apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
     dnsmasq \
@@ -30,11 +30,11 @@ RUN \
     procps \
     tftp-hpa && \
   echo "**** install build packages ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    npm && \
+ apk add --no-cache --virtual \
+    build-dependencies npm && \
   echo "**** install WebApp version ${NETBOOTXYZ_VERSION} ****" && \
   curl -o /tmp/webapp.tar.gz -L https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz && \
-  echo "${NETBOOTXYZ_SHA256}  /tmp/webapp.tar.gz" | sha256sum -c - && \
+  echo "${NETBOOTXYZ_SHA256} /tmp/webapp.tar.gz" | sha256sum -c - && \
   mkdir -p /app/ && tar xf /tmp/webapp.tar.gz -C \
     /app/ --strip-components=1 && \
   npm install --prefix /app && \

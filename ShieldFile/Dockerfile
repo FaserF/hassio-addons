@@ -23,7 +23,7 @@ ENV ADDON_NAME="ShieldFile"
 ENV ADDON_SLUG="shieldfile"
 ENV ADDON_UNSUPPORTED="false"
 
-RUN apk add --no-cache curl bash dos2unix openssl nginx \
+RUN apk add --no-cache -u libssl3 libcrypto3 curl bash dos2unix openssl nginx \
     && mkdir -p /data/database
 
 COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser

@@ -14,3 +14,7 @@ map:
 ingress: true
 ingress_port: 8123
 init: false
+options:
+  log_level: info
+schema:
+  log_level: list(trace|debug|info|warning|error|fatal)

@@ -16,7 +16,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
-# hadolint ignore=DL3008,DL3013,DL3018,DL3042
+# Setup base system
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.2.0"
@@ -24,8 +24,9 @@ ENV ADDON_NAME="ER-Startseite (Dashboard)"
 ENV ADDON_SLUG="er-dashboard"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008,DL3013,DL3018,DL3042
 RUN \
-    apk add --no-cache -u \
+ apk add --no-cache -u libssl3 libcrypto3 \
         curl \
         nginx \
         openssl \
@@ -37,7 +38,7 @@ RUN \
         py3-greenlet \
         su-exec \
     \
-    && pip3 install --no-cache-dir --upgrade pip==25.3
+    && pip3 install --no-cache-dir --upgrade pip
 
 # Copy Frontend
 COPY --from=frontend /usr/share/nginx/html /app/dist

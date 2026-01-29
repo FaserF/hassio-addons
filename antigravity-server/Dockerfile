@@ -4,7 +4,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0 # hadolint ignore=DL3008
 FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=Eidolf/Docker-AntiGravity versioning=loose
-ARG ANTIGRAVITY_VERSION="2026.1.2"
+ARG ANTIGRAVITY_VERSION="2026.1.5-nightly.20260127.1621"
 ENV ANTIGRAVITY_VERSION=${ANTIGRAVITY_VERSION}
 ARG LAZYGIT_VERSION=0.40.2
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -12,17 +12,13 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install dependencies for NoVNC and VNC server
-# Install dependencies and tools
-
-# hadolint ignore=DL3008,SC1091
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.1.2"
 ENV ADDON_NAME="Antigravity-Server"
 ENV ADDON_SLUG="antigravity-server"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3008,SC1091
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \
