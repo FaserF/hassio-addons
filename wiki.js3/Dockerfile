@@ -29,7 +29,7 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
 # Reinstall dependencies for Node 24 compatibility
-RUN apk add --no-cache -u libssl3 libcrypto3 --virtual .build-deps build-base python3 && \
+RUN apk add --no-cache --virtual .build-deps build-base python3 && \
     rm -rf node_modules && \
     yarn install --production && \
     yarn cache clean && \

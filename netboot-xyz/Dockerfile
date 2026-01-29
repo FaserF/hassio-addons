@@ -30,7 +30,7 @@ RUN \
     procps \
     tftp-hpa && \
   echo "**** install build packages ****" && \
- apk add --no-cache -u libssl3 libcrypto3 --virtual \
+ apk add --no-cache --virtual \
     build-dependencies npm && \
   echo "**** install WebApp version ${NETBOOTXYZ_VERSION} ****" && \
   curl -o /tmp/webapp.tar.gz -L https://github.com/netbootxyz/webapp/archive/${NETBOOTXYZ_VERSION}.tar.gz && \

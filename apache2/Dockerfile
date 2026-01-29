@@ -20,7 +20,7 @@ WORKDIR /tmp
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 # Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
-# hadolint ignore=DL3003,DL3018,DL3047
+# hadolint ignore=DL3003,DL3018,DL3047,DL4006
 RUN mkdir /run/apache2 \
     && apk --no-cache -u add libcrypto3 libssl3 \
     apache2 \

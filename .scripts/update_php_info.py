@@ -8,7 +8,11 @@ DOC_FILE = "DOCS.md"
 
 def get_php_info(dockerfile_path):
     """Extracts PHP version and modules from Dockerfile."""
-    content = dockerfile_path.read_text(encoding="utf-8")
+    try:
+        content = dockerfile_path.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"Error reading {dockerfile_path}: {e}")
+        return None, []
 
     # Try to find ARG PHP_VERSION
     php_version = None
@@ -22,7 +26,10 @@ def get_php_info(dockerfile_path):
         versions = re.findall(r"php(\d+)", content)
         if versions:
             php_version_num = max(set(versions), key=versions.count)
-            php_version = f"{php_version_num[0]}.{php_version_num[1]}"
+            if len(php_version_num) >= 2:
+                php_version = f"{php_version_num[0]}.{php_version_num[1]}"
+            else:
+                php_version = f"{php_version_num}.0"
 
     if not php_version_num:
         return None, []
@@ -61,7 +68,11 @@ def update_doc_file(doc_path, php_version, modules):
         print(f"Warning: {doc_path} does not exist.")
         return
 
-    content = doc_path.read_text(encoding="utf-8")
+    try:
+        content = doc_path.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"Error reading {doc_path}: {e}")
+        return
 
     # Generate the text
     module_list = "\n".join([f"- {m}" for m in modules])

@@ -29,7 +29,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
-    && PHP_V=$(echo "${PHP_VERSION}" | tr -d '.') \
+    && PHP_V=$(echo "${PHP_VERSION}" | awk -F. '{print $1$2}') \
     && apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \

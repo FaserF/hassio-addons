@@ -49,7 +49,6 @@ website_name: null
 - pdo
 - pdo_mysql
 - pdo_sqlite
-- pecl-xdebug
 - phar
 - session
 - simplexml

@@ -20,6 +20,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
+# hadolint ignore=DL4006
 RUN mkdir /run/apache2 \
  && apk --no-cache -u add libcrypto3 libssl3 \
     apache2 \

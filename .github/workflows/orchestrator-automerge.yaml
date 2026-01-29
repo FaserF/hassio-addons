@@ -402,7 +402,7 @@ jobs:
               // But we can rely on the fact that if we got here, previous steps didn't fail/exit
               // Actually, we should minimize here too to clean up previous "skipped" messages
               const exec = require('@actions/exec');
-              await exec.exec('bash', ['.github/scripts/minimize-comments.sh', prNumber, 'Auto-merge']);
+              await exec.exec('bash', ['.github/scripts/minimize-comments.sh', String(prNumber), 'Auto-merge']);
             } catch (error) {
               console.log('Failed to minimize comments: ' + error.message);
             }
