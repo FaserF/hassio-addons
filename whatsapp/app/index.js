@@ -557,6 +557,8 @@ async function connectToWhatsApp() {
             msg.message?.templateButtonReplyMessage?.selectedId ||
             '';
 
+          let senderJid = msg.key.remoteJid;
+
           // Check for alternative JID (useful when primary is LID but we want Phone JID)
           const remoteJidAlt = msg.key.remoteJidAlt;
 
