@@ -8,7 +8,7 @@ arch:
   - aarch64
   - amd64
 init: false
-host_network: true
+host_network: false
 map:
   - homeassistant_config:rw
 panel_icon: mdi:whatsapp
