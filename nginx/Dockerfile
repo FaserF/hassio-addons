@@ -68,7 +68,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     cmake make musl-dev gcc gettext-dev libintl libxml2 git \
     && git clone --depth 1 --branch master https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-master \
     && cd musl-locales-master \
-    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
     && cd .. && rm -rf musl-locales-master \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 

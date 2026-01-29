@@ -99,7 +99,7 @@ jobs:
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
           echo "CI failed. Minimizing previous comments..."
-          bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+          bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
 
           echo "Posting comment and exiting..."
           gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge skipped:** The associated CI run ([#${{ github.event.workflow_run.run_number }}](${{ github.event.workflow_run.html_url }})) did not complete successfully. Please resolve all CI issues to trigger auto-merge."
@@ -128,7 +128,7 @@ jobs:
           else
             echo "⏭️ Author '$AUTHOR' is not in auto-merge list. Skipping."
             echo "allowed=false" >> "$GITHUB_OUTPUT"
-            bash .github/scripts/minimize-comments.sh "${{ steps.find-pr.outputs.pr_number }}" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "${{ steps.find-pr.outputs.pr_number }}" "Auto-merge" || true
             gh issue comment "${{ steps.find-pr.outputs.pr_number }}" --body "⏭️ **Auto-merge skipped:** Author '$AUTHOR' is not in the allowed list for automated merging."
           fi
 
@@ -204,7 +204,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI jobs failed."
             exit 1
 
@@ -227,7 +227,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
              # Post comment and fail
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** All verification jobs were skipped."
             exit 1
           else
@@ -265,7 +265,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Inform user
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "ℹ️ **Auto-merge skipped:** New commits were detected on the PR."
             exit 0 # Exit 0 here might be okay as new CI will trigger another run, but let's be consistent. Keeping 0 is safer to avoid noise.
           fi
@@ -307,7 +307,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail workflow for visibility
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI workflows are still running."
             exit 1
           fi
@@ -320,7 +320,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
 
             # Post comment and fail workflow
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI validation failed."
             exit 1
           fi
@@ -354,7 +354,7 @@ jobs:
           if echo "$labels" | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge"
+            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
             gh issue comment "$PR_NUMBER" --body "🛑 **Auto-merge cancelled:** 'no-merge' label detected on the PR."
             exit 0
           else

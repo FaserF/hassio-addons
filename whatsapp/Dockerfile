@@ -31,7 +31,7 @@ COPY . .
 # 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
 # hadolint ignore=DL3018
     RUN \
- apk add --no-cache dos2unix && \
+ apk add --no-cache "dos2unix~=7.5" && \
     if [ -d "rootfs" ]; then \
         cp -rv rootfs/* /; \
         # Fix potential Windows CRLF in s6 scripts

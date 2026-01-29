@@ -10,7 +10,7 @@ def get_php_info(dockerfile_path):
     """Extracts PHP version and modules from Dockerfile."""
     try:
         content = dockerfile_path.read_text(encoding="utf-8")
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         print(f"Error reading {dockerfile_path}: {e}")
         return None, []
 
@@ -70,7 +70,7 @@ def update_doc_file(doc_path, php_version, modules):
 
     try:
         content = doc_path.read_text(encoding="utf-8")
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         print(f"Error reading {doc_path}: {e}")
         return
 
@@ -89,7 +89,7 @@ def update_doc_file(doc_path, php_version, modules):
     # Check if markers exist
     if "<!-- PHP_INFO_START -->" in content:
         # Replace existing
-        pattern = r"<!-- PHP_INFO_START -->.*<!-- PHP_INFO_END -->"
+        pattern = r"<!-- PHP_INFO_START -->.*?<!-- PHP_INFO_END -->"
         new_content = re.sub(pattern, info_text, content, flags=re.DOTALL)
     else:
         # Append to end or before "Support" section
