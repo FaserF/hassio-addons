@@ -212,7 +212,5 @@ if [ "$default_ssl_conf" != "default" ]; then
 	fi
 fi
 
-
-
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"

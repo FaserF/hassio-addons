@@ -1,10 +1,11 @@
-import re
 import os
+import re
 from pathlib import Path
 
 # Addons to process
 ADDONS = ["apache2", "apache2-minimal-mariadb", "nginx"]
 DOC_FILE = "DOCS.md"
+
 
 def get_php_info(dockerfile_path):
     """Extracts PHP version and modules from Dockerfile."""
@@ -19,8 +20,8 @@ def get_php_info(dockerfile_path):
     php_version_num = None
     arg_match = re.search(r'ARG PHP_VERSION="([^"]+)"', content)
     if arg_match:
-        php_version = arg_match.group(1) # e.g. "8.5"
-        php_version_num = php_version.replace(".", "") # e.g. "85"
+        php_version = arg_match.group(1)  # e.g. "8.5"
+        php_version_num = php_version.replace(".", "")  # e.g. "85"
     else:
         # Fallback to old behavior
         versions = re.findall(r"php(\d+)", content)
@@ -47,7 +48,7 @@ def get_php_info(dockerfile_path):
 
     # Variable matches: php${PHP_V...}-([a-zA-Z0-9_\-]+)
     # This matches both PHP_VERSION and PHP_V
-    var_pattern = r'php\$\{PHP_V(?:ERSION)?.*?\}-([a-zA-Z0-9_\-]+)'
+    var_pattern = r"php\$\{PHP_V(?:ERSION)?.*?\}-([a-zA-Z0-9_\-]+)"
     matches = re.finditer(var_pattern, content)
     for m in matches:
         mod = m.group(1)
@@ -61,6 +62,7 @@ def get_php_info(dockerfile_path):
     modules = sorted(list(set(modules)))
 
     return php_version, modules
+
 
 def update_doc_file(doc_path, php_version, modules):
     """Updates the DOCS.md file with PHP info."""
@@ -104,6 +106,7 @@ def update_doc_file(doc_path, php_version, modules):
     else:
         print(f"No changes for {doc_path}.")
 
+
 def main():
     repo_root = Path(".")
 
@@ -120,6 +123,7 @@ def main():
         if php_ver:
             doc_file = addon_dir / DOC_FILE
             update_doc_file(doc_file, php_ver, modules)
+
 
 if __name__ == "__main__":
     main()
