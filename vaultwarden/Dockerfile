@@ -21,6 +21,13 @@ COPY --from=vaultwarden /vaultwarden /opt/vaultwarden
 COPY --from=vaultwarden /web-vault /opt/web-vault
 
 # add Nginx
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="0.3.2"
+ENV ADDON_NAME="Vaultwarden (Bitwarden) (Custom)"
+ENV ADDON_SLUG="vaultwarden"
+ENV ADDON_UNSUPPORTED="false"
+ENV LOG_LEVEL="info"
+
 RUN \
     apk add --no-cache --upgrade \
         curl \
