@@ -30,6 +30,7 @@ RUN mkdir /run/apache2 \
     && apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     "php${PHP_V}-apache2" \
     apache2-utils \
     apache2-mod-wsgi \
