@@ -12,7 +12,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-
 # hadolint ignore=DL3008,SC1091
 
 # Addon metadata (injected by CI)

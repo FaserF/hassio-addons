@@ -9,7 +9,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install requirements
 # hadolint ignore=DL3008
 
-
 # hadolint ignore=DL3008
 
 # Addon metadata (injected by CI)

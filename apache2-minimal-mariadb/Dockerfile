@@ -8,7 +8,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # shellcheck disable=SC2015
 
-
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 

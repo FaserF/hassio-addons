@@ -12,8 +12,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install Nginx
 # hadolint ignore=DL3018
 
-
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.1.1"
 ENV ADDON_NAME="BentoPDF"

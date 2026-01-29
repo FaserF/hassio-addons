@@ -13,10 +13,8 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3047
 
-
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
-
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.2.1"

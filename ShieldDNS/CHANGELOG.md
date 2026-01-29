@@ -3,6 +3,7 @@
 ## 2.3.0 (2026-01-29)
 
 ### 📦 Dependencies
+
 - fix addon startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
 - ⬆️ Update cloudflare/cloudflared Docker tag to v2026.1.2 [skip-tests] (#613) [skip-tests] ([`6a278fce`](https://github.com/FaserF/hassio-addons/commit/6a278fcef3ee9815f0fcfcef47338f06e16cd1f9))
@@ -13,11 +14,12 @@
 - ⬆️ Update coredns/coredns Docker tag to v1.14.1 [skip-tests] (#589) [skip-tests] ([`5276dd24`](https://github.com/FaserF/hassio-addons/commit/5276dd247dc4e733f67e398e1fc36c960286d8fb))
 
 ### 📝 Documentation
+
 - Readme improvements ([`8a12ebd4`](https://github.com/FaserF/hassio-addons/commit/8a12ebd40149adb39f056b7dc3e10f1dd02853cb))
 
 ### 🚀 Other
-- standardized log level handling between addons ([`cf4bc264`](https://github.com/FaserF/hassio-addons/commit/cf4bc264edca7956fb4ae13ae76b22c8c5afafac))
 
+- standardized log level handling between addons ([`cf4bc264`](https://github.com/FaserF/hassio-addons/commit/cf4bc264edca7956fb4ae13ae76b22c8c5afafac))
 
 ## 2.2.1 (2026-01-14)
 
