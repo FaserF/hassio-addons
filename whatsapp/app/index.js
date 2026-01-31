@@ -242,37 +242,52 @@ function maskData(str) {
   return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
 
-// --- Global State ---
-let sock;
-let currentQR = null;
-let isConnected = false;
-let eventQueue = []; // Queue for polling events
-let connectionLogs = [];
-const stats = {
-  sent: 0,
-  received: 0,
-  failed: 0,
-  last_sent_message: 'None',
-  last_sent_target: 'None',
-  last_received_message: 'None',
-  last_received_sender: 'None',
-  last_failed_message: 'None',
-  last_failed_target: 'None',
-  last_error_reason: 'None',
-  start_time: Date.now(),
-  my_number: 'Unknown',
-  version: 'Unknown',
-};
+// --- Session Management ---
+const sessions = new Map();
 
-function addLog(msg, type = 'info') {
-  const timestamp = new Date().toLocaleTimeString();
-  connectionLogs.unshift({ timestamp, msg, type });
-  if (connectionLogs.length > 50) connectionLogs.pop();
+function getSession(sessionId) {
+  if (!sessionId) sessionId = 'default';
+  if (!sessions.has(sessionId)) {
+    sessions.set(sessionId, {
+      id: sessionId,
+      sock: null,
+      currentQR: null,
+      isConnected: false,
+      eventQueue: [],
+      connectionLogs: [],
+      messageStore: new Map(),
+      stats: {
+        sent: 0,
+        received: 0,
+        failed: 0,
+        last_sent_message: 'None',
+        last_sent_target: 'None',
+        last_received_message: 'None',
+        last_received_sender: 'None',
+        last_failed_message: 'None',
+        last_failed_target: 'None',
+        last_error_reason: 'None',
+        start_time: Date.now(),
+        my_number: 'Unknown',
+        version: BAILEYS_VERSION,
+      },
+    });
+  }
+  return sessions.get(sessionId);
 }
 
-// Ensure auth dir exists
-if (!fs.existsSync(AUTH_DIR)) {
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
+function addLog(session, msg, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  session.connectionLogs.unshift({ timestamp, msg, type });
+  if (session.connectionLogs.length > 50) session.connectionLogs.pop();
+}
+
+function getAuthDir(sessionId) {
+  const dir = sessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', sessionId);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
 }
 
 // --- Version Check ---
@@ -282,7 +297,7 @@ try {
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     BAILEYS_VERSION = pkg.version;
-    stats.version = BAILEYS_VERSION; // Update stats object with early version info
+    getSession('default').stats.version = BAILEYS_VERSION; // Update stats object with early version info
   }
 } catch (e) {
   logger.warn({ error: e.message }, 'Could not read Baileys version');
@@ -315,7 +330,7 @@ async function publishMDNS(name, attempt = 0) {
         publishMDNS(name, attempt + 1);
       } else {
         logger.error({ serviceName, error: err.message }, 'mDNS advertisement error');
-        addLog(`mDNS error: ${err.message}`, 'warning');
+        addLog(getSession('default'), `mDNS error: ${err.message}`, 'warning');
       }
     });
 
@@ -370,7 +385,7 @@ const ipFilterMiddleware = (req, res, next) => {
 const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
-    addLog(`Unauthorized API access attempt from ${req.ip}`, 'error');
+    addLog(getSession('default'), `Unauthorized API access attempt from ${req.ip}`, 'error');
     logger.warn(
       { ip: req.ip, path: req.originalUrl, tokenProvided: !!providedToken },
       '[AUTH] Unauthorized access attempt'
@@ -412,6 +427,7 @@ app.use('/session', authMiddleware);
 app.use('/qr', authMiddleware);
 app.use('/status', authMiddleware);
 app.use('/events', authMiddleware);
+app.use('/stats', authMiddleware); // Added stats to protected routes
 app.use('/send_message', authMiddleware);
 app.use('/send_image', authMiddleware);
 app.use('/send_poll', authMiddleware);
@@ -419,7 +435,6 @@ app.use('/send_location', authMiddleware);
 app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/send_document', authMiddleware);
-app.use('/send_video', authMiddleware);
 app.use('/send_video', authMiddleware);
 app.use('/send_audio', authMiddleware);
 app.use('/send_list', authMiddleware);
@@ -430,6 +445,8 @@ app.use('/set_presence', authMiddleware);
 app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
 app.use('/logs', authMiddleware);
+
+const getReqSession = (req) => getSession(req.query.session_id || 'default');
 
 // --- Media Support ---
 const MEDIA_DIR = path.join(process.cwd(), 'media');
@@ -452,7 +469,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => {});
+            fs.unlink(filePath, () => { });
           }
         });
       });
@@ -462,27 +479,29 @@ setInterval(
 );
 
 // --- Store Initialization ---
-// Custom In-Memory Store to handle message retries
-const messageStore = new Map();
+// Session-specific message stores are managed within the session object.
 
 // Helper to bind store to events
-function bindStore(ev) {
+function bindStore(session, ev) {
   ev.on('messages.upsert', ({ messages }) => {
     for (const msg of messages) {
       if (msg.key.id) {
-        messageStore.set(msg.key.id, msg);
+        session.messageStore.set(msg.key.id, msg);
       }
     }
   });
 }
 
-async function connectToWhatsApp() {
-  addLog('Starting request for new session...', 'info');
-  const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
+async function connectToWhatsApp(sessionId = 'default') {
+  const session = getSession(sessionId);
+  const sessionAuthDir = getAuthDir(sessionId);
 
-  sock = makeWASocket({
+  addLog(session, `Starting request for session: ${sessionId}...`, 'info');
+  const { state, saveCreds } = await useMultiFileAuthState(sessionAuthDir);
+
+  session.sock = makeWASocket({
     auth: state,
-    logger: logger.child({ module: 'baileys' }, { level: 'warn' }), // Use child logger, suppress Baileys noise
+    logger: logger.child({ module: `baileys-${sessionId}` }, { level: 'warn' }),
     browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
     markOnlineOnConnect: MARK_ONLINE,
@@ -493,63 +512,63 @@ async function connectToWhatsApp() {
     retryRequestDelayMs: 5000,
     getMessage: async (key) => {
       // Check our custom store
-      if (messageStore.has(key.id)) {
-        logger.debug({ msgId: key.id }, '[Store] Retrieving message from store');
-        return messageStore.get(key.id).message;
+      if (session.messageStore.has(key.id)) {
+        logger.debug({ msgId: key.id, sessionId }, '[Store] Retrieving message from store');
+        return session.messageStore.get(key.id).message;
       }
-      logger.debug({ msgId: key.id }, '[Store] Message not found in store');
+      logger.debug({ msgId: key.id, sessionId }, '[Store] Message not found in store');
       return undefined;
     },
   });
 
   // Bind custom store to events
-  bindStore(sock.ev);
+  bindStore(session, session.sock.ev);
 
-  sock.ev.on('creds.update', saveCreds);
+  session.sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('connection.update', async (update) => {
+  session.sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      logger.info('QR Code received');
-      addLog('QR Code generated. Waiting for scan...', 'success');
-      currentQR = await QRCode.toDataURL(qr);
+      logger.info({ sessionId }, 'QR Code received');
+      addLog(session, 'QR Code generated. Waiting for scan...', 'success');
+      session.currentQR = await QRCode.toDataURL(qr);
     }
 
     if (connection === 'close') {
       const shouldReconnect =
         lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
       const reason = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
-      addLog(`Connection closed: ${reason}`, 'warning');
+      addLog(session, `Connection closed: ${reason}`, 'warning');
 
-      logger.warn({ reason, shouldReconnect }, 'Connection closed');
-      isConnected = false;
+      logger.warn({ reason, shouldReconnect, sessionId }, 'Connection closed');
+      session.isConnected = false;
 
       if (shouldReconnect) {
-        addLog('Reconnecting...', 'info');
-        setTimeout(connectToWhatsApp, 1000);
+        addLog(session, 'Reconnecting...', 'info');
+        setTimeout(() => connectToWhatsApp(sessionId), 1000);
       } else {
-        addLog('Session logged out. Clean up metadata required.', 'error');
-        logger.error('Logged out. Please delete /data/auth_info_baileys to re-pair.');
+        addLog(session, 'Session logged out. Clean up metadata required.', 'error');
+        logger.error({ sessionId }, `Logged out. Please delete ${sessionAuthDir} to re-pair.`);
       }
     } else if (connection === 'open') {
-      logger.info('WhatsApp connection opened');
-      addLog('WhatsApp Connection Established! 🟢', 'success');
-      isConnected = true;
-      currentQR = null;
-      if (sock && sock.user) {
-        stats.my_number = sock.user.id.split(':')[0]; // Extract number from JID
-        stats.version = BAILEYS_VERSION;
+      logger.info({ sessionId }, 'WhatsApp connection opened');
+      addLog(session, 'WhatsApp Connection Established! 🟢', 'success');
+      session.isConnected = true;
+      session.currentQR = null;
+      if (session.sock && session.sock.user) {
+        session.stats.my_number = session.sock.user.id.split(':')[0]; // Extract number from JID
+        session.stats.version = BAILEYS_VERSION;
       }
     } else if (connection === 'connecting') {
-      addLog('Connecting to WhatsApp...', 'info');
+      addLog(session, 'Connecting to WhatsApp...', 'info');
     }
   });
 
   // Handle Incoming Messages
-  sock.ev.on('messages.upsert', async (m) => {
+  session.sock.ev.on('messages.upsert', async (m) => {
     if (m.messages && m.messages.length > 0) {
-      stats.received += m.messages.length;
+      session.stats.received += m.messages.length;
 
       const events = m.messages
         .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
@@ -563,6 +582,7 @@ async function connectToWhatsApp() {
 
           // Check for alternative JID (useful when primary is LID but we want Phone JID)
           const remoteJidAlt = msg.key.remoteJidAlt;
+          let senderJid = msg.key.remoteJid;
 
           if (
             senderJid.endsWith('@lid') &&
@@ -606,8 +626,8 @@ async function connectToWhatsApp() {
                 'buffer',
                 {},
                 {
-                  logger: logger.child({ module: 'media-dl' }),
-                  reuploadRequest: sock.updateMediaMessage,
+                  logger: logger.child({ module: `media-dl-${sessionId}` }),
+                  reuploadRequest: session.sock.updateMediaMessage,
                 }
               );
 
@@ -623,7 +643,7 @@ async function connectToWhatsApp() {
                 mediaUrl = `/media/${filename}`;
               }
             } catch (err) {
-              logger.error({ error: err.message }, 'Failed to download media');
+              logger.error({ error: err.message, sessionId }, 'Failed to download media');
               text = `${text} (Media Download Failed)`;
             }
           }
@@ -632,13 +652,11 @@ async function connectToWhatsApp() {
             text = 'Unknown/Unsupported Message Type';
           }
 
-          // Update global stats with the latest message detail
-          stats.last_received_message = maskData(text);
-          stats.last_received_sender = maskData(senderNumber);
+          // Update session stats with the latest message detail
+          session.stats.last_received_message = maskData(text);
+          session.stats.last_received_sender = maskData(senderNumber);
 
           // Determine effective sender number (handle Groups and LIDs)
-          // For groups: remoteJid = group, participant = sender (phone JID typically)
-          // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
           const participant = msg.key.participant || msg.participant;
           let effectiveSenderJid = senderJid;
 
@@ -664,11 +682,12 @@ async function connectToWhatsApp() {
             media_mimetype: mimeType,
             caption: caption,
             raw: msg, // Keep raw for power users
+            session_id: sessionId,
           };
         });
 
       const resolvedEvents = await Promise.all(events);
-      eventQueue.push(...resolvedEvents);
+      session.eventQueue.push(...resolvedEvents);
 
       // --- Webhook Integration ---
       for (const event of resolvedEvents) {
@@ -681,21 +700,21 @@ async function connectToWhatsApp() {
 
           try {
             if (body === '/ping') {
-              await sock.sendMessage(sender, { text: 'Pong! 🏓' });
-              addLog(`Processed command /ping from ${maskData(sender)}`, 'info');
+              await session.sock.sendMessage(sender, { text: 'Pong! 🏓' });
+              addLog(session, `Processed command /ping from ${maskData(sender)}`, 'info');
             } else if (body === '/id') {
-              await sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
-              addLog(`Processed command /id from ${maskData(sender)}`, 'info');
+              await session.sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
+              addLog(session, `Processed command /id from ${maskData(sender)}`, 'info');
             } else if (body === '/restart') {
-              await sock.sendMessage(sender, { text: '🔄 Restarting WhatsApp connection...' });
-              addLog(`Processed command /restart from ${maskData(sender)}`, 'warning');
+              await session.sock.sendMessage(sender, { text: '🔄 Restarting WhatsApp connection...' });
+              addLog(session, `Processed command /restart from ${maskData(sender)}`, 'warning');
               // Graceful restart
               setTimeout(() => {
-                sock.end(new Error('User requested restart'));
+                session.sock.end(new Error('User requested restart'));
               }, 1000);
             }
           } catch (cmdErr) {
-            logger.error({ error: cmdErr.message }, 'Failed to process native command');
+            logger.error({ error: cmdErr.message, sessionId }, 'Failed to process native command');
           }
         }
       }
@@ -707,121 +726,127 @@ async function connectToWhatsApp() {
 
 // POST /session/start
 app.post('/session/start', (req, res) => {
-  addLog('Received Session Start request from Integration', 'info');
-  if (isConnected) {
+  const session = getReqSession(req);
+  addLog(session, `Received Session Start request (session: ${session.id})`, 'info');
+  if (session.isConnected) {
     return res.json({ status: 'connected', message: 'Already connected' });
   }
-  if (sock && !sock.ws?.isClosed) {
+  if (session.sock && !session.sock.ws?.isClosed) {
     return res.json({
       status: 'scanning',
       message: 'Session negotiation in progress',
     });
   }
 
-  connectToWhatsApp();
+  connectToWhatsApp(session.id);
   res.json({ status: 'starting', message: 'Session init started' });
 });
 
 // DELETE /session
 app.delete('/session', async (req, res) => {
-  addLog('Received Logout/Reset request', 'warning');
-  logger.info('Received DELETE /session request (Logout)');
+  const session = getReqSession(req);
+  addLog(session, 'Received Logout/Reset request', 'warning');
+  logger.info({ sessionId: session.id }, 'Received DELETE /session request (Logout)');
   try {
-    if (sock) {
-      // Baileys logout can sometimes hang if connection is bad
+    if (session.sock) {
       await Promise.race([
-        sock.logout(),
+        session.sock.logout(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000)),
-      ]).catch((e) => logger.warn({ error: e.message }, 'Logout failed or timed out'));
+      ]).catch((e) => logger.warn({ error: e.message, sessionId: session.id }, 'Logout failed or timed out'));
 
-      sock.end(undefined);
-      sock = undefined;
+      session.sock.end(undefined);
+      session.sock = undefined;
     }
 
-    if (fs.existsSync(AUTH_DIR)) {
-      fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+    const sessionAuthDir = getAuthDir(session.id);
+    if (fs.existsSync(sessionAuthDir)) {
+      fs.rmSync(sessionAuthDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(AUTH_DIR, { recursive: true });
+    fs.mkdirSync(sessionAuthDir, { recursive: true });
 
-    isConnected = false;
-    currentQR = null;
-    addLog('Session data cleared. Ready for new pair.', 'success');
+    session.isConnected = false;
+    session.currentQR = null;
+    addLog(session, 'Session data cleared. Ready for new pair.', 'success');
     res.json({ status: 'success', message: 'Session deleted and logged out' });
   } catch (e) {
-    addLog(`Logout failed: ${e.toString()}`, 'error');
-    logger.error({ error: e.message }, 'Error during session delete');
+    addLog(session, `Logout failed: ${e.toString()}`, 'error');
+    logger.error({ error: e.message, sessionId: session.id }, 'Error during session delete');
     res.status(500).json({ error: e.toString() });
   }
 });
 
 // GET /qr
 app.get('/qr', (req, res) => {
-  if (isConnected) {
+  const session = getReqSession(req);
+  if (session.isConnected) {
     return res.json({ status: 'connected', qr: null });
   }
-  if (currentQR) {
-    return res.json({ status: 'scanning', qr: currentQR });
+  if (session.currentQR) {
+    return res.json({ status: 'scanning', qr: session.currentQR });
   }
-  // Change to 200 with status 'waiting' to prevent Frontend error handling issues
   return res.json({ status: 'waiting', detail: 'QR generation in progress' });
 });
 
 // GET /status
 app.get('/status', (req, res) => {
-  res.json({ connected: isConnected, version: BAILEYS_VERSION });
+  const session = getReqSession(req);
+  res.json({ connected: session.isConnected, version: BAILEYS_VERSION, session_id: session.id });
 });
 
 // GET /events (Polling)
 app.get('/events', (req, res) => {
-  // Return all queued events and clear queue
-  const events = [...eventQueue];
-  eventQueue = [];
+  const session = getReqSession(req);
+  const events = [...session.eventQueue];
+  session.eventQueue = [];
   res.json(events);
 });
 
 // GET /logs
 app.get('/logs', (req, res) => {
-  res.json(connectionLogs);
+  const session = getReqSession(req);
+  res.json(session.connectionLogs);
 });
 
 // GET /stats
 app.get('/stats', (req, res) => {
+  const session = getReqSession(req);
   res.json({
-    ...stats,
-    uptime: Math.floor((Date.now() - stats.start_time) / 1000),
+    ...session.stats,
+    uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
   });
 });
 
 // POST /send_message
 app.post('/send_message', async (req, res) => {
+  const session = getReqSession(req);
   const { number, message } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
     logger.debug(
-      { input: maskData(number), jid: maskData(jid), socketExists: !!sock, isConnected },
+      { input: maskData(number), jid: maskData(jid), socketExists: !!session.sock, isConnected: session.isConnected, sessionId: session.id },
       '[SendMessage] Processing request'
     );
 
-    if (!sock) {
+    if (!session.sock) {
       throw new Error('Socket not initialized');
     }
 
     // Try to wake up connection with presence update
-    await sock.sendPresenceUpdate('composing', jid);
+    await session.sock.sendPresenceUpdate('composing', jid);
     await delay(250);
 
     await Promise.race([
-      sock.sendMessage(jid, { text: message }),
+      session.sock.sendMessage(jid, { text: message }),
       new Promise((_, reject) =>
         setTimeout(() => {
           logger.error(
-            { target: maskData(number) },
+            { target: maskData(number), sessionId: session.id },
             'Send message timeout reached. Triggering forced reconnect.'
           );
           // Force close the socket to trigger a reconnect if Baileys is deadlocked
-          sock.end(
+          session.sock.end(
             new Error(`Send message timeout (${SEND_MESSAGE_TIMEOUT}ms) - Connection stale`)
           );
           reject(
@@ -832,82 +857,84 @@ app.post('/send_message', async (req, res) => {
         }, SEND_MESSAGE_TIMEOUT)
       ),
     ]);
-    stats.sent += 1;
-    stats.last_sent_message = maskData(message);
-    stats.last_sent_target = maskData(number);
+    session.stats.sent += 1;
+    session.stats.last_sent_message = maskData(message);
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = maskData(message);
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send message: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = maskData(message);
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_image
 app.post('/send_image', async (req, res) => {
+  const session = getReqSession(req);
   const { number, url, caption } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    // Baileys supports URL directly
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       image: { url: url },
       caption: caption,
     });
-    stats.sent += 1;
-    stats.last_sent_message = 'Image';
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = 'Image';
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = caption ? `Image: ${maskData(caption)}` : 'Image';
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send image: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = caption ? `Image: ${maskData(caption)}` : 'Image';
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send image: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_poll
 app.post('/send_poll', async (req, res) => {
+  const session = getReqSession(req);
   const { number, question, options } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       poll: {
         name: question,
         values: options,
-        selectableCount: 1, // Single select by default, maybe expose this?
+        selectableCount: 1,
       },
     });
-    stats.sent += 1;
-    stats.last_sent_message = `Poll: ${question}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Poll: ${question}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Poll: ${maskData(question)}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send poll: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Poll: ${maskData(question)}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send poll: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_location
 app.post('/send_location', async (req, res) => {
+  const session = getReqSession(req);
   const { number, latitude, longitude, title, description } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       location: {
         degreesLatitude: latitude,
         degreesLongitude: longitude,
@@ -915,194 +942,193 @@ app.post('/send_location', async (req, res) => {
         address: description,
       },
     });
-    stats.sent += 1;
-    stats.last_sent_message = `Location: ${title || 'Pinned'}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Location: ${maskData(title) || 'Pinned'}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send location: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Location: ${maskData(title) || 'Pinned'}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send location: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_reaction
 app.post('/send_reaction', async (req, res) => {
+  const session = getReqSession(req);
   const { number, reaction, messageId } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       react: {
-        text: reaction, // use empty string to remove reaction
+        text: reaction,
         key: {
           remoteJid: jid,
-          fromMe: false, // We're reacting to an incoming message
+          fromMe: false,
           id: messageId,
         },
       },
     });
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Reaction: ${maskData(reaction)}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send reaction: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Reaction: ${maskData(reaction)}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send reaction: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_buttons
 app.post('/send_buttons', async (req, res) => {
+  const session = getReqSession(req);
   const { number, message, buttons, footer } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    // Buttons are tricky in Baileys and vary by version.
-    // Assuming 'buttons' array matches Baileys structure: [{buttonId, buttonText: {displayText}, type: 1}]
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       text: message,
       footer: footer,
       buttons: buttons,
       headerType: 1,
     });
-    stats.sent += 1;
-    stats.last_sent_message = `Buttons: ${message}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Buttons: ${message}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Buttons: ${maskData(message)}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send buttons: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Buttons: ${maskData(message)}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send buttons: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_document
 app.post('/send_document', async (req, res) => {
+  const session = getReqSession(req);
   const { number, url, fileName, caption } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       document: { url: url },
       fileName: fileName,
       caption: caption,
       mimetype: 'application/octet-stream',
     });
-    stats.sent += 1;
-    stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Document: ${maskData(fileName) || 'unnamed'}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send document: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Document: ${maskData(fileName) || 'unnamed'}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send document: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_video
 app.post('/send_video', async (req, res) => {
+  const session = getReqSession(req);
   const { number, url, caption } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       video: { url: url },
       caption: caption,
     });
-    stats.sent += 1;
-    stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = caption ? `Video: ${maskData(caption)}` : 'Video';
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send video: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = caption ? `Video: ${maskData(caption)}` : 'Video';
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send video: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_audio
 app.post('/send_audio', async (req, res) => {
+  const session = getReqSession(req);
   const { number, url, ptt } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       audio: { url: url },
       ptt: !!ptt,
       mimetype: 'audio/mp4',
     });
-    stats.sent += 1;
-    stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = ptt ? 'Voice Note' : 'Audio';
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send audio: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = ptt ? 'Voice Note' : 'Audio';
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send audio: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /revoke_message
 app.post('/revoke_message', async (req, res) => {
+  const session = getReqSession(req);
   const { number, message_id } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    // Deleting for everyone requires the key including remoteJid, id, and fromMe=true (usually)
-    // However, Baileys usually handles this if we pass the key structure.
-    // For sending a delete, we need to send a protocol message.
-    // sock.sendMessage(jid, { delete: key })
-
-    // We assume we are deleting our OWN message, so fromMe is true.
     const key = {
       remoteJid: jid,
       fromMe: true,
       id: message_id,
     };
 
-    await sock.sendMessage(jid, { delete: key });
+    await session.sock.sendMessage(jid, { delete: key });
 
-    stats.sent += 1;
-    stats.last_sent_message = `Revoke: ${message_id}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Revoke: ${message_id}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Revoke: ${message_id}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to revoke message: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Revoke: ${message_id}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to revoke message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /edit_message
 app.post('/edit_message', async (req, res) => {
+  const session = getReqSession(req);
   const { number, message_id, new_content } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
@@ -1112,49 +1138,50 @@ app.post('/edit_message', async (req, res) => {
       id: message_id,
     };
 
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       text: new_content,
       edit: key,
     });
 
-    stats.sent += 1;
-    stats.last_sent_message = `Edit: ${message_id}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Edit: ${message_id}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Edit: ${message_id}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to edit message: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Edit: ${message_id}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to edit message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /set_presence
 app.post('/set_presence', async (req, res) => {
+  const session = getReqSession(req);
   const { number, presence } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
-    // presence: 'available' | 'composing' | 'recording' | 'paused'
-    await sock.sendPresenceUpdate(presence, jid);
+    await session.sock.sendPresenceUpdate(presence, jid);
     res.json({ status: 'sent' });
   } catch (e) {
-    addLog(`Failed to set presence: ${e.message}`, 'error');
+    addLog(session, `Failed to set presence: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // GET /groups
 app.get('/groups', async (req, res) => {
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  const session = getReqSession(req);
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
-    if (!sock) throw new Error('Socket not initialized');
+    if (!session.sock) throw new Error('Socket not initialized');
 
-    const groups = await sock.groupFetchAllParticipating();
+    const groups = await session.sock.groupFetchAllParticipating();
     const result = Object.values(groups).map((g) => ({
       id: g.id,
       name: g.subject,
@@ -1163,36 +1190,34 @@ app.get('/groups', async (req, res) => {
 
     res.json(result);
   } catch (e) {
-    logger.error({ error: e.message }, 'Failed to fetch groups');
+    logger.error({ error: e.message, sessionId: session.id }, 'Failed to fetch groups');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /mark_as_read
 app.post('/mark_as_read', async (req, res) => {
+  const session = getReqSession(req);
   const { number, messageId } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
 
     if (messageId) {
-      // Mark specific message as read
-      await sock.readMessages([
+      await session.sock.readMessages([
         {
           remoteJid: jid,
           id: messageId,
-          fromMe: false, // Mark incoming messages
+          fromMe: false,
         },
       ]);
     } else {
-      // Mark all unread messages in this chat as read
-      // Use chatModify with markRead action
-      await sock.chatModify({ markRead: true, lastMessages: [] }, jid);
+      await session.sock.chatModify({ markRead: true, lastMessages: [] }, jid);
     }
     res.json({ status: 'success' });
   } catch (e) {
-    addLog(`Failed to mark read: ${e.message}`, 'error');
+    addLog(session, `Failed to mark read: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1221,20 +1246,25 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     return res.status(404).send('Not Found');
   }
 
+  // Determine session to show (default to 'default' or first available)
+  const sessionId = req.query.session_id || 'default';
+  const session = getSession(sessionId);
+
   // Determine current state
-  const statusClass = isConnected ? 'connected' : currentQR ? 'waiting' : 'disconnected';
-  const statusText = isConnected
+  const statusClass = session.isConnected ? 'connected' : session.currentQR ? 'waiting' : 'disconnected';
+  const statusText = session.isConnected
     ? 'Connected 🟢'
-    : currentQR
+    : session.currentQR
       ? 'Scan QR Code 📱'
       : 'Disconnected 🔴';
-  const showQR = !isConnected && currentQR;
-  const showQRPlaceholder = !isConnected && !currentQR;
+  const showQR = !session.isConnected && session.currentQR;
+  const showQRPlaceholder = !session.isConnected && !session.currentQR;
 
   // Recent logs (last 10)
   const recentLogs =
-    connectionLogs
-      .slice(0, 10)
+    session.connectionLogs
+      .slice(-10)
+      .reverse()
       .map(
         (l) =>
           `<div class="log-entry"><span class="log-time">${l.timestamp}</span><span class="log-type-${l.type}">${l.msg}</span></div>`
@@ -1279,19 +1309,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
-                <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
+                <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1299,8 +1327,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1369,7 +1397,8 @@ app.post('/settings/webhook', authMiddleware, (req, res) => {
   try {
     fs.writeFileSync(WEBHOOK_CONFIG_FILE, JSON.stringify(configToSave, null, 2));
     logger.info('💾 Webhook configuration updated and saved.');
-    addLog('Webhook configuration updated', 'info');
+    // Global webhook settings, but we log to 'default' session for visibility
+    addLog(getSession('default'), 'Webhook configuration updated', 'info');
     res.json({ status: 'success', config: configToSave });
   } catch (e) {
     logger.error({ error: e.message }, '❌ Failed to save webhook config');
@@ -1379,87 +1408,95 @@ app.post('/settings/webhook', authMiddleware, (req, res) => {
 
 // POST /send_list
 app.post('/send_list', async (req, res) => {
+  const session = getReqSession(req);
   const { number, title, text, button_text, sections } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
 
-    // Construct List Message
-    // Note: 'sections' must be an array of objects { title, rows: [ { title, rowId, description? } ] }
-    await sock.sendMessage(jid, {
-      text: text || title || 'Menu', // Required content
-      footer: title ? text : undefined, // WhatsApp UI quirk logic
+    await session.sock.sendMessage(jid, {
+      text: text || title || 'Menu',
+      footer: title ? text : undefined,
       title: title,
       buttonText: button_text || 'Menu',
       sections: sections,
     });
 
-    stats.sent += 1;
-    stats.last_sent_message = `List: ${title || text}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `List: ${title || text}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `List: ${title || text}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send list: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `List: ${title || text}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send list: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // POST /send_contact
 app.post('/send_contact', async (req, res) => {
+  const session = getReqSession(req);
   const { number, contact_name, contact_number } = req.body;
-  if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
+  if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
 
-    // Construct VCard v3.0
     const vcard =
-      'BEGIN:VCARD\n' + // metadata of the contact card
+      'BEGIN:VCARD\n' +
       'VERSION:3.0\n' +
-      `FN:${contact_name}\n` + // full name
-      `ORG:Home Assistant;\n` + // organization (optional)
-      `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` + // WhatsApp ID and number
+      `FN:${contact_name}\n` +
+      `ORG:Home Assistant;\n` +
+      `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` +
       'END:VCARD';
 
-    await sock.sendMessage(jid, {
+    await session.sock.sendMessage(jid, {
       contacts: {
         displayName: contact_name,
         contacts: [{ vcard }],
       },
     });
 
-    stats.sent += 1;
-    stats.last_sent_message = `Contact: ${contact_name}`;
-    stats.last_sent_target = number;
+    session.stats.sent += 1;
+    session.stats.last_sent_message = `Contact: ${contact_name}`;
+    session.stats.last_sent_target = number;
     res.json({ status: 'sent' });
   } catch (e) {
-    stats.failed += 1;
-    stats.last_failed_message = `Contact: ${contact_name}`;
-    stats.last_failed_target = maskData(number);
-    stats.last_error_reason = e.message || e.toString();
-    addLog(`Failed to send contact: ${e.message}`, 'error');
+    session.stats.failed += 1;
+    session.stats.last_failed_message = `Contact: ${contact_name}`;
+    session.stats.last_failed_target = maskData(number);
+    session.stats.last_error_reason = e.message || e.toString();
+    addLog(session, `Failed to send contact: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
   }
 });
 
 // Listen on all interfaces in the container (0.0.0.0)
-// This is safe because each addon runs in its own isolated Docker container
-// Ports are isolated by Docker's network namespace, so no conflicts between addons
 app.listen(PORT, '0.0.0.0', () => {
   logger.info({ port: PORT }, 'WhatsApp API listening');
   logger.info('✅ Service ready - Health check available at /health');
 
-  // Auto-start session if credentials exist
-  const credsFile = path.join(AUTH_DIR, 'creds.json');
-  if (fs.existsSync(credsFile)) {
-    logger.info('📦 Existing authentication found, auto-starting session...');
-    connectToWhatsApp().catch((err) => {
-      logger.error({ error: err.message }, '❌ Failed to auto-start session');
-    });
+  // Auto-start session for 'default' if credentials exist
+  const defaultDir = getAuthDir('default');
+  if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
+    logger.info('📦 Default session credentials found, auto-starting...');
+    connectToWhatsApp('default').catch(() => { });
+  }
+
+  // Auto-start all other sessions
+  const sessionsDir = path.join(DATA_DIR, 'sessions');
+  if (fs.existsSync(sessionsDir)) {
+    const sessionDirs = fs.readdirSync(sessionsDir);
+    for (const sDir of sessionDirs) {
+      const fullPath = path.join(sessionsDir, sDir);
+      if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
+        logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
+        connectToWhatsApp(sDir).catch(() => { });
+      }
+    }
   }
 });
