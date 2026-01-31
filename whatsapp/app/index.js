@@ -242,11 +242,24 @@ function maskData(str) {
   return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
 
-// --- Session Management ---
 const sessions = new Map();
+const SESSION_ID_REGEX = /^[a-zA-Z0-9_.-]+$/;
 
-function getSession(sessionId) {
-  if (!sessionId) sessionId = 'default';
+function sanitizeSessionId(sessionId) {
+  if (!sessionId) return 'default';
+  // Use path.basename to extract the deepest name, preventing path traversal
+  const base = path.basename(sessionId);
+  // Restrict to a safe character set
+  const sanitized = base.replace(/[^\w.-]/g, '');
+
+  if (!sanitized || sanitized === '..' || !SESSION_ID_REGEX.test(sanitized)) {
+    return 'default';
+  }
+  return sanitized;
+}
+
+function getSession(rawSessionId) {
+  const sessionId = sanitizeSessionId(rawSessionId);
   if (!sessions.has(sessionId)) {
     sessions.set(sessionId, {
       id: sessionId,
@@ -375,7 +388,7 @@ const ipFilterMiddleware = (req, res, next) => {
   // For standard "Host Network" addons, requests from other containers might appear as public IP or gateway?
   // But usually Home Assistant Addons on Host Network see the real modification IP.
 
-  addLog(`Blocked external access attempt from ${ip}`, 'warning');
+  addLog(getSession('default'), `Blocked external access attempt from ${ip}`, 'warning');
   logger.warn({ ip }, '[SECURITY] Blocked external access attempt (UI Auth Disabled)');
   return res
     .status(403)
@@ -446,7 +459,10 @@ app.use('/groups', authMiddleware);
 app.use('/mark_as_read', authMiddleware);
 app.use('/logs', authMiddleware);
 
-const getReqSession = (req) => getSession(req.query.session_id || 'default');
+const getReqSession = (req) => {
+  const rawId = req.query.session_id || req.body?.session_id || 'default';
+  return getSession(rawId);
+};
 
 // --- Media Support ---
 const MEDIA_DIR = path.join(process.cwd(), 'media');
@@ -469,7 +485,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => { });
+            fs.unlink(filePath, () => {});
           }
         });
       });
@@ -706,7 +722,9 @@ async function connectToWhatsApp(sessionId = 'default') {
               await session.sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
               addLog(session, `Processed command /id from ${maskData(sender)}`, 'info');
             } else if (body === '/restart') {
-              await session.sock.sendMessage(sender, { text: '🔄 Restarting WhatsApp connection...' });
+              await session.sock.sendMessage(sender, {
+                text: '🔄 Restarting WhatsApp connection...',
+              });
               addLog(session, `Processed command /restart from ${maskData(sender)}`, 'warning');
               // Graceful restart
               setTimeout(() => {
@@ -752,7 +770,9 @@ app.delete('/session', async (req, res) => {
       await Promise.race([
         session.sock.logout(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000)),
-      ]).catch((e) => logger.warn({ error: e.message, sessionId: session.id }, 'Logout failed or timed out'));
+      ]).catch((e) =>
+        logger.warn({ error: e.message, sessionId: session.id }, 'Logout failed or timed out')
+      );
 
       session.sock.end(undefined);
       session.sock = undefined;
@@ -766,6 +786,25 @@ app.delete('/session', async (req, res) => {
 
     session.isConnected = false;
     session.currentQR = null;
+    session.eventQueue = [];
+    session.connectionLogs = [];
+    session.messageStore.clear();
+    session.stats = {
+      sent: 0,
+      received: 0,
+      failed: 0,
+      last_sent_message: 'None',
+      last_sent_target: 'None',
+      last_received_message: 'None',
+      last_received_sender: 'None',
+      last_failed_message: 'None',
+      last_failed_target: 'None',
+      last_error_reason: 'None',
+      start_time: Date.now(),
+      my_number: 'Unknown',
+      version: BAILEYS_VERSION,
+    };
+
     addLog(session, 'Session data cleared. Ready for new pair.', 'success');
     res.json({ status: 'success', message: 'Session deleted and logged out' });
   } catch (e) {
@@ -825,7 +864,13 @@ app.post('/send_message', async (req, res) => {
   try {
     const jid = getJid(number);
     logger.debug(
-      { input: maskData(number), jid: maskData(jid), socketExists: !!session.sock, isConnected: session.isConnected, sessionId: session.id },
+      {
+        input: maskData(number),
+        jid: maskData(jid),
+        socketExists: !!session.sock,
+        isConnected: session.isConnected,
+        sessionId: session.id,
+      },
       '[SendMessage] Processing request'
     );
 
@@ -885,7 +930,7 @@ app.post('/send_image', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = 'Image';
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -914,7 +959,7 @@ app.post('/send_poll', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = `Poll: ${question}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -944,7 +989,7 @@ app.post('/send_location', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1001,7 +1046,7 @@ app.post('/send_buttons', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = `Buttons: ${message}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1029,7 +1074,7 @@ app.post('/send_document', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1055,7 +1100,7 @@ app.post('/send_video', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1082,7 +1127,7 @@ app.post('/send_audio', async (req, res) => {
     });
     session.stats.sent += 1;
     session.stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1112,7 +1157,7 @@ app.post('/revoke_message', async (req, res) => {
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `Revoke: ${message_id}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1145,7 +1190,7 @@ app.post('/edit_message', async (req, res) => {
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `Edit: ${message_id}`;
-    session.stats.last_sent_target = number;
+    session.stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1251,7 +1296,11 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
   const session = getSession(sessionId);
 
   // Determine current state
-  const statusClass = session.isConnected ? 'connected' : session.currentQR ? 'waiting' : 'disconnected';
+  const statusClass = session.isConnected
+    ? 'connected'
+    : session.currentQR
+      ? 'waiting'
+      : 'disconnected';
   const statusText = session.isConnected
     ? 'Connected 🟢'
     : session.currentQR
@@ -1309,17 +1358,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1327,8 +1378,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1484,7 +1535,7 @@ app.listen(PORT, '0.0.0.0', () => {
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => { });
+    connectToWhatsApp('default').catch(() => {});
   }
 
   // Auto-start all other sessions
@@ -1495,7 +1546,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => { });
+        connectToWhatsApp(sDir).catch(() => {});
       }
     }
   }
