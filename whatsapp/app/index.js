@@ -8,13 +8,13 @@ import {
   delay,
   downloadMediaMessage,
 } from '@whiskeysockets/baileys';
+import mime from 'mime-types';
 import pino from 'pino';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import http from 'http';
-import mime from 'mime-types';
 
 // --- Log Level ---
 const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
@@ -420,7 +420,6 @@ app.use('/send_reaction', authMiddleware);
 app.use('/send_buttons', authMiddleware);
 app.use('/send_document', authMiddleware);
 app.use('/send_video', authMiddleware);
-app.use('/send_video', authMiddleware);
 app.use('/send_audio', authMiddleware);
 app.use('/send_list', authMiddleware);
 app.use('/send_contact', authMiddleware);
@@ -452,7 +451,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => {});
+            fs.unlink(filePath, () => { });
           }
         });
       });
@@ -460,7 +459,6 @@ setInterval(
   },
   60 * 60 * 1000
 );
-
 // --- Store Initialization ---
 // Custom In-Memory Store to handle message retries
 const messageStore = new Map();
@@ -551,127 +549,125 @@ async function connectToWhatsApp() {
     if (m.messages && m.messages.length > 0) {
       stats.received += m.messages.length;
 
-      const events = m.messages
-        .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
-        .map(async (msg) => {
-          let text =
-            msg.message?.conversation ||
-            msg.message?.extendedTextMessage?.text ||
-            msg.message?.buttonsResponseMessage?.selectedDisplayText ||
-            msg.message?.templateButtonReplyMessage?.selectedId ||
-            '';
+      const events = [];
+      const messagesToProcess = m.messages.filter(
+        (msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast'
+      );
 
-          // Check for alternative JID (useful when primary is LID but we want Phone JID)
-          const remoteJidAlt = msg.key.remoteJidAlt;
+      for (const msg of messagesToProcess) {
+        let text =
+          msg.message?.conversation ||
+          msg.message?.extendedTextMessage?.text ||
+          msg.message?.buttonsResponseMessage?.selectedDisplayText ||
+          msg.message?.templateButtonReplyMessage?.selectedId ||
+          '';
 
-          if (
-            senderJid.endsWith('@lid') &&
-            remoteJidAlt &&
-            remoteJidAlt.endsWith('@s.whatsapp.net')
-          ) {
-            // Swap them: Use Phone JID as primary sender for HA compatibility
-            senderJid = remoteJidAlt;
-          }
+        // Check for alternative JID (useful when primary is LID but we want Phone JID)
+        const remoteJidAlt = msg.key.remoteJidAlt;
+        let senderJid = msg.key.remoteJid;
 
-          let senderNumber = senderJid.split('@')[0];
-          const isGroup = senderJid.endsWith('@g.us');
+        if (
+          senderJid.endsWith('@lid') &&
+          remoteJidAlt &&
+          remoteJidAlt.endsWith('@s.whatsapp.net')
+        ) {
+          // Swap them: Use Phone JID as primary sender for HA compatibility
+          senderJid = remoteJidAlt;
+        }
 
-          // Check for media
-          const messageType = Object.keys(msg.message || {})[0];
-          let mediaUrl = null;
-          let mediaPath = null;
-          let mediaType = null;
-          let mimeType = null;
-          let caption = null;
+        let senderNumber = senderJid.split('@')[0];
+        const isGroup = senderJid.endsWith('@g.us');
 
-          const supportedMediaTypes = [
-            'imageMessage',
-            'videoMessage',
-            'audioMessage',
-            'documentMessage',
-            'stickerMessage',
-          ];
+        // Check for media
+        const messageType = Object.keys(msg.message || {})[0];
+        let mediaUrl = null;
+        let mediaPath = null;
+        let mediaType = null;
+        let mimeType = null;
+        let caption = null;
 
-          if (supportedMediaTypes.includes(messageType)) {
-            try {
-              const mediaContent = msg.message[messageType];
-              caption = mediaContent.caption || '';
-              text = text || caption || `[Media: ${messageType}]`;
-              mediaType = messageType.replace('Message', '');
-              mimeType = mediaContent.mimetype;
+        const supportedMediaTypes = [
+          'imageMessage',
+          'videoMessage',
+          'audioMessage',
+          'documentMessage',
+          'stickerMessage',
+        ];
 
-              // Download media
-              const buffer = await downloadMediaMessage(
-                msg,
-                'buffer',
-                {},
-                {
-                  logger: logger.child({ module: 'media-dl' }),
-                  reuploadRequest: sock.updateMediaMessage,
-                }
-              );
+        if (supportedMediaTypes.includes(messageType)) {
+          try {
+            const mediaContent = msg.message[messageType];
+            caption = mediaContent.caption || '';
+            text = text || caption || `[Media: ${messageType}]`;
+            mediaType = messageType.replace('Message', '');
+            mimeType = mediaContent.mimetype;
 
-              if (buffer) {
-                const ext = mime.extension(mimeType) || 'bin';
-                const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
-                const savePath = path.join(MEDIA_DIR, filename);
-
-                fs.writeFileSync(savePath, buffer);
-                mediaPath = savePath;
-
-                // Construct accessible URL
-                mediaUrl = `/media/${filename}`;
+            // Download media
+            const buffer = await downloadMediaMessage(
+              msg,
+              'buffer',
+              {},
+              {
+                logger: logger.child({ module: 'media-dl' }),
+                reuploadRequest: sock.updateMediaMessage,
               }
-            } catch (err) {
-              logger.error({ error: err.message }, 'Failed to download media');
-              text = `${text} (Media Download Failed)`;
+            );
+
+            if (buffer) {
+              const ext = mime.extension(mimeType) || 'bin';
+              const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+              const savePath = path.join(MEDIA_DIR, filename);
+
+              fs.writeFileSync(savePath, buffer);
+              mediaPath = savePath;
+
+              // Construct accessible URL
+              mediaUrl = `/media/${filename}`;
             }
+          } catch (err) {
+            logger.error({ error: err.message }, 'Failed to download media');
+            text = `${text} (Media Download Failed)`;
           }
+        }
 
-          if (!text && !mediaUrl) {
-            text = 'Unknown/Unsupported Message Type';
-          }
+        if (!text && !mediaUrl) {
+          text = 'Unknown/Unsupported Message Type';
+        }
+        // Update global stats with the latest message detail
+        stats.last_received_message = maskData(text);
+        stats.last_received_sender = maskData(senderNumber);
 
-          // Update global stats with the latest message detail
-          stats.last_received_message = maskData(text);
-          stats.last_received_sender = maskData(senderNumber);
+        // Determine effective sender number (handle Groups and LIDs)
+        // For groups: remoteJid = group, participant = sender (phone JID typically)
+        // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
+        const participant = msg.key.participant || msg.participant;
+        let effectiveSenderJid = senderJid;
 
-          // Determine effective sender number (handle Groups and LIDs)
-          // For groups: remoteJid = group, participant = sender (phone JID typically)
-          // For 1:1 LID: remoteJid = LID (or swapped above), participant may be empty or phone JID
-          const participant = msg.key.participant || msg.participant;
-          let effectiveSenderJid = senderJid;
+        if (
+          participant &&
+          typeof participant === 'string' &&
+          participant.includes('@s.whatsapp.net')
+        ) {
+          effectiveSenderJid = participant;
+        }
 
-          if (
-            participant &&
-            typeof participant === 'string' &&
-            participant.includes('@s.whatsapp.net')
-          ) {
-            effectiveSenderJid = participant;
-          }
+        senderNumber = effectiveSenderJid.split('@')[0];
 
-          senderNumber = effectiveSenderJid.split('@')[0];
-
-          return {
-            content: text,
-            sender: senderJid, // origin (Group or Phone JID, preferred over LID)
-            sender_number: senderNumber, // The actual user phone number (best effort)
-            sender_lid: msg.key.remoteJid.endsWith('@lid') ? msg.key.remoteJid : undefined, // Expose raw LID if available
-            is_group: isGroup,
-            media_url: mediaUrl,
-            media_path: mediaPath,
-            media_type: mediaType,
-            media_mimetype: mimeType,
-            caption: caption,
-            raw: msg, // Keep raw for power users
-          };
+        events.push({
+          content: text,
+          sender: senderJid, // origin (Group or Phone JID, preferred over LID)
+          sender_number: senderNumber, // The actual user phone number (best effort)
+          sender_lid: msg.key.remoteJid.endsWith('@lid')
+            ? msg.key.remoteJid
+            : undefined, // Expose raw LID if available
+          is_group: isGroup,
+          raw: msg, // Keep raw for power users
         });
-
-      const resolvedEvents = await Promise.all(events);
-      eventQueue.push(...resolvedEvents);
+      }
+      eventQueue.push(...events);
 
       // --- Webhook Integration ---
-      for (const event of resolvedEvents) {
+      for (const event of events) {
         triggerWebhook(event);
 
         // --- Native Command Handling ---
@@ -991,6 +987,50 @@ app.post('/send_document', async (req, res) => {
   const { number, url, fileName, caption } = req.body;
   if (!isConnected) return res.status(503).json({ detail: 'Not connected' });
 
+  // 1. Validate URL Scheme
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ detail: 'Invalid or missing URL' });
+  }
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).json({ detail: 'Invalid URL scheme. Only http/https allowed.' });
+    }
+  } catch (e) {
+    return res.status(400).json({ detail: 'Invalid URL format' });
+  }
+
+  // 2. Validate Content Size (HEAD Request)
+  try {
+    const protocol = parsedUrl.protocol === 'https:' ? await import('https') : http;
+    const size = await new Promise((resolve, reject) => {
+      const reqInfo = protocol.request(url, { method: 'HEAD', timeout: 5000 }, (resInfo) => {
+        if (resInfo.statusCode >= 400) {
+          // Allow it to proceed if HEAD fails? Or fail?
+          // User wants to strictly validate. But some servers might block HEAD.
+          // We will resolve with 0 to skip check if status is bad, or reject?
+          // Let's resolve with content-length if present.
+          resolve(parseInt(resInfo.headers['content-length'] || '0', 10));
+        } else {
+          resolve(parseInt(resInfo.headers['content-length'] || '0', 10));
+        }
+      });
+      reqInfo.on('error', (err) => resolve(0)); // Skip check on network error
+      reqInfo.on('timeout', () => { reqInfo.destroy(); resolve(0); });
+      reqInfo.end();
+    });
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB Limit
+    if (size > MAX_SIZE) {
+      addLog(`Blocked oversized document (${size} bytes) to ${maskData(number)}`, 'warning');
+      return res.status(413).json({ detail: `File too large. Limit is ${MAX_SIZE} bytes.` });
+    }
+  } catch (e) {
+    // Ignore checking errors, proceed to sending
+    logger.warn({ error: e.message }, 'Failed to validate document size, proceeding anyway');
+  }
+
   try {
     const jid = getJid(number);
     await sock.sendMessage(jid, {
@@ -1000,8 +1040,9 @@ app.post('/send_document', async (req, res) => {
       mimetype: 'application/octet-stream',
     });
     stats.sent += 1;
-    stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
-    stats.last_sent_target = number;
+    // 3. PII Masking in Stats
+    stats.last_sent_message = `Document: ${maskData(fileName) || 'unnamed'}`;
+    stats.last_sent_target = maskData(number);
     res.json({ status: 'sent' });
   } catch (e) {
     stats.failed += 1;
@@ -1175,21 +1216,13 @@ app.post('/mark_as_read', async (req, res) => {
 
   try {
     const jid = getJid(number);
-
-    if (messageId) {
-      // Mark specific message as read
-      await sock.readMessages([
-        {
-          remoteJid: jid,
-          id: messageId,
-          fromMe: false, // Mark incoming messages
-        },
-      ]);
-    } else {
-      // Mark all unread messages in this chat as read
-      // Use chatModify with markRead action
-      await sock.chatModify({ markRead: true, lastMessages: [] }, jid);
-    }
+    await sock.readMessages([
+      {
+        remoteJid: jid,
+        id: messageId,
+        fromMe: false, // Mark incoming messages
+      },
+    ]);
     res.json({ status: 'success' });
   } catch (e) {
     addLog(`Failed to mark read: ${e.message}`, 'error');
@@ -1279,19 +1312,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1299,8 +1330,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}

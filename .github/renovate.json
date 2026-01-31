@@ -31,7 +31,7 @@
         "/(^|/)_config\\.yml$"
       ],
       "matchStrings": [
-        "remote_theme:\\s*(?<depName>pmarsceill/just-the-docs)@(?<currentValue>.*)"
+        "remote_theme:\\s*(?<depName>pmarsceill/just-the-docs)"
       ],
       "datasourceTemplate": "github-tags",
       "description": "Monitor Jekyll theme repository for tags"
@@ -297,6 +297,18 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "paperless-ngx/paperless-ngx"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Vaultwarden version in Dockerfile (FROM vaultwarden/server:X.X.X)",
+      "managerFilePatterns": [
+        "/vaultwarden/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "FROM [\"']?vaultwarden/server:(?<currentValue>[^\"']+)[\"']?"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "vaultwarden/server"
     }
   ],
   "packageRules": [
@@ -474,6 +486,24 @@
         "@whiskeysockets/baileys"
       ],
       "ignoreUnstable": false
+    },
+    {
+      "description": "Vaultwarden - track all tags, but only automerge stable releases",
+      "matchDepNames": [
+        "vaultwarden/server"
+      ],
+      "ignoreUnstable": false
+    },
+    {
+      "matchDepNames": [
+        "vaultwarden/server"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "ignoreUnstable": true,
+      "automerge": true
     }
   ]
 }

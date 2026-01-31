@@ -101,6 +101,7 @@ body:
         - switchcraft
         - tado_aa
         - tt-rss
+        - vaultwarden
         - whatsapp
         - wiki.js
         - wiki.js3

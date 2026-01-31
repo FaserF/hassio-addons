@@ -67,3 +67,4 @@ workflow_report.txt
 test-nginx-debug.sh
 /switchcraft/sources
 /whatsapp/integration
+yamllint*.txt

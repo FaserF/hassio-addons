@@ -1,0 +1,18 @@
+configuration:
+  log_level:
+    name: Log level
+    description: Steuert die Ausführlichkeit der Protokollausgabe.
+  ssl:
+    name: SSL
+    description: SSL für die Web-Oberfläche aktivieren oder deaktivieren.
+  certfile:
+    name: Zertifikatsdatei
+    description: Die für SSL zu verwendende Zertifikatsdatei.
+  keyfile:
+    name: Schlüsseldatei
+    description: Die für SSL zu verwendende Schlüsseldatei.
+  request_size_limit:
+    name: Anforderungsgrößenbeschränkung
+    description: Maximal zulässige Größe für API-Anfragen in Bytes.
+network:
+  7277/tcp: Web-Oberfläche

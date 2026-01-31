@@ -62,6 +62,7 @@
 
 - Many new features implemented & docs improved
 
+
 ## 1.0.5 (2026-01-27)
 
 ### 📦 Dependencies
