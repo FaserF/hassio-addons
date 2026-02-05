@@ -1,10 +1,10 @@
 # SAP ABAP Cloud Developer Trial - Configuration
 
-> **⚠️ IMPORTANT:** This add-on is excluded from CI build/test workflows due to its size. It is only built during releases.
+> **⚠️ IMPORTANT:** this app is excluded from CI build/test workflows due to its size. It is only built during releases.
 
 ## Disclaimers
 
-> **NO LICENSE PROVIDED**: This add-on does NOT include any SAP license.
+> **NO LICENSE PROVIDED**: this app does NOT include any SAP license.
 >
 > **NO WARRANTY**: Provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss or other issues.
 >
@@ -14,7 +14,7 @@
 
 ### Option: `agree_to_license`
 
-You must agree to SAP's license terms before using this add-on.
+You must agree to SAP's license terms before using this app.
 
 - **Type:** boolean
 - **Default:** `false`
@@ -54,7 +54,7 @@ When `true`, allows startup with minimum requirements:
 
 ## First-Time Setup
 
-1. Start the add-on and wait 5-10 minutes
+1. Start the app and wait 5-10 minutes
 2. Access SAP Fiori: `https://<your-ip>:8443/sap/bc/ui2/flp`
 3. Or connect via SAP GUI
 

@@ -16,7 +16,7 @@ Please visit @geekman original repo of this program: <https://github.com/geekman
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -27,8 +27,8 @@ firmware_path: /share/miwifi_firmware/
 
 ## 📂 Folder Usage
 
-- `/share`: Used for `firmware_path`. This is where the add-on looks for the original firmware and where the modified firmware will be saved.
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+- `/share`: Used for `firmware_path`. This is where the app looks for the original firmware and where the modified firmware will be saved.
+- `/data`: Used internally by the app for persistent meta-data storage.
 
 ## Support
 

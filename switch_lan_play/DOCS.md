@@ -12,7 +12,7 @@ The first installation can take up to 10 minutes because of this! Depending on y
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -22,7 +22,7 @@ server: null
 
 ## 📂 Folder Usage
 
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+- `/data`: Used internally by the app for persistent meta-data storage.
 
 ## Support
 

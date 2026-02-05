@@ -25,7 +25,7 @@ configuration:
     description: Email address for the generic admin account.
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the add-on logs."
+    description: "Controls the verbosity of the app logs."
   reset_database:
     name: Reset Database
     description: Enable this option to reset the database. WARNING - Deletes all data!

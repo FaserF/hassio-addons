@@ -22,7 +22,7 @@ configuration:
     description: "Format for stored filenames."
   log_level:
     name: "Log Level"
-    description: "Set the log level for the add-on."
+    description: "Set the log level for the app."
   reset_database:
     name: "Reset Database"
     description: "Reset the database (use with caution)."

@@ -1,10 +1,10 @@
-# FaserF's Home Assistant Add-ons 🏠
+# FaserF's Home Assistant Apps 🏠
 
-This repository contains a collection of custom **Home Assistant Add-ons**
+This repository contains a collection of custom **Home Assistant Apps** (formerly known as Apps)
 maintained by FaserF.
 
 > [!NOTE]
-> These add-ons are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Add-ons that I no longer use myself receive poorer support from me.
+> These apps are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Apps that I no longer use myself receive poorer support from me.
 
 [![View in Code Wiki](https://img.shields.io/badge/View_in-Code_Wiki-8A2BE2?style=flat-square&logo=google&logoColor=white)](https://codewiki.google/github.com/FaserF/hassio-addons)
 
@@ -46,9 +46,9 @@ Latest development builds - built locally from your device. For testing new feat
 | **Stable** | ✅ Yes              | Fast         | 🟢 High   |
 | **Edge**   | ❌ No (local build) | Slow         | 🟡 Medium |
 
-## Add-ons List 📦
+## Apps List 📦
 
-The table below shows **all add-ons** in this repository, including unsupported ones.
+The table below shows **all apps** in this repository, including unsupported ones.
 
 <!-- markdownlint-disable MD060 -->
 
@@ -109,7 +109,7 @@ Tested on **amd64** architecture.
 
 ---
 
-## 🪦 Unsupported Add-ons Info
+## 🪦 Unsupported Apps Info
 
 To install them, you must add this repository again but point to the `unsupported` branch:
 
@@ -125,7 +125,7 @@ To install them, you must add this repository again but point to the `unsupporte
 > [!CAUTION]
 > **UNSUPPORTED / LEGACY SOFTWARE**
 >
-> The `unsupported` branch contains add-ons that are **no longer maintained**, deprecated, or broken.
+> The `unsupported` branch contains apps that are **no longer maintained**, deprecated, or broken.
 > They are provided "as-is" for archival purposes.
 > Updates are rare, and functionality is not guaranteed.
 > **These builds are performed locally on your device.**
@@ -133,21 +133,21 @@ To install them, you must add this repository again but point to the `unsupporte
 <!-- separator -->
 
 > [!WARNING]
-> Unsupported add-ons are **NOT MAINTAINED**. Use them strictly at your own risk.
+> Unsupported apps are **NOT MAINTAINED**. Use them strictly at your own risk.
 
 ## 🏆 Platinum Standard Quality
 
-This repository adheres to a **Platinum Standard** for Home Assistant Add-ons, ensuring robust stability, security, and code quality.
+This repository adheres to a **Platinum Standard** for Home Assistant Apps, ensuring robust stability, security, and code quality.
 
-Every add-on in this repository undergoes extensive CI/CD verification, including:
+Every app in this repository undergoes extensive CI/CD verification, including:
 
 - **Automated Builds:** Verified across multiple architectures.
 - **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and [Hadolint](https://github.com/hadolint/hadolint).
-- **Strict Linting:** Enforced by [Add-on Linter](https://github.com/home-assistant/hassio-addons/tree/master/linter), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
+- **Strict Linting:** Enforced by [App Linter](https://github.com/home-assistant/hassio-addons/tree/master/linter), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
 - **Code Consistency:** Automated formatting via [Prettier](https://prettier.io/), [Black](https://github.com/psf/black), and [isort](https://github.com/PyCQA/isort).
 - **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
 
-We strive to provide add-ons that are not just functional, but also secure, maintainable, and reliable.
+We strive to provide apps that are not just functional, but also secure, maintainable, and reliable.
 
 ---
 

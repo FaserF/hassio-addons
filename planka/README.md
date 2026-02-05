@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/planka/logo.png" width="100" />
 
-[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_planka)
-[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_planka)
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/addons/)
 [![Docker Image](https://img.shields.io/badge/docker-1.2.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-planka)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
@@ -22,19 +22,19 @@ Planka provides a modern, collaborative way to manage tasks with features like:
 - Project management
 - User avatars and attachments
 
-This add-on bundles PostgreSQL to provide a complete, self-hosted solution.
+This app bundles PostgreSQL to provide a complete, self-hosted solution.
 
 ## Installation
 
-1. Search for "Planka" in the Home Assistant Add-on Store.
-2. Install the add-on.
-3. Start the add-on.
+1. Search for "Planka" in the Home Assistant App Store.
+2. Install the app.
+3. Start the app.
 
 ---
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 

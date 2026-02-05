@@ -7,7 +7,7 @@ configuration:
     description: Private secret key for Flet sessions. Warning - changing this invalidates existing sessions.
   base_url:
     name: Base URL
-    description: The external URL where this add-on is accessible (required for OAuth).
+    description: The external URL where this app is accessible (required for OAuth).
   entra_client_id:
     name: Entra ID Client ID
     description: Client ID for Microsoft Entra ID (Old Azure AD) authentication.

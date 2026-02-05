@@ -4,7 +4,7 @@ Open Source Webserver without PHP and minimal extra modules.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -21,9 +21,9 @@ website_name: null
 
 ## 📂 Folder Usage
 
-- `/share`: Used to store your website files. The default location is `/share/htdocs`. This allows you to easily edit your website files from outside the add-on container.
+- `/share`: Used to store your website files. The default location is `/share/htdocs`. This allows you to easily edit your website files from outside the app container.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
-- `/data`: Used internally by the add-on for persistent storage.
+- `/data`: Used internally by the app for persistent storage.
 
 ## Support
 

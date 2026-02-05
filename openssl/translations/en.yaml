@@ -4,4 +4,4 @@ configuration:
     description: "The Common Name (CN) for which the certificate should be issued."
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the add-on logs."
+    description: "Controls the verbosity of the app logs."

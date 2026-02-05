@@ -10,4 +10,4 @@ configuration:
     description: "DHCP range for the PXE server."
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the add-on logs."
+    description: "Controls the verbosity of the app logs."

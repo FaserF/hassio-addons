@@ -4,7 +4,7 @@ ShieldDNS is a high-performance DoT proxy for AdGuard Home.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -24,8 +24,8 @@ upstream_dns: 192.168.1.2
 ## 📂 Folder Usage
 
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`).
-- `/config`: Home Assistant configuration directory (mapped but not used by the add-on directly).
-- `/data`: Used internally by the add-on for persistent storage.
+- `/config`: Home Assistant configuration directory (mapped but not used by the app directly).
+- `/data`: Used internally by the app for persistent storage.
 
 ## Support
 

@@ -4,7 +4,7 @@ PXE-Server to deploy a OS inside your local network.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -26,14 +26,14 @@ path_config: /media/netboot/config
 
 ### Requirements
 
-> ⚠️ **Important**: This add-on requires **Protection mode** to be **disabled** because it needs full network access for PXE/DHCP functionality. The add-on will fail to start if protection mode is enabled.
+> ⚠️ **Important**: this app requires **Protection mode** to be **disabled** because it needs full network access for PXE/DHCP functionality. The app will fail to start if protection mode is enabled.
 
 ## 📂 Folder Usage
 
 - `/media`: Used for storing boot images and configuration files. Path and config path are configurable via options:
   - `path`: `/media/netboot/image` (Location for bootable ISOs/images)
   - `path_config`: `/media/netboot/config` (Location for menu and instance configuration)
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+- `/data`: Used internally by the app for persistent meta-data storage.
 
 ## ⚠️ Secure Boot
 

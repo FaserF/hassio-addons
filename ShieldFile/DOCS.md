@@ -4,7 +4,7 @@ ShieldFile provides a modern, fast, and secure way to manage files on your Home 
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -23,10 +23,10 @@ users:
 
 - `/config`: Home Assistant configuration directory.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`).
-- `/share`: Shared folder between Home Assistant and other add-ons.
+- `/share`: Shared folder between Home Assistant and other apps.
 - `/media`: Media folder for storing media files.
 - `/backup`: Home Assistant backup directory.
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+- `/data`: Used internally by the app for persistent meta-data storage.
 
 ## Support
 

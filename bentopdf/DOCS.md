@@ -4,11 +4,11 @@ BentoPDF for Home Assistant OS
 
 A privacy-first, client-side PDF toolkit that processes files locally in your browser.
 
-**⚠️ Important:** This is the Beta version of the BentoPDF add-on.
+**⚠️ Important:** This is the Beta version of the BentoPDF app.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 

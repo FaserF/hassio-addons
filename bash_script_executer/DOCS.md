@@ -4,7 +4,7 @@ Execute your own bash scripts inside this Homeassistant Addon environment.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -16,8 +16,8 @@ script_path3: 'false'
 
 ## 📂 Folder Usage
 
-- `/share`: Used to store your bash scripts. This is the primary directory where the add-on looks for scripts to execute.
-- `/data`: Used internally by the add-on for persistent storage.
+- `/share`: Used to store your bash scripts. This is the primary directory where the app looks for scripts to execute.
+- `/data`: Used internally by the app for persistent storage.
 
 ## Support
 

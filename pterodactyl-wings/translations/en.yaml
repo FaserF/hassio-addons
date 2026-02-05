@@ -4,4 +4,4 @@ configuration:
     description: "Path to the configuration file."
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the add-on logs."
+    description: "Controls the verbosity of the app logs."

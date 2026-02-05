@@ -3,7 +3,7 @@
 Bluetooth MQTT Gateway Server (Unsupported)
 
 > [!WARNING]
-> **This add-on is no longer supported.**
+> **this app is no longer supported.**
 > The original repository (wealth/bt-mqtt-gateway) was archived in October 2023.
 >
 > **Recommended Alternatives for 2025:**
@@ -16,7 +16,7 @@ This can be used, to improve the reliability of bluetooth thermostats. See <http
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -27,8 +27,8 @@ debug: false
 
 ## 📂 Folder Usage
 
-* `/share`: Used to store the configuration file `bt-mqtt-gateway.yaml`. This allows you to easily edit the configuration from outside the add-on container.
-* `/data`: Used internally by the add-on for persistent storage.
+* `/share`: Used to store the configuration file `bt-mqtt-gateway.yaml`. This allows you to easily edit the configuration from outside the app container.
+* `/data`: Used internally by the app for persistent storage.
 
 ## Requirements
 

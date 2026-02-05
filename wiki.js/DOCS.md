@@ -6,7 +6,7 @@ The most powerful and extensible open source Wiki software. Make documentation a
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 

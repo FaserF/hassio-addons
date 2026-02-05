@@ -1,7 +1,7 @@
 name: Paperless-ngx
 version: 0.1.0
 slug: paperless-ngx
-description: Community-supported Paperless-ngx Add-on for Home Assistant
+description: Community-supported Paperless-ngx App for Home Assistant
 url: https://github.com/paperless-ngx/paperless-ngx
 arch:
   - aarch64

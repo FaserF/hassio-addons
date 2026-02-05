@@ -1,6 +1,6 @@
-# Verify Addons - Home Assistant Add-on Verification Suite
+# Verify Addons - Home Assistant App Verification Suite
 
-A modular verification suite for Home Assistant add-ons that performs comprehensive checks including linting, security scanning, build validation, and functional testing.
+A modular verification suite for Home Assistant Apps that performs comprehensive checks including linting, security scanning, build validation, and functional testing.
 
 ## Directory Structure
 
@@ -37,10 +37,10 @@ verify_addons/
 Run the main orchestrator from the repository root:
 
 ```powershell
-# Run all tests on all add-ons
+# Run all tests on all apps
 .\.scripts\verify_test_addons.ps1
 
-# Test specific add-on(s)
+# Test specific app(s)
 .\.scripts\verify_test_addons.ps1 -Addon apache2,openssl
 
 # Run specific tests only
@@ -49,10 +49,10 @@ Run the main orchestrator from the repository root:
 # Fix issues automatically
 .\.scripts\verify_test_addons.ps1 -Fix
 
-# Only check changed add-ons
+# Only check changed apps
 .\.scripts\verify_test_addons.ps1 -ChangedOnly
 
-# Include unsupported add-ons
+# Include unsupported apps
 .\.scripts\verify_test_addons.ps1 -IncludeUnsupported
 
 # Run real Supervisor integration test (resource-intensive!)

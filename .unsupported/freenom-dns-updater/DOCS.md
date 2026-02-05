@@ -8,7 +8,7 @@ The full feature list can be found there.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -19,8 +19,8 @@ update_time_in_seconds: 86400
 
 ## 📂 Folder Usage
 
-- `/share`: Used to store the Freenom configuration file. This allows you to easily edit the configuration from outside the add-on container.
-- `/data`: Used internally by the add-on for persistent storage.
+- `/share`: Used to store the Freenom configuration file. This allows you to easily edit the configuration from outside the app container.
+- `/data`: Used internally by the app for persistent storage.
 
 ## Support
 

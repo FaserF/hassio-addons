@@ -19,4 +19,4 @@ configuration:
     description: "Additional confirmation for database reset. Must be enabled together with 'reset_database'."
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the add-on logs."
+    description: "Controls the verbosity of the app logs."

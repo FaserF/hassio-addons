@@ -16,27 +16,27 @@ Home Assistant WhatsApp Backend (Baileys/Node.js)
 
 ## Architecture
 
-This add-on is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
+This app is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
 
 **Flow:**
 `Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
 ## 🌐 Network & Discovery
 
-By default, this add-on uses **Host Network Mode** (`host_network: true`).
+By default, this app uses **Host Network Mode** (`host_network: true`).
 
 ### Why is this enabled?
 
-- **Auto-Discovery:** It allows the add-on to broadcast its presence via **mDNS/Zeroconf** (`_ha-whatsapp._tcp.local`).
-- **Ease of Use:** Home Assistant will automatically find the add-on and prompt you to configure it ("New devices found"), pre-filling the URL and Port.
+- **Auto-Discovery:** It allows the app to broadcast its presence via **mDNS/Zeroconf** (`_ha-whatsapp._tcp.local`).
+- **Ease of Use:** Home Assistant will automatically find the app and prompt you to configure it ("New devices found"), pre-filling the URL and Port.
 
 ### Can I disable it?
 
-Yes. If you prefer strictly isolated networking, you can disable the **"Use Host Network"** toggle in the add-on's configuration tab.
+Yes. If you prefer strictly isolated networking, you can disable the **"Use Host Network"** toggle in the app's configuration tab.
 
 **If you disable Host Network:**
 
-1. **No Auto-Discovery:** Home Assistant will not "see" the add-on automatically.
+1. **No Auto-Discovery:** Home Assistant will not "see" the app automatically.
 2. **Manual Config:** You must manually enter the URL (e.g., `http://<your-ha-ip>:8066`) when setting up the integration.
 
 ## 🔒 Security & Public Access
@@ -68,7 +68,7 @@ Once the addon and integration are configured, check out the following resources
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant app page.
 
 ### Options
 
@@ -89,7 +89,7 @@ ui_auth_password: ''
 - `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
-- `mark_online`: (Default: `false`) If set to `true`, the add-on will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
+- `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
@@ -97,13 +97,13 @@ ui_auth_password: ''
 ## 📂 Folder Usage
 
 - `/data`: Used for persistent session data (`auth_info_baileys`), API tokens (`api_token.txt`), and logs. This ensure you don't have to scan the QR code frequently.
-- `/config`: Home Assistant configuration directory (mapped but not used by the add-on directly).
+- `/config`: Home Assistant configuration directory (mapped but not used by the app directly).
 
 ## Troubleshooting
 
 ### "Browser Context Closed"
 
-If you see errors about the browser context, it might have crashed. The add-on is designed to restart the browser process automatically on the next request or crash the container to let Supervisor restart it.
+If you see errors about the browser context, it might have crashed. The app is designed to restart the browser process automatically on the next request or crash the container to let Supervisor restart it.
 
 ### Session Lost
 
@@ -117,7 +117,7 @@ For issues and feature requests, please use the GitHub repository issues.
 
 ## 🎣 Webhook Support
 
-You can configure this add-on to forward all incoming messages to a webhook URL. This is useful for custom integrations, logging, or bridging to other chat systems.
+You can configure this app to forward all incoming messages to a webhook URL. This is useful for custom integrations, logging, or bridging to other chat systems.
 
 **Configuration:**
 
@@ -130,12 +130,12 @@ The webhook will receive a JSON payload for every incoming message. See [Webhook
 
 ## 🚀 Rocket.Chat Support
 
-This add-on can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps** framework.
+This app can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps** framework.
 
 **Setup:**
 
 1. Install the Rocket.Chat App (Apps > Marketplace > Private App).
-2. Configure the App settings in Rocket.Chat with your Add-on URL and API Token.
-3. Enable Webhooks in this Add-on and point them to your Rocket.Chat instance.
+2. Configure the App settings in Rocket.Chat with your App URL and API Token.
+3. Enable Webhooks in this App and point them to your Rocket.Chat instance.
 
 See the full **[Rocket.Chat Integration Guide](https://faserf.github.io/ha-whatsapp/rocketchat.html)** for step-by-step instructions.

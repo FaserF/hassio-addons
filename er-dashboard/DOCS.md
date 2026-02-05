@@ -4,10 +4,10 @@ ER-Startseite is a modern, highly customizable dashboard with a neon aesthetic.
 
 ## Access
 
-The add-on can be accessed in two ways:
+The app can be accessed in two ways:
 
 1. **Ingress (Recommended)**: Accessible directly via the Home Assistant sidebar. This use port `8099` internally and is proxied through Home Assistant (HTTPS).
-2. **Direct Access**: Accessible via `http://<your-ip>:9123`. This port can be configured to use SSL in the add-on options.
+2. **Direct Access**: Accessible via `http://<your-ip>:9123`. This port can be configured to use SSL in the app options.
 
 ## Configuration
 
@@ -19,7 +19,7 @@ The add-on can be accessed in two ways:
 
 ## Advanced Configuration
 
-The add-on uses the following internal environment variables which are pre-configured:
+The app uses the following internal environment variables which are pre-configured:
 
 - `PROJECT_NAME`: The name of the project displayed in the UI.
 - `BACKEND_CORS_ORIGINS`: Allowed origins for CORS.
@@ -29,8 +29,8 @@ The add-on uses the following internal environment variables which are pre-confi
 
 ### Database
 
-The add-on includes a bundled PostgreSQL 17 instance. Data is persisted in the add-on's internal storage. If you ever need to reset the database, you can wipe the add-on data.
+The app includes a bundled PostgreSQL 17 instance. Data is persisted in the app's internal storage. If you ever need to reset the database, you can wipe the app data.
 
 ### Custom Backgrounds
 
-You can upload your own background images and videos via the Web UI. These are stored within the add-on's persistent storage.
+You can upload your own background images and videos via the Web UI. These are stored within the app's persistent storage.

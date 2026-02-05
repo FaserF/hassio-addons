@@ -8,7 +8,7 @@ A Python script that automatically adjusts the temperature in your home based on
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -22,7 +22,7 @@ username: ''
 
 ## 📂 Folder Usage
 
-- `/data`: Used internally by the add-on for persistent meta-data storage and session information.
+- `/data`: Used internally by the app for persistent meta-data storage and session information.
 
 ## Support
 

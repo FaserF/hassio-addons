@@ -1,4 +1,4 @@
-# Home Assistant Add-on: AegisBot
+# Home Assistant App: AegisBot
 
 Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
 for Home Assistant.
@@ -6,16 +6,16 @@ for Home Assistant.
 ## About
 
 AegisBot is a comprehensive Telegram moderation bot that combines advanced antispam,
-security scanning, and an AI-driven FAQ system based on group context. This add-on
+security scanning, and an AI-driven FAQ system based on group context. This app
 packages the entire application (frontend dashboard and backend) into a single,
-easy-to-install Home Assistant add-on.
+easy-to-install Home Assistant App.
 
 ## Installation
 
-1. Add this repository to your Home Assistant add-on store
-1. Install the "AegisBot" add-on
-1. Configure the add-on (see configuration section below)
-1. Start the add-on
+1. Add this repository to your Home Assistant App store
+1. Install the "AegisBot" app
+1. Configure the app (see configuration section below)
+1. Start the app
 1. Access AegisBot through the Home Assistant interface using Ingress
 
 ## Configuration
@@ -147,14 +147,14 @@ debug: true
 
 ## 📂 Folder Usage
 
-This add-on uses the following folders:
+This app uses the following folders:
 
 - `/data`: Used for persistent storage of the AegisBot application data, including:
   - `database/`: SQLite database file.
   - `plugins/`: Custom plugins for the bot.
   - `uploads/`: Files uploaded through the bot.
   - `.secret_key`: Automatically generated encryption key.
-- `/share`: Mapped for general use, but not used by the add-on by default.
+- `/share`: Mapped for general use, but not used by the app by default.
 
 ## Support
 
@@ -165,9 +165,9 @@ For issues and feature requests:
 
 ## License
 
-This add-on uses the AegisBot project which is licensed under MIT.
+This app uses the AegisBot project which is licensed under MIT.
 
 ## Authors
 
 - Original AegisBot Project: FaserF
-- Home Assistant Add-on: FaserF
+- Home Assistant App: FaserF

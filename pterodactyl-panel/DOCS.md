@@ -16,16 +16,16 @@ Docker containers while exposing a beautiful and intuitive UI to end users.
 After the first start, you can log in with the following default credentials:
 
 - **Email:** `admin@example.com`
-- **Password:** The value you set in the **password** field of the add-on configuration.
+- **Password:** The value you set in the **password** field of the app configuration.
 
 > [!IMPORTANT]
 > **How to get your password:**
 >
 > 1. **If you set a password in the configuration:**
->    - Use the exact password you entered in the `password` field of the add-on configuration.
+>    - Use the exact password you entered in the `password` field of the app configuration.
 > 2. **If you left the password field empty:**
 >    - A random password was automatically generated during the first startup.
->    - Check the add-on logs for a message like: `"No database password set in configuration! Generating random password: XXXXXXXXXX"`
+>    - Check the app logs for a message like: `"No database password set in configuration! Generating random password: XXXXXXXXXX"`
 >    - You can also find it in `/share/pterodactyl/.env` as `DB_PASSWORD=`
 >    - Or check the startup logs for: `"For the first login use admin@example.com / admin as user and your database password to sign in."`
 
@@ -41,7 +41,7 @@ Please change the password and email address in the panel settings immediately a
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -55,21 +55,21 @@ ssl: true
 
 ## 📂 Folder Usage
 
-- `/share`: Mapped for sharing files between the panel and other add-ons or the host.
+- `/share`: Mapped for sharing files between the panel and other apps or the host.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
 - `/data`: Used for persistent storage of the panel's internal data, including the application code and local settings.
 
 ## Support
 
-If you encounter any issues with this add-on, please report them using the link below.
-The issue form will be pre-filled with the add-on information to help us resolve the
+If you encounter any issues with this app, please report them using the link below.
+The issue form will be pre-filled with the app information to help us resolve the
 problem faster.
 
 > Please use the link above to report problems. This ensures that all necessary
-> information (add-on name, version, etc.) is automatically included in your bug report.
+> information (app name, version, etc.) is automatically included in your bug report.
 
 If you have an idea for a new feature or improvement, please use the link below to
-submit a feature request. The form will be pre-filled with the add-on information.
+submit a feature request. The form will be pre-filled with the app information.
 
-> Please use the link above to request features. This ensures that the add-on name
+> Please use the link above to request features. This ensures that the app name
 > is automatically included in your feature request.

@@ -4,7 +4,7 @@ A lightweight NGINX web server for Home Assistant OS, with PHP 8.5 and MariaDB s
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Port Configuration
 
@@ -12,7 +12,7 @@ By default, HTTPS is mapped to external port **8324** instead of the standard po
 
 ### SSL/HTTPS Configuration
 
-> **⚠️ Important**: SSL is **disabled by default** (`ssl: false`) to allow the add-on to start without pre-existing certificates.
+> **⚠️ Important**: SSL is **disabled by default** (`ssl: false`) to allow the app to start without pre-existing certificates.
 
 **To enable SSL/HTTPS:**
 
@@ -28,11 +28,11 @@ By default, HTTPS is mapped to external port **8324** instead of the standard po
    keyfile: privkey.pem
    ```
 
-3. **Restart the add-on** to apply the changes.
+3. **Restart the app** to apply the changes.
 
 **Important Notes:**
 
-- The add-on will **fail to start** if `ssl: true` is set but the certificate files are missing.
+- the app will **fail to start** if `ssl: true` is set but the certificate files are missing.
 - Ensure certificates are in place **before** enabling SSL.
 - The `certfile` and `keyfile` options are only used when `ssl: true`.
 
@@ -52,7 +52,7 @@ website_name: null
 
 ## 📂 Folder Usage
 
-- `/share`: Used to store your website files. The default location is `/share/htdocs`. This allows you to easily edit your website files from outside the add-on container.
+- `/share`: Used to store your website files. The default location is `/share/htdocs`. This allows you to easily edit your website files from outside the app container.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). **Required** if `ssl: true` is enabled. Place your certificate files here before enabling SSL.
 - `/data`: Used for persistent storage of the MariaDB database and internal configurations.
 

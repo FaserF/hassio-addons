@@ -4,7 +4,7 @@ The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful ma
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -21,7 +21,7 @@ test_mode: false
 ## 📂 Folder Usage
 
 - `/config`: Home Assistant configuration directory.
-- `/share`: Mapped for sharing files between the platform and other add-ons or the host.
+- `/share`: Mapped for sharing files between the platform and other apps or the host.
 - `/data`: Used for persistent storage of the Solumati application data, including the local database and settings.
 
 ## Support

@@ -3,10 +3,10 @@
 Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (Unsupported)
 
 > [!WARNING]
-> **Deprecated / Experimental**: This add-on is experimental. Tuya has patched newer firmwares to prevent this OTA hack. Use at your own risk!
+> **Deprecated / Experimental**: this app is experimental. Tuya has patched newer firmwares to prevent this OTA hack. Use at your own risk!
 > Please prefer using the standalone installation of `tuya-convert` on a Raspberry Pi or Linux laptop for better success rates.
 
-**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs, switches, bulbs) from the cloud by flashing them with custom firmware like **Tasmota** or **ESPHome**—without soldering! This add-on brings the famous Tuya-Convert tool directly to your Home Assistant OS environment.
+**Tuya-Convert** allows you to free your Tuya-based smart devices (plugs, switches, bulbs) from the cloud by flashing them with custom firmware like **Tasmota** or **ESPHome**—without soldering! this app brings the famous Tuya-Convert tool directly to your Home Assistant OS environment.
 
 ## ✨ Features
 
@@ -16,7 +16,7 @@ Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (U
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -28,8 +28,8 @@ firmware: tasmota.bin
 
 ## 📂 Folder Usage
 
-- `/share`: Used for `backup_path` (Default: `/share/tuya-convert/`). This allows you to easily retrieve backups of the original firmware from outside the add-on container.
-- `/data`: Used internally by the add-on for persistent storage.
+- `/share`: Used for `backup_path` (Default: `/share/tuya-convert/`). This allows you to easily retrieve backups of the original firmware from outside the app container.
+- `/data`: Used internally by the app for persistent storage.
 
 ## Support
 

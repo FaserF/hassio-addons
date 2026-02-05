@@ -6,19 +6,19 @@ N8n (Nodemation) is an extendable workflow automation tool. With a fair-code dis
 
 ## Installation
 
-1. Search for the "N8n" add-on in the Supervisor add-on store.
-2. Install the add-on.
-3. Start the "N8n" add-on.
-4. Check the logs of the "N8n" add-on to see if everything went well.
+1. Search for the "N8n" app in the Supervisor app store.
+2. Install the app.
+3. Start the "N8n" app.
+4. Check the logs of the "N8n" app to see if everything went well.
 5. Click "OPEN WEB UI" to access the N8n interface.
 
 ## ⚙️ Configuration
 
-**Note**: This add-on supports Ingress. You can verify this by checking if the "OPEN WEB UI" button is active.
+**Note**: this app supports Ingress. You can verify this by checking if the "OPEN WEB UI" button is active.
 
 ### SSL/HTTPS Configuration
 
-> **⚠️ Important**: SSL is **disabled by default** (`ssl: false`) to allow the add-on to start without pre-existing certificates.
+> **⚠️ Important**: SSL is **disabled by default** (`ssl: false`) to allow the app to start without pre-existing certificates.
 
 **To enable SSL/HTTPS:**
 
@@ -34,7 +34,7 @@ N8n (Nodemation) is an extendable workflow automation tool. With a fair-code dis
    keyfile: privkey.pem
    ```
 
-3. **Restart the add-on** to apply the changes.
+3. **Restart the app** to apply the changes.
 
 ### Options
 
@@ -47,11 +47,11 @@ log_level: info
 
 #### Option: `log_level`
 
-The log level of the add-on.
+The log level of the app.
 
 ## 📂 Folder Usage
 
-- `/data/n8n`: Used for persistent storage of N8n data (workflows, credentials, etc.). This directory is preserved across add-on restarts and updates.
+- `/data/n8n`: Used for persistent storage of N8n data (workflows, credentials, etc.). This directory is preserved across app restarts and updates.
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). **Required** if `ssl: true` is enabled. Place your certificate files here before enabling SSL.
 
 ## Support

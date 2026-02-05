@@ -1,10 +1,10 @@
-# Home Assistant Add-on: SwitchCraft
+# Home Assistant App: SwitchCraft
 
 ## Configuration
 
-**Note**: _Remember to restart the add-on when the configuration is changed._
+**Note**: _Remember to restart the app when the configuration is changed._
 
-Example add-on configuration:
+Example app configuration:
 
 ```yaml
 log_level: info
@@ -14,7 +14,7 @@ log_level: info
 
 ### Option: `log_level`
 
-The `log_level` option controls the level of log output by the add-on and can
+The `log_level` option controls the level of log output by the app and can
 be changed to be more or less verbose, which might be useful when you are
 dealing with an unknown issue. Possible values are:
 

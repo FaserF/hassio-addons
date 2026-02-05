@@ -4,7 +4,7 @@ Generate self-signed certificates for Homeassistant OS.
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -14,8 +14,8 @@ website_name: null
 
 ## 📂 Folder Usage
 
-- `/ssl`: Used to store the generated self-signed certificates (`key_openssl.pem` and `cert_openssl.pem`). These are placed here so other add-ons can access and use them.
-- `/data`: Used internally by the add-on for persistent meta-data storage.
+- `/ssl`: Used to store the generated self-signed certificates (`key_openssl.pem` and `cert_openssl.pem`). These are placed here so other apps can access and use them.
+- `/data`: Used internally by the app for persistent meta-data storage.
 
 ## Usage
 

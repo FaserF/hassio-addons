@@ -4,7 +4,7 @@ Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your brows
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
@@ -25,7 +25,7 @@ autostart_antigravity: true
 
 ## 📂 Folder Usage
 
-- `/share`: Mapped with read/write access, allowing you to easily share files between the Antigravity desktop and other Home Assistant add-ons or the host.
+- `/share`: Mapped with read/write access, allowing you to easily share files between the Antigravity desktop and other Home Assistant Apps or the host.
 - `/data`: Used for persistent storage of the user's home directory (`/home/antigravity`) and system configurations.
 
 ## Support
