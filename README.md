@@ -1,6 +1,6 @@
 # FaserF's Home Assistant Apps 🏠
 
-This repository contains a collection of custom **Home Assistant Apps** (formerly known as Apps)
+This repository contains a collection of custom **Home Assistant Apps** (formerly known as Add-Ons)
 maintained by FaserF.
 
 > [!NOTE]
