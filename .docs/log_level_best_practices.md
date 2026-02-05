@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides standardized patterns for implementing robust `log_level` configuration in Home Assistant add-ons.
+This document provides standardized patterns for implementing robust `log_level` configuration in Home Assistant apps.
 
 ## Standard Pattern
 
@@ -21,7 +21,7 @@ fi
 - Explicit error detection if `bashio::config` fails
 - Warning log informs user of the fallback
 - Ensures `LOG_LEVEL` is never empty
-- Consistent fallback behavior across all add-ons
+- Consistent fallback behavior across all apps
 
 ### 2. Alternative: has_value Check
 
@@ -90,7 +90,7 @@ esac
 ### Node.js (Pino)
 
 ```javascript
-// Map addon log levels to pino-compatible levels
+// Map app log levels to pino-compatible levels
 const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 const LOG_LEVEL_MAP = {
   trace: 'trace',
@@ -135,7 +135,7 @@ esac
 sed -i "s|error_log .*|error_log /var/log/nginx/error.log ${nginx_log_level};|" /etc/nginx/nginx.conf
 ```
 
-## Checklist for New Add-ons
+## Checklist for New Apps
 
 - [ ] Add `log_level` to `options` with default value (`info`)
 - [ ] Add `log_level?:` to `schema` with validator

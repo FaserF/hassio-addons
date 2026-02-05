@@ -1,6 +1,6 @@
 ---
 name: Feature request
-description: Suggest an idea for this project for one of FaserF's Custom Addon's
+description: Suggest an idea for this project for one of FaserF's Custom App's
 title: "[Feature Request]: "
 labels: ["enhancement"]
 assignees:
@@ -24,13 +24,13 @@ body:
       value: |
         ## Environment
   - type: dropdown
-    id: addon_name
+    id: app_name
     validations:
       required: true
     attributes:
-      label: For which Add-On
+      label: For which App
       description: >
-        The name of the Addon you are wishing a new feature.
+        The name of the App you are wishing a new feature.
         For example: Apache2
       options:
         - Other
