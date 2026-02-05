@@ -280,6 +280,9 @@ function getSession(rawSessionId) {
         last_failed_message: 'None',
         last_failed_target: 'None',
         last_error_reason: 'None',
+        last_sent_time: null,
+        last_received_time: null,
+        last_failed_time: null,
         start_time: Date.now(),
         my_number: 'Unknown',
         version: BAILEYS_VERSION,
@@ -485,7 +488,7 @@ setInterval(
         fs.stat(filePath, (err, stats) => {
           if (err) return;
           if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => {});
+            fs.unlink(filePath, () => { });
           }
         });
       });
@@ -671,6 +674,7 @@ async function connectToWhatsApp(sessionId = 'default') {
           // Update session stats with the latest message detail
           session.stats.last_received_message = maskData(text);
           session.stats.last_received_sender = maskData(senderNumber);
+          session.stats.last_received_time = Date.now();
 
           // Determine effective sender number (handle Groups and LIDs)
           const participant = msg.key.participant || msg.participant;
@@ -799,7 +803,11 @@ app.delete('/session', async (req, res) => {
       last_received_sender: 'None',
       last_failed_message: 'None',
       last_failed_target: 'None',
+      last_failed_target: 'None',
       last_error_reason: 'None',
+      last_sent_time: null,
+      last_received_time: null,
+      last_failed_time: null,
       start_time: Date.now(),
       my_number: 'Unknown',
       version: BAILEYS_VERSION,
@@ -905,11 +913,13 @@ app.post('/send_message', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = maskData(message);
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = maskData(message);
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send message: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -931,11 +941,13 @@ app.post('/send_image', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = 'Image';
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = caption ? `Image: ${maskData(caption)}` : 'Image';
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send image: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -960,11 +972,13 @@ app.post('/send_poll', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Poll: ${question}`;
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Poll: ${maskData(question)}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send poll: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -990,11 +1004,13 @@ app.post('/send_location', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Location: ${maskData(title) || 'Pinned'}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send location: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1024,6 +1040,7 @@ app.post('/send_reaction', async (req, res) => {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Reaction: ${maskData(reaction)}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send reaction: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1047,11 +1064,13 @@ app.post('/send_buttons', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Buttons: ${message}`;
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Buttons: ${maskData(message)}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send buttons: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1075,11 +1094,13 @@ app.post('/send_document', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Document: ${maskData(fileName) || 'unnamed'}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send document: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1101,11 +1122,13 @@ app.post('/send_video', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = caption ? `Video: ${maskData(caption)}` : 'Video';
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send video: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1128,11 +1151,13 @@ app.post('/send_audio', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
     session.stats.last_sent_target = maskData(number);
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = ptt ? 'Voice Note' : 'Audio';
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send audio: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1358,19 +1383,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1378,8 +1401,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1477,11 +1500,13 @@ app.post('/send_list', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `List: ${title || text}`;
     session.stats.last_sent_target = number;
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `List: ${title || text}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send list: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1515,11 +1540,13 @@ app.post('/send_contact', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Contact: ${contact_name}`;
     session.stats.last_sent_target = number;
+    session.stats.last_sent_time = Date.now();
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Contact: ${contact_name}`;
     session.stats.last_failed_target = maskData(number);
+    session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send contact: ${e.message}`, 'error');
     res.status(500).json({ detail: e.toString() });
@@ -1535,7 +1562,7 @@ app.listen(PORT, '0.0.0.0', () => {
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => {});
+    connectToWhatsApp('default').catch(() => { });
   }
 
   // Auto-start all other sessions
@@ -1546,7 +1573,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
