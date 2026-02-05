@@ -13,7 +13,6 @@
 
 ## 📖 About
 
-
 ## 🐛 Report a Bug
 
 If you encounter any issues with this app, please report them using the link below. The issue form will be pre-filled with the app information to help us resolve the problem faster.

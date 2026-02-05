@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/pterodactyl-panel/logo.png" width="100" />
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_pterodactyl-panel)
-[![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/addons/)
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_pterodactyl-panel)
+[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 [![Docker Image](https://img.shields.io/badge/docker-1.2.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-pterodactyl_panel)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
@@ -12,7 +12,6 @@
 ---
 
 ## 📖 About
-
 
 ## Installation
 
@@ -40,7 +39,6 @@ problem faster.
 
 If you have an idea for a new feature or improvement, please use the link below to
 submit a feature request. The form will be pre-filled with the app information.
-
 
 ## 🐛 Report a Bug
 
@@ -72,7 +70,7 @@ Maintained by **FaserF**.
 
 ## ⚙️ Configuration
 
-Configure the app via the **Configuration** tab in the Home Assistant App page.
+Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
 
 ### Options
 
