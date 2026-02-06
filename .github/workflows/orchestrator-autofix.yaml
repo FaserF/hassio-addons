@@ -62,7 +62,7 @@ jobs:
       # Keep for future reference if PR autofix is re-enabled.
       # - name: 💬 Comment on PR (32-bit Removal)
       #   if: github.event_name == 'pull_request' && steps.enforce_arch.outputs.modified == 'true'
-      #   uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      #   uses: actions/github-script@v8
       #   with:
       #     script: |
       #       const signature = "<!-- autofix-32bit-notice -->";

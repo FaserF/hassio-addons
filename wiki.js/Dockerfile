@@ -11,8 +11,10 @@ ARG BUILD_DATE="unknown"
 
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.3.2"
+ENV ADDON_VERSION="3.4.0"
 ENV ADDON_NAME="Wiki.JS"
 ENV ADDON_SLUG="wiki.js"
 ENV ADDON_UNSUPPORTED="false"

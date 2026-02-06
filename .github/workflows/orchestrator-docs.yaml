@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@v6
 
       - name: 📝 Update Templates
         run: |
@@ -43,6 +43,6 @@ jobs:
           python3 .scripts/update_php_info.py
 
       - name: 💾 Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-update documentation standards"

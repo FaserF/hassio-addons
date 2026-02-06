@@ -14,4 +14,4 @@ if [ "$(stat -c %U /data/db 2>/dev/null)" != "mongodb" ]; then
     chown -R mongodb:mongodb /data/db
 fi
 
-exec sudo -u mongodb mongod --dbpath /data/db --bind_ip 127.0.0.1
+exec sudo -u mongodb mongod --dbpath /data/db --bind_ip 127.0.0.1 --logpath /dev/stdout --logappend

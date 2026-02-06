@@ -12,8 +12,6 @@ exec vncserver :1 \
     -localhost no \
     -geometry 1920x1080 \
     -depth 24 \
-    -AcceptClipboard=1 \
-    -SendClipboard=1 \
     -fg \
     -SecurityTypes VncAuth \
     -rfbauth /root/.config/tigervnc/passwd

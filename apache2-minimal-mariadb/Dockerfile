@@ -16,8 +16,10 @@ ARG PHP_VERSION="8.5"
 
 # hadolint ignore=DL4006
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.2.1"
+ENV ADDON_VERSION="3.3.0"
 ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
 ENV ADDON_SLUG="apache2-minimal-mariadb"
 ENV ADDON_UNSUPPORTED="false"

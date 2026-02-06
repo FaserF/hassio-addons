@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6
 
       - name: 🧹 Run actionlint
         id: actionlint
@@ -66,7 +66,7 @@ jobs:
       - name: 📝 Post Lint Report on Failure
         id: lint-report
         if: steps.actionlint.outputs.exit-code != '0'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8
         env:
           ACTIONLINT_OUTPUT: "${{ steps.actionlint.outputs.stdout }}"
           ACTIONLINT_STDERR: "${{ steps.actionlint.outputs.stderr }}"
@@ -91,7 +91,7 @@ jobs:
     steps:
       - name: 📊 Check GitHub Actions Billing
         id: billing
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8
         with:
           script: |
             try {
@@ -188,7 +188,7 @@ jobs:
 
       - name: 📝 Post Minutes Warning
         if: steps.billing.outputs.status == 'warning' || steps.billing.outputs.status == 'critical' || steps.billing.outputs.status == 'exhausted'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8
         env:
           BILLING_MESSAGE: ${{ steps.billing.outputs.message }}
           BILLING_STATUS: ${{ steps.billing.outputs.status }}
@@ -272,10 +272,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6
 
       - name: 📝 Analyze and Report Infrastructure Errors
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8
         with:
           script: |
             const script = require('./.scripts/workflow_monitor.js')

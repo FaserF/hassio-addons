@@ -17,8 +17,10 @@ ENV PYTHONUNBUFFERED=1
 
 # hadolint ignore=DL3018
 
+
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.4.1"
+ENV ADDON_VERSION="0.5.0"
 ENV ADDON_NAME="AegisBot"
 ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
@@ -31,8 +33,6 @@ RUN \
     musl-dev \
     libffi-dev \
     curl \
-    postgresql-client \
-    xz \
     postgresql-client \
     xz \
     nodejs \

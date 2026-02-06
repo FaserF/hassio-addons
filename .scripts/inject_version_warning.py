@@ -227,8 +227,9 @@ _show_startup_banner() {{
 
     # Footer with links
     bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    bashio::log.info "📝 Issues: https://github.com/$REPO/issues"
-    bashio::log.info "💖 Maintained by: $MAINTAINER"
+    bashio::log.info " Add-on: $NAME"
+    bashio::log.info " 📝 Issues: https://github.com/$REPO/issues"
+    bashio::log.info " 💖 Maintained by: $MAINTAINER"
     bashio::log.blue "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     bashio::log.info ""
 }}

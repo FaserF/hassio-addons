@@ -29,7 +29,7 @@ jobs:
       pull-requests: write
     steps:
       - name: 📝 Post CI Starting Comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -76,7 +76,7 @@ jobs:
       filters: ${{ steps.generator.outputs.filters }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@v6
 
       - name: 🐍 Generate Dynamic Filters
         id: generator
@@ -160,7 +160,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@v6
         if: steps.check-stale.outputs.is_stale != 'true'
         with:
           fetch-depth: 0
@@ -275,11 +275,11 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
+        uses: ludeeus/action-shellcheck@v2 # 2.0.0
         with:
           scandir: "./${{ matrix.addon }}"
         env:
@@ -287,7 +287,7 @@ jobs:
 
       # 2. Hadolint
       - name: 🐳 Hadolint
-        uses: brpaz/hadolint-action@c27bd9edc1e95eed30474db8f295ff5807ebca14 # v1.5.0
+        uses: brpaz/hadolint-action@v1
         with:
           dockerfile: "./${{ matrix.addon }}/Dockerfile"
 
@@ -347,7 +347,7 @@ jobs:
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
       - name: 🐍 Set up Python (cached)
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@v6
         with:
           python-version: '3.14'
           cache: 'pip'
@@ -427,13 +427,13 @@ jobs:
         addon: ${{ fromJSON(needs.filter.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@v6
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: 💾 Cache Docker layers (optimized for shared base image)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
+        uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
           # Primary key: addon-specific for precise cache hits
@@ -495,7 +495,7 @@ jobs:
       actions: read
     steps:
       - name: 📥 Download Compliance Artifacts
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           pattern: compliance-*
@@ -503,7 +503,7 @@ jobs:
           path: reports
 
       - name: 📝 Post Platinum Compliance Report
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@v8
         continue-on-error: true
         with:
           script: |
@@ -700,7 +700,7 @@ jobs:
             }
 
       - name: 📝 Post General CI Failure Report
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@v8
         with:
           script: |
             // Paginate to get ALL jobs (default limit is 30)
@@ -1169,10 +1169,10 @@ jobs:
       issues: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@v6
 
       - name: 📝 Post Success Comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@v8
         continue-on-error: true
         with:
           script: |

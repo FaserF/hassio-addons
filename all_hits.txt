@@ -1,0 +1,27 @@
+.github\workflows\orchestrator-automerge.yaml:        if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
+.github\workflows\orchestrator-automerge.yaml:          JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --paginate --jq '.jobs[] | {name: .name, conclusion: .conclusion}' | jq -c .)
+.github\workflows\orchestrator-automerge.yaml:            conclusion=$(echo "$job" | jq -r '.conclusion')
+.github\workflows\orchestrator-automerge.yaml:              case "$conclusion" in
+.github\workflows\orchestrator-automerge.yaml:                  echo "❌ Failed: $name ($conclusion)"
+.github\workflows\orchestrator-automerge.yaml:                  echo "❓ Unknown: $name ($conclusion)"
+.github\workflows\orchestrator-automerge.yaml:          FAILED_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .id' | grep -c . || echo "0")
+.github\workflows\orchestrator-automerge.yaml:          SUCCESS_COUNT=$(echo "$WORKFLOW_RUNS_JSON" | jq -r 'select(.conclusion == "success") | .id' | grep -c . || echo "0")
+.github\workflows\orchestrator-automerge.yaml:          echo "$WORKFLOW_RUNS_JSON" | jq -r '. | "Found workflow run: \(.name) (id: \(.id), status: \(.status), conclusion: \(.conclusion // "none"))"' || true
+.github\workflows\orchestrator-ci.yaml:                j.conclusion === 'failure' ||
+.github\workflows\orchestrator-ci.yaml:                j.conclusion === 'cancelled' ||
+.github\workflows\orchestrator-ci.yaml:                j.conclusion === 'timed_out'
+.github\workflows\orchestrator-ci.yaml:                j.conclusion === 'success' &&
+.github\workflows\orchestrator-ci.yaml:                j.steps.some(s => s.conclusion === 'failure')
+.github\workflows\orchestrator-ci.yaml:                const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure') : [];
+.github\workflows\orchestrator-ci.yaml:                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+.github\workflows\orchestrator-ci.yaml:                                    (job.conclusion === 'cancelled' ? 'Job Cancelled' :
+.github\workflows\orchestrator-ci.yaml:                                     job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown Step');
+.github\workflows\orchestrator-ci.yaml:                    s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out'
+.github\workflows\orchestrator-ci.yaml:                // If no step info, use job conclusion
+.github\workflows\orchestrator-ci.yaml:                    const stepName = job.conclusion === 'cancelled' ? 'Job Cancelled' :
+.github\workflows\orchestrator-ci.yaml:                                    job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown';
+.github\workflows\orchestrator-ci.yaml:                const failedRuns = prRuns.filter(run => run.conclusion === 'failure');
+.github\workflows\orchestrator-cleanup.yaml:            const lastRunFailed = lastRun.conclusion === 'failure' || lastRun.conclusion === 'cancelled';
+.github\workflows\orchestrator-release.yaml:            FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+.github\workflows\orchestrator-release.yaml:            SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || echo "0")
+.github\workflows\orchestrator-workflow-monitor.yaml:      github.event.workflow_run.conclusion == 'failure'
