@@ -7,14 +7,14 @@ ARG BUILD_DATE="unknown"
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # 1. Install Node.js & Git (Using standard repos for stability)
-# hadolint ignore=DL3018
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.2.1"
 ENV ADDON_NAME="WhatsApp"
 ENV ADDON_SLUG="whatsapp"
 ENV ADDON_UNSUPPORTED="false"
 
+# 1. Install Node.js & Git (Using standard repos for stability)
+# hadolint ignore=DL3018
 RUN \
  apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \

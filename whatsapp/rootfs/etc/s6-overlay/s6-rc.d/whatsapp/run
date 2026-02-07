@@ -141,7 +141,7 @@ install_integration() {
             if [ -d "$INTEGRATION_DIR" ]; then
                 bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
 
-                if [ "$IS_UPDATE" == "true" ]; then
+                if [ "$IS_UPDATE" = "true" ]; then
                     MSG="The WhatsApp integration has been updated to $TAG_NAME. Please restart Home Assistant."
                     TITLE="WhatsApp Integration Updated"
                 else

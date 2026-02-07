@@ -479,7 +479,6 @@ logger.info(`📂 Media Directory: ${MEDIA_DIR}`);
 app.use('/media', express.static(MEDIA_DIR));
 
 // Clean up old media files every hour (keep for 24h)
-// Clean up old media files every hour (keep for 24h)
 // ONLY if not using a custom media folder (to prevent deleting user data)
 if (!process.env.MEDIA_FOLDER) {
   setInterval(
