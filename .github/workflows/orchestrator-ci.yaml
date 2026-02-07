@@ -41,29 +41,22 @@ jobs:
             const signature = "<!-- ci-start-comment -->";
             const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
 
-            // If the comment already exists, skip posting a new one
             if (existingComment) {
-                console.log("CI start comment already exists, skipping...");
-                return;
+                console.log(`Updating existing CI start comment ${existingComment.id}...`);
+                await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: existingComment.id,
+                    body: body
+                });
+            } else {
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: body
+                });
             }
-
-            let body = signature + "\n";
-            body += "## 🔄 CI Tests Running\n\n";
-            body += "Comprehensive CI tests are now running. This may take a few minutes.\n\n";
-            body += "A detailed feedback comment will be posted once all checks are complete.\n\n";
-            body += "---\n\n";
-            body += "**📋 Merge Policy:**\n";
-            body += "- PRs are typically only merged when **all CI tests pass**\n";
-            body += "- If tests fail, you will receive automated guidance on how to fix the issues\n";
-            body += "- PRs with failing tests may receive limited maintainer attention until resolved\n\n";
-            body += "_*Workflow configuration errors are handled by maintainers_";
-
-            await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body
-            });
 
   # --------------------------------------------------------------------------------
   # FILTER: Detect which add-ons have changed
@@ -795,9 +788,14 @@ jobs:
             const oldGeneralComments = existingComments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
             for (const comment of oldGeneralComments) {
                 try {
+                    // Update existing if it's the only one, otherwise minimize and post new?
+                    // Updating is cleaner for the timeline.
+                    // But minimizing and posting new ensures it's at the bottom.
+                    // Improving logic: Minimize OLD ones, post NEW one.
                     await github.graphql(`
                         mutation($subjectId: ID!) {
                             minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+
                                 minimizedComment {
                                     isMinimized
                                 }

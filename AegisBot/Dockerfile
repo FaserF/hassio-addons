@@ -12,17 +12,14 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 
-# Install System Requirements including Node.js
-# hadolint ignore=DL3018,DL3017
-
-# hadolint ignore=DL3018
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="0.5.0"
 ENV ADDON_NAME="AegisBot"
 ENV ADDON_SLUG="aegisbot"
 ENV ADDON_UNSUPPORTED="false"
 
+# Install System Requirements including Node.js
+# hadolint ignore=DL3018,DL3017
 RUN \
     apk add --no-cache -u libssl3 libcrypto3 \
     musl \

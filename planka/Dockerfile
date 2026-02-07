@@ -8,14 +8,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
 
-# hadolint ignore=DL3013
-
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.1"
+ENV ADDON_VERSION="1.2.0"
 ENV ADDON_NAME="Planka"
 ENV ADDON_SLUG="planka"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3013
 RUN \
     apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \

@@ -17,7 +17,8 @@ param(
     [switch]$Help,
     [switch]$Debug,
     [switch]$VerboseNotifications,
-    [switch]$ExitOnError
+    [switch]$ExitOnError,
+    [switch]$LintOnly
 )
 
 # --- SETUP ---
@@ -340,6 +341,14 @@ try {
         # Add SupervisorTest if switch is ON and not already included
         if ($SupervisorTest -and "SupervisorTest" -notin $activeTests) {
             $activeTests += "SupervisorTest"
+        }
+
+        # Handle LintOnly Mode
+        if ($LintOnly) {
+            $activeTests = $activeTests | Where-Object { $_ -notin @("DockerBuild", "DockerRun", "SupervisorTest") }
+            if ("all" -in $Addon -and -not $ChangedOnly) {
+                Write-Host "NOTE: LintOnly mode enabled. Skipping Docker Build/Run and Supervisor Tests." -ForegroundColor Yellow
+            }
         }
 
         if ($Fix -and $Config['testWeights'] -and $Config['testWeights']['AutoFix']) {

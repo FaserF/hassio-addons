@@ -19,6 +19,7 @@ ENV ADDON_NAME="Home Assistant Test Instance"
 ENV ADDON_SLUG="ha_test_instance"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
