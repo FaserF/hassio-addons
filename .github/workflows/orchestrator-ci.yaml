@@ -275,7 +275,7 @@ jobs:
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@v1
+        uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "./${{ matrix.App }}"
         env:
