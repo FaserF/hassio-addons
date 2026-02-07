@@ -1,6 +1,7 @@
 #!/usr/bin/with-contenv bashio
+source /usr/lib/bashio/banner.sh
 
-bashio::log.info "Starting WhatsApp App (Baileys)..."
+bashio::log.info "Starting WhatsApp Homeassistant App (Baileys)..."
 
 export PORT=8066
 # Map Bashio log level to Pino log level (used by Baileys/WhatsApp)
@@ -284,4 +285,5 @@ else
 fi
 
 cd /opt/whatsapp
+bashio::app.print_banner
 exec node index.js
