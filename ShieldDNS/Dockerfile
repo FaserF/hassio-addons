@@ -5,7 +5,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 FROM coredns/coredns:1.14.1 AS coredns
 
 # hadolint ignore=DL3007
-FROM cloudflare/cloudflared:2026.1.2 AS cloudflared
+FROM cloudflare/cloudflared:2026.2.0 AS cloudflared
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}

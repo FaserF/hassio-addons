@@ -342,11 +342,11 @@ jobs:
         continue-on-error: ${{ matrix.App == 'netboot-xyz' }}
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
-      - name: 🐍 Set up Python (cached)
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.14'
-          cache: 'pip'
+          python-version: "3.14"
+          cache: "pip"
 
       - name: 📦 Install Compliance Deps
         run: pip install pyyaml

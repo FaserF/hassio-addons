@@ -230,6 +230,7 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
+            -e SUPERVISOR_DEV=0 \
             -e SUPERVISOR_SHARE_DATA=1 \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
