@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.3 (2026-02-07)
+
+### ✨ Features
+- last_sent last_failed last_recieved ([`2914df1a`](https://github.com/FaserF/hassio-addons/commit/2914df1ac839b50b61058dcfd1a69894e5be4775))
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.128.4 [skip-tests] ([`ad0c5a49`](https://github.com/FaserF/hassio-addons/commit/ad0c5a492cea6e565c22e7b4b08ed361d356aeca))
+- ⬆️ Update dependency fastapi to v0.128.1 [skip-tests] (#635) [skip-tests] ([`683b7e63`](https://github.com/FaserF/hassio-addons/commit/683b7e63194e4b9f098db389444277659ccd7437))
+- ⬆️ Update dependency globals to v17.3.0 [skip-tests] (#631) [skip-tests] ([`15dd1b1c`](https://github.com/FaserF/hassio-addons/commit/15dd1b1ce5317c96efc2649ac83c1d6fefbdbe12))
+
+### 🚀 Other
+- CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Add support for Multiple WhatsApp instances #626 (#630) [skip-tests] ([`a039be95`](https://github.com/FaserF/hassio-addons/commit/a039be95e2bf92722f701c1fa2ccfbac2cbf5224))
+- another fix for "sender" does not contain phone number #612 ([`5fc82618`](https://github.com/FaserF/hassio-addons/commit/5fc826182ac6f31a3ddb106305737c894a9a456c))
+
+
 ## 1.2.2 (2026-01-29)
 
 ### 📦 Dependencies

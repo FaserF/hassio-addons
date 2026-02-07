@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # 1. Install Node.js & Git (Using standard repos for stability)
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.1"
+ENV ADDON_VERSION="1.2.2"
 ENV ADDON_NAME="WhatsApp"
 ENV ADDON_SLUG="whatsapp"
 ENV ADDON_UNSUPPORTED="false"
