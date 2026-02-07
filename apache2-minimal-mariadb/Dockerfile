@@ -14,7 +14,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
-# hadolint ignore=DL4006
+# hadolint ignore=DL4006,DL3018
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="3.3.0"

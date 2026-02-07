@@ -177,7 +177,7 @@ maxTemp=$(bashio::config 'maxTemp')
 log_level=$(bashio::config 'log_level')
 
 # Validate credentials
-if [ -z "$username" ] || [ "$username" == "null" ] || [ -z "$password" ] || [ "$password" == "null" ]; then
+if [ -z "$username" ] || [ "$username" = "null" ] || [ -z "$password" ] || [ "$password" = "null" ]; then
 	bashio::log.error "=========================================="
 	bashio::log.error "❌ Missing Tado credentials!"
 	bashio::log.error "=========================================="

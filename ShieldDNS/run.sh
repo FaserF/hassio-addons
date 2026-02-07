@@ -328,7 +328,7 @@ bashio::log.info "🔍 Checking port availability..."
 
 # Auto-Fallback for DoT Port (853 -> 8853)
 if is_port_busy "${DOT_PORT}"; then
-	if [ "${DOT_PORT}" == "853" ]; then
+	if [ "${DOT_PORT}" = "853" ]; then
 		bashio::log.warning "⚠️  Port 853 is BUSY (likely AdGuard Home)."
 		bashio::log.warning "🔄 Switching DoT to Fallback Port: 8853"
 		DOT_PORT="8853"

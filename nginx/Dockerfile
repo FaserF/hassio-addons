@@ -10,9 +10,6 @@ ARG NGINX_VERSION=""
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-# Create directory for nginx to store PID file and install dependencies
-# hadolint ignore=DL3018,DL3047
-
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
@@ -23,6 +20,8 @@ ENV ADDON_SLUG="nginx"
 ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /tmp
+
+# Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
   && apk --no-cache -u add libssl3 libcrypto3 \

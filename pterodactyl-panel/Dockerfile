@@ -2,18 +2,11 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
+ENV PTERODACTYL_VERSION="v1.12.0"
+
 # Install system requirements
 # Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
-
-ENV PTERODACTYL_VERSION="v1.12.0"
-
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.0"
-ENV ADDON_NAME="pterodactyl Panel Gameserver"
-ENV ADDON_SLUG="pterodactyl_panel"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     redis \
     curl \
@@ -79,6 +72,12 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 # All build requirements get scrapped as to maintain a small image
 FROM base as production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
+
+# Addon metadata (injected by CI)
+ENV ADDON_VERSION="1.2.0"
+ENV ADDON_NAME="pterodactyl Panel Gameserver"
+ENV ADDON_SLUG="pterodactyl_panel"
+ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /var/www/html
 

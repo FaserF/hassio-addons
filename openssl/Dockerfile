@@ -3,14 +3,13 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
-# hadolint ignore=DL3018
-
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="2.3.0"
 ENV ADDON_NAME="OpenSSL"
 ENV ADDON_SLUG="openssl"
 ENV ADDON_UNSUPPORTED="false"
 
+# hadolint ignore=DL3018
 RUN apk --no-cache -u add libssl3 libcrypto3 openssl
 
 # Copy data for add-on

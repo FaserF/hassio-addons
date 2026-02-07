@@ -8,15 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install requirements
 # hadolint ignore=DL3008
-
-# hadolint ignore=DL3008
-
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.0.2"
-ENV ADDON_NAME="Komodo"
-ENV ADDON_SLUG="komodo"
-ENV ADDON_UNSUPPORTED="false"
-
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

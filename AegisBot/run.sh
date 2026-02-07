@@ -524,7 +524,7 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 	# Get GitHub Repo from config or use default
 	GITHUB_REPO_CONFIG="${GITHUB_REPO:-FaserF/AegisBot}"
 
-	if [ "$DOWNLOAD_VERSION" == "latest" ]; then
+	if [ "$DOWNLOAD_VERSION" = "latest" ]; then
 		bashio::log.info "Fetching latest release information for $GITHUB_REPO_CONFIG..."
 
 		# We need to fetch the tag name. Logic similar to download: try public, then private.
@@ -570,7 +570,7 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 	fi
 
 	# Prepare Download URL
-	if [ "$DOWNLOAD_VERSION" == "main" ]; then
+	if [ "$DOWNLOAD_VERSION" = "main" ]; then
 		DOWNLOAD_URL="https://api.github.com/repos/${GITHUB_REPO_CONFIG}/tarball/main"
 	else
 		DOWNLOAD_URL="https://api.github.com/repos/${GITHUB_REPO_CONFIG}/tarball/$DOWNLOAD_VERSION"
