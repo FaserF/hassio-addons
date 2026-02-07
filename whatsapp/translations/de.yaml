@@ -25,7 +25,7 @@ configuration:
     description: "Ein geheimer Token, der mit der Webhook-Anfrage gesendet wird (X-Webhook-Token Header), um die Kommunikation abzusichern."
   ui_auth_enabled:
     name: "UI Authentifizierung"
-    description: "Aktiviert die Basis-Authentifizierung für die Web-Oberfläche (Port 8066). Empfohlen, wenn das Addon im Internet freigegeben ist."
+    description: "Aktiviert die Basis-Authentifizierung für die Web-Oberfläche (Port 8066). Empfohlen, wenn die Homeassistant App im Internet freigegeben ist."
   ui_auth_password:
     name: "UI Passwort"
     description: "Das Passwort für die Web-Oberfläche (Benutzername ist immer 'admin')."

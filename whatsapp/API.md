@@ -1,13 +1,13 @@
-# WhatsApp Addon API Documentation
+# WhatsApp App API Documentation
 
-This addon exposes a REST API that acts as a bridge between Home Assistant (via the [ha-whatsapp integration](https://github.com/FaserF/ha-whatsapp)) and the WhatsApp network using `Baileys`.
+This App exposes a REST API that acts as a bridge between Home Assistant (via the [ha-whatsapp integration](https://github.com/FaserF/ha-whatsapp)) and the WhatsApp network using `Baileys`.
 
 ## Authentication
 
 All API requests (except `/health`) **MUST** include the `X-Auth-Token` header.
 
 - The token is automatically generated on first run.
-- You can view and copy the token from the Addon Dashboard (Web UI).
+- You can view and copy the token from the App Dashboard (Web UI).
 
 ## Endpoints
 
@@ -301,7 +301,7 @@ Sends a VCard contact.
 
 ### 4. Native Commands
 
-The Addon supports the following native commands via WhatsApp messages (sent to the bot):
+The App supports the following native commands via WhatsApp messages (sent to the bot):
 
 - **`/ping`**: Returns "Pong! 🏓" (useful for checking connection).
 - **`/id`**: Returns the current Chat ID (useful for finding Group IDs).
@@ -341,5 +341,5 @@ Healthcheck endpoint for Docker/Supervisor. No auth required.
 **Response:**
 
 ```json
-{ "status": "ok", "service": "whatsapp-addon" }
+{ "status": "ok", "service": "whatsapp-App" }
 ```

@@ -19,7 +19,7 @@ Home Assistant WhatsApp Backend (Baileys/Node.js)
 This app is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
 
 **Flow:**
-`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon` -> `Baileys (Node.js)` -> `WhatsApp Web`
+`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This App` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
 ## 🌐 Network & Discovery
 
@@ -41,7 +41,7 @@ Yes. If you prefer strictly isolated networking, you can disable the **"Use Host
 
 ## 🔒 Security & Public Access
 
-Requires Home Assistant 2024.12+ (or newer) to expose ports via the addon configuration.
+Requires Home Assistant 2024.12+ (or newer) to expose ports via the App configuration.
 
 If you plan to use **Webhooks** or the **Rocket.Chat integration**, you may need to expose **Port 8066** to the internet (or at least to your Rocket.Chat instance).
 
@@ -59,7 +59,7 @@ To enable password protection for the Web UI:
 
 ## 🚀 Getting Started with Automations
 
-Once the addon and integration are configured, check out the following resources to start building:
+Once the App and integration are configured, check out the following resources to start building:
 
 - [Installation](https://faserf.github.io/ha-whatsapp/installation.html)
 - [Automations](https://faserf.github.io/ha-whatsapp/automations.html)
