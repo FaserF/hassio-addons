@@ -72,12 +72,12 @@ Run the main orchestrator from the repository root:
 | `YamlLint`       | Lints YAML files                | No              |
 | `MarkdownLint`   | Lints Markdown files            | No              |
 | `Prettier`       | Checks code formatting          | No              |
-| `AppLinter`    | Official HA App linter        | Yes             |
+| `AppLinter`      | Official HA App linter          | Yes             |
 | `Compliance`     | Python compliance checks        | No              |
 | `Trivy`          | Security vulnerability scanning | Yes             |
 | `VersionCheck`   | Base image version validation   | No              |
-| `DockerBuild`    | Builds App Docker images      | Yes             |
-| `DockerRun`      | Runs Apps in mock environment | Yes             |
+| `DockerBuild`    | Builds App Docker images        | Yes             |
+| `DockerRun`      | Runs Apps in mock environment   | Yes             |
 | `CodeRabbit`     | Static analysis (Dockerfile)    | No              |
 | `WorkflowChecks` | GitHub Actions validation       | Yes             |
 | `PythonChecks`   | Python code analysis            | No              |
