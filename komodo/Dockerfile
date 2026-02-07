@@ -1,5 +1,5 @@
-ARG BUILD_FROM
-ARG KOMODO_VERSION
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG KOMODO_VERSION=1.19.5
 FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
 FROM ${BUILD_FROM}
 
@@ -18,7 +18,7 @@ RUN \
         sudo \
     && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
        gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor \
-    && echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
+    && echo "deb [ arch=amd64,arm64 trusted=yes ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
        tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \

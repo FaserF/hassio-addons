@@ -94,54 +94,41 @@ jobs:
 
       - name: ❌ Report CI Failure
         if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
+        uses: actions/github-script@v8
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_NUMBER: "${{ github.event.workflow_run.run_number }}"
+          RUN_URL: "${{ github.event.workflow_run.html_url }}"
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
-        run: |
-          echo "CI failed. Minimizing previous comments..."
-          # Instead of minimizing, just post? No, reducing noise means updating.
-          # script to find and update comment
-          node -e '
-            const github = require("@actions/github");
-            const context = github.context;
-            const octokit = github.getOctokit(process.env.GH_TOKEN);
-            async function run() {
-                const prNumber = parseInt(process.env.PR_NUMBER);
-                const { data: comments } = await octokit.rest.issues.listComments({
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+            });
+            const signature = "❌ **Auto-merge skipped:**";
+            const existing = comments.find(c => c.user.type === "Bot" && c.body.includes(signature));
+            const body = "❌ **Auto-merge skipped:** The associated CI run ([#" + process.env.RUN_NUMBER + "](" + process.env.RUN_URL + ")) did not complete successfully. Please resolve all CI issues to trigger auto-merge.";
+
+            if (existing) {
+                console.log("Updating existing auto-merge failure comment...");
+                await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: existing.id,
+                    body: body
+                });
+            } else {
+                console.log("Posting new auto-merge failure comment...");
+                await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: prNumber,
+                    body: body
                 });
-                const signature = "❌ **Auto-merge skipped:**";
-                const existing = comments.find(c => c.user.type === "Bot" && c.body.includes(signature));
-                const body = "❌ **Auto-merge skipped:** The associated CI run ([#" + process.env.RUN_NUMBER + "](" + process.env.RUN_URL + ")) did not complete successfully. Please resolve all CI issues to trigger auto-merge.";
-
-                if (existing) {
-                    console.log("Updating existing auto-merge failure comment...");
-                    await octokit.rest.issues.updateComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        comment_id: existing.id,
-                        body: body
-                    });
-                } else {
-                    console.log("Posting new auto-merge failure comment...");
-                    await octokit.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: prNumber,
-                        body: body
-                    });
-                }
             }
-            run().catch(err => { console.error(err); process.exit(1); });
-          '
-          env:
-             RUN_NUMBER: "${{ github.event.workflow_run.run_number }}"
-             RUN_URL: "${{ github.event.workflow_run.html_url }}"
-             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-             PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
-          exit 0
 
       - name: 🚫 Skip if no PR found
         if: steps.find-pr.outputs.found != 'true'

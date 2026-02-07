@@ -58,10 +58,10 @@ jobs:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
 
-      - name: 🐍 Setup Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
+          python-version: "3.14"
 
       - name: 📦 Install Python Dependencies
         run: pip install requests pyyaml --quiet
