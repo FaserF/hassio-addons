@@ -39,6 +39,7 @@ jobs:
             });
 
             const signature = "<!-- ci-start-comment -->";
+            const body = `## 🚀 CI Build Starting\n\nI'm now running the CI checks for this PR. Please wait for the results below.\n\n${signature}`;
             const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
 
             if (existingComment) {
@@ -81,7 +82,9 @@ jobs:
           filters = {}
           # Apps excluded from CI builds/tests (only built during release)
           # These Apps are too large or resource-intensive for CI
-          CI_EXCLUDED_AppS = {"sap-abap-cloud-dev"}
+          # apps excluded from CI builds/tests (only built during release)
+          # These apps are too large or resource-intensive for CI
+          CI_EXCLUDED_APPS = {"sap-abap-cloud-dev"}
 
           # Scan for config.yaml to identify Apps
           for root, dirs, files in os.walk("."):
@@ -103,7 +106,7 @@ jobs:
                        continue
 
                   # Skip CI-excluded Apps (heavy/long-running, only built on release)
-                  if App_name in CI_EXCLUDED_AppS:
+                  if App_name in CI_EXCLUDED_APPS:
                       print(f"Skipping CI-excluded App: {App_name}")
                       continue
 
@@ -272,7 +275,7 @@ jobs:
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@v2
+        uses: ludeeus/action-shellcheck@v1
         with:
           scandir: "./${{ matrix.App }}"
         env:
@@ -331,9 +334,9 @@ jobs:
             echo "⏭️ No package.json found, skipping ESLint."
           fi
 
-      # 4. App Linter (Frenck's) - Validates config.yaml/json
-      - name: 🕵️ App Linter
-        uses: frenck/action-App-linter@v2
+      # 4. apps linter (Frenck's) - Validates config.yaml/json
+      - name: 🕵️ app linter
+        uses: frenck/action-addon-linter@v2
         with:
           path: "./${{ matrix.App }}"
         continue-on-error: ${{ matrix.App == 'netboot-xyz' }}
@@ -469,7 +472,7 @@ jobs:
             --target "/data/${{ matrix.App }}" \
             --image "$IMAGE" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --App || exit 1
+            --addon || exit 1
 
           echo "✅ amd64 build successful"
 
