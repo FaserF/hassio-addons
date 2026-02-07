@@ -173,10 +173,10 @@ install_integration() {
 # We check slug, name, and version to be sure
 # Fetch App Info from Supervisor API directly check
 # (bashio::app.* commands were failing, likely due to older bashio version in base or context)
-App_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/Apps/self/info)
-SLUG=$(echo "$App_INFO" | jq -r '.data.slug // empty')
-NAME=$(echo "$App_INFO" | jq -r '.data.name // empty')
-VERSION=$(echo "$App_INFO" | jq -r '.data.version // empty')
+APP_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
+SLUG=$(echo "$APP_INFO" | jq -r '.data.slug // empty')
+NAME=$(echo "$APP_INFO" | jq -r '.data.name // empty')
+VERSION=$(echo "$APP_INFO" | jq -r '.data.version // empty')
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
@@ -198,7 +198,7 @@ fi
 
 # Fetch Releases once
 bashio::log.info "Fetching release information..."
-RELEASES_JSON=$(curl -s -A "HomeAssistant-App" "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
+RELEASES_JSON=$(curl -s -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-whatsapp/releases")
 
 # Valid JSON check
 if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then

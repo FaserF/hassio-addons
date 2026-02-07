@@ -4,8 +4,8 @@
 # shellcheck shell=bash
 
 bashio::app.print_banner() {
-	local App_version
-	App_version=$(bashio::app.version)
+	local app_version
+	app_version=$(bashio::addon.version)
 
 	# Load Baileys version from environment file
 	if [ -f /etc/environment ]; then
@@ -26,11 +26,11 @@ bashio::app.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Version Checks
-	if [[ "$App_version" == *"dev"* ]]; then
-		bashio::log.warning "⚠️  You are running a Development Build ($App_version)!"
+	if [[ "$app_version" == *"dev"* ]]; then
+		bashio::log.warning "⚠️  You are running a Development Build ($app_version)!"
 		bashio::log.warning "⚠️  This version may be unstable and contain bugs."
-	elif [[ "$App_version" =~ ^0\. ]]; then
-		bashio::log.info "🚧  You are running a BETA version ($App_version)."
+	elif [[ "$app_version" =~ ^0\. ]]; then
+		bashio::log.info "🚧  You are running a BETA version ($app_version)."
 	fi
 
 	bashio::log.blue "-----------------------------------------------------------"

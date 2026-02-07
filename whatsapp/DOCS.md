@@ -96,7 +96,7 @@ media_folder: null
 
 > [!CAUTION]
 > **Privacy Consideration for `media_folder`**
-> When a custom `media_folder` is set, all files in that directory are served publicly via the `/media` endpoint (e.g., `http://<addon-ip>:8066/media/filename`).
+> When a custom `media_folder` is set, all files in that directory are served publicly via the `/media` endpoint (e.g., `http://<host-ip>:8066/media/filename`).
 >
 > If you point this to a shared directory (like `/media/whatsapp`), ensure that no sensitive or private files are stored there, as they will be accessible without authentication if the port is exposed.
 

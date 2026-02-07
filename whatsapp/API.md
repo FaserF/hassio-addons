@@ -152,11 +152,6 @@ Sends a document (PDF, Zip, Doc, etc.).
 }
 ```
 
-"caption": "Here is the document you requested"
-}
-
-````
-
 #### `POST /send_video`
 
 Sends a video file.
@@ -169,7 +164,7 @@ Sends a video file.
   "url": "https://example.com/video.mp4",
   "caption": "Watch this!"
 }
-````
+```
 
 #### `POST /send_audio`
 
@@ -184,8 +179,6 @@ Sends an audio file or voice note.
   "ptt": true
 }
 ```
-
-**Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
 
 **Note:** `ptt: true` sends it as a voice note (waveform), `false` sends it as a normal audio file.
 
@@ -341,5 +334,5 @@ Healthcheck endpoint for Docker/Supervisor. No auth required.
 **Response:**
 
 ```json
-{ "status": "ok", "service": "whatsapp-App" }
+{ "status": "ok", "service": "whatsapp-addon" }
 ```
