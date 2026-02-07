@@ -79,6 +79,8 @@ keep_alive_interval: 30000
 mask_sensitive_data: false
 ui_auth_enabled: false
 ui_auth_password: ''
+media_folder: '/share/whatsapp'
+
 ```
 
 ### Configuration Options
@@ -90,6 +92,7 @@ ui_auth_password: ''
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
+- `media_folder`: (for example: `/share/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (null), files are stored internally and deleted after 24h.
 
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.

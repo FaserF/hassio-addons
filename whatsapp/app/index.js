@@ -468,34 +468,42 @@ const getReqSession = (req) => {
 };
 
 // --- Media Support ---
-const MEDIA_DIR = path.join(process.cwd(), 'media');
+const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 if (!fs.existsSync(MEDIA_DIR)) {
   fs.mkdirSync(MEDIA_DIR, { recursive: true });
 }
+logger.info(`📂 Media Directory: ${MEDIA_DIR}`);
+
 // Serve media files publicly (or protected if needed, but usually HA needs access)
 // We use a random token in the filename to provide obscure URLs instead of full auth complexity specific for HA
 app.use('/media', express.static(MEDIA_DIR));
 
 // Clean up old media files every hour (keep for 24h)
-setInterval(
-  () => {
-    const now = Date.now();
-    const maxAge = 24 * 60 * 60 * 1000;
-    fs.readdir(MEDIA_DIR, (err, files) => {
-      if (err) return;
-      files.forEach((file) => {
-        const filePath = path.join(MEDIA_DIR, file);
-        fs.stat(filePath, (err, stats) => {
-          if (err) return;
-          if (now - stats.mtimeMs > maxAge) {
-            fs.unlink(filePath, () => {});
-          }
+// Clean up old media files every hour (keep for 24h)
+// ONLY if not using a custom media folder (to prevent deleting user data)
+if (!process.env.MEDIA_FOLDER) {
+  setInterval(
+    () => {
+      const now = Date.now();
+      const maxAge = 24 * 60 * 60 * 1000;
+      fs.readdir(MEDIA_DIR, (err, files) => {
+        if (err) return;
+        files.forEach((file) => {
+          const filePath = path.join(MEDIA_DIR, file);
+          fs.stat(filePath, (err, stats) => {
+            if (err) return;
+            if (now - stats.mtimeMs > maxAge) {
+              fs.unlink(filePath, () => { });
+            }
+          });
         });
       });
-    });
-  },
-  60 * 60 * 1000
-);
+    },
+    60 * 60 * 1000
+  );
+} else {
+  logger.info('⚠️  Custom Media Folder in use - Automatic cleanup DISABLED.');
+}
 
 // --- Store Initialization ---
 // Session-specific message stores are managed within the session object.
@@ -1382,19 +1390,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1402,8 +1408,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1563,7 +1569,7 @@ app.listen(PORT, '0.0.0.0', () => {
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => {});
+    connectToWhatsApp('default').catch(() => { });
   }
 
   // Auto-start all other sessions
@@ -1574,7 +1580,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
