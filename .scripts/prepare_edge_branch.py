@@ -227,7 +227,7 @@ def update_repository_json() -> bool:
             data = json.load(f)
 
         # Add edge indicator
-        data["name"] = "FaserF's Home Assistant Add-ons (Edge)"
+        data["name"] = "FaserF's Home Assistant Apps (Edge)"
 
         # Initialize channels if missing
         if "channels" not in data:

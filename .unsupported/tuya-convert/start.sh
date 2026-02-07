@@ -22,5 +22,5 @@ else
 	exit
 fi
 
-echo "Addon will now be stopped. If you want to flash another one, be sure to restart the addon."
+echo "App will now be stopped. If you want to flash another one, be sure to restart the App."
 echo "======================================================"

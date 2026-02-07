@@ -4,17 +4,17 @@
 
 🎉 **Happy New Year 2026!** 🎉
 
-### 🎉 Major Release - Unified Addon Update
+### 🎉 Major Release - Unified App Update
 
-All addons have been unified, updated, and many bugs have been fixed. Many addons have been partially or completely rewritten to improve stability, performance, and maintainability.
+All Apps have been unified, updated, and many bugs have been fixed. Many Apps have been partially or completely rewritten to improve stability, performance, and maintainability.
 
 #### Important Information
 
 - **Edge Branch (Beta)**: A new `edge` branch is now available for those who want to test the latest features and improvements before they are released to the stable channel.
-- **Unsupported Branch**: A new `unsupported` branch has been created for addons that no longer receive direct manual support. These addons are still maintained but may have limited support compared to the main addons.
-- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the addons.
+- **Unsupported Branch**: A new `unsupported` branch has been created for Apps that no longer receive direct manual support. These Apps are still maintained but may have limited support compared to the main Apps.
+- **Bug Reports**: If you encounter any new issues, please report them on GitHub as usual. Your feedback helps us improve the Apps.
 
-This release represents a significant effort to standardize and improve all addons in the repository.
+This release represents a significant effort to standardize and improve all Apps in the repository.
 
 ---
 
@@ -22,11 +22,11 @@ This release represents a significant effort to standardize and improve all addo
 
 ## 1.8.1
 
-- Automatically updated addon-base to version v19.0.0
+- Automatically updated App-base to version v19.0.0
 
 ## 1.8.0
 
-- Automatically updated addon-base to version v19.0.0
+- Automatically updated App-base to version v19.0.0
 - Drop support for armhf, armv7, and i386 systems
 
 ## 1.7.6
@@ -35,23 +35,23 @@ This release represents a significant effort to standardize and improve all addo
 
 ## 1.7.5
 
-- Automatically updated addon-base to version v18.2.1
+- Automatically updated App-base to version v18.2.1
 
 ## 1.7.4
 
-- Automatically updated addon-base to version v17.2.5
+- Automatically updated App-base to version v17.2.5
 
 ## 1.7.3
 
-- Automatically updated addon-base to version v17.2.2
+- Automatically updated App-base to version v17.2.2
 
 ## 1.7.2
 
-- Automatically updated addon-base to version v17.2.1
+- Automatically updated App-base to version v17.2.1
 
 ## 1.7.1
 
-- Automatically updated addon-base to version v17.2.1
+- Automatically updated App-base to version v17.2.1
 
 ## 1.7.0
 
@@ -59,55 +59,55 @@ This release represents a significant effort to standardize and improve all addo
 
 ## 1.6.23
 
-- Automatically updated addon-base to version v17.2.1
+- Automatically updated App-base to version v17.2.1
 
 ## 1.6.22
 
-- automatically update addon-base to version v17.0.1
+- automatically update App-base to version v17.0.1
 
 ## 1.6.21
 
-- automatically update addon-base to version v17.0.0
+- automatically update App-base to version v17.0.0
 
 ## 1.6.20
 
-- automatically update addon-base to version v16.3.6
+- automatically update App-base to version v16.3.6
 
 ## 1.6.19
 
-- automatically update addon-base to version v16.3.5
+- automatically update App-base to version v16.3.5
 
 ## 1.6.18
 
-- automatically update addon-base to version v16.3.4
+- automatically update App-base to version v16.3.4
 
 ## 1.6.17
 
-- automatically update addon-base to version v16.3.3
+- automatically update App-base to version v16.3.3
 
 ## 1.6.16
 
-- automatically update addon-base to version v16.3.2
+- automatically update App-base to version v16.3.2
 
 ## 1.6.15
 
-- automatically update addon-base to version v16.3.1
+- automatically update App-base to version v16.3.1
 
 ## 1.6.14
 
-- automatically update addon-base to version v16.3.0
+- automatically update App-base to version v16.3.0
 
 ## 1.6.13
 
-- automatically update addon-base to version v16.2.1
+- automatically update App-base to version v16.2.1
 
 ## 1.6.12
 
-- automatically update addon-base to version v16.1.3
+- automatically update App-base to version v16.1.3
 
 ## 1.6.11
 
-- automatically update addon-base to version v16.0.0
+- automatically update App-base to version v16.0.0
 
 ## 1.6.10
 
@@ -152,7 +152,7 @@ This release represents a significant effort to standardize and improve all addo
 ## 1.6.0
 
 - bump hassio-addon-base to V14.0.0
-- autorelease new version updates on addon base updates
+- autorelease new version updates on App base updates
 
 ## 1.5.1
 

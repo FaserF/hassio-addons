@@ -61,7 +61,7 @@ RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run
 # Labels
 LABEL org.opencontainers.image.title="Apache2 Minimal with MariaDB Client"
 LABEL org.opencontainers.image.description="Open Source Webserver with MariaDB Client and some PHP Modules."
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb"

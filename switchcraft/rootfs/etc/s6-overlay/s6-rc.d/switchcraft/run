@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
-# Home Assistant Add-on: SwitchCraft
+# Home Assistant App: SwitchCraft
 # Service definition
 # ==============================================================================
 set -e
@@ -9,7 +9,7 @@ set -e
 # Trace execution for debugging (Disabled)
 # set -x
 
-bashio::log.info "Starting SwitchCraft Add-on Service..."
+bashio::log.info "Starting SwitchCraft App Service..."
 
 # Get Config
 LOG_LEVEL=$(bashio::config 'log_level')

@@ -4,8 +4,8 @@ set -e
 # shellcheck disable=SC1091
 
 
-# Get Addon Version
-addon_version=$(bashio::addon.version)
+# Get App Version
+App_version=$(bashio::app.version)
 
 # Run App
 cd /app

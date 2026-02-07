@@ -10,7 +10,7 @@ on:
       - "Cleanup PR Artifacts"
       - "Orchestrator Docs & Standards"
       - "Orchestrator Governance"
-      - "Orchestrator New Add-on Intake"
+      - "Orchestrator New App Intake"
       - "Orchestrator Labeler"
       - "Orchestrator Maintenance"
       - "Orchestrator Release"

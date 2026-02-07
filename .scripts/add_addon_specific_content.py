@@ -114,7 +114,7 @@ def get_addon_specific_content(addon_dirname, config, addon_path):
     about_text = extract_about_from_docs(addon_path)
     if not about_text and config:
         description = config.get("description", "")
-        if description and description != "Home Assistant Add-on":
+        if description and description != "Home Assistant App":
             about_text = description
 
     if about_text:

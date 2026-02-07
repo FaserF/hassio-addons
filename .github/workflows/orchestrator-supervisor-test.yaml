@@ -1,10 +1,10 @@
 # Supervisor Integration Test Workflow
-# Runs real Home Assistant Supervisor environment to test add-on installation, startup, and ingress
+# Runs real Home Assistant Supervisor environment to test App installation, startup, and ingress
 #
 # This workflow is called by the main CI orchestrator (orchestrator-ci.yaml)
 # It only runs when:
 # - A PR has relevant code changes (not just documentation)
-# - The add-on has ingress enabled
+# - The App has ingress enabled
 #
 # Uses the official HA devcontainer with full Supervisor support
 
@@ -13,24 +13,24 @@ name: "🧪 Supervisor Integration Test"
 on:
   workflow_call:
     inputs:
-      addons:
-        description: "Add-ons to test (JSON array of addon names)"
+      Apps:
+        description: "Apps to test (JSON array of App names)"
         required: true
         type: string
       timeout:
-        description: "Timeout per add-on in minutes"
+        description: "Timeout per App in minutes"
         required: false
         default: "15"
         type: string
   workflow_dispatch:
     inputs:
-      addons:
-        description: "Add-ons to test (comma-separated slugs, or 'ingress' for all ingress-enabled)"
+      Apps:
+        description: "Apps to test (comma-separated slugs, or 'ingress' for all ingress-enabled)"
         required: true
         default: "whatsapp"
         type: string
       timeout:
-        description: "Timeout per add-on in minutes"
+        description: "Timeout per App in minutes"
         required: false
         default: "15"
         type: string
@@ -43,102 +43,102 @@ permissions:
   contents: read
 
 env:
-  DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
+  DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:Apps
   HA_PORT: 7123
   SUPERVISOR_STARTUP_TIMEOUT: 100
-  ADDON_INSTALL_TIMEOUT: 300
-  ADDON_START_TIMEOUT: 600
+  App_INSTALL_TIMEOUT: 300
+  App_START_TIMEOUT: 600
 
 jobs:
-  # Filter to only ingress-enabled addons
+  # Filter to only ingress-enabled Apps
   filter-ingress:
-    name: "🔍 Filter Ingress Add-ons"
+    name: "🔍 Filter Ingress Apps"
     runs-on: ubuntu-latest
     outputs:
-      ingress_addons: ${{ steps.filter.outputs.ingress_addons }}
-      has_addons: ${{ steps.filter.outputs.has_addons }}
+      ingress_Apps: ${{ steps.filter.outputs.ingress_Apps }}
+      has_Apps: ${{ steps.filter.outputs.has_Apps }}
     steps:
       - name: "📥 Checkout Repository"
         uses: actions/checkout@v6
 
-      - name: "🔧 Filter Ingress-Enabled Add-ons"
+      - name: "🔧 Filter Ingress-Enabled Apps"
         id: filter
         run: |
           # shellcheck disable=SC2086,SC2129
           # Parse input - handle both JSON array (from workflow_call) and comma-separated (from dispatch)
-          INPUT='${{ inputs.addons }}'
+          INPUT='${{ inputs.Apps }}'
 
           # Check if it's a JSON array
           if echo "$INPUT" | jq -e 'type == "array"' > /dev/null 2>&1; then
-            ADDONS=$(echo "$INPUT" | jq -r '.[]')
+            AppS=$(echo "$INPUT" | jq -r '.[]')
           elif [ "$INPUT" = "ingress" ]; then
-            # Find all add-ons with ingress: true
-            ADDONS=""
+            # Find all Apps with ingress: true
+            AppS=""
             while IFS= read -r config_file; do
-              addon_dir=$(dirname "$config_file")
-              addon_name=$(basename "$addon_dir")
-              # Skip .unsupported addons - they are built locally from unsupported branch
-              # Skip CI-excluded addons (heavy/long-running, only test on release)
-              if [ "$addon_name" != "homeassistant-test-instance" ] && [ "$addon_name" != ".unsupported" ] && [ "$addon_name" != "sap-abap-cloud-dev" ] && [[ "$addon_dir" != ./.unsupported/* ]]; then
-                ADDONS="${ADDONS}${addon_name}"$'\n'
+              App_dir=$(dirname "$config_file")
+              App_name=$(basename "$App_dir")
+              # Skip .unsupported Apps - they are built locally from unsupported branch
+              # Skip CI-excluded Apps (heavy/long-running, only test on release)
+              if [ "$App_name" != "homeassistant-test-instance" ] && [ "$App_name" != ".unsupported" ] && [ "$App_name" != "sap-abap-cloud-dev" ] && [[ "$App_dir" != ./.unsupported/* ]]; then
+                AppS="${AppS}${App_name}"$'\n'
               fi
             done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -exec grep -l "^ingress: true" {} +)
           else
             # Comma-separated list
-            ADDONS=$(echo "$INPUT" | tr ',' '\n')
+            AppS=$(echo "$INPUT" | tr ',' '\n')
           fi
 
-          echo "Input addons:"
-          echo "$ADDONS"
+          echo "Input Apps:"
+          echo "$AppS"
 
-          # Filter to only ingress-enabled addons
-          # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
-          INGRESS_ADDONS=""
+          # Filter to only ingress-enabled Apps
+          # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
+          INGRESS_AppS=""
           # shellcheck disable=SC2086
-          for addon in $ADDONS; do
-            addon=$(echo "$addon" | xargs)  # trim whitespace
+          for App in $AppS; do
+            App=$(echo "$App" | xargs)  # trim whitespace
 
-            # Skip .unsupported addons - they are built locally from unsupported branch
-            if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -f "./.unsupported/$addon/config.yaml" ]; then
-              echo "⏭️ $addon is unsupported - skipping (built locally from unsupported branch)"
+            # Skip .unsupported Apps - they are built locally from unsupported branch
+            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -f "./.unsupported/$App/config.yaml" ]; then
+              echo "⏭️ $App is unsupported - skipping (built locally from unsupported branch)"
               continue
             fi
 
             config_file=""
 
-            if [ -f "./$addon/config.yaml" ]; then
-              config_file="./$addon/config.yaml"
+            if [ -f "./$App/config.yaml" ]; then
+              config_file="./$App/config.yaml"
             else
-              echo "⏭️ $addon not found - skipping"
+              echo "⏭️ $App not found - skipping"
               continue
             fi
 
             if [ -n "$config_file" ] && grep -q "^ingress: true" "$config_file" 2>/dev/null; then
-              echo "✅ $addon has ingress enabled"
-              if [ -n "$INGRESS_ADDONS" ]; then
-                INGRESS_ADDONS="$INGRESS_ADDONS,$addon"
+              echo "✅ $App has ingress enabled"
+              if [ -n "$INGRESS_AppS" ]; then
+                INGRESS_AppS="$INGRESS_AppS,$App"
               else
-                INGRESS_ADDONS="$addon"
+                INGRESS_AppS="$App"
               fi
             else
-              echo "⏭️ $addon does not have ingress - skipping"
+              echo "⏭️ $App does not have ingress - skipping"
             fi
           done
 
-          if [ -z "$INGRESS_ADDONS" ]; then
-            echo "No ingress-enabled add-ons to test"
-            echo "ingress_addons=" >> "$GITHUB_OUTPUT"
-            echo "has_addons=false" >> "$GITHUB_OUTPUT"
+          if [ -z "$INGRESS_AppS" ]; then
+            echo "No ingress-enabled Apps to test"
+            echo "ingress_Apps=" >> "$GITHUB_OUTPUT"
+            echo "has_Apps=false" >> "$GITHUB_OUTPUT"
           else
-            echo "Ingress add-ons to test: $INGRESS_ADDONS"
-            echo "ingress_addons=$INGRESS_ADDONS" >> "$GITHUB_OUTPUT"
-            echo "has_addons=true" >> "$GITHUB_OUTPUT"
+            echo "Ingress Apps to test: $INGRESS_AppS"
+            echo "ingress_Apps=$INGRESS_AppS" >> "$GITHUB_OUTPUT"
+            echo "has_Apps=true" >> "$GITHUB_OUTPUT"
           fi
 
   supervisor-test:
     name: "🏠 Supervisor Test"
     needs: filter-ingress
-    if: needs.filter-ingress.outputs.has_addons == 'true'
+    if: needs.filter-ingress.outputs.has_Apps == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -160,7 +160,7 @@ jobs:
           docker network create ha-test-net 2>/dev/null || true
 
           # Create data directories
-          mkdir -p /tmp/ha-data/addons/local
+          mkdir -p /tmp/ha-data/Apps/local
           mkdir -p /tmp/ha-data/config
           mkdir -p /tmp/ha-data/share
           mkdir -p /tmp/ha-data/media
@@ -177,25 +177,25 @@ jobs:
           echo 'token: "example"' > /tmp/ha-data/share/pterodactyl/config.yml
           chmod -R 777 /tmp/ha-data/share
 
-          # Copy add-ons to local addons directory
-          # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
-          IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
-          for addon in "${ADDON_ARRAY[@]}"; do
-            addon=$(echo "$addon" | xargs)  # trim whitespace
+          # Copy Apps to local Apps directory
+          # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
+          IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
+          for App in "${App_ARRAY[@]}"; do
+            App=$(echo "$App" | xargs)  # trim whitespace
 
-            # Skip .unsupported addons - they should not be tested here
-            if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]] || [ -d "./.unsupported/$addon" ]; then
-              echo "⏭️ Skipping .unsupported addon: $addon (built locally from unsupported branch)"
+            # Skip .unsupported Apps - they should not be tested here
+            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -d "./.unsupported/$App" ]; then
+              echo "⏭️ Skipping .unsupported App: $App (built locally from unsupported branch)"
               continue
             fi
 
-            if [ -d "./$addon" ]; then
-              echo "Copying $addon to local addons..."
-              cp -r "./$addon" "/tmp/ha-data/addons/local/"
+            if [ -d "./$App" ]; then
+              echo "Copying $App to local Apps..."
+              cp -r "./$App" "/tmp/ha-data/Apps/local/"
 
                 # Strip 'image' key to force local build
                 # Use tr to remove potential carriage returns from CRLF files
-                DEST_DIR="/tmp/ha-data/addons/local/$(basename "$addon")"
+                DEST_DIR="/tmp/ha-data/Apps/local/$(basename "$App")"
                 if [ -f "$DEST_DIR/config.yaml" ]; then
                   echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
                   # Robust line removal that handles CRLF
@@ -215,7 +215,7 @@ jobs:
                  fi
               fi
             else
-              echo "Warning: Add-on $addon not found"
+              echo "Warning: App $App not found"
             fi
           done
 
@@ -225,7 +225,7 @@ jobs:
             --privileged \
             --network ha-test-net \
             -p ${{ env.HA_PORT }}:7123 \
-            -v /tmp/ha-data/addons:/mnt/supervisor/addons \
+            -v /tmp/ha-data/Apps:/mnt/supervisor/Apps \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
@@ -276,12 +276,12 @@ jobs:
           fi
 
           # Dependencies
-          if echo "${{ needs.filter-ingress.outputs.ingress_addons }}" | grep -qE "wiki.js|pterodactyl-panel|wordpress"; then
+          if echo "${{ needs.filter-ingress.outputs.ingress_Apps }}" | grep -qE "wiki.js|pterodactyl-panel|wordpress"; then
             echo "Installing Dependency: MariaDB (core_mariadb)..."
-            if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
+            if ! docker exec ha-supervisor-test ha Apps install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
-            elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
+            elif ! docker exec ha-supervisor-test ha Apps start core_mariadb; then
                  echo "⚠️ Failed to start core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
@@ -292,7 +292,7 @@ jobs:
                  START_TIME=$(date +%s)
                  READY=false
                  while [ $(($(date +%s) - START_TIME)) -lt $MAX_WAIT ]; do
-                   STATUS=$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo "unknown")
+                   STATUS=$(docker exec ha-supervisor-test ha Apps info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo "unknown")
                    if [ "$STATUS" = "started" ]; then
                      echo "✅ MariaDB is started and ready."
                      READY=true
@@ -310,7 +310,7 @@ jobs:
             echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
           fi
 
-      - name: "🔍 Test Add-ons"
+      - name: "🔍 Test Apps"
         if: steps.supervisor.outputs.supervisor_ready == 'true'
         id: test
         env:
@@ -322,44 +322,44 @@ jobs:
           # TIMEOUT="${{ inputs.timeout || '15' }}" # Unused currently
           # TIMEOUT=15
 
-          IFS=',' read -ra ADDON_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_addons }}"
+          IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
 
-          for addon in "${ADDON_ARRAY[@]}"; do
-            addon=$(echo "$addon" | xargs)  # trim whitespace
-            if [ -z "$addon" ]; then continue; fi
+          for App in "${App_ARRAY[@]}"; do
+            App=$(echo "$App" | xargs)  # trim whitespace
+            if [ -z "$App" ]; then continue; fi
 
-            # Check for newer commit before starting this addon test
+            # Check for newer commit before starting this App test
             # This allows cancelling long-running test sequences if a newer PR version is available
             LATEST_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq '.headRefOid' 2>/dev/null || echo "")
             CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
             if [ -n "$LATEST_SHA" ] && [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
                echo "::warning title=Skipped for newer commit::Stopping tests because a newer commit ($LATEST_SHA) is available for this PR."
-               RESULTS="$RESULTS\n⏭️ Remaining addons: SKIPPED (Newer commit available)"
+               RESULTS="$RESULTS\n⏭️ Remaining Apps: SKIPPED (Newer commit available)"
                break
             fi
 
-            if [ "$MYSQL_FAILED" = "true" ] && echo "$addon" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel|wordpress"; then
-                 echo "⏭️ $addon dependency failed - skipping"
-                 RESULTS="$RESULTS\n⏭️ $addon: SKIP (Dependency failed)"
+            if [ "$MYSQL_FAILED" = "true" ] && echo "$App" | grep -qE "wiki\.js|wiki\.js3|pterodactyl-panel|wordpress"; then
+                 echo "⏭️ $App dependency failed - skipping"
+                 RESULTS="$RESULTS\n⏭️ $App: SKIP (Dependency failed)"
                  continue
             fi
 
             echo ""
             echo "=========================================="
-            echo "Testing: $addon"
+            echo "Testing: $App"
             echo "=========================================="
 
             # Get exact slug from config.yaml
-            # NOTE: .unsupported addons should not reach here, but check anyway
-            CONFIG_FILE="./$addon/config.yaml"
+            # NOTE: .unsupported Apps should not reach here, but check anyway
+            CONFIG_FILE="./$App/config.yaml"
             if [ ! -f "$CONFIG_FILE" ]; then
-              if [ -f "./.unsupported/$addon/config.yaml" ]; then
-                echo "❌ Error: .unsupported addon $addon should not be tested here"
-                RESULTS="$RESULTS\n❌ $addon: ERROR (Unsupported addon)"
+              if [ -f "./.unsupported/$App/config.yaml" ]; then
+                echo "❌ Error: .unsupported App $App should not be tested here"
+                RESULTS="$RESULTS\n❌ $App: ERROR (Unsupported App)"
                 continue
               else
-                echo "❌ Error: Config file not found for $addon"
-                RESULTS="$RESULTS\n❌ $addon: ERROR (Config not found)"
+                echo "❌ Error: Config file not found for $App"
+                RESULTS="$RESULTS\n❌ $App: ERROR (Config not found)"
                 continue
               fi
             fi
@@ -368,45 +368,45 @@ jobs:
             # tr -d '\r' is critical for files with CRLF line endings
             SLUG_VAL=$(grep "^slug:" "$CONFIG_FILE" | head -n 1 | cut -d':' -f2 | tr -d ' "' | tr -d '\r' | xargs)
             if [ -z "$SLUG_VAL" ]; then
-              SLUG_VAL="$addon"
+              SLUG_VAL="$App"
             fi
             SLUG="local_$SLUG_VAL"
             echo "Slug detected: $SLUG"
 
-            # Refresh add-on store
-            echo "Refreshing add-on store..."
-            docker exec ha-supervisor-test ha addons reload || true
-            echo "Waiting for supervisor to scan add-ons..."
+            # Refresh App store
+            echo "Refreshing App store..."
+            docker exec ha-supervisor-test ha Apps reload || true
+            echo "Waiting for supervisor to scan Apps..."
             sleep 15
 
             # Check supervisor logs for discovery errors
             echo "Checking supervisor logs for discovery/validation errors..."
-            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|warn|validation|failed to load|invalid|$addon|$SLUG)" || echo "No discovery errors found in logs"
+            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|warn|validation|failed to load|invalid|$App|$SLUG)" || echo "No discovery errors found in logs"
 
-            # Verify add-on is detected
-            echo "Checking if add-on is detected..."
-            LIST_OUTPUT=$(docker exec ha-supervisor-test ha addons --raw-json 2>&1 || echo "[]")
+            # Verify App is detected
+            echo "Checking if App is detected..."
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha Apps --raw-json 2>&1 || echo "[]")
             if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
-              echo "✅ Add-on detected: $SLUG"
+              echo "✅ App detected: $SLUG"
             else
-              echo "⚠️ Add-on not found in list, but continuing with install attempt..."
-              echo "Available add-ons:"
+              echo "⚠️ App not found in list, but continuing with install attempt..."
+              echo "Available Apps:"
               echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
-              echo "Checking add-on directory structure..."
-              docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list add-on directory"
+              echo "Checking App directory structure..."
+              docker exec ha-supervisor-test ls -la /mnt/supervisor/Apps/local/ 2>&1 || echo "Could not list App directory"
               echo ""
-              echo "Checking if add-on files exist in container..."
-              docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$addon/" 2>&1 || echo "Add-on directory not found"
+              echo "Checking if App files exist in container..."
+              docker exec ha-supervisor-test ls -la "/mnt/supervisor/Apps/local/$App/" 2>&1 || echo "App directory not found"
               echo ""
               echo "Checking for validation errors in supervisor logs..."
-              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(validation|error|$addon|$SLUG)" || echo "No validation errors found"
+              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(validation|error|$App|$SLUG)" || echo "No validation errors found"
             fi
 
-            # Install add-on
-            echo "Installing $addon ($SLUG)..."
+            # Install App
+            echo "Installing $App ($SLUG)..."
             set +e  # Don't exit on error, we'll handle it
-            INSTALL_OUTPUT=$(timeout "${ADDON_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
+            INSTALL_OUTPUT=$(timeout "${App_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha Apps install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
             set -e  # Re-enable exit on error
 
@@ -420,47 +420,47 @@ jobs:
             fi
 
             # Handle 500 errors as warnings instead of failures
-            # Note: This is likely a CI container issue, but could also indicate real add-on start problems
+            # Note: This is likely a CI container issue, but could also indicate real App start problems
             # Should be investigated if it occurs frequently
             if [ $INSTALL_EXIT -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
-                echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify App)"
+                docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 | tail -25 || true
 
-                # Verify if add-on was actually installed despite the 500 error
-                echo "Verifying if add-on was actually installed..."
-                ADDON_INFO=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>&1 || echo "")
-                ADDON_INSTALLED=$(echo "$ADDON_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
-                ADDON_STATE=$(echo "$ADDON_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
+                # Verify if App was actually installed despite the 500 error
+                echo "Verifying if App was actually installed..."
+                App_INFO=$(docker exec ha-supervisor-test ha Apps info "$SLUG" --raw-json 2>&1 || echo "")
+                App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
+                App_STATE=$(echo "$App_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
 
-                # Check if add-on is installed by looking at the installed flag or state
-                if [ "$ADDON_INSTALLED" = "true" ] || [ "$ADDON_STATE" != "unknown" ]; then
-                  echo "✅ Add-on was installed despite 500 error (installed: $ADDON_INSTALLED, state: $ADDON_STATE), continuing..."
+                # Check if App is installed by looking at the installed flag or state
+                if [ "$App_INSTALLED" = "true" ] || [ "$App_STATE" != "unknown" ]; then
+                  echo "✅ App was installed despite 500 error (installed: $App_INSTALLED, state: $App_STATE), continuing..."
                   INSTALL_EXIT=0
-                  RESULTS="$RESULTS\n⚠️ $addon: WARN (Install 500 error but installed - likely CI issue)"
-                elif [ "$ADDON_INSTALLED" = "false" ]; then
-                  echo "❌ Add-on was NOT installed despite 500 error (installed: false)"
+                  RESULTS="$RESULTS\n⚠️ $App: WARN (Install 500 error but installed - likely CI issue)"
+                elif [ "$App_INSTALLED" = "false" ]; then
+                  echo "❌ App was NOT installed despite 500 error (installed: false)"
                   echo "Checking supervisor logs for validation errors..."
-                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
-                  RESULTS="$RESULTS\n❌ $addon: FAIL (Install 500 error and not installed)"
+                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                  RESULTS="$RESULTS\n❌ $App: FAIL (Install 500 error and not installed)"
                   FAILED=1
                   INSTALL_EXIT=1
                 else
                   # If we can't determine, be conservative and fail
                   echo "⚠️ Could not determine install status, treating as failure"
-                  echo "Add-on info output: $ADDON_INFO"
-                  RESULTS="$RESULTS\n❌ $addon: FAIL (Install 500 error, status unclear)"
+                  echo "App info output: $App_INFO"
+                  RESULTS="$RESULTS\n❌ $App: FAIL (Install 500 error, status unclear)"
                   FAILED=1
                   INSTALL_EXIT=1
                 fi
               else
                 echo "❌ Install failed with exit code $INSTALL_EXIT"
                 echo "Checking supervisor logs for more details..."
-                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$addon|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
-                echo "Checking add-on info..."
-                docker exec ha-supervisor-test ha addons info "$SLUG" 2>&1 || echo "Could not get add-on info"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || echo "Could not get add-on logs"
-                RESULTS="$RESULTS\n❌ $addon: FAIL (Install failed)"
+                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                echo "Checking App info..."
+                docker exec ha-supervisor-test ha Apps info "$SLUG" 2>&1 || echo "Could not get App info"
+                docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
+                RESULTS="$RESULTS\n❌ $App: FAIL (Install failed)"
                 FAILED=1
               fi
             fi
@@ -472,9 +472,9 @@ jobs:
               OPTS=""
               if grep -q "website_name" "$CONFIG_FILE"; then
                 OPTS='{"website_name": "example.com"}'
-              elif [ "$addon" = "bash_script_executer" ]; then
+              elif [ "$App" = "bash_script_executer" ]; then
                 OPTS='{"script_path": "/share/test.sh"}'
-              elif [ "$addon" = "wordpress" ]; then
+              elif [ "$App" = "wordpress" ]; then
                 # Wordpress requires database config
                 OPTS='{"database_host": "core-mariadb"}'
               fi
@@ -482,13 +482,13 @@ jobs:
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
                 # Create the update script if it doesn't exist
-                # Create it in /tmp/ha-data/ to avoid breaking add-on discovery in /addons/local/
+                # Create it in /tmp/ha-data/ to avoid breaking App discovery in /Apps/local/
                 # shellcheck disable=SC2016
                 cat << 'EOF' > /tmp/ha-data/update_config.sh
           #!/bin/sh
           slug="$1"
           opts="$2"
-          file="/mnt/supervisor/addons.json"
+          file="/mnt/supervisor/Apps.json"
           if [ ! -f "$file" ]; then exit 1; fi
           tmp=$(mktemp)
           jq --arg slug "$slug" --argjson opts "$opts" '
@@ -499,31 +499,31 @@ jobs:
                 docker exec ha-supervisor-test sh /mnt/supervisor/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
               fi
 
-              # Start add-on
-              echo "Starting $addon..."
+              # Start App
+              echo "Starting $App..."
               set +e # Don't exit on error
-              START_OUTPUT=$(timeout "${ADDON_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
+              START_OUTPUT=$(timeout "${App_START_TIMEOUT}s" docker exec ha-supervisor-test ha Apps start "$SLUG" 2>&1)
               START_EXIT=$?
               set -e # Re-enable exit on error
 
               # Handle 500 errors as warnings instead of failures
-              # Note: This is likely a CI container issue, but could also indicate real add-on start problems
+              # Note: This is likely a CI container issue, but could also indicate real App start problems
               # Should be investigated if it occurs frequently
               if [ $START_EXIT -ne 0 ]; then
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
-                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify add-on)"
+                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify App)"
                   echo "$START_OUTPUT"
                   echo "Dumping Supervisor Logs for 500 Error:"
                   docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 || true
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
-                  RESULTS="$RESULTS\n⚠️ $addon: WARN (Start 500 error - likely CI issue)"
+                  docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 | tail -25 || true
+                  RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500 error - likely CI issue)"
                   # Continue with status check even though start reported 500
                   START_EXIT=0
                 else
                   echo "❌ Start failed"
                   echo "$START_OUTPUT"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
-                  RESULTS="$RESULTS\n❌ $addon: FAIL (Start failed)"
+                  docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 | tail -50 || true
+                  RESULTS="$RESULTS\n❌ $App: FAIL (Start failed)"
                   FAILED=1
                 fi
               fi
@@ -532,19 +532,19 @@ jobs:
                 echo "✅ Start command successful"
 
                 # Poll for status (wait for start)
-                echo "Waiting for add-on to start (up to ${ADDON_START_TIMEOUT}s)..."
+                echo "Waiting for App to start (up to ${App_START_TIMEOUT}s)..."
                 START_TIME=$(date +%s)
-                END_TIME=$((START_TIME + ADDON_START_TIMEOUT))
+                END_TIME=$((START_TIME + App_START_TIMEOUT))
                 STATUS="unknown"
 
                 while [ "$(date +%s)" -lt "$END_TIME" ]; do
                   # Check if container is running (more reliable than CLI)
-                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG_VAL"; then
+                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "App_local_$SLUG_VAL"; then
                     STATUS="started"
                     break
                   fi
                   # Fallback to CLI check
-                  STATUS="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
+                  STATUS="$(docker exec ha-supervisor-test ha Apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
                   if [ "$STATUS" = "started" ]; then
                     break
                   fi
@@ -552,46 +552,46 @@ jobs:
                   sleep 5
                 done
                 echo ""
-                echo "Final Add-on state: $STATUS"
+                echo "Final App state: $STATUS"
 
                 if [ "$STATUS" = "started" ]; then
                   # Test ingress
                   echo "Testing ingress endpoint..."
-                  INGRESS_URL="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
+                  INGRESS_URL="$(docker exec ha-supervisor-test ha Apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
                   if [ -n "$INGRESS_URL" ]; then
                     HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
                     if echo "$HTTP_CODE" | grep -q "^[23]"; then
                       echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
-                      RESULTS="$RESULTS\n✅ $addon: PASS (Ingress OK)"
+                      RESULTS="$RESULTS\n✅ $App: PASS (Ingress OK)"
                     else
                       echo "⚠️ Ingress returned HTTP $HTTP_CODE"
-                      RESULTS="$RESULTS\n⚠️ $addon: WARN (Ingress HTTP $HTTP_CODE)"
+                      RESULTS="$RESULTS\n⚠️ $App: WARN (Ingress HTTP $HTTP_CODE)"
                     fi
                   else
-                    RESULTS="$RESULTS\n✅ $addon: PASS (Running, no ingress URL)"
+                    RESULTS="$RESULTS\n✅ $App: PASS (Running, no ingress URL)"
                   fi
                 else
-                  echo "❌ Add-on not in 'started' state"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
-                  RESULTS="$RESULTS\n❌ $addon: FAIL (State: $STATUS)"
+                  echo "❌ App not in 'started' state"
+                  docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 | tail -50
+                  RESULTS="$RESULTS\n❌ $App: FAIL (State: $STATUS)"
                   FAILED=1
                 fi
               fi
               # Verification Override for Pterodactyl Wings (Wait for Config)
               if [ "$FAILED" -eq 1 ]; then
-                 LOGS=$(docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 || true)
-                 if echo "$LOGS" | grep -q "Add-on is NOT configured"; then
-                      echo "✅ Detected 'Add-on is NOT configured' - Marking as PASS"
+                 LOGS=$(docker exec ha-supervisor-test ha Apps logs "$SLUG" 2>&1 || true)
+                 if echo "$LOGS" | grep -q "App is NOT configured"; then
+                      echo "✅ Detected 'App is NOT configured' - Marking as PASS"
                       FAILED=0
                       # Append success message (it might appear after a FAIL message in summary, effectively overriding it)
-                      RESULTS="${RESULTS}\n✅ $addon: PASS (Started - Waiting for Config)"
+                      RESULTS="${RESULTS}\n✅ $App: PASS (Started - Waiting for Config)"
                  fi
               fi
 
               # Stop and uninstall
-              echo "Cleaning up $addon..."
-              docker exec ha-supervisor-test ha addons stop "$SLUG" 2>/dev/null || true
-              docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
+              echo "Cleaning up $App..."
+              docker exec ha-supervisor-test ha Apps stop "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha Apps uninstall "$SLUG" 2>/dev/null || true
             fi
           done
 
@@ -622,7 +622,7 @@ jobs:
           {
             echo "## 🧪 Supervisor Integration Test Results"
             echo ""
-            echo "**Add-ons tested:** ${{ needs.filter-ingress.outputs.ingress_addons }}"
+            echo "**Apps tested:** ${{ needs.filter-ingress.outputs.ingress_Apps }}"
             echo ""
             if [ "${{ steps.test.outputs.failed }}" = "1" ]; then
               echo "❌ **Some tests failed**"

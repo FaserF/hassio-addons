@@ -1,7 +1,7 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
-# Home Assistant Add-on: Antigravity-Server
+# Home Assistant App: Antigravity-Server
 # Runs the TigerVNC server
 # ==============================================================================
 

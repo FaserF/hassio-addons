@@ -22,7 +22,7 @@ configuration:
     description: "Format für gespeicherte Dateinamen."
   log_level:
     name: "Protokollierungsstufe"
-    description: "Die Protokollierungsstufe für das Add-on festlegen."
+    description: "Die Protokollierungsstufe für das App festlegen."
   reset_database:
     name: "Datenbank zurücksetzen"
     description: "Die Datenbank zurücksetzen (mit Vorsicht verwenden)."

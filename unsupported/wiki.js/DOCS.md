@@ -21,11 +21,11 @@ ssl: true
 
 - `/ssl`: Used for SSL certificates (`certfile` and `keyfile`). Required if `ssl: true` is enabled.
 - `/data`: Used for persistent storage of Wiki.js application files, local database, and configurations.
-- `/addon_configs`: Used for storing Git SSH keys and local repository data.
+- `/App_configs`: Used for storing Git SSH keys and local repository data.
 
 ## 🔗 Git Integration
 
-This addon supports Wiki.js Git storage for syncing your wiki content with a Git repository.
+This App supports Wiki.js Git storage for syncing your wiki content with a Git repository.
 
 ### Setup Steps
 
@@ -36,35 +36,35 @@ This addon supports Wiki.js Git storage for syncing your wiki content with a Git
    Example (Ed25519):
 
    ```bash
-   ssh-keygen -t ed25519 -f /addon_configs/wiki.js/git/ssh/id_ed25519 -N ""
+   ssh-keygen -t ed25519 -f /App_configs/wiki.js/git/ssh/id_ed25519 -N ""
    ```
 
    Example (RSA):
 
    ```bash
-   ssh-keygen -t rsa -b 4096 -f /addon_configs/wiki.js/git/ssh/id_rsa -N ""
+   ssh-keygen -t rsa -b 4096 -f /App_configs/wiki.js/git/ssh/id_rsa -N ""
    ```
 
 2. **Add Deploy Key** to your Git repository:
-   - Copy the public key from `/addon_configs/wiki.js/git/ssh/id_rsa.pub`
+   - Copy the public key from `/App_configs/wiki.js/git/ssh/id_rsa.pub`
    - Add it as a deploy key with write access in your repository settings
 
 3. **Configure in Wiki.js**:
    - Go to Administration → Storage → Git
    - Enable Git storage
    - Set Repository URI (SSH format: `git@github.com:user/repo.git`)
-   - Set SSH Private Key Path: `/addon_configs/wiki.js/git/ssh/id_ed25519` (or `id_rsa` / `id_ecdsa`)
-   - Set Local Repository Path: `/addon_configs/wiki.js/git/repo`
+   - Set SSH Private Key Path: `/App_configs/wiki.js/git/ssh/id_ed25519` (or `id_rsa` / `id_ecdsa`)
+   - Set Local Repository Path: `/App_configs/wiki.js/git/repo`
    - Configure sync direction and schedule
 
 ### Folder Structure
 
-- `/addon_configs/wiki.js/git/ssh/`: SSH keys for Git authentication
-- `/addon_configs/wiki.js/git/repo/`: Local Git repository (managed by Wiki.js)
+- `/App_configs/wiki.js/git/ssh/`: SSH keys for Git authentication
+- `/App_configs/wiki.js/git/repo/`: Local Git repository (managed by Wiki.js)
 
 ## Requirements
 
-Please ensure that the MariaDB Addon is installed!
+Please ensure that the MariaDB App is installed!
 
 ## Support
 

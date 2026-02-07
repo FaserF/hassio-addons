@@ -11,7 +11,7 @@ arch:
   - amd64
 map:
   - ssl
-  - addon_config:rw
+  - App_config:rw
 ingress: true
 ingress_port: 3011
 init: false

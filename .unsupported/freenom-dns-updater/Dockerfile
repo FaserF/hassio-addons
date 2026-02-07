@@ -29,7 +29,7 @@ HEALTHCHECK --interval=300s --timeout=10s --start-period=30s --retries=3 \
 # Labels
 LABEL org.opencontainers.image.title="Freenom-dns-updater"
 LABEL org.opencontainers.image.description="Freenom Registrar Domain Management - update dns records, Manage (add/update/remove) a domain's dns record, auto renew domains and more. (Unsupported)"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/freenom-dns-updater"

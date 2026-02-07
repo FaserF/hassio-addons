@@ -1,5 +1,5 @@
 ---
-name: Sync README Addon List
+name: Sync README App List
 
 on:
   push:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   sync-readme:
-    name: Sync Add-ons List
+    name: Sync Apps List
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
@@ -32,7 +32,7 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install pyyaml
 
-      - name: 📝 Generate addon table
+      - name: 📝 Generate App table
         id: generate
         run: |
           python3 << 'EOF'
@@ -54,23 +54,23 @@ jobs:
               return "✅" if major >= 1 else "⚠️"
 
           repo_root = Path(".")
-          addons = []
+          Apps = []
 
-          # Regular addons
+          # Regular Apps
           for item in sorted(repo_root.iterdir()):
               if item.is_dir() and not item.name.startswith((".", "_")):
                   config = item / "config.yaml"
                   if config.exists():
-                      addons.append({"path": item.name, "config": config, "unsupported": False})
+                      Apps.append({"path": item.name, "config": config, "unsupported": False})
 
-          # Unsupported addons
+          # Unsupported Apps
           unsupported = repo_root / ".unsupported"
           if unsupported.exists():
               for item in sorted(unsupported.iterdir()):
                   if item.is_dir():
                       config = item / "config.yaml"
                       if config.exists():
-                          addons.append({"path": f".unsupported/{item.name}", "config": config, "unsupported": True})
+                          Apps.append({"path": f".unsupported/{item.name}", "config": config, "unsupported": True})
 
           # Generate table
           lines = [
@@ -79,27 +79,27 @@ jobs:
           ]
 
           import subprocess
-          for addon in addons:
-              with open(addon["config"], "r") as f:
+          for App in Apps:
+              with open(App["config"], "r") as f:
                   cfg = yaml.safe_load(f)
-              name = cfg.get("name", addon["path"])
+              name = cfg.get("name", App["path"])
               desc = cfg.get("description", "No description")[:40]
-              if addon["unsupported"]:
+              if App["unsupported"]:
                   desc = f"{desc} (Unsupported)"[:40]
               version = str(cfg.get("version", "0.0.0"))
-              status = get_status(version, addon["unsupported"])
+              status = get_status(version, App["unsupported"])
 
               # Get first commit date
-              # For unsupported addons, try to find the original creation date
+              # For unsupported Apps, try to find the original creation date
               # by checking the original path before it was moved to .unsupported
               try:
-                  config_path = str(addon["config"])
+                  config_path = str(App["config"])
 
                   # If unsupported, try original path first
-                  if addon["unsupported"]:
-                      # Extract addon name from path (e.g., ".unsupported/bt-mqtt-gateway" -> "bt-mqtt-gateway")
-                      addon_name = Path(addon["config"]).parent.name
-                      original_config = repo_root / addon_name / "config.yaml"
+                  if App["unsupported"]:
+                      # Extract App name from path (e.g., ".unsupported/bt-mqtt-gateway" -> "bt-mqtt-gateway")
+                      App_name = Path(App["config"]).parent.name
+                      original_config = repo_root / App_name / "config.yaml"
 
                       # Try to get date from original location
                       try:
@@ -121,7 +121,7 @@ jobs:
                           dates = result.stdout.strip().split("\n")
                           since = dates[-1][:7] if dates and dates[-1] else "—"
                   else:
-                      # Regular addon - use current path
+                      # Regular App - use current path
                       result = subprocess.run(
                           ["git", "log", "--follow", "--format=%cs", "--", config_path],
                           capture_output=True, text=True, check=True
@@ -131,30 +131,5 @@ jobs:
               except:
                   since = "—"
 
-              lines.append(f"| **[{name}]({addon['path']})** | {desc} | {status} | {since} |")
+              lines.append(f"| **[{name}]({App['path']})** | {desc} | {status} | {since} |")
 
-          table = "\n".join(lines)
-
-          # Read README
-          readme = Path("README.md")
-          if not readme.exists():
-              readme = Path("README.MD")
-          content = readme.read_text()
-
-          # Find and replace table (between markers)
-          import re
-          pattern = r"(\| Name\s+\| Description\s+\| Status \|\n\| :[-]+.+?\n)(.+?)(\n\n<!-- markdownlint-enable MD060 -->)"
-          replacement = r"\1" + "\n".join(lines[2:]) + r"\n\3"
-          new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
-
-          readme.write_text(new_content)
-          print(f"Updated {len(addons)} addons in README")
-          EOF
-
-      - name: 📤 Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "docs: auto-sync addon list in README"
-          file_pattern: "README.md README.MD"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"

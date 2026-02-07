@@ -35,9 +35,9 @@ fi
 # Get External Port from Supervisor
 external_port=""
 if [ -n "$SUPERVISOR_TOKEN" ]; then
-    addon_info=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info 2>/dev/null)
-    if [ -n "$addon_info" ] && echo "$addon_info" | jq -e . >/dev/null 2>&1; then
-        external_port=$(echo "$addon_info" | jq -r ".data.network.\"${port}/tcp\"?" 2>/dev/null)
+    App_info=$(curl -sSL -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/Apps/self/info 2>/dev/null)
+    if [ -n "$App_info" ] && echo "$App_info" | jq -e . >/dev/null 2>&1; then
+        external_port=$(echo "$App_info" | jq -r ".data.network.\"${port}/tcp\"?" 2>/dev/null)
     fi
 fi
 

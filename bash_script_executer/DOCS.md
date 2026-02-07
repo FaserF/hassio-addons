@@ -1,6 +1,6 @@
 # Bash Script Executer Documentation
 
-Execute your own bash scripts inside this Homeassistant Addon environment.
+Execute your own bash scripts inside this Homeassistant App environment.
 
 ## ⚙️ Configuration
 

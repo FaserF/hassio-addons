@@ -28,8 +28,8 @@ else
 	mkdir -p "$(dirname "${FULL_KEY_PATH}")"
 	openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
 		-nodes -keyout "${FULL_KEY_PATH}" -out "${FULL_CERT_PATH}" \
-		-subj "/CN=shieldfile-addon" \
-		-addext "subjectAltName=DNS:shieldfile-addon,IP:127.0.0.1"
+		-subj "/CN=shieldfile-App" \
+		-addext "subjectAltName=DNS:shieldfile-App,IP:127.0.0.1"
 fi
 
 # Initialize DB if missing
@@ -89,7 +89,7 @@ fi
 
 # If no users were configured/created, create a default admin user
 if [ "$user_count" -eq 0 ]; then
-	bashio::log.warning "No users configured in addon settings!"
+	bashio::log.warning "No users configured in App settings!"
 
 	# Check if default admin already exists in database
 	if filebrowser users find "admin" --database "$DB_PATH" &>/dev/null; then
@@ -110,8 +110,8 @@ fi
 # ------------------------------------------------------------------------------
 
 # Get Ingress Entry
-if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
-	INGRESS_ENTRY=$(bashio::addon.ingress_entry)
+if bashio::var.has_value "$(bashio::app.ingress_entry)"; then
+	INGRESS_ENTRY=$(bashio::app.ingress_entry)
 else
 	INGRESS_ENTRY="/"
 fi

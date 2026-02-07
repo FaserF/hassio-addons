@@ -67,7 +67,7 @@ jobs:
             # If we can't determine changes, assume we should run
             {
               echo "only_workflows=false"
-              echo "changed_addons=ALL"
+              echo "changed_Apps=ALL"
             } >> "$GITHUB_OUTPUT"
             echo "⚠️ Could not determine changed files, proceeding with sync"
             exit 0
@@ -79,18 +79,18 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # Extract addon directories from changed files
-          CHANGED_ADDONS=$(echo "$CHANGED_FILES" | \
+          # Extract App directories from changed files
+          CHANGED_AppS=$(echo "$CHANGED_FILES" | \
             grep -E "^[^./][^/]+/" | \
             cut -d'/' -f1 | \
             sort -u | \
             grep -v "^\\." || echo "")
 
-          echo "Changed addons: $CHANGED_ADDONS"
+          echo "Changed Apps: $CHANGED_AppS"
           # Save to output (newline-separated -> space-separated for easier parsing)
           {
-            echo "changed_addons<<EOF"
-            echo "$CHANGED_ADDONS"
+            echo "changed_Apps<<EOF"
+            echo "$CHANGED_AppS"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -157,11 +157,11 @@ jobs:
 
             # Get config.yaml files from edge branch
             for config in $(git ls-tree -r --name-only origin/edge | grep -E "^[^./][^/]+/config.yaml$"); do
-              ADDON=$(dirname "$config")
+              App=$(dirname "$config")
               VERSION=$(git show "origin/edge:$config" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"']*\)["'"'"']\?/\1/')
               if [ -n "$VERSION" ]; then
-                echo "$ADDON=$VERSION" >> "$VERSIONS_FILE"
-                echo "  $ADDON: $VERSION"
+                echo "$App=$VERSION" >> "$VERSIONS_FILE"
+                echo "  $App: $VERSION"
               fi
             done
 
@@ -180,7 +180,7 @@ jobs:
           echo "Resetting edge branch to match master..."
           git checkout -B edge master
 
-      - name: 🗑️ Remove Unsupported Addons
+      - name: 🗑️ Remove Unsupported Apps
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
@@ -188,7 +188,7 @@ jobs:
           echo "Removing .unsupported directory from edge branch..."
           rm -rf .unsupported
           git add .unsupported
-          git commit -m "chore: remove unsupported addons from edge [skip ci]" || echo "No unsupported addons to remove"
+          git commit -m "chore: remove unsupported Apps from edge [skip ci]" || echo "No unsupported Apps to remove"
 
       - name: 📝 Prepare edge for local builds
         if: |
@@ -200,68 +200,68 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔄 Update version for changed addons only
+      - name: 🔄 Update version for changed Apps only
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
         run: |
-          echo "🔍 Determining which addons to bump..."
+          echo "🔍 Determining which Apps to bump..."
 
-          # Get all addon directories
-          ALL_ADDONS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
+          # Get all App directories
+          ALL_AppS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
 
-          # For workflow_dispatch, bump all addons
+          # For workflow_dispatch, bump all Apps
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "📦 workflow_dispatch: Bumping ALL addons"
-            CHANGED_ADDONS="$ALL_ADDONS"
+            echo "📦 workflow_dispatch: Bumping ALL Apps"
+            CHANGED_AppS="$ALL_AppS"
           else
-            # Use the addons detected in the check_changes step
-            CHANGED_ADDONS="${{ steps.check_changes.outputs.changed_addons }}"
+            # Use the Apps detected in the check_changes step
+            CHANGED_AppS="${{ steps.check_changes.outputs.changed_Apps }}"
 
             # Handle special case where we couldn't detect changes
-            if [ "$CHANGED_ADDONS" = "ALL" ]; then
-              echo "⚠️ Could not detect specific changes - bumping all addons"
-              CHANGED_ADDONS="$ALL_ADDONS"
+            if [ "$CHANGED_AppS" = "ALL" ]; then
+              echo "⚠️ Could not detect specific changes - bumping all Apps"
+              CHANGED_AppS="$ALL_AppS"
             fi
           fi
 
           # Load saved versions file
           VERSIONS_FILE="${{ steps.save_versions.outputs.versions_file }}"
 
-          # Bump changed addons
-          if [ -n "$CHANGED_ADDONS" ]; then
-            echo "📦 Addons to bump (changed in this push):"
-            echo "$CHANGED_ADDONS" | while read -r addon; do
-              [ -n "$addon" ] && echo "  - $addon"
+          # Bump changed Apps
+          if [ -n "$CHANGED_AppS" ]; then
+            echo "📦 Apps to bump (changed in this push):"
+            echo "$CHANGED_AppS" | while read -r App; do
+              [ -n "$App" ] && echo "  - $App"
             done
 
-            for addon in $CHANGED_ADDONS; do
-              if [ -f "$addon/config.yaml" ]; then
+            for App in $CHANGED_AppS; do
+              if [ -f "$App/config.yaml" ]; then
                 echo ""
-                echo "📝 Bumping $addon..."
-                python3 .scripts/bump_version.py "$addon" patch --dev --changelog 2>/dev/null || echo "⚠️ Skipping $addon"
+                echo "📝 Bumping $App..."
+                python3 .scripts/bump_version.py "$App" patch --dev --changelog 2>/dev/null || echo "⚠️ Skipping $App"
               fi
             done
           fi
 
-          # Restore previous dev versions for UNCHANGED addons
+          # Restore previous dev versions for UNCHANGED Apps
           if [ -n "$VERSIONS_FILE" ] && [ -f "$VERSIONS_FILE" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
             echo ""
-            echo "🔄 Restoring dev versions for unchanged addons..."
+            echo "🔄 Restoring dev versions for unchanged Apps..."
 
-            for addon in $ALL_ADDONS; do
-              # Skip if this addon was changed (already bumped above)
-              if echo "$CHANGED_ADDONS" | grep -q "^${addon}$"; then
+            for App in $ALL_AppS; do
+              # Skip if this App was changed (already bumped above)
+              if echo "$CHANGED_AppS" | grep -q "^${App}$"; then
                 continue
               fi
 
               # Look up saved version
-              SAVED_VERSION=$(grep "^${addon}=" "$VERSIONS_FILE" 2>/dev/null | cut -d'=' -f2)
+              SAVED_VERSION=$(grep "^${App}=" "$VERSIONS_FILE" 2>/dev/null | cut -d'=' -f2)
 
               if [ -n "$SAVED_VERSION" ] && [[ "$SAVED_VERSION" == *"-dev"* ]]; then
-                echo "  📌 Restoring $addon to $SAVED_VERSION"
+                echo "  📌 Restoring $App to $SAVED_VERSION"
                 # Update version in config.yaml using sed
-                sed -i "s/^version:.*/version: \"$SAVED_VERSION\"/" "$addon/config.yaml"
+                sed -i "s/^version:.*/version: \"$SAVED_VERSION\"/" "$App/config.yaml"
               fi
             done
           fi

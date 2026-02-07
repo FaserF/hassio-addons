@@ -8,8 +8,8 @@ name: Orchestrator Release
 on:
   workflow_dispatch:
     inputs:
-      addon:
-        description: "Add-on slug (folder name) or list (comma-separated), 'all' for all add-ons, or 'detect' for auto"
+      App:
+        description: "App slug (folder name) or list (comma-separated), 'all' for all Apps, or 'detect' for auto"
         required: true
         type: string
       version:
@@ -62,7 +62,7 @@ permissions:
   pull-requests: read
 
 env:
-  # Addons to ignore for auto-releases (Blacklist)
+  # Apps to ignore for auto-releases (Blacklist)
   AUTO_RELEASE_IGNORE: |
     sap-abap-cloud-dev
 
@@ -74,7 +74,7 @@ env:
 
 jobs:
   # ================================================================================
-  # DETECT: Determine which addons need release
+  # DETECT: Determine which Apps need release
   # ================================================================================
   detect:
     name: 🔍 Detect Release Targets
@@ -85,7 +85,7 @@ jobs:
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'release(all)'))
     runs-on: ubuntu-latest
     outputs:
-      addons: ${{ steps.detect.outputs.addons }}
+      Apps: ${{ steps.detect.outputs.Apps }}
       should_release: ${{ steps.detect.outputs.should_release }}
       is_auto: ${{ steps.detect.outputs.is_auto }}
       version_type: ${{ steps.detect.outputs.version_type }}
@@ -105,17 +105,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
           PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
-          INPUT_ADDON: ${{ github.event.inputs.addon }}
+          INPUT_App: ${{ github.event.inputs.App }}
           INPUT_VERSION: ${{ github.event.inputs.version }}
           INPUT_CUSTOM_VERSION: ${{ github.event.inputs.custom_version }}
-          DISPATCH_ADDON: ${{ github.event.client_payload.addon }}
+          DISPATCH_App: ${{ github.event.client_payload.App }}
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           EVENT_NAME: ${{ github.event_name }}
           HEAD_COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           set -e
-          ADDONS=""
+          AppS=""
           SHOULD_RELEASE="false"
           IS_AUTO="false"
           VERSION_TYPE="patch"
@@ -136,75 +136,75 @@ jobs:
             fi
 
             echo "🔍 Manual dispatch detected"
-            echo "  INPUT_ADDON: '$INPUT_ADDON'"
+            echo "  INPUT_App: '$INPUT_App'"
             echo "  INPUT_VERSION: '$INPUT_VERSION'"
 
-            if [ "$INPUT_ADDON" == "all" ]; then
+            if [ "$INPUT_App" == "all" ]; then
               IS_ALL="true"
-              # Find all add-ons (matching Python script logic)
-              echo "🔍 Finding all add-ons..."
-              SKIP_ADDONS="homeassistant-test-instance"
+              # Find all Apps (matching Python script logic)
+              echo "🔍 Finding all Apps..."
+              SKIP_AppS="homeassistant-test-instance"
 
-              # Regular addons (top-level directories with config.yaml)
-              # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+              # Regular Apps (top-level directories with config.yaml)
+              # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
               for item in */; do
                 item_name="${item%/}"
                 if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
-                  # Skip test add-ons
+                  # Skip test Apps
                   skip=false
-                  for skip_item in $SKIP_ADDONS; do
+                  for skip_item in $SKIP_AppS; do
                     if [ "$item_name" == "$skip_item" ]; then
                       skip=true
                       break
                     fi
                   done
                   if [ "$skip" == "false" ]; then
-                    [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                    [ -z "$AppS" ] && AppS="$item_name" || AppS="$AppS,$item_name"
                   fi
                 fi
               done
 
-              # .unsupported addons are NOT included - they are built locally from unsupported branch
-              echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
+              # .unsupported Apps are NOT included - they are built locally from unsupported branch
+              echo "ℹ️ Skipping .unsupported Apps (built locally from unsupported branch)"
 
               SHOULD_RELEASE="true"
-              echo "📦 Found add-ons: $ADDONS"
-              echo "Count: $(echo "$ADDONS" | tr ',' '\n' | wc -l)"
-            elif [ -n "$INPUT_ADDON" ] && [ "$INPUT_ADDON" != "detect" ]; then
+              echo "📦 Found Apps: $AppS"
+              echo "Count: $(echo "$AppS" | tr ',' '\n' | wc -l)"
+            elif [ -n "$INPUT_App" ] && [ "$INPUT_App" != "detect" ]; then
               IS_ALL="false"
               # Handle comma-separated list
-              IFS=',' read -ra INPUT_ADDONS_ARRAY <<< "$INPUT_ADDON"
-              VALID_ADDONS=""
+              IFS=',' read -ra INPUT_AppS_ARRAY <<< "$INPUT_App"
+              VALID_AppS=""
 
-              for addon in "${INPUT_ADDONS_ARRAY[@]}"; do
-                  addon=$(echo "$addon" | xargs) # trim whitespace
+              for App in "${INPUT_AppS_ARRAY[@]}"; do
+                  App=$(echo "$App" | xargs) # trim whitespace
 
                   # Check if it exists (basic check, though dynamic check happens later too)
-                  if [ ! -d "$addon" ]; then
-                      echo "⚠️ Warning: Add-on directory '$addon' does not exist. Skipping."
+                  if [ ! -d "$App" ]; then
+                      echo "⚠️ Warning: App directory '$App' does not exist. Skipping."
                       continue
                   fi
 
                   # Check unsupported
-                  if [[ "$addon" == .unsupported/* ]] || [[ "$addon" == .unsupported* ]]; then
-                    echo "❌ Error: .unsupported addons cannot be built via this workflow"
-                    echo "   .unsupported addons are built locally from the unsupported branch"
-                    echo "   Skipping $addon"
+                  if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]]; then
+                    echo "❌ Error: .unsupported Apps cannot be built via this workflow"
+                    echo "   .unsupported Apps are built locally from the unsupported branch"
+                    echo "   Skipping $App"
                     continue
                   fi
 
-                  [ -z "$VALID_ADDONS" ] && VALID_ADDONS="$addon" || VALID_ADDONS="$VALID_ADDONS,$addon"
+                  [ -z "$VALID_AppS" ] && VALID_AppS="$App" || VALID_AppS="$VALID_AppS,$App"
               done
 
-              if [ -n "$VALID_ADDONS" ]; then
-                  ADDONS="$VALID_ADDONS"
+              if [ -n "$VALID_AppS" ]; then
+                  AppS="$VALID_AppS"
                   SHOULD_RELEASE="true"
-                  echo "📦 Add-ons to release: $ADDONS"
+                  echo "📦 Apps to release: $AppS"
               else
-                  echo "❌ No valid add-ons found to release from input: '$INPUT_ADDON'"
+                  echo "❌ No valid Apps found to release from input: '$INPUT_App'"
                   SHOULD_RELEASE="false"
               fi
-            elif [ "$INPUT_ADDON" == "detect" ]; then
+            elif [ "$INPUT_App" == "detect" ]; then
               IS_ALL="false"
               echo "🔍 Auto-detection triggered manually (checking HEAD^ vs HEAD)"
 
@@ -212,15 +212,15 @@ jobs:
               CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
               for file in $CHANGED_FILES; do
-                # Skip .unsupported addons
+                # Skip .unsupported Apps
                 if [[ "$file" == .unsupported/* ]]; then
-                  echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                  echo "⏭️ Skipping .unsupported App: $file (built locally from unsupported branch)"
                   continue
                 fi
 
                 if [[ "$file" == *"/config.yaml" ]]; then
-                  addon_dir=$(dirname "$file")
-                  addon_name=$(basename "$addon_dir")
+                  App_dir=$(dirname "$file")
+                  App_name=$(basename "$App_dir")
 
                   # Check if version changed
                   # Get old version (handle new file case)
@@ -234,8 +234,8 @@ jobs:
                   NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
                   if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
-                     echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
-                     [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                     echo "🚀 Detected version bump in $App_name: $OLD_VERSION -> $NEW_VERSION"
+                     [ -z "$AppS" ] && AppS="$App_name" || AppS="$AppS,$App_name"
                      SHOULD_RELEASE="true"
                      IS_MANUAL_BUMP="true"
                      SHOULD_RELEASE="true"
@@ -246,12 +246,12 @@ jobs:
                 fi
               done
 
-              if [ -z "$ADDONS" ]; then
+              if [ -z "$AppS" ]; then
                 echo "ℹ️ No version bumps detected in last commit."
               fi
             else
               IS_ALL="false"
-              echo "⚠️ Invalid or missing addon input: '$INPUT_ADDON'"
+              echo "⚠️ Invalid or missing App input: '$INPUT_App'"
               SHOULD_RELEASE="false"
             fi
 
@@ -262,8 +262,8 @@ jobs:
             IS_AUTO="true"
             VERSION_TYPE="${DISPATCH_VERSION:-patch}"
 
-            if [ -n "$DISPATCH_ADDON" ]; then
-              ADDONS="$DISPATCH_ADDON"
+            if [ -n "$DISPATCH_App" ]; then
+              AppS="$DISPATCH_App"
               SHOULD_RELEASE="true"
             fi
 
@@ -278,7 +278,7 @@ jobs:
               echo "PR was not merged, skipping."
               {
                 echo "should_release=false"
-                echo "addons=[]"
+                echo "Apps=[]"
                 echo "is_auto=false"
                 echo "version_type=patch"
               } >> "$GITHUB_OUTPUT"
@@ -292,7 +292,7 @@ jobs:
                 echo "⛔ Found blocking label: $label"
                 {
                   echo "should_release=false"
-                  echo "addons=[]"
+                  echo "Apps=[]"
                   echo "is_auto=true"
                   echo "version_type=patch"
                 } >> "$GITHUB_OUTPUT"
@@ -326,7 +326,7 @@ jobs:
                 echo "No safe labels or safe title patterns found"
                 {
                   echo "should_release=false"
-                  echo "addons=[]"
+                  echo "Apps=[]"
                   echo "is_auto=true"
                   echo "is_auto=true"
                   echo "version_type=patch"
@@ -350,7 +350,7 @@ jobs:
               echo "❌ Error: Could not detect any changed files for verification."
               {
                 echo "should_release=false"
-                echo "addons=[]"
+                echo "Apps=[]"
                 echo "is_auto=true"
                 echo "version_type=patch"
               } >> "$GITHUB_OUTPUT"
@@ -361,88 +361,88 @@ jobs:
             IS_BASE_IMAGE_UPDATE="false"
             # PR_TITLE is already fetched above
             PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body' || echo "")
-            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|Add-on base images|Bailys|Homeassistant Addon Base|Important Update)"; then
+            if echo "$PR_TITLE $PR_BODY" | grep -qiE "(base.*image|hassio-addons/(base|debian-base|base-python)|App base images|Bailys|Homeassistant App Base|Important Update)"; then
               IS_BASE_IMAGE_UPDATE="true"
               echo "🔍 Base image update detected from PR title/description"
             fi
 
             # ----------------------------------------------------------------
-            # Identify affected addons
+            # Identify affected Apps
             # ----------------------------------------------------------------
-            # If base image update, release ALL affected addons (not just AUTO_RELEASE_ADDONS)
-            # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+            # If base image update, release ALL affected Apps (not just AUTO_RELEASE_AppS)
+            # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
             if [ "$IS_BASE_IMAGE_UPDATE" == "true" ]; then
-              echo "🔍 Base image update - releasing all affected addons (excluding .unsupported)"
-              # Find all addons with changed Dockerfile or build.yaml
+              echo "🔍 Base image update - releasing all affected Apps (excluding .unsupported)"
+              # Find all Apps with changed Dockerfile or build.yaml
               for file in $CHANGED; do
-                # Skip .unsupported addons - they are built locally from unsupported branch
+                # Skip .unsupported Apps - they are built locally from unsupported branch
                 if [[ "$file" =~ ^\.unsupported/ ]]; then
-                  echo "  ⏭️ Skipping .unsupported addon: $file"
+                  echo "  ⏭️ Skipping .unsupported App: $file"
                   continue
                 fi
 
-                # Extract addon directory from file path (only regular addons)
+                # Extract App directory from file path (only regular Apps)
                 if [[ "$file" =~ ^([^/]+)/ ]]; then
-                  addon_dir="${BASH_REMATCH[1]}"
+                  App_dir="${BASH_REMATCH[1]}"
                 else
                   continue
                 fi
 
-                # Check if Dockerfile or build.yaml in this addon was changed
-                if echo "$CHANGED" | grep -qE "^${addon_dir}/(Dockerfile|build\.yaml)$"; then
+                # Check if Dockerfile or build.yaml in this App was changed
+                if echo "$CHANGED" | grep -qE "^${App_dir}/(Dockerfile|build\.yaml)$"; then
                   # Skip if already added
-                  if [[ ! ",$ADDONS," =~ ,"$addon_dir", ]]; then
-                    [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
-                    echo "  ✅ Added $addon_dir (Dockerfile/build.yaml changed)"
+                  if [[ ! ",$AppS," =~ ,"$App_dir", ]]; then
+                    [ -z "$AppS" ] && AppS="$App_dir" || AppS="$AppS,$App_dir"
+                    echo "  ✅ Added $App_dir (Dockerfile/build.yaml changed)"
                   fi
                 fi
               done
             else
               # ----------------------------------------------------------------
-              # Detect NEW Add-ons (config.yaml added)
+              # Detect NEW Apps (config.yaml added)
               # ----------------------------------------------------------------
-              echo "🔍 Checking for newly or modified add-ons..."
-              CLEAN_IGNORE_ADDONS="$(echo "$AUTO_RELEASE_IGNORE" | tr '\n' ' ')"
+              echo "🔍 Checking for newly or modified Apps..."
+              CLEAN_IGNORE_AppS="$(echo "$AUTO_RELEASE_IGNORE" | tr '\n' ' ')"
 
-              # Loop through changed files to detect affected addons
+              # Loop through changed files to detect affected Apps
               for file in $CHANGED; do
                  # Skip .unsupported (already handled at top level, but for safety in loop)
                  if [[ "$file" == .unsupported/* ]]; then
                     continue
                  fi
 
-                 # Extract addon slug (first directory level)
+                 # Extract App slug (first directory level)
                  if [[ "$file" =~ ^([^/]+)/ ]]; then
-                    addon_dir="${BASH_REMATCH[1]}"
+                    App_dir="${BASH_REMATCH[1]}"
 
                     # Skip hidden directories (like .github, .scripts), internal folders (_images), or docs
-                    if [[ "$addon_dir" == .* ]] || [[ "$addon_dir" == _* ]] || [[ "$addon_dir" == "docs" ]]; then
+                    if [[ "$App_dir" == .* ]] || [[ "$App_dir" == _* ]] || [[ "$App_dir" == "docs" ]]; then
                        continue
                     fi
 
                     # Skip if already identified as target
-                    if [[ ",$ADDONS," =~ ,"$addon_dir", ]]; then
+                    if [[ ",$AppS," =~ ,"$App_dir", ]]; then
                        continue
                     fi
 
-                    # IMPORTANT: Verify it's actually an add-on directory by checking for config.yaml
-                    if [ ! -f "${addon_dir}/config.yaml" ]; then
+                    # IMPORTANT: Verify it's actually an App directory by checking for config.yaml
+                    if [ ! -f "${App_dir}/config.yaml" ]; then
                        continue
                     fi
 
-                    # 1. Detect NEW addons (config.yaml added)
-                    if [[ "$file" == "${addon_dir}/config.yaml" ]] && git diff --name-status HEAD^ HEAD | grep -qE "^A.*${file}"; then
-                        echo "  🚀 Detected NEW add-on: $addon_dir"
-                        [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    # 1. Detect NEW Apps (config.yaml added)
+                    if [[ "$file" == "${App_dir}/config.yaml" ]] && git diff --name-status HEAD^ HEAD | grep -qE "^A.*${file}"; then
+                        echo "  🚀 Detected NEW App: $App_dir"
+                        [ -z "$AppS" ] && AppS="$App_dir" || AppS="$AppS,$App_dir"
                         continue
                     fi
 
-                    # 2. Detect updates for ALL addons (except ignored)
-                    if [[ " $CLEAN_IGNORE_ADDONS " != *" $addon_dir "* ]]; then
-                       echo "  ✅ Added $addon_dir (Changed file: $file)"
-                       [ -z "$ADDONS" ] && ADDONS="$addon_dir" || ADDONS="$ADDONS,$addon_dir"
+                    # 2. Detect updates for ALL Apps (except ignored)
+                    if [[ " $CLEAN_IGNORE_AppS " != *" $App_dir "* ]]; then
+                       echo "  ✅ Added $App_dir (Changed file: $file)"
+                       [ -z "$AppS" ] && AppS="$App_dir" || AppS="$AppS,$App_dir"
                     else
-                       echo "  ⏭️ Skipping ignored addon: $addon_dir"
+                       echo "  ⏭️ Skipping ignored App: $App_dir"
                     fi
                  fi
               done
@@ -455,11 +455,11 @@ jobs:
             # Check for version changes in any config.yaml
             for file in $CHANGED; do
               if [[ "$file" == *"/config.yaml" ]]; then
-                addon_dir=$(dirname "$file")
-                addon_slug=$(basename "$addon_dir")
+                App_dir=$(dirname "$file")
+                App_slug=$(basename "$App_dir")
 
                 # Skip .unsupported
-                if [[ "$addon_dir" == .unsupported/* ]]; then continue; fi
+                if [[ "$App_dir" == .unsupported/* ]]; then continue; fi
 
                 # Check if version field actually changed
                 if git rev-parse --verify HEAD^:"$file" >/dev/null 2>&1; then
@@ -470,10 +470,10 @@ jobs:
                 NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
                 if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
-                   echo "🚀 Detected explicit version bump in $addon_slug: $OLD_VERSION -> $NEW_VERSION"
-                   # Add to ADDONS if not already there
-                   if [[ ! ",$ADDONS," =~ ,"$addon_slug", ]]; then
-                     [ -z "$ADDONS" ] && ADDONS="$addon_slug" || ADDONS="$ADDONS,$addon_slug"
+                   echo "🚀 Detected explicit version bump in $App_slug: $OLD_VERSION -> $NEW_VERSION"
+                   # Add to AppS if not already there
+                   if [[ ! ",$AppS," =~ ,"$App_slug", ]]; then
+                     [ -z "$AppS" ] && AppS="$App_slug" || AppS="$AppS,$App_slug"
                    fi
                    # Use this version instead of patch bump
                    TARGET_VERSION="$NEW_VERSION"
@@ -483,7 +483,7 @@ jobs:
               fi
             done
 
-            [ -n "$ADDONS" ] && SHOULD_RELEASE="true"
+            [ -n "$AppS" ] && SHOULD_RELEASE="true"
           # ----------------------------------------------------------------
           # PUSH TO MASTER (Manual Version Bump Detection or release(all) trigger)
           # ----------------------------------------------------------------
@@ -493,51 +493,51 @@ jobs:
              # Check for "release(all)" in commit message
              COMMIT_MSG="$HEAD_COMMIT_MSG"
              if echo "$COMMIT_MSG" | grep -qi "release(all)"; then
-               echo "🚀 Detected 'release(all)' in commit message - releasing all add-ons"
-               SKIP_ADDONS="homeassistant-test-instance sap-abap-cloud-dev"
+               echo "🚀 Detected 'release(all)' in commit message - releasing all Apps"
+               SKIP_AppS="homeassistant-test-instance sap-abap-cloud-dev"
 
-               # Regular addons (top-level directories with config.yaml)
-               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+               # Regular Apps (top-level directories with config.yaml)
+               # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
                for item in */; do
                  item_name="${item%/}"
                  if [ -f "${item}config.yaml" ] && [ ! "${item_name#.}" != "$item_name" ] && [ ! "${item_name#_}" != "$item_name" ]; then
-                   # Skip test add-ons
+                   # Skip test Apps
                    skip=false
-                   for skip_item in $SKIP_ADDONS; do
+                   for skip_item in $SKIP_AppS; do
                      if [ "$item_name" == "$skip_item" ]; then
                        skip=true
                        break
                      fi
                    done
                    if [ "$skip" == "false" ]; then
-                     [ -z "$ADDONS" ] && ADDONS="$item_name" || ADDONS="$ADDONS,$item_name"
+                     [ -z "$AppS" ] && AppS="$item_name" || AppS="$AppS,$item_name"
                    fi
                  fi
                done
 
-               # .unsupported addons are NOT included - they are built locally from unsupported branch
-               echo "ℹ️ Skipping .unsupported addons (built locally from unsupported branch)"
+               # .unsupported Apps are NOT included - they are built locally from unsupported branch
+               echo "ℹ️ Skipping .unsupported Apps (built locally from unsupported branch)"
 
                SHOULD_RELEASE="true"
                VERSION_TYPE="patch" # Default for release(all)
-               echo "📦 Found add-ons: $ADDONS"
+               echo "📦 Found Apps: $AppS"
              else
                IS_ALL="false"
                # Original logic: Detect manual version bumps
-               # NOTE: .unsupported addons are excluded - they are built locally from unsupported branch
+               # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
                # Get list of changed files
                CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
                for file in $CHANGED_FILES; do
-                 # Skip .unsupported addons - they are built locally from unsupported branch
+                 # Skip .unsupported Apps - they are built locally from unsupported branch
                  if [[ "$file" == .unsupported/* ]]; then
-                   echo "⏭️ Skipping .unsupported addon: $file (built locally from unsupported branch)"
+                   echo "⏭️ Skipping .unsupported App: $file (built locally from unsupported branch)"
                    continue
                  fi
 
                  if [[ "$file" == *"/config.yaml" ]]; then
-                   addon_dir=$(dirname "$file")
-                   addon_name=$(basename "$addon_dir")
+                   App_dir=$(dirname "$file")
+                   App_name=$(basename "$App_dir")
 
                    # Check if version changed
                    # Get old version (handle new file case)
@@ -551,8 +551,8 @@ jobs:
                    NEW_VERSION=$(grep "^version:" "$file" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
                    if [ "$OLD_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
-                      echo "🚀 Detected version bump in $addon_name: $OLD_VERSION -> $NEW_VERSION"
-                      [ -z "$ADDONS" ] && ADDONS="$addon_name" || ADDONS="$ADDONS,$addon_name"
+                      echo "🚀 Detected version bump in $App_name: $OLD_VERSION -> $NEW_VERSION"
+                      [ -z "$AppS" ] && AppS="$App_name" || AppS="$AppS,$App_name"
                       SHOULD_RELEASE="true"
                       IS_MANUAL_BUMP="true"
                       TARGET_VERSION="$NEW_VERSION"
@@ -564,87 +564,87 @@ jobs:
 
           fi
 
-          # Sort addons by priority (only if multiple addons are affected)
-          if [ -n "$ADDONS" ]; then
-            ADDON_COUNT=$(echo "$ADDONS" | tr ',' '\n' | wc -l | tr -d ' ')
-            if [ "$ADDON_COUNT" -gt 1 ]; then
-              echo "📋 Sorting addons by priority (multiple addons detected)..."
+          # Sort Apps by priority (only if multiple Apps are affected)
+          if [ -n "$AppS" ]; then
+            App_COUNT=$(echo "$AppS" | tr ',' '\n' | wc -l | tr -d ' ')
+            if [ "$App_COUNT" -gt 1 ]; then
+              echo "📋 Sorting Apps by priority (multiple Apps detected)..."
 
               # Split into categories
-              NORMAL_ADDONS=""
-              SWITCH_LAN_PLAY_ADDONS=""
-              PTERODACTYL_WINGS_ADDONS=""
-              PTERODACTYL_PANEL_ADDONS=""
-              ANTIGRAVITY_ADDON=""
-              SAP_ADDON=""
-              UNSUPPORTED_ADDONS=""
+              NORMAL_AppS=""
+              SWITCH_LAN_PLAY_AppS=""
+              PTERODACTYL_WINGS_AppS=""
+              PTERODACTYL_PANEL_AppS=""
+              ANTIGRAVITY_App=""
+              SAP_App=""
+              UNSUPPORTED_AppS=""
 
-              # Process each addon
+              # Process each App
               IFS=','
-              for addon in $ADDONS; do
-                addon=$(echo "$addon" | xargs)  # trim whitespace
+              for App in $AppS; do
+                App=$(echo "$App" | xargs)  # trim whitespace
 
               # Check category
-              if [[ "$addon" == .unsupported/* ]]; then
-                # Unsupported addons go last
-                [ -z "$UNSUPPORTED_ADDONS" ] && UNSUPPORTED_ADDONS="$addon" || UNSUPPORTED_ADDONS="$UNSUPPORTED_ADDONS,$addon"
-              elif [[ "$addon" == "sap-abap-cloud-dev" ]]; then
+              if [[ "$App" == .unsupported/* ]]; then
+                # Unsupported Apps go last
+                [ -z "$UNSUPPORTED_AppS" ] && UNSUPPORTED_AppS="$App" || UNSUPPORTED_AppS="$UNSUPPORTED_AppS,$App"
+              elif [[ "$App" == "sap-abap-cloud-dev" ]]; then
                  # SAP goes second-to-last (after antigravity, before unsupported)
-                SAP_ADDON="$addon"
-              elif [[ "$addon" == "antigravity-server" ]]; then
+                SAP_App="$App"
+              elif [[ "$App" == "antigravity-server" ]]; then
                 # antigravity-server goes third-to-last
-                ANTIGRAVITY_ADDON="$addon"
-              elif [[ "$addon" == pterodactyl-panel* ]]; then
+                ANTIGRAVITY_App="$App"
+              elif [[ "$App" == pterodactyl-panel* ]]; then
                  # pterodactyl panel goes fourth-to-last
-                 [ -z "$PTERODACTYL_PANEL_ADDONS" ] && PTERODACTYL_PANEL_ADDONS="$addon" || PTERODACTYL_PANEL_ADDONS="$PTERODACTYL_PANEL_ADDONS,$addon"
-              elif [[ "$addon" == pterodactyl-wings* ]]; then
+                 [ -z "$PTERODACTYL_PANEL_AppS" ] && PTERODACTYL_PANEL_AppS="$App" || PTERODACTYL_PANEL_AppS="$PTERODACTYL_PANEL_AppS,$App"
+              elif [[ "$App" == pterodactyl-wings* ]]; then
                  # pterodactyl wings goes fifth-to-last
-                 [ -z "$PTERODACTYL_WINGS_ADDONS" ] && PTERODACTYL_WINGS_ADDONS="$addon" || PTERODACTYL_WINGS_ADDONS="$PTERODACTYL_WINGS_ADDONS,$addon"
-              elif [[ "$addon" == switch_lan_play* ]]; then
-                # switch_lan_play addons go sixth-to-last
-                [ -z "$SWITCH_LAN_PLAY_ADDONS" ] && SWITCH_LAN_PLAY_ADDONS="$addon" || SWITCH_LAN_PLAY_ADDONS="$SWITCH_LAN_PLAY_ADDONS,$addon"
+                 [ -z "$PTERODACTYL_WINGS_AppS" ] && PTERODACTYL_WINGS_AppS="$App" || PTERODACTYL_WINGS_AppS="$PTERODACTYL_WINGS_AppS,$App"
+              elif [[ "$App" == switch_lan_play* ]]; then
+                # switch_lan_play Apps go sixth-to-last
+                [ -z "$SWITCH_LAN_PLAY_AppS" ] && SWITCH_LAN_PLAY_AppS="$App" || SWITCH_LAN_PLAY_AppS="$SWITCH_LAN_PLAY_AppS,$App"
               else
-                # Normal addons go first
-                [ -z "$NORMAL_ADDONS" ] && NORMAL_ADDONS="$addon" || NORMAL_ADDONS="$NORMAL_ADDONS,$addon"
+                # Normal Apps go first
+                [ -z "$NORMAL_AppS" ] && NORMAL_AppS="$App" || NORMAL_AppS="$NORMAL_AppS,$App"
               fi
             done
             unset IFS
 
             # Rebuild in correct order
-            SORTED_ADDONS=""
-            [ -n "$NORMAL_ADDONS" ] && SORTED_ADDONS="$NORMAL_ADDONS"
-            [ -n "$SWITCH_LAN_PLAY_ADDONS" ] && {
-              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SWITCH_LAN_PLAY_ADDONS" || SORTED_ADDONS="$SWITCH_LAN_PLAY_ADDONS"
+            SORTED_AppS=""
+            [ -n "$NORMAL_AppS" ] && SORTED_AppS="$NORMAL_AppS"
+            [ -n "$SWITCH_LAN_PLAY_AppS" ] && {
+              [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$SWITCH_LAN_PLAY_AppS" || SORTED_AppS="$SWITCH_LAN_PLAY_AppS"
             }
-            [ -n "$PTERODACTYL_WINGS_ADDONS" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_WINGS_ADDONS" || SORTED_ADDONS="$PTERODACTYL_WINGS_ADDONS"
+            [ -n "$PTERODACTYL_WINGS_AppS" ] && {
+                [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$PTERODACTYL_WINGS_AppS" || SORTED_AppS="$PTERODACTYL_WINGS_AppS"
             }
-            [ -n "$PTERODACTYL_PANEL_ADDONS" ] && {
-                [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$PTERODACTYL_PANEL_ADDONS" || SORTED_ADDONS="$PTERODACTYL_PANEL_ADDONS"
+            [ -n "$PTERODACTYL_PANEL_AppS" ] && {
+                [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$PTERODACTYL_PANEL_AppS" || SORTED_AppS="$PTERODACTYL_PANEL_AppS"
             }
-            [ -n "$ANTIGRAVITY_ADDON" ] && {
-              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$ANTIGRAVITY_ADDON" || SORTED_ADDONS="$ANTIGRAVITY_ADDON"
+            [ -n "$ANTIGRAVITY_App" ] && {
+              [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$ANTIGRAVITY_App" || SORTED_AppS="$ANTIGRAVITY_App"
             }
-            [ -n "$SAP_ADDON" ] && {
-              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$SAP_ADDON" || SORTED_ADDONS="$SAP_ADDON"
+            [ -n "$SAP_App" ] && {
+              [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$SAP_App" || SORTED_AppS="$SAP_App"
             }
-            [ -n "$UNSUPPORTED_ADDONS" ] && {
-              [ -n "$SORTED_ADDONS" ] && SORTED_ADDONS="$SORTED_ADDONS,$UNSUPPORTED_ADDONS" || SORTED_ADDONS="$UNSUPPORTED_ADDONS"
+            [ -n "$UNSUPPORTED_AppS" ] && {
+              [ -n "$SORTED_AppS" ] && SORTED_AppS="$SORTED_AppS,$UNSUPPORTED_AppS" || SORTED_AppS="$UNSUPPORTED_AppS"
             }
 
-            ADDONS="$SORTED_ADDONS"
-            echo "✅ Sorted addons: $ADDONS"
+            AppS="$SORTED_AppS"
+            echo "✅ Sorted Apps: $AppS"
             fi
           fi
 
           # Convert to JSON array (compact format for GitHub Actions output)
-          if [ -n "$ADDONS" ]; then
-            JSON="$(echo "$ADDONS" | tr ',' '\n' | jq -R . | jq -s -c .)"
+          if [ -n "$AppS" ]; then
+            JSON="$(echo "$AppS" | tr ',' '\n' | jq -R . | jq -s -c .)"
           else
             JSON="[]"
           fi
 
-          echo "Addons: $ADDONS"
+          echo "Apps: $AppS"
           echo "Should release: $SHOULD_RELEASE"
           echo "Is auto: $IS_AUTO"
           echo "Version type: $VERSION_TYPE"
@@ -653,7 +653,7 @@ jobs:
 
           # Output as compact JSON (single line) to avoid formatting issues
           # shellcheck disable=SC2129
-          printf "addons=%s\n" "$JSON" >> "$GITHUB_OUTPUT"
+          printf "Apps=%s\n" "$JSON" >> "$GITHUB_OUTPUT"
           printf "should_release=%s\n" "$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
           printf "is_auto=%s\n" "$IS_AUTO" >> "$GITHUB_OUTPUT"
           printf "version_type=%s\n" "$VERSION_TYPE" >> "$GITHUB_OUTPUT"
@@ -667,53 +667,53 @@ jobs:
   # VERIFY: Lint and test build before release
   # ================================================================================
   verify:
-    name: ✅ Verify ${{ matrix.addon }}
+    name: ✅ Verify ${{ matrix.App }}
     needs: detect
     if: needs.detect.outputs.should_release == 'true' && github.event.inputs.skip_verification != 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        addon: ${{ fromJson(needs.detect.outputs.addons) }}
+        App: ${{ fromJson(needs.detect.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
 
-      - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@v2
+      - name: 🕵️ App Linter
+        uses: frenck/action-App-linter@v2
         with:
-          path: "./${{ matrix.addon }}"
+          path: "./${{ matrix.App }}"
 
-      - name: ℹ️ Get Add-on Info
+      - name: ℹ️ Get App Info
         id: info
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ matrix.addon }}"
+          path: "./${{ matrix.App }}"
 
       - name: 🔧 Inject Version Warning
         run: |
           pip install pyyaml --quiet
-          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+          python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Test Build
-        if: matrix.addon != 'sap-abap-cloud-dev'
+        if: matrix.App != 'sap-abap-cloud-dev'
         uses: home-assistant/builder@2025.11.0
         with:
           args: |
             --test \
             --amd64 \
-            --target /data/${{ matrix.addon }} \
+            --target /data/${{ matrix.App }} \
             --image "${{ steps.info.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+            --App
 
   # ================================================================================
   # RELEASE: Build & Push
   # ================================================================================
   release:
-    name: 🚀 Release ${{ matrix.addon }}
+    name: 🚀 Release ${{ matrix.App }}
     needs: [detect, verify]
     if: |
       always() &&
@@ -726,7 +726,7 @@ jobs:
       # Retry logic handles potential git race conditions
       max-parallel: 5
       matrix:
-        addon: ${{ fromJson(needs.detect.outputs.addons) }}
+        App: ${{ fromJson(needs.detect.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
@@ -738,9 +738,9 @@ jobs:
         id: status
         run: |
           # shellcheck disable=SC2193
-          if [[ "${{ matrix.addon }}" == .unsupported/* ]]; then
+          if [[ "${{ matrix.App }}" == .unsupported/* ]]; then
             echo "is_unsupported=true" >> "$GITHUB_OUTPUT"
-            echo "📦 Addon is UNSUPPORTED"
+            echo "📦 App is UNSUPPORTED"
           else
             echo "is_unsupported=false" >> "$GITHUB_OUTPUT"
           fi
@@ -748,39 +748,39 @@ jobs:
       - name: 🔧 Inject Version Warning
         run: |
           pip install pyyaml --quiet
-          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+          python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔧 Fix Image Field Format (if needed)
-        if: matrix.addon != 'sap-abap-cloud-dev'
+        if: matrix.App != 'sap-abap-cloud-dev'
         run: |
           # Ensure image field uses correct format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
-          SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
           CORRECT_IMAGE="ghcr.io/faserf/hassio-addons-${SLUG}-{arch}"
 
-          if grep -q "^image:" "${{ matrix.addon }}/config.yaml"; then
-            CURRENT_IMAGE=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          if grep -q "^image:" "${{ matrix.App }}/config.yaml"; then
+            CURRENT_IMAGE=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
             if [ "$CURRENT_IMAGE" != "$CORRECT_IMAGE" ]; then
-              sed -i "s|^image:.*|image: ${CORRECT_IMAGE}|g" "${{ matrix.addon }}/config.yaml"
+              sed -i "s|^image:.*|image: ${CORRECT_IMAGE}|g" "${{ matrix.App }}/config.yaml"
               echo "✅ Updated image field from '$CURRENT_IMAGE' to '$CORRECT_IMAGE'"
             else
               echo "ℹ️ Image field already correct: $CORRECT_IMAGE"
             fi
           else
             # Add image field if missing
-            sed -i "/^slug:.*/a image: ${CORRECT_IMAGE}" "${{ matrix.addon }}/config.yaml"
+            sed -i "/^slug:.*/a image: ${CORRECT_IMAGE}" "${{ matrix.App }}/config.yaml"
             echo "✅ Added image field: $CORRECT_IMAGE"
           fi
 
-      - name: ℹ️ Get Add-on Info
+      - name: ℹ️ Get App Info
         id: info
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ matrix.addon }}"
+          path: "./${{ matrix.App }}"
 
       - name: 🐋 Login to GitHub Container Registry
-        if: matrix.addon != 'sap-abap-cloud-dev'
+        if: matrix.App != 'sap-abap-cloud-dev'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -788,19 +788,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐳 Set up Docker Buildx
-        if: matrix.addon != 'sap-abap-cloud-dev'
+        if: matrix.App != 'sap-abap-cloud-dev'
         uses: docker/setup-buildx-action@v3
 
       - name: 💾 Cache Docker layers (optimized for shared base image)
         uses: actions/cache@v5
         with:
-          path: /tmp/.buildx-cache-${{ matrix.addon }}
-          # Primary key: addon-specific for precise cache hits
-          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          path: /tmp/.buildx-cache-${{ matrix.App }}
+          # Primary key: App-specific for precise cache hits
+          key: ${{ runner.os }}-buildx-${{ matrix.App }}-${{ github.sha }}
           restore-keys: |
-            # Try addon-specific cache first
-            ${{ runner.os }}-buildx-${{ matrix.addon }}-
-            # Fallback to shared base image cache (all addons share base:19.0.0)
+            # Try App-specific cache first
+            ${{ runner.os }}-buildx-${{ matrix.App }}-
+            # Fallback to shared base image cache (all Apps share base:19.0.0)
             ${{ runner.os }}-buildx-base-image-19.0.0-
             # Last resort: any buildx cache
             ${{ runner.os }}-buildx-
@@ -827,13 +827,13 @@ jobs:
           if [ "$IS_MANUAL_BUMP" == "true" ] || [ "$CHANGELOG_ONLY" == "true" ]; then
              echo "ℹ️ Changelog-only mode: Updating Changelog without version bump."
              # Get current version from config.yaml
-             CURRENT_VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-             python3 .scripts/bump_version.py "${{ matrix.addon }}" patch --target-version "$CURRENT_VERSION" --changelog-only --message "$MSG"
+             CURRENT_VERSION=$(grep "^version:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+             python3 .scripts/bump_version.py "${{ matrix.App }}" patch --target-version "$CURRENT_VERSION" --changelog-only --message "$MSG"
           else
-             PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.addon }}\" \"$VERSION_TYPE\" --message \"$MSG\""
+             PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.App }}\" \"$VERSION_TYPE\" --message \"$MSG\""
 
              if [ -n "$TARGET_VERSION" ] && [ "$TARGET_VERSION" != "null" ]; then
-                PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.addon }}\" patch --target-version \"$TARGET_VERSION\" --message \"$MSG\""
+                PYTHON_CMD="python3 .scripts/bump_version.py \"${{ matrix.App }}\" patch --target-version \"$TARGET_VERSION\" --message \"$MSG\""
              fi
 
              eval "$PYTHON_CMD"
@@ -844,21 +844,21 @@ jobs:
       - name: 🔍 Debug Git Status (Post-Bump)
         run: |
           echo "Current directory: $(pwd)"
-          ls -la "${{ matrix.addon }}"
+          ls -la "${{ matrix.App }}"
           git status
           git diff
-          grep "version:" "${{ matrix.addon }}/config.yaml"
+          grep "version:" "${{ matrix.App }}/config.yaml"
 
       - name: 🔄 Pull latest changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Store local changes for this addon
-          ADDON_FILES="."
+          # Store local changes for this App
+          App_FILES="."
           if [ -n "$(git status --porcelain)" ]; then
-            echo "📦 Stashing local changes for ${{ matrix.addon }}..."
-            git stash push -u -m "temp-stash-${{ matrix.addon }}" || echo "No changes to stash"
+            echo "📦 Stashing local changes for ${{ matrix.App }}..."
+            git stash push -u -m "temp-stash-${{ matrix.App }}" || echo "No changes to stash"
           fi
 
           # Fetch and update to latest master
@@ -866,15 +866,15 @@ jobs:
           git reset --hard origin/master
 
           # Restore and reapply local changes
-          if git stash list | grep -q "temp-stash-${{ matrix.addon }}"; then
-            STASH_ENTRY=$(git stash list | grep "temp-stash-${{ matrix.addon }}" | head -n1 | cut -d: -f1)
+          if git stash list | grep -q "temp-stash-${{ matrix.App }}"; then
+            STASH_ENTRY=$(git stash list | grep "temp-stash-${{ matrix.App }}" | head -n1 | cut -d: -f1)
             if [ -n "$STASH_ENTRY" ]; then
               # Apply stash (don't pop, in case of conflicts)
               git stash apply "$STASH_ENTRY" || {
                 echo "⚠️ Merge conflict detected, resolving..."
-                # If there's a conflict, resolve by taking our version (the addon files)
-                git checkout --ours -- "$ADDON_FILES" 2>/dev/null || true
-                git add "$ADDON_FILES"
+                # If there's a conflict, resolve by taking our version (the App files)
+                git checkout --ours -- "$App_FILES" 2>/dev/null || true
+                git add "$App_FILES"
                 # Clean up the stash
                 git stash drop "$STASH_ENTRY" 2>/dev/null || true
               }
@@ -887,8 +887,8 @@ jobs:
           git rebase --abort 2>/dev/null || true
 
           # Reapply changes one more time if needed
-          if [ -n "$(git status --porcelain "$ADDON_FILES")" ]; then
-            echo "✅ Local changes preserved for ${{ matrix.addon }}"
+          if [ -n "$(git status --porcelain "$App_FILES")" ]; then
+            echo "✅ Local changes preserved for ${{ matrix.App }}"
           fi
 
       - name: 🚀 Commit & Push (with Retry)
@@ -902,9 +902,9 @@ jobs:
             echo "Attempt $i of $MAX_RETRIES..."
 
             # 1. Check status and Commit
-            if [ -n "$(git status --porcelain "${{ matrix.addon }}")" ]; then
-              git add "${{ matrix.addon }}"
-              COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.addon) || format('🚀 release({0}): version bump [skip-tests]', matrix.addon) }}"
+            if [ -n "$(git status --porcelain "${{ matrix.App }}")" ]; then
+              git add "${{ matrix.App }}"
+              COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.App) || format('🚀 release({0}): version bump [skip-tests]', matrix.App) }}"
               git commit -m "$COMMIT_MSG" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Commit failed or empty"
             else
               echo "Nothing to commit (or already committed)"
@@ -934,25 +934,25 @@ jobs:
           echo "❌ Failed to push after $MAX_RETRIES attempts"
           exit 1
 
-      - name: ℹ️ Get Add-on Info (Post-Bump)
+      - name: ℹ️ Get App Info (Post-Bump)
         id: info_build
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ matrix.addon }}"
+          path: "./${{ matrix.App }}"
 
       - name: 🗑️ Delete existing image version (if exists)
         continue-on-error: true
         run: |
           # Extract version from config.yaml
-          VERSION=$(grep "^version:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          VERSION=$(grep "^version:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
 
           # Get package name from config.yaml image field
           # Format: ghcr.io/faserf/hassio-addons-{slug}-{arch}
-          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
             # Fallback: use slug
-            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
             PACKAGE_NAME="hassio-addons-${SLUG}"
           else
             # Extract package name: remove ghcr.io/faserf/ prefix
@@ -1008,12 +1008,12 @@ jobs:
             fi
           fi
 
-      - name: 🏗️ Build & Push Add-on
-        if: matrix.addon != 'sap-abap-cloud-dev'
+      - name: 🏗️ Build & Push App
+        if: matrix.App != 'sap-abap-cloud-dev'
         run: |
           # Read architectures from config.yaml
           # shellcheck disable=SC2001,SC2046
-          ARCHS=$(grep -A 10 "^arch:" "${{ matrix.addon }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
+          ARCHS=$(grep -A 10 "^arch:" "${{ matrix.App }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
 
           # Default to amd64 and aarch64 if no arches found
           if [ -z "$ARCHS" ]; then
@@ -1054,11 +1054,11 @@ jobs:
           # Extract image name from config.yaml
           # Format should be: ghcr.io/faserf/hassio-addons-{slug}-{arch}
           # Builder expects: hassio-addons-{slug}-{arch} (without registry prefix)
-          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
             # Fallback: use slug from config
-            SLUG=$(grep "^slug:" "${{ matrix.addon }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
             IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
           else
             # Remove ghcr.io/faserf/ prefix to get package name
@@ -1078,20 +1078,20 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
             -v "$(pwd)":/data \
-            -v /tmp/.buildx-cache-${{ matrix.addon }}:/cache:rw \
+            -v /tmp/.buildx-cache-${{ matrix.App }}:/cache:rw \
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             $(echo -e "$BUILDER_ARGS") \
-            --target "/data/${{ matrix.addon }}" \
+            --target "/data/${{ matrix.App }}" \
             --image "$IMAGE_NAME" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+            --App
 
       - name: 📢 Release Summary
         run: |
           {
             echo "### 🚀 Release Complete"
             echo ""
-            echo "**Add-on:** ${{ matrix.addon }}"
+            echo "**App:** ${{ matrix.App }}"
             echo "**Type:** ${{ needs.detect.outputs.is_auto == 'true' && 'Auto-release' || 'Manual release' }}"
             echo "**Unsupported:** ${{ steps.status.outputs.is_unsupported }}"
             echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
@@ -1115,7 +1115,7 @@ jobs:
         run: |
           echo "Starting failure monitor for 'all' release..."
           echo "Will cancel remaining jobs if 3 failures are detected."
-          echo "Will also cancel remaining jobs after 5 successful skipped addons."
+          echo "Will also cancel remaining jobs after 5 successful skipped Apps."
           echo ""
 
           MAX_FAILURES=3
@@ -1147,10 +1147,10 @@ jobs:
             # Check if skipped threshold reached
             if [ "$SKIPPED_COUNT" -ge "$MAX_SKIPPED_SUCCESS" ]; then
               echo ""
-              echo "✅ Threshold reached: $SKIPPED_COUNT successful skipped addons (threshold: $MAX_SKIPPED_SUCCESS)"
-              echo "ℹ️  Most addons are likely working. Stopping monitor (builds will continue running)."
+              echo "✅ Threshold reached: $SKIPPED_COUNT successful skipped Apps (threshold: $MAX_SKIPPED_SUCCESS)"
+              echo "ℹ️  Most Apps are likely working. Stopping monitor (builds will continue running)."
               echo ""
-              echo "✅ Monitor completed early: $SKIPPED_COUNT successful skipped addons detected. Remaining releases will continue."
+              echo "✅ Monitor completed early: $SKIPPED_COUNT successful skipped Apps detected. Remaining releases will continue."
               exit 0
             fi
 
@@ -1158,7 +1158,7 @@ jobs:
             if [ "$FAILED_COUNT" -ge "$MAX_FAILURES" ]; then
               echo ""
               echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
-              echo "⚠️  WARNING: Too many addons have failed. Cancelling remaining release jobs..."
+              echo "⚠️  WARNING: Too many Apps have failed. Cancelling remaining release jobs..."
 
               # Get all release jobs that are still queued or in_progress
               RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .id')
@@ -1179,7 +1179,7 @@ jobs:
               fi
 
               echo ""
-              echo "⚠️  WARNING: Too many addons failed ($FAILED_COUNT/$MAX_FAILURES threshold). Remaining releases have been cancelled."
+              echo "⚠️  WARNING: Too many Apps failed ($FAILED_COUNT/$MAX_FAILURES threshold). Remaining releases have been cancelled."
               exit 0
             fi
 

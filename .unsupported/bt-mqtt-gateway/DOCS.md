@@ -32,7 +32,7 @@ debug: false
 
 ## Requirements
 
-Please make sure that a MQTT Addon is being installed already.
+Please make sure that a MQTT App is being installed already.
 
 ## Support
 

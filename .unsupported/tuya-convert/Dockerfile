@@ -33,7 +33,7 @@ HEALTHCHECK NONE
 LABEL \
     org.opencontainers.image.title="tuya-convert BETA" \
     org.opencontainers.image.description="Tuya Convert - Flash Tuya devices with open Source software (Beta/Deprecated) (Unsupported)" \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/.unsupported/tuya-convert" \

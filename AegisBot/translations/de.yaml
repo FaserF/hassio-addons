@@ -21,7 +21,7 @@ configuration:
   developer_mode:
     name: Entwickler-Modus
     description: >-
-      Wenn aktiviert, lädt das Add-on bei jedem Neustart den neuesten Code
+      Wenn aktiviert, lädt das App bei jedem Neustart den neuesten Code
       vom main-Branch herunter. WARNUNG: Kann instabile Features enthalten!
 
   reset_database:

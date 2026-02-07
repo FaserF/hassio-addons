@@ -1,9 +1,9 @@
-# Pterodactyl Wings - Example Home Assistant Add-on Configuration
+# Pterodactyl Wings - Example Home Assistant App Configuration
 
-# This is the Home Assistant add-on configuration (set via "Configuration" tab)
+# This is the Home Assistant App configuration (set via "Configuration" tab)
 # The actual Wings daemon configuration is placed in /share/pterodactyl/config.yml
 
 # Path to the Wings daemon configuration file.
-# The Panel add-on automatically generates this file at /share/pterodactyl/config.yml.
+# The Panel App automatically generates this file at /share/pterodactyl/config.yml.
 # If you are running Wings standalone, create your own config.yml here.
 config_file: /share/pterodactyl/config.yml

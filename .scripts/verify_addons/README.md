@@ -1,11 +1,11 @@
-# Verify Addons - Home Assistant App Verification Suite
+# Verify Apps - Home Assistant App Verification Suite
 
 A modular verification suite for Home Assistant Apps that performs comprehensive checks including linting, security scanning, build validation, and functional testing.
 
 ## Directory Structure
 
 ```
-verify_addons/
+verify_Apps/
 ├── README.md               # This file
 ├── lib/
 │   └── common.ps1          # Shared functions (Add-Result, Write-Header, etc.)
@@ -17,7 +17,7 @@ verify_addons/
 │   ├── 04-yamllint.ps1         # YAML linting
 │   ├── 05-markdownlint.ps1     # Markdown linting
 │   ├── 06-prettier.ps1         # Code formatting
-│   ├── 07-addon-linter.ps1     # HA addon linting
+│   ├── 07-App-linter.ps1     # HA App linting
 │   ├── 08-compliance.ps1       # Python compliance
 │   ├── 09-trivy.ps1            # Security scanning
 │   ├── 10-version-check.ps1    # Base image versions
@@ -38,28 +38,28 @@ Run the main orchestrator from the repository root:
 
 ```powershell
 # Run all tests on all apps
-.\.scripts\verify_test_addons.ps1
+.\.scripts\verify_test_Apps.ps1
 
 # Test specific app(s)
-.\.scripts\verify_test_addons.ps1 -Addon apache2,openssl
+.\.scripts\verify_test_Apps.ps1 -App apache2,openssl
 
 # Run specific tests only
-.\.scripts\verify_test_addons.ps1 -Tests ShellCheck,Hadolint
+.\.scripts\verify_test_Apps.ps1 -Tests ShellCheck,Hadolint
 
 # Fix issues automatically
-.\.scripts\verify_test_addons.ps1 -Fix
+.\.scripts\verify_test_Apps.ps1 -Fix
 
 # Only check changed apps
-.\.scripts\verify_test_addons.ps1 -ChangedOnly
+.\.scripts\verify_test_Apps.ps1 -ChangedOnly
 
 # Include unsupported apps
-.\.scripts\verify_test_addons.ps1 -IncludeUnsupported
+.\.scripts\verify_test_Apps.ps1 -IncludeUnsupported
 
 # Run real Supervisor integration test (resource-intensive!)
-.\.scripts\verify_test_addons.ps1 -Addon whatsapp -SupervisorTest
+.\.scripts\verify_test_Apps.ps1 -App whatsapp -SupervisorTest
 
 # Run without desktop notifications
-.\.scripts\verify_test_addons.ps1 -DisableNotifications
+.\.scripts\verify_test_Apps.ps1 -DisableNotifications
 ```
 
 ## Available Tests
@@ -72,12 +72,12 @@ Run the main orchestrator from the repository root:
 | `YamlLint`       | Lints YAML files                | No              |
 | `MarkdownLint`   | Lints Markdown files            | No              |
 | `Prettier`       | Checks code formatting          | No              |
-| `AddonLinter`    | Official HA addon linter        | Yes             |
+| `AppLinter`    | Official HA App linter        | Yes             |
 | `Compliance`     | Python compliance checks        | No              |
 | `Trivy`          | Security vulnerability scanning | Yes             |
 | `VersionCheck`   | Base image version validation   | No              |
-| `DockerBuild`    | Builds addon Docker images      | Yes             |
-| `DockerRun`      | Runs addons in mock environment | Yes             |
+| `DockerBuild`    | Builds App Docker images      | Yes             |
+| `DockerRun`      | Runs Apps in mock environment | Yes             |
 | `CodeRabbit`     | Static analysis (Dockerfile)    | No              |
 | `WorkflowChecks` | GitHub Actions validation       | Yes             |
 | `PythonChecks`   | Python code analysis            | No              |
@@ -93,14 +93,14 @@ You can run test modules directly for debugging:
 
 ```powershell
 # Load common functions first
-. .\.scripts\verify_addons\lib\common.ps1
-$Config = Get-TestConfig ".\.scripts\verify_addons\config\test-config.yaml"
+. .\.scripts\verify_Apps\lib\common.ps1
+$Config = Get-TestConfig ".\.scripts\verify_Apps\config\test-config.yaml"
 
-# Get addons
-$addons = Get-ChildItem -Path . -Directory | Where-Object { Test-Path "$($_.FullName)\config.yaml" }
+# Get Apps
+$Apps = Get-ChildItem -Path . -Directory | Where-Object { Test-Path "$($_.FullName)\config.yaml" }
 
 # Run a specific test
-& .\.scripts\verify_addons\tests\02-shellcheck.ps1 -Addons $addons -Config $Config
+& .\.scripts\verify_Apps\tests\02-shellcheck.ps1 -Apps $Apps -Config $Config
 ```
 
 ## Configuration
@@ -125,10 +125,10 @@ Renovate automatically updates version pins in this file.
     Description of your test.
 #>
 param(
-    [Parameter(Mandatory)][array]$Addons,
+    [Parameter(Mandatory)][array]$Apps,
     [Parameter(Mandatory)][hashtable]$Config,
     [bool]$ChangedOnly = $false,
-    [hashtable]$ChangedAddons = @{}
+    [hashtable]$ChangedApps = @{}
 )
 
 # Source common module
@@ -136,12 +136,12 @@ param(
 
 Write-Header "XX. Your Test Name"
 
-foreach ($a in $Addons) {
-    if (-not (Should-RunTest -AddonName $a.Name -TestName "YourTest" ...)) { continue }
+foreach ($a in $Apps) {
+    if (-not (Should-RunTest -AppName $a.Name -TestName "YourTest" ...)) { continue }
 
     # Your test logic here
 
-    Add-Result -Addon $a.Name -Check "YourTest" -Status "PASS" -Message "OK"
+    Add-Result -App $a.Name -Check "YourTest" -Status "PASS" -Message "OK"
 }
 ```
 

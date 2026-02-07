@@ -3,7 +3,7 @@
 A simple chat bridge between different messanger apps.
 
 > [!CAUTION]
-> **UNSUPPORTED ADD-ON**
+> **UNSUPPORTED App**
 >
 > This app is **no longer supported**. The upstream Matterbridge project has not been developed since **January 2023** and is considered abandoned. No support will be provided.
 

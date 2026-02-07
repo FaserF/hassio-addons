@@ -91,7 +91,7 @@ LABEL \
 LABEL \
     org.opencontainers.image.title="SAP ABAP Cloud Developer Trial" \
     org.opencontainers.image.description="SAP ABAP Platform Trial for local ABAP development - NO LICENSE PROVIDED" \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-dev" \

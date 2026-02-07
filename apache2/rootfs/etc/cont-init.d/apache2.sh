@@ -37,9 +37,9 @@ fi
 phppath=/etc/php85/php.ini
 
 if [ "$phpini" = "get_file" ]; then
-	cp "$phppath" /share/apache2addon_php.ini
-	echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2addon_php.ini"
-	echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
+	cp "$phppath" /share/apache2App_php.ini
+	echo "You have requestet a copy of the php.ini file. You will now find your copy at /share/apache2App_php.ini"
+	echo "App will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
 	exit 0
 fi
 
@@ -50,7 +50,7 @@ fi
 # execution within the container environment.
 #
 # USERS MUST ONLY PROVIDE TRUSTED COMMANDS.
-# No further sandboxing or sanitization is performed by the add-on.
+# No further sandboxing or sanitization is performed by the App.
 # Reference: https://github.com/FaserF/hassio-addons/tree/master/apache2#security
 # ------------------------------------------------------------------------------
 if bashio::config.has_value 'init_commands'; then

@@ -44,10 +44,10 @@ if bashio::config.true 'reset_database'; then
 	fi
 
 	bashio::log.info "✅ DATABASE RESET COMPLETE"
-	bashio::log.warning "IMPORTANT: Disable reset options in add-on settings!"
+	bashio::log.warning "IMPORTANT: Disable reset options in App settings!"
 
-	bashio::addon.option 'reset_database'
-	bashio::addon.option 'reset_database_confirm'
+	bashio::app.option 'reset_database'
+	bashio::app.option 'reset_database_confirm'
 fi
 
 if [ ! -d "/data/er_dashboard/database" ] || [ -z "$(ls -A "/data/er_dashboard/database")" ]; then

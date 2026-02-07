@@ -1,6 +1,6 @@
 name: Orchestrator Unsupported Sync
 
-# This workflow keeps the 'unsupported' branch populated with ONLY unsupported addons
+# This workflow keeps the 'unsupported' branch populated with ONLY unsupported Apps
 # moving them to the root level.
 
 on:
@@ -41,12 +41,12 @@ jobs:
 
       - name: 🧹 Clean and Rearrange
         run: |
-          echo "Removing supported addons..."
+          echo "Removing supported Apps..."
           # Delete everything that isn't .unsupported, .github, .scripts, or repository.json/files
           # Easier strategy: Move .unsupported contents to temp, clear, restore.
 
           mkdir ../temp_unsupported
-          cp -r .unsupported/* ../temp_unsupported/ || echo "No unsupported addons found"
+          cp -r .unsupported/* ../temp_unsupported/ || echo "No unsupported Apps found"
 
           # Remove all directories in current root except .github and .scripts and .git
           find . -maxdepth 1 -type d \
@@ -64,7 +64,7 @@ jobs:
             -not -name "README.md" \
             -delete
 
-          echo "Restoring unsupported addons to root..."
+          echo "Restoring unsupported Apps to root..."
           cp -r ../temp_unsupported/* .
           rm -rf ../temp_unsupported
 
@@ -77,7 +77,7 @@ jobs:
 
       - name: 🔄 Bump Versions (Dev)
         run: |
-          # Bump all found addons to dev (reusing bump_version logic)
+          # Bump all found Apps to dev (reusing bump_version logic)
           # Note: bump_version might struggle with history if git didn't track moves (cp used above).
           # But since we Force Push, we don't strictly care about "history consistency" for the user,
           # only that the version is unique.
@@ -91,19 +91,19 @@ jobs:
 
           # To fix this, let's commit the "Move" first so git tracks it (if similar content).
           git add -A
-          git commit -m "chore: rearrange unsupported addons [skip ci]" || echo "Nothing to commit"
+          git commit -m "chore: rearrange unsupported Apps [skip ci]" || echo "Nothing to commit"
 
           # Now bump
           for config in */config.yaml; do
             if [ -f "$config" ]; then
-              ADDON_DIR=$(dirname "$config")
-              echo "Processing $ADDON_DIR..."
-              python3 .scripts/bump_version.py "$ADDON_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $ADDON_DIR"
+              App_DIR=$(dirname "$config")
+              echo "Processing $App_DIR..."
+              python3 .scripts/bump_version.py "$App_DIR" patch --dev --changelog 2>/dev/null || echo "Skipping $App_DIR"
             fi
           done
 
       - name: 🚀 Push unsupported branch
         run: |
           git add -A
-          git diff --staged --quiet || git commit -m "chore: update unsupported addons [skip ci]"
+          git diff --staged --quiet || git commit -m "chore: update unsupported Apps [skip ci]"
           git push origin unsupported --force

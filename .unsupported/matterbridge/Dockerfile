@@ -45,7 +45,7 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
 # Labels
 LABEL org.opencontainers.image.title="Matterbridge"
 LABEL org.opencontainers.image.description="A simple chat bridge between different messenger apps"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/matterbridge"

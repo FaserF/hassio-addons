@@ -90,7 +90,7 @@ HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.
 # Labels
 LABEL org.opencontainers.image.title="NGINX"
 LABEL org.opencontainers.image.description="Open Source Webserver with PHP and MariaDB."
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/nginx"

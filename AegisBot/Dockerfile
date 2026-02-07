@@ -124,7 +124,7 @@ CMD [ "/run.sh" ]
 # Labels
 LABEL org.opencontainers.image.title="AegisBot"
 LABEL org.opencontainers.image.description="Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/AegisBot"

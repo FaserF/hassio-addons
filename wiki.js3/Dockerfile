@@ -52,7 +52,7 @@ HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
 LABEL \
     org.opencontainers.image.title="Wiki.JS (Version 3 - Alpha)" \
     org.opencontainers.image.description="The most powerful and extensible open source Wiki software (Version 3 - Alpha)" \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/wiki.js3" \

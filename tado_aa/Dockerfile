@@ -54,7 +54,7 @@ CMD [ "/run.sh" ]
 LABEL \
     org.opencontainers.image.title="Tado Auto Assist" \
     org.opencontainers.image.description="Tado Auto-Assist for Geofencing and open Window detection" \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/tado_aa" \
