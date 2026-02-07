@@ -1,9 +1,11 @@
-import subprocess
 import os
+import subprocess
+
 
 def run_command(cmd, shell=True):
     result = subprocess.run(cmd, shell=shell, capture_output=True, text=True)
     return result.stdout.strip(), result.stderr.strip()
+
 
 def main():
     # Get list of modified files
@@ -20,7 +22,19 @@ def main():
     discarded_count = 0
     preserved_count = 0
 
-    binary_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.zip', '.ico', '.pdf', '.woff', '.woff2', '.ttf', '.eot'}
+    binary_extensions = {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".zip",
+        ".ico",
+        ".pdf",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+    }
 
     for file_path in modified_files:
         # Check if binary
@@ -42,7 +56,10 @@ def main():
             print(f"Preserving real change: {file_path}")
             preserved_count += 1
 
-    print(f"Done. Discarded {discarded_count} files, preserved {preserved_count} files.")
+    print(
+        f"Done. Discarded {discarded_count} files, preserved {preserved_count} files."
+    )
+
 
 if __name__ == "__main__":
     main()

@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/whatsapp/logo.png" width="100" />
 
-[![Open your Home Assistant instance and show the App dashboard.](https://my.home-assistant.io/badges/supervisor_App.svg)](https://my.home-assistant.io/redirect/supervisor_App/?App=c1e285b7_whatsapp)
-[![Home Assistant App](https://img.shields.io/badge/home%20assistant-App-blue.svg)](https://www.home-assistant.io/Apps/)
+[![Open your Home Assistant instance and show the apps dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp)
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 [![Docker Image](https://img.shields.io/badge/docker-1.2.3-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
