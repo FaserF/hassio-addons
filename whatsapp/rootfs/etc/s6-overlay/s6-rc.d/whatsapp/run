@@ -52,12 +52,12 @@ else
     export WEBHOOK_ENABLED="false"
 fi
 
-if ! WEBHOOK_URL=$(bashio::config 'webhook_url') || [ -z "$WEBHOOK_URL" ]; then
+if ! WEBHOOK_URL=$(bashio::config 'webhook_url') || [ "$WEBHOOK_URL" = "null" ] || [ -z "$WEBHOOK_URL" ]; then
     WEBHOOK_URL=""
 fi
 export WEBHOOK_URL
 
-if ! WEBHOOK_TOKEN=$(bashio::config 'webhook_token') || [ -z "$WEBHOOK_TOKEN" ]; then
+if ! WEBHOOK_TOKEN=$(bashio::config 'webhook_token') || [ "$WEBHOOK_TOKEN" = "null" ] || [ -z "$WEBHOOK_TOKEN" ]; then
     WEBHOOK_TOKEN=""
 fi
 export WEBHOOK_TOKEN
@@ -69,7 +69,7 @@ else
     export UI_AUTH_ENABLED="false"
 fi
 
-if ! UI_AUTH_PASSWORD=$(bashio::config 'ui_auth_password') || [ -z "$UI_AUTH_PASSWORD" ]; then
+if ! UI_AUTH_PASSWORD=$(bashio::config 'ui_auth_password') || [ "$UI_AUTH_PASSWORD" = "null" ] || [ -z "$UI_AUTH_PASSWORD" ]; then
     UI_AUTH_PASSWORD=""
 fi
 export UI_AUTH_PASSWORD
@@ -82,7 +82,7 @@ else
 fi
 
 # Media Folder Configuration
-if ! MEDIA_FOLDER=$(bashio::config 'media_folder') || [ -z "$MEDIA_FOLDER" ]; then
+if ! MEDIA_FOLDER=$(bashio::config 'media_folder') || [ "$MEDIA_FOLDER" = "null" ] || [ -z "$MEDIA_FOLDER" ]; then
     MEDIA_FOLDER=""
 fi
 export MEDIA_FOLDER

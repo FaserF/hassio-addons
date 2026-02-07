@@ -31,6 +31,6 @@ configuration:
     description: "Das Passwort für die Web-Oberfläche (Benutzername ist immer 'admin')."
   media_folder:
     name: "Medien-Ordner"
-    description: "Pfad zu einem öffentlichen Ordner (z.B. /share/whatsapp), um empfangene Medien zu speichern. Wenn gesetzt, ist die automatische Bereinigung DEAKTIVIERT."
+    description: "Pfad zu einem öffentlichen Ordner (z.B. /media/whatsapp), um empfangene Medien zu speichern. Wenn gesetzt, ist die automatische Bereinigung DEAKTIVIERT."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.
