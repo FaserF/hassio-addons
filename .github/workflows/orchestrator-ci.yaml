@@ -279,7 +279,7 @@ jobs:
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
-        uses: ludeeus/action-shellcheck@v2 # 2.0.0
+        uses: ludeeus/action-shellcheck@2
         with:
           scandir: "./${{ matrix.addon }}"
         env:
@@ -287,7 +287,7 @@ jobs:
 
       # 2. Hadolint
       - name: 🐳 Hadolint
-        uses: brpaz/hadolint-action@v1
+        uses: hadolint/hadolint-action@v3
         with:
           dockerfile: "./${{ matrix.addon }}/Dockerfile"
 
@@ -297,13 +297,13 @@ jobs:
       # so we don't block PRs for style violations. Failures still appear in logs.
       - name: 📝 MarkdownLint
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
-        uses: actionshub/markdownlint@6c82ff529253530dfbf75c37570876c52692835f # v3.1.4
+        uses: actionshub/markdownlint@v3
         with:
           args: "${{ matrix.addon }}/*.md"
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
-        uses: frenck/action-yamllint@34b4bbcaeabedcfefad6adea8c5bbc42af0e2d47 # v1.5
+        uses: frenck/action-yamllint@v1
         with:
           args: "./${{ matrix.addon }}/*.yaml"
 
@@ -340,7 +340,7 @@ jobs:
 
       # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2
+        uses: frenck/action-addon-linter@v2
         with:
           path: "./${{ matrix.addon }}"
         continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
@@ -382,7 +382,7 @@ jobs:
 
       - name: 📤 Upload Compliance Report
         if: steps.compliance.outputs.status == 'failure'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@v6
         with:
           name: compliance-${{ github.run_id }}-${{ steps.compliance.outputs.addon_safe }}
           path: compliance_report.txt
