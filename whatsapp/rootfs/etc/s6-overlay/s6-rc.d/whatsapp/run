@@ -82,11 +82,20 @@ else
     export MARK_ONLINE="false"
 fi
 
-# Media Folder Configuration
-if ! MEDIA_FOLDER=$(bashio::config 'media_folder') || [ "$MEDIA_FOLDER" = "null" ] || [ -z "$MEDIA_FOLDER" ]; then
-    MEDIA_FOLDER=""
+# Media Folder (Default null)
+if ! MEDIA_FOLDER=$(bashio::config 'media_folder') || [ -z "$MEDIA_FOLDER" ]; then
+    MEDIA_FOLDER="null"
 fi
-export MEDIA_FOLDER
+
+if [ "$MEDIA_FOLDER" != "null" ]; then
+    bashio::log.info "Validating media folder: ${MEDIA_FOLDER}..."
+    if ! mkdir -p "$MEDIA_FOLDER"; then
+        bashio::log.error "Failed to create media folder: ${MEDIA_FOLDER}. Check permissions."
+    else
+        bashio::log.info "✅ Media folder ready."
+        export MEDIA_FOLDER
+    fi
+fi
 
 # Detect Home Assistant config directory
 HA_CONFIG_ROOT=""
@@ -172,12 +181,12 @@ install_integration() {
 
 # Determine Channel (Edge vs Stable)
 # We check slug, name, and version to be sure
-# Fetch App Info from Supervisor API directly check
-# (bashio::app.* commands were failing, likely due to older bashio version in base or context)
-APP_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
-SLUG=$(echo "$APP_INFO" | jq -r '.data.slug // empty')
-NAME=$(echo "$APP_INFO" | jq -r '.data.name // empty')
-VERSION=$(echo "$APP_INFO" | jq -r '.data.version // empty')
+# Fetch Addon Info from Supervisor API directly
+# (bashio::addon.* commands were failing, likely due to older bashio version in base or context)
+ADDON_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
+SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
+NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
+VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
