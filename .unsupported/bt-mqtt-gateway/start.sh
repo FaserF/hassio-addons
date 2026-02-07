@@ -6,7 +6,7 @@ DEBUG=$(bashio::config 'debug')
 
 if ! [ -f "$config_path" ]; then
 	echo "There is no $config_path file! Please have a look at the example config https://github.com/zewelor/bt-mqtt-gateway/blob/master/config.yaml.example ."
-	echo "Try restarting the addon once your config file has been fully configured an been put somewhere on the HA /share folder."
+	echo "Try restarting the App once your config file has been fully configured an been put somewhere on the HA /share folder."
 	exit 1
 fi
 

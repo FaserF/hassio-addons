@@ -72,7 +72,7 @@ if bashio::config.true 'reset_database'; then
 	fi
 
 	# Wait 3 seconds to give user time to cancel
-	bashio::log.warning "Starting reset in 3 seconds... (Stop add-on NOW to abort)"
+	bashio::log.warning "Starting reset in 3 seconds... (Stop App NOW to abort)"
 	sleep 3
 
 	bashio::log.info "Proceeding with database reset..."
@@ -85,13 +85,13 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=========================================="
 	bashio::log.info "Database has been dropped."
 	bashio::log.info "It will be recreated on next step."
-	bashio::log.warning "IMPORTANT: Disable 'reset_database' and 'reset_database_confirm' in the add-on settings!"
+	bashio::log.warning "IMPORTANT: Disable 'reset_database' and 'reset_database_confirm' in the App settings!"
 	bashio::log.warning "Otherwise, the database will be wiped again on next restart."
 	bashio::log.info "=========================================="
 
 	# Remove reset_database options
-	bashio::addon.option 'reset_database'
-	bashio::addon.option 'reset_database_confirm'
+	bashio::app.option 'reset_database'
+	bashio::app.option 'reset_database_confirm'
 fi
 
 # Securely Create Database and User

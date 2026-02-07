@@ -19,8 +19,8 @@ def generate_labels(addon_path):
         print(f"Failed to read config.yaml in {addon_path}: {e}")
         return False
 
-    name = config.get("name", "Home Assistant Add-on")
-    description = config.get("description", "Home Assistant Add-on")
+    name = config.get("name", "Home Assistant App")
+    description = config.get("description", "Home Assistant App")
     url = config.get("url", "https://github.com/FaserF/hassio-addons")
     # Note: version could be dynamic but labels are usually static metadata
 
@@ -28,7 +28,7 @@ def generate_labels(addon_path):
     labels = {
         "org.opencontainers.image.title": f'"{name}"',
         "org.opencontainers.image.description": f'"{description}"',
-        "org.opencontainers.image.vendor": '"FaserF\'s Home Assistant Add-ons"',
+        "org.opencontainers.image.vendor": '"FaserF\'s Home Assistant Apps"',
         "org.opencontainers.image.authors": '"FaserF <https://github.com/FaserF>"',
         "org.opencontainers.image.licenses": '"MIT"',
         "org.opencontainers.image.url": f'"{url}"',

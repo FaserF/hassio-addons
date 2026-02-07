@@ -62,7 +62,7 @@ CMD [ "/run.sh" ]
 LABEL \
     org.opencontainers.image.title="Switch LAN Play Server" \
     org.opencontainers.image.description="Nintendo Switch Lan Play -Server" \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server" \

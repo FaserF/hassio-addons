@@ -1,4 +1,4 @@
-# Verify Addons Configuration
+# Verify Apps Configuration
 # This file contains Renovate-managed versions and test configuration
 
 # --- RENOVATE-MANAGED VERSIONS ---
@@ -28,7 +28,7 @@ mockArch: "amd64"
 scriptVersion: "3.1.0"
 
 # --- DOCKER RUN SKIPS ---
-# Addons to skip during DockerRun test with reason
+# Apps to skip during DockerRun test with reason
 skipDockerRun:
   wiki.js: "Requires MySQL Service"
   switch_lan_play: "Requires external switch-lan-play server"
@@ -42,7 +42,7 @@ validTests:
   - YamlLint
   - MarkdownLint
   - Prettier
-  - AddonLinter
+  - AppLinter
   - Compliance
   - Trivy
   - VersionCheck
@@ -60,7 +60,7 @@ dockerTests:
   - ShellCheck
   - Hadolint
   - SupervisorTest
-  - AddonLinter
+  - AppLinter
   - Trivy
   - DockerBuild
   - DockerRun
@@ -74,9 +74,9 @@ docsOnlyTests:
   - Prettier
   - LineEndings
 
-# --- TEST WEIGHTS (Seconds per Add-on) ---
+# --- TEST WEIGHTS (Seconds per App) ---
 # Used for ETA calculation. These are empirical estimates from measured runs.
-# Note: Add ~20% buffer for slower hardware; Docker tests vary by addon complexity.
+# Note: Add ~20% buffer for slower hardware; Docker tests vary by App complexity.
 testWeights:
   LineEndings: 0.3
   ShellCheck: 1.5
@@ -84,7 +84,7 @@ testWeights:
   YamlLint: 0.8
   MarkdownLint: 0.8
   Prettier: 2.5
-  AddonLinter: 12.0
+  AppLinter: 12.0
   Compliance: 1.5
   Trivy: 45.0
   VersionCheck: 1.5
@@ -102,7 +102,7 @@ testWeights:
 # These settings are used for the real Supervisor integration test (optional)
 # Note: SupervisorTest is NOT included in 'all' - requires explicit -SupervisorTest flag
 supervisorTests:
-  # Add-ons to skip during real Supervisor testing (require external services/hardware)
+  # Apps to skip during real Supervisor testing (require external services/hardware)
   skipSupervisorTest:
     bt-mqtt-gateway: "Requires Bluetooth hardware"
     tuya-convert: "Requires WiFi hardware for AP mode"
@@ -112,5 +112,5 @@ supervisorTests:
 
   # Timeout settings (in seconds)
   supervisorStartupTimeout: 300
-  addonInstallTimeout: 300
-  addonStartTimeout: 600
+  AppInstallTimeout: 300
+  AppStartTimeout: 600

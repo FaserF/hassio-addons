@@ -17,8 +17,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaserF's Home Assistant Add-ons</title>
-    <meta name="description" content="Premium Home Assistant Add-ons Repository: WordPress, Wiki.js, Pterodactyl, Webservers & more.">
+    <title>FaserF's Home Assistant Apps</title>
+    <meta name="description" content="Premium Home Assistant Apps Repository: WordPress, Wiki.js, Pterodactyl, Webservers & more.">
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
@@ -35,7 +35,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <header>
         <div class="container">
-            <h1>FaserF's Home Assistant Add-ons</h1>
+            <h1>FaserF's Home Assistant Apps</h1>
             <p class="subtitle">A curated collection of advanced add-ons including WordPress, Wiki.js, Pterodactyl, and more. Built with Platinum Quality Standards.</p>
 
             <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons" class="cta-button" target="_blank">
@@ -50,7 +50,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <main class="container">
 
         <div class="stats-bar">
-            <span>📦 Total Add-ons: <strong>{total_addons}</strong></span>
+            <span>📦 Total Apps: <strong>{total_addons}</strong></span>
             <span>✅ Stable: <strong>{stable_count}</strong></span>
             <span>⚠️ Beta: <strong>{beta_count}</strong></span>
             <span>🛡️ Unsupported: <strong>{unsupported_count}</strong></span>

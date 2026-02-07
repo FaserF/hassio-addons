@@ -21,7 +21,7 @@ configuration:
   developer_mode:
     name: Developer Mode
     description: >-
-      When enabled, the addon will always download and use the latest code
+      When enabled, the App will always download and use the latest code
       from the main branch on every restart. WARNING: This may include unstable features!
 
   reset_database:

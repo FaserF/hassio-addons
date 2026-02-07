@@ -116,7 +116,7 @@ jobs:
           fi
 
       # 2. Python (Format & Sort Imports)
-      # We format the internal scripts and any add-on python files
+      # We format the internal scripts and any App python files
       - name: 🐍 Run Black (Formatter)
         id: black
         continue-on-error: true

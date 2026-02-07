@@ -4,7 +4,7 @@
 
 ### 📦 Dependencies
 
-- fix addon startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
+- fix App startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
 
 ### 📝 Documentation
 
@@ -24,11 +24,11 @@
 
 ### 🚀 Other
 
-- Addon startup fixes ([`73b94671`](https://github.com/FaserF/hassio-addons/commit/73b946716792bc436f0ae9873aadfda22c408dd8))
-- another addon startup fix ([`d0854324`](https://github.com/FaserF/hassio-addons/commit/d08543246e722adf571278229106b59a769e7e3d))
-- fix addon start ([`bd5bf2fb`](https://github.com/FaserF/hassio-addons/commit/bd5bf2fbab8bd530f3dc69b3c893dbd4323f7805))
+- App startup fixes ([`73b94671`](https://github.com/FaserF/hassio-addons/commit/73b946716792bc436f0ae9873aadfda22c408dd8))
+- another App startup fix ([`d0854324`](https://github.com/FaserF/hassio-addons/commit/d08543246e722adf571278229106b59a769e7e3d))
+- fix App start ([`bd5bf2fb`](https://github.com/FaserF/hassio-addons/commit/bd5bf2fbab8bd530f3dc69b3c893dbd4323f7805))
 - log level var fix ([`d2bd46e1`](https://github.com/FaserF/hassio-addons/commit/d2bd46e147f1e8d1e9d6a301071a2f4249f77a87))
-- New addon: SwitchCraft ([`0814735e`](https://github.com/FaserF/hassio-addons/commit/0814735e2e3f8dff7f47c6a998ee865bb7e4a0df))
+- New App: SwitchCraft ([`0814735e`](https://github.com/FaserF/hassio-addons/commit/0814735e2e3f8dff7f47c6a998ee865bb7e4a0df))
 
 ### 📌 Release Note
 

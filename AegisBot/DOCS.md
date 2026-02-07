@@ -46,7 +46,7 @@ easy-to-install Home Assistant App.
 
 1. Visit: [https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
 1. Configure:
-   - **Token name**: `aegisbot-homeassistant-addon`
+   - **Token name**: `aegisbot-homeassistant-App`
    - **Repository access**: Select "Only select repositories" → `FaserF/AegisBot`
    - **Permissions**: "Contents" → "Read-only"
 1. Copy the token (starts with `github_pat_`)

@@ -54,7 +54,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
 LABEL \
   org.opencontainers.image.title="Netboot.xyz" \
   org.opencontainers.image.description="PXE-Server to deploy a OS inside your local network" \
-  org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+  org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
   org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
   org.opencontainers.image.licenses="MIT" \
   org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/netboot-xyz" \

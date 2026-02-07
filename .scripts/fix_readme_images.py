@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fix relative image paths in README files for Home Assistant Add-on UI compatibility.
+Fix relative image paths in README files for Home Assistant App UI compatibility.
 
 The Home Assistant Supervisor UI cannot render relative image paths like `![Logo](logo.png)`.
 This script converts them to absolute GitHub raw URLs.

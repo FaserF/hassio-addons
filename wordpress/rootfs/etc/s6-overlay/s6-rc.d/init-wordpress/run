@@ -25,7 +25,7 @@ if bashio::services.available "mysql"; then
         DB_PORT="3306"
     fi
 else
-    bashio::exit.nok "The 'mysql' service is not available! Please install and start the MariaDB add-on."
+    bashio::exit.nok "The 'mysql' service is not available! Please install and start the MariaDB App."
 fi
 
 # Removed insecure password check as we now auto-generate it
@@ -124,10 +124,10 @@ if bashio::config.true 'reset_database'; then
 	rm -f "$temp_config2"
 
 	bashio::log.info "✅ DATABASE RESET COMPLETE"
-	bashio::log.warning "IMPORTANT: Disable reset options in add-on settings!"
+	bashio::log.warning "IMPORTANT: Disable reset options in App settings!"
 
-	bashio::addon.option 'reset_database'
-	bashio::addon.option 'reset_database_confirm'
+	bashio::app.option 'reset_database'
+	bashio::app.option 'reset_database_confirm'
 fi
 
 # Check if Wordpress is installed
@@ -230,7 +230,7 @@ cat > /var/www/wordpress/test.html <<'EOF'
 <html>
 <head><title>WordPress Test</title></head>
 <body>
-<h1>WordPress Add-on Test</h1>
+<h1>WordPress App Test</h1>
 <p>If you see this, Nginx is working correctly!</p>
 <p>WordPress should be accessible at: <a href="/">WordPress</a></p>
 </body>
@@ -257,7 +257,7 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
     WORDPRESS_URL=$(bashio::config 'wordpress_url')
 
     if [ -z "$WORDPRESS_URL" ] || [ "$WORDPRESS_URL" == "null" ]; then
-        bashio::exit.nok "The configuration 'wordpress_url' is missing! Please set your external URL (e.g. https://example.com) in the add-on configuration."
+        bashio::exit.nok "The configuration 'wordpress_url' is missing! Please set your external URL (e.g. https://example.com) in the App configuration."
     fi
 
     # Auto-append port to URL if SSL is enabled and no port is specified
@@ -301,7 +301,7 @@ if ! wp --allow-root --path=/var/www/wordpress core is-installed; then
     fi
     if [ -n "$MISSING_CONFIGS" ]; then
         bashio::log.error "Missing required configuration: ${MISSING_CONFIGS}"
-        bashio::log.error "Please configure these options in the add-on settings."
+        bashio::log.error "Please configure these options in the App settings."
         exit 1
     fi
 

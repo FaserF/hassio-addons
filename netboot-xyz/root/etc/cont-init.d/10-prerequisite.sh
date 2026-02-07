@@ -2,8 +2,8 @@
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 
-# Check if protection mode is disabled - this addon requires full system access
-if bashio::addon.protected; then
+# Check if protection mode is disabled - this App requires full system access
+if bashio::app.protected; then
 	touch /run/ABORT_STARTUP
 	bashio::require.unprotected
 fi
@@ -19,7 +19,7 @@ path_config=$(bashio::config 'path_config')
 
 # Note: With host_network: true, ports are fixed and cannot be changed
 # The config.yaml defines "85": 85 and "69/udp": 69, which means internal=external
-# We don't need to validate via bashio::addon.port as it may return empty with host_network
+# We don't need to validate via bashio::app.port as it may return empty with host_network
 # Instead, we just use the fixed values directly
 bashio::log.info "Using fixed ports for host_network mode: NGINX=85, TFTP=69, Web UI=3000"
 
@@ -64,7 +64,7 @@ fi
 if [ -L /assets ]; then rm /assets; elif [ -d /assets ]; then rm -rf /assets; else rm -f /assets; fi
 ln -s "$path" /assets
 if [ ! -d "$path_config" ]; then
-	echo "Looks like the path $path_config did not exist! We will still start the addon with default options!"
+	echo "Looks like the path $path_config did not exist! We will still start the App with default options!"
 	mkdir -p "$path_config"
 fi
 if [ -L /config ]; then

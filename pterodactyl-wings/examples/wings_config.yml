@@ -1,6 +1,6 @@
 # Pterodactyl Wings Daemon Configuration Example
 # Place this file in: /share/pterodactyl/config.yml
-# If you use the Pterodactyl Panel add-on, this file is generated automatically.
+# If you use the Pterodactyl Panel App, this file is generated automatically.
 
 debug: false
 uuid: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

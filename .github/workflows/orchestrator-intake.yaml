@@ -1,4 +1,4 @@
-name: Orchestrator New Add-on Intake
+name: Orchestrator New App Intake
 
 on:
   pull_request:
@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   intake:
-    name: 🆕 New Add-on Intake
+    name: 🆕 New App Intake
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,14 +33,14 @@ jobs:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
 
-      - name: 🔍 Detect New Add-ons
-        id: new-addons
+      - name: 🔍 Detect New Apps
+        id: new-Apps
         run: |
           # Use python script
           OUTPUT="$(python3 .scripts/intake.py)"
           echo "$OUTPUT"
-          # Check if new add-ons found (string representation of list in last line)
-          if [[ "$OUTPUT" == *"Detected new add-on"* ]]; then
+          # Check if new Apps found (string representation of list in last line)
+          if [[ "$OUTPUT" == *"Detected new App"* ]]; then
               echo "found=true" >> "$GITHUB_OUTPUT"
               # Extract list logic simplified: just pass to next steps implicitly via re-running or file?
               # For now, let's rely on detection script being idempotent.
@@ -49,17 +49,17 @@ jobs:
           fi
 
       - name: ✅ Compliance Check & Comment
-        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'pull_request'
         id: compliance
         run: |
-          # Run compliance on detected new add-ons
-          NEW_ADDONS="$(python3 .scripts/intake.py --list)"
-          if [ -n "$NEW_ADDONS" ]; then
-            # Iterate over new addons and run compliance
+          # Run compliance on detected new Apps
+          NEW_AppS="$(python3 .scripts/intake.py --list)"
+          if [ -n "$NEW_AppS" ]; then
+            # Iterate over new Apps and run compliance
             # shellcheck disable=SC2046
-            for addon in $NEW_ADDONS; do
-              echo "Checking $addon..."
-              python3 .scripts/check_compliance.py "$addon" >> compliance.log 2>&1 || true
+            for App in $NEW_AppS; do
+              echo "Checking $App..."
+              python3 .scripts/check_compliance.py "$App" >> compliance.log 2>&1 || true
             done
           fi
 
@@ -76,12 +76,12 @@ jobs:
           fi
 
       - name: 💬 Post Comment
-        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'pull_request'
+        if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v8
         with:
           script: |
             const output = process.env.CONTENT;
-            const signature = "<!-- addon-intake-report -->";
+            const signature = "<!-- App-intake-report -->";
 
             const { data: comments } = await github.rest.issues.listComments({
                owner: context.repo.owner,
@@ -89,7 +89,7 @@ jobs:
                issue_number: context.issue.number,
             });
 
-            const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("### 🛡️ Add-on Compliance Check")));
+            const previousComments = comments.filter(c => c.user.type === 'Bot' && (c.body.includes(signature) || c.body.includes("### 🛡️ App Compliance Check")));
 
             for (const comment of previousComments) {
                 try {
@@ -109,7 +109,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${signature}\n## 🛡️ Add-on Compliance Check\n\nThe following new add-ons were detected and checked for compliance:\n\n<details open>\n<summary>🔍 <strong>Compliance Report</strong></summary>\n\n\`\`\`\n${output}\n\`\`\`\n\n</details>`
+              body: `${signature}\n## 🛡️ App Compliance Check\n\nThe following new Apps were detected and checked for compliance:\n\n<details open>\n<summary>🔍 <strong>Compliance Report</strong></summary>\n\n\`\`\`\n${output}\n\`\`\`\n\n</details>`
             })
 
       - name: 🛑 Fail if Non-Compliant
@@ -117,13 +117,13 @@ jobs:
         run: exit 1
 
       - name: 📝 Auto-Remediate (Add to README & Templates)
-        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           python3 .scripts/intake.py --fix
           python3 .scripts/sync_templates.py
 
       - name: 💾 Commit Changes
-        if: steps.new-addons.outputs.found == 'true' && github.event_name == 'push'
+        if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "chore: register new add-on [skip ci]"
+          commit_message: "chore: register new App [skip ci]"

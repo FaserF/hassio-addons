@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bashio
 # Git Support Setup for Wiki.js V3
 
-GIT_DATA_DIR="/addon_configs/wiki.js3/git"
+GIT_DATA_DIR="/App_configs/wiki.js3/git"
 GIT_SSH_DIR="$GIT_DATA_DIR/ssh"
 GIT_REPO_DIR="$GIT_DATA_DIR/repo"
 

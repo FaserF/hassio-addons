@@ -19,14 +19,14 @@ website_name: null
 
 ## Usage
 
-After starting the addon, a self signed certificate will be created and placed to:
+After starting the App, a self signed certificate will be created and placed to:
 `/ssl/key_openssl.pem`
 `/ssl/cert_openssl.pem`
 
-These can then be used by other addons. If the certificates are about to expire, just restart the addon once and new certificates will be created.
+These can then be used by other Apps. If the certificates are about to expire, just restart the App once and new certificates will be created.
 
 > [!WARNING]
-> After restarting the addon, old certificates named as above will be deleted and overwritten!
+> After restarting the App, old certificates named as above will be deleted and overwritten!
 
 ## Support
 

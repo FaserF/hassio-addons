@@ -47,9 +47,9 @@ if [ -z "$website_name" ] || [ "$website_name" = "null" ]; then
 fi
 
 if [ "$phpini" = "get_file" ]; then
-	cp "$phppath" /share/nginxaddon_php.ini
-	echo "You have requested a copy of the php.ini file. You will now find your copy at /share/nginxaddon_php.ini"
-	echo "Addon will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
+	cp "$phppath" /share/nginxApp_php.ini
+	echo "You have requested a copy of the php.ini file. You will now find your copy at /share/nginxApp_php.ini"
+	echo "App will now be stopped. Please remove the config option and change it to the name of your new config file (for example /share/php.ini)"
 	exit 0
 fi
 
@@ -60,7 +60,7 @@ fi
 # execution within the container environment.
 #
 # USERS MUST ONLY PROVIDE TRUSTED COMMANDS.
-# No further sandboxing or sanitization is performed by the add-on.
+# No further sandboxing or sanitization is performed by the App.
 # Reference: https://github.com/FaserF/hassio-addons/tree/master/nginx#security
 # ------------------------------------------------------------------------------
 if bashio::config.has_value 'init_commands'; then

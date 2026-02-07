@@ -2,5 +2,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🆕 New App Request
-    url: https://github.com/FaserF/hassio-apps/blob/main/.github/NEW_ADDON_REQUEST.md
+    url: https://faserf.github.io/hassio-addons/requests.html
     about: Want a new app? Read why I don't accept app requests (but feature requests are welcome!)
+  - name: 📖 Documentation
+    url: https://faserf.github.io/hassio-addons
+    about: Read the official documentation for these apps.

@@ -45,7 +45,7 @@ HEALTHCHECK \
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"
 LABEL org.opencontainers.image.description="Secure, Web-based File Manager (SFTP over HTTPS)"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"

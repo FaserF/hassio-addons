@@ -59,7 +59,7 @@ jobs:
             }
 
   # --------------------------------------------------------------------------------
-  # FILTER: Detect which add-ons have changed
+  # FILTER: Detect which Apps have changed
   # --------------------------------------------------------------------------------
   generate-config:
     name: Generate Config
@@ -79,35 +79,35 @@ jobs:
           import uuid
 
           filters = {}
-          # Add-ons excluded from CI builds/tests (only built during release)
-          # These add-ons are too large or resource-intensive for CI
-          CI_EXCLUDED_ADDONS = {"sap-abap-cloud-dev"}
+          # Apps excluded from CI builds/tests (only built during release)
+          # These Apps are too large or resource-intensive for CI
+          CI_EXCLUDED_AppS = {"sap-abap-cloud-dev"}
 
-          # Scan for config.yaml to identify add-ons
+          # Scan for config.yaml to identify Apps
           for root, dirs, files in os.walk("."):
               if "config.yaml" in files:
-                  addon_name = os.path.relpath(root, ".")
-                  if addon_name == ".": continue
+                  App_name = os.path.relpath(root, ".")
+                  if App_name == ".": continue
 
                   # Standardize path separators
-                  addon_name = addon_name.replace(os.path.sep, "/")
+                  App_name = App_name.replace(os.path.sep, "/")
 
                   # Skip hidden directories (including .unsupported - these are built locally from unsupported branch)
                   # If the path starts with . (including .unsupported), skip
                   # If the path is inside a hidden dir (like .git/foo), skip
-                  parts = addon_name.split("/")
+                  parts = App_name.split("/")
                   if parts[0].startswith("."):
                       continue
                   if len(parts) > 1 and any(p.startswith(".") for p in parts):
                        # Skip any path containing hidden directories
                        continue
 
-                  # Skip CI-excluded add-ons (heavy/long-running, only built on release)
-                  if addon_name in CI_EXCLUDED_ADDONS:
-                      print(f"Skipping CI-excluded add-on: {addon_name}")
+                  # Skip CI-excluded Apps (heavy/long-running, only built on release)
+                  if App_name in CI_EXCLUDED_AppS:
+                      print(f"Skipping CI-excluded App: {App_name}")
                       continue
 
-                  filters[addon_name] = [f"{addon_name}/**"]
+                  filters[App_name] = [f"{App_name}/**"]
 
           # Dump as JSON (valid YAML)
           json_content = json.dumps(filters)
@@ -121,14 +121,14 @@ jobs:
         shell: python
 
   # --------------------------------------------------------------------------------
-  # FILTER: Detect which add-ons have changed
+  # FILTER: Detect which Apps have changed
   # --------------------------------------------------------------------------------
   filter:
     name: 🔍 Detect Changes
     needs: generate-config
     runs-on: ubuntu-latest
     outputs:
-      addons: ${{ steps.filter.outputs.changes }}
+      Apps: ${{ steps.filter.outputs.changes }}
       docs_only: ${{ steps.change-type.outputs.docs_only }}
       needs_build: ${{ steps.change-type.outputs.needs_build }}
       force_supervisor: ${{ steps.change-type.outputs.force_supervisor }}
@@ -231,11 +231,11 @@ jobs:
           fi
 
           # Determine if we should skip heavy supervisor tests based on change volume vs complexity
-          # Threshold: more than 5 addons, and all changes are minor (doc/changelog/formatting)
-          ADDON_COUNT=$(echo "${{ steps.filter.outputs.changes }}" | jq '. | length' 2>/dev/null || echo "0")
+          # Threshold: more than 5 Apps, and all changes are minor (doc/changelog/formatting)
+          App_COUNT=$(echo "${{ steps.filter.outputs.changes }}" | jq '. | length' 2>/dev/null || echo "0")
           skip_supervisor="false"
-          if [ "$ADDON_COUNT" -gt 5 ] && [ "$docs_only" == "true" ]; then
-             echo "🚀 Large docs-only PR detected ($ADDON_COUNT addons). Skipping heavy tests."
+          if [ "$App_COUNT" -gt 5 ] && [ "$docs_only" == "true" ]; then
+             echo "🚀 Large docs-only PR detected ($App_COUNT Apps). Skipping heavy tests."
              skip_supervisor="true"
           fi
 
@@ -254,8 +254,8 @@ jobs:
     name: 🧹 Lint & Validate
     needs: filter
     if: |
-      needs.filter.outputs.addons != '[]' &&
-      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.Apps != '[]' &&
+      needs.filter.outputs.Apps != '' &&
       needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -265,7 +265,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+        App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
@@ -274,7 +274,7 @@ jobs:
       - name: 🐚 ShellCheck
         uses: ludeeus/action-shellcheck@v2
         with:
-          scandir: "./${{ matrix.addon }}"
+          scandir: "./${{ matrix.App }}"
         env:
           SHELLCHECK_OPTS: -s bash -e SC2086
 
@@ -282,7 +282,7 @@ jobs:
       - name: 🐳 Hadolint
         uses: hadolint/hadolint-action@v3.3.0
         with:
-          dockerfile: "./${{ matrix.addon }}/Dockerfile"
+          dockerfile: "./${{ matrix.App }}/Dockerfile"
 
       # 3. Common Linters (Markdown/YAML/JSON/Prettier)
       # ADVISORY CHECKS: These use continue-on-error: true intentionally.
@@ -292,29 +292,29 @@ jobs:
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         uses: actionshub/markdownlint@v3.1.4
         with:
-          args: "${{ matrix.addon }}/*.md"
+          args: "${{ matrix.App }}/*.md"
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
         uses: frenck/action-yamllint@v1
         with:
-          args: "./${{ matrix.addon }}/*.yaml"
+          args: "./${{ matrix.App }}/*.yaml"
 
       - name: 💅 Prettier
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         run: |
           npm install -g prettier
-          prettier --check "${{ matrix.addon }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
+          prettier --check "${{ matrix.App }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
       - name: 🧩 ESLint
         continue-on-error: false # Fail on logic errors
         run: |
           # Find directory with package.json (root or app/)
           LINT_DIR=""
-          if [ -f "./${{ matrix.addon }}/package.json" ]; then
-            LINT_DIR="./${{ matrix.addon }}"
-          elif [ -f "./${{ matrix.addon }}/app/package.json" ]; then
-            LINT_DIR="./${{ matrix.addon }}/app"
+          if [ -f "./${{ matrix.App }}/package.json" ]; then
+            LINT_DIR="./${{ matrix.App }}"
+          elif [ -f "./${{ matrix.App }}/app/package.json" ]; then
+            LINT_DIR="./${{ matrix.App }}/app"
           fi
 
           if [ -n "$LINT_DIR" ]; then
@@ -331,12 +331,12 @@ jobs:
             echo "⏭️ No package.json found, skipping ESLint."
           fi
 
-      # 4. Add-on Linter (Frenck's) - Validates config.yaml/json
-      - name: 🕵️ Add-on Linter
-        uses: frenck/action-addon-linter@v2
+      # 4. App Linter (Frenck's) - Validates config.yaml/json
+      - name: 🕵️ App Linter
+        uses: frenck/action-App-linter@v2
         with:
-          path: "./${{ matrix.addon }}"
-        continue-on-error: ${{ matrix.addon == 'netboot-xyz' }}
+          path: "./${{ matrix.App }}"
+        continue-on-error: ${{ matrix.App == 'netboot-xyz' }}
 
       # 5. Platinum Compliance (S6, Healthcheck, OCI, Translations, Images)
       - name: 🐍 Set up Python (cached)
@@ -353,9 +353,9 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          # Add addon name as header for report aggregation
-          echo "ADDON: ${{ matrix.addon }}" > compliance_report.txt
-          python3 .scripts/check_compliance.py "./${{ matrix.addon }}" >> compliance_report.txt 2>&1
+          # Add App name as header for report aggregation
+          echo "App: ${{ matrix.App }}" > compliance_report.txt
+          python3 .scripts/check_compliance.py "./${{ matrix.App }}" >> compliance_report.txt 2>&1
           exit_code=$?
           set -e
 
@@ -369,15 +369,15 @@ jobs:
             echo "status=success" >> "$GITHUB_OUTPUT"
           fi
 
-          # Sanitize addon name for artifact naming (replace / with -)
-          ADDON_SAFE=$(echo "${{ matrix.addon }}" | tr '/' '-')
-          echo "addon_safe=$ADDON_SAFE" >> "$GITHUB_OUTPUT"
+          # Sanitize App name for artifact naming (replace / with -)
+          App_SAFE=$(echo "${{ matrix.App }}" | tr '/' '-')
+          echo "App_safe=$App_SAFE" >> "$GITHUB_OUTPUT"
 
       - name: 📤 Upload Compliance Report
         if: steps.compliance.outputs.status == 'failure'
         uses: actions/upload-artifact@v6
         with:
-          name: compliance-${{ github.run_id }}-${{ steps.compliance.outputs.addon_safe }}
+          name: compliance-${{ github.run_id }}-${{ steps.compliance.outputs.App_safe }}
           path: compliance_report.txt
           retention-days: 1
 
@@ -395,7 +395,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
-          scan-ref: "./${{ matrix.addon }}"
+          scan-ref: "./${{ matrix.App }}"
           ignore-unfixed: true
           severity: "CRITICAL,HIGH"
 
@@ -403,21 +403,21 @@ jobs:
   # BUILD: Test Build (No Push)
   # --------------------------------------------------------------------------------
   build:
-    name: 🏗️ Test Build (${{ matrix.addon }})
+    name: 🏗️ Test Build (${{ matrix.App }})
     needs: [filter, lint]
     # Skip build if only docs/workflows changed (no Dockerfile, config, scripts)
     if: |
       always() &&
-      needs.filter.outputs.addons != '[]' &&
-      needs.filter.outputs.addons != '' &&
+      needs.filter.outputs.Apps != '[]' &&
+      needs.filter.outputs.Apps != '' &&
       needs.filter.outputs.needs_build == 'true' &&
       needs.filter.outputs.is_stale != 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # Only matrix on addons, build all arches sequentially on same runner
+      # Only matrix on Apps, build all arches sequentially on same runner
       matrix:
-        addon: ${{ fromJSON(needs.filter.outputs.addons) }}
+        App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
@@ -429,26 +429,26 @@ jobs:
         uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
-          # Primary key: addon-specific for precise cache hits
-          key: ${{ runner.os }}-buildx-${{ matrix.addon }}-${{ github.sha }}
+          # Primary key: App-specific for precise cache hits
+          key: ${{ runner.os }}-buildx-${{ matrix.App }}-${{ github.sha }}
           restore-keys: |
-            # Try addon-specific cache first
-            ${{ runner.os }}-buildx-${{ matrix.addon }}-
-            # Fallback to shared base image cache (all addons share base:19.0.0)
+            # Try App-specific cache first
+            ${{ runner.os }}-buildx-${{ matrix.App }}-
+            # Fallback to shared base image cache (all Apps share base:19.0.0)
             ${{ runner.os }}-buildx-base-image-19.0.0-
             # Last resort: any buildx cache
             ${{ runner.os }}-buildx-
 
-      - name: ℹ️ Get Add-on Info
+      - name: ℹ️ Get App Info
         id: info
         uses: home-assistant/actions/helpers/info@master
         with:
-          path: "./${{ matrix.addon }}"
+          path: "./${{ matrix.App }}"
 
       - name: 🔧 Inject Version Warning
         run: |
           pip install pyyaml --quiet
-          python3 .scripts/inject_version_warning.py "${{ matrix.addon }}"
+          python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -456,7 +456,7 @@ jobs:
         run: |
           IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
 
-          echo "Building ${{ matrix.addon }} for amd64 only (CI optimization)"
+          echo "Building ${{ matrix.App }} for amd64 only (CI optimization)"
           echo "Other architectures are built during release."
 
           docker run --rm --privileged \
@@ -466,10 +466,10 @@ jobs:
             ghcr.io/home-assistant/amd64-builder:2025.11.0 \
             --test \
             --amd64 \
-            --target "/data/${{ matrix.addon }}" \
+            --target "/data/${{ matrix.App }}" \
             --image "$IMAGE" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon || exit 1
+            --App || exit 1
 
           echo "✅ amd64 build successful"
 
@@ -515,41 +515,41 @@ jobs:
 
             let summary = "## 🛡️ Platinum Compliance Issues\n\n";
             summary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
-            summary += "The following add-ons failed compliance checks:\n\n";
+            summary += "The following Apps failed compliance checks:\n\n";
             let hasContent = false;
             let totalIssues = 0;
             let missingHealthchecks = 0;
             let missingLogos = 0;
-            let addonsWithHealthcheckIssue = [];
-            let addonsWithLogoIssue = [];
+            let AppsWithHealthcheckIssue = [];
+            let AppsWithLogoIssue = [];
 
             for (const dir of dirs) {
                 const reportPath = path.join('reports', dir, 'compliance_report.txt');
                 if (fs.existsSync(reportPath)) {
                    const content = fs.readFileSync(reportPath, 'utf8');
-                   // Extract addon name from "ADDON: xyz" header line
-                   const addonMatch = content.match(/^ADDON: (.+)$/m);
-                   const addonName = addonMatch ? addonMatch[1] : dir.replace('compliance-', '');
-                   // Remove the ADDON line from display content
-                   const displayContent = content.replace(/^ADDON: .+\n/, '');
+                   // Extract App name from "App: xyz" header line
+                   const AppMatch = content.match(/^App: (.+)$/m);
+                   const AppName = AppMatch ? AppMatch[1] : dir.replace('compliance-', '');
+                   // Remove the App line from display content
+                   const displayContent = content.replace(/^App: .+\n/, '');
 
                    // Filter out success reports that were accidentally uploaded
                    if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) {
-                       console.log(`Report for ${addonName} contains success message. Skipping detail block.`);
+                       console.log(`Report for ${AppName} contains success message. Skipping detail block.`);
                        continue;
                    }
 
                    if (content.includes("HEALTHCHECK")) {
                        missingHealthchecks++;
-                       addonsWithHealthcheckIssue.push(addonName);
+                       AppsWithHealthcheckIssue.push(AppName);
                    }
                    if (content.includes("logo.png")) {
                        missingLogos++;
-                       addonsWithLogoIssue.push(addonName);
+                       AppsWithLogoIssue.push(AppName);
                    }
                    totalIssues++;
 
-                   summary += `<details>\n<summary><strong>${addonName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
+                   summary += `<details>\n<summary><strong>${AppName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
                    hasContent = true;
                 }
             }
@@ -560,15 +560,15 @@ jobs:
 
             summary += "```yaml\n";
             summary += "# Platinum Compliance Issues for AI Processing\n";
-            summary += `total_addons_with_issues: ${totalIssues}\n\n`;
+            summary += `total_Apps_with_issues: ${totalIssues}\n\n`;
 
             if (missingHealthchecks > 0) {
                 summary += "healthcheck_issues:\n";
                 summary += "  count: " + missingHealthchecks + "\n";
-                summary += "  addons:\n";
-                for (const addon of addonsWithHealthcheckIssue) {
-                    summary += `    - addon: "${addon}"\n`;
-                    summary += `      file: "${addon}/Dockerfile"\n`;
+                summary += "  Apps:\n";
+                for (const App of AppsWithHealthcheckIssue) {
+                    summary += `    - App: "${App}"\n`;
+                    summary += `      file: "${App}/Dockerfile"\n`;
                     summary += `      fix: "Add HEALTHCHECK instruction before CMD/ENTRYPOINT"\n`;
                     summary += `      example: 'HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://127.0.0.1:PORT/health || exit 1'\n`;
                 }
@@ -577,10 +577,10 @@ jobs:
             if (missingLogos > 0) {
                 summary += "\nlogo_issues:\n";
                 summary += "  count: " + missingLogos + "\n";
-                summary += "  addons:\n";
-                for (const addon of addonsWithLogoIssue) {
-                    summary += `    - addon: "${addon}"\n`;
-                    summary += `      missing_file: "${addon}/logo.png"\n`;
+                summary += "  Apps:\n";
+                for (const App of AppsWithLogoIssue) {
+                    summary += `    - App: "${App}"\n`;
+                    summary += `      missing_file: "${App}/logo.png"\n`;
                     summary += `      requirements: "500x500px PNG with transparent background"\n`;
                     summary += `      action: "Generate or provide logo.png image"\n`;
                 }
@@ -611,7 +611,7 @@ jobs:
                 });
 
                 // Match current OR legacy signatures
-                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ App Compliance Check"];
                 const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
 
                 for (const comment of previousComments) {
@@ -656,7 +656,7 @@ jobs:
                 if (!hasFailedLabel) {
                     const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
                     // Blocklist known invalid labels to prevent flapping
-                    const blocklist = ['addon/docker', 'addon/config', 'addon/scripts', 'addon/docs', 'addon/images', 'addon/assets', 'addon/src', 'addon/lib', 'addon/bin', 'addon/test', 'addon/tests'];
+                    const blocklist = ['App/docker', 'App/config', 'App/scripts', 'App/docs', 'App/images', 'App/assets', 'App/src', 'App/lib', 'App/bin', 'App/test', 'App/tests'];
 
                     const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n) && !blocklist.includes(n));
                     filteredLabels.push('ci/platinum-issues');
@@ -675,7 +675,7 @@ jobs:
                    repo: context.repo.repo,
                    issue_number: context.issue.number,
                 });
-                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ Add-on Compliance Check"];
+                const signatures = ["## 🛡️ Platinum Compliance Issues", "🛡️ App Compliance Check"];
                 const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
                 for (const comment of previousComments) {
                     try {
@@ -814,14 +814,14 @@ jobs:
 
             // Failed Jobs List (excluding Compliance) - with clickable links
             report += "| Job | Step | Link |\n|---|---|---|\n";
-            let affectedAddons = new Set();
+            let affectedApps = new Set();
             let specificTests = new Set();
             let failureTypes = new Set();
 
             for (const job of nonComplianceJobs) {
-                // Regex to capture "addon" from: "Job Name (addon)" or "Job Name (addon - arch)"
+                // Regex to capture "App" from: "Job Name (App)" or "Job Name (App - arch)"
                 const match = job.name.match(/\((.*?)(?: -.*)?\)/);
-                if (match) affectedAddons.add(match[1]);
+                if (match) affectedApps.add(match[1]);
 
                 // Get ALL failed steps (not just the first one)
                 const failedSteps = job.steps ? job.steps.filter(s =>
@@ -861,7 +861,7 @@ jobs:
                         else if (stepName.includes("MarkdownLint")) specificTests.add("MarkdownLint");
                         else if (stepName.includes("YAMLLint")) specificTests.add("YamlLint");
                         else if (stepName.includes("Prettier")) specificTests.add("Prettier");
-                        else if (stepName.includes("Add-on Linter")) specificTests.add("AddonLinter");
+                        else if (stepName.includes("App Linter")) specificTests.add("AppLinter");
                         else if (stepName.includes("Trivy")) specificTests.add("Trivy");
                         else if (job.name.includes("Build")) specificTests.add("DockerBuild");
                         else if (stepName.includes("Supervisor") || stepName.includes("Test")) specificTests.add("SupervisorTest");
@@ -892,20 +892,20 @@ jobs:
                     !step.name || !step.name.includes("Compliance")
                 );
 
-                const addonMatch = job.name.match(/\((.*?)(?: -.*)?\)/);
-                const addon = addonMatch ? addonMatch[1] : "unknown";
+                const AppMatch = job.name.match(/\((.*?)(?: -.*)?\)/);
+                const App = AppMatch ? AppMatch[1] : "unknown";
 
                 // If no step info, use job conclusion
                 if (nonComplianceSteps.length === 0) {
                     const stepName = job.conclusion === 'cancelled' ? 'Job Cancelled' :
                                     job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown';
-                    const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+                    const entry = { App, stepName, jobName: job.name, url: job.html_url };
                     otherFailures.push(entry);
                 } else {
                     // Process each failed step
                     for (const failedStep of nonComplianceSteps) {
                         const stepName = failedStep.name || "Unknown";
-                        const entry = { addon, stepName, jobName: job.name, url: job.html_url };
+                        const entry = { App, stepName, jobName: job.name, url: job.html_url };
 
                         if (stepName.includes("ShellCheck") || stepName.includes("Hadolint") ||
                             stepName.includes("Lint") || stepName.includes("Prettier") ||
@@ -932,21 +932,21 @@ jobs:
 
             if (lintFailures.length > 0) {
                 report += "lint_failures:\n";
-                report += "  # Fix with: .\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon <name> -Fix -Tests ShellCheck,Hadolint\n";
+                report += "  # Fix with: .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App <name> -Fix -Tests ShellCheck,Hadolint\n";
                 for (const f of lintFailures) {
-                    report += `  - addon: "${f.addon}"\n`;
+                    report += `  - App: "${f.App}"\n`;
                     report += `    step: "${f.stepName}"\n`;
                     report += `    files_to_check:\n`;
                     if (f.stepName.includes("ShellCheck")) {
-                        report += `      - "${f.addon}/**/*.sh"\n`;
-                        report += `      - "${f.addon}/run.sh"\n`;
+                        report += `      - "${f.App}/**/*.sh"\n`;
+                        report += `      - "${f.App}/run.sh"\n`;
                     }
                     if (f.stepName.includes("Hadolint")) {
-                        report += `      - "${f.addon}/Dockerfile"\n`;
+                        report += `      - "${f.App}/Dockerfile"\n`;
                     }
-                    if (f.stepName.includes("Add-on Linter")) {
-                        report += `      - "${f.addon}/config.yaml"\n`;
-                        report += `      - "${f.addon}/build.yaml"\n`;
+                    if (f.stepName.includes("App Linter")) {
+                        report += `      - "${f.App}/config.yaml"\n`;
+                        report += `      - "${f.App}/build.yaml"\n`;
                     }
                 }
             }
@@ -956,10 +956,10 @@ jobs:
                 report += "  # Docker build errors - check Dockerfile syntax and base images\n";
                 report += "  # Common issues: ARG after FROM, missing packages, invalid base image\n";
                 for (const f of buildFailures) {
-                    report += `  - addon: "${f.addon}"\n`;
+                    report += `  - App: "${f.App}"\n`;
                     report += `    files_to_fix:\n`;
-                    report += `      - "${f.addon}/Dockerfile"\n`;
-                    report += `      - "${f.addon}/build.yaml"  # Check build_from image\n`;
+                    report += `      - "${f.App}/Dockerfile"\n`;
+                    report += `      - "${f.App}/build.yaml"  # Check build_from image\n`;
                     report += `    common_fixes:\n`;
                     report += `      - "Ensure ARG BUILD_FROM is first line after comments"\n`;
                     report += `      - "Check base image exists: ghcr.io/hassio-addons/base:19.0.0"\n`;
@@ -972,7 +972,7 @@ jobs:
                 report += "  # Trivy found vulnerabilities - may need package updates\n";
                 report += "  # NOTE: Some vulnerabilities require upstream fixes (not auto-fixable)\n";
                 for (const f of securityFailures) {
-                    report += `  - addon: "${f.addon}"\n`;
+                    report += `  - App: "${f.App}"\n`;
                     report += `    action: "Review Trivy output and update vulnerable packages"\n`;
                     report += `    manual_review_required: true\n`;
                 }
@@ -980,20 +980,20 @@ jobs:
 
             if (supervisorFailures.length > 0) {
                 report += "\nsupervisor_failures:\n";
-                report += "  # Supervisor integration test failures - check addon installation/startup\n";
-                report += "  # Common issues: Addon not detected, installation failed, startup timeout\n";
+                report += "  # Supervisor integration test failures - check App installation/startup\n";
+                report += "  # Common issues: App not detected, installation failed, startup timeout\n";
                 for (const f of supervisorFailures) {
-                    report += `  - addon: "${f.addon}"\n`;
+                    report += `  - App: "${f.App}"\n`;
                     report += `    step: "${f.stepName}"\n`;
                     report += `    files_to_check:\n`;
-                    report += `      - "${f.addon}/config.yaml"  # Check ingress, ports, schema\n`;
-                    report += `      - "${f.addon}/Dockerfile"  # Check healthcheck, base image\n`;
-                    report += `      - "${f.addon}/rootfs/etc/services.d/*/run"  # Check service scripts\n`;
+                    report += `      - "${f.App}/config.yaml"  # Check ingress, ports, schema\n`;
+                    report += `      - "${f.App}/Dockerfile"  # Check healthcheck, base image\n`;
+                    report += `      - "${f.App}/rootfs/etc/services.d/*/run"  # Check service scripts\n`;
                     report += `    common_fixes:\n`;
                     report += `      - "Verify ingress: true in config.yaml"\n`;
                     report += `      - "Check that service scripts use correct shebang (#!/usr/bin/with-contenv bashio)"\n`;
                     report += `      - "Ensure HEALTHCHECK is present in Dockerfile"\n`;
-                    report += `      - "Verify addon slug matches directory name"\n`;
+                    report += `      - "Verify App slug matches directory name"\n`;
                 }
             }
 
@@ -1001,17 +1001,17 @@ jobs:
                 report += "\nother_failures:\n";
                 report += "  # These require manual investigation\n";
                 for (const f of otherFailures) {
-                    report += `  - addon: "${f.addon}"\n`;
+                    report += `  - App: "${f.App}"\n`;
                     report += `    step: "${f.stepName}"\n`;
                     report += `    manual_review_required: true\n`;
                 }
             }
 
             report += "\n# Quick fix commands:\n";
-            if (affectedAddons.size > 0) {
-                const addonsList = Array.from(affectedAddons).join('","');
-                report += `powershell: .\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon "${addonsList}" -Fix\n`;
-                report += `bash: pwsh -File ./.scripts/verify_addons/verify_test_addons.ps1 -Addon "${addonsList}" -Fix\n`;
+            if (affectedApps.size > 0) {
+                const AppsList = Array.from(affectedApps).join('","');
+                report += `powershell: .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix\n`;
+                report += `bash: pwsh -File ./.scripts/verify_Apps/verify_test_Apps.ps1 -App "${AppsList}" -Fix\n`;
             }
 
             report += "\n# Items NOT fixable by local script:\n";
@@ -1023,7 +1023,7 @@ jobs:
                 report += "  - Security vulnerabilities (require package updates or upstream fixes)\n";
             }
             if (supervisorFailures.length > 0) {
-                report += "  - Supervisor test failures (require addon configuration fixes, check logs)\n";
+                report += "  - Supervisor test failures (require App configuration fixes, check logs)\n";
             }
             report += "  - Missing logo.png/icon.png (need to generate or provide images)\n";
             report += "  - Translation files (need manual creation in translations/en.yaml)\n";
@@ -1037,11 +1037,11 @@ jobs:
             }
 
             let testCommand = "";
-            if (affectedAddons.size > 0) {
-                const addonsList = Array.from(affectedAddons).join('","');
-                testCommand = `.\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon "${addonsList}" -Fix${testsArg}`;
+            if (affectedApps.size > 0) {
+                const AppsList = Array.from(affectedApps).join('","');
+                testCommand = `.\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix${testsArg}`;
             } else {
-                testCommand = `.\\.scripts\\verify_addons\\verify_test_addons.ps1 -Addon all -Fix${testsArg}`;
+                testCommand = `.\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App all -Fix${testsArg}`;
             }
 
             // Local Test Command (expanded section)
@@ -1137,8 +1137,8 @@ jobs:
       (needs.build.result == 'success' || (needs.build.result == 'skipped' && needs.filter.outputs.force_supervisor == 'true')) &&
       (
         (
-          needs.filter.outputs.addons != '[]' &&
-          needs.filter.outputs.addons != '' &&
+          needs.filter.outputs.Apps != '[]' &&
+          needs.filter.outputs.Apps != '' &&
           needs.filter.outputs.docs_only != 'true' &&
           needs.filter.outputs.skip_supervisor != 'true'
         ) ||
@@ -1147,7 +1147,7 @@ jobs:
       needs.filter.outputs.is_stale != 'true'
     uses: ./.github/workflows/orchestrator-supervisor-test.yaml
     with:
-      addons: ${{ needs.filter.outputs.addons }}
+      Apps: ${{ needs.filter.outputs.Apps }}
       timeout: "15"
 
   success_report:

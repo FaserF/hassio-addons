@@ -20,7 +20,7 @@ CMD [ "/run.sh" ]
 LABEL \
     org.opencontainers.image.title="Bash Script Executer" \
     org.opencontainers.image.description="Execute your own bash scripts inside this Homeassistant Addon environment." \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer" \

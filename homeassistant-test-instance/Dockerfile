@@ -62,7 +62,7 @@ HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
 LABEL \
     org.opencontainers.image.title="Home Assistant Test Instance" \
     org.opencontainers.image.description="A standalone Home Assistant Core instance for testing purposes." \
-    org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons" \
+    org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
     org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/homeassistant-test-instance" \

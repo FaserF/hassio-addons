@@ -97,7 +97,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
 # Labels
 LABEL org.opencontainers.image.title="pterodactyl Panel Gameserver"
 LABEL org.opencontainers.image.description="Open-Source Gameserver Management Panel"
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Add-ons"
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/FaserF/hassio-addons/tree/master/pterodactyl-panel"

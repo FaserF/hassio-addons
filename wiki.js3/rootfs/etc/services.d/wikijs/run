@@ -56,12 +56,12 @@ if bashio::config.true 'reset_database'; then
 		su-exec postgres psql -d postgres -c "DROP DATABASE IF EXISTS wiki;"
 
 		#Remove reset_database options
-		bashio::addon.option 'reset_database'
-		bashio::addon.option 'reset_database_confirm'
+		bashio::app.option 'reset_database'
+		bashio::app.option 'reset_database_confirm'
 	fi
 
 	# Reset Git Storage
-	GIT_DATA_DIR="/addon_configs/wiki.js3/git"
+	GIT_DATA_DIR="/App_configs/wiki.js3/git"
 	if [ -d "$GIT_DATA_DIR" ]; then
 		bashio::log.warning "Cleaning up Git storage and SSH keys..."
 		# shellcheck disable=SC2115
@@ -107,12 +107,12 @@ try {
 echo "Starting Wiki.JS V3"
 cd /wiki
 # Configure Log Level
-if ! ADDON_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$ADDON_LOG_LEVEL" ]; then
+if ! App_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$App_LOG_LEVEL" ]; then
     bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
-    ADDON_LOG_LEVEL="info"
+    App_LOG_LEVEL="info"
 fi
 # Map log levels to Wiki.js compatible values
-case "${ADDON_LOG_LEVEL}" in
+case "${App_LOG_LEVEL}" in
 trace | debug) WIKI_LOG_LEVEL="debug" ;;
 info | notice) WIKI_LOG_LEVEL="info" ;;
 warning | warn) WIKI_LOG_LEVEL="warn" ;; # Backward compat: accept old 'warn' value

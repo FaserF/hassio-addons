@@ -1,7 +1,7 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
-# Home Assistant Add-on: Antigravity-Server
+# Home Assistant App: Antigravity-Server
 # Initialize VNC password and environment
 # ==============================================================================
 
@@ -14,7 +14,7 @@ chmod 1777 /tmp/.X11-unix
 
 # Setup VNC password
 if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_password')" ]; then
-    bashio::log.info "Using configured VNC password from addon options."
+    bashio::log.info "Using configured VNC password from App options."
     VNC_PASSWORD=$(bashio::config 'vnc_password')
     if [ ${#VNC_PASSWORD} -gt 8 ]; then
         bashio::log.warning "User provided VNC password is longer than 8 characters. Truncating to the first 8 characters due to VNC protocol limitations."

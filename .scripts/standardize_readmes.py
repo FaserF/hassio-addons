@@ -94,7 +94,7 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
         docker_badge = f"[![Docker Image](https://img.shields.io/badge/docker-available-blue.svg?logo=docker&style=flat-square)](https://github.com/{MAINTAINER}/hassio-addons/pkgs/container)"
 
     return f"""[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon={addon_slug})
-[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
 {docker_badge}
 ![Project Maintenance](https://img.shields.io/badge/maintainer-{MAINTAINER}-blue?style=flat-square)"""
 
@@ -289,7 +289,7 @@ def process_addon(addon_path):
 
     addon_dirname = os.path.basename(addon_path)
     name = config.get("name", addon_dirname)
-    description = config.get("description", "Home Assistant Add-on")
+    description = config.get("description", "Home Assistant App")
     version = config.get("version", "0.0.0")
     slug = f"{REPO_HASH}_{addon_dirname}"  # e.g. c1e285b7_whatsapp
 
@@ -321,7 +321,7 @@ def process_addon(addon_path):
 
     # Configuration
     new_content += "## ⚙️ Configuration\n\n"
-    new_content += "Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.\n\n"
+    new_content += "Configure the add-on via the **Configuration** tab in the Home Assistant App page.\n\n"
     new_content += "### Options\n\n"
     new_content += maximize_config_example(config, config_type) + "\n\n"
     new_content += "---\n\n"

@@ -40,7 +40,7 @@ schema:
   doh_alt_port_2: port?
 # ports:
 #   # With host_network: true, we do not map ports via Docker.
-#   # The addon binds directly to the ports defined in 'options'.
+#   # The App binds directly to the ports defined in 'options'.
 #   # Removing this section avoids the "Network" configuration tab in HA, which is misleading here.
 #   # 853/tcp: 853
 #   # 443/tcp: 3443

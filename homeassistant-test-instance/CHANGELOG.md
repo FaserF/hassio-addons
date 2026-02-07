@@ -10,7 +10,7 @@
 
 ### 🚀 Other
 
-- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- fixed logo in Homeassistant App UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
@@ -24,7 +24,7 @@
 
 ### 🚀 Other
 
-- fixed logo in Homeassistant Addon UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
+- fixed logo in Homeassistant App UI ([`f053f7b0`](https://github.com/FaserF/hassio-addons/commit/f053f7b0b0c43df32e122ba054ba6118379ab959))
 - small fixes & improvements ([`ce7a62e4`](https://github.com/FaserF/hassio-addons/commit/ce7a62e43eb50c87458588df6581b8ed3a741c9d))
 - small fixes ([`60c5ddf4`](https://github.com/FaserF/hassio-addons/commit/60c5ddf4fede8242031082aa8e7fa0d057c0087f))
 
@@ -48,7 +48,7 @@
 - CI fixes ([`5039dc35`](https://github.com/FaserF/hassio-addons/commit/5039dc35107fac66fb599939422f44163c740c7d))
 - CI fixes ([`1d426e51`](https://github.com/FaserF/hassio-addons/commit/1d426e51f461f8daaf3b1515eafc94d09f8eb2e0))
 - CI fixes ([`7c1edc7a`](https://github.com/FaserF/hassio-addons/commit/7c1edc7a1ec187d26b385e547b7774324e678bee))
-- healthcheck improvements & addon startup fixes ([`972a29cc`](https://github.com/FaserF/hassio-addons/commit/972a29ccfa302464481c7bfa593d1720daefccec))
+- healthcheck improvements & App startup fixes ([`972a29cc`](https://github.com/FaserF/hassio-addons/commit/972a29ccfa302464481c7bfa593d1720daefccec))
 - CI fixes ([`9406b72c`](https://github.com/FaserF/hassio-addons/commit/9406b72cd925e206e73371e57694b24908d6ceca))
 - more CI fixes ([`0ff6319b`](https://github.com/FaserF/hassio-addons/commit/0ff6319bbd8380102ef7e795ac21e14f9ac360b8))
 - CI fixes ([`c2273a0d`](https://github.com/FaserF/hassio-addons/commit/c2273a0d984c6df12b15d7ea6636ffff1354c8ed))
@@ -78,14 +78,14 @@
 - build & CI fixes ([`f3e56438`](https://github.com/FaserF/hassio-addons/commit/f3e56438d1ea5055dc32ad545da9f8ed9488ca83))
 - remove edge sync trigger comment ([`96d8862d`](https://github.com/FaserF/hassio-addons/commit/96d8862db91fd2f24e4f6df1660bd66596656671))
 - trigger edge sync ([`cdb903f7`](https://github.com/FaserF/hassio-addons/commit/cdb903f7626d21267e087ae126cd752b9b98cd6c))
-- Remove obsolete ENV ADDON_VERSION ([`9c530872`](https://github.com/FaserF/hassio-addons/commit/9c530872176a32f7316fb2a7171c3d3d2c865f10))
+- Remove obsolete ENV App_VERSION ([`9c530872`](https://github.com/FaserF/hassio-addons/commit/9c530872176a32f7316fb2a7171c3d3d2c865f10))
 - more CI fixes ([`ee2d55fe`](https://github.com/FaserF/hassio-addons/commit/ee2d55fe409ee33f9f01450827adeeeafbc54956))
 
 ## 0.2.0 (2026-01-03)
 
 ### 📦 Dependencies
 
-- Bump all addon versions ([`7a5426ba`](https://github.com/FaserF/hassio-addons/commit/7a5426bac78e1dbbbf0de477757cbe4562594434))
+- Bump all App versions ([`7a5426ba`](https://github.com/FaserF/hassio-addons/commit/7a5426bac78e1dbbbf0de477757cbe4562594434))
 
 ### 🎨 Style
 
@@ -94,8 +94,8 @@
 ### 🚀 Other
 
 - Docs improvements ([`9ba3343c`](https://github.com/FaserF/hassio-addons/commit/9ba3343c174fc850b55a9d73117eb57476b9d5cb))
-- fix Addon startup ([`7a83fd1c`](https://github.com/FaserF/hassio-addons/commit/7a83fd1cf7e004cd117e2372f51880fde076f4dc))
-- fixed addon startup issues ([`29ed9ca8`](https://github.com/FaserF/hassio-addons/commit/29ed9ca8cc9312be4fe346d2674cb333c0a59859))
+- fix App startup ([`7a83fd1c`](https://github.com/FaserF/hassio-addons/commit/7a83fd1cf7e004cd117e2372f51880fde076f4dc))
+- fixed App startup issues ([`29ed9ca8`](https://github.com/FaserF/hassio-addons/commit/29ed9ca8cc9312be4fe346d2674cb333c0a59859))
 
 ## 0.1.10 (2026-01-03)
 

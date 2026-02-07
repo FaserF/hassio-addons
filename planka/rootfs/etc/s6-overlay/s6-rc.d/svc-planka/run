@@ -36,19 +36,19 @@ export TRUST_PROXY=1
 # BASE_URL handling
 if bashio::config.has_value 'base_url'; then
     export BASE_URL="$(bashio::config 'base_url')"
-elif bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
-    export BASE_URL="http://localhost$(bashio::addon.ingress_entry)"
+elif bashio::var.has_value "$(bashio::app.ingress_entry)"; then
+    export BASE_URL="http://localhost$(bashio::app.ingress_entry)"
 else
     export BASE_URL="http://localhost:1337"
 fi
 export SAILS_SECURITY_CORS_ALLOW_ORIGINS='*'
 # Log level - schema now uses Winston-compatible levels
 # Winston supports: error, warn, info, http, verbose, debug, silly
-if ! ADDON_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$ADDON_LOG_LEVEL" ]; then
+if ! App_LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$App_LOG_LEVEL" ]; then
     bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
-    ADDON_LOG_LEVEL="info"
+    App_LOG_LEVEL="info"
 fi
-case "$ADDON_LOG_LEVEL" in
+case "$App_LOG_LEVEL" in
     trace)        export LOG_LEVEL="silly"   ;;
     debug)        export LOG_LEVEL="debug"   ;;
     info|notice)  export LOG_LEVEL="info"    ;;

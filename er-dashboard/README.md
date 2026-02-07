@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/er-dashboard/logo.png" width="100" />
 
-[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_er-dashboard)
-[![Home Assistant Add-on](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Open your Home Assistant instance and show the App dashboard.](https://my.home-assistant.io/badges/supervisor_App.svg)](https://my.home-assistant.io/redirect/supervisor_App/?App=c1e285b7_er-dashboard)
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-App-blue.svg)](https://www.home-assistant.io/Apps/)
 [![Docker Image](https://img.shields.io/badge/docker-1.3.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-er-dashboard)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
@@ -33,7 +33,7 @@ ER-Startseite is a self-hosted dashboard application featuring:
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the App via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 

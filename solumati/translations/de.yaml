@@ -4,7 +4,7 @@ configuration:
     description: "Steuert die Ausführlichkeit der Protokolle. 'info' wird für den normalen Betrieb empfohlen."
   test_mode:
     name: "Test Modus"
-    description: "Wenn aktiviert, generiert das Add-on Dummy-Benutzer und Daten zu Testzwecken."
+    description: "Wenn aktiviert, generiert das App Dummy-Benutzer und Daten zu Testzwecken."
   app_base_url:
     name: "Anwendungs-Basis-URL"
     description: "Die externe URL, unter der Solumati erreichbar ist. Wird zum Erstellen von Links verwendet. Wenn leer, wird versucht, sie automatisch von Ingress zu erkennen."
@@ -16,4 +16,4 @@ configuration:
     description: "Wenn aktiviert, wird nicht angemeldeten Benutzern eine Landing-/Marketing-Seite anstelle des Anmeldebildschirms angezeigt."
   dev_use_main_branch:
     name: "Entwickler: Main Branch nutzen"
-    description: "⚠️ FORTGESCHRITTEN: Wenn aktiviert, lädt das Add-on bei JEDEM Start den neuesten Code aus dem GitHub 'main' Branch herunter und baut ihn neu. Dies verlängert die Startzeit erheblich."
+    description: "⚠️ FORTGESCHRITTEN: Wenn aktiviert, lädt das App bei JEDEM Start den neuesten Code aus dem GitHub 'main' Branch herunter und baut ihn neu. Dies verlängert die Startzeit erheblich."
