@@ -252,10 +252,18 @@ jobs:
           docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log
 
           echo "Waiting for Supervisor to be ready..."
+          # Show the very first bootup logs in a group
+          sleep 5
+          echo "::group::Early Bootup Logs"
+          docker exec ha-supervisor-test head -n 50 /tmp/supervisor.log 2>/dev/null || echo "No logs yet"
+          echo "::endgroup::"
+
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
-            # Stream logs to CI output for visibility
-            echo "--- Live Logs (Iteration $i) ---"
-            docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null | tail -n 10 || echo "Waiting for logs..."
+            # Stream logs every 15s to avoid flooding the CI output
+            if [ $((i % 15)) -eq 0 ]; then
+              echo "--- Live Logs (T+${i}s) ---"
+              docker exec ha-supervisor-test tail -n 10 /tmp/supervisor.log 2>/dev/null || echo "Waiting..."
+            fi
 
             if docker exec ha-supervisor-test ha addons info >/dev/null 2>&1; then
               echo "✅ Supervisor is ready after ${i}s"
