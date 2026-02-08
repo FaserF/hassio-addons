@@ -155,8 +155,9 @@ jobs:
       - name: "🚀 Start Supervisor Environment"
         id: supervisor
         run: |
+          # shellcheck disable=SC2086
           # Generate a random Supervisor token for this run
-          SUPERVISOR_TOKEN=$(openssl rand -hex 16)
+          SUPERVISOR_TOKEN="$(openssl rand -hex 16)"
           echo "SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN" >> "$GITHUB_ENV"
 
           # shellcheck disable=SC2086,SC2129,SC2034
@@ -185,7 +186,7 @@ jobs:
           # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
           IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
           for App in "${App_ARRAY[@]}"; do
-            App=$(echo "$App" | xargs)  # trim whitespace
+            App="$(echo "$App" | xargs)"  # trim whitespace
 
             # Skip .unsupported Apps - they should not be tested here
             if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -d "./.unsupported/$App" ]; then
@@ -211,11 +212,11 @@ jobs:
               if [ -f "$DEST_DIR/config.yaml" ]; then
                  if grep -q "8080/tcp" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 8080 to 8088 to avoid CI conflicts..."
-                    sed -i 's/8080/8088/g' "$DEST_DIR/config.yaml"
+                    sed -i "s/8080/8088/g" "$DEST_DIR/config.yaml"
                  fi
                  if grep -q "2022" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
-                    sed -i 's/2022/2028/g' "$DEST_DIR/config.yaml"
+                    sed -i "s/2022/2028/g" "$DEST_DIR/config.yaml"
                  fi
               fi
             else
@@ -232,8 +233,8 @@ jobs:
             --name ha-supervisor-test \
             --privileged \
             --network ha-test-net \
-            -p ${{ env.HA_PORT }}:7123 \
-            -v /tmp/ha-data/addons:/mnt/supervisor/addons \
+            -p "${{ env.HA_PORT }}:7123" \
+            -v /tmp/ha-data/addons/local:/mnt/supervisor/addons/local \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
@@ -241,8 +242,8 @@ jobs:
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=qemux86-64 \
             -e SUPERVISOR_DEV=1 \
-            -e SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN \
-            ${{ env.DEVCONTAINER_IMAGE }} \
+            -e SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN" \
+            "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
           echo "Container started, waiting for initialization..."
@@ -258,9 +259,9 @@ jobs:
           docker exec ha-supervisor-test head -n 50 /tmp/supervisor.log 2>/dev/null || echo "No logs yet"
           echo "::endgroup::"
 
-          for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
+          for i in $(seq 1 "${{ env.SUPERVISOR_STARTUP_TIMEOUT }}"); do
             # Stream logs every 15s to avoid flooding the CI output
-            if [ $((i % 15)) -eq 0 ]; then
+            if [ "$((i % 15))" -eq 0 ]; then
               echo "--- Live Logs (T+${i}s) ---"
               docker exec ha-supervisor-test tail -n 10 /tmp/supervisor.log 2>/dev/null || echo "Waiting..."
             fi
@@ -310,8 +311,8 @@ jobs:
                  MAX_WAIT=60
                  START_TIME=$(date +%s)
                  READY=false
-                 while [ $(($(date +%s) - START_TIME)) -lt $MAX_WAIT ]; do
-                   STATUS=$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo "unknown")
+                 while [ "$(( $(date +%s) - START_TIME ))" -lt "$MAX_WAIT" ]; do
+                   STATUS="$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo 'unknown')"
                    if [ "$STATUS" = "started" ]; then
                      echo "✅ MariaDB is started and ready."
                      READY=true
