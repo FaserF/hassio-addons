@@ -132,3 +132,6 @@ jobs:
                   since = "—"
 
               lines.append(f"| **[{name}]({App['path']})** | {desc} | {status} | {since} |")
+
+          print("\n".join(lines))
+          EOF

@@ -3,7 +3,7 @@
 
 # --- RENOVATE-MANAGED VERSIONS ---
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/base
-latestBase: "19.0.0"
+latestBase: "20.0.1"
 
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
 latestDebian: "9.1.0"

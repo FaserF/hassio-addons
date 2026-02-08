@@ -27,8 +27,10 @@ foreach ($a in $Addons) {
         $configPath = Join-Path $RepoRoot ".markdownlint.yaml"
 
         # Only run if files exist to avoid error
-        if (Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md") {
-            $output = npx markdownlint-cli $target --config "$configPath" --ignore "node_modules" --ignore ".git" --ignore ".unsupported" 2>&1 | Out-String
+        if ($mdFiles = Get-ChildItem -Path $a.FullName -Recurse -Filter "*.md" | Where-Object { $_.FullName -notmatch '([\\/])(node_modules|vendor|\.git|\.venv)([\\/]|$)' }) {
+            # Convert paths to relative or quoted absolute paths for safety
+            $filePaths = $mdFiles.FullName | ForEach-Object { "$_" }
+            $output = npx markdownlint-cli --config "$configPath" $filePaths 2>&1 | Out-String
             if ($LASTEXITCODE -ne 0) { throw $output }
             Add-Result -Addon $a.Name -Check "MarkdownLint" -Status "PASS" -Message "OK"
         }

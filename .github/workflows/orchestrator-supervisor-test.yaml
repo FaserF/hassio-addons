@@ -230,8 +230,6 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
-            -e SUPERVISOR_DEV=1 \
-            -e SUPERVISOR_MACHINE=qemux86-64 \
             -e SUPERVISOR_SHARE_DATA=1 \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
@@ -239,10 +237,6 @@ jobs:
 
           echo "Container started, waiting for initialization..."
           sleep 10
-
-          # Surgical strike: Remove debugpy to prevent the fork() deadlock/hang in CI
-          # This allows SUPERVISOR_DEV=1 (OS-Agent bypass) without the debugger starting
-          docker exec ha-supervisor-test find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true
 
           # Create missing directory for Docker
           docker exec ha-supervisor-test mkdir -p /var/lib/docker

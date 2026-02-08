@@ -28,13 +28,13 @@ After the first start, you can log in with the following default credentials:
 >    - Check the app logs for a message like: `"No database password set in configuration! Generating random password: XXXXXXXXXX"`
 >    - You can also find it in `/share/pterodactyl/.env` as `DB_PASSWORD=`
 >    - Or check the startup logs for: `"For the first login use admin@example.com / admin as user and your database password to sign in."`
-
+>
 > [!NOTE]
 > The `password` field in the configuration serves **two purposes**:
 >
 > - It's used as the database password for the `pterodactyl` database user
 > - It's also used as the initial admin login password for the panel
-
+>
 > If you don't set a password, a random one is generated and shown in the logs. **Make sure to save it!**
 
 Please change the password and email address in the panel settings immediately after your first login.
