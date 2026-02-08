@@ -239,7 +239,7 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
-            -e SUPERVISOR_MACHINE=generic-x86-64 \
+            -e SUPERVISOR_MACHINE=qemux86-64 \
             -e SUPERVISOR_DEV=1 \
             -e SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN \
             ${{ env.DEVCONTAINER_IMAGE }} \
