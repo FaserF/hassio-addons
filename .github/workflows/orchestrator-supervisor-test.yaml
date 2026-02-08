@@ -46,7 +46,6 @@ env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
   SUPERVISOR_STARTUP_TIMEOUT: 120
-  SUPERVISOR_TOKEN: generated_T9k8L
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
@@ -156,6 +155,10 @@ jobs:
       - name: "🚀 Start Supervisor Environment"
         id: supervisor
         run: |
+          # Generate a random Supervisor token for this run
+          SUPERVISOR_TOKEN=$(openssl rand -hex 16)
+          echo "SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN" >> "$GITHUB_ENV"
+
           # shellcheck disable=SC2086,SC2129,SC2034
           # Create network
           docker network create ha-test-net 2>/dev/null || true
@@ -224,6 +227,8 @@ jobs:
           touch /tmp/supervisor.log
 
           # Start the devcontainer with Supervisor
+          # We run a cleanup first to prevent debugpy deadlock, then exec supervisor_run as PID 1
+          # This ensures docker logs captures everything from the very beginning
           docker run -d \
             --name ha-supervisor-test \
             --privileged \
@@ -234,23 +239,15 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
-            -v /tmp/supervisor.log:/tmp/supervisor.log \
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
+            -e SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
-            sleep infinity
+            bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true; mkdir -p /var/lib/docker; echo 'DEBUG: Environment variables:'; env | sort; echo 'DEBUG: Permission check:'; whoami; exec supervisor_run"
 
           echo "Container started, waiting for initialization..."
-          sleep 10
-
-          # Create missing directory for Docker
-          docker exec ha-supervisor-test mkdir -p /var/lib/docker
-
-          # Start Supervisor inside the container (detached)
-          # We use direct output redirection to /tmp/supervisor.log for better reliability in CI
-          docker exec -d ha-supervisor-test bash -c "supervisor_run > /tmp/supervisor.log 2>&1" || true
 
           echo "Waiting for Supervisor to be ready..."
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
@@ -263,6 +260,7 @@ jobs:
             # Fail fast if container crashed
             if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
               echo "Container stopped unexpectedly!"
+              docker logs ha-supervisor-test
               break
             fi
 
@@ -272,11 +270,6 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
-            echo "::group::Internal Supervisor Logs"
-            docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
-            echo "::group::Internal Dashboard Logs (Alternative)"
-            docker exec ha-supervisor-test cat /var/log/supervisor.log 2>/dev/null || echo "No alternative logs found"
-            echo "::endgroup::"
             echo "::group::Docker Logs"
             docker logs ha-supervisor-test
             echo "::endgroup::"
