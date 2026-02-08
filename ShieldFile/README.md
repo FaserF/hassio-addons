@@ -1,6 +1,6 @@
 # ShieldFile
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/ShieldFile/logo.png" width="100"  alt="ShieldFile Logo"/>
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/ShieldFile/logo.png" width="100" />
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_ShieldFile)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
@@ -49,8 +49,8 @@ keyfile: privkey.pem
 log_level: info
 port: 8443
 users:
-  - password: changeme1234
-    username: admin
+- password: changeme1234
+  username: admin
 ```
 
 ---
