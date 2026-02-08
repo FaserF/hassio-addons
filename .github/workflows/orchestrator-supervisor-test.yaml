@@ -227,9 +227,8 @@ jobs:
           touch /tmp/supervisor.log
 
           # Start the devcontainer with Supervisor
-          # We run a cleanup first to prevent debugpy deadlock, then exec supervisor_run as PID 1
-          # This ensures docker logs captures everything from the very beginning
-          docker run -d \
+          # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
+          docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
             --network ha-test-net \
@@ -243,14 +242,21 @@ jobs:
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
             -e SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN \
-            -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
-            bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true; mkdir -p /var/lib/docker; echo 'DEBUG: Environment variables:'; env | sort; echo 'DEBUG: Permission check:'; whoami; exec supervisor_run"
+            sleep infinity
 
           echo "Container started, waiting for initialization..."
 
+          # Prepare environment and start Supervisor via script to provide TTY
+          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true; mkdir -p /var/lib/docker"
+          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log
+
           echo "Waiting for Supervisor to be ready..."
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
+            # Stream logs to CI output for visibility
+            echo "--- Live Logs (Iteration $i) ---"
+            docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null | tail -n 10 || echo "Waiting for logs..."
+
             if docker exec ha-supervisor-test ha addons info >/dev/null 2>&1; then
               echo "✅ Supervisor is ready after ${i}s"
               echo "supervisor_ready=true" >> "$GITHUB_OUTPUT"
@@ -270,6 +276,9 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
+            echo "::group::Internal Supervisor Logs (Full)"
+            docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
+            echo "::endgroup::"
             echo "::group::Docker Logs"
             docker logs ha-supervisor-test
             echo "::endgroup::"
