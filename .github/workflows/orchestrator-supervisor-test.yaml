@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 100
+  SUPERVISOR_STARTUP_TIMEOUT: 120
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
@@ -230,8 +230,6 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
-            -e SUPERVISOR_DEV=0 \
-            -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_SHARE_DATA=1 \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
@@ -245,8 +243,7 @@ jobs:
 
           # Start Supervisor inside the container (detached)
           # Use 'script' to maintain TTY for stty checks while logging
-          # Forcefully unset SUPERVISOR_DEV to prevent debugger initialization delays
-          docker exec -d ha-supervisor-test bash -c 'unset SUPERVISOR_DEV && script -f -q -c "supervisor_run" /tmp/supervisor.log' || true
+          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log || true
 
           echo "Waiting for Supervisor to be ready..."
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do

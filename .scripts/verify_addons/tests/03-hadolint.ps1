@@ -26,7 +26,7 @@ if ($DockerAvailable) {
         $df = Join-Path $a.FullName "Dockerfile"
         if (Test-Path $df) {
             try {
-                $out = (Get-Content $df | docker run --rm -i hadolint/hadolint hadolint - --ignore DL3018 2>&1)
+                $out = (Get-Content $df | docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 - 2>&1)
                 if ($LASTEXITCODE -ne 0) {
                     Add-Result -Addon $a.Name -Check "Hadolint" -Status "FAIL" -Message $out
                 }
