@@ -1,9 +1,0 @@
-node_modules
-auth_info_baileys
-.git
-.github
-*.log
-*.zip
-rocketchat-app
-integration
-docs

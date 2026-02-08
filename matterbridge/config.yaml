@@ -1,0 +1,19 @@
+name: Matterbridge (Unsupported)
+version: 2.0.0
+slug: matterbridge
+description: A simple chat bridge (Unsupported - Matterbridge not developed since
+  Jan 2023) (Unsupported)
+url: https://github.com/FaserF/hassio-addons/tree/master/.unsupported/matterbridge
+arch:
+- aarch64
+- amd64
+map:
+- share:rw
+init: false
+panel_icon: mdi:bridge
+options:
+  config_path: /share/matterbridge/matterbridge.toml
+  log_level: info
+schema:
+  config_path: str
+  log_level: list(info|debug)

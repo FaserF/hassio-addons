@@ -1,4 +1,0 @@
-configuration:
-  log_level:
-    name: "Protokoll-Ebene"
-    description: "Steueert den Schweregrad der im Protokoll angezeigten Meldungen."

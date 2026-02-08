@@ -1,5 +1,0 @@
-#!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
-
-bashio::log.info "Starting TT-RSS Updater..."
-exec s6-setuidgid nginx php84 /var/www/tt-rss/update_daemon2.php
