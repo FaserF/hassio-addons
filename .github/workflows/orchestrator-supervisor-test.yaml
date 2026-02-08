@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 120
+  SUPERVISOR_STARTUP_TIMEOUT: 300
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
