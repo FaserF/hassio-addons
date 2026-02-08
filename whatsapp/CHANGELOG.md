@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.4-dev-3315032 (2026-02-08)
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.128.5 [skip-tests] (#648) [skip-tests] ([`11a4910c`](https://github.com/FaserF/hassio-addons/commit/11a4910c88736d855e1c8b82493288b211834716))
+- ⬆️ Update eslint monorepo to v10 [skip-tests] (major) (#646) [skip-tests] ([`edb864cd`](https://github.com/FaserF/hassio-addons/commit/edb864cd199b73b69d5972e148e80580800c27eb))
+
+### 🚀 Other
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
+
+
 ## 1.2.3 (2026-02-07)
 
 ### ✨ Features
