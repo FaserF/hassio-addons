@@ -236,8 +236,8 @@ jobs:
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -v /tmp/supervisor.log:/tmp/supervisor.log \
             -e SUPERVISOR_SHARE_DATA=1 \
-            -e SUPERVISOR_MACHINE=qemux86-64 \
-            -e SUPERVISOR_TOKEN=${{ env.SUPERVISOR_TOKEN }} \
+            -e SUPERVISOR_MACHINE=generic-x86-64 \
+            -e SUPERVISOR_DEV=1 \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
             sleep infinity
@@ -249,8 +249,8 @@ jobs:
           docker exec ha-supervisor-test mkdir -p /var/lib/docker
 
           # Start Supervisor inside the container (detached)
-          # Use 'script' to maintain TTY for stty checks while logging
-          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log || true
+          # We use direct output redirection to /tmp/supervisor.log for better reliability in CI
+          docker exec -d ha-supervisor-test bash -c "supervisor_run > /tmp/supervisor.log 2>&1" || true
 
           echo "Waiting for Supervisor to be ready..."
           for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
@@ -274,6 +274,8 @@ jobs:
             echo "❌ Supervisor failed to start"
             echo "::group::Internal Supervisor Logs"
             docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
+            echo "::group::Internal Dashboard Logs (Alternative)"
+            docker exec ha-supervisor-test cat /var/log/supervisor.log 2>/dev/null || echo "No alternative logs found"
             echo "::endgroup::"
             echo "::group::Docker Logs"
             docker logs ha-supervisor-test
