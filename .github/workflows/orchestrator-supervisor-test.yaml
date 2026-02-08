@@ -259,7 +259,7 @@ jobs:
 
           # Prepare environment and start Supervisor via script to provide TTY
           docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true"
-          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log
+          docker exec -d ha-supervisor-test script -efq -c "supervisor_run" /tmp/supervisor.log
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
