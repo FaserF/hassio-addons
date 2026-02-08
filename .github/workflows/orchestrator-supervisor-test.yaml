@@ -46,6 +46,7 @@ env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
   SUPERVISOR_STARTUP_TIMEOUT: 120
+  SUPERVISOR_TOKEN: generated_T9k8L
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
@@ -219,6 +220,9 @@ jobs:
             fi
           done
 
+          # Create log file for debugging
+          touch /tmp/supervisor.log
+
           # Start the devcontainer with Supervisor
           docker run -d \
             --name ha-supervisor-test \
@@ -228,9 +232,12 @@ jobs:
             -v /tmp/ha-data/addons:/mnt/supervisor/addons \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
-            --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
+            --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
+            -v /tmp/supervisor.log:/tmp/supervisor.log \
             -e SUPERVISOR_SHARE_DATA=1 \
+            -e SUPERVISOR_MACHINE=qemux86-64 \
+            -e SUPERVISOR_TOKEN=${{ env.SUPERVISOR_TOKEN }} \
             -v ha-supervisor-storage:/var/lib/docker \
             ${{ env.DEVCONTAINER_IMAGE }} \
             sleep infinity

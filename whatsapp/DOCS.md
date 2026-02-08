@@ -80,7 +80,6 @@ mask_sensitive_data: false
 ui_auth_enabled: false
 ui_auth_password: ''
 media_folder: null
-
 ```
 
 ### Configuration Options
