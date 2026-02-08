@@ -249,16 +249,16 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
-            -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
             -e SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN" \
+            -v ha-supervisor-storage:/var/lib/docker \
             "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
           echo "Container started, waiting for initialization..."
 
           # Prepare environment and start Supervisor via script to provide TTY
-          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true; mkdir -p /var/lib/docker"
+          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true"
           docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log
 
           echo "Waiting for Supervisor to be ready..."
