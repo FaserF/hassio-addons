@@ -1,6 +1,6 @@
 # Wiki.JS (Version 3 - Alpha)
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/wiki.js3/logo.png" width="100"  alt="wiki.js3 Logo"/>
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/wiki.js3/logo.png" width="100" />
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_wiki.js3)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
