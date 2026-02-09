@@ -36,10 +36,10 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
-ARG SOLUMATI_VERSION="v2025.12.4b0"
+ARG SOLUMATI_VERSION="v2026.2.0a1"
 ENV SOLUMATI_VERSION=${SOLUMATI_VERSION}
 # renovate: datasource=github-releases depName=FaserF/Solumati
-ARG SOLUMATI_SHA256="fd5be5ca00e1f00a6205f15517f5fb3bad15ac7183e51ae5a8fdae2cab37e218"
+ARG SOLUMATI_SHA256="66a22a143d7e69fd9cb63c315c9e55deff3adfd78f8cf2c5cfe31763958db8d4"
 WORKDIR /tmp
 RUN mkdir src && \
     curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
