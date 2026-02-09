@@ -166,6 +166,7 @@ jobs:
         if: steps.check-stale.outputs.is_stale != 'true'
         uses: dorny/paths-filter@v3
         with:
+          token: ''  # Force use of local git instead of GitHub API to avoid timeouts
           filters: ${{ needs.generate-config.outputs.filters }}
 
       - name: 🔎 Analyze Change Types
