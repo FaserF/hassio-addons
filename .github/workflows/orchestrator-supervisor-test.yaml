@@ -421,7 +421,7 @@ jobs:
             else
               echo "⚠️ App not found in list, but continuing with install attempt..."
               echo "Available Apps:"
-              echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
+              echo "$LIST_OUTPUT" | jq -r '.data.addons[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
               echo "Checking App directory structure..."
               docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list App directory"
@@ -460,7 +460,7 @@ jobs:
                 # Verify if App was actually installed despite the 500 error
                 echo "Verifying if App was actually installed..."
                 App_INFO=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>&1 || echo "")
-                App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
+                App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.version != null' 2>/dev/null || echo "false")
                 App_STATE=$(echo "$App_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
 
                 # Check if App is installed by looking at the installed flag or state
