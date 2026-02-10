@@ -517,16 +517,16 @@ jobs:
                 # Pipe script content directly to docker exec to avoid mount issues
                 # shellcheck disable=SC2016
                 cat << 'EOF' | docker exec -i ha-supervisor-test sh -s -- "$SLUG" "$OPTS"
-                  slug="$1"
-                  opts="$2"
-                  file="/mnt/supervisor/addons.json"
-                  if [ ! -f "$file" ]; then echo "addons.json not found at $file"; exit 1; fi
-                  tmp=$(mktemp)
-                  jq --arg slug "$slug" --argjson opts "$opts" '
-                    if .user[$slug] == null then .user[$slug] = {} else . end |
-                    .user[$slug].options = $opts
-                ' "$file" > "$tmp" && mv "$tmp" "$file"
-                EOF
+          slug="$1"
+          opts="$2"
+          file="/mnt/supervisor/addons.json"
+          if [ ! -f "$file" ]; then echo "addons.json not found at $file"; exit 1; fi
+          tmp=$(mktemp)
+          jq --arg slug "$slug" --argjson opts "$opts" '
+            if .user[$slug] == null then .user[$slug] = {} else . end |
+            .user[$slug].options = $opts
+          ' "$file" > "$tmp" && mv "$tmp" "$file"
+          EOF
                 if [ $? -ne 0 ]; then
                   echo "⚠️ Failed to update options"
                 fi
