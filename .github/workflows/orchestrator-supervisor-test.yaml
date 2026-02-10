@@ -514,21 +514,21 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Create the update script in a mounted directory
+                # Create the update script in a mounted directory (using /share as it is confirmed mounted)
                 # shellcheck disable=SC2016
-                cat << 'EOF' > /tmp/ha-data/addons/update_config.sh
+                cat << 'EOF' > /tmp/ha-data/share/update_config.sh
           #!/bin/sh
           slug="$1"
           opts="$2"
           file="/mnt/supervisor/addons.json"
-          if [ ! -f "$file" ]; then exit 1; fi
+          if [ ! -f "$file" ]; then echo "addons.json not found at $file"; exit 1; fi
           tmp=$(mktemp)
           jq --arg slug "$slug" --argjson opts "$opts" '
             if .user[$slug] == null then .user[$slug] = {} else . end |
             .user[$slug].options = $opts
           ' "$file" > "$tmp" && mv "$tmp" "$file"
           EOF
-                docker exec ha-supervisor-test sh /mnt/supervisor/addons/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
+                docker exec ha-supervisor-test sh /mnt/supervisor/share/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
               fi
 
               # Start App
@@ -631,7 +631,7 @@ jobs:
               # Stop and uninstall
               echo "Cleaning up $App..."
               docker exec ha-supervisor-test ha apps stop "$SLUG" 2>/dev/null || true
-              docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha apps uninstall "$SLUG" 2>/dev/null || true
             fi
           done
 
