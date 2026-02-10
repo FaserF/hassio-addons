@@ -415,13 +415,13 @@ jobs:
 
             # Verify App is detected
             echo "Checking if App is detected..."
-            LIST_OUTPUT=$(docker exec ha-supervisor-test ha apps --raw-json 2>&1 || echo "[]")
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha apps list --raw-json 2>&1 || echo "[]")
             if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
               echo "✅ App detected: $SLUG"
             else
               echo "⚠️ App not found in list, but continuing with install attempt..."
               echo "Available Apps:"
-              echo "$LIST_OUTPUT" | jq -r '.data.addons[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
+              echo "$LIST_OUTPUT" | jq -r '(.data.addons // .addons)[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
               echo "Checking App directory structure..."
               docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list App directory"
@@ -514,10 +514,9 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Create the update script in a mounted directory (using /share as it is confirmed mounted)
+                # Pipe script content directly to docker exec to avoid mount issues
                 # shellcheck disable=SC2016
-                cat << 'EOF' > /tmp/ha-data/share/update_config.sh
-          #!/bin/sh
+                cat << 'EOF' | docker exec -i ha-supervisor-test sh -s -- "$SLUG" "$OPTS"
           slug="$1"
           opts="$2"
           file="/mnt/supervisor/addons.json"
@@ -527,8 +526,10 @@ jobs:
             if .user[$slug] == null then .user[$slug] = {} else . end |
             .user[$slug].options = $opts
           ' "$file" > "$tmp" && mv "$tmp" "$file"
-          EOF
-                docker exec ha-supervisor-test sh /mnt/supervisor/share/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
+EOF
+                if [ $? -ne 0 ]; then
+                  echo "⚠️ Failed to update options"
+                fi
               fi
 
               # Start App
