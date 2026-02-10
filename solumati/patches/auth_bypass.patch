@@ -1,4 +1,6 @@
-@@ -13,6 +13,29 @@
+--- backend/app/api/dependencies.py
++++ backend/app/api/dependencies.py
+@@ -13,6 +13,22 @@
  def get_current_user_from_header(
      x_user_id: Optional[int] = Header(None), db: Session = Depends(get_db)
  ):
