@@ -514,22 +514,12 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Pipe script content directly to docker exec to avoid mount issues
-                # shellcheck disable=SC2016
-                cat << 'EOF' | docker exec -i ha-supervisor-test sh -s -- "$SLUG" "$OPTS"
-          slug="$1"
-          opts="$2"
-          file="/mnt/supervisor/addons.json"
-          if [ ! -f "$file" ]; then echo "addons.json not found at $file"; exit 1; fi
-          tmp=$(mktemp)
-          jq --arg slug "$slug" --argjson opts "$opts" '
-            if .user[$slug] == null then .user[$slug] = {} else . end |
-            .user[$slug].options = $opts
-          ' "$file" > "$tmp" && mv "$tmp" "$file"
-          EOF
-                if [ $? -ne 0 ]; then
-                  echo "⚠️ Failed to update options"
-                fi
+                # Use a loop to set each option via CLI for maximum reliability
+                # This ensures keys like 'media_folder' are correctly registered
+                echo "$OPTS" | jq -r 'to_entries[] | "\(.key)\n\(.value)"' | while read -r key; read -r val; do
+                  # shellcheck disable=SC2086
+                  docker exec ha-supervisor-test ha apps options "$SLUG" --$key "$val" >/dev/null 2>&1 || echo "⚠️ Could not set $key"
+                done
               fi
 
               # Start App
@@ -540,21 +530,13 @@ jobs:
               set -e # Re-enable exit on error
 
               # Handle 500 errors as warnings instead of failures
-              # Note: This is likely a CI container issue, but could also indicate real App start problems
-              # Should be investigated if it occurs frequently
               if [ $START_EXIT -ne 0 ]; then
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
-                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify App)"
-                  echo "$START_OUTPUT"
-                  echo "Dumping Supervisor Logs for 500 Error:"
-                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 || true
-                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -25 || true
-                  RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500 error - likely CI issue)"
-                  # Continue with status check even though start reported 500
+                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI issue)"
+                  RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500)"
                   START_EXIT=0
                 else
-                  echo "❌ Start failed"
-                  echo "$START_OUTPUT"
+                  echo "❌ Start failed: $START_OUTPUT"
                   docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
                   RESULTS="$RESULTS\n❌ $App: FAIL (Start failed)"
                   FAILED=1
@@ -571,14 +553,10 @@ jobs:
                 STATUS="unknown"
 
                 while [ "$(date +%s)" -lt "$END_TIME" ]; do
-                  # Check if container is running (more reliable than CLI)
-                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG_VAL"; then
+                  # Check if container is running or CLI reports started
+                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG" || \
+                     [ "$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')" = "started" ]; then
                     STATUS="started"
-                    break
-                  fi
-                  # Fallback to CLI check
-                  STATUS="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
-                  if [ "$STATUS" = "started" ]; then
                     break
                   fi
                   echo -n "."
@@ -591,28 +569,32 @@ jobs:
                   # Test ingress
                   echo "Testing ingress endpoint..."
                   INGRESS_URL="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
-                  if [ -n "$INGRESS_URL" ]; then
-                    HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
-
-                    # Solumati/Ingress Retry Logic
-                    if [ "$HTTP_CODE" = "000" ] || [ "$HTTP_CODE" = "502" ]; then
-                        echo "⚠️ Ingress returned $HTTP_CODE - Retrying in 10s..."
-                        sleep 10
-                        HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
-                    fi
-
-                    if echo "$HTTP_CODE" | grep -q "^[23]"; then
-                      echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
-                      RESULTS="$RESULTS\n✅ $App: PASS (Ingress OK)"
-                    else
-                      echo "⚠️ Ingress returned HTTP $HTTP_CODE"
-                      RESULTS="$RESULTS\n⚠️ $App: WARN (Ingress HTTP $HTTP_CODE)"
-                    fi
+                  if [ -n "$INGRESS_URL" ] && [ "$INGRESS_URL" != "null" ]; then
+                    # Standardized retry logic for ingress
+                    for attempt in 1 2; do
+                      # Port 8123 is the internal HA port in this devcontainer
+                      HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8123$INGRESS_URL" 2>&1 || echo "000")"
+                      if echo "$HTTP_CODE" | grep -q "^[23]"; then
+                        echo "✅ Ingress is up (HTTP $HTTP_CODE)"
+                        RESULTS="$RESULTS\n✅ $App: PASS"
+                        break
+                      else
+                        if [ $attempt -eq 1 ]; then
+                          echo "⚠️ Ingress returned $HTTP_CODE - Retrying in 15s..."
+                          sleep 15
+                        else
+                          echo "❌ Ingress check failed after retry (HTTP $HTTP_CODE)"
+                          RESULTS="$RESULTS\n❌ $App: FAIL (Ingress $HTTP_CODE)"
+                          FAILED=1
+                        fi
+                      fi
+                    done
                   else
-                    RESULTS="$RESULTS\n✅ $App: PASS (Running, no ingress URL)"
+                    echo "✅ App started (no ingress to test)"
+                    RESULTS="$RESULTS\n✅ $App: PASS"
                   fi
                 else
-                  echo "❌ App not in 'started' state"
+                  echo "❌ App failed to reach 'started' state"
                   docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50
                   RESULTS="$RESULTS\n❌ $App: FAIL (State: $STATUS)"
                   FAILED=1
