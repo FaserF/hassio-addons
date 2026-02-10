@@ -237,6 +237,10 @@ jobs:
           touch /tmp/supervisor.log
 
           # Start the devcontainer with Supervisor
+          # Ensure standard share directory exists
+          mkdir -p /tmp/ha-data/share
+          mkdir -p /tmp/ha-data/media
+
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
           docker run -d -t \
             --name ha-supervisor-test \
@@ -510,16 +514,26 @@ jobs:
               elif echo "$SLUG" | grep -q "whatsapp"; then
                 # Whatsapp requires media_folder
                 OPTS='{"media_folder": "/share/whatsapp"}'
+                echo "Ensuring WhatsApp share directory exists..."
+                mkdir -p /tmp/ha-data/share/whatsapp
               fi
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Use a loop to set each option via CLI for maximum reliability
-                # This ensures keys like 'media_folder' are correctly registered
-                echo "$OPTS" | jq -r 'to_entries[] | "\(.key)\n\(.value)"' | while read -r key; read -r val; do
-                  # shellcheck disable=SC2086
-                  docker exec ha-supervisor-test ha apps options "$SLUG" --$key "$val" >/dev/null 2>&1 || echo "⚠️ Could not set $key"
-                done
+                # Use --options flag. JSON passed directly via docker exec with proper quoting.
+                docker exec ha-supervisor-test ha apps options "$SLUG" --options "$OPTS" || echo "⚠️ Failed to update options"
+
+                # Wait for Supervisor to sync configuration
+                sleep 2
+
+                # Verify options were applied
+                ACTUAL_OPTS=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -rc '.data.user_options // .data.options // "{}"')
+                echo "Options in Supervisor: $ACTUAL_OPTS"
+                if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
+                  echo "⚠️ Warning: media_folder not found in actual options. Retrying once..."
+                  docker exec ha-supervisor-test ha apps options "$SLUG" --options "$OPTS"
+                  sleep 2
+                fi
               fi
 
               # Start App
@@ -571,19 +585,19 @@ jobs:
                   INGRESS_URL="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
                   if [ -n "$INGRESS_URL" ] && [ "$INGRESS_URL" != "null" ]; then
                     # Standardized retry logic for ingress
-                    for attempt in 1 2; do
-                      # Port 8123 is the internal HA port in this devcontainer
+                    # Port 8123 is the internal HA port in this devcontainer
+                    for attempt in $(seq 1 4); do
                       HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8123$INGRESS_URL" 2>&1 || echo "000")"
                       if echo "$HTTP_CODE" | grep -q "^[23]"; then
                         echo "✅ Ingress is up (HTTP $HTTP_CODE)"
                         RESULTS="$RESULTS\n✅ $App: PASS"
                         break
                       else
-                        if [ $attempt -eq 1 ]; then
-                          echo "⚠️ Ingress returned $HTTP_CODE - Retrying in 15s..."
+                        if [ "$attempt" -lt 4 ]; then
+                          echo "⚠️ Ingress returned $HTTP_CODE (Attempt $attempt/4) - Retrying in 15s..."
                           sleep 15
                         else
-                          echo "❌ Ingress check failed after retry (HTTP $HTTP_CODE)"
+                          echo "❌ Ingress check failed after retries (HTTP $HTTP_CODE)"
                           RESULTS="$RESULTS\n❌ $App: FAIL (Ingress $HTTP_CODE)"
                           FAILED=1
                         fi
