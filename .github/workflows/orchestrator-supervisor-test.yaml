@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 300
+  SUPERVISOR_STARTUP_TIMEOUT: 100
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
@@ -308,10 +308,10 @@ jobs:
           # Dependencies
           if echo "${{ needs.filter-ingress.outputs.ingress_Apps }}" | grep -qE "wiki.js|pterodactyl-panel|wordpress"; then
             echo "Installing Dependency: MariaDB (core_mariadb)..."
-            if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
+            if ! docker exec ha-supervisor-test ha apps install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
-            elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
+            elif ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                  echo "⚠️ Failed to start core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
@@ -322,7 +322,7 @@ jobs:
                  START_TIME=$(date +%s)
                  READY=false
                  while [ "$(( $(date +%s) - START_TIME ))" -lt "$MAX_WAIT" ]; do
-                   STATUS="$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo 'unknown')"
+                   STATUS="$(docker exec ha-supervisor-test ha apps info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo 'unknown')"
                    if [ "$STATUS" = "started" ]; then
                      echo "✅ MariaDB is started and ready."
                      READY=true
@@ -405,7 +405,7 @@ jobs:
 
             # Refresh App store
             echo "Refreshing App store..."
-            docker exec ha-supervisor-test ha addons reload || true
+            docker exec ha-supervisor-test ha apps reload || true
             echo "Waiting for supervisor to scan Apps..."
             sleep 15
 
@@ -415,7 +415,7 @@ jobs:
 
             # Verify App is detected
             echo "Checking if App is detected..."
-            LIST_OUTPUT=$(docker exec ha-supervisor-test ha addons --raw-json 2>&1 || echo "[]")
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha apps --raw-json 2>&1 || echo "[]")
             if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
               echo "✅ App detected: $SLUG"
             else
@@ -436,7 +436,7 @@ jobs:
             # Install App
             echo "Installing $App ($SLUG)..."
             set +e  # Don't exit on error, we'll handle it
-            INSTALL_OUTPUT=$(timeout "${App_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
+            INSTALL_OUTPUT=$(timeout "${App_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha apps install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
             set -e  # Re-enable exit on error
 
@@ -455,11 +455,11 @@ jobs:
             if [ $INSTALL_EXIT -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify App)"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -25 || true
 
                 # Verify if App was actually installed despite the 500 error
                 echo "Verifying if App was actually installed..."
-                App_INFO=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>&1 || echo "")
+                App_INFO=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>&1 || echo "")
                 App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
                 App_STATE=$(echo "$App_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
 
@@ -488,8 +488,8 @@ jobs:
                 echo "Checking supervisor logs for more details..."
                 docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
                 echo "Checking App info..."
-                docker exec ha-supervisor-test ha addons info "$SLUG" 2>&1 || echo "Could not get App info"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
+                docker exec ha-supervisor-test ha apps info "$SLUG" 2>&1 || echo "Could not get App info"
+                docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
                 RESULTS="$RESULTS\n❌ $App: FAIL (Install failed)"
                 FAILED=1
               fi
@@ -507,6 +507,9 @@ jobs:
               elif [ "$App" = "wordpress" ]; then
                 # Wordpress requires database config
                 OPTS='{"database_host": "core-mariadb"}'
+              elif echo "$SLUG" | grep -q "whatsapp"; then
+                # Whatsapp requires media_folder
+                OPTS='{"media_folder": "/share/whatsapp"}'
               fi
 
               if [ -n "$OPTS" ]; then
@@ -531,7 +534,7 @@ jobs:
               # Start App
               echo "Starting $App..."
               set +e # Don't exit on error
-              START_OUTPUT=$(timeout "${App_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
+              START_OUTPUT=$(timeout "${App_START_TIMEOUT}s" docker exec ha-supervisor-test ha apps start "$SLUG" 2>&1)
               START_EXIT=$?
               set -e # Re-enable exit on error
 
@@ -544,14 +547,14 @@ jobs:
                   echo "$START_OUTPUT"
                   echo "Dumping Supervisor Logs for 500 Error:"
                   docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 || true
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -25 || true
                   RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500 error - likely CI issue)"
                   # Continue with status check even though start reported 500
                   START_EXIT=0
                 else
                   echo "❌ Start failed"
                   echo "$START_OUTPUT"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
                   RESULTS="$RESULTS\n❌ $App: FAIL (Start failed)"
                   FAILED=1
                 fi
@@ -573,7 +576,7 @@ jobs:
                     break
                   fi
                   # Fallback to CLI check
-                  STATUS="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
+                  STATUS="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
                   if [ "$STATUS" = "started" ]; then
                     break
                   fi
@@ -586,9 +589,17 @@ jobs:
                 if [ "$STATUS" = "started" ]; then
                   # Test ingress
                   echo "Testing ingress endpoint..."
-                  INGRESS_URL="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
+                  INGRESS_URL="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
                   if [ -n "$INGRESS_URL" ]; then
                     HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
+
+                    # Solumati/Ingress Retry Logic
+                    if [ "$HTTP_CODE" = "000" ] || [ "$HTTP_CODE" = "502" ]; then
+                        echo "⚠️ Ingress returned $HTTP_CODE - Retrying in 10s..."
+                        sleep 10
+                        HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
+                    fi
+
                     if echo "$HTTP_CODE" | grep -q "^[23]"; then
                       echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
                       RESULTS="$RESULTS\n✅ $App: PASS (Ingress OK)"
@@ -601,14 +612,14 @@ jobs:
                   fi
                 else
                   echo "❌ App not in 'started' state"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
+                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50
                   RESULTS="$RESULTS\n❌ $App: FAIL (State: $STATUS)"
                   FAILED=1
                 fi
               fi
               # Verification Override for Pterodactyl Wings (Wait for Config)
               if [ "$FAILED" -eq 1 ]; then
-                 LOGS=$(docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 || true)
+                 LOGS=$(docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 || true)
                  if echo "$LOGS" | grep -q "App is NOT configured"; then
                       echo "✅ Detected 'App is NOT configured' - Marking as PASS"
                       FAILED=0
@@ -619,7 +630,7 @@ jobs:
 
               # Stop and uninstall
               echo "Cleaning up $App..."
-              docker exec ha-supervisor-test ha addons stop "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha apps stop "$SLUG" 2>/dev/null || true
               docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
             fi
           done
