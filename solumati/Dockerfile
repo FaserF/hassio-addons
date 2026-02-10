@@ -29,7 +29,8 @@ RUN \
     gcc \
     musl-dev \
     libffi-dev \
-    curl
+    curl \
+    patch
 
 # Set shell for pipefail support
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
@@ -51,7 +52,9 @@ RUN mkdir src && \
 COPY patches/auth_bypass.patch /tmp/auth_bypass.patch
 
 # Apply patch
-RUN cd src && patch -p0 < /tmp/auth_bypass.patch
+WORKDIR /tmp/src
+RUN patch -p0 < /tmp/auth_bypass.patch
+WORKDIR /tmp
 
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
