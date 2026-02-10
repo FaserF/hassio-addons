@@ -25,7 +25,7 @@ options:
   ui_auth_enabled: false
   ui_auth_password: ""
   mark_online: false
-  media_folder: null
+  media_folder: ""
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)

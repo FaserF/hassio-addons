@@ -47,6 +47,12 @@ RUN mkdir src && \
     tar xzf solumati.tar.gz -C src --strip-components=1 && \
     rm solumati.tar.gz
 
+# Copy patch
+COPY patches/auth_bypass.patch /tmp/auth_bypass.patch
+
+# Apply patch
+RUN cd src && patch -p0 < /tmp/auth_bypass.patch
+
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
