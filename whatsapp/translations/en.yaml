@@ -29,5 +29,8 @@ configuration:
   ui_auth_password:
     name: "UI Password"
     description: "The password for the Web UI (Username is always 'admin')."
+  media_folder:
+    name: "Media Folder"
+    description: "Path to a public folder (e.g. /media/whatsapp) to save received media. If set, automatic cleanup is DISABLED."
 network:
   8066/tcp: Internal API port the integration connects to.

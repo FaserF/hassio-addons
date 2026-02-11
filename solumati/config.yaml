@@ -13,6 +13,8 @@ ingress: true
 ingress_port: 80
 panel_icon: mdi:heart-multiple
 panel_title: Solumati
+hassio_api: true
+ingress_entry: /
 map:
   - homeassistant_config:rw
   - share:rw

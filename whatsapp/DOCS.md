@@ -19,7 +19,7 @@ Home Assistant WhatsApp Backend (Baileys/Node.js)
 This app is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
 
 **Flow:**
-`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This Addon` -> `Baileys (Node.js)` -> `WhatsApp Web`
+`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This App` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
 ## 🌐 Network & Discovery
 
@@ -41,7 +41,7 @@ Yes. If you prefer strictly isolated networking, you can disable the **"Use Host
 
 ## 🔒 Security & Public Access
 
-Requires Home Assistant 2024.12+ (or newer) to expose ports via the addon configuration.
+Requires Home Assistant 2024.12+ (or newer) to expose ports via the App configuration.
 
 If you plan to use **Webhooks** or the **Rocket.Chat integration**, you may need to expose **Port 8066** to the internet (or at least to your Rocket.Chat instance).
 
@@ -59,7 +59,7 @@ To enable password protection for the Web UI:
 
 ## 🚀 Getting Started with Automations
 
-Once the addon and integration are configured, check out the following resources to start building:
+Once the App and integration are configured, check out the following resources to start building:
 
 - [Installation](https://faserf.github.io/ha-whatsapp/installation.html)
 - [Automations](https://faserf.github.io/ha-whatsapp/automations.html)
@@ -79,6 +79,7 @@ keep_alive_interval: 30000
 mask_sensitive_data: false
 ui_auth_enabled: false
 ui_auth_password: ''
+media_folder: null
 ```
 
 ### Configuration Options
@@ -90,6 +91,13 @@ ui_auth_password: ''
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
+- `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
+
+> [!CAUTION]
+> **Privacy Consideration for `media_folder`**
+> When a custom `media_folder` is set, all files in that directory are served publicly via the `/media` endpoint (e.g., `http://<host-ip>:8066/media/filename`).
+>
+> If you point this to a shared directory (like `/media/whatsapp`), ensure that no sensitive or private files are stored there, as they will be accessible without authentication if the port is exposed.
 
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.

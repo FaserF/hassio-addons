@@ -1,0 +1,44 @@
+--- backend/app/api/dependencies.py
++++ backend/app/api/dependencies.py
+@@ -13,6 +13,41 @@
+ def get_current_user_from_header(
+     x_user_id: Optional[int] = Header(None), db: Session = Depends(get_db)
+ ):
++    # Patch: Allow bypass in TEST_MODE
++    from app.core.config import TEST_MODE
++    if TEST_MODE:
++        # Return the first admin user found
++        user = db.query(models.User).filter(models.User.role == "admin").first()
++        if user:
++            return user
++
++        # Create dummy admin if missing (robustly)
++        try:
++            print("Creating dummy admin user for TEST_MODE bypass...")
++            user = models.User(
++                email="admin@example.com",
++                hashed_password="dummy",
++                role="admin",
++                is_active=True,
++                full_name="Test Admin",
++                is_superuser=True,
++            )
++            db.add(user)
++            db.commit()
++            db.refresh(user)
++            return user
++        except Exception as e:
++            print(f"Failed to create user in DB, falling back to Mock: {e}")
++
++            class MockUser:
++                id = 1
++                email = "admin@example.com"
++                role = "admin"
++                is_active = True
++                is_superuser = True
++                full_name = "Mock Admin"
++
++            return MockUser()
+     if x_user_id is None:
+         raise HTTPException(status_code=401, detail="Missing authentication header")
+     user = db.query(models.User).filter(models.User.id == x_user_id).first()

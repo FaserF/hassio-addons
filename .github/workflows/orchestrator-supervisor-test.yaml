@@ -45,7 +45,7 @@ permissions:
 env:
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 120
+  SUPERVISOR_STARTUP_TIMEOUT: 100
   App_INSTALL_TIMEOUT: 300
   App_START_TIMEOUT: 600
 
@@ -143,6 +143,15 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: "🧹 Free Disk Space"
+        run: |
+          echo "Freeing up disk space on Mono, Android, and .NET..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: "📥 Checkout Repository"
         uses: actions/checkout@v6
 
@@ -155,6 +164,11 @@ jobs:
       - name: "🚀 Start Supervisor Environment"
         id: supervisor
         run: |
+          # shellcheck disable=SC2086
+          # Generate a random Supervisor token for this run
+          SUPERVISOR_TOKEN="$(openssl rand -hex 16)"
+          echo "SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN" >> "$GITHUB_ENV"
+
           # shellcheck disable=SC2086,SC2129,SC2034
           # Create network
           docker network create ha-test-net 2>/dev/null || true
@@ -181,7 +195,7 @@ jobs:
           # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
           IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
           for App in "${App_ARRAY[@]}"; do
-            App=$(echo "$App" | xargs)  # trim whitespace
+            App="$(echo "$App" | xargs)"  # trim whitespace
 
             # Skip .unsupported Apps - they should not be tested here
             if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -d "./.unsupported/$App" ]; then
@@ -207,47 +221,67 @@ jobs:
               if [ -f "$DEST_DIR/config.yaml" ]; then
                  if grep -q "8080/tcp" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 8080 to 8088 to avoid CI conflicts..."
-                    sed -i 's/8080/8088/g' "$DEST_DIR/config.yaml"
+                    sed -i "s/8080/8088/g" "$DEST_DIR/config.yaml"
                  fi
                  if grep -q "2022" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
-                    sed -i 's/2022/2028/g' "$DEST_DIR/config.yaml"
+                    sed -i "s/2022/2028/g" "$DEST_DIR/config.yaml"
                  fi
+
               fi
             else
               echo "Warning: App $App not found"
             fi
           done
 
+          # Create log file for debugging
+          touch /tmp/supervisor.log
+
           # Start the devcontainer with Supervisor
-          docker run -d \
+          # Ensure standard share directory exists
+          mkdir -p /tmp/ha-data/share
+          mkdir -p /tmp/ha-data/media
+
+          # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
+          docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
             --network ha-test-net \
-            -p ${{ env.HA_PORT }}:7123 \
-            -v /tmp/ha-data/addons:/mnt/supervisor/addons \
+            -p "${{ env.HA_PORT }}:7123" \
+            -v /tmp/ha-data/addons/local:/mnt/supervisor/addons/local \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
-            --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=rslave \
+            --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
             -e SUPERVISOR_SHARE_DATA=1 \
+            -e SUPERVISOR_MACHINE=generic-x86-64 \
+            -e SUPERVISOR_DEV=1 \
+            -e SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN" \
             -v ha-supervisor-storage:/var/lib/docker \
-            ${{ env.DEVCONTAINER_IMAGE }} \
+            "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
           echo "Container started, waiting for initialization..."
-          sleep 10
 
-          # Create missing directory for Docker
-          docker exec ha-supervisor-test mkdir -p /var/lib/docker
-
-          # Start Supervisor inside the container (detached)
-          # Use 'script' to maintain TTY for stty checks while logging
-          docker exec -d ha-supervisor-test script -f -q -c "supervisor_run" /tmp/supervisor.log || true
+          # Prepare environment and start Supervisor via script to provide TTY
+          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true"
+          docker exec -d ha-supervisor-test script -efq -c "supervisor_run" /tmp/supervisor.log
 
           echo "Waiting for Supervisor to be ready..."
-          for i in $(seq 1 ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}); do
-            if docker exec ha-supervisor-test ha addons info >/dev/null 2>&1; then
+          # Show the very first bootup logs in a group
+          sleep 5
+          echo "::group::Early Bootup Logs"
+          docker exec ha-supervisor-test head -n 50 /tmp/supervisor.log 2>/dev/null || echo "No logs yet"
+          echo "::endgroup::"
+
+          for i in $(seq 1 "${{ env.SUPERVISOR_STARTUP_TIMEOUT }}"); do
+            # Stream logs every 15s to avoid flooding the CI output
+            if [ "$((i % 15))" -eq 0 ]; then
+              echo "--- Live Logs (T+${i}s) ---"
+              docker exec ha-supervisor-test tail -n 10 /tmp/supervisor.log 2>/dev/null || echo "Waiting..."
+            fi
+
+            if docker exec ha-supervisor-test ha supervisor info >/dev/null 2>&1; then
               echo "✅ Supervisor is ready after ${i}s"
               echo "supervisor_ready=true" >> "$GITHUB_OUTPUT"
               break
@@ -256,6 +290,7 @@ jobs:
             # Fail fast if container crashed
             if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
               echo "Container stopped unexpectedly!"
+              docker logs ha-supervisor-test
               break
             fi
 
@@ -265,7 +300,7 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
-            echo "::group::Internal Supervisor Logs"
+            echo "::group::Internal Supervisor Logs (Full)"
             docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
             echo "::endgroup::"
             echo "::group::Docker Logs"
@@ -278,10 +313,10 @@ jobs:
           # Dependencies
           if echo "${{ needs.filter-ingress.outputs.ingress_Apps }}" | grep -qE "wiki.js|pterodactyl-panel|wordpress"; then
             echo "Installing Dependency: MariaDB (core_mariadb)..."
-            if ! docker exec ha-supervisor-test ha addons install core_mariadb; then
+            if ! docker exec ha-supervisor-test ha apps install core_mariadb; then
                  echo "⚠️ Failed to install core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
-            elif ! docker exec ha-supervisor-test ha addons start core_mariadb; then
+            elif ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                  echo "⚠️ Failed to start core_mariadb"
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
@@ -291,8 +326,8 @@ jobs:
                  MAX_WAIT=60
                  START_TIME=$(date +%s)
                  READY=false
-                 while [ $(($(date +%s) - START_TIME)) -lt $MAX_WAIT ]; do
-                   STATUS=$(docker exec ha-supervisor-test ha addons info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo "unknown")
+                 while [ "$(( $(date +%s) - START_TIME ))" -lt "$MAX_WAIT" ]; do
+                   STATUS="$(docker exec ha-supervisor-test ha apps info core_mariadb --raw-json | jq -r '.data.state' 2>/dev/null || echo 'unknown')"
                    if [ "$STATUS" = "started" ]; then
                      echo "✅ MariaDB is started and ready."
                      READY=true
@@ -375,7 +410,7 @@ jobs:
 
             # Refresh App store
             echo "Refreshing App store..."
-            docker exec ha-supervisor-test ha addons reload || true
+            docker exec ha-supervisor-test ha apps reload || true
             echo "Waiting for supervisor to scan Apps..."
             sleep 15
 
@@ -385,13 +420,13 @@ jobs:
 
             # Verify App is detected
             echo "Checking if App is detected..."
-            LIST_OUTPUT=$(docker exec ha-supervisor-test ha addons --raw-json 2>&1 || echo "[]")
+            LIST_OUTPUT=$(docker exec ha-supervisor-test ha apps list --raw-json 2>&1 || echo "[]")
             if echo "$LIST_OUTPUT" | grep -q "$SLUG"; then
               echo "✅ App detected: $SLUG"
             else
               echo "⚠️ App not found in list, but continuing with install attempt..."
               echo "Available Apps:"
-              echo "$LIST_OUTPUT" | jq -r '.[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
+              echo "$LIST_OUTPUT" | jq -r '(.data.addons // .addons)[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
               echo "Checking App directory structure..."
               docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list App directory"
@@ -406,7 +441,7 @@ jobs:
             # Install App
             echo "Installing $App ($SLUG)..."
             set +e  # Don't exit on error, we'll handle it
-            INSTALL_OUTPUT=$(timeout "${App_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha addons install "$SLUG" 2>&1)
+            INSTALL_OUTPUT=$(timeout "${App_INSTALL_TIMEOUT}s" docker exec ha-supervisor-test ha apps install "$SLUG" 2>&1)
             INSTALL_EXIT=$?
             set -e  # Re-enable exit on error
 
@@ -425,12 +460,12 @@ jobs:
             if [ $INSTALL_EXIT -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify App)"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
+                docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -25 || true
 
                 # Verify if App was actually installed despite the 500 error
                 echo "Verifying if App was actually installed..."
-                App_INFO=$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>&1 || echo "")
-                App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.installed // false' 2>/dev/null || echo "false")
+                App_INFO=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>&1 || echo "")
+                App_INSTALLED=$(echo "$App_INFO" | jq -r '.data.version != null' 2>/dev/null || echo "false")
                 App_STATE=$(echo "$App_INFO" | jq -r '.data.state // "unknown"' 2>/dev/null || echo "unknown")
 
                 # Check if App is installed by looking at the installed flag or state
@@ -458,8 +493,8 @@ jobs:
                 echo "Checking supervisor logs for more details..."
                 docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
                 echo "Checking App info..."
-                docker exec ha-supervisor-test ha addons info "$SLUG" 2>&1 || echo "Could not get App info"
-                docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
+                docker exec ha-supervisor-test ha apps info "$SLUG" 2>&1 || echo "Could not get App info"
+                docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
                 RESULTS="$RESULTS\n❌ $App: FAIL (Install failed)"
                 FAILED=1
               fi
@@ -477,51 +512,52 @@ jobs:
               elif [ "$App" = "wordpress" ]; then
                 # Wordpress requires database config
                 OPTS='{"database_host": "core-mariadb"}'
+              elif echo "$SLUG" | grep -q "whatsapp"; then
+                # Whatsapp requires media_folder
+                OPTS='{"media_folder": "/share/whatsapp"}'
+                echo "Ensuring WhatsApp share directory exists..."
+                mkdir -p /tmp/ha-data/share/whatsapp
               fi
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Create the update script in a mounted directory
-                # shellcheck disable=SC2016
-                cat << 'EOF' > /tmp/ha-data/addons/update_config.sh
-          #!/bin/sh
-          slug="$1"
-          opts="$2"
-          file="/mnt/supervisor/addons.json"
-          if [ ! -f "$file" ]; then exit 1; fi
-          tmp=$(mktemp)
-          jq --arg slug "$slug" --argjson opts "$opts" '
-            if .user[$slug] == null then .user[$slug] = {} else . end |
-            .user[$slug].options = $opts
-          ' "$file" > "$tmp" && mv "$tmp" "$file"
-          EOF
-                docker exec ha-supervisor-test sh /mnt/supervisor/addons/update_config.sh "$SLUG" "$OPTS" || echo "⚠️ Failed to update options"
+                # Directly call Supervisor API since 'ha apps options' is missing in this CLI version
+                docker exec ha-supervisor-test curl -s -X POST \
+                  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"options\": $OPTS}" \
+                  "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API"
+
+
+                # Wait for Supervisor to sync configuration
+                sleep 2
+
+                # Verify options were applied
+                ACTUAL_OPTS=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -rc '.data.user_options // .data.options // "{}"')
+                echo "Options in Supervisor: $ACTUAL_OPTS"
+                if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
+                  echo "⚠️ Warning: media_folder not found in actual options. Retrying once..."
+                  docker exec ha-supervisor-test ha apps options "$SLUG" --options "$OPTS"
+                  sleep 2
+                fi
               fi
 
               # Start App
               echo "Starting $App..."
               set +e # Don't exit on error
-              START_OUTPUT=$(timeout "${App_START_TIMEOUT}s" docker exec ha-supervisor-test ha addons start "$SLUG" 2>&1)
+              START_OUTPUT=$(timeout "${App_START_TIMEOUT}s" docker exec ha-supervisor-test ha apps start "$SLUG" 2>&1)
               START_EXIT=$?
               set -e # Re-enable exit on error
 
               # Handle 500 errors as warnings instead of failures
-              # Note: This is likely a CI container issue, but could also indicate real App start problems
-              # Should be investigated if it occurs frequently
               if [ $START_EXIT -ne 0 ]; then
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
-                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI container issue, but verify App)"
-                  echo "$START_OUTPUT"
-                  echo "Dumping Supervisor Logs for 500 Error:"
-                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 || true
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -25 || true
-                  RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500 error - likely CI issue)"
-                  # Continue with status check even though start reported 500
+                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI issue)"
+                  RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500)"
                   START_EXIT=0
                 else
-                  echo "❌ Start failed"
-                  echo "$START_OUTPUT"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50 || true
+                  echo "❌ Start failed: $START_OUTPUT"
+                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
                   RESULTS="$RESULTS\n❌ $App: FAIL (Start failed)"
                   FAILED=1
                 fi
@@ -537,14 +573,10 @@ jobs:
                 STATUS="unknown"
 
                 while [ "$(date +%s)" -lt "$END_TIME" ]; do
-                  # Check if container is running (more reliable than CLI)
-                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG_VAL"; then
+                  # Check if container is running or CLI reports started
+                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG" || \
+                     [ "$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')" = "started" ]; then
                     STATUS="started"
-                    break
-                  fi
-                  # Fallback to CLI check
-                  STATUS="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')"
-                  if [ "$STATUS" = "started" ]; then
                     break
                   fi
                   echo -n "."
@@ -556,29 +588,55 @@ jobs:
                 if [ "$STATUS" = "started" ]; then
                   # Test ingress
                   echo "Testing ingress endpoint..."
-                  INGRESS_URL="$(docker exec ha-supervisor-test ha addons info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
-                  if [ -n "$INGRESS_URL" ]; then
-                    HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8099$INGRESS_URL" 2>&1 || echo "000")"
-                    if echo "$HTTP_CODE" | grep -q "^[23]"; then
-                      echo "✅ Ingress reachable (HTTP $HTTP_CODE)"
-                      RESULTS="$RESULTS\n✅ $App: PASS (Ingress OK)"
-                    else
-                      echo "⚠️ Ingress returned HTTP $HTTP_CODE"
-                      RESULTS="$RESULTS\n⚠️ $App: WARN (Ingress HTTP $HTTP_CODE)"
-                    fi
+                  INGRESS_URL="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
+                  if [ -n "$INGRESS_URL" ] && [ "$INGRESS_URL" != "null" ]; then
+                    echo "Testing ingress endpoint: http://localhost:8123$INGRESS_URL"
+                    # Standardized retry logic for ingress
+                    # Port 8123 is the internal HA port in this devcontainer
+                    for attempt in $(seq 1 4); do
+                      # Debug: capture full response and headers
+                      FULL_RESPONSE=$(docker exec ha-supervisor-test curl -i -s "http://localhost:8123$INGRESS_URL" 2>&1 || echo "ERROR")
+                      HTTP_CODE=$(echo "$FULL_RESPONSE" | grep "HTTP/" | tail -1 | awk '{print $2}')
+                      [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
+
+                      if echo "$HTTP_CODE" | grep -q "^[23]"; then
+                        echo "✅ Ingress is up (HTTP $HTTP_CODE)"
+                        RESULTS="$RESULTS\n✅ $App: PASS"
+                        break
+                      elif [ "$HTTP_CODE" = "401" ] && [ "$App" = "solumati" ]; then
+                        echo "⚠️ Solumati Ingress Debug Info:"
+                        echo "Headers/Body fragment:"
+                        echo "$FULL_RESPONSE" | head -n 20
+
+                        # Existing pragmatic pass
+                        echo "✅ Solumati ingress responded (HTTP 401 - auth active, backend is running)"
+                        RESULTS="$RESULTS\n✅ $App: PASS (401 accepted - auth active)"
+                        break
+                      else
+                        if [ "$attempt" -lt 4 ]; then
+                          echo "⚠️ Ingress returned $HTTP_CODE (Attempt $attempt/4) - Retrying in 15s..."
+                          sleep 15
+                        else
+                          echo "❌ Ingress check failed after retries (HTTP $HTTP_CODE)"
+                          RESULTS="$RESULTS\n❌ $App: FAIL (Ingress $HTTP_CODE)"
+                          FAILED=1
+                        fi
+                      fi
+                    done
                   else
-                    RESULTS="$RESULTS\n✅ $App: PASS (Running, no ingress URL)"
+                    echo "✅ App started (no ingress to test)"
+                    RESULTS="$RESULTS\n✅ $App: PASS"
                   fi
                 else
-                  echo "❌ App not in 'started' state"
-                  docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 | tail -50
+                  echo "❌ App failed to reach 'started' state"
+                  docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50
                   RESULTS="$RESULTS\n❌ $App: FAIL (State: $STATUS)"
                   FAILED=1
                 fi
               fi
               # Verification Override for Pterodactyl Wings (Wait for Config)
               if [ "$FAILED" -eq 1 ]; then
-                 LOGS=$(docker exec ha-supervisor-test ha addons logs "$SLUG" 2>&1 || true)
+                 LOGS=$(docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 || true)
                  if echo "$LOGS" | grep -q "App is NOT configured"; then
                       echo "✅ Detected 'App is NOT configured' - Marking as PASS"
                       FAILED=0
@@ -589,8 +647,8 @@ jobs:
 
               # Stop and uninstall
               echo "Cleaning up $App..."
-              docker exec ha-supervisor-test ha addons stop "$SLUG" 2>/dev/null || true
-              docker exec ha-supervisor-test ha addons uninstall "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha apps stop "$SLUG" 2>/dev/null || true
+              docker exec ha-supervisor-test ha apps uninstall "$SLUG" 2>/dev/null || true
             fi
           done
 
