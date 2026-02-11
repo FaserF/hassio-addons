@@ -516,6 +516,9 @@ jobs:
                 OPTS='{"media_folder": "/share/whatsapp"}'
                 echo "Ensuring WhatsApp share directory exists..."
                 mkdir -p /tmp/ha-data/share/whatsapp
+              elif [ "$App" = "solumati" ]; then
+                # Solumati requires test_mode for ingress check bypass
+                OPTS='{"test_mode": true}'
               fi
 
               if [ -n "$OPTS" ]; then
