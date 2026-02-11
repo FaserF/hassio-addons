@@ -227,6 +227,12 @@ jobs:
                     echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
                     sed -i "s/2022/2028/g" "$DEST_DIR/config.yaml"
                  fi
+
+                 # Solumati: Enable test_mode by default so auth bypass is active during CI ingress check
+                 if [ "$App" = "solumati" ]; then
+                    echo "Enabling test_mode in solumati config.yaml defaults..."
+                    sed -i 's/test_mode: false/test_mode: true/' "$DEST_DIR/config.yaml"
+                 fi
               fi
             else
               echo "Warning: App $App not found"
@@ -516,42 +522,12 @@ jobs:
                 OPTS='{"media_folder": "/share/whatsapp"}'
                 echo "Ensuring WhatsApp share directory exists..."
                 mkdir -p /tmp/ha-data/share/whatsapp
-              elif [ "$App" = "solumati" ]; then
-                # Solumati requires test_mode for ingress check bypass
-                OPTS='{"test_mode": true}'
               fi
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Use Supervisor API directly via Python script for reliability and better error logging
-                echo "$OPTS" > /tmp/addon_options.json
-                docker cp /tmp/addon_options.json ha-supervisor-test:/tmp/options.json
+                docker exec ha-supervisor-test ha addons options "$SLUG" --options "$OPTS" || echo "⚠️ Failed to update options via CLI"
 
-                # Build Python script for robust API call (using printf to avoid YAML heredoc parsing issues)
-                printf '%s\n' \
-                  'import os, sys, json, urllib.request, urllib.error' \
-                  'token = os.environ.get("SUPERVISOR_TOKEN")' \
-                  "slug = \"$SLUG\"" \
-                  'url = f"http://supervisor/addons/{slug}/options"' \
-                  'try:' \
-                  '    with open("/tmp/options.json", "r") as f:' \
-                  '        data = json.load(f)' \
-                  '    payload = {"options": data}' \
-                  '    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), method="POST")' \
-                  '    req.add_header("Authorization", f"Bearer {token}")' \
-                  '    req.add_header("Content-Type", "application/json")' \
-                  '    with urllib.request.urlopen(req) as response:' \
-                  '        print(f"Success: {response.getcode()}")' \
-                  '        print(response.read().decode())' \
-                  'except urllib.error.HTTPError as e:' \
-                  '    print(f"HTTP Error {e.code}: {e.read().decode()}")' \
-                  '    sys.exit(1)' \
-                  'except Exception as e:' \
-                  '    print(f"Error: {e}")' \
-                  '    sys.exit(1)' \
-                  > /tmp/set_options.py
-                docker cp /tmp/set_options.py ha-supervisor-test:/tmp/set_options.py
-                docker exec ha-supervisor-test python3 /tmp/set_options.py || echo "⚠️ Failed to update options"
 
                 # Wait for Supervisor to sync configuration
                 sleep 2
