@@ -521,7 +521,12 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                docker exec ha-supervisor-test ha addons options "$SLUG" --options "$OPTS" || echo "⚠️ Failed to update options via CLI"
+                # Directly call Supervisor API since 'ha apps options' is missing in this CLI version
+                docker exec ha-supervisor-test curl -s -X POST \
+                  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"options\": $OPTS}" \
+                  "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API"
 
 
                 # Wait for Supervisor to sync configuration
@@ -585,18 +590,25 @@ jobs:
                   echo "Testing ingress endpoint..."
                   INGRESS_URL="$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.ingress_url // ""')"
                   if [ -n "$INGRESS_URL" ] && [ "$INGRESS_URL" != "null" ]; then
+                    echo "Testing ingress endpoint: http://localhost:8123$INGRESS_URL"
                     # Standardized retry logic for ingress
                     # Port 8123 is the internal HA port in this devcontainer
                     for attempt in $(seq 1 4); do
-                      HTTP_CODE="$(docker exec ha-supervisor-test curl -s -o /dev/null -w "%{http_code}" "http://localhost:8123$INGRESS_URL" 2>&1 || echo "000")"
+                      # Debug: capture full response and headers
+                      FULL_RESPONSE=$(docker exec ha-supervisor-test curl -i -s "http://localhost:8123$INGRESS_URL" 2>&1 || echo "ERROR")
+                      HTTP_CODE=$(echo "$FULL_RESPONSE" | grep "HTTP/" | tail -1 | awk '{print $2}')
+                      [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
+
                       if echo "$HTTP_CODE" | grep -q "^[23]"; then
                         echo "✅ Ingress is up (HTTP $HTTP_CODE)"
                         RESULTS="$RESULTS\n✅ $App: PASS"
                         break
                       elif [ "$HTTP_CODE" = "401" ] && [ "$App" = "solumati" ]; then
-                        # Solumati returns 401 because its FastAPI backend requires JWT auth on all routes.
-                        # 401 proves the backend is running and responding. Auth bypass requires test_mode
-                        # which cannot be reliably set in this CI environment.
+                        echo "⚠️ Solumati Ingress Debug Info:"
+                        echo "Headers/Body fragment:"
+                        echo "$FULL_RESPONSE" | head -n 20
+
+                        # Existing pragmatic pass
                         echo "✅ Solumati ingress responded (HTTP 401 - auth active, backend is running)"
                         RESULTS="$RESULTS\n✅ $App: PASS (401 accepted - auth active)"
                         break
