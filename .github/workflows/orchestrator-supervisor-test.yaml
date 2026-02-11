@@ -523,14 +523,43 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Use Supervisor API directly via curl since 'ha apps options' CLI is unreliable in this environment
+                # Use Supervisor API directly via Python script for reliability and better error logging
                 echo "$OPTS" > /tmp/addon_options.json
                 docker cp /tmp/addon_options.json ha-supervisor-test:/tmp/options.json
-                docker exec ha-supervisor-test curl -s -X POST \
-                  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                  -H "Content-Type: application/json" \
-                  -d "@/tmp/options.json" \
-                  "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options"
+
+                # Create Python script for robust API call
+                cat <<EOF > /tmp/set_options.py
+import os, sys, json, urllib.request, urllib.error
+token = os.environ.get("SUPERVISOR_TOKEN")
+slug = "$SLUG"
+url = f"http://supervisor/addons/{slug}/options"
+
+try:
+    with open("/tmp/options.json", "r") as f:
+        data = json.load(f)
+
+    # Wrap data in 'options' key if not already present (Supervisor API requirement)
+    # The previous attempt failed because 'ha' CLI and 'curl' payloads differed.
+    # The direct API expects {"options": {...}} structure.
+    payload = {"options": data}
+
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), method="POST")
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("Content-Type", "application/json")
+
+    with urllib.request.urlopen(req) as response:
+        print(f"Success: {response.getcode()}")
+        print(response.read().decode())
+
+except urllib.error.HTTPError as e:
+    print(f"HTTP Error {e.code}: {e.read().decode()}")
+    sys.exit(1)
+except Exception as e:
+    print(f"Error: {e}")
+    sys.exit(1)
+EOF
+                docker cp /tmp/set_options.py ha-supervisor-test:/tmp/set_options.py
+                docker exec ha-supervisor-test python3 /tmp/set_options.py || echo "⚠️ Failed to update options"
 
                 # Wait for Supervisor to sync configuration
                 sleep 2
