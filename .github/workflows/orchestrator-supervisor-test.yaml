@@ -523,8 +523,14 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Use --options flag. JSON passed directly via docker exec with proper quoting.
-                docker exec ha-supervisor-test ha apps options "$SLUG" --options "$OPTS" || echo "⚠️ Failed to update options"
+                # Use Supervisor API directly via curl since 'ha apps options' CLI is unreliable in this environment
+                echo "$OPTS" > /tmp/addon_options.json
+                docker cp /tmp/addon_options.json ha-supervisor-test:/tmp/options.json
+                docker exec ha-supervisor-test curl -s -X POST \
+                  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "@/tmp/options.json" \
+                  "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options"
 
                 # Wait for Supervisor to sync configuration
                 sleep 2
