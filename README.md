@@ -18,7 +18,7 @@ maintained by FaserF.
 Pre-built Docker images from official releases. Best for most users.
 
 1. Click to add the stable repository:
-   [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_App_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_App_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
+   [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 2. Or manually add:
 
@@ -31,7 +31,7 @@ Pre-built Docker images from official releases. Best for most users.
 Latest development builds - built locally from your device. For testing new features.
 
 1. Click to add the edge repository:
-   [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_App_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_App_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
+   [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 
 2. Or manually add:
 
@@ -117,7 +117,7 @@ Tested on **amd64** architecture.
 To install them, you must add this repository again but point to the `unsupported` branch:
 
 1. Click to add the unsupported repository:
-   [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_App_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_App_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
+   [![Add Unsupported Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23unsupported)
 
 2. Or manually add:
 
