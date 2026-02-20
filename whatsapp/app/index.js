@@ -877,6 +877,9 @@ app.post('/send_message', async (req, res) => {
 
   let quoted = undefined;
   if (quotedMessageId) {
+    // Note: messageStore is in-memory and ephemeral. It only contains messages
+    // received/sent during the current session. If the addon restarts,
+    // quoting will fall back to unquoted if the ID is not in the new store.
     const rawMsg = session.messageStore.get(quotedMessageId);
     if (rawMsg) {
       quoted = rawMsg;
@@ -907,7 +910,7 @@ app.post('/send_message', async (req, res) => {
     await delay(250);
 
     await Promise.race([
-      session.sock.sendMessage(jid, { text: message }, { quoted: quoted }),
+      session.sock.sendMessage(jid, { text: message }, { quoted }),
       new Promise((_, reject) =>
         setTimeout(() => {
           logger.error(
