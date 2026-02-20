@@ -202,6 +202,22 @@ function getJid(number) {
     : `${number}@s.whatsapp.net`;
 }
 
+/**
+ * Retrieves a message from the session store for quoting.
+ */
+function getQuotedMessage(session, quotedMessageId) {
+  if (!quotedMessageId) return undefined;
+
+  // Note: messageStore is in-memory and ephemeral. It only contains messages
+  // received/sent during the current session. If the addon restarts,
+  // quoting will fall back to unquoted if the ID is not in the new store.
+  const rawMsg = session.messageStore.get(quotedMessageId);
+  if (rawMsg) return rawMsg;
+
+  logger.warn({ quotedMessageId, sessionId: session.id }, 'Quoted message not found in store');
+  return undefined;
+}
+
 async function triggerWebhook(data) {
   if (!WEBHOOK_ENABLED || !WEBHOOK_URL) return;
 
@@ -875,18 +891,7 @@ app.post('/send_message', async (req, res) => {
   const { number, message, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-  let quoted = undefined;
-  if (quotedMessageId) {
-    // Note: messageStore is in-memory and ephemeral. It only contains messages
-    // received/sent during the current session. If the addon restarts,
-    // quoting will fall back to unquoted if the ID is not in the new store.
-    const rawMsg = session.messageStore.get(quotedMessageId);
-    if (rawMsg) {
-      quoted = rawMsg;
-    } else {
-      logger.warn({ quotedMessageId, sessionId: session.id }, 'Quoted message not found in store');
-    }
-  }
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
@@ -948,15 +953,21 @@ app.post('/send_message', async (req, res) => {
 // POST /send_image
 app.post('/send_image', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, caption } = req.body;
+  const { number, url, caption, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      image: { url: url },
-      caption: caption,
-    });
+    await session.sock.sendMessage(
+      jid,
+      {
+        image: { url: url },
+        caption: caption,
+      },
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = 'Image';
     session.stats.last_sent_target = maskData(number);
@@ -976,18 +987,24 @@ app.post('/send_image', async (req, res) => {
 // POST /send_poll
 app.post('/send_poll', async (req, res) => {
   const session = getReqSession(req);
-  const { number, question, options } = req.body;
+  const { number, question, options, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      poll: {
-        name: question,
-        values: options,
-        selectableCount: 1,
+    await session.sock.sendMessage(
+      jid,
+      {
+        poll: {
+          name: question,
+          values: options,
+          selectableCount: 1,
+        },
       },
-    });
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Poll: ${question}`;
     session.stats.last_sent_target = maskData(number);
@@ -1007,19 +1024,25 @@ app.post('/send_poll', async (req, res) => {
 // POST /send_location
 app.post('/send_location', async (req, res) => {
   const session = getReqSession(req);
-  const { number, latitude, longitude, title, description } = req.body;
+  const { number, latitude, longitude, title, description, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      location: {
-        degreesLatitude: latitude,
-        degreesLongitude: longitude,
-        name: title,
-        address: description,
+    await session.sock.sendMessage(
+      jid,
+      {
+        location: {
+          degreesLatitude: latitude,
+          degreesLongitude: longitude,
+          name: title,
+          address: description,
+        },
       },
-    });
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
     session.stats.last_sent_target = maskData(number);
@@ -1069,17 +1092,23 @@ app.post('/send_reaction', async (req, res) => {
 // POST /send_buttons
 app.post('/send_buttons', async (req, res) => {
   const session = getReqSession(req);
-  const { number, message, buttons, footer } = req.body;
+  const { number, message, buttons, footer, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      text: message,
-      footer: footer,
-      buttons: buttons,
-      headerType: 1,
-    });
+    await session.sock.sendMessage(
+      jid,
+      {
+        text: message,
+        footer: footer,
+        buttons: buttons,
+        headerType: 1,
+      },
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Buttons: ${message}`;
     session.stats.last_sent_target = maskData(number);
@@ -1099,17 +1128,23 @@ app.post('/send_buttons', async (req, res) => {
 // POST /send_document
 app.post('/send_document', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, fileName, caption } = req.body;
+  const { number, url, fileName, caption, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      document: { url: url },
-      fileName: fileName,
-      caption: caption,
-      mimetype: 'application/octet-stream',
-    });
+    await session.sock.sendMessage(
+      jid,
+      {
+        document: { url: url },
+        fileName: fileName,
+        caption: caption,
+        mimetype: 'application/octet-stream',
+      },
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
     session.stats.last_sent_target = maskData(number);
@@ -1129,15 +1164,21 @@ app.post('/send_document', async (req, res) => {
 // POST /send_video
 app.post('/send_video', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, caption } = req.body;
+  const { number, url, caption, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      video: { url: url },
-      caption: caption,
-    });
+    await session.sock.sendMessage(
+      jid,
+      {
+        video: { url: url },
+        caption: caption,
+      },
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
     session.stats.last_sent_target = maskData(number);
@@ -1157,16 +1198,22 @@ app.post('/send_video', async (req, res) => {
 // POST /send_audio
 app.post('/send_audio', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, ptt } = req.body;
+  const { number, url, ptt, quotedMessageId } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
-      audio: { url: url },
-      ptt: !!ptt,
-      mimetype: 'audio/mp4',
-    });
+    await session.sock.sendMessage(
+      jid,
+      {
+        audio: { url: url },
+        ptt: !!ptt,
+        mimetype: 'audio/mp4',
+      },
+      { quoted }
+    );
     session.stats.sent += 1;
     session.stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
     session.stats.last_sent_target = maskData(number);
