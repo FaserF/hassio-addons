@@ -3,9 +3,11 @@
 ## 1.2.4 (2026-02-19)
 
 ### ✨ Features
+
 - Save Media to Folder #638 ([`776e93a0`](https://github.com/FaserF/hassio-addons/commit/776e93a0e89567d7e29c8ce752e3881f837be79b))
 
 ### 📦 Dependencies
+
 - Bump qs from 6.14.1 to 6.14.2 in /whatsapp/app ([`d7a6b3cb`](https://github.com/FaserF/hassio-addons/commit/d7a6b3cb3f19069be4da98909d4397fb256c5bf1))
 - ⬆️ Update dependency fastapi to v0.128.5 [skip-tests] (#648) [skip-tests] ([`11a4910c`](https://github.com/FaserF/hassio-addons/commit/11a4910c88736d855e1c8b82493288b211834716))
 - ⬆️ Update eslint monorepo to v10 [skip-tests] (major) (#646) [skip-tests] ([`edb864cd`](https://github.com/FaserF/hassio-addons/commit/edb864cd199b73b69d5972e148e80580800c27eb))
@@ -13,6 +15,7 @@
 - Update run ([`d9082883`](https://github.com/FaserF/hassio-addons/commit/d9082883c4021d15774fc8f4ed894277c2e4d6a5))
 
 ### 🚀 Other
+
 - test fixes ([`6aa2141b`](https://github.com/FaserF/hassio-addons/commit/6aa2141b7932f265222ed644f78d0b49b54fcae0))
 - small fix ([`082ba3bf`](https://github.com/FaserF/hassio-addons/commit/082ba3bf0ece5128e3c9426b3ed102c0ec7b488e))
 - supervisor test fix ([`e6652e3d`](https://github.com/FaserF/hassio-addons/commit/e6652e3d964021b110591b8faed30b6464ce6e34))
@@ -21,7 +24,6 @@
 - replace addon with app naming ([`05d882aa`](https://github.com/FaserF/hassio-addons/commit/05d882aa52388a12c679b6a1876ba529b041adbc))
 - Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
 - linter fixes ([`42dc2b9b`](https://github.com/FaserF/hassio-addons/commit/42dc2b9bc0e0d83ae9ac7673261ed6d89661597e))
-
 
 ## 1.2.3 (2026-02-07)
 
