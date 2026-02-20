@@ -508,7 +508,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => {});
+              fs.unlink(filePath, () => { });
             }
           });
         });
@@ -1099,12 +1099,18 @@ app.post('/send_buttons', async (req, res) => {
 
   try {
     const jid = getJid(number);
+    const formattedButtons = (buttons || []).map((b) => ({
+      buttonId: b.id || b.buttonId || String(Math.random()),
+      buttonText: { displayText: b.displayText || b.text || 'Button' },
+      type: 1,
+    }));
+
     await session.sock.sendMessage(
       jid,
       {
         text: message,
         footer: footer,
-        buttons: buttons,
+        buttons: formattedButtons,
         headerType: 1,
       },
       { quoted }
@@ -1449,19 +1455,17 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${
-              showQR
-                ? `
+            ${showQR
+      ? `
             <div class="qr-container">
                 <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
-            ${
-              showQRPlaceholder
-                ? `
+            ${showQRPlaceholder
+      ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1469,8 +1473,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-                : ''
-            }
+      : ''
+    }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1630,7 +1634,7 @@ app.listen(PORT, '0.0.0.0', () => {
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => {});
+    connectToWhatsApp('default').catch(() => { });
   }
 
   // Auto-start all other sessions
@@ -1641,7 +1645,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
