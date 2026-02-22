@@ -1,0 +1,296 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Add-on: Imapsync
+# ==============================================================================
+
+# Ensure we don't crash on simple errors during boot
+set +e
+set +u
+
+bashio::log.info "Starting Imapsync Add-on (Service Boot)..."
+
+# Global configuration
+SYNC_INTERVAL=$(bashio::config 'sync_interval' '300')
+LOG_LEVEL=$(bashio::config 'log_level' 'info')
+
+bashio::log.debug "Configuration: SYNC_INTERVAL=${SYNC_INTERVAL}, LOG_LEVEL=${LOG_LEVEL}"
+
+# Function to refresh OAuth2 tokens
+refresh_oauth2_token() {
+    local provider="$1"
+    local client_id="$2"
+    local client_secret="$3"
+    local refresh_token="$4"
+    local tenant_id="$5"
+    local token_endpoint=""
+
+    if [[ "$provider" == "google" ]]; then
+        token_endpoint="https://oauth2.googleapis.com/token"
+    elif [[ "$provider" == "microsoft" ]]; then
+        tenant_id="${tenant_id:-common}"
+        token_endpoint="https://login.microsoftonline.com/${tenant_id}/oauth2/v2.0/token"
+    else
+        bashio::log.error "Unknown OAuth2 provider: $provider"
+        return 1
+    fi
+
+    local response
+    if [[ "$provider" == "google" ]]; then
+        response=$(curl -s -X POST "$token_endpoint" \
+            -d "client_id=${client_id}" \
+            -d "client_secret=${client_secret}" \
+            -d "refresh_token=${refresh_token}" \
+            -d "grant_type=refresh_token")
+    else
+        response=$(curl -s -X POST "$token_endpoint" \
+            -d "client_id=${client_id}" \
+            -d "client_secret=${client_secret}" \
+            -d "refresh_token=${refresh_token}" \
+            -d "grant_type=refresh_token" \
+            -d "scope=https://outlook.office.com/IMAP.AccessAsUser.All offline_access")
+    fi
+
+    if echo "$response" | jq -e '.access_token' >/dev/null 2>&1; then
+        echo "$response" | jq -r '.access_token'
+        return 0
+    else
+        local err
+        err=$(echo "$response" | jq -r '.error_description // .error // "Unknown error"' 2>/dev/null)
+        bashio::log.error "Failed to refresh OAuth2 token for $provider: ${err}"
+        return 1
+    fi
+}
+
+# Main Loop
+while true; do
+  bashio::log."${LOG_LEVEL}" "Starting a new sync cycle..."
+
+  if bashio::config.has_value 'jobs'; then
+    # Get all job keys (explicitly ensure unique keys)
+    JOBS=$(bashio::config 'jobs | keys[]' | sort -u)
+
+    for job in ${JOBS}; do
+      # Fetch job specific config
+      SOURCE_HOST=$(bashio::config "jobs[${job}].source_host")
+      SOURCE_USER=$(bashio::config "jobs[${job}].source_user")
+      SOURCE_AUTH=$(bashio::config "jobs[${job}].source_auth_type" "password")
+      SOURCE_PASS=$(bashio::config "jobs[${job}].source_password")
+      SOURCE_CID=$(bashio::config "jobs[${job}].source_oauth2_client_id")
+      SOURCE_CSEC=$(bashio::config "jobs[${job}].source_oauth2_client_secret")
+      SOURCE_RT=$(bashio::config "jobs[${job}].source_oauth2_refresh_token")
+      SOURCE_TID=$(bashio::config "jobs[${job}].source_oauth2_tenant_id")
+
+      DEST_HOST=$(bashio::config "jobs[${job}].destination_host")
+      DEST_USER=$(bashio::config "jobs[${job}].destination_user")
+      DEST_AUTH=$(bashio::config "jobs[${job}].destination_auth_type" "password")
+      DEST_PASS=$(bashio::config "jobs[${job}].destination_password")
+      DEST_CID=$(bashio::config "jobs[${job}].destination_oauth2_client_id")
+      DEST_CSEC=$(bashio::config "jobs[${job}].destination_oauth2_client_secret")
+      DEST_RT=$(bashio::config "jobs[${job}].destination_oauth2_refresh_token")
+      DEST_TID=$(bashio::config "jobs[${job}].destination_oauth2_tenant_id")
+
+      DELETE_AFTER=$(bashio::config "jobs[${job}].delete_after_sync" "false")
+      INCLUDE_FOLDERS=$(bashio::config "jobs[${job}].included_folders")
+      EXCLUDE_FOLDERS=$(bashio::config "jobs[${job}].excluded_folders")
+      MAX_AGE=$(bashio::config "jobs[${job}].max_age" "0")
+      MAX_SIZE=$(bashio::config "jobs[${job}].max_size" "0")
+      SYNC_INTERNAL=$(bashio::config "jobs[${job}].sync_internal_dates" "true")
+      SUBSCRIBE=$(bashio::config "jobs[${job}].subscribe_folders" "true")
+      SYNC_LABELS=$(bashio::config "jobs[${job}].sync_gmail_labels" "false")
+      DRY_RUN=$(bashio::config "jobs[${job}].dry_run" "false")
+
+      ARGS=()
+      ARGS+=(--host1 "${SOURCE_HOST}" --user1 "${SOURCE_USER}")
+      ARGS+=(--host2 "${DEST_HOST}" --user2 "${DEST_USER}")
+      ARGS+=(--nolog)
+
+      # Folder filters
+      if bashio::config.has_value "jobs[${job}].included_folders"; then
+          while IFS= read -r folder; do
+              if [[ -n "${folder}" ]]; then
+                  ARGS+=(--folder "${folder}")
+                  bashio::log.debug "Adding included folder: ${folder}"
+              fi
+          done <<< "$(bashio::config "jobs[${job}].included_folders" | jq -r '.[]? // empty')"
+      fi
+      if bashio::config.has_value "jobs[${job}].excluded_folders"; then
+          while IFS= read -r folder; do
+              if [[ -n "${folder}" ]]; then
+                  ARGS+=(--exclude "${folder}")
+                  bashio::log.debug "Adding excluded folder: ${folder}"
+              fi
+          done <<< "$(bashio::config "jobs[${job}].excluded_folders" | jq -r '.[]? // empty')"
+      fi
+
+      # Date and Size constraints
+      [[ "${MAX_AGE}" -gt 0 ]] && ARGS+=(--maxage "${MAX_AGE}")
+      [[ "${MAX_SIZE}" -gt 0 ]] && ARGS+=(--maxsize "${MAX_SIZE}")
+
+      # Behavioral flags
+      if [[ "${SYNC_INTERNAL}" == "true" ]]; then
+          ARGS+=(--syncinternaldates)
+      else
+          ARGS+=(--nosyncinternaldates)
+      fi
+
+      if [[ "${SUBSCRIBE}" == "true" ]]; then
+          ARGS+=(--subscribe)
+      else
+          ARGS+=(--nosubscribe)
+      fi
+
+      [[ "${SYNC_LABELS}" == "true" ]] && ARGS+=(--synclabels)
+      [[ "${DRY_RUN}" == "true" ]] && ARGS+=(--dry)
+
+      # Source Auth
+      if [[ "${SOURCE_AUTH}" == "oauth2" ]]; then
+          PROVIDER="google"
+          [[ "$SOURCE_HOST" == *"outlook"* || "$SOURCE_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          ACCESS_TOKEN=$(refresh_oauth2_token "$PROVIDER" "$SOURCE_CID" "$SOURCE_CSEC" "$SOURCE_RT" "$SOURCE_TID")
+          if [[ $? -eq 0 ]]; then
+              mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
+              printf "%s" "dummy_oauth2_pass" > "/tmp/imapsync_creds/pass1_${job}"
+              ARGS+=(--authmech1 "XOAUTH2" --oauthaccesstoken1 "$ACCESS_TOKEN" --passfile1 "/tmp/imapsync_creds/pass1_${job}")
+          else
+              bashio::log.error "Skipping job ${job} due to source OAuth2 failure."
+              continue
+          fi
+      else
+          mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
+          printf "%s" "${SOURCE_PASS}" > "/tmp/imapsync_creds/pass1_${job}"
+          ARGS+=(--passfile1 "/tmp/imapsync_creds/pass1_${job}")
+      fi
+
+      # Destination Auth
+      if [[ "${DEST_AUTH}" == "oauth2" ]]; then
+          PROVIDER="google"
+          [[ "$DEST_HOST" == *"outlook"* || "$DEST_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          ACCESS_TOKEN=$(refresh_oauth2_token "$PROVIDER" "$DEST_CID" "$DEST_CSEC" "$DEST_RT" "$DEST_TID")
+          if [[ $? -eq 0 ]]; then
+              mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
+              printf "%s" "dummy_oauth2_pass" > "/tmp/imapsync_creds/pass2_${job}"
+              ARGS+=(--authmech2 "XOAUTH2" --oauthaccesstoken2 "$ACCESS_TOKEN" --passfile2 "/tmp/imapsync_creds/pass2_${job}")
+          else
+              bashio::log.error "Skipping job ${job} due to destination OAuth2 failure."
+              continue
+          fi
+      else
+          mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
+          printf "%s" "${DEST_PASS}" > "/tmp/imapsync_creds/pass2_${job}"
+          ARGS+=(--passfile2 "/tmp/imapsync_creds/pass2_${job}")
+      fi
+
+      # Base arguments
+
+      [[ "${DELETE_AFTER}" == "true" ]] && ARGS+=(--delete1)
+      [[ "${LOG_LEVEL}" == "debug" ]] && ARGS+=(--debug)
+      [[ "${LOG_LEVEL}" == "trace" ]] && ARGS+=(--debug --debugimap)
+
+      # Additional CLI args
+      if bashio::config.has_value "jobs[${job}].additional_cli_args"; then
+          while IFS= read -r arg; do
+              [[ -n "${arg}" ]] && ARGS+=("${arg}")
+          done <<< "$(bashio::config "jobs[${job}].additional_cli_args" | jq -r '.[]? // empty')"
+      fi
+
+      bashio::log.info "Running imapsync for job ${job}: ${SOURCE_USER} -> ${DEST_USER}"
+
+      LOG_FILE="/tmp/imapsync_job_${job}.log"
+
+      if [[ "${LOG_LEVEL}" == "debug" || "${LOG_LEVEL}" == "trace" ]]; then
+          # Stream full output live at debug/trace level
+          /usr/local/bin/imapsync "${ARGS[@]}" 2>&1 | tee "${LOG_FILE}"
+          EXIT_CODE=${PIPESTATUS[0]}
+      else
+          # Stream curated output live, filtering out noisy message-level logs
+          # Keep: Login status, folder counts, folder sizes, quotas, warnings, and current sync progress
+          # Start a background log monitor using perl, which natively bypasses the severe
+          # block buffering issues that occur with `tail -f FILE | while read` on Alpine.
+          perl -e '
+            $|=1; # Auto-flush STDOUT
+            open(my $fh, "<", "'"${LOG_FILE}"'") or die "Cannot open log: $!";
+            for (;;) {
+              while (my $line = <$fh>) {
+                if ($line =~ /Host[12]:|(Folders (sizes|in host2))|Quota|Warning|Error|\+\+\+\+|\-\smsg\s|\+\smsg\s|copied\s/) {
+                  $line =~ s/^\s+|\s+$//g; # Trim whitespace
+                  print "  $line\n";
+                }
+              }
+              select(undef, undef, undef, 0.5); # Sleep 0.5s
+              seek($fh, 0, 1); # Clear EOF flag
+            }
+          ' | while IFS= read -r CLEAN_LINE; do
+            bashio::log.info "${CLEAN_LINE}"
+          done &
+          LOGGER_PID=$!
+
+          # Force line buffering for STDOUT and STDERR using unbuffer (from expect package)
+          # Perl (imapsync) will otherwise block-buffer its output when redirected to a file.
+          unbuffer /usr/local/bin/imapsync "${ARGS[@]}" --no-modulesversion --noid --debugfolders > "${LOG_FILE}" 2>&1
+          EXIT_CODE=$?
+
+          # Allow a moment for the final log lines to be tailored before killing the monitor
+          sleep 2
+          kill $LOGGER_PID 2>/dev/null || true
+      fi
+
+      if [[ "${EXIT_CODE}" -eq 0 ]]; then
+          bashio::log.info "imapsync exited with code: ${EXIT_CODE}"
+      else
+          bashio::log.error "imapsync exited with non-zero code: ${EXIT_CODE}."
+          bashio::log.error "--- LAST 25 LINES OF IMAPSYNC LOG ---"
+          tail -n 25 "${LOG_FILE}" | while read -r err_line; do
+              bashio::log.error "  ${err_line}"
+          done
+          bashio::log.error "-------------------------------------"
+      fi
+
+      # Parse real imapsync stats lines (from actual output format seen in logs)
+      SYNCED=$(grep -E "^Messages transferred:" "${LOG_FILE}" | grep -oE "[0-9]+" | tail -n 1)
+      SKIPPED=$(grep -E "^Messages skipped:" "${LOG_FILE}" | grep -oE "[0-9]+" | tail -n 1)
+      ERRORS=$(grep -E "^Errors during transfer:" "${LOG_FILE}" | grep -oE "[0-9]+" | tail -n 1)
+      SIZE=$(grep -E "^Nb bytes transferred:" "${LOG_FILE}" | head -n 1 | sed 's/^Nb bytes transferred:[[:space:]]*//')
+
+      SYNCED="${SYNCED:-0}"
+      SKIPPED="${SKIPPED:-0}"
+      ERRORS="${ERRORS:-0}"
+      SIZE="${SIZE:-unknown}"
+
+      if [[ "${EXIT_CODE}" -eq 0 ]]; then
+          bashio::log.info "=================================================="
+          bashio::log.info "JOB ${job} DONE: ${SOURCE_USER} -> ${DEST_USER}"
+      else
+          bashio::log.warning "=================================================="
+          bashio::log.warning "JOB ${job} FINISHED WITH ERRORS: ${SOURCE_USER} -> ${DEST_USER}"
+      fi
+      bashio::log.info "  Transferred: ${SYNCED} | Skipped: ${SKIPPED} | Errors: ${ERRORS}"
+      bashio::log.info "  Data transferred: ${SIZE}"
+      if [[ "${EXIT_CODE}" -eq 0 ]]; then
+          bashio::log.info "=================================================="
+      else
+          bashio::log.warning "=================================================="
+      fi
+
+      # Cleanup
+      rm -f "/tmp/imapsync_creds/pass1_${job}" "/tmp/imapsync_creds/pass2_${job}" "${LOG_FILE}"
+    done
+  else
+    bashio::log.warning "No jobs defined in configuration!"
+  fi
+
+  # Cycle end
+  bashio::log.info "Sync cycle completed. Next run in ${SYNC_INTERVAL} seconds."
+
+  # Handle interval 0 or invalid
+  if [[ ! "${SYNC_INTERVAL}" =~ ^[0-9]+$ ]] || [[ "${SYNC_INTERVAL}" -eq 0 ]]; then
+      if [[ "${SYNC_INTERVAL}" -eq 0 ]]; then
+          bashio::log.info "Sync interval is zero. Idling..."
+          while true; do sleep 3600; done
+      else
+          bashio::log.warning "Invalid sync_interval '${SYNC_INTERVAL}'. Defaulting to 300."
+          sleep 300
+      fi
+  else
+      sleep "${SYNC_INTERVAL}"
+  fi
+done

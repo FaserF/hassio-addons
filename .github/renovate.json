@@ -151,6 +151,19 @@
     },
     {
       "customType": "regex",
+      "description": "Track imapsync version in Dockerfile",
+      "managerFilePatterns": [
+        "/imapsync/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG IMAPSYNC_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "imapsync/imapsync",
+      "extractVersionTemplate": "^imapsync-(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
       "description": "Track xqrepack git commit for script pinning",
       "managerFilePatterns": [
         "/.unsupported/xqrepack/Dockerfile$/"
@@ -364,7 +377,8 @@
         "Eidolf/Docker-AntiGravity",
         "WordPress/WordPress",
         "n8n",
-        "FaserF/SwitchCraft"
+        "FaserF/SwitchCraft",
+        "imapsync/imapsync"
       ],
       "automerge": false
     },

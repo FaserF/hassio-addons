@@ -281,32 +281,50 @@ function Check-Docker {
         return $true
     }
 
-    if ($IsWindows) {
-        # Check if Docker Desktop is even installed
-        $dockerPath = where.exe docker 2>$null
-        if (-not $dockerPath) { return $false }
+    $isWin = $false
+    if ($IsWindows) { $isWin = $true }
+    elseif ($env:OS -eq "Windows_NT") { $isWin = $true }
 
-        Write-Host "Checking Docker..." -ForegroundColor Gray
-        # Use a short timeout for the check to avoid hangs
+    if ($isWin) {
+        Write-Host "Checking Docker connectivity..." -ForegroundColor Gray
         $dockerCheck = docker version --format '{{.Server.Version}}' 2>$null | Out-String
         if ($LASTEXITCODE -eq 0 -and $dockerCheck.Trim()) { return $true }
 
-        Write-Host "Docker is not running. Attempting to start Docker Desktop..." -ForegroundColor Yellow
-        $dockerDesktop = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-        if (Test-Path $dockerDesktop) {
-            Start-Process $dockerDesktop -ErrorAction SilentlyContinue
-            Write-Host "Waiting for Docker to start (up to 30s)..." -ForegroundColor Gray
-            for ($i = 0; $i -lt 30; $i++) {
-                Start-Sleep -Seconds 1
-                $info = docker version --format '{{.Server.Version}}' 2>$null | Out-String
-                if ($LASTEXITCODE -eq 0 -and $info.Trim()) {
-                    Write-Host "Docker started!" -ForegroundColor Green
-                    return $true
-                }
-                Write-Progress -Activity "Starting Docker Desktop" -Status "Waiting for Docker ($i/30s)..." -PercentComplete (($i/30)*100)
+        Write-Host "Docker is not responding. Attempting to start Docker Desktop..." -ForegroundColor Yellow
+        $dockerDesktopPaths = @(
+            "C:\Program Files\Docker\Docker\Docker Desktop.exe",
+            "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+        )
+
+        $dockerFound = $false
+        foreach ($p in $dockerDesktopPaths) {
+            if (Test-Path $p) {
+                Start-Process $p -ErrorAction SilentlyContinue
+                $dockerFound = $true
+                break
             }
-            Write-Progress -Activity "Starting Docker Desktop" -Completed
         }
+
+        if (-not $dockerFound) {
+            Write-Host "WARNING: Docker Desktop executable not found." -ForegroundColor Red
+            return $false
+        }
+
+        Write-Host "Waiting for Docker Engine to start (up to 120s)..." -ForegroundColor Gray
+        for ($i = 0; $i -lt 120; $i++) {
+            Start-Sleep -Seconds 1
+            $info = docker version --format '{{.Server.Version}}' 2>$null | Out-String
+            if ($LASTEXITCODE -eq 0 -and $info.Trim()) {
+                Write-Host "Docker Engine started successfully!" -ForegroundColor Green
+                return $true
+            }
+            if ($i % 5 -eq 0) {
+                Write-Progress -Activity "Starting Docker Desktop" -Status "Waiting for Docker Engine ($i/120s)..." -PercentComplete (($i/120)*100)
+            }
+        }
+        Write-Progress -Activity "Starting Docker Desktop" -Completed
+        Write-Host "Docker Engine failed to start within the timeout." -ForegroundColor Red
+        return $false
     } else {
         # Linux/macOS simple check
         docker version --format '{{.Server.Version}}' 2>$null | Out-Null

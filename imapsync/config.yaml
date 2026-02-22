@@ -1,0 +1,79 @@
+---
+name: Imapsync
+version: 0.2.9
+slug: imapsync
+description: Sync IMAP accounts easily and reliably.
+url: https://github.com/FaserF/hassio-addons/tree/master/imapsync
+arch:
+  - aarch64
+  - amd64
+# image: ghcr.io/faserf/hassio-addons-imapsync-{arch}
+ingress: false
+init: false
+map:
+  - config:rw
+options:
+  sync_interval: 3600
+  log_level: info
+  jobs:
+    - source_host: imap.example.com
+      source_user: source@example.com
+      source_auth_type: password
+      source_password: secret
+      source_oauth2_client_id: ""
+      source_oauth2_client_secret: ""
+      source_oauth2_refresh_token: ""
+      source_oauth2_tenant_id: ""
+      destination_host: imap.example.net
+      destination_user: dest@example.net
+      destination_auth_type: password
+      destination_password: secret
+      destination_oauth2_client_id: ""
+      destination_oauth2_client_secret: ""
+      destination_oauth2_refresh_token: ""
+      destination_oauth2_tenant_id: ""
+      delete_after_sync: false
+      included_folders: []
+      excluded_folders: []
+      max_age: 0
+      max_size: 0
+      sync_internal_dates: true
+      subscribe_folders: true
+      sync_gmail_labels: false
+      dry_run: false
+      additional_cli_args:
+        - "--delete2"
+schema:
+  # Minimum 90 seconds to prevent overlapping sync cycles
+  sync_interval: "int(90,)"
+  log_level: list(trace|debug|info|warning|error)?
+  jobs:
+    - source_host: str
+      source_user: str
+      source_auth_type: list(password|oauth2)
+      source_password: password?
+      source_oauth2_client_id: str?
+      source_oauth2_client_secret: str?
+      source_oauth2_refresh_token: str?
+      source_oauth2_tenant_id: str?
+      destination_host: str
+      destination_user: str
+      destination_auth_type: list(password|oauth2)
+      destination_password: password?
+      destination_oauth2_client_id: str?
+      destination_oauth2_client_secret: str?
+      destination_oauth2_refresh_token: str?
+      destination_oauth2_tenant_id: str?
+      delete_after_sync: bool?
+      included_folders:
+        - str?
+      excluded_folders:
+        - str?
+      max_age: int?
+      max_size: int?
+      sync_internal_dates: bool?
+      subscribe_folders: bool?
+      sync_gmail_labels: bool?
+      dry_run: bool?
+      additional_cli_args:
+        - str?
