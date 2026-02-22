@@ -250,10 +250,10 @@ GIT_REPO_DIR="$GIT_DATA_DIR/repo"
 
 # Migration from old non-persistent location /App_configs/wiki.js/git
 if [ -d "/App_configs/wiki.js/git" ]; then
-    bashio::log.info "Migrating Git data from /App_configs/wiki.js/git to /config/git..."
-    mkdir -p "$GIT_DATA_DIR"
-    cp -rp /App_configs/wiki.js/git/* "$GIT_DATA_DIR/"
-    rm -rf /App_configs/wiki.js/git
+	bashio::log.info "Migrating Git data from /App_configs/wiki.js/git to /config/git..."
+	mkdir -p "$GIT_DATA_DIR"
+	cp -rp /App_configs/wiki.js/git/* "$GIT_DATA_DIR/"
+	rm -rf /App_configs/wiki.js/git
 fi
 
 # Create directories for Git storage
