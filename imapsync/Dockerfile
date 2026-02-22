@@ -13,7 +13,7 @@ ENV ADDON_SLUG="imapsync"
 ENV ADDON_UNSUPPORTED="false"
 
 # Install Perl and imapsync dependencies natively
-# hadolint ignore=DL3018,DL3047
+# hadolint ignore=DL3018
 ARG IMAPSYNC_VERSION=2.229
 RUN apk --no-cache -u add \
     expect \
@@ -44,7 +44,6 @@ RUN apk --no-cache -u add \
     perl-regexp-common \
     perl-sys-meminfo \
     perl-term-readkey \
-    perl-test-mockobject \
     perl-unicode-string \
     perl-uri \
     curl \

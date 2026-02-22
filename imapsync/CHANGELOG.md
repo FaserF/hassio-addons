@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.2.9
-- Replaced the `tail -f` background monitor with a custom Perl-based log poller. This bypasses the severe internal block-buffering of the BusyBox `tail` utility on Alpine Linux, ensuring that every sync progress line is transmitted to the Home Assistant log immediately without waiting for a buffer to fill up.
+## 0.3.0
+- [x] **imapsync v0.3.0**: Major milestone release consolidating all stability and logging improvements.
+- Robust real-time logging: switched to a sub-second Perl log poller for zero-lag activity updates.
 
 ## 0.2.8
 - Broadened real-time log monitoring to include individual message transfer status (`- msg`, `+ msg`, `copied`). This ensures continuous, definitive proof of activity during massive folder syncs where `imapsync` natively suppresses high-level folder progress markers in non-interactive environments.

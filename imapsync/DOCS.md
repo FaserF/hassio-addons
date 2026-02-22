@@ -6,17 +6,17 @@ Welcome to the definitive guide for the Home Assistant Imapsync Add-on. This too
 
 ## 📑 Table of Contents
 1. [Core Concepts](#-core-concepts)
-2. [Global Configuration](#-global-configuration)
-3. [Job Configuration](#-job-configuration)
-4. [Provider-Specific Guide (Critical)](#-provider-specific-guide)
+2. [OAuth2 Authentication (Modern Auth)](#-oauth2-authentication-modern-auth)
+3. [Global Configuration](#-global-configuration)
+4. [Job Configuration](#-job-configuration)
+5. [Provider-Specific Guide (Critical)](#-provider-specific-guide)
    - [Gmail](#gmail)
    - [Yahoo Mail](#yahoo-mail)
    - [Outlook / Office 365](#outlook--office-365)
    - [iCloud](#icloud)
    - [GMX / Web.de](#gmx--webde)
    - [Fastmail](#fastmail)
-5. [Advanced CLI Flags](#-advanced-cli-flags)
-6. [OAuth2 Authentication (Modern Auth)](#-oauth2-authentication-modern-auth)
+6. [Advanced CLI Flags](#-advanced-cli-flags)
 7. [Performance & Large Migrations](#-performance--large-migrations)
 8. [Troubleshooting & FAQ](#-troubleshooting--faq)
 9. [Security Best Practices](#-security-best-practices)
@@ -34,6 +34,7 @@ Example config:
 jobs:
   - source_host: imap.gmail.com
     source_user: your-email@gmail.com
+    source_auth_type: oauth2
     source_oauth2_client_id: "..."
     source_oauth2_client_secret: "..."
     source_oauth2_refresh_token: "..."

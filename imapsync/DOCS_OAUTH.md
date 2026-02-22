@@ -98,6 +98,7 @@ Add the harvested values to your sync job:
 jobs:
   - source_host: imap.gmail.com
     source_user: your-email@gmail.com
+    source_auth_type: oauth2
     source_oauth2_client_id: "your-client-id"
     source_oauth2_client_secret: "your-client-secret"
     source_oauth2_refresh_token: "your-refresh-token"

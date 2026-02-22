@@ -10,10 +10,26 @@ set +u
 bashio::log.info "Starting Imapsync Add-on (Service Boot)..."
 
 # Global configuration
-SYNC_INTERVAL=$(bashio::config 'sync_interval' '300')
+SYNC_INTERVAL=$(bashio::config 'sync_interval' '3600')
 LOG_LEVEL=$(bashio::config 'log_level' 'info')
 
+# Validate logs
+if ! bashio::log.has_level "${LOG_LEVEL}"; then
+    bashio::log.warning "Invalid log_level '${LOG_LEVEL}'. Defaulting to info."
+    LOG_LEVEL="info"
+fi
+
+# Validate interval
+if [[ ! "${SYNC_INTERVAL}" =~ ^[0-9]+$ ]] || [[ "${SYNC_INTERVAL}" -lt 90 ]]; then
+    bashio::log.warning "Invalid sync_interval '${SYNC_INTERVAL}' (must be >= 90). Defaulting to 3600."
+    SYNC_INTERVAL=3600
+fi
+
 bashio::log.debug "Configuration: SYNC_INTERVAL=${SYNC_INTERVAL}, LOG_LEVEL=${LOG_LEVEL}"
+
+# Re-enable strict mode after bootstrap
+set -e
+set -u
 
 # Function to refresh OAuth2 tokens
 refresh_oauth2_token() {
@@ -79,6 +95,7 @@ while true; do
       SOURCE_CSEC=$(bashio::config "jobs[${job}].source_oauth2_client_secret")
       SOURCE_RT=$(bashio::config "jobs[${job}].source_oauth2_refresh_token")
       SOURCE_TID=$(bashio::config "jobs[${job}].source_oauth2_tenant_id")
+      SOURCE_PROV=$(bashio::config "jobs[${job}].source_oauth2_provider")
 
       DEST_HOST=$(bashio::config "jobs[${job}].destination_host")
       DEST_USER=$(bashio::config "jobs[${job}].destination_user")
@@ -88,6 +105,7 @@ while true; do
       DEST_CSEC=$(bashio::config "jobs[${job}].destination_oauth2_client_secret")
       DEST_RT=$(bashio::config "jobs[${job}].destination_oauth2_refresh_token")
       DEST_TID=$(bashio::config "jobs[${job}].destination_oauth2_tenant_id")
+      DEST_PROV=$(bashio::config "jobs[${job}].destination_oauth2_provider")
 
       DELETE_AFTER=$(bashio::config "jobs[${job}].delete_after_sync" "false")
       INCLUDE_FOLDERS=$(bashio::config "jobs[${job}].included_folders")
@@ -108,8 +126,8 @@ while true; do
       if bashio::config.has_value "jobs[${job}].included_folders"; then
           while IFS= read -r folder; do
               if [[ -n "${folder}" ]]; then
-                  ARGS+=(--folder "${folder}")
-                  bashio::log.debug "Adding included folder: ${folder}"
+                  ARGS+=(--include "${folder}")
+                  bashio::log.debug "Adding included folder regex: ${folder}"
               fi
           done <<< "$(bashio::config "jobs[${job}].included_folders" | jq -r '.[]? // empty')"
       fi
@@ -144,8 +162,13 @@ while true; do
 
       # Source Auth
       if [[ "${SOURCE_AUTH}" == "oauth2" ]]; then
-          PROVIDER="google"
-          [[ "$SOURCE_HOST" == *"outlook"* || "$SOURCE_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          PROVIDER="${SOURCE_PROV}"
+          if [[ -z "${PROVIDER}" ]]; then
+              # Auto-detect fallback
+              PROVIDER="google"
+              [[ "$SOURCE_HOST" == *"outlook"* || "$SOURCE_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          fi
+          bashio::log.debug "Using OAuth2 provider for source: ${PROVIDER}"
           ACCESS_TOKEN=$(refresh_oauth2_token "$PROVIDER" "$SOURCE_CID" "$SOURCE_CSEC" "$SOURCE_RT" "$SOURCE_TID")
           if [[ $? -eq 0 ]]; then
               mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
@@ -163,8 +186,13 @@ while true; do
 
       # Destination Auth
       if [[ "${DEST_AUTH}" == "oauth2" ]]; then
-          PROVIDER="google"
-          [[ "$DEST_HOST" == *"outlook"* || "$DEST_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          PROVIDER="${DEST_PROV}"
+          if [[ -z "${PROVIDER}" ]]; then
+              # Auto-detect fallback
+              PROVIDER="google"
+              [[ "$DEST_HOST" == *"outlook"* || "$DEST_HOST" == *"office365"* ]] && PROVIDER="microsoft"
+          fi
+          bashio::log.debug "Using OAuth2 provider for destination: ${PROVIDER}"
           ACCESS_TOKEN=$(refresh_oauth2_token "$PROVIDER" "$DEST_CID" "$DEST_CSEC" "$DEST_RT" "$DEST_TID")
           if [[ $? -eq 0 ]]; then
               mkdir -p /tmp/imapsync_creds && chmod 700 /tmp/imapsync_creds
@@ -204,6 +232,10 @@ while true; do
       else
           # Stream curated output live, filtering out noisy message-level logs
           # Keep: Login status, folder counts, folder sizes, quotas, warnings, and current sync progress
+
+          # Fix race condition: ensure file exists before monitor starts
+          touch "${LOG_FILE}"
+
           # Start a background log monitor using perl, which natively bypasses the severe
           # block buffering issues that occur with `tail -f FILE | while read` on Alpine.
           perl -e '

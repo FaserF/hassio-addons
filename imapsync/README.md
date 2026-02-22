@@ -32,7 +32,7 @@ This add-on is a Home Assistant wrapper around the industry-standard [imapsync](
 - 🔄 **Incremental sync** — only copies new or changed messages, stops and resumes efficiently
 - 📁 **Folder filtering** — sync only selected folders (e.g. just Inbox) or exclude specific ones (e.g. Trash/Spam)
 - 🔐 **OAuth2 support** — works with Google (Gmail) and Microsoft (Office 365/Outlook)
-- 📬 **Multi-account** — run multiple sync jobs in parallel (e.g. A→B and C→D in the same cycle)
+- 📬 **Multi-job** — run multiple sync jobs sequentially (one after another)
 - ⏱️ **Scheduled** — configure the sync interval (minimum 90 seconds)
 - 📊 **Log summary** — always shows transferred/skipped/error counts after each sync
 
@@ -107,5 +107,7 @@ For complete documentation including provider-specific setup, OAuth2, advanced f
 
 ## 👨‍💻 Credits & License
 
-This project is open-source and available under the MIT License.
+- **Add-on Wrapper**: Licensed under the [MIT License](LICENSE).
+- **imapsync**: The bundled tool is licensed separately under the [NOLIMIT Public License (NLPL)](https://github.com/imapsync/imapsync/blob/master/LICENSE).
+
 Maintained by **FaserF**. Powered by [imapsync](https://github.com/imapsync/imapsync) by Gilles Lamiral.

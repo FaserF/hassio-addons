@@ -293,7 +293,8 @@ function Check-Docker {
         Write-Host "Docker is not responding. Attempting to start Docker Desktop..." -ForegroundColor Yellow
         $dockerDesktopPaths = @(
             "C:\Program Files\Docker\Docker\Docker Desktop.exe",
-            "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+            "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe",
+            "$env:LOCALAPPDATA\Docker\Docker Desktop.exe"
         )
 
         $dockerFound = $false
