@@ -59,12 +59,12 @@ fi
 if grep -q " /assets " /proc/mounts; then
 	bashio::log.info "/assets is a mount, skipping replacement with symlink."
 else
-    if [ -L /assets ]; then
-        rm /assets
-    elif [ -d /assets ]; then
-        rm -rf /assets
-    fi
-    ln -sf "$path" /assets
+	if [ -L /assets ]; then
+		rm /assets
+	elif [ -d /assets ]; then
+		rm -rf /assets
+	fi
+	ln -sf "$path" /assets
 fi
 
 # Handle /config
@@ -76,13 +76,13 @@ fi
 if grep -q " /config " /proc/mounts; then
 	bashio::log.info "/config is a mount, skipping replacement with symlink."
 else
-    if [ -L /config ]; then
-        rm /config
-    elif [ -d /config ]; then
-        bashio::log.info "Removing existing /config directory to replace with symlink..."
-        rm -rf /config
-    fi
-    ln -sf "$path_config" /config
+	if [ -L /config ]; then
+		rm /config
+	elif [ -d /config ]; then
+		bashio::log.info "Removing existing /config directory to replace with symlink..."
+		rm -rf /config
+	fi
+	ln -sf "$path_config" /config
 fi
 
 if [ ! -d /config/menus ]; then
