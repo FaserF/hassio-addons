@@ -613,7 +613,19 @@ async function connectToWhatsApp(sessionId = 'default') {
       session.stats.received += m.messages.length;
 
       const events = m.messages
-        .filter((msg) => !msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast')
+        .filter((msg) => {
+          // Always ignore status broadcasts
+          if (msg.key.remoteJid === 'status@broadcast') return false;
+
+          // If the message is from me, only allow it if it's sent to my own JID (self-message)
+          if (msg.key.fromMe) {
+            const myJid = session.sock.user.id.replace(/:.*@/, '@');
+            return msg.key.remoteJid === myJid;
+          }
+
+          // Allow all other incoming messages
+          return true;
+        })
         .map(async (msg) => {
           let text =
             msg.message?.conversation ||
