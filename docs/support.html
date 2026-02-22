@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support FaserF – FaserF's Home Assistant Apps</title>
+    <meta name="description" content="Support the development of FaserF's free Home Assistant Add-on collection.">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
+    <meta name="theme-color" content="#161b22">
+
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        .support-hero {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+        }
+        .support-hero h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .support-hero p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 680px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+        .donate-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .donate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.9rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+        .donate-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .donate-btn.github {
+            background: linear-gradient(135deg, #EA4AAA, #b5308b);
+            color: #fff;
+        }
+        .donate-btn.paypal {
+            background: linear-gradient(135deg, #003087, #009cde);
+            color: #fff;
+        }
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin: 2rem 0 3rem;
+        }
+        .why-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: left;
+        }
+        .why-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .why-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .why-card p { font-size: 0.9rem; opacity: 0.75; line-height: 1.5; margin: 0; }
+        .other-ways { margin: 0 0 3rem; }
+        .other-ways h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
+        .other-ways ul { list-style: none; padding: 0; }
+        .other-ways ul li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.95rem;
+            opacity: 0.85;
+        }
+        .other-ways ul li:last-child { border-bottom: none; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 2.5rem 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>FaserF's Home Assistant Apps</h1>
+            <p class="subtitle">A curated collection of advanced add-ons including WordPress, Wiki.js, Pterodactyl, and more.</p>
+            <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons" class="cta-button" target="_blank">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+                </svg>
+                Add Repository to Home Assistant
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <a href="index.html" class="back-link">← Back to all Add-ons</a>
+
+        <div class="support-hero">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">❤️</div>
+            <h2>Support This Project</h2>
+            <p>
+                All these add-ons are maintained entirely in my <strong>free time alongside a regular full-time job</strong>.
+                Every feature, every bug fix, and every update happens in the evenings and on weekends.
+                Test hardware costs real money, and your support directly enables more time for open-source work.
+            </p>
+
+            <div class="donate-buttons">
+                <a href="https://github.com/sponsors/FaserF" target="_blank" class="donate-btn github">
+                    <svg height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.38 7.86 10.89.57.11.78-.25.78-.55v-2.06c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.96 10.96 0 0 1 5.74 0c2.18-1.49 3.14-1.18 3.14-1.18.63 1.59.24 2.76.12 3.05.74.8 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.07.78 2.15v3.19c0 .3.2.67.79.55A11.52 11.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>
+                    Sponsor on GitHub
+                </a>
+                <a href="https://paypal.me/FaserF" target="_blank" class="donate-btn paypal">
+                    <svg height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.067 8.478c.492.876.487 2.04.049 3.194-.943 2.473-3.198 3.324-5.52 3.324H13.33a.67.67 0 0 0-.661.566l-.708 4.482-.208 1.305c-.034.218.135.416.355.416h2.49c.293 0 .542-.213.588-.502l.024-.126.466-2.956.03-.161a.593.593 0 0 1 .588-.502h.37c2.397 0 4.274-.974 4.82-3.79.228-1.177.11-2.16-.496-2.85a2.368 2.368 0 0 0-.92-.401z"/><path d="M19.415 8.078a4.907 4.907 0 0 0-.61-.136 7.8 7.8 0 0 0-1.24-.091H13.38a.59.59 0 0 0-.587.502l-.935 5.921-.027.173a.67.67 0 0 1 .661-.566h1.266c2.322 0 4.577-.851 5.52-3.324.44-1.154.444-2.318-.049-3.194a2.853 2.853 0 0 0-.814-.285z"/><path d="M8.505 5.54a.59.59 0 0 0-.587.502L6.03 16.544a.356.356 0 0 0 .352.413h2.61l.655-4.15.935-5.921a.59.59 0 0 1 .587-.502h3.185a7.8 7.8 0 0 1 1.24.091c.212.037.415.087.61.136a4.19 4.19 0 0 1 .814.285C16.99 5.617 16.042 5 14.36 5H8.505z"/></svg>
+                    Donate via PayPal
+                </a>
+            </div>
+
+            <p style="font-size: 0.85rem; opacity: 0.55;">Donations are completely voluntary. All add-ons will always be free and open-source. 🙏</p>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="icon">🕒</div>
+                <h3>Free Time Project</h3>
+                <p>Every add-on is built and maintained exclusively in the evenings and on weekends. More support = more time available.</p>
+            </div>
+            <div class="why-card">
+                <div class="icon">🔧</div>
+                <h3>Hardware Costs</h3>
+                <p>Testing requires real devices and Home Assistant hardware. These cost real money and donations help cover them.</p>
+            </div>
+            <div class="why-card">
+                <div class="icon">💪</div>
+                <h3>Independence</h3>
+                <p>The more support I receive, the less I depend on other income and the more I can invest into GitHub projects.</p>
+            </div>
+            <div class="why-card">
+                <div class="icon">🚀</div>
+                <h3>More Features</h3>
+                <p>Donations directly motivate new add-ons, faster bug fixes, better docs, and more regular releases.</p>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="other-ways">
+            <h3>🤝 Other Ways to Help</h3>
+            <ul>
+                <li>⭐ <strong>Star the <a href="https://github.com/FaserF/hassio-addons" target="_blank" style="color:#58a6ff">hassio-addons repository</a></strong> — visibility matters!</li>
+                <li>🐛 <strong>Report bugs</strong> with detailed logs on <a href="https://github.com/FaserF/hassio-addons/issues" target="_blank" style="color:#58a6ff">GitHub Issues</a></li>
+                <li>📖 <strong>Improve documentation</strong> — PRs with corrections and examples are always welcome</li>
+                <li>💬 <strong>Help other users</strong> in GitHub Issues and the Home Assistant Community forums</li>
+                <li>📢 <strong>Spread the word</strong> — share the repository with other Home Assistant enthusiasts</li>
+            </ul>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 FaserF. All known &amp; unknown rights reserved. <br> Powered by GitHub Pages.</p>
+        <p><a href="https://github.com/FaserF/hassio-addons">View Repository on GitHub</a></p>
+    </footer>
+
+</body>
+</html>

@@ -11,6 +11,22 @@
 
 ---
 
+## ❤️ Support This Project
+
+> I maintain all these add-ons in my **free time alongside a regular job**. Test devices cost money, and every donation helps me stay independent and invest more time into open-source work.
+>
+> Donations are completely voluntary — but the more support I receive, the less I depend on other income and the more time I can dedicate to these projects.
+
+<div align="center">
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20on-GitHub-%23EA4AAA?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/FaserF)&nbsp;&nbsp;
+[![PayPal](https://img.shields.io/badge/Donate%20via-PayPal-%2300457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/FaserF)
+
+</div>
+
+---
+
+
 > [!CAUTION]
 > **Experimental / Beta Status**
 >
