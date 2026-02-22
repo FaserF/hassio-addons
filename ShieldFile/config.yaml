@@ -1,5 +1,5 @@
-name: "ShieldFile"
-version: "2.3.0"
+name: "ShieldFile (Edge)"
+version: "2.3.1-dev-c70fff0"
 slug: "shieldfile"
 description: "Secure, Web-based File Manager (SFTP over HTTPS)"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldFile"
@@ -10,7 +10,7 @@ init: false
 ingress: true
 panel_icon: mdi:shield-lock
 ports:
-  8443/tcp: 8443
+  8443/tcp: 18443
 ports_description:
   8443/tcp: "Direct Secure Access (HTTPS)"
 map:
@@ -37,4 +37,3 @@ schema:
   base_directory: str
   port: port
   log_level: list(trace|debug|info|notice|warning|error|fatal)
-image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}

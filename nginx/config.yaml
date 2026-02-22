@@ -1,13 +1,12 @@
 ---
-name: NGINX
-version: 0.3.0
+name: NGINX (Edge)
+version: 0.3.1-dev-c70fff0
 slug: nginx
 description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/nginx
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-nginx-{arch}
 # webui: http://[HOST]:[PORT:80]
 map:
   - ssl:rw
@@ -43,8 +42,8 @@ schema:
   init_commands:
     - str?
 ports:
-  80/tcp: 80
-  443/tcp: 8324
+  80/tcp: 10080
+  443/tcp: 18324
 ports_description:
   80/tcp: Web interface http
   443/tcp: SSL Web interface

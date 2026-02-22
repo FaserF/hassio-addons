@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.5-dev-c70fff0 (2026-02-22)
+
+### ✨ Features
+- new feat: quoting on replying (#651) [skip-tests] ([`e839f6f1`](https://github.com/FaserF/hassio-addons/commit/e839f6f1165448f7df733d581797c3dad50fff83))
+
+### 📦 Dependencies
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+- Update index.js ([`e53e7090`](https://github.com/FaserF/hassio-addons/commit/e53e7090118925ee112df381baabe707025d320d))
+- Update index.js ([`022cbd47`](https://github.com/FaserF/hassio-addons/commit/022cbd479c9a7875893106d101915ec299d97aa8))
+- Update index.js ([`4ee59a06`](https://github.com/FaserF/hassio-addons/commit/4ee59a06a0f1978f66fb8964dfc882f9ae38e7d5))
+
+### 🚀 Other
+- add support to track sent to myself ([`829970f4`](https://github.com/FaserF/hassio-addons/commit/829970f48afea122458974494722dc3f27a02c75))
+
+
 ## 1.2.4 (2026-02-19)
 
 ### ✨ Features

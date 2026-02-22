@@ -1,18 +1,17 @@
 ---
-name: SwitchCraft
-version: 0.2.0
+name: SwitchCraft (Edge)
+version: 0.2.1-dev-c70fff0
 slug: switchcraft
 description: SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.
 url: https://github.com/FaserF/SwitchCraft
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-switchcraft-{arch}
 ingress: true
 ingress_entry: "/"
 ingress_port: 8080
 ports:
-  8080/tcp: 8081
+  8080/tcp: 18081
 init: false
 map:
   - homeassistant_config:rw

@@ -1,13 +1,12 @@
 ---
-name: Apache2 Minimal with MariaDB Client
-version: 3.3.0
+name: Apache2 Minimal with MariaDB Client (Edge)
+version: 3.3.1-dev-c70fff0
 slug: apache2-minimal-mariadb
 description: Open Source Webserver with MariaDB Client and some PHP Modules.
 url: https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}
 map:
   - ssl:rw
   - media:rw
@@ -42,8 +41,8 @@ schema:
   init_commands:
     - str?
 ports:
-  80/tcp: 80
-  443/tcp: 8324
+  80/tcp: 10080
+  443/tcp: 18324
 ports_description:
   80/tcp: Web interface http
   443/tcp: SSL Web interface

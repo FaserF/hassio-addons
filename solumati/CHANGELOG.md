@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.3.1-dev-c70fff0 (2026-02-22)
+
+### 📦 Dependencies
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+- Update auth_bypass.patch ([`3be861f1`](https://github.com/FaserF/hassio-addons/commit/3be861f133316fc071c07f9674c433d4a1e847a1))
+- Update auth_bypass.patch ([`2931443e`](https://github.com/FaserF/hassio-addons/commit/2931443e5101f6b34bb0bca2ed4d13b6ed7da3a3))
+- Update Dockerfile ([`f814cfad`](https://github.com/FaserF/hassio-addons/commit/f814cfad81b0be6a445b99b2179f0e6661404869))
+- Update Dockerfile ([`34edbde3`](https://github.com/FaserF/hassio-addons/commit/34edbde3aee42cbd904ff41578acd09ef4b9a09d))
+
+### 🚀 Other
+- add better debugging for SV test ([`96f3f54b`](https://github.com/FaserF/hassio-addons/commit/96f3f54b1f4abbfacacf5a05c6d25e6f49255e91))
+- small fix ([`ede074b4`](https://github.com/FaserF/hassio-addons/commit/ede074b45c5bc12410b58e4adb263df90a89d4db))
+- fix patch ([`c5339f06`](https://github.com/FaserF/hassio-addons/commit/c5339f0612a5c0c856b1de356aca28f59452b141))
+- test fixes ([`6aa2141b`](https://github.com/FaserF/hassio-addons/commit/6aa2141b7932f265222ed644f78d0b49b54fcae0))
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
+- CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 2.3.0 (2026-01-29)
 
 ### 📦 Dependencies

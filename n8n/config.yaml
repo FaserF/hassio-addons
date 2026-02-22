@@ -1,8 +1,7 @@
 ---
-name: N8n
-version: "1.2.0"
+name: N8n (Edge)
+version: "1.2.1-dev-c70fff0"
 slug: n8n
-image: ghcr.io/faserf/hassio-addons-n8n-{arch}
 description: "Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation."
 url: "https://github.com/faserf/hassio-addons/tree/master/n8n"
 arch:
@@ -27,6 +26,6 @@ schema:
   port: int?
   listen_address: str?
 ports:
-  5678/tcp: 5678
+  5678/tcp: 15678
 ports_description:
   5678/tcp: Web Interface

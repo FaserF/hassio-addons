@@ -1,5 +1,5 @@
-name: Paperless-ngx
-version: 0.1.0
+name: Paperless-ngx (Edge)
+version: 0.1.1-dev-c70fff0
 slug: paperless-ngx
 description: Community-supported Paperless-ngx App for Home Assistant
 url: https://github.com/paperless-ngx/paperless-ngx
@@ -14,7 +14,7 @@ map:
   - media:rw
   - ssl
 ports:
-  8000/tcp: 8000
+  8000/tcp: 18000
 ports_description:
   8000/tcp: Web Interface
 ingress: true
@@ -41,4 +41,3 @@ schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_database: bool?
   reset_database_confirm: bool?
-image: ghcr.io/faserf/hassio-addons-paperless-ngx-{arch}

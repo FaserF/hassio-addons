@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.1-dev-c70fff0 (2026-02-22)
+
+### 📦 Dependencies
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.2.0) [skip-tests] (#625) [skip-tests] ([`c5614ab3`](https://github.com/FaserF/hassio-addons/commit/c5614ab301e79dd3e1cfa4f462e1f1b26c1c9482))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.2.0) [skip-tests] (#624) [skip-tests] ([`dcf52e6e`](https://github.com/FaserF/hassio-addons/commit/dcf52e6e0c7581c897c891b353f35d20c767757c))
+
+### 🚀 Other
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 0.2.0 (2026-01-29)
 
 ### 📦 Dependencies

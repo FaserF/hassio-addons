@@ -1,10 +1,9 @@
 ---
-name: SAP ABAP Cloud Developer Trial
-version: 0.2.0
+name: SAP ABAP Cloud Developer Trial (Edge)
+version: 0.2.1-dev-c70fff0
 slug: sap-abap-cloud-dev
 description: SAP ABAP Platform Trial for local ABAP development
 url: https://github.com/FaserF/hassio-addons/tree/master/sap-abap-cloud-dev
-image: ghcr.io/faserf/hassio-addons-sap-abap-cloud-dev-{arch}
 arch:
   - amd64
 init: false
@@ -20,12 +19,12 @@ schema:
   ignore_requirements: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
-  3200/tcp: 3200
-  3300/tcp: 3300
-  8443/tcp: 8443
-  30213/tcp: 30213
-  50000/tcp: 50000
-  50001/tcp: 50001
+  3200/tcp: 13200
+  3300/tcp: 13300
+  8443/tcp: 18443
+  30213/tcp: 40213
+  50000/tcp: 60000
+  50001/tcp: 60001
 ports_description:
   3200/tcp: SAP GUI (instance 00)
   3300/tcp: SAP Gateway

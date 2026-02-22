@@ -1,12 +1,11 @@
 ---
-name: Switch LAN Play Server
-version: 2.3.0
+name: Switch LAN Play Server (Edge)
+version: 2.3.1-dev-c70fff0
 slug: switch-lan-play-server
 description: Nintendo Switch Lan Play -Server
 url: https://github.com/FaserF/hassio-addons/tree/master/switch_lan_play_server
 arch:
   - amd64
-image: ghcr.io/faserf/hassio-addons-switch-lan-play-server-{arch}
 panel_icon: mdi:local-area-network
 init: false
 options:

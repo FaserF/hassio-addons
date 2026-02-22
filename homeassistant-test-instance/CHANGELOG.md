@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.5-dev-c70fff0 (2026-02-22)
+
+### 📦 Dependencies
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.2.0](https://github.com/home-assistant/core/releases/tag/2026.2.0) [skip-tests] (#636) [skip-tests] ([`e7aac93c`](https://github.com/FaserF/hassio-addons/commit/e7aac93c9a7de59800be103031c6055b53e65089))
+- fix addon startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v20 [skip-tests] (#616) ([`09e8340b`](https://github.com/FaserF/hassio-addons/commit/09e8340b06c4263037fab6cf6d90fc913c7f99d5))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.1.3](https://github.com/home-assistant/core/releases/tag/2026.1.3) [skip-tests] (#605) [skip-tests] ([`efcd0612`](https://github.com/FaserF/hassio-addons/commit/efcd06127b58728e6bde74154c18e714bc3d61f5))
+
+### 📝 Documentation
+- Readme improvements ([`8a12ebd4`](https://github.com/FaserF/hassio-addons/commit/8a12ebd40149adb39f056b7dc3e10f1dd02853cb))
+
+### 🚀 Other
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
+- Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 0.2.4 (2026-01-21)
 
 ### 📦 Dependencies

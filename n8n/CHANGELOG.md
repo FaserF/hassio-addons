@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.1-dev-c70fff0 (2026-02-22)
+
+### 📦 Dependencies
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+- ⬆️ Update dependency n8n to v2.6.3 [skip-tests] (#633) [skip-tests] ([`dc6997fe`](https://github.com/FaserF/hassio-addons/commit/dc6997fee2d87962c7e88e7e3c41cfef6bfc0bb1))
+- ⬆️ Update dependency n8n to v2.4.8 [skip-tests] (#622) [skip-tests] ([`8c19bba0`](https://github.com/FaserF/hassio-addons/commit/8c19bba0a7787284559a3c6407033fb4f44b91bc))
+- ⬆️ Update dependency n8n to v2.4.7 [skip-tests] (#621) [skip-tests] ([`6c4e35c7`](https://github.com/FaserF/hassio-addons/commit/6c4e35c757705de5fe671215c4467591b47350dd))
+
+### 🚀 Other
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
+- Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 1.2.0 (2026-01-29)
 
 ### 📦 Dependencies

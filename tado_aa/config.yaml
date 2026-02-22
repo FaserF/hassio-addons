@@ -1,13 +1,12 @@
 ---
-name: Tado Auto Assist
-version: 2.3.0
+name: Tado Auto Assist (Edge)
+version: 2.3.1-dev-c70fff0
 slug: tado_aa
 description: Tado Auto-Assist for Geofencing and open Window detection
 url: https://github.com/FaserF/hassio-addons/tree/master/tado_aa
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-tado_aa-{arch}
 init: false
 options:
   username: ""

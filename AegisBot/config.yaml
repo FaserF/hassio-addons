@@ -1,8 +1,7 @@
 ---
-name: AegisBot
-version: "0.5.0"
+name: AegisBot (Edge)
+version: "0.5.1-dev-c70fff0"
 slug: aegisbot
-image: ghcr.io/faserf/hassio-addons-aegisbot-{arch}
 description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
 url: https://github.com/FaserF/AegisBot
 arch:
@@ -13,7 +12,7 @@ ingress: true
 ingress_stream: true
 panel_icon: mdi:robot
 ports:
-  8077/tcp: 8077
+  8077/tcp: 18077
 ports_description:
   8077/tcp: Web Interface (HTTP)
 map:

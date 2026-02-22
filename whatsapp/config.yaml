@@ -1,7 +1,6 @@
-name: "WhatsApp"
-version: "1.2.4"
+name: "WhatsApp (Edge)"
+version: "1.2.5-dev-c70fff0"
 slug: "whatsapp"
-image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
 description: "Home Assistant WhatsApp App (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed)."
 url: "https://github.com/FaserF/ha-whatsapp"
 arch:

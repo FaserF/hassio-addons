@@ -1,8 +1,7 @@
 ---
-name: Komodo
-version: 0.1.0
+name: Komodo (Edge)
+version: 0.1.1-dev-c70fff0
 slug: komodo
-image: ghcr.io/faserf/hassio-addons-komodo-{arch}
 description: A tool to build and deploy software on many servers
 url: https://github.com/moghtech/komodo
 arch:
@@ -17,6 +16,6 @@ options:
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports:
-  9120/tcp: 9120
+  9120/tcp: 19120
 ports_description:
   9120/tcp: Web Interface

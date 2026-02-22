@@ -1,13 +1,12 @@
 ---
-name: OpenSSL
-version: 2.3.0
+name: OpenSSL (Edge)
+version: 2.3.1-dev-c70fff0
 slug: openssl
 description: Generate self-signed certificates
 url: https://github.com/FaserF/hassio-addons/tree/master/openssl
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-openssl-{arch}
 map:
   - ssl:rw
 init: false

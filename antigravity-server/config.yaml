@@ -1,12 +1,11 @@
 ---
-name: Antigravity-Server
-version: "1.2.1"
+name: Antigravity-Server (Edge)
+version: "1.2.2-dev-c70fff0"
 slug: antigravity-server
 description: Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
 url: https://github.com/FaserF/hassio-addons/tree/master/antigravity-server
 arch:
   - amd64
-image: ghcr.io/faserf/hassio-addons-antigravity-server-{arch}
 init: false
 ingress: true
 ingress_port: 6080
@@ -15,8 +14,8 @@ panel_title: Antigravity
 map:
   - share:rw
 ports:
-  6080/tcp: 6080
-  5901/tcp: 5901
+  6080/tcp: 16080
+  5901/tcp: 15901
 ports_description:
   6080/tcp: "NoVNC Web Interface (use Ingress for secure access)"
   5901/tcp: "VNC Client Port"

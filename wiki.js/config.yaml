@@ -1,8 +1,7 @@
 ---
-name: Wiki.JS
-version: 3.4.0
+name: Wiki.JS (Edge)
+version: 3.4.1-dev-c70fff0
 slug: wiki.js
-image: ghcr.io/faserf/hassio-addons-wiki-{arch}
 description: The most powerful and extensible open source Wiki software
 url: https://github.com/FaserF/hassio-addons/tree/master/wiki.js
 arch:
@@ -32,8 +31,8 @@ schema:
   reset_database: bool?
   reset_database_confirm: bool?
 ports:
-  3010/tcp: 3000
-  3443/tcp: 3443
+  3010/tcp: 13000
+  3443/tcp: 13443
 ports_description:
   3010/tcp: HTTP Entrance port (internal port 3010, external port 3000)
   3443/tcp: HTTPS/SSL Entrance port
