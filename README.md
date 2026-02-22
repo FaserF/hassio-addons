@@ -122,7 +122,6 @@ The table below shows **all apps** in this repository, including unsupported one
 
 ---
 
-
 Found a bug? [Open an issue](https://github.com/FaserF/hassio-addons/issues).
 Tested on **amd64** architecture.
 
