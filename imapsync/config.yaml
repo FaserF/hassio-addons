@@ -65,15 +65,12 @@ schema:
       destination_oauth2_tenant_id: str?
       destination_oauth2_provider: list(google|microsoft)?
       delete_after_sync: bool?
-      included_folders:
-        - str?
-      excluded_folders:
-        - str?
-      max_age: "int(0,)"?
-      max_size: "int(0,)"?
+      included_folders: [str?]
+      excluded_folders: [str?]
+      max_age: "int(0,)?"
+      max_size: "int(0,)?"
       sync_internal_dates: bool?
       subscribe_folders: bool?
       sync_gmail_labels: bool?
       dry_run: bool?
-      additional_cli_args:
-        - str?
+      additional_cli_args: [str?]
