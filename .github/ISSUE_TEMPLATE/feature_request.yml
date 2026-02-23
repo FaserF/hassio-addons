@@ -45,6 +45,7 @@ body:
         - bentopdf
         - er-dashboard
         - homeassistant-test-instance
+        - imapsync
         - komodo
         - matterbridge
         - n8n

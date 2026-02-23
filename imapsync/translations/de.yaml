@@ -1,0 +1,88 @@
+configuration:
+  sync_interval:
+    name: "Synchronisierungsintervall"
+    description: "Die Zeit in Sekunden, die zwischen zwei Synchronisierungszyklen vergeht."
+  log_level:
+    name: "Protokollebene"
+    description: "Passen Sie die Ausführlichkeit der Add-on-Protokolle an."
+  jobs:
+    name: "Synchronisierungsaufgaben"
+    description: "Liste aller Synchronisierungsaufgaben. Sie können mehrere unabhängige Synchronisierungspaare hinzufügen (z. B. Konto A nach B, Konto C nach D)."
+  source_host:
+    name: "Quell-Host"
+    description: "Der Quell-IMAP-Server."
+  source_user:
+    name: "Quell-Benutzername"
+    description: "Der Benutzername/E-Mail für den Quell-Server."
+  source_auth_type:
+    name: "Quelle: Authentifizierungsmethode"
+    description: "ERFORDERLICH. Wählen Sie 'password' für herkömmliche Anmeldung oder 'oauth2' für moderne Authentifizierung (Google/Microsoft)."
+  source_password:
+    name: "Quelle: Passwort"
+    description: "ERFORDERLICH für 'password'. Ihr Hauptpasswort oder ein App-Passwort."
+  source_oauth2_client_id:
+    name: "Quelle: OAuth2 Client ID"
+    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie diese aus der Google Cloud Console oder dem Azure Portal."
+  source_oauth2_client_secret:
+    name: "Quelle: OAuth2 Client Secret"
+    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie dieses aus der Google Cloud Console oder dem Azure Portal."
+  source_oauth2_refresh_token:
+    name: "Quelle: OAuth2 Refresh Token"
+    description: "ERFORDERLICH für 'oauth2' (Sowohl Google als auch Microsoft). Dauerhaftes Token für die Synchronisierung im Hintergrund."
+  source_oauth2_tenant_id:
+    name: "Quelle: OAuth2 Tenant ID"
+    description: "OPTIONAL (Nur Microsoft). Wird für Google nicht verwendet. Normalerweise 'common' für persönliche Outlook/Office365-Konten."
+  destination_host:
+    name: "Ziel-Host"
+    description: "ERFORDERLICH. Der Ziel-IMAP-Server (z.B. imap.gmail.com)."
+  destination_user:
+    name: "Ziel-Benutzername"
+    description: "ERFORDERLICH. Korrekter Benutzername oder E-Mail-Adresse für den Ziel-Server."
+  destination_auth_type:
+    name: "Ziel: Authentifizierungsmethode"
+    description: "ERFORDERLICH. Wählen Sie 'password' für herkömmliche Anmeldung oder 'oauth2' für moderne Authentifizierung (Google/Microsoft)."
+  destination_password:
+    name: "Ziel: Passwort"
+    description: "ERFORDERLICH für 'password'. Ihr Hauptpasswort oder ein App-Passwort."
+  destination_oauth2_client_id:
+    name: "Ziel: OAuth2 Client ID"
+    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie diese aus der Google Cloud Console oder dem Azure Portal."
+  destination_oauth2_client_secret:
+    name: "Ziel: OAuth2 Client Secret"
+    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie dieses aus der Google Cloud Console oder dem Azure Portal."
+  destination_oauth2_refresh_token:
+    name: "Ziel: OAuth2 Refresh Token"
+    description: "ERFORDERLICH für 'oauth2' (Sowohl Google als auch Microsoft). Dauerhaftes Token für die Synchronisierung im Hintergrund."
+  destination_oauth2_tenant_id:
+    name: "Ziel: OAuth2 Tenant ID"
+    description: "OPTIONAL (Nur Microsoft). Wird für Google nicht verwendet. Normalerweise 'common' für persönliche Outlook/Office365-Konten."
+  delete_after_sync:
+    name: "Nach Synchronisierung löschen"
+    description: "Wenn aktiviert, werden E-Mails von der Quelle gelöscht, nachdem sie erfolgreich auf das Ziel synchronisiert wurden. MIT VORSICHT GENIESSEN!"
+  included_folders:
+    name: "Eingeschlossene Ordner (Regex-Liste)"
+    description: "OPTIONAL. Liste von regulären Ausdrücken. Nur Ordner, die hierauf passen, werden synchronisiert. Beispiel: ['^INBOX$', '^Gesendet']"
+  excluded_folders:
+    name: "Ausgeschlossene Ordner (Regex-Liste)"
+    description: "OPTIONAL. Liste von regulären Ausdrücken. Ordner, die hierauf passen, werden übersprungen. Beispiel: ['^Papierkorb$', '^Spam']"
+  max_age:
+    name: "Maximales Alter (Tage)"
+    description: "OPTIONAL. Überspringt Nachrichten, die älter als diese Anzahl an Tagen sind. Auf 0 setzen, um alle Nachrichten zu synchronisieren."
+  max_size:
+    name: "Maximale Größe (Bytes)"
+    description: "OPTIONAL. Überspringt Nachrichten, die größer als diese Anzahl an Bytes sind. Auf 0 setzen für unbegrenzt."
+  sync_internal_dates:
+    name: "Internes Datum synchronisieren"
+    description: "Bewahrt das ursprüngliche 'Empfangen'-Datum der Nachrichten. Normalerweise empfohlen, dies aktiviert zu lassen."
+  subscribe_folders:
+    name: "Ordner abonnieren"
+    description: "Abonniert Ordner auf dem Zielserver, wenn sie auf dem Quellserver abonniert sind."
+  sync_gmail_labels:
+    name: "Gmail-Label synchronisieren"
+    description: "Gmail-spezifisch. Synchronisiert und resynchronisiert Gmail-Label (werden von imapsync wie Ordner behandelt)."
+  dry_run:
+    name: "Testlauf (Dry Run)"
+    description: "Wenn aktiviert, zeigt imapsync an, was es tun würde, ohne tatsächliche Änderungen vorzunehmen."
+  additional_cli_args:
+    name: "Zusätzliche Kommandozeilenargumente"
+    description: "Zusätzliche Argumente, die direkt an die imapsync CLI übergeben werden."
