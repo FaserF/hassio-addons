@@ -316,6 +316,7 @@ function Check-Docker {
             Start-Sleep -Seconds 1
             $info = docker version --format '{{.Server.Version}}' 2>$null | Out-String
             if ($LASTEXITCODE -eq 0 -and $info.Trim()) {
+                Write-Progress -Activity "Starting Docker Desktop" -Completed
                 Write-Host "Docker Engine started successfully!" -ForegroundColor Green
                 return $true
             }

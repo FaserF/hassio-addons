@@ -9,36 +9,18 @@ Welcome to the definitive guide for the Home Assistant Imapsync Add-on. This too
 2. [OAuth2 Authentication (Modern Auth)](#-oauth2-authentication-modern-auth)
 3. [Global Configuration](#-global-configuration)
 4. [Job Configuration](#-job-configuration)
-5. [Provider-Specific Guide (Critical)](#-provider-specific-guide)
+5. [Multi-Account Sync Example](#-multi-account-sync-example)
+6. [Provider-Specific Guide (Critical)](#-provider-specific-guide)
    - [Gmail](#gmail)
    - [Yahoo Mail](#yahoo-mail)
    - [Outlook / Office 365](#outlook--office-365)
    - [iCloud](#icloud)
    - [GMX / Web.de](#gmx--webde)
    - [Fastmail](#fastmail)
-6. [Advanced CLI Flags](#-advanced-cli-flags)
-7. [Performance & Large Migrations](#-performance--large-migrations)
-8. [Troubleshooting & FAQ](#-troubleshooting--faq)
-9. [Security Best Practices](#-security-best-practices)
-
----
-
-## 🔐 OAuth2 Authentication (Modern Auth)
-
-This add-on supports OAuth2 for Google (Gmail/Advanced Protection) and Microsoft (Office 365/Outlook). This is the recommended method for these providers as it avoids "Less Secure App" issues.
-
-**For a detailed step-by-step guide on how to get your tokens, see [OAuth2 Setup Guide](DOCS_OAUTH.md).**
-
-Example config:
-```yaml
-jobs:
-  - source_host: imap.gmail.com
-    source_user: your-email@gmail.com
-    source_auth_type: oauth2
-    source_oauth2_client_id: "..."
-    source_oauth2_client_secret: "..."
-    source_oauth2_refresh_token: "..."
-```
+7. [Advanced CLI Flags](#-advanced-cli-flags)
+8. [Performance & Large Migrations](#-performance--large-migrations)
+9. [Troubleshooting & FAQ](#-troubleshooting--faq)
+10. [Security Best Practices](#-security-best-practices)
 
 ---
 
@@ -52,17 +34,23 @@ Imapsync works by connecting to two IMAP servers (Source and Destination) and co
 
 ---
 
+## 🔐 OAuth2 Authentication (Modern Auth)
+
+This add-on supports OAuth2 for Google (Gmail/Advanced Protection) and Microsoft (Office 365/Outlook). This is the recommended method for these providers as it avoids "Less Secure App" issues.
+
+---
+
 ## 🌐 Global Configuration
 
 Located in the main configuration tab of the add-on.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `sync_interval` | Integer | `3600` | Seconds between sync cycles. Minimum: `90`. |
+| `sync_interval` | Integer | `3600` | Seconds between sync cycles. Minimum: `90` (or `0` for run-once mode). |
 | `log_level` | String | `info` | Adjusts verbosity (`debug`, `info`, `warning`, etc.). |
 
 > [!NOTE]
-> If `sync_interval` is set to `0`, the add-on will execute all defined jobs once and then go into an idle state. You will need to restart the add-on to trigger another sync.
+> If `sync_interval` is set to `0`, the add-on will execute all defined jobs once and then go into an idle state (run-once mode). You will need to restart the add-on to trigger another sync.
 
 ---
 
@@ -166,7 +154,7 @@ Most issues arise from provider security settings. Follow these steps exactly.
 
 ---
 
-## ⚡ Advanced Configuration (UI & CLI)
+## ⚡ Advanced CLI Flags
 
 Most common `imapsync` flags are now available directly in the **Configuration UI**. Use the `additional_cli_args` section for everything else.
 
