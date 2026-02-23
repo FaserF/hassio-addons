@@ -17,26 +17,28 @@ ENV ADDON_NAME="N8n"
 ENV ADDON_SLUG="n8n"
 ENV ADDON_UNSUPPORTED="false"
 
+RUN apk add --no-cache \
+    curl \
+    nodejs \
+    npm \
+    python3 \
+    sqlite \
+    libc6-compat
+
+# Install n8n
+# hadolint ignore=DL3018
 RUN \
- apk add --no-cache -u libssl3 libcrypto3 --virtual .build-dependencies \
+    apk add --no-cache --virtual .build-dependencies \
         build-base \
         python3-dev \
-    \
- && apk add --no-cache -u \
-        curl \
-        nodejs \
-        npm \
-        python3 \
-        sqlite \
-    \
     && npm install -g "n8n@${N8N_VERSION}" \
-    \
     && apk del --purge .build-dependencies \
-    && rm -f -r \
+    && rm -rf \
         /root/.npm \
-        /root/.cache \
-    \
-    && n8n --version
+        /root/.cache
+
+# Verify installation
+RUN n8n --version
 
 # Copy root filesystem
 # Copy root filesystem
