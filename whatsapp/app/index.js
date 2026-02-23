@@ -1599,31 +1599,35 @@ app.post('/send_list', async (req, res) => {
 
     const messageId = session.sock.generateMessageID();
 
-    await session.sock.relayMessage(jid, {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            header: {
-              title: title || '',
-              hasMediaAttachment: false,
-            },
-            body: { text: text || title || 'Menu' },
-            footer: { text: title ? text : '' },
-            nativeFlowMessage: {
-              buttons: [
-                {
-                  name: 'single_select',
-                  buttonParamsJson: JSON.stringify({
-                    title: button_text || 'Open Menu',
-                    sections: formattedSections,
-                  }),
-                },
-              ],
+    await session.sock.relayMessage(
+      jid,
+      {
+        viewOnceMessage: {
+          message: {
+            interactiveMessage: {
+              header: {
+                title: title || '',
+                hasMediaAttachment: false,
+              },
+              body: { text: text || title || 'Menu' },
+              footer: { text: title ? text : '' },
+              nativeFlowMessage: {
+                buttons: [
+                  {
+                    name: 'single_select',
+                    buttonParamsJson: JSON.stringify({
+                      title: button_text || 'Open Menu',
+                      sections: formattedSections,
+                    }),
+                  },
+                ],
+              },
             },
           },
         },
       },
-    }, { messageId });
+      { messageId }
+    );
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `List: ${title || text}`;
