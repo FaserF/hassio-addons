@@ -175,10 +175,12 @@ To test apps locally and mirror the GitHub Actions CI pipeline, we provide a ded
 
 1. Open PowerShell and navigate to the root of this repository.
 2. Run the test script for your specific app:
+
    ```powershell
    .\.scripts\verify_addons\verify_test_addons.ps1 -Addon "your_app_slug"
    ```
-   *Example: `.\.scripts\verify_addons\verify_test_addons.ps1 -Addon "wiki.js"`*
+
+   _Example: `.\.scripts\verify_addons\verify_test_addons.ps1 -Addon "wiki.js"`_
 
 This script performs full validation, linting, Docker builds, and runs the container to ensure the app functions identically to the automated CI checks.
 
