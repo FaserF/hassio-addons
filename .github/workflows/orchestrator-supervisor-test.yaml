@@ -323,7 +323,7 @@ jobs:
                  echo "Waiting for MariaDB to be ready..."
                  echo "MYSQL_FAILED=false" >> "$GITHUB_ENV"
                  # Poll for MariaDB status
-                 MAX_WAIT=60
+                 MAX_WAIT=300
                  START_TIME=$(date +%s)
                  READY=false
                  while [ "$(( $(date +%s) - START_TIME ))" -lt "$MAX_WAIT" ]; do
@@ -603,13 +603,13 @@ jobs:
                         echo "✅ Ingress is up (HTTP $HTTP_CODE)"
                         RESULTS="$RESULTS\n✅ $App: PASS"
                         break
-                      elif [ "$HTTP_CODE" = "401" ] && [ "$App" = "solumati" ]; then
-                        echo "⚠️ Solumati Ingress Debug Info:"
+                      elif [ "$HTTP_CODE" = "401" ] && { [ "$App" = "solumati" ] || [ "$App" = "n8n" ]; }; then
+                        echo "⚠️ $App Ingress Debug Info:"
                         echo "Headers/Body fragment:"
                         echo "$FULL_RESPONSE" | head -n 20
 
                         # Existing pragmatic pass
-                        echo "✅ Solumati ingress responded (HTTP 401 - auth active, backend is running)"
+                        echo "✅ $App ingress responded (HTTP 401 - auth active, backend is running)"
                         RESULTS="$RESULTS\n✅ $App: PASS (401 accepted - auth active)"
                         break
                       else

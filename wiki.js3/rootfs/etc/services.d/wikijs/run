@@ -61,7 +61,7 @@ if bashio::config.true 'reset_database'; then
 	fi
 
 	# Reset Git Storage
-	GIT_DATA_DIR="/App_configs/wiki.js3/git"
+	GIT_DATA_DIR="/config/git"
 	if [ -d "$GIT_DATA_DIR" ]; then
 		bashio::log.warning "Cleaning up Git storage and SSH keys..."
 		# shellcheck disable=SC2115

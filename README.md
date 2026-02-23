@@ -169,6 +169,23 @@ We strive to provide apps that are not just functional, but also secure, maintai
 
 ---
 
+## 🛠️ For Developers: Local Testing
+
+To test apps locally and mirror the GitHub Actions CI pipeline, we provide a dedicated PowerShell script. This is the fastest way to verify builds and test run behavior before committing:
+
+1. Open PowerShell and navigate to the root of this repository.
+2. Run the test script for your specific app:
+
+   ```powershell
+   .\.scripts\verify_addons\verify_test_addons.ps1 -Addon "your_app_slug"
+   ```
+
+   _Example: `.\.scripts\verify_addons\verify_test_addons.ps1 -Addon "wiki.js"`_
+
+This script performs full validation, linting, Docker builds, and runs the container to ensure the app functions identically to the automated CI checks.
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License (c) 2019–2026 FaserF.

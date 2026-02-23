@@ -211,6 +211,22 @@ fi
 # Export necessary environment variables
 export N8N_USER_FOLDER="/data/n8n"
 
+# Ingress support
+if bashio::config.true 'ingress'; then
+    ingress_entry=$(bashio::app.ingress_entry)
+    bashio::log.info "Ingress is enabled. Using entry path: ${ingress_entry}"
+
+    # Ensure N8N_PATH starts and ends with a slash correctly
+    # bashio::app.ingress_entry usually starts with / and ends with /
+    # but we sanitize just in case
+    N8N_PATH="${ingress_entry}"
+    [[ "${N8N_PATH}" != */ ]] && N8N_PATH="${N8N_PATH}/"
+    [[ "${N8N_PATH}" != /* ]] && N8N_PATH="/${N8N_PATH}"
+
+    export N8N_PATH
+    bashio::log.info "Final N8N_PATH set to: ${N8N_PATH}"
+fi
+
 if bashio::config.has_value 'port'; then
     N8N_PORT=$(bashio::config 'port')
 else

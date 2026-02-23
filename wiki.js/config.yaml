@@ -12,7 +12,7 @@ services:
   - mysql:need
 map:
   - ssl
-  - addon_config:rw
+  - addon_config
 ingress: true
 ingress_port: 3010
 init: false
