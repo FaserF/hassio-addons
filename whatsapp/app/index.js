@@ -1119,7 +1119,9 @@ app.post('/send_buttons', async (req, res) => {
       }),
     }));
 
-    await session.sock.sendMessage(
+    const messageId = session.sock.generateMessageID();
+
+    await session.sock.relayMessage(
       jid,
       {
         viewOnceMessage: {
@@ -1135,7 +1137,7 @@ app.post('/send_buttons', async (req, res) => {
           },
         },
       },
-      { quoted }
+      { messageId, quoted }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Buttons: ${message}`;
@@ -1595,7 +1597,9 @@ app.post('/send_list', async (req, res) => {
       })),
     }));
 
-    await session.sock.sendMessage(jid, {
+    const messageId = session.sock.generateMessageID();
+
+    await session.sock.relayMessage(jid, {
       viewOnceMessage: {
         message: {
           interactiveMessage: {
@@ -1619,7 +1623,7 @@ app.post('/send_list', async (req, res) => {
           },
         },
       },
-    });
+    }, { messageId });
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `List: ${title || text}`;

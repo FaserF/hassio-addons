@@ -66,6 +66,7 @@ node_modules/
 
 # Cleanup & Reports
 *report.txt
+*test*.txt
 *report.json
 *final.txt
 *lint.txt
