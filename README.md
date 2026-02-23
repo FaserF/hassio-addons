@@ -69,6 +69,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[BT MQTT Gateway](.unsupported/bt-mqtt-gateway)**             | Bluetooth MQTT Gateway (Unsupported)        | ❌     | 2023-05 |
 | **[Freenom DNS Updater](.unsupported/freenom-dns-updater)**     | Dynamic DNS Updater (Unsupported)           | ❌     | 2023-05 |
 | **[Home Assistant Test Instance](homeassistant-test-instance)** | Nested Home Assistant for Testing           | ⚠️     | 2026-01 |
+| **[Imapsync](imapsync)**                                        | Sync IMAP accounts easily and reliably.     | ⚠️     | 2026-02 |
 | **[Komodo](komodo)**                                            | Build and deploy software on many servers   | ⚠️     | 2026-01 |
 | **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)            | ❌     | 2023-05 |
 | **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant | ⚠️     | 2026-01 |
