@@ -1112,18 +1112,28 @@ app.post('/send_buttons', async (req, res) => {
   try {
     const jid = getJid(number);
     const formattedButtons = (buttons || []).map((b) => ({
-      buttonId: b.id || b.buttonId || String(Math.random()),
-      buttonText: { displayText: b.displayText || b.text || 'Button' },
-      type: 1,
+      name: 'quick_reply',
+      buttonParamsJson: JSON.stringify({
+        display_text: b.displayText || b.text || 'Button',
+        id: b.id || b.buttonId || String(Math.random()),
+      }),
     }));
 
     await session.sock.sendMessage(
       jid,
       {
-        text: message,
-        footer: footer,
-        buttons: formattedButtons,
-        headerType: 1,
+        viewOnceMessage: {
+          message: {
+            interactiveMessage: {
+              header: { hasMediaAttachment: false },
+              body: { text: message },
+              footer: { text: footer || '' },
+              nativeFlowMessage: {
+                buttons: formattedButtons,
+              },
+            },
+          },
+        },
       },
       { quoted }
     );
@@ -1575,12 +1585,40 @@ app.post('/send_list', async (req, res) => {
   try {
     const jid = getJid(number);
 
+    const formattedSections = (sections || []).map((s) => ({
+      title: s.title || '',
+      rows: (s.rows || []).map((r) => ({
+        header: r.title || '',
+        title: r.title || '',
+        description: r.description || '',
+        id: r.id || String(Math.random()),
+      })),
+    }));
+
     await session.sock.sendMessage(jid, {
-      text: text || title || 'Menu',
-      footer: title ? text : undefined,
-      title: title,
-      buttonText: button_text || 'Menu',
-      sections: sections,
+      viewOnceMessage: {
+        message: {
+          interactiveMessage: {
+            header: {
+              title: title || '',
+              hasMediaAttachment: false,
+            },
+            body: { text: text || title || 'Menu' },
+            footer: { text: title ? text : '' },
+            nativeFlowMessage: {
+              buttons: [
+                {
+                  name: 'single_select',
+                  buttonParamsJson: JSON.stringify({
+                    title: button_text || 'Open Menu',
+                    sections: formattedSections,
+                  }),
+                },
+              ],
+            },
+          },
+        },
+      },
     });
 
     session.stats.sent += 1;
