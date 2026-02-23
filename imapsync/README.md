@@ -29,6 +29,7 @@
 This add-on is a Home Assistant wrapper around the industry-standard [imapsync](https://github.com/imapsync/imapsync) tool for IMAP email synchronization.
 
 **Key features:**
+
 - 🔄 **Incremental sync** — only copies new or changed messages, stops and resumes efficiently
 - 📁 **Folder filtering** — sync only selected folders (e.g. just Inbox) or exclude specific ones (e.g. Trash/Spam)
 - 🔐 **OAuth2 support** — works with Google (Gmail) and Microsoft (Office 365/Outlook)
@@ -54,29 +55,29 @@ Configure the add-on via the **Configuration** tab in the Home Assistant add-on 
 
 ### Global Options
 
-| Option | Default | Description |
-| :--- | :--- | :--- |
-| `sync_interval` | `3600` | Seconds between sync cycles (min. 90) |
-| `log_level` | `info` | Log verbosity: `info`, `debug`, `trace`, `warning`, `error` |
+| Option          | Default | Description                                                 |
+| :-------------- | :------ | :---------------------------------------------------------- |
+| `sync_interval` | `3600`  | Seconds between sync cycles (min. 90)                       |
+| `log_level`     | `info`  | Log verbosity: `info`, `debug`, `trace`, `warning`, `error` |
 
 ### Job Options (per sync pair)
 
-| Option | Default | Description |
-| :--- | :--- | :--- |
-| `source_host` | — | Source IMAP server (e.g. `imap.yahoo.com`) |
-| `source_user` | — | Source username/email |
-| `source_auth_type` | `password` | `password` or `oauth2` |
-| `source_password` | — | Source password or App Password |
-| `destination_host` | — | Destination IMAP server (e.g. `imap.gmail.com`) |
-| `destination_user` | — | Destination username/email |
-| `destination_auth_type` | `password` | `password` or `oauth2` |
-| `destination_password` | — | Destination password or App Password |
-| `included_folders` | `[]` | Regex list of folders to sync (empty = all) |
-| `excluded_folders` | `[]` | Regex list of folders to skip |
-| `max_age` | `0` | Skip messages older than X days (0 = no limit) |
-| `max_size` | `0` | Skip messages larger than X bytes (0 = no limit) |
-| `delete_after_sync` | `false` | Delete from source after sync ⚠️ |
-| `dry_run` | `false` | Simulate sync without making changes |
+| Option                  | Default    | Description                                      |
+| :---------------------- | :--------- | :----------------------------------------------- |
+| `source_host`           | —          | Source IMAP server (e.g. `imap.yahoo.com`)       |
+| `source_user`           | —          | Source username/email                            |
+| `source_auth_type`      | `password` | `password` or `oauth2`                           |
+| `source_password`       | —          | Source password or App Password                  |
+| `destination_host`      | —          | Destination IMAP server (e.g. `imap.gmail.com`)  |
+| `destination_user`      | —          | Destination username/email                       |
+| `destination_auth_type` | `password` | `password` or `oauth2`                           |
+| `destination_password`  | —          | Destination password or App Password             |
+| `included_folders`      | `[]`       | Regex list of folders to sync (empty = all)      |
+| `excluded_folders`      | `[]`       | Regex list of folders to skip                    |
+| `max_age`               | `0`        | Skip messages older than X days (0 = no limit)   |
+| `max_size`              | `0`        | Skip messages larger than X bytes (0 = no limit) |
+| `delete_after_sync`     | `false`    | Delete from source after sync ⚠️                 |
+| `dry_run`               | `false`    | Simulate sync without making changes             |
 
 ### Minimal Example
 
@@ -87,11 +88,11 @@ jobs:
   - source_host: imap.mail.yahoo.com
     source_user: youraddress@yahoo.com
     source_auth_type: password
-    source_password: "your-yahoo-app-password"
+    source_password: 'your-yahoo-app-password'
     destination_host: imap.gmail.com
     destination_user: youraddress@gmail.com
     destination_auth_type: password
-    destination_password: "your-gmail-app-password"
+    destination_password: 'your-gmail-app-password'
 ```
 
 > [!IMPORTANT]
