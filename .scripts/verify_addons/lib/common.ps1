@@ -493,6 +493,68 @@ function Should-RunTest {
     return $false
 }
 
+# --- DEPENDENCY MANAGEMENT ---
+function Install-Dependencies {
+    <#
+    .SYNOPSIS
+        Checks for and installs missing dependencies for the test suite.
+    #>
+    Write-Host "Checking for test suite dependencies..." -ForegroundColor Gray
+
+    # 1. Python & YamlLint
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+        $pythonPath = (Get-Command python -ErrorAction SilentlyContinue).Source
+        $hasYamllint = (python -m yamllint --version 2>$null)
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ! Missing: yamllint. Attempting installation via pip..." -ForegroundColor Yellow
+            & "$pythonPath" -m pip install yamllint --user
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  ✅ yamllint installed successfully." -ForegroundColor Green
+            } else {
+                Write-Host "  ❌ Failed to install yamllint. Please install manually: pip install yamllint" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "  ✅ yamllint found." -ForegroundColor DarkGray
+        }
+    } else {
+        Write-Host "  ❌ Python not found. Some tests (YamlLint, PythonChecks) will be skipped." -ForegroundColor Red
+    }
+
+    # 2. Node.js & NPM Tools (Prettier, MarkdownLint)
+    if (Get-Command npm -ErrorAction SilentlyContinue) {
+        $npmTools = @{
+            "prettier" = "prettier"
+            "markdownlint" = "markdownlint-cli"
+        }
+
+        foreach ($cmdName in $npmTools.Keys) {
+            $pkgName = $npmTools[$cmdName]
+            if (-not (Get-Command $cmdName -ErrorAction SilentlyContinue)) {
+                Write-Host "  ! Missing: $cmdName. Attempting installation via npm..." -ForegroundColor Yellow
+                npm install -g $pkgName
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "  ✅ $cmdName installed successfully." -ForegroundColor Green
+                } else {
+                    Write-Host "  ❌ Failed to install $cmdName. Please install manually: npm install -g $pkgName" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "  ✅ $cmdName found." -ForegroundColor DarkGray
+            }
+        }
+    } else {
+        Write-Host "  ❌ NPM not found. UI/Markdown linting tests will be skipped." -ForegroundColor Red
+    }
+
+    # 3. Docker Linter (Hadolint) - Binary only usually, but we can check if it exists
+    if (-not (Get-Command hadolint -ErrorAction SilentlyContinue)) {
+        Write-Host "  ! Missing: hadolint. Container-based ShellCheck/Hadolint might be available via Docker." -ForegroundColor DarkGray
+    } else {
+        Write-Host "  ✅ hadolint found." -ForegroundColor DarkGray
+    }
+
+    Write-Host ""
+}
+
 # --- YAML CONFIG LOADER ---
 function Get-TestConfig {
     <#
