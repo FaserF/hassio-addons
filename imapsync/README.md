@@ -2,12 +2,24 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/imapsync/logo.png" width="100" />
 
+[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_imapsync)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
+[![Docker Image](https://img.shields.io/badge/docker-0.3.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-imapsync)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Sync IMAP accounts easily and reliably. Perfect for seamless email migration, backup, and continuous synchronization between any two IMAP servers.
+> Sync IMAP accounts easily and reliably.
 
 ---
+
+> [!CAUTION]
+> **Experimental / Beta Status**
+>
+> This add-on is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+---
+
+## 📖 About
 
 ## ❤️ Support This Project
 
@@ -17,18 +29,12 @@
 
 <div align="center">
 
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20on-GitHub-%23EA4AAA?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/FaserF)&nbsp;&nbsp;
-[![PayPal](https://img.shields.io/badge/Donate%20via-PayPal-%2300457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/FaserF)
-
 </div>
-
----
-
-## 📖 About
 
 This add-on is a Home Assistant wrapper around the industry-standard [imapsync](https://github.com/imapsync/imapsync) tool for IMAP email synchronization.
 
 **Key features:**
+
 - 🔄 **Incremental sync** — only copies new or changed messages, stops and resumes efficiently
 - 📁 **Folder filtering** — sync only selected folders (e.g. just Inbox) or exclude specific ones (e.g. Trash/Spam)
 - 🔐 **OAuth2 support** — works with Google (Gmail) and Microsoft (Office 365/Outlook)
@@ -50,64 +56,45 @@ If you encounter any issues with this add-on, please report them using the link 
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant add-on page.
+Configure the add-on via the **Configuration** tab in the Home Assistant App page.
 
-### Global Options
-
-| Option | Default | Description |
-| :--- | :--- | :--- |
-| `sync_interval` | `3600` | Seconds between sync cycles (min. 90) |
-| `log_level` | `info` | Log verbosity: `info`, `debug`, `trace`, `warning`, `error` |
-
-### Job Options (per sync pair)
-
-| Option | Default | Description |
-| :--- | :--- | :--- |
-| `source_host` | — | Source IMAP server (e.g. `imap.yahoo.com`) |
-| `source_user` | — | Source username/email |
-| `source_auth_type` | `password` | `password` or `oauth2` |
-| `source_password` | — | Source password or App Password |
-| `destination_host` | — | Destination IMAP server (e.g. `imap.gmail.com`) |
-| `destination_user` | — | Destination username/email |
-| `destination_auth_type` | `password` | `password` or `oauth2` |
-| `destination_password` | — | Destination password or App Password |
-| `included_folders` | `[]` | Regex list of folders to sync (empty = all) |
-| `excluded_folders` | `[]` | Regex list of folders to skip |
-| `max_age` | `0` | Skip messages older than X days (0 = no limit) |
-| `max_size` | `0` | Skip messages larger than X bytes (0 = no limit) |
-| `delete_after_sync` | `false` | Delete from source after sync ⚠️ |
-| `dry_run` | `false` | Simulate sync without making changes |
-
-### Minimal Example
+### Options
 
 ```yaml
-sync_interval: 3600
-log_level: info
 jobs:
-  - source_host: imap.mail.yahoo.com
-    source_user: youraddress@yahoo.com
-    source_auth_type: password
-    source_password: "your-yahoo-app-password"
-    destination_host: imap.gmail.com
-    destination_user: youraddress@gmail.com
-    destination_auth_type: password
-    destination_password: "your-gmail-app-password"
+- additional_cli_args: []
+  delete_after_sync: false
+  destination_auth_type: password
+  destination_host: imap.example.net
+  destination_oauth2_client_id: ''
+  destination_oauth2_client_secret: ''
+  destination_oauth2_refresh_token: ''
+  destination_oauth2_tenant_id: ''
+  destination_password: ''
+  destination_user: dest@example.net
+  dry_run: false
+  excluded_folders: []
+  included_folders: []
+  max_age: 0
+  max_size: 0
+  source_auth_type: password
+  source_host: imap.example.com
+  source_oauth2_client_id: ''
+  source_oauth2_client_secret: ''
+  source_oauth2_refresh_token: ''
+  source_oauth2_tenant_id: ''
+  source_password: ''
+  source_user: source@example.com
+  subscribe_folders: true
+  sync_gmail_labels: false
+  sync_internal_dates: true
+log_level: info
+sync_interval: 3600
 ```
-
-> [!IMPORTANT]
-> Most providers (Gmail, Yahoo, iCloud, Outlook) require an **App Password** instead of your regular account password. See [DOCS.md](DOCS.md) for provider-specific setup guides.
-
----
-
-## 📚 Documentation
-
-For complete documentation including provider-specific setup, OAuth2, advanced filtering, and troubleshooting, see **[DOCS.md](DOCS.md)**.
 
 ---
 
 ## 👨‍💻 Credits & License
 
-- **Add-on Wrapper**: Licensed under the [MIT License](LICENSE).
-- **imapsync**: The bundled tool is licensed separately under the [NOLIMIT Public License (NLPL)](https://github.com/imapsync/imapsync/blob/master/LICENSE).
-
-Maintained by **FaserF**. Powered by [imapsync](https://github.com/imapsync/imapsync) by Gilles Lamiral.
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.
