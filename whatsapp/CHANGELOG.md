@@ -3,12 +3,13 @@
 ## 1.3.1 (2026-02-23)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency eslint to v10.0.1 [skip-tests] ([`c461d635`](https://github.com/FaserF/hassio-addons/commit/c461d635ebefc4dc23b559b7e322532618febfd4))
 
 ### 🚀 Other
+
 - another fix for buttons & lists #653 ([`e10b91fa`](https://github.com/FaserF/hassio-addons/commit/e10b91fa33e83745a81d3da524b59677c2399394))
 - try to fix buttons&lists #653 ([`019b3228`](https://github.com/FaserF/hassio-addons/commit/019b32286a879fe9fb9753868620c66eade89882))
-
 
 ## 1.3.0 (2026-02-23)
 

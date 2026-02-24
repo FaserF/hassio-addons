@@ -526,7 +526,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => { });
+              fs.unlink(filePath, () => {});
             }
           });
         });
@@ -597,8 +597,7 @@ async function connectToWhatsApp(sessionId = 'default') {
     }
 
     if (connection === 'close') {
-      const isLoggedOut =
-        lastDisconnect.error?.output?.statusCode === DisconnectReason.loggedOut;
+      const isLoggedOut = lastDisconnect.error?.output?.statusCode === DisconnectReason.loggedOut;
       const shouldReconnect = !isLoggedOut;
       const reason = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
       addLog(session, `Connection closed: ${reason}`, 'warning');
@@ -624,8 +623,15 @@ async function connectToWhatsApp(sessionId = 'default') {
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
 
-        addLog(session, `Reconnecting in ${reconnectDelay / 1000}s... (attempt ${session.reconnectAttempts})`, 'info');
-        logger.info({ sessionId, attempt: session.reconnectAttempts, delayMs: reconnectDelay }, 'Scheduling reconnect');
+        addLog(
+          session,
+          `Reconnecting in ${reconnectDelay / 1000}s... (attempt ${session.reconnectAttempts})`,
+          'info'
+        );
+        logger.info(
+          { sessionId, attempt: session.reconnectAttempts, delayMs: reconnectDelay },
+          'Scheduling reconnect'
+        );
         setTimeout(() => connectToWhatsApp(sessionId), reconnectDelay);
       }
     } else if (connection === 'open') {
@@ -1522,17 +1528,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
-            ${showQR
-      ? `
+            ${
+              showQR
+                ? `
             <div class="qr-container">
                 <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
-            ${showQRPlaceholder
-      ? `
+            ${
+              showQRPlaceholder
+                ? `
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
@@ -1540,8 +1548,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
             </div>
             `
-      : ''
-    }
+                : ''
+            }
 
             <div class="logs-container">
                 ${recentLogs}
@@ -1735,7 +1743,7 @@ app.listen(PORT, '0.0.0.0', () => {
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => { });
+    connectToWhatsApp('default').catch(() => {});
   }
 
   // Auto-start all other sessions
@@ -1746,7 +1754,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => { });
+        connectToWhatsApp(sDir).catch(() => {});
       }
     }
   }
