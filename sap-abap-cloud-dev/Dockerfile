@@ -1,6 +1,6 @@
 # Multi-stage build: Use HA debian-base for S6/Bashio, pull SAP runtime from SAP image
 # renovate: datasource=docker depName=ghcr.io/hassio-addons/debian-base
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.2.0
 # renovate: datasource=docker depName=sapse/abap-cloud-developer-trial
 ARG SAP_IMAGE=sapse/abap-cloud-developer-trial:2023
 # hadolint ignore=DL3006
