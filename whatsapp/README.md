@@ -29,15 +29,11 @@
 <a href="https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp" target="_blank">
 </a>
 
-
-
 ## 🐛 Report a Bug
 
 If you encounter any issues with this app, please report them using the link below. The issue form will be pre-filled with the app information to help us resolve the problem faster.
 
 **[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.3.0&log_information=Please+paste+the+App+log+output+here%3A%0A%0A)**
-
-
 
 ## 💡 Feature Request
 

@@ -21,7 +21,6 @@ This app is a "bridge". It does **not** communicate with Home Assistant directly
 **Flow:**
 `Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This App` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
-
 ## 🔒 Security & Public Access
 
 Requires Home Assistant 2024.12+ (or newer) to expose ports via the App configuration.
