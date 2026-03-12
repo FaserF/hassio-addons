@@ -26,7 +26,9 @@ jobs:
       name: github-pages
     steps:
       - name: ⬇️ Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6

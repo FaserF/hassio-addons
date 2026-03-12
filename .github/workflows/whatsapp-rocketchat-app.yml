@@ -18,7 +18,9 @@ jobs:
       - name: Install dependencies
         run: apk add --no-cache zip git openssh-client
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 

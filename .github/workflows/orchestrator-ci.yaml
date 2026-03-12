@@ -71,6 +71,8 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 🐍 Generate Dynamic Filters
         id: generator
@@ -156,7 +158,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         if: steps.check-stale.outputs.is_stale != 'true'
         with:
           fetch-depth: 0
@@ -272,7 +276,9 @@ jobs:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       # 1. ShellCheck
       - name: 🐚 ShellCheck
@@ -429,7 +435,9 @@ jobs:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -1176,7 +1184,9 @@ jobs:
       issues: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 📝 Post Success Comment
         uses: actions/github-script@v8

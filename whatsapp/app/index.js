@@ -1810,7 +1810,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                     const currentVal = select.value;
                     let options = '';
                     data.sessionList.forEach(s => {
-                        options += \`<option value="\${s.id}" \${s.id === currentSession ? 'selected' : ''}>\${s.id} (\${s.connected ? '✅' : '❌'})\</option>\`;
+                        options += \`<option value="\${s.id}" \${s.id === currentSession ? 'selected' : ''}>\${s.id} (\${s.connected ? '✅' : '❌'})</option>\`;
                     });
                     select.innerHTML = options;
 
