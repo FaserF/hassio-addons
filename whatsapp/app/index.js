@@ -548,21 +548,22 @@ const uiAuthMiddleware = (req, res, next) => {
 };
 
 const ingressPrefixMiddleware = (req, res, next) => {
+  // Normalize multiple slashes at the start of any request
+  if (req.url.startsWith('//')) {
+      req.url = req.url.replace(/\/+/g, '/');
+  }
+
   const ingressPath = req.headers['x-ingress-path'];
   if (ingressPath) {
     const urlBefore = req.url;
-    // Handle the exact ingress path (with or without trailing slash)
-    if (req.url === ingressPath || req.url === ingressPath.replace(/\/$/, '')) {
-      req.url = '/';
-    } else {
-      // Ensure prefix ends with slash for substring matching of subpaths
-      const prefixWithSlash = ingressPath.endsWith('/') ? ingressPath : ingressPath + '/';
-      if (req.url.startsWith(prefixWithSlash)) {
-        req.url = '/' + req.url.substring(prefixWithSlash.length);
-      }
+    // Ensure prefix is stripped regardless of trailing slash mismatches
+    const cleanPrefix = ingressPath.replace(/\/$/, '');
+    if (req.url.startsWith(cleanPrefix)) {
+      req.url = req.url.substring(cleanPrefix.length);
+      if (!req.url.startsWith('/')) req.url = '/' + req.url;
     }
-
-    // Normalize multiple slashes (e.g. //api -> /api)
+    
+    // Final normalization
     req.url = req.url.replace(/\/+/g, '/');
 
     if (urlBefore !== req.url) {
@@ -572,7 +573,7 @@ const ingressPrefixMiddleware = (req, res, next) => {
       );
     }
   } else {
-    // Even without ingress, normalize slashes
+    // Normalization fallback for non-ingress too
     const urlBefore = req.url;
     req.url = req.url.replace(/\/+/g, '/');
     if (urlBefore !== req.url) {
@@ -2026,8 +2027,8 @@ function renderDashboard(sessionId) {
                     </div>
                 </div>
 
-                <!-- Recent Failures -->
-                <div class="card" id="card-diagnostics" style="display:none; border: 2px solid var(--warning); background: #fffcf0;">
+                <!-- System Diagnostics -->
+                <div class="card" id="card-diagnostics" style="display:none; border: 2px solid var(--warning); background: #fffcf0; grid-column: 1 / -1; order: 999;">
                     <div class="card-title">🔍 System Diagnostics</div>
                     <div class="info-grid">
                         <div class="info-item">
@@ -2035,10 +2036,13 @@ function renderDashboard(sessionId) {
                             <span id="diag-basepath" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Url Path</span>
+                            <span class="info-label">Actual URL</span>
                             <span id="diag-pathname" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
                         </div>
                     </div>
+                    <p style="font-size:0.75rem; color:var(--text-secondary); margin:0;">
+                      If you see 404 errors, please report these paths on GitHub.
+                    </p>
                 </div>
 
                 <!-- Recent Sent -->
@@ -2084,13 +2088,16 @@ function renderDashboard(sessionId) {
 
             // Robust base path detection for Home Assistant Ingress
             const getBasePath = () => {
-                const path = window.location.pathname;
-                // If it ends with a slash, use it. If not, only add one if it doesn't look like a file.
-                // But for Ingress, it's usually /endpoint/ or /endpoint.
-                if (path.endsWith('/')) return path;
-                return path + '/';
+                try {
+                    // This is the cleanest way to get the folder path
+                    const path = window.location.pathname;
+                    const folder = path.substring(0, path.lastIndexOf('/') + 1);
+                    return folder || '/';
+                } catch (e) {
+                    return '/';
+                }
             };
-            const basePath = getBasePath().replace(/\/+/g, '/'); // Normalize double slashes
+            const basePath = getBasePath().replace(/\/+/g, '/'); 
             console.log('Detected Base Path:', basePath);
 
             document.getElementById('diag-basepath').textContent = basePath;
@@ -2115,7 +2122,7 @@ function renderDashboard(sessionId) {
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    a.download = \`whatsapp-debug-\${currentSession}.json\`;
+                    a.download = 'whatsapp-debug-' + currentSession + '.json';
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
@@ -2188,7 +2195,9 @@ function renderDashboard(sessionId) {
                     const select = document.getElementById('session-select');
                     let options = '';
                     data.sessionList.forEach(s => {
-                        options += \`<option value="\${s.id}" \${s.id === currentSession ? 'selected' : ''}>\${s.id} (\${s.connected ? '✅' : '❌'})</option>\`;
+                        const isSelected = s.id === currentSession ? 'selected' : '';
+                        const statusIcon = s.connected ? '✅' : '❌';
+                        options += '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + statusIcon + ')</option>';
                     });
                     select.innerHTML = options;
 
@@ -2239,37 +2248,37 @@ function renderDashboard(sessionId) {
 
                     // Update Lists
                     document.getElementById('list-sent').innerHTML = data.recentSent.length ?
-                        data.recentSent.map(m => \`
-                            <div class="history-item">
-                                <span class="history-time">\${m.timestamp}</span>
-                                <span class="history-target">To: \${m.target}</span>
-                                <div class="history-msg">\${m.message}</div>
-                            </div>
-                        \`).join('') : '<div class="empty-state">No messages sent recently</div>';
+                        data.recentSent.map(m => 
+                            '<div class="history-item">' +
+                                '<span class="history-time">' + m.timestamp + '</span>' +
+                                '<span class="history-target">To: ' + m.target + '</span>' +
+                                '<div class="history-msg">' + m.message + '</div>' +
+                            '</div>'
+                        ).join('') : '<div class="empty-state">No messages sent recently</div>';
 
                     document.getElementById('list-received').innerHTML = data.recentReceived.length ?
-                        data.recentReceived.map(m => \`
-                            <div class="history-item">
-                                <span class="history-time">\${m.timestamp}</span>
-                                <span class="history-sender">From: \${m.sender}</span>
-                                <div class="history-msg">\${m.message}</div>
-                            </div>
-                        \`).join('') : '<div class="empty-state">No messages received recently</div>';
+                        data.recentReceived.map(m => 
+                            '<div class="history-item">' +
+                                '<span class="history-time">' + m.timestamp + '</span>' +
+                                '<span class="history-sender">From: ' + m.sender + '</span>' +
+                                '<div class="history-msg">' + m.message + '</div>' +
+                            '</div>'
+                        ).join('') : '<div class="empty-state">No messages received recently</div>';
 
                     document.getElementById('list-failures').innerHTML = data.recentFailures.length ?
-                        data.recentFailures.map(m => \`
-                            <div class="history-item failure">
-                                <span class="history-time">\${m.timestamp}</span>
-                                <span class="history-target">Target: \${m.target}</span>
-                                <div class="history-msg">\${m.message}</div>
-                                <div class="history-reason">Error: \${m.reason}</div>
-                            </div>
-                        \`).join('') : '<div class="empty-state">No failures recorded</div>';
+                        data.recentFailures.map(m => 
+                            '<div class="history-item failure">' +
+                                '<span class="history-time">' + m.timestamp + '</span>' +
+                                '<span class="history-target">Target: ' + m.target + '</span>' +
+                                '<div class="history-msg">' + m.message + '</div>' +
+                                '<div class="history-reason">Error: ' + m.reason + '</div>' +
+                            '</div>'
+                        ).join('') : '<div class="empty-state">No failures recorded</div>';
 
                     document.getElementById('list-logs').innerHTML = data.recentLogs.length ?
-                        data.recentLogs.map(l => \`
-                            <div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">\${l.timestamp}</span><span class="log-type-\${l.type}">\${l.msg}</span></div>
-                        \`).join('') : '<div class="log-entry">No logs yet</div>';
+                        data.recentLogs.map(l => 
+                            '<div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
+                        ).join('') : '<div class="log-entry">No logs yet</div>';
 
                 } catch (e) {
                     console.error('Fetch error:', e);
