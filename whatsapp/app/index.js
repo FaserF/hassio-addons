@@ -476,6 +476,11 @@ const ipFilterMiddleware = (req, res, next) => {
   // If UI Auth is enabled, we allow access from everywhere (protected by password)
   if (UI_AUTH_ENABLED) return next();
 
+  // Special case: Home Assistant Ingress requests always have this header
+  if (req.headers['x-ingress-path'] || req.headers['x-hass-source']) {
+    return next();
+  }
+
   let ip = req.ip || req.connection.remoteAddress;
 
   // Normalize IPv6 mapped IPv4 addresses
@@ -497,12 +502,12 @@ const ipFilterMiddleware = (req, res, next) => {
 
   if (isPrivate) return next();
 
-  // Allow Docker internal ranges (often 172.x but covered above) or Hassio specific
-  // For standard "Host Network" addons, requests from other containers might appear as public IP or gateway?
-  // But usually Home Assistant Addons on Host Network see the real modification IP.
-
-  addLog(getSession('default'), `Blocked external access attempt from ${ip}`, 'warning');
-  logger.warn({ ip }, '[SECURITY] Blocked external access attempt (UI Auth Disabled)');
+  // If we reach here, it's potentially an external or unknown access attempt
+  addLog(getSession('default'), `Blocked access attempt from ${ip}`, 'warning');
+  logger.warn(
+    { ip, headers: req.headers },
+    '[SECURITY] Blocked access attempt (UI Auth Disabled)'
+  );
   return res
     .status(403)
     .send('Forbidden: External access is disabled when UI Authentication is off.');
@@ -1711,11 +1716,16 @@ app.get('/', uiAuthMiddleware, (req, res) => {
   res.send(renderDashboard(sessionId));
 });
 
-// Catch-all for other UI routes/tabs
+// Catch-all for other UI routes/tabs to support single-page app behavior
 app.get(
-  /^(?!\/api|\/qr|\/status|\/events|\/logs|\/health|\/media|\/session\/start).+/,
+  /^(?!\/(api|qr|status|events|logs|health|media|session\/start)).+/,
   uiAuthMiddleware,
   (req, res) => {
+    // If it looks like an API call but wasn't caught (e.g. missing trailing slash or prefix issue),
+    // don't serve the dashboard HTML.
+    if (req.path.includes('/api/')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
     const sessionId = req.query.session_id || 'default';
     res.send(renderDashboard(sessionId));
   }
@@ -1965,7 +1975,7 @@ function renderDashboard(sessionId) {
 
                 <!-- Bug Report Widget -->
                 <div class="card">
-                    <div class="card-title">🐛 Integration Bug Report & Support</div>
+                    <div class="card-title">🐛 Integration Bug Report</div>
                     <p style="font-size:0.85rem; color:var(--text-secondary);">
                         Encountered an issue? Download an anonymized debug bundle and report it on GitHub.
                     </p>
@@ -2020,6 +2030,15 @@ function renderDashboard(sessionId) {
         <script>
             let currentSession = '${sessionId}';
 
+            // Robust base path detection for Home Assistant Ingress
+            const getBasePath = () => {
+                const path = window.location.pathname;
+                if (path.endsWith('/')) return path;
+                return path.substring(0, path.lastIndexOf('/') + 1);
+            };
+            const basePath = getBasePath();
+            console.log('Detected Base Path:', basePath);
+
             function switchSession(id) {
                 currentSession = id;
                 const url = new URL(window.location);
@@ -2030,7 +2049,7 @@ function renderDashboard(sessionId) {
 
             async function downloadDebugInfo() {
                 try {
-                    const response = await fetch('./api/debug/download?session_id=' + currentSession, {
+                    const response = await fetch(basePath + 'api/debug/download?session_id=' + currentSession, {
                         headers: { 'Accept': 'application/json' }
                     });
                     if (!response.ok) throw new Error('Download failed');
@@ -2051,7 +2070,7 @@ function renderDashboard(sessionId) {
             async function restartSession() {
                 if (!confirm('Are you sure you want to restart this session?')) return;
                 try {
-                    const response = await fetch('api/session/restart', {
+                    const response = await fetch(basePath + 'api/session/restart', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ session_id: currentSession })
@@ -2068,7 +2087,7 @@ function renderDashboard(sessionId) {
             async function clearLogs() {
                 if (!confirm('Clear all connection logs for this session?')) return;
                 try {
-                    const response = await fetch('api/logs/clear', {
+                    const response = await fetch(basePath + 'api/logs/clear', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ session_id: currentSession })
@@ -2083,10 +2102,18 @@ function renderDashboard(sessionId) {
 
             async function updateDashboard() {
                 try {
-                    const response = await fetch('api/dashboard?session_id=' + currentSession, {
+                    const response = await fetch(basePath + 'api/dashboard?session_id=' + currentSession, {
                         headers: { 'Accept': 'application/json' }
                     });
-                    if (!response.ok) throw new Error('API request failed with status: ' + response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Update failed:', response.status, errorText);
+                        // If we are getting 403 or 401, maybe show something helpful?
+                        if (response.status === 403) {
+                            document.getElementById('status-badge').textContent = 'Access Blocked (403) ⛔';
+                        }
+                        throw new Error('API request failed with status: ' + response.status);
+                    }
                     const data = await response.json();
 
                     // Update Title & Sidebar Version Info
