@@ -361,7 +361,7 @@ function signalInterest(sessionId) {
     // If we DO have creds, we are likely already in a retry loop or connected.
     if (!hasCreds) {
       logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
-      connectToWhatsApp(sessionId).catch(() => { });
+      connectToWhatsApp(sessionId).catch(() => {});
     }
   }
 }
@@ -629,7 +629,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => { });
+              fs.unlink(filePath, () => {});
             }
           });
         });
@@ -1743,7 +1743,10 @@ app.get(
     // If it looks like an API call but wasn't caught (e.g. missing trailing slash or prefix issue),
     // don't serve the dashboard HTML.
     if (req.path.includes('/api/')) {
-      logger.warn({ path: req.path, url: req.url, headers: req.headers }, 'Catch-all hit for API path - check Ingress prefixing');
+      logger.warn(
+        { path: req.path, url: req.url, headers: req.headers },
+        'Catch-all hit for API path - check Ingress prefixing'
+      );
       return res.status(404).json({ error: 'API route not found' });
     }
     const sessionId = req.query.session_id || 'default';
@@ -2424,7 +2427,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => { });
+  connectToWhatsApp('default').catch(() => {});
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2434,7 +2437,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => { });
+        connectToWhatsApp(sDir).catch(() => {});
       }
     }
   }
