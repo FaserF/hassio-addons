@@ -1465,6 +1465,13 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
   const sessionId = req.query.session_id || 'default';
   const session = getSession(sessionId);
 
+  // List all sessions for the switcher
+  const sessionList = Array.from(sessions.values()).map((s) => ({
+    id: s.id,
+    connected: s.isConnected,
+    number: s.stats.my_number || 'Unknown',
+  }));
+
   // Determine current state
   const statusClass = session.isConnected
     ? 'connected'
@@ -1482,13 +1489,19 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
   // Recent logs (last 10)
   const recentLogs =
     session.connectionLogs
-      .slice(-10)
-      .reverse()
+      .slice(0, 10)
       .map(
         (l) =>
           `<div class="log-entry"><span class="log-time">${l.timestamp}</span><span class="log-type-${l.type}">${l.msg}</span></div>`
       )
       .join('') || '<div class="log-entry">No logs yet</div>';
+
+  const sessionOptions = sessionList
+    .map(
+      (s) =>
+        `<option value="${s.id}" ${s.id === sessionId ? 'selected' : ''}>${s.id} (${s.connected ? '✅' : '❌'})</option>`
+    )
+    .join('');
 
   res.send(`
     <!DOCTYPE html>
@@ -1497,11 +1510,12 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="refresh" content="5">
-        <title>WhatsApp Addon</title>
+        <title>WhatsApp Addon - ${sessionId}</title>
         <style>
             body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #111b21; }
             .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; width: 95%; text-align: center; }
-            h1 { color: #00a884; margin-bottom: 0.5rem; }
+            h1 { color: #00a884; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+            .session-id { font-size: 0.9rem; color: #667781; background: #f0f2f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
             .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; margin: 15px 0; }
             .status-badge.connected { background: #d9fdd3; color: #00a884; }
             .status-badge.disconnected { background: #fde8e8; color: #dc3545; }
@@ -1520,11 +1534,20 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             .token-label { font-size: 0.8rem; color: #667781; margin-bottom: 8px; }
             .footer { margin-top: 20px; font-size: 0.75rem; color: #8696a0; }
             .refresh-hint { font-size: 0.75rem; color: #8696a0; margin-top: 10px; }
+            .switcher { margin: 15px 0; text-align: left; font-size: 0.85rem; }
+            select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d7db; margin-top: 5px; }
         </style>
     </head>
     <body>
         <div class="card">
-            <h1>📱 WhatsApp Addon</h1>
+            <h1>📱 WhatsApp Addon <span class="session-id">${sessionId}</span></h1>
+
+            <div class="switcher">
+                <label for="sessionSelect">Switch Session:</label>
+                <select id="sessionSelect" onchange="window.location.href='?session_id=' + this.value">
+                    ${sessionOptions}
+                </select>
+            </div>
 
             <div class="status-badge ${statusClass}">${statusText}</div>
 
@@ -1544,7 +1567,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             <div class="qr-container">
                 <div class="qr-placeholder">
                     Waiting for QR Code...<br>
-                    <small>Refresh this page or check logs below</small>
+                    <small>Ensure you've started the session from Home Assistant.</small>
                 </div>
             </div>
             `
@@ -1589,7 +1612,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             </script>
 
             <div class="footer">
-                Addon v${process.env.ADDON_VERSION || '1.0.3'} • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
+                Addon v${process.env.ADDON_VERSION || '1.3.0'} • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
             </div>
 
             <div class="refresh-hint">
