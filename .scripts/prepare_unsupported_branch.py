@@ -101,13 +101,9 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
 
         # Try multiple patterns to handle different quote styles
         # Pattern 1: name: "Value" (double quotes)
-        pattern_dq = re.compile(
-            rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE
-        )
+        pattern_dq = re.compile(rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE)
         # Pattern 2: name: 'Value' (single quotes)
-        pattern_sq = re.compile(
-            rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
-        )
+        pattern_sq = re.compile(rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE)
         # Pattern 3: name: Value (no quotes)
         pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})$", re.MULTILINE)
 

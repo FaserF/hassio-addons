@@ -3,10 +3,7 @@
 Generate the GitHub Pages index.html from addon metadata.
 """
 
-import json
-import os
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
@@ -216,9 +213,7 @@ def get_git_info(path: Path) -> dict:
     return info
 
 
-def extract_metadata(
-    config_path: Path, relative_path: str, is_unsupported: bool
-) -> dict:
+def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> dict:
     """Extract metadata from config.yaml."""
     try:
         with open(config_path, "r", encoding="utf-8") as f:
@@ -289,11 +284,7 @@ def main():
     # scan for addons
     # 1. Main dir
     for item in sorted(repo_root.iterdir()):
-        if (
-            item.is_dir()
-            and not item.name.startswith((".", "_"))
-            and item.name != "docs"
-        ):
+        if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "docs":
             config_path = item / "config.yaml"
             if config_path.exists():
                 print(f"  - Processing {item.name}...")
@@ -309,9 +300,7 @@ def main():
                 config_path = item / "config.yaml"
                 if config_path.exists():
                     print(f"  - Processing .unsupported/{item.name}...")
-                    meta = extract_metadata(
-                        config_path, f".unsupported/{item.name}", True
-                    )
+                    meta = extract_metadata(config_path, f".unsupported/{item.name}", True)
                     if meta:
                         addons.append(meta)
 

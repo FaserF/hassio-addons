@@ -65,17 +65,11 @@ def is_unsupported(addon_path: str) -> bool:
 
 def generate_startup_banner_code(addon_info: dict, unsupported: bool) -> str:
     """Generate the bash startup banner code to inject into run.sh."""
-    version = addon_info["version"]
     name = addon_info["name"]
     slug = addon_info["slug"]
 
     # Escape for bash (escape \, ", `, $)
-    name_escaped = (
-        name.replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("`", "\\`")
-        .replace("$", "\\$")
-    )
+    name_escaped = name.replace("\\", "\\\\").replace('"', '\\"').replace("`", "\\`").replace("$", "\\$")
 
     code = f"""
 # ============================================================================
@@ -280,9 +274,7 @@ ENV ADDON_UNSUPPORTED="{str(unsupported).lower()}"
 
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if stripped.startswith(
-            ("RUN ", "COPY ", "ADD ", "WORKDIR ")
-        ) and not stripped.startswith("# "):
+        if stripped.startswith(("RUN ", "COPY ", "ADD ", "WORKDIR ")) and not stripped.startswith("# "):
             insert_idx = i
             break
 

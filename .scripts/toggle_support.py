@@ -1,8 +1,6 @@
 import argparse
 import os
 import shutil
-import subprocess
-import sys
 
 # Re-use prune logic by importing or calling?
 # Prune script is standalone. We can call it via subprocess or import main if refactored.
@@ -87,14 +85,12 @@ def prune_images(addon):
         # Keep 1 (latest usually)
         # Logic: If unsupported, maybe user wants to keep NO images?
         # User said: "delete all Docker Images except the newest".
-        to_keep = versions[:1]
         to_delete = versions[1:]
 
         for v in to_delete:
             vid = v["id"]
             print(f"   - Deleting version {vid} of {pkg}")
             # Delete
-            del_url = f"{url}/{vid}"  # this url base is .../versions, so + /id works? No, url var was set to base.
             # actually we constructed url above.
             # verify url construction
             requests.delete(f"{url}/{vid}", headers=headers)
@@ -144,9 +140,7 @@ def toggle_support(addon, action):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("addon", help="Add-on slug")
-    parser.add_argument(
-        "action", choices=["supported", "unsupported"], help="Target state"
-    )
+    parser.add_argument("action", choices=["supported", "unsupported"], help="Target state")
     args = parser.parse_args()
 
     toggle_support(args.addon, args.action)

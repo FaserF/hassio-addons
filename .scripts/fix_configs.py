@@ -19,11 +19,7 @@ def fix_config(path):
 
         # Remove deprecated keys if they are causing linter errors (usually defaults)
         # Note: We are removing lines purely based on key presence as requested by linter
-        if (
-            stripped.startswith("startup:")
-            or stripped.startswith("boot:")
-            or stripped.startswith("ingress_port:")
-        ):
+        if stripped.startswith("startup:") or stripped.startswith("boot:") or stripped.startswith("ingress_port:"):
             print(f"Removing deprecated line in {path}: {stripped}")
             changed = True
             continue

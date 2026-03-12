@@ -69,11 +69,7 @@ def find_translation(conf_trans, full_key):
         else:
             found_nested = False
             break
-    if (
-        found_nested
-        and isinstance(current, dict)
-        and ("name" in current or "description" in current)
-    ):
+    if found_nested and isinstance(current, dict) and ("name" in current or "description" in current):
         return current
 
     # Try 2: Flattened dotted match (e.g. database.type)
@@ -128,9 +124,7 @@ def check_informal_form(text):
 
 def check_translations(addon_path):
     errors = []
-    config = load_file(os.path.join(addon_path, "config.yaml")) or load_file(
-        os.path.join(addon_path, "config.json")
-    )
+    config = load_file(os.path.join(addon_path, "config.yaml")) or load_file(os.path.join(addon_path, "config.json"))
 
     if not config or "schema" not in config:
         return True, []
@@ -153,9 +147,7 @@ def check_translations(addon_path):
 
         trans = load_file(trans_file)
         if not trans or "configuration" not in trans:
-            errors.append(
-                f"Translation file for {lang!r} is missing 'configuration' section"
-            )
+            errors.append(f"Translation file for {lang!r} is missing 'configuration' section")
             continue
 
         conf_trans = trans["configuration"]
@@ -167,14 +159,10 @@ def check_translations(addon_path):
                 errors.append(f"Missing translation for {key!r} in {lang!r}")
             else:
                 if not isinstance(trans_entry, dict):
-                    errors.append(
-                        f"Translation entry for {key!r} in {lang!r} should be a dictionary"
-                    )
+                    errors.append(f"Translation entry for {key!r} in {lang!r} should be a dictionary")
                 else:
                     if "name" not in trans_entry and "description" not in trans_entry:
-                        errors.append(
-                            f"Translation for {key!r} in {lang!r} missing both 'name' and 'description'"
-                        )
+                        errors.append(f"Translation for {key!r} in {lang!r} missing both 'name' and 'description'")
 
                     if lang == "de":
                         for field in ["name", "description"]:
@@ -201,9 +189,9 @@ def main():
         for item in os.listdir(base_path):
             item_path = os.path.join(base_path, item)
             if os.path.isdir(item_path) and not item.startswith("."):
-                if os.path.exists(
-                    os.path.join(item_path, "config.yaml")
-                ) or os.path.exists(os.path.join(item_path, "config.json")):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                    os.path.join(item_path, "config.json")
+                ):
                     addons.append(item_path)
 
     failed = False

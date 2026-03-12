@@ -34,7 +34,9 @@ def check_readme(addon_path, fix=False):
 
     my_ha_link = f"https://my.home-assistant.io/redirect/supervisor_addon/?addon={slug}"
 
-    badge_markdown = f"[![Open your Home Assistant instance and show the add-on dashboard.]({my_ha_badge})]({my_ha_link})"
+    badge_markdown = (
+        f"[![Open your Home Assistant instance and show the add-on dashboard.]({my_ha_badge})]({my_ha_link})"
+    )
 
     # Check if correct badge is present
     if my_ha_link not in content:
@@ -80,9 +82,7 @@ def check_readme(addon_path, fix=False):
 
     for pattern, link_text in docs_link_patterns:
         if re.search(pattern, content):
-            errors.append(
-                f"Documentation link is relative ({link_text}) instead of absolute GitHub link."
-            )
+            errors.append(f"Documentation link is relative ({link_text}) instead of absolute GitHub link.")
             if fix:
                 print(f"🔧 Fixing Documentation link for {addon_path}")
                 # Check if DOCS.md exists
@@ -94,15 +94,13 @@ def check_readme(addon_path, fix=False):
                     # Construct absolute GitHub link
                     github_link = f"{REPO_URL}/blob/{REPO_BRANCH}/{rel_path}/DOCS.md"
                     # Replace relative link with absolute link
-                    content = re.sub(
-                        pattern, f"[Documentation]({github_link})", content
-                    )
+                    content = re.sub(pattern, f"[Documentation]({github_link})", content)
                     with open(readme_path, "w", encoding="utf-8") as f:
                         f.write(content)
                     print(f"   Fixed Documentation link (replaced {link_text}).")
                     break  # Only fix once
                 else:
-                    print(f"   ⚠️ DOCS.md not found, skipping link fix.")
+                    print("   ⚠️ DOCS.md not found, skipping link fix.")
                     break
 
     # Heuristic check for other badges
@@ -128,9 +126,7 @@ def main():
 
     dirs = args.dirs
     if not dirs:
-        dirs = [
-            d for d in os.listdir(".") if os.path.isdir(d) and not d.startswith(".")
-        ]
+        dirs = [d for d in os.listdir(".") if os.path.isdir(d) and not d.startswith(".")]
         # Also check .unsupported directory
         unsupported_path = ".unsupported"
         if os.path.exists(unsupported_path):
@@ -142,9 +138,7 @@ def main():
     failed = False
     for d in dirs:
         # Only check if it looks like an addon (has config)
-        if os.path.exists(os.path.join(d, "config.yaml")) or os.path.exists(
-            os.path.join(d, "config.json")
-        ):
+        if os.path.exists(os.path.join(d, "config.yaml")) or os.path.exists(os.path.join(d, "config.json")):
             if not check_readme(d, fix=args.fix):
                 failed = True
 

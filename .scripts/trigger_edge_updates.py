@@ -12,11 +12,7 @@ EDGE_ADDONS = [
 def get_all_addons():
     addons = []
     for item in os.listdir("."):
-        if (
-            os.path.isdir(item)
-            and not item.startswith(".")
-            and os.path.exists(os.path.join(item, "config.yaml"))
-        ):
+        if os.path.isdir(item) and not item.startswith(".") and os.path.exists(os.path.join(item, "config.yaml")):
             if item.endswith("-edge") or item in EDGE_ADDONS:
                 addons.append(item)
     return addons

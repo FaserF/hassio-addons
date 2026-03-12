@@ -131,15 +131,13 @@ def remove_all_issue_sections(content):
     # This pattern matches the link and the NOTE block that follows (multi-line)
     # Updated to match any URL parameters (more flexible)
     issue_link_pattern = r"(?s)\*\*\[(?:Report a Bug|Request a Feature)\]\(https://github\.com/[^)]+issues/new[^)]+\)\*\*\s*\n\s*> \[!NOTE\].*?automatically included.*?\.\s*\n"
-    cleaned = re.sub(
-        issue_link_pattern, "", content, flags=re.IGNORECASE | re.MULTILINE
-    )
+    cleaned = re.sub(issue_link_pattern, "", content, flags=re.IGNORECASE | re.MULTILINE)
 
     # Also remove links that might not have the NOTE block (more aggressive cleanup)
-    issue_link_simple_pattern = r"\*\*\[(?:Report a Bug|Request a Feature)\]\(https://github\.com/[^)]+issues/new[^)]+\)\*\*"
-    cleaned = re.sub(
-        issue_link_simple_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE
+    issue_link_simple_pattern = (
+        r"\*\*\[(?:Report a Bug|Request a Feature)\]\(https://github\.com/[^)]+issues/new[^)]+\)\*\*"
     )
+    cleaned = re.sub(issue_link_simple_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
 
     # Also remove orphaned introductory text before links (repeat until no more matches)
     # Remove all lines containing these texts that are NOT in a section (no ## header before them)
@@ -193,22 +191,20 @@ def remove_all_issue_sections(content):
 
     # Remove bug report sections (with headers) - match from header to next section
     # This pattern should match the entire section including the URL with any parameters
-    bug_report_pattern = r"(?s)(---\s*\n\s*)?##\s+.*?[🐛]?\s*[Rr]eport\s+[Aa]\s+[Bb]ug.*?(?=\n---\s*\n\s*##|##\s+[💡]|##\s+[👨‍💻]|$)"
+    bug_report_pattern = (
+        r"(?s)(---\s*\n\s*)?##\s+.*?[🐛]?\s*[Rr]eport\s+[Aa]\s+[Bb]ug.*?(?=\n---\s*\n\s*##|##\s+[💡]|##\s+[👨‍💻]|$)"
+    )
     # Try multiple times to ensure all sections are removed
     while re.search(bug_report_pattern, cleaned, flags=re.IGNORECASE | re.MULTILINE):
-        cleaned = re.sub(
-            bug_report_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE
-        )
+        cleaned = re.sub(bug_report_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
 
     # Remove feature request sections (with headers) - match from header to next section
-    feature_request_pattern = r"(?s)(---\s*\n\s*)?##\s+.*?[💡]?\s*[Ff]eature\s+[Rr]equest.*?(?=\n---\s*\n\s*##|##\s+[👨‍💻]|$)"
+    feature_request_pattern = (
+        r"(?s)(---\s*\n\s*)?##\s+.*?[💡]?\s*[Ff]eature\s+[Rr]equest.*?(?=\n---\s*\n\s*##|##\s+[👨‍💻]|$)"
+    )
     # Try multiple times to ensure all sections are removed
-    while re.search(
-        feature_request_pattern, cleaned, flags=re.IGNORECASE | re.MULTILINE
-    ):
-        cleaned = re.sub(
-            feature_request_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE
-        )
+    while re.search(feature_request_pattern, cleaned, flags=re.IGNORECASE | re.MULTILINE):
+        cleaned = re.sub(feature_request_pattern, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
 
     # Remove any remaining orphaned content blocks (introductory text)
     orphan_patterns = [
@@ -292,7 +288,6 @@ def process_addon(addon_path, dry_run=False):
 
     # Get addon info
     addon_version = config.get("version", "unknown")
-    addon_name = config.get("name", addon_dirname)
 
     # Generate issue URLs
     bug_report_url = generate_bug_report_url(addon_dirname, addon_version)
@@ -306,9 +301,7 @@ def process_addon(addon_path, dry_run=False):
     cleaned_content = remove_all_issue_sections(content)
 
     # Add new issue sections
-    new_content = add_issue_sections(
-        cleaned_content, bug_report_url, feature_request_url
-    )
+    new_content = add_issue_sections(cleaned_content, bug_report_url, feature_request_url)
 
     if dry_run:
         print(f"[DRY RUN] Would update {addon_dirname} (version: {addon_version})")
@@ -343,9 +336,9 @@ def find_addons(base_path):
         for item in os.listdir(unsupported_path):
             item_path = os.path.join(unsupported_path, item)
             if os.path.isdir(item_path):
-                if os.path.exists(
-                    os.path.join(item_path, "config.yaml")
-                ) or os.path.exists(os.path.join(item_path, "config.json")):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                    os.path.join(item_path, "config.json")
+                ):
                     addons.append(item_path)
 
     return addons
@@ -357,12 +350,8 @@ if __name__ == "__main__":
     import sys
 
     if sys.platform == "win32":
-        sys.stdout = io.TextIOWrapper(
-            sys.stdout.buffer, encoding="utf-8", errors="replace"
-        )
-        sys.stderr = io.TextIOWrapper(
-            sys.stderr.buffer, encoding="utf-8", errors="replace"
-        )
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(
         description="Add bug report section with pre-filled GitHub issue link to all addon README files"
@@ -396,6 +385,4 @@ if __name__ == "__main__":
             if process_addon(addon, dry_run=args.dry_run):
                 updated_count += 1
 
-        print(
-            f"\n{'Would update' if args.dry_run else 'Updated'} {updated_count} addon(s)."
-        )
+        print(f"\n{'Would update' if args.dry_run else 'Updated'} {updated_count} addon(s).")

@@ -7,11 +7,7 @@ SOURCE_LIB = os.path.join(".scripts", "bashio", "banner.sh")
 def get_addons():
     addons = []
     for item in os.listdir("."):
-        if (
-            os.path.isdir(item)
-            and not item.startswith(".")
-            and os.path.exists(os.path.join(item, "config.yaml"))
-        ):
+        if os.path.isdir(item) and not item.startswith(".") and os.path.exists(os.path.join(item, "config.yaml")):
             addons.append(item)
     return addons
 

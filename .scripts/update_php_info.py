@@ -1,4 +1,3 @@
-import os
 import re
 from pathlib import Path
 
@@ -40,7 +39,7 @@ def get_php_info(dockerfile_path):
     modules = []
 
     # Regular literal matches
-    matches = re.finditer(f"php{php_version_num}-([a-zA-Z0-9_\-]+)", content)
+    matches = re.finditer(rf"php{php_version_num}-([a-zA-Z0-9_\-]+)", content)
     for m in matches:
         mod = m.group(1)
         if mod not in ["dev", "pear", "doc", "apache2", "fpm", "cgi"]:

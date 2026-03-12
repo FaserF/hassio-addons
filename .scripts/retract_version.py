@@ -34,9 +34,7 @@ def retract_version(package_name, version, token, owner):
         resp = requests.get(base_url, headers=headers)
         if resp.status_code == 404:
             # Try Org
-            base_url = (
-                f"{GITHUB_API}/orgs/{owner}/packages/container/{package_name}/versions"
-            )
+            base_url = f"{GITHUB_API}/orgs/{owner}/packages/container/{package_name}/versions"
             resp = requests.get(base_url, headers=headers)
 
         if resp.status_code != 200:

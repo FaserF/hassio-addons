@@ -43,10 +43,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # Allow some logging to help debug
-        sys.stderr.write(
-            "%s - - [%s] %s\n"
-            % (self.address_string(), self.log_date_time_string(), format % args)
-        )
+        sys.stderr.write("%s - - [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format % args))
 
     def get_options(self):
         """Load options from file dynamically with retries for file locks."""
@@ -98,9 +95,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
                     "state": "running",
                 }
             )
-        elif self.path == "/addons/self/info" or re.match(
-            r"^/addons/[^/]+/info$", self.path
-        ):
+        elif self.path == "/addons/self/info" or re.match(r"^/addons/[^/]+/info$", self.path):
             self._send_json(
                 {
                     "name": "Test Add-on",
@@ -171,9 +166,7 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
         elif self.path == "/info":
             self._send_json(
                 {
-                    "supervisor": os.environ.get(
-                        "MOCK_SUPERVISOR_VERSION", "2025.12.3"
-                    ),
+                    "supervisor": os.environ.get("MOCK_SUPERVISOR_VERSION", "2025.12.3"),
                     "homeassistant": os.environ.get("MOCK_CORE_VERSION", "2025.12.3"),
                     "hassos": os.environ.get("MOCK_OS_VERSION", "16.3"),
                 }
@@ -243,9 +236,7 @@ def run_server(options_path="options.json", port=80, bind_address="0.0.0.0"):
 
     server = ThreadedHTTPServer((bind_address, port), SupervisorMockHandler)
     print(f"Mock Supervisor API running on {bind_address}:{port}")
-    print(
-        "Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping, /os/info, /host/info"
-    )
+    print("Endpoints: /addons/self/options, /core/info, /addons/self/info, /supervisor/ping, /os/info, /host/info")
     server.serve_forever()
 
 
@@ -266,9 +257,5 @@ if __name__ == "__main__":
         port = 80
 
     # Bind address: CLI arg > env var > safe default
-    bind_address = (
-        sys.argv[3]
-        if len(sys.argv) > 3
-        else os.environ.get("MOCK_BIND_ADDRESS", "0.0.0.0")
-    )
+    bind_address = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("MOCK_BIND_ADDRESS", "0.0.0.0")
     run_server(options_path, port, bind_address)

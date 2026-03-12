@@ -160,9 +160,7 @@ def update_readme():
         if path in addons:
             new_status = addons[path]["status"]
             if new_status != current_status:
-                print(
-                    f"📝 Updating {name}: {current_status} → {new_status} ({addons[path]['status_name']})"
-                )
+                print(f"📝 Updating {name}: {current_status} → {new_status} ({addons[path]['status_name']})")
                 updates_made += 1
         else:
             new_status = current_status

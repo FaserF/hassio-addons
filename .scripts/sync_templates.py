@@ -6,11 +6,7 @@ TEMPLATE_PATH = ".github/ISSUE_TEMPLATE/bug_report.yml"
 def get_addons():
     addons = []
     for item in os.listdir("."):
-        if (
-            os.path.isdir(item)
-            and not item.startswith(".")
-            and os.path.exists(os.path.join(item, "config.yaml"))
-        ):
+        if os.path.isdir(item) and not item.startswith(".") and os.path.exists(os.path.join(item, "config.yaml")):
             addons.append(item)
     return sorted(addons)
 
@@ -36,7 +32,6 @@ def sync_template():
 
     start_index = -1
     end_index = -1
-    indentation = ""
 
     # State machine to find the specific options block
     found_label = False
@@ -91,9 +86,7 @@ def sync_template():
         if end_index == -1:
             end_index = len(lines)
 
-        print(
-            f"✅ Updating add-on list options between lines {start_index+1} and {end_index}"
-        )
+        print(f"✅ Updating add-on list options between lines {start_index+1} and {end_index}")
 
         # Construct new lines
         new_lines_list = []

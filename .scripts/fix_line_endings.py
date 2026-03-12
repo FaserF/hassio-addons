@@ -40,10 +40,7 @@ def process_dir(start_dir):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
 
         for file in files:
-            if (
-                any(file.startswith(prefix) for prefix in SKIP_PREFIXES)
-                or file == "verify_log.txt"
-            ):
+            if any(file.startswith(prefix) for prefix in SKIP_PREFIXES) or file == "verify_log.txt":
                 continue
             if any(file.endswith(ext) or file == ext for ext in EXTENSIONS):
                 to_lf(os.path.join(root, file))

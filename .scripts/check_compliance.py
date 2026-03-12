@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 import yaml
@@ -47,37 +48,23 @@ def check_addon(addon_path):
         content = f.read()
 
     # Check 1: S6 Overlay
-    if (
-        "S6_" not in content
-        and "s6-overlay" not in content
-        and "/usr/bin/with-contenv" not in content
-    ):
+    if "S6_" not in content and "s6-overlay" not in content and "/usr/bin/with-contenv" not in content:
         # Some add-ons might use base image with pre-configured S6, but it's good practice to be explicit or use standard patterns
-        warnings.append(
-            "S6 Overlay not explicitly detected (checked for S6_ vars, s6-overlay string, or with-contenv)"
-        )
+        warnings.append("S6 Overlay not explicitly detected (checked for S6_ vars, s6-overlay string, or with-contenv)")
 
     # Check 2: Healthcheck
     if "HEALTHCHECK" not in content:
         errors.append("Missing HEALTHCHECK instruction in Dockerfile")
 
     # Check 3: OCI Labels
-    if (
-        "org.opencontainers.image.title" not in content
-        or "org.opencontainers.image.description" not in content
-    ):
+    if "org.opencontainers.image.title" not in content or "org.opencontainers.image.description" not in content:
         warnings.append("Missing OCI Labels (org.opencontainers.image...)")
 
     def validate_base_image(img, ctx):
         # Validation Intent: Accept official/trusted namespaces (ghcr.io/hassio-addons/ or ghcr.io/home-assistant/)
         # as sufficient validation. Downstream controls provide the trust boundary here.
-        if not (
-            img.startswith("ghcr.io/hassio-addons/")
-            or img.startswith("ghcr.io/home-assistant/")
-        ):
-            warnings.append(
-                f"{ctx} Base image '{img}' does not look like an official HA/Hassio-Addons base image."
-            )
+        if not (img.startswith("ghcr.io/hassio-addons/") or img.startswith("ghcr.io/home-assistant/")):
+            warnings.append(f"{ctx} Base image '{img}' does not look like an official HA/Hassio-Addons base image.")
 
     # Check 4: Base Image (Official)
     # Parse FROM instruction or build.yaml
@@ -123,12 +110,8 @@ def check_addon(addon_path):
             with open(config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
-            has_log_level_option = (
-                "options" in config and "log_level" in config["options"]
-            )
-            has_log_level_schema = (
-                "schema" in config and "log_level" in config["schema"]
-            )
+            has_log_level_option = "options" in config and "log_level" in config["options"]
+            has_log_level_schema = "schema" in config and "log_level" in config["schema"]
 
             if not has_log_level_option:
                 warnings.append("Missing 'log_level' in config.yaml options")

@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 
@@ -93,9 +92,7 @@ def main():
         if os.path.exists(".unsupported"):
             for item in os.listdir(".unsupported"):
                 path = os.path.join(".unsupported", item)
-                if os.path.isdir(path) and os.path.exists(
-                    os.path.join(path, "config.yaml")
-                ):
+                if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
                     addons.append(path)
 
     changed = False

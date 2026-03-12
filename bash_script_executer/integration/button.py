@@ -1,5 +1,4 @@
 from homeassistant.components.button import ButtonEntity
-from homeassistant.core import HomeAssistant
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
@@ -16,6 +15,4 @@ class BashScriptExecuterButton(ButtonEntity):
 
     async def async_press(self) -> None:
         """Handle the button press."""
-        await self.hass.services.async_call(
-            "hassio", "addon_start", {"addon": "bashscriptexecuter"}
-        )
+        await self.hass.services.async_call("hassio", "addon_start", {"addon": "bashscriptexecuter"})

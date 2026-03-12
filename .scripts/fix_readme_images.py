@@ -10,7 +10,6 @@ Usage:
 """
 
 import argparse
-import os
 import re
 from pathlib import Path
 
@@ -52,9 +51,7 @@ def get_default_branch():
         return "master"  # Fallback
 
 
-def fix_readme_images(
-    addon_path: Path, owner: str, repo: str, branch: str, dry_run: bool = False
-):
+def fix_readme_images(addon_path: Path, owner: str, repo: str, branch: str, dry_run: bool = False):
     """Fix relative image paths in a README file."""
     readme_path = addon_path / "README.md"
     if not readme_path.exists():
@@ -87,9 +84,7 @@ def fix_readme_images(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Fix relative image paths in README files"
-    )
+    parser = argparse.ArgumentParser(description="Fix relative image paths in README files")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -116,9 +111,7 @@ def main():
         if addon_path.name.startswith("."):
             continue
 
-        changed, message = fix_readme_images(
-            addon_path, owner, repo, branch, args.dry_run
-        )
+        changed, message = fix_readme_images(addon_path, owner, repo, branch, args.dry_run)
 
         if changed:
             print(f"✅ {addon_path.name}: {message}")
@@ -127,9 +120,7 @@ def main():
             print(f"⏭️  {addon_path.name}: {message}")
 
     print("-" * 50)
-    print(
-        f"Total: {fixed_count} README(s) {'would be ' if args.dry_run else ''}updated"
-    )
+    print(f"Total: {fixed_count} README(s) {'would be ' if args.dry_run else ''}updated")
 
 
 if __name__ == "__main__":

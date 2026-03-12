@@ -78,3 +78,6 @@ deduplicate_readmes.ps1
 validate_json.py
 /.scripts/verify_addons/logs
 /tmp
+*ruff*.txt
+*mypy*.txt
+*black*.txt

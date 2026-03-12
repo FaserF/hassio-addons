@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 
 import yaml
@@ -15,7 +14,7 @@ def get_config_info(addon_path):
     try:
         with open(config_path, "r") as f:
             return yaml.safe_load(f)
-    except:
+    except Exception:
         return None
 
 
@@ -31,9 +30,7 @@ def detect_new_addons(fix=False):
     all_dirs = [
         d
         for d in os.listdir(".")
-        if os.path.isdir(d)
-        and not d.startswith(".")
-        and os.path.exists(os.path.join(d, "config.yaml"))
+        if os.path.isdir(d) and not d.startswith(".") and os.path.exists(os.path.join(d, "config.yaml"))
     ]
 
     # Filter known ones
@@ -57,7 +54,6 @@ def detect_new_addons(fix=False):
         # We append to the end of the table or a generic list.
         # Find last pipe '|' line?
         lines = readme_content.splitlines()
-        table_end_idx = -1
 
         # This is fragile without a defined marker, but we try to find the Add-ons table.
         # Look for header | Name | Description | ...
@@ -82,11 +78,7 @@ def detect_new_addons(fix=False):
             for addon in new_addons:
                 conf = get_config_info(addon)
                 name = conf.get("name", addon) if conf else addon
-                desc = (
-                    conf.get("description", "No description")
-                    if conf
-                    else "No description"
-                )
+                desc = conf.get("description", "No description") if conf else "No description"
                 # Construct row
                 # | [Name](slug) | Description |
                 row = f"| [{name}]({addon}) | {desc} |"

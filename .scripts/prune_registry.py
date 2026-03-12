@@ -19,7 +19,7 @@ if not ORG_NAME or not TOKEN:
     print(f"   TOKEN: {'SET' if TOKEN else 'NOT SET'}")
     sys.exit(1)
 
-print(f"🔧 Configuration:")
+print("🔧 Configuration:")
 print(f"   ORG_NAME: {ORG_NAME}")
 print(f"   TOKEN: {'SET' if TOKEN else 'NOT SET'}")
 print()
@@ -71,7 +71,6 @@ def is_unsupported_addon(package_name):
 
 def get_packages_via_graphql():
     """Alternative: Use GraphQL API to list packages (workaround for REST API 400 error)."""
-    import json
 
     query = """
     query($org: String!, $packageType: PackageType!, $first: Int!, $after: String) {
@@ -123,7 +122,7 @@ def get_packages_via_graphql():
                 break
 
             if "data" not in data or "organization" not in data["data"]:
-                print(f"❌ Unexpected GraphQL response structure")
+                print("❌ Unexpected GraphQL response structure")
                 break
 
             org_data = data["data"]["organization"]
@@ -179,7 +178,7 @@ def get_packages(package_type="container"):
             if page == 1 and not use_user_endpoint:
                 print("⚠️ Org endpoint failed (404), trying user endpoint...")
                 use_user_endpoint = True
-                base_url = f"https://api.github.com/user/packages"
+                base_url = "https://api.github.com/user/packages"
                 url = f"{base_url}?package_type={package_type}&per_page={per_page}&page={page}"
                 try:
                     res = requests.get(url, headers=HEADERS)
@@ -193,10 +192,7 @@ def get_packages(package_type="container"):
 
         if res.status_code == 400:
             # Bad request - known GitHub API issue with container packages
-            error_text = res.text
-            print(
-                "⚠️ Bad Request (400) - Known GitHub API issue with container packages"
-            )
+            print("⚠️ Bad Request (400) - Known GitHub API issue with container packages")
             print("   Trying GraphQL API as workaround...")
 
             # Try GraphQL API as workaround
@@ -205,23 +201,17 @@ def get_packages(package_type="container"):
                 return graphql_packages
             else:
                 print("❌ GraphQL workaround also failed")
-                print(
-                    "   💡 Hint: This is a known GitHub API limitation. Consider using GitHub CLI:"
-                )
+                print("   💡 Hint: This is a known GitHub API limitation. Consider using GitHub CLI:")
                 print(f"      gh api orgs/{ORG_NAME}/packages?package_type=container")
                 break
 
         if res.status_code == 401:
-            print(
-                "❌ Unauthorized (401): Check if GITHUB_TOKEN is valid and has 'read:packages' permission"
-            )
+            print("❌ Unauthorized (401): Check if GITHUB_TOKEN is valid and has 'read:packages' permission")
             break
 
         if res.status_code == 403:
             print("❌ Forbidden (403): Token may not have 'read:packages' permission")
-            print(
-                "   💡 Hint: Ensure the token has 'read:packages' and 'delete:packages' scopes"
-            )
+            print("   💡 Hint: Ensure the token has 'read:packages' and 'delete:packages' scopes")
             break
 
         if res.status_code != 200:
@@ -290,9 +280,7 @@ def delete_version(package_name, version_id, package_type="container"):
         if res.status_code == 204:
             return True
         else:
-            print(
-                f"❌ Failed to delete version {version_id} for {package_name}: {res.status_code} {res.text}"
-            )
+            print(f"❌ Failed to delete version {version_id} for {package_name}: {res.status_code} {res.text}")
             return False
 
 
@@ -332,7 +320,7 @@ def main():
     mode = "🔍 DRY RUN" if DRY_RUN else "🧹 Pruning"
     print(f"{mode} registry for {ORG_NAME}...")
     if DRY_RUN:
-        print(f"   ⚠️ DRY RUN MODE: No versions will actually be deleted")
+        print("   ⚠️ DRY RUN MODE: No versions will actually be deleted")
     print(f"   📦 Supported addons: Keep {KEEP_VERSIONS_SUPPORTED} versions")
     print(f"   🏚️ Unsupported addons: Keep {KEEP_VERSIONS_UNSUPPORTED} version(s)")
     print()
@@ -366,9 +354,7 @@ def main():
             continue
 
         is_unsupported = is_unsupported_addon(name)
-        keep_versions = (
-            KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
-        )
+        keep_versions = KEEP_VERSIONS_UNSUPPORTED if is_unsupported else KEEP_VERSIONS_SUPPORTED
         addon_type = "🏚️ UNSUPPORTED" if is_unsupported else "📦 Supported"
 
         print(f"👉 {addon_type}: {name} (keep {keep_versions})...")
@@ -415,14 +401,10 @@ def main():
 
     print()
     if DRY_RUN:
-        print(
-            f"📊 Summary: Would delete {deleted_count} version(s) across {len(packages)} package(s)"
-        )
+        print(f"📊 Summary: Would delete {deleted_count} version(s) across {len(packages)} package(s)")
         print("   ℹ️ Run without DRY_RUN=true to actually delete these versions")
     else:
-        print(
-            f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)"
-        )
+        print(f"📊 Summary: Deleted {deleted_count} version(s) across {len(packages)} package(s)")
 
 
 if __name__ == "__main__":

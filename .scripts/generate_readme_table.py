@@ -8,7 +8,6 @@ generates a 4-column table placeholder, but the actual "Added" dates should
 be preserved from the existing README.md or added manually for new add-ons.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -49,18 +48,12 @@ def find_addons(repo_root: Path) -> list[dict]:
     for directory in dirs_to_check:
         for item in sorted(directory.iterdir()):
             # Exclude 'addons' to avoid processing the parent directory itself
-            if (
-                item.is_dir()
-                and not item.name.startswith((".", "_"))
-                and item.name != "addons"
-            ):
+            if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "addons":
                 config_path = item / "config.yaml"
                 if config_path.exists():
                     # Calculate relative path from repo_root
                     rel_path = item.relative_to(repo_root).as_posix()
-                    addons.append(
-                        {"path": rel_path, "config": config_path, "unsupported": False}
-                    )
+                    addons.append({"path": rel_path, "config": config_path, "unsupported": False})
 
     # Unsupported addons
     unsupported_dir = repo_root / ".unsupported"

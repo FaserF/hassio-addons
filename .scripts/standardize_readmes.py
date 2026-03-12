@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 
 import yaml
 
@@ -17,11 +16,7 @@ def check_domain(s, domains):
     for domain in domains:
         # Escaping dots for regex and checking for word boundaries or non-domain chars
         # This prevents matches like trusted.com.attacker.com
-        pattern = (
-            r"(?:^|[\s\"'\(])(?:https?://)?(?:[^/\s@]+\.)?"
-            + re.escape(domain)
-            + r"(?:/|\s|$|[\"' \)])"
-        )
+        pattern = r"(?:^|[\s\"'\(])(?:https?://)?(?:[^/\s@]+\.)?" + re.escape(domain) + r"(?:/|\s|$|[\"' \)])"
         if re.search(pattern, s, re.IGNORECASE):
             return True
     return False
@@ -67,7 +62,7 @@ def is_beta(version_str):
         if major < 1:
             return True
         return False
-    except:
+    except Exception:
         return True
 
 
@@ -143,12 +138,7 @@ def clean_existing_content(content):
                 continue
 
             # Detect Logo
-            if (
-                "![Logo]" in sline
-                or "logo.png" in sline
-                or "icon.png" in sline
-                or "<img src=" in sline
-            ):
+            if "![Logo]" in sline or "logo.png" in sline or "icon.png" in sline or "<img src=" in sline:
                 continue
 
             # Detect Quotes/Description (Common at top)
@@ -156,10 +146,7 @@ def clean_existing_content(content):
                 continue
 
             # Detect Beta Warning (Avoid duplicates)
-            if (
-                "Experimental / Beta Status" in sline
-                or "primarily developed for personal use" in sline
-            ):
+            if "Experimental / Beta Status" in sline or "primarily developed for personal use" in sline:
                 continue
 
             # Detect HR
@@ -190,10 +177,7 @@ def clean_existing_content(content):
                 continue
 
             # Filter Badges/Logos inside content body
-            if "]" in sline and (
-                "badge" in sline
-                or check_domain(sline, ["shields.io", "my.home-assistant.io"])
-            ):
+            if "]" in sline and ("badge" in sline or check_domain(sline, ["shields.io", "my.home-assistant.io"])):
                 continue
             if "![Logo]" in sline or "logo.png" in sline or "<img src=" in sline:
                 continue
@@ -208,9 +192,7 @@ def clean_existing_content(content):
 
             # Filter Configuration Header -> STOP PROCESSING
             # We regenerate this section fully
-            if sline.startswith("## Configuration") or sline.startswith(
-                "## ⚙️ Configuration"
-            ):
+            if sline.startswith("## Configuration") or sline.startswith("## ⚙️ Configuration"):
                 break
 
             # Filter HRs in content to avoid stacking separators
@@ -269,15 +251,13 @@ def find_addons(base_path):
         for item in os.listdir(unsupported_path):
             item_path = os.path.join(unsupported_path, item)
             if os.path.isdir(item_path):
-                if os.path.exists(
-                    os.path.join(item_path, "config.yaml")
-                ) or os.path.exists(os.path.join(item_path, "config.json")):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                    os.path.join(item_path, "config.json")
+                ):
                     addons.append(item_path)
 
     # Also check if cwd is an addon
-    if os.path.exists(os.path.join(base_path, "config.yaml")) or os.path.exists(
-        os.path.join(base_path, "config.json")
-    ):
+    if os.path.exists(os.path.join(base_path, "config.yaml")) or os.path.exists(os.path.join(base_path, "config.json")):
         pass
 
     return addons

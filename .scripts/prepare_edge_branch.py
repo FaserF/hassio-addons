@@ -15,7 +15,6 @@ Usage:
 import json
 import os
 import re
-import sys
 
 import yaml
 
@@ -39,9 +38,7 @@ def remove_image_from_config(config_path: str) -> bool:
         # First remove uncommented image lines
         new_content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
         # Then remove commented out image lines
-        new_content = re.sub(
-            r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE
-        )
+        new_content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE)
 
         if new_content != content:
             with open(config_path, "w", encoding="utf-8") as f:
@@ -80,17 +77,11 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
 
         # Try multiple patterns to handle different quote styles
         # Pattern 1: name: "Value" (double quotes)
-        pattern_dq = re.compile(
-            rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE
-        )
+        pattern_dq = re.compile(rf'^name:\s+"({re.escape(current_name)})"$', re.MULTILINE)
         # Pattern 2: name: 'Value' (single quotes)
-        pattern_sq = re.compile(
-            rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE
-        )
+        pattern_sq = re.compile(rf"^name:\s+'({re.escape(current_name)})'$", re.MULTILINE)
         # Pattern 3: name: Value (no quotes)
-        pattern_nq = re.compile(
-            rf"^name:\s+({re.escape(current_name)})\s*$", re.MULTILINE
-        )
+        pattern_nq = re.compile(rf"^name:\s+({re.escape(current_name)})\s*$", re.MULTILINE)
 
         new_content = content
         updated = False
@@ -135,9 +126,7 @@ def remap_ports_in_config(config_path: str) -> bool:
 
         # If host_network is enabled, we cannot remap ports
         if data.get("host_network") is True:
-            print(
-                f"   ℹ️  Skipping port remapping for {config_path} (host_network enabled)"
-            )
+            print(f"   ℹ️  Skipping port remapping for {config_path} (host_network enabled)")
             return False
 
         new_content = content
@@ -152,9 +141,7 @@ def remap_ports_in_config(config_path: str) -> bool:
             new_port = original_port + 10000
 
             # Construct regex to find this specific line
-            pattern = re.compile(
-                rf"^(\s+){re.escape(str(port_key))}:\s+{original_port}$", re.MULTILINE
-            )
+            pattern = re.compile(rf"^(\s+){re.escape(str(port_key))}:\s+{original_port}$", re.MULTILINE)
 
             if pattern.search(new_content):
                 new_content = pattern.sub(rf"\g<1>{port_key}: {new_port}", new_content)
@@ -234,9 +221,7 @@ def update_repository_json() -> bool:
             data["channels"] = {}
 
         # Set up edge channel, inheriting from stable if available
-        base_channel = data.get("channels", {}).get(
-            "stable", {"description": "Stable builds"}
-        )
+        base_channel = data.get("channels", {}).get("stable", {"description": "Stable builds"})
         data["channels"]["edge"] = base_channel.copy()
         data["channels"]["edge"]["name"] = "Edge"
         data["channels"]["edge"]["description"] = "Development/Edge builds"

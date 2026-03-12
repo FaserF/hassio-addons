@@ -85,9 +85,7 @@ def remove_banner(params):
             print(f"✅ Restoring {path} to SUPPORTED status in README...")
             import re
 
-            new_content = re.sub(
-                r"\n{3,}", "\n\n", content.replace(UNSUPPORTED_BANNER.strip(), "")
-            )
+            new_content = re.sub(r"\n{3,}", "\n\n", content.replace(UNSUPPORTED_BANNER.strip(), ""))
 
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
@@ -122,9 +120,7 @@ def main():
     if os.path.exists(unsupported_dir):
         for item in os.listdir(unsupported_dir):
             path = os.path.join(unsupported_dir, item)
-            if os.path.isdir(path) and os.path.exists(
-                os.path.join(path, "config.yaml")
-            ):
+            if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
                 add_banner({"path": path})
 
     # 2. Scan Root folders -> MUST NOT have Banner
@@ -135,7 +131,7 @@ def main():
         if os.path.isdir(path) and os.path.exists(os.path.join(path, "config.yaml")):
             remove_banner({"path": path})
 
-    print(f"✅ Processed all add-ons for status updates.")
+    print("✅ Processed all add-ons for status updates.")
 
 
 if __name__ == "__main__":

@@ -28,15 +28,12 @@ def replace_in_file(filepath, mapping):
             if occurrences > 1:
                 warnings.append((original, occurrences))
                 print(
-                    f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', "
-                    "replacing only first match"
+                    f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', " "replacing only first match"
                 )
             # Replace first occurrence only
             # Handle multiline replacements by normalizing line endings
             normalized_original = original.replace("\r\n", "\n").replace("\r", "\n")
-            normalized_replacement = replacement.replace("\r\n", "\n").replace(
-                "\r", "\n"
-            )
+            normalized_replacement = replacement.replace("\r\n", "\n").replace("\r", "\n")
             content = content.replace(normalized_original, normalized_replacement, 1)
             replaced.append(original)
 
@@ -92,9 +89,7 @@ if __name__ == "__main__":
     if failed:
         print(f"Failed patterns: {len(failed)}")
     if warnings:
-        print(
-            f"Patterns with multiple occurrences (only first replaced): {len(warnings)}"
-        )
+        print(f"Patterns with multiple occurrences (only first replaced): {len(warnings)}")
 
     # Cleanup backup on success
     os.remove(backup_path)

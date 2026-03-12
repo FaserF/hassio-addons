@@ -82,9 +82,7 @@ def extract_about_from_docs(addon_path):
         docs_content = f.read()
 
     # Look for "## About" section
-    about_match = re.search(
-        r"##\s+About\s*\n(.*?)(?=\n##|$)", docs_content, re.DOTALL | re.IGNORECASE
-    )
+    about_match = re.search(r"##\s+About\s*\n(.*?)(?=\n##|$)", docs_content, re.DOTALL | re.IGNORECASE)
     if about_match:
         about_text = about_match.group(1).strip()
         # Clean up the text (remove excessive newlines)
@@ -96,7 +94,6 @@ def extract_about_from_docs(addon_path):
 
 def get_addon_specific_content(addon_dirname, config, addon_path):
     """Get addon-specific content based on addon name."""
-    addon_name = config.get("name", addon_dirname) if config else addon_dirname
 
     # Apache2 - Versions table
     if addon_dirname == "apache2":
@@ -137,9 +134,7 @@ def find_insertion_point(content, addon_dirname):
             if line.strip().startswith(">") and "Bluetooth MQTT Gateway" in line:
                 # Find end of quote block
                 j = i + 1
-                while j < len(lines) and (
-                    lines[j].strip().startswith(">") or lines[j].strip() == ""
-                ):
+                while j < len(lines) and (lines[j].strip().startswith(">") or lines[j].strip() == ""):
                     j += 1
                 return j
 
@@ -149,9 +144,7 @@ def find_insertion_point(content, addon_dirname):
             if line.strip().startswith(">") and "Open Source Webserver" in line:
                 # Find end of quote block
                 j = i + 1
-                while j < len(lines) and (
-                    lines[j].strip().startswith(">") or lines[j].strip() == ""
-                ):
+                while j < len(lines) and (lines[j].strip().startswith(">") or lines[j].strip() == ""):
                     j += 1
                 # Skip orphaned text lines
                 while j < len(lines) and lines[j].strip().startswith("If you"):
@@ -161,14 +154,10 @@ def find_insertion_point(content, addon_dirname):
     # For minimal Apache variants, insert after description
     if addon_dirname in ["apache2-minimal", "apache2-minimal-mariadb"]:
         for i, line in enumerate(lines):
-            if line.strip().startswith(">") and (
-                "Webserver" in line or "MariaDB" in line
-            ):
+            if line.strip().startswith(">") and ("Webserver" in line or "MariaDB" in line):
                 # Find end of quote block
                 j = i + 1
-                while j < len(lines) and (
-                    lines[j].strip().startswith(">") or lines[j].strip() == ""
-                ):
+                while j < len(lines) and (lines[j].strip().startswith(">") or lines[j].strip() == ""):
                     j += 1
                 # Skip orphaned text lines
                 while j < len(lines) and lines[j].strip().startswith("If you"):
@@ -181,14 +170,10 @@ def find_insertion_point(content, addon_dirname):
         if line.strip().startswith(">") and not line.strip().startswith("> [!"):
             # Find end of quote block
             j = i + 1
-            while j < len(lines) and (
-                lines[j].strip().startswith(">") or lines[j].strip() == ""
-            ):
+            while j < len(lines) and (lines[j].strip().startswith(">") or lines[j].strip() == ""):
                 j += 1
             # Skip beta warnings if present
-            while j < len(lines) and (
-                lines[j].strip().startswith("> [!") or lines[j].strip() == "---"
-            ):
+            while j < len(lines) and (lines[j].strip().startswith("> [!") or lines[j].strip() == "---"):
                 if lines[j].strip() == "---":
                     j += 1
                     break
@@ -246,18 +231,12 @@ def process_addon(addon_path, dry_run=False):
 
     # For minimal Apache variants
     if addon_dirname in ["apache2-minimal", "apache2-minimal-mariadb"]:
-        if (
-            "## 📚 Documentation" in content
-            and "Full Apache2 Add-on Documentation" in content
-        ):
+        if "## 📚 Documentation" in content and "Full Apache2 Add-on Documentation" in content:
             print(f"[SKIP] Skipping {addon_dirname}: Documentation link already exists")
             return False
 
     # For bt-mqtt-gateway
-    if (
-        addon_dirname == "bt-mqtt-gateway"
-        and "This add-on is no longer supported" in content
-    ):
+    if addon_dirname == "bt-mqtt-gateway" and "This add-on is no longer supported" in content:
         print(f"[SKIP] Skipping {addon_dirname}: Warning already exists")
         return False
 
@@ -275,11 +254,7 @@ def process_addon(addon_path, dry_run=False):
     new_lines = lines[:insert_line]
 
     # Add separator if needed
-    if (
-        new_lines
-        and new_lines[-1].strip()
-        and not new_lines[-1].strip().startswith("---")
-    ):
+    if new_lines and new_lines[-1].strip() and not new_lines[-1].strip().startswith("---"):
         new_lines.append("")
 
     # Add the specific content
@@ -322,9 +297,9 @@ def find_addons(base_path):
         for item in os.listdir(unsupported_path):
             item_path = os.path.join(unsupported_path, item)
             if os.path.isdir(item_path):
-                if os.path.exists(
-                    os.path.join(item_path, "config.yaml")
-                ) or os.path.exists(os.path.join(item_path, "config.json")):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                    os.path.join(item_path, "config.json")
+                ):
                     addons.append(item_path)
 
     return addons
@@ -336,16 +311,10 @@ if __name__ == "__main__":
     import sys
 
     if sys.platform == "win32":
-        sys.stdout = io.TextIOWrapper(
-            sys.stdout.buffer, encoding="utf-8", errors="replace"
-        )
-        sys.stderr = io.TextIOWrapper(
-            sys.stderr.buffer, encoding="utf-8", errors="replace"
-        )
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-    parser = argparse.ArgumentParser(
-        description="Add addon-specific content sections to README files"
-    )
+    parser = argparse.ArgumentParser(description="Add addon-specific content sections to README files")
     parser.add_argument(
         "--addon",
         help="Process specific addon directory only",
@@ -375,6 +344,4 @@ if __name__ == "__main__":
             if process_addon(addon, dry_run=args.dry_run):
                 updated_count += 1
 
-        print(
-            f"\n{'Would update' if args.dry_run else 'Updated'} {updated_count} addon(s)."
-        )
+        print(f"\n{'Would update' if args.dry_run else 'Updated'} {updated_count} addon(s).")

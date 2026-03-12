@@ -176,9 +176,7 @@ def add_image_field(config_path, slug, dry_run=False):
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(
-        description="Ensure all add-ons have an 'image' field"
-    )
+    parser = argparse.ArgumentParser(description="Ensure all add-ons have an 'image' field")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -231,7 +229,7 @@ def main():
             errors.append((addon_name, message))
             print(f"❌ Error processing {addon_name}: {message}")
 
-    print(f"\n📊 Summary:")
+    print("\n📊 Summary:")
     print(f"  ✅ {'Would update' if args.dry_run else 'Updated'}: {len(updated)}")
     print(f"  ⏭️  Skipped (already has image): {len(skipped)}")
     if errors:

@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 
@@ -33,12 +32,7 @@ def main():
         item_path = os.path.join(ROOT_DIR, item)
 
         # Skip if not a directory or is hidden or is the target dir
-        if (
-            not os.path.isdir(item_path)
-            or item.startswith(".")
-            or item == TARGET_DIR
-            or item == "scripts"
-        ):
+        if not os.path.isdir(item_path) or item.startswith(".") or item == TARGET_DIR or item == "scripts":
             continue
 
         # Check if item is in unsupported list

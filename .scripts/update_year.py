@@ -119,10 +119,7 @@ def main():
         license_files = list(repo_root.rglob("LICENSE.txt"))
         for license_file in license_files:
             # Skip if in .git or other hidden directories
-            if any(
-                part.startswith(".") and part != ".unsupported"
-                for part in license_file.parts
-            ):
+            if any(part.startswith(".") and part != ".unsupported" for part in license_file.parts):
                 continue
 
             if update_license_file(str(license_file), old_year, new_year):
@@ -136,10 +133,7 @@ def main():
             if license_file.suffix:  # Skip if has extension
                 continue
             # Skip if in .git or other hidden directories
-            if any(
-                part.startswith(".") and part != ".unsupported"
-                for part in license_file.parts
-            ):
+            if any(part.startswith(".") and part != ".unsupported" for part in license_file.parts):
                 continue
 
             if update_license_file(str(license_file), old_year, new_year):
