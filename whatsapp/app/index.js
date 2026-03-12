@@ -2373,7 +2373,7 @@ app.get('/api/dashboard', (req, res) => {
   signalInterest(sessionId);
 
   logger.debug({ sessionId, requestedSessionId: sessionId }, 'Dashboard API request');
-  
+
   if (session.stats.sent > 0 || session.stats.received > 0) {
     logger.debug({ sessionId, stats: session.stats }, '📊 Session has activity');
   }
