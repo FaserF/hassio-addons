@@ -95,7 +95,8 @@ foreach ($addon in $Addons) {
 
     # Check ingress_port (required for ingress add-ons)
     if (-not $ingressConfig.ingress_port) {
-        $issues += "Missing 'ingress_port' (required for ingress add-ons)"
+        $ingressConfig.ingress_port = 8099
+        $warnings += "Missing 'ingress_port' - defaulting to 8099"
     }
     elseif ($ingressConfig.ingress_port -isnot [int] -and $ingressConfig.ingress_port -notmatch '^\d+$') {
         $issues += "Invalid 'ingress_port': must be a valid port number"

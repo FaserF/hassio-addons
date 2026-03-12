@@ -26,6 +26,7 @@ jobs:
         id: find-pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
           echo "Looking for PR with head SHA: $HEAD_SHA"
@@ -42,7 +43,6 @@ jobs:
 
             if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
               echo "DEBUG: No PR found via SHA ($HEAD_SHA). Trying branch fallback..."
-              HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
               echo "DEBUG: Head Branch: '$HEAD_BRANCH'"
 
               if [ -n "$HEAD_BRANCH" ]; then
@@ -59,7 +59,7 @@ jobs:
 
             if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
               echo "DEBUG: Final PR_DATA check failed."
-              echo "No PR found for commit $HEAD_SHA or branch ${{ github.event.workflow_run.head_branch }}"
+              echo "No PR found for commit $HEAD_SHA or branch $HEAD_BRANCH"
               echo "found=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi

@@ -288,6 +288,9 @@ function getSession(rawSessionId) {
       firstFailureTime: null,
       eventQueue: [],
       connectionLogs: [],
+      recentSent: [],
+      recentReceived: [],
+      recentFailures: [],
       messageStore: new Map(),
       stats: {
         sent: 0,
@@ -316,6 +319,29 @@ function addLog(session, msg, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   session.connectionLogs.unshift({ timestamp, msg, type });
   if (session.connectionLogs.length > 50) session.connectionLogs.pop();
+}
+
+function trackSent(session, target, message) {
+  const timestamp = new Date().toLocaleTimeString();
+  session.recentSent.unshift({ timestamp, target: maskData(target), message: maskData(message) });
+  if (session.recentSent.length > 5) session.recentSent.pop();
+}
+
+function trackReceived(session, sender, message) {
+  const timestamp = new Date().toLocaleTimeString();
+  session.recentReceived.unshift({ timestamp, sender: maskData(sender), message: maskData(message) });
+  if (session.recentReceived.length > 5) session.recentReceived.pop();
+}
+
+function trackFailure(session, target, message, reason) {
+  const timestamp = new Date().toLocaleTimeString();
+  session.recentFailures.unshift({
+    timestamp,
+    target: maskData(target),
+    message: maskData(message),
+    reason: reason,
+  });
+  if (session.recentFailures.length > 5) session.recentFailures.pop();
 }
 
 function getAuthDir(sessionId) {
@@ -588,7 +614,14 @@ async function connectToWhatsApp(sessionId = 'default') {
 
   session.sock.ev.on('creds.update', saveCreds);
 
-  session.sock.ev.on('connection.update', async (update) => {
+  const sock = session.sock;
+  sock.ev.on('connection.update', async (update) => {
+    // Ignore events from old/closed sockets to prevent race conditions
+    if (session.sock !== sock) {
+      logger.debug({ sessionId }, 'Ignoring connection.update from stale socket');
+      return;
+    }
+
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -742,10 +775,12 @@ async function connectToWhatsApp(sessionId = 'default') {
                 mediaUrl = `/media/${filename}`;
               }
             } catch (err) {
-              logger.error({ error: err.message, sessionId }, 'Failed to download media');
               text = `${text} (Media Download Failed)`;
+              trackFailure(session, senderNumber, `Media: ${messageType}`, err.message);
             }
           }
+
+          trackReceived(session, senderNumber, text);
 
           if (!text && !mediaUrl) {
             text = 'Unknown/Unsupported Message Type';
@@ -976,8 +1011,14 @@ app.post('/send_message', async (req, res) => {
     await session.sock.sendPresenceUpdate('composing', jid);
     await delay(250);
 
-    await Promise.race([
-      session.sock.sendMessage(jid, { text: message }, { quoted }),
+    const { expiration } = req.body;
+
+    const sentMsg = await Promise.race([
+      session.sock.sendMessage(
+        jid,
+        { text: message },
+        { quoted, ephemeralExpiration: expiration }
+      ),
       new Promise((_, reject) =>
         setTimeout(() => {
           logger.error(
@@ -1000,7 +1041,8 @@ app.post('/send_message', async (req, res) => {
     session.stats.last_sent_message = maskData(message);
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, message);
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = maskData(message);
@@ -1008,6 +1050,7 @@ app.post('/send_message', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send message: ${e.message}`, 'error');
+    trackFailure(session, number, message, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1015,26 +1058,27 @@ app.post('/send_message', async (req, res) => {
 // POST /send_image
 app.post('/send_image', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, caption, quotedMessageId } = req.body;
+  const { number, url, caption, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(
+    const sentMsg = await session.sock.sendMessage(
       jid,
       {
         image: { url: url },
         caption: caption,
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = 'Image';
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, caption ? `Image: ${caption}` : 'Image');
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = caption ? `Image: ${maskData(caption)}` : 'Image';
@@ -1042,6 +1086,7 @@ app.post('/send_image', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send image: ${e.message}`, 'error');
+    trackFailure(session, number, caption ? `Image: ${caption}` : 'Image', e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1049,14 +1094,14 @@ app.post('/send_image', async (req, res) => {
 // POST /send_poll
 app.post('/send_poll', async (req, res) => {
   const session = getReqSession(req);
-  const { number, question, options, quotedMessageId } = req.body;
+  const { number, question, options, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(
+    const sentMsg = await session.sock.sendMessage(
       jid,
       {
         poll: {
@@ -1065,13 +1110,14 @@ app.post('/send_poll', async (req, res) => {
           selectableCount: 1,
         },
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Poll: ${question}`;
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, `Poll: ${question}`);
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Poll: ${maskData(question)}`;
@@ -1079,6 +1125,7 @@ app.post('/send_poll', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send poll: ${e.message}`, 'error');
+    trackFailure(session, number, `Poll: ${question}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1086,14 +1133,14 @@ app.post('/send_poll', async (req, res) => {
 // POST /send_location
 app.post('/send_location', async (req, res) => {
   const session = getReqSession(req);
-  const { number, latitude, longitude, title, description, quotedMessageId } = req.body;
+  const { number, latitude, longitude, title, description, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(
+    const sentMsg = await session.sock.sendMessage(
       jid,
       {
         location: {
@@ -1103,13 +1150,14 @@ app.post('/send_location', async (req, res) => {
           address: description,
         },
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, `Location: ${title || 'Pinned'}`);
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Location: ${maskData(title) || 'Pinned'}`;
@@ -1117,6 +1165,7 @@ app.post('/send_location', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send location: ${e.message}`, 'error');
+    trackFailure(session, number, `Location: ${title || 'Pinned'}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1129,7 +1178,7 @@ app.post('/send_reaction', async (req, res) => {
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(jid, {
+    const sentMsg = await session.sock.sendMessage(jid, {
       react: {
         text: reaction,
         key: {
@@ -1139,7 +1188,7 @@ app.post('/send_reaction', async (req, res) => {
         },
       },
     });
-    res.json({ status: 'sent' });
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Reaction: ${maskData(reaction)}`;
@@ -1147,6 +1196,7 @@ app.post('/send_reaction', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send reaction: ${e.message}`, 'error');
+    trackFailure(session, number, `Reaction: ${reaction}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1154,7 +1204,7 @@ app.post('/send_reaction', async (req, res) => {
 // POST /send_buttons
 app.post('/send_buttons', async (req, res) => {
   const session = getReqSession(req);
-  const { number, message, buttons, footer, quotedMessageId } = req.body;
+  const { number, message, buttons, footer, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
@@ -1190,13 +1240,14 @@ app.post('/send_buttons', async (req, res) => {
           },
         },
       },
-      { messageId, quoted }
+      { messageId, quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Buttons: ${message}`;
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, `Buttons: ${message}`);
+    res.json({ status: 'sent', id: messageId });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Buttons: ${maskData(message)}`;
@@ -1204,6 +1255,7 @@ app.post('/send_buttons', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send buttons: ${e.message}`, 'error');
+    trackFailure(session, number, `Buttons: ${message}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1211,14 +1263,14 @@ app.post('/send_buttons', async (req, res) => {
 // POST /send_document
 app.post('/send_document', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, fileName, caption, quotedMessageId } = req.body;
+  const { number, url, fileName, caption, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(
+    const sentMsg = await session.sock.sendMessage(
       jid,
       {
         document: { url: url },
@@ -1226,13 +1278,14 @@ app.post('/send_document', async (req, res) => {
         caption: caption,
         mimetype: 'application/octet-stream',
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = `Document: ${fileName || 'unnamed'}`;
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, `Document: ${fileName || 'unnamed'}`);
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = `Document: ${maskData(fileName) || 'unnamed'}`;
@@ -1240,6 +1293,7 @@ app.post('/send_document', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send document: ${e.message}`, 'error');
+    trackFailure(session, number, `Document: ${fileName || 'unnamed'}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1247,26 +1301,27 @@ app.post('/send_document', async (req, res) => {
 // POST /send_video
 app.post('/send_video', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, caption, quotedMessageId } = req.body;
+  const { number, url, caption, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
-    await session.sock.sendMessage(
+    const sentMsg = await session.sock.sendMessage(
       jid,
       {
         video: { url: url },
         caption: caption,
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = caption ? `Video: ${maskData(caption)}` : 'Video';
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
-    res.json({ status: 'sent' });
+    trackSent(session, number, caption ? `Video: ${caption}` : 'Video');
+    res.json({ status: 'sent', id: sentMsg.key.id });
   } catch (e) {
     session.stats.failed += 1;
     session.stats.last_failed_message = caption ? `Video: ${maskData(caption)}` : 'Video';
@@ -1274,6 +1329,7 @@ app.post('/send_video', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send video: ${e.message}`, 'error');
+    trackFailure(session, number, caption ? `Video: ${caption}` : 'Video', e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1281,7 +1337,7 @@ app.post('/send_video', async (req, res) => {
 // POST /send_audio
 app.post('/send_audio', async (req, res) => {
   const session = getReqSession(req);
-  const { number, url, ptt, quotedMessageId } = req.body;
+  const { number, url, ptt, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
@@ -1295,12 +1351,13 @@ app.post('/send_audio', async (req, res) => {
         ptt: !!ptt,
         mimetype: 'audio/mp4',
       },
-      { quoted }
+      { quoted, ephemeralExpiration: expiration }
     );
     session.stats.sent += 1;
     session.stats.last_sent_message = ptt ? 'Voice Note' : 'Audio';
     session.stats.last_sent_target = maskData(number);
     session.stats.last_sent_time = Date.now();
+    trackSent(session, number, ptt ? 'Voice Note' : 'Audio');
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1309,6 +1366,7 @@ app.post('/send_audio', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send audio: ${e.message}`, 'error');
+    trackFailure(session, number, ptt ? 'Voice Note' : 'Audio', e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1332,6 +1390,7 @@ app.post('/revoke_message', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Revoke: ${message_id}`;
     session.stats.last_sent_target = maskData(number);
+    trackSent(session, number, `Revoke: ${message_id}`);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1339,6 +1398,7 @@ app.post('/revoke_message', async (req, res) => {
     session.stats.last_failed_target = maskData(number);
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to revoke message: ${e.message}`, 'error');
+    trackFailure(session, number, `Revoke: ${message_id}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1365,6 +1425,7 @@ app.post('/edit_message', async (req, res) => {
     session.stats.sent += 1;
     session.stats.last_sent_message = `Edit: ${message_id}`;
     session.stats.last_sent_target = maskData(number);
+    trackSent(session, number, `Edit: ${message_id}`);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1372,6 +1433,7 @@ app.post('/edit_message', async (req, res) => {
     session.stats.last_failed_target = maskData(number);
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to edit message: ${e.message}`, 'error');
+    trackFailure(session, number, `Edit: ${message_id}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1441,9 +1503,8 @@ app.post('/mark_as_read', async (req, res) => {
   }
 });
 
-// GET /health - Simple health check endpoint for ingress readiness
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'whatsapp-addon' });
+  res.status(200).json({ status: 'ok', service: 'whatsapp-homeassistant-app' });
 });
 
 // --- Dashboard (Server-Side Rendered) ---
@@ -1476,6 +1537,13 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     number: s.stats.my_number || 'Unknown',
   }));
 
+  const sessionOptions = sessionList
+    .map(
+      (s) =>
+        `<option value="${s.id}" ${s.id === sessionId ? 'selected' : ''}>${s.id} (${s.connected ? '✅' : '❌'})</option>`
+    )
+    .join('');
+
   // Determine current state
   const statusClass = session.isConnected
     ? 'connected'
@@ -1486,7 +1554,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     ? 'Connected 🟢'
     : session.currentQR
       ? 'Scan QR Code 📱'
-      : 'Disconnected 🔴';
+      : `Disconnected ${session.disconnectReason === 'logged_out' ? '🚫' : '🔴'}`;
   const showQR = !session.isConnected && session.currentQR;
   const showQRPlaceholder = !session.isConnected && !session.currentQR;
 
@@ -1500,12 +1568,35 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
       )
       .join('') || '<div class="log-entry">No logs yet</div>';
 
-  const sessionOptions = sessionList
-    .map(
-      (s) =>
-        `<option value="${s.id}" ${s.id === sessionId ? 'selected' : ''}>${s.id} (${s.connected ? '✅' : '❌'})</option>`
-    )
-    .join('');
+  // Recent message histories
+  const sentList = session.recentSent.map(m => `
+    <div class="history-item">
+      <span class="history-time">${m.timestamp}</span>
+      <span class="history-target">To: ${m.target}</span>
+      <div class="history-msg">${m.message}</div>
+    </div>
+  `).join('') || '<div class="empty-state">No messages sent recently</div>';
+
+  const receivedList = session.recentReceived.map(m => `
+    <div class="history-item">
+      <span class="history-time">${m.timestamp}</span>
+      <span class="history-sender">From: ${m.sender}</span>
+      <div class="history-msg">${m.message}</div>
+    </div>
+  `).join('') || '<div class="empty-state">No messages received recently</div>';
+
+  const failureList = session.recentFailures.map(m => `
+    <div class="history-item failure">
+      <span class="history-time">${m.timestamp}</span>
+      <span class="history-target">Target: ${m.target}</span>
+      <div class="history-msg">${m.message}</div>
+      <div class="history-reason">Error: ${m.reason}</div>
+    </div>
+  `).join('') || '<div class="empty-state">No failures recorded</div>';
+
+  const uptimeStr = session.stats.start_time 
+    ? new Date(Date.now() - session.stats.start_time).toISOString().substr(11, 8)
+    : 'N/A';
 
   res.send(`
     <!DOCTYPE html>
@@ -1514,118 +1605,199 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="refresh" content="5">
-        <title>WhatsApp Addon - ${sessionId}</title>
+        <title>WhatsApp Homeassistant App - ${sessionId}</title>
         <style>
-            body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #111b21; }
-            .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; width: 95%; text-align: center; }
-            h1 { color: #00a884; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-            .session-id { font-size: 0.9rem; color: #667781; background: #f0f2f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
-            .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; margin: 15px 0; }
-            .status-badge.connected { background: #d9fdd3; color: #00a884; }
-            .status-badge.disconnected { background: #fde8e8; color: #dc3545; }
+            :root {
+                --primary: #00a884;
+                --primary-dark: #008f6f;
+                --bg: #f0f2f5;
+                --card-bg: #ffffff;
+                --text: #111b21;
+                --text-secondary: #667781;
+                --danger: #ea0038;
+                --warning: #ffbc00;
+                --success: #d9fdd3;
+                --border: #e9edef;
+                --sidebar-bg: #111b21;
+                --sidebar-text: #ffffff;
+            }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
+            
+            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+            .sidebar h1 { font-size: 1.4rem; margin: 0; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+            .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
+            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+            .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
+            .sidebar-link i { font-size: 1.2rem; }
+
+            .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+            .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+            .session-switcher { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; }
+
+            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+            .card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1rem; }
+            .card-title { font-weight: 700; font-size: 1.1rem; color: var(--text); display: flex; align-items: center; gap: 10px; }
+            
+            .status-section { display: flex; flex-direction: column; align-items: center; text-align: center; }
+            .status-badge { padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin: 10px 0; letter-spacing: 0.5px; }
+            .status-badge.connected { background: var(--success); color: var(--primary-dark); }
+            .status-badge.disconnected { background: #fee; color: var(--danger); }
             .status-badge.waiting { background: #fff8c5; color: #9a6700; }
-            .qr-container { margin: 20px 0; min-height: 264px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px dashed #d1d7db; border-radius: 8px; }
-            .qr-placeholder { color: #8696a0; font-size: 0.9rem; padding: 20px; }
-            img.qr-code { max-width: 264px; border-radius: 8px; }
-            .logs-container { margin-top: 20px; background: #111b21; color: #00ff41; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; text-align: left; max-height: 150px; overflow-y: auto; }
+            
+            .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px; }
+            .stat-box { background: var(--bg); padding: 10px; border-radius: 12px; }
+            .stat-val { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
+            .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
+
+            .qr-container { background: #fff; border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+            .qr-code { max-width: 200px; border-radius: 8px; }
+
+            .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+            .history-item { background: var(--bg); padding: 10px; border-radius: 10px; position: relative; }
+            .history-item.failure { border-left: 4px solid var(--danger); }
+            .history-time { font-size: 0.7rem; color: var(--text-secondary); display: block; }
+            .history-target, .history-sender { font-weight: 700; font-size: 0.85rem; margin: 4px 0; display: block; }
+            .history-msg { font-size: 0.9rem; color: #111b21; white-space: pre-wrap; word-break: break-all; }
+            .history-reason { color: var(--danger); font-size: 0.75rem; margin-top: 5px; font-style: italic; }
+            .empty-state { color: var(--text-secondary); font-style: italic; text-align: center; padding: 20px; }
+
+            .details-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
+            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+
+            .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 200px; overflow-y: auto; }
             .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
-            .log-time { color: #8696a0; margin-right: 8px; }
-            .log-type-error { color: #ff5f5f; }
-            .log-type-success { color: #00a884; }
-            .log-type-info { color: #53bdeb; }
-            .token-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e9edef; }
-            .token-box { background: #f0f2f5; padding: 12px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 0.8rem; border: 1px solid #d1d7db; user-select: all; cursor: text; }
-            .token-label { font-size: 0.8rem; color: #667781; margin-bottom: 8px; }
-            .footer { margin-top: 20px; font-size: 0.75rem; color: #8696a0; }
-            .refresh-hint { font-size: 0.75rem; color: #8696a0; margin-top: 10px; }
-            .switcher { margin: 15px 0; text-align: left; font-size: 0.85rem; }
-            select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d7db; margin-top: 5px; }
+
+            .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; }
+            
+            @media (max-width: 900px) {
+                body { flex-direction: column; }
+                .sidebar { width: auto; padding: 1rem; }
+                .grid { grid-template-columns: 1fr; }
+            }
         </style>
     </head>
     <body>
-        <div class="card">
-            <h1>📱 WhatsApp Addon <span class="session-id">${sessionId}</span></h1>
-
-            <div class="switcher">
-                <label for="sessionSelect">Switch Session:</label>
-                <select id="sessionSelect" onchange="window.location.href='?session_id=' + this.value">
-                    ${sessionOptions}
-                </select>
+        <div class="sidebar">
+            <h1>💬 WS-HA-App</h1>
+            <div class="sidebar-links">
+                <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
+                <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
+                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 Addon Repo</a>
+                <a href="/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
             </div>
-
-            <div class="status-badge ${statusClass}">${statusText}</div>
-
-            ${
-              showQR
-                ? `
-            <div class="qr-container">
-                <img class="qr-code" src="${session.currentQR}" alt="Scan QR Code with WhatsApp" />
-            </div>
-            `
-                : ''
-            }
-
-            ${
-              showQRPlaceholder
-                ? `
-            <div class="qr-container">
-                <div class="qr-placeholder">
-                    Waiting for QR Code...<br>
-                    <small>Ensure you've started the session from Home Assistant.</small>
+            
+            <div style="margin-top: auto;">
+                <div class="stat-label">System Info</div>
+                <div style="font-size: 0.8rem; color: #8696a0;">
+                    Node: ${process.version}<br>
+                    Addon: v${process.env.ADDON_VERSION || '1.3.0'}<br>
+                    Baileys: v${BAILEYS_VERSION}
                 </div>
             </div>
-            `
-                : ''
-            }
+        </div>
 
-            <div class="logs-container">
-                ${recentLogs}
-            </div>
-
-            <div class="token-section">
-                <div class="token-label">🔑 API Token (for Integration)</div>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="apiTokenInput" value="${API_TOKEN}" readonly
-                        style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #d1d7db; font-family: monospace; background: #f0f2f5; color: #54656f;">
-                    <button onclick="copyToken()" style="padding: 0 20px; background: #00a884; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                        Copy
-                    </button>
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h2 style="margin:0;">Dashboard Overview</h2>
+                <div class="session-switcher">
+                    <span>Session:</span>
+                    <select onchange="window.location.href='?session_id=' + this.value">
+                        ${sessionOptions}
+                    </select>
                 </div>
-                <div id="copyFeedback" style="display: none; color: #00a884; font-size: 0.8rem; margin-top: 5px; text-align: right;">Copied!</div>
             </div>
 
-            <script>
-                function copyToken() {
-                    var copyText = document.getElementById("apiTokenInput");
-                    copyText.select();
-                    copyText.setSelectionRange(0, 99999); // For mobile devices
-                    navigator.clipboard.writeText(copyText.value).then(() => {
-                        showFeedback();
-                    }).catch(err => {
-                        // Fallback for non-secure contexts (http)
-                        document.execCommand("copy");
-                        showFeedback();
-                    });
-                }
+            <div class="grid">
+                <!-- Status Card -->
+                <div class="card">
+                    <div class="card-title">🔌 Connection Status</div>
+                    <div class="status-section">
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                        ${session.disconnectReason ? `<div style="color:var(--danger); font-size:0.8rem;">Reason: ${session.disconnectReason}</div>` : ''}
+                    </div>
+                    
+                    ${showQR ? `
+                        <div class="qr-container">
+                            <span class="stat-label">Scan to Connect</span><br>
+                            <img class="qr-code" src="${session.currentQR}" alt="QR" />
+                        </div>
+                    ` : ''}
+                    
+                    ${showQRPlaceholder ? `
+                        <div class="qr-container">
+                            <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
+                            <span class="stat-label">Initializing WhatsApp...</span>
+                        </div>
+                    ` : ''}
 
-                function showFeedback() {
-                    const fb = document.getElementById("copyFeedback");
-                    fb.style.display = "block";
-                    setTimeout(() => { fb.style.display = "none"; }, 2000);
-                }
-            </script>
+                    <div class="stats-row">
+                        <div class="stat-box"><div class="stat-val">${session.stats.sent}</div><div class="stat-label">Sent</div></div>
+                        <div class="stat-box"><div class="stat-val">${session.stats.received}</div><div class="stat-label">Received</div></div>
+                        <div class="stat-box"><div class="stat-val">${session.stats.failed}</div><div class="stat-label">Failed</div></div>
+                    </div>
+                    <div style="margin-top:10px; text-align:center;">
+                        <span class="stat-label">Uptime:</span> <strong>${uptimeStr}</strong> • 
+                        <span class="stat-label">Reconnections:</span> <strong>${session.reconnectAttempts}</strong>
+                    </div>
+                </div>
 
-            <div class="footer">
-                Addon v${process.env.ADDON_VERSION || '1.3.0'} • Node.js ${process.version} • Baileys v${BAILEYS_VERSION}
+                <!-- Integration Card -->
+                <div class="card">
+                    <div class="card-title">🏠 Home Assistant Setup</div>
+                    <div class="details-box">
+                        <span class="stat-label">Addon Host (Recommended)</span><br>
+                        <code>http://605cee21_whatsapp:8066</code><br><br>
+                        <span class="stat-label">Docker / Internal IP</span><br>
+                        <code>http://${require('os').networkInterfaces().eth0?.[0]?.address || 'localhost'}:8066</code><br><br>
+                        <span class="stat-label">Port</span><br>
+                        <code>8066</code>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary);">
+                        Enter the Addon Host URL in the Home Assistant integration config flow to connect.
+                    </p>
+                </div>
+
+                <!-- Recent Sent -->
+                <div class="card">
+                    <div class="card-title">📤 Recent Outbound</div>
+                    <div class="history-list">
+                        ${sentList}
+                    </div>
+                </div>
+
+                <!-- Recent Received -->
+                <div class="card">
+                    <div class="card-title">📥 Recent Inbound</div>
+                    <div class="history-list">
+                        ${receivedList}
+                    </div>
+                </div>
+
+                <!-- Recent Failures -->
+                <div class="card">
+                    <div class="card-title">⚠️ Failed Actions</div>
+                    <div class="history-list">
+                        ${failureList}
+                    </div>
+                </div>
+
+                <!-- Live Logs -->
+                <div class="card">
+                    <div class="card-title">📜 Connection Events</div>
+                    <div class="logs-view">
+                        ${recentLogs}
+                    </div>
+                </div>
             </div>
 
-            <div class="refresh-hint">
-                Page auto-refreshes every 5 seconds
+            <div class="footer-info">
+                WhatsApp Homeassistant App Dashboard • Auto-refreshes every 5s • Version: ${process.env.ADDON_VERSION || '1.3.0'}
             </div>
         </div>
     </body>
     </html>
-    `);
+  `);
 });
 
 // POST /settings/webhook
@@ -1657,8 +1829,10 @@ app.post('/settings/webhook', authMiddleware, (req, res) => {
 // POST /send_list
 app.post('/send_list', async (req, res) => {
   const session = getReqSession(req);
-  const { number, title, text, button_text, sections } = req.body;
+  const { number, title, text, footer, button_text, sections, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+  const quoted = getQuotedMessage(session, quotedMessageId);
 
   try {
     const jid = getJid(number);
@@ -1702,13 +1876,14 @@ app.post('/send_list', async (req, res) => {
           },
         },
       },
-      { messageId }
+      { messageId, quoted, ephemeralExpiration: expiration }
     );
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `List: ${title || text}`;
     session.stats.last_sent_target = number;
     session.stats.last_sent_time = Date.now();
+    trackSent(session, number, `List: ${title || text}`);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1717,6 +1892,7 @@ app.post('/send_list', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send list: ${e.message}`, 'error');
+    trackFailure(session, number, `List: ${title || text}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });
@@ -1724,7 +1900,7 @@ app.post('/send_list', async (req, res) => {
 // POST /send_contact
 app.post('/send_contact', async (req, res) => {
   const session = getReqSession(req);
-  const { number, contact_name, contact_number } = req.body;
+  const { number, contact_name, contact_number, quotedMessageId, expiration } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
@@ -1738,17 +1914,24 @@ app.post('/send_contact', async (req, res) => {
       `TEL;type=CELL;type=VOICE;waid=${contact_number}:${contact_number}\n` +
       'END:VCARD';
 
-    await session.sock.sendMessage(jid, {
-      contacts: {
-        displayName: contact_name,
-        contacts: [{ vcard }],
+    const quoted = getQuotedMessage(session, quotedMessageId);
+
+    await session.sock.sendMessage(
+      jid,
+      {
+        contacts: {
+          displayName: contact_name,
+          contacts: [{ vcard }],
+        },
       },
-    });
+      { quoted, ephemeralExpiration: expiration }
+    );
 
     session.stats.sent += 1;
     session.stats.last_sent_message = `Contact: ${contact_name}`;
     session.stats.last_sent_target = number;
     session.stats.last_sent_time = Date.now();
+    trackSent(session, number, `Contact: ${contact_name}`);
     res.json({ status: 'sent' });
   } catch (e) {
     session.stats.failed += 1;
@@ -1757,6 +1940,7 @@ app.post('/send_contact', async (req, res) => {
     session.stats.last_failed_time = Date.now();
     session.stats.last_error_reason = e.message || e.toString();
     addLog(session, `Failed to send contact: ${e.message}`, 'error');
+    trackFailure(session, number, `Contact: ${contact_name}`, e.message);
     res.status(500).json({ detail: e.toString() });
   }
 });

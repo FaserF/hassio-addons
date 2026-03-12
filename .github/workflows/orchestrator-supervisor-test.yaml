@@ -603,7 +603,7 @@ jobs:
                         echo "✅ Ingress is up (HTTP $HTTP_CODE)"
                         RESULTS="$RESULTS\n✅ $App: PASS"
                         break
-                      elif [ "$HTTP_CODE" = "401" ] && { [ "$App" = "solumati" ] || [ "$App" = "n8n" ]; }; then
+                      elif [ "$HTTP_CODE" = "401" ] && { [ "$App" = "solumati" ]; }; then
                         echo "⚠️ $App Ingress Debug Info:"
                         echo "Headers/Body fragment:"
                         echo "$FULL_RESPONSE" | head -n 20
