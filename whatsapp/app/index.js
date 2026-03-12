@@ -566,7 +566,10 @@ const ingressPrefixMiddleware = (req, res, next) => {
     req.url = req.url.replace(/\/+/g, '/');
 
     if (urlBefore !== req.url) {
-      logger.debug({ urlBefore, urlAfter: req.url, ingressPath }, 'Stripped Ingress prefix & normalized');
+      logger.debug(
+        { urlBefore, urlAfter: req.url, ingressPath },
+        'Stripped Ingress prefix & normalized'
+      );
     }
   } else {
     // Even without ingress, normalize slashes
