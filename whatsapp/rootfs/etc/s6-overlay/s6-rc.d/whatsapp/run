@@ -252,6 +252,14 @@ if [ ! -d "$INTEGRATION_DIR" ]; then
     fi
 else
     bashio::log.info "✅ Integration found at $INTEGRATION_DIR"
+    
+    # Export integration version for Node.js app
+    if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+        INTEGRATION_VERSION=$(jq -r '.version' "$INTEGRATION_DIR/manifest.json")
+        export INTEGRATION_VERSION
+        bashio::log.info "Integration Version: ${INTEGRATION_VERSION}"
+    fi
+
     bashio::log.info "Checking for updates..."
 
     if [ -f "$INTEGRATION_DIR/manifest.json" ]; then

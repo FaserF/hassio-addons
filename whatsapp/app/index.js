@@ -361,7 +361,7 @@ function signalInterest(sessionId) {
     // If we DO have creds, we are likely already in a retry loop or connected.
     if (!hasCreds) {
       logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
-      connectToWhatsApp(sessionId).catch(() => {});
+      connectToWhatsApp(sessionId).catch(() => { });
     }
   }
 }
@@ -644,7 +644,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => {});
+              fs.unlink(filePath, () => { });
             }
           });
         });
@@ -804,10 +804,10 @@ async function connectToWhatsApp(sessionId = 'default') {
         // Extract basic device info from credentials if available
         const creds = state.creds;
         session.deviceInfo = {
-          manufacturer: creds.registration?.deviceManufacturer || 'Unknown',
+          manufacturer: creds.registration?.deviceManufacturer || creds.verifiedName?.details?.verifiedName || 'Unknown',
           model: creds.registration?.deviceName || 'WhatsApp Web',
           platform: creds.platform || 'web',
-          battery: undefined, // Battery is hard to get via standard Baileys events without more complex listeners
+          battery: undefined,
         };
       }
     } else if (connection === 'connecting') {
@@ -1671,7 +1671,8 @@ app.get('/api/dashboard', (req, res) => {
     recentReceived: (session.recentReceived || []).slice(0, 5),
     recentFailures: (session.recentFailures || []).slice(0, 5),
     nodeVersion: process.version,
-    addonVersion: process.env.ADDON_VERSION || '1.3.2',
+    addonVersion: process.env.ADDON_VERSION || '1.0.0',
+    integrationVersion: process.env.INTEGRATION_VERSION || 'Unknown',
     baileysVersion: BAILEYS_VERSION,
     webhookEnabled: WEBHOOK_ENABLED,
     webhookUrl: WEBHOOK_URL,
@@ -1711,11 +1712,13 @@ app.get('/api/debug/download', (req, res) => {
       node: process.version,
       platform: process.platform,
       arch: process.arch,
-      addon_version: process.env.ADDON_VERSION || '1.3.2',
+      addon_version: process.env.ADDON_VERSION || '1.0.0',
+      integration_version: process.env.INTEGRATION_VERSION || 'Unknown',
       baileys_version: BAILEYS_VERSION,
-      is_edge:
-        (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') ||
-        (process.env.ADDON_VERSION || '').toLowerCase().includes('dev'),
+      is_edge: (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') ||
+        (process.env.ADDON_VERSION || '').toLowerCase().includes('dev') ||
+        (process.env.INTEGRATION_VERSION || '').toLowerCase().includes('dev') ||
+        (process.env.INTEGRATION_VERSION || '').toLowerCase().includes('beta'),
     },
     config: {
       port: PORT,
@@ -1803,7 +1806,22 @@ function renderDashboard(sessionId) {
             .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; font-size: 0.95rem; }
             .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
 
-            .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; }
+            .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+
+            .warning-banner {
+                background: #fff3cd;
+                border: 1px solid #ffeeba;
+                color: #856404;
+                padding: 12px 20px;
+                border-radius: 8px;
+                margin-bottom: 5px;
+                display: none;
+                align-items: center;
+                gap: 15px;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .warning-banner b { color: #533f03; }
             .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
             .session-switcher { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
             select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; font-size: 0.9rem; }
@@ -1888,13 +1906,21 @@ function renderDashboard(sessionId) {
                 <div class="stat-label">System Info</div>
                 <div style="font-size: 0.8rem; color: #8696a0;">
                     Node: <span id="node-version">...</span><br>
-                    Addon: <span id="addon-version">...</span><br>
+                    Addon: <span id="addon-version-sidebar" style="color: var(--primary);">...</span><br>
+                    Integration: <span id="int-version-sidebar" style="color: var(--primary);">...</span><br>
                     Baileys: <span id="baileys-version">...</span>
                 </div>
             </div>
         </div>
 
         <div class="main-content">
+            <div id="dev-banner" class="warning-banner">
+                <span style="font-size: 1.5rem;">⚠️</span>
+                <div>
+                    <b>Experimental Version Active</b><br>
+                    <span style="font-size: 0.85rem; opacity: 0.9;">You are running a development, edge, or beta version. Features may be unstable.</span>
+                </div>
+            </div>
             <div class="dashboard-header">
                 <h2 style="margin:0;">Dashboard Overview</h2>
                 <div class="session-switcher">
@@ -2080,8 +2106,7 @@ function renderDashboard(sessionId) {
                 </div>
             </div>
 
-            <div class="footer-info">
-                WhatsApp Homeassistant App Dashboard • Real-time Monitoring • Version: <span id="footer-version">...</span>
+                 WhatsApp Homeassistant App Dashboard • Real-time Monitoring • Addon: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
             </div>
         </div>
 
@@ -2099,7 +2124,7 @@ function renderDashboard(sessionId) {
                     return '/';
                 }
             };
-            const basePath = getBasePath().replace(/[/]+/g, '/'); 
+            const basePath = getBasePath().replace(/[/]+/g, '/');
             console.log('Detected Base Path:', basePath);
 
             document.getElementById('diag-basepath').textContent = basePath;
@@ -2187,11 +2212,24 @@ function renderDashboard(sessionId) {
                     document.getElementById('card-diagnostics').style.display = 'none';
                     const data = await response.json();
 
-                    // Update Title & Sidebar Version Info
+                    // Update Version Info
+                    const addonVer = data.addonVersion || 'Unknown';
+                    const intVer = data.integrationVersion || 'Unknown';
+
                     document.getElementById('node-version').textContent = data.nodeVersion;
-                    document.getElementById('addon-version').textContent = data.addonVersion;
+                    document.getElementById('addon-version-sidebar').textContent = addonVer;
+                    document.getElementById('int-version-sidebar').textContent = intVer;
                     document.getElementById('baileys-version').textContent = data.baileysVersion;
-                    document.getElementById('footer-version').textContent = data.addonVersion;
+                    document.getElementById('footer-addon-version').textContent = addonVer;
+                    document.getElementById('footer-int-version').textContent = intVer;
+
+                    // Show Banner if Dev/Beta
+                    const isDev = addonVer.toLowerCase().includes('edge') ||
+                                  addonVer.toLowerCase().includes('dev') ||
+                                  intVer.toLowerCase().includes('dev') ||
+                                  intVer.toLowerCase().includes('beta') ||
+                                  intVer.toLowerCase().includes('pre');
+                    document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
 
                     // Update Session Switcher
                     const select = document.getElementById('session-select');
@@ -2250,7 +2288,7 @@ function renderDashboard(sessionId) {
 
                     // Update Lists
                     document.getElementById('list-sent').innerHTML = data.recentSent.length ?
-                        data.recentSent.map(m => 
+                        data.recentSent.map(m =>
                             '<div class="history-item">' +
                                 '<span class="history-time">' + m.timestamp + '</span>' +
                                 '<span class="history-target">To: ' + m.target + '</span>' +
@@ -2259,7 +2297,7 @@ function renderDashboard(sessionId) {
                         ).join('') : '<div class="empty-state">No messages sent recently</div>';
 
                     document.getElementById('list-received').innerHTML = data.recentReceived.length ?
-                        data.recentReceived.map(m => 
+                        data.recentReceived.map(m =>
                             '<div class="history-item">' +
                                 '<span class="history-time">' + m.timestamp + '</span>' +
                                 '<span class="history-sender">From: ' + m.sender + '</span>' +
@@ -2268,7 +2306,7 @@ function renderDashboard(sessionId) {
                         ).join('') : '<div class="empty-state">No messages received recently</div>';
 
                     document.getElementById('list-failures').innerHTML = data.recentFailures.length ?
-                        data.recentFailures.map(m => 
+                        data.recentFailures.map(m =>
                             '<div class="history-item failure">' +
                                 '<span class="history-time">' + m.timestamp + '</span>' +
                                 '<span class="history-target">Target: ' + m.target + '</span>' +
@@ -2278,7 +2316,7 @@ function renderDashboard(sessionId) {
                         ).join('') : '<div class="empty-state">No failures recorded</div>';
 
                     document.getElementById('list-logs').innerHTML = data.recentLogs.length ?
-                        data.recentLogs.map(l => 
+                        data.recentLogs.map(l =>
                             '<div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
                         ).join('') : '<div class="log-entry">No logs yet</div>';
 
@@ -2455,7 +2493,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => {});
+  connectToWhatsApp('default').catch(() => { });
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2465,7 +2503,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
