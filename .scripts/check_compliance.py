@@ -23,17 +23,17 @@ def check_addon(addon_path):
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:
                 cfg_content = f.read()
-            
+
             # Use regex to find image tag pointing to ghcr.io precisely
             # This prevents bypasses like "image: my-ghcr.io/..." or "image: ghcr.io.attacker.com/..."
             ghcr_pattern = r"^\s*image:\s*['\"]?ghcr\.io/faserf/"
-            
+
             matched = False
             for line in cfg_content.splitlines():
                 if re.search(ghcr_pattern, line, re.IGNORECASE):
                     matched = True
                     break
-            
+
             if matched:
                 errors.append(
                     "Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally."

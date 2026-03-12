@@ -17,7 +17,11 @@ def check_domain(s, domains):
     for domain in domains:
         # Escaping dots for regex and checking for word boundaries or non-domain chars
         # This prevents matches like trusted.com.attacker.com
-        pattern = r"(?:^|[\s\"'\(])(?:https?://)?(?:[^/\s@]+\.)?" + re.escape(domain) + r"(?:/|\s|$|[\"' \)])"
+        pattern = (
+            r"(?:^|[\s\"'\(])(?:https?://)?(?:[^/\s@]+\.)?"
+            + re.escape(domain)
+            + r"(?:/|\s|$|[\"' \)])"
+        )
         if re.search(pattern, s, re.IGNORECASE):
             return True
     return False
@@ -127,7 +131,10 @@ def clean_existing_content(content):
             # Detect Badges
             if "]" in sline and (
                 "badge" in sline
-                or check_domain(sline, ["shields.io", "my.home-assistant.io", "github.com", "ko-fi.com"])
+                or check_domain(
+                    sline,
+                    ["shields.io", "my.home-assistant.io", "github.com", "ko-fi.com"],
+                )
             ):
                 continue
 
