@@ -580,7 +580,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => { });
+              fs.unlink(filePath, () => {});
             }
           });
         });
@@ -713,7 +713,7 @@ async function connectToWhatsApp(sessionId = 'default') {
           manufacturer: creds.registration?.deviceManufacturer || 'Unknown',
           model: creds.registration?.deviceName || 'WhatsApp Web',
           platform: creds.platform || 'web',
-          battery: undefined // Battery is hard to get via standard Baileys events without more complex listeners
+          battery: undefined, // Battery is hard to get via standard Baileys events without more complex listeners
         };
       }
     } else if (connection === 'connecting') {
@@ -1627,15 +1627,17 @@ app.get('/api/debug/download', (req, res) => {
       id: session.id,
       connected: session.isConnected,
       reconnect_attempts: session.reconnectAttempts,
-      uptime: session.stats?.start_time ? Math.floor((Date.now() - session.stats.start_time) / 1000) : 0,
+      uptime: session.stats?.start_time
+        ? Math.floor((Date.now() - session.stats.start_time) / 1000)
+        : 0,
     },
     stats: session.stats,
-    logs: (session.connectionLogs || []).map(l => ({
+    logs: (session.connectionLogs || []).map((l) => ({
       ...l,
       msg: l.msg
         .replace(API_TOKEN, '[REDACTED - See Ingress UI Home Assistant Setup card for the key]')
-        .replace(WEBHOOK_TOKEN, '[REDACTED]')
-    }))
+        .replace(WEBHOOK_TOKEN, '[REDACTED]'),
+    })),
   };
 
   res.setHeader('Content-disposition', `attachment; filename=whatsapp-debug-${sessionId}.json`);
@@ -1651,10 +1653,14 @@ app.get('/', uiAuthMiddleware, (req, res) => {
 });
 
 // Catch-all for other UI routes/tabs
-app.get(/^(?!\/api|\/qr|\/status|\/events|\/logs|\/health|\/media|\/session\/start).+/, uiAuthMiddleware, (req, res) => {
-  const sessionId = req.query.session_id || 'default';
-  res.send(renderDashboard(sessionId));
-});
+app.get(
+  /^(?!\/api|\/qr|\/status|\/events|\/logs|\/health|\/media|\/session\/start).+/,
+  uiAuthMiddleware,
+  (req, res) => {
+    const sessionId = req.query.session_id || 'default';
+    res.send(renderDashboard(sessionId));
+  }
+);
 
 function renderDashboard(sessionId) {
   return `
@@ -2292,7 +2298,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => { });
+  connectToWhatsApp('default').catch(() => {});
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2302,7 +2308,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => { });
+        connectToWhatsApp(sDir).catch(() => {});
       }
     }
   }
