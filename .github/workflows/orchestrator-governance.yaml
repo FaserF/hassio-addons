@@ -11,8 +11,6 @@ permissions:
   issues: write
   pull-requests: write
   contents: read
- 
-env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -176,3 +174,4 @@ jobs:
           github-token: ${{ github.token }}
           issue-inactive-days: "60"
           pr-inactive-days: "60"
+

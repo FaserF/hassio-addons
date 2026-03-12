@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   sync-readme:
@@ -21,8 +22,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
@@ -137,3 +136,4 @@ jobs:
 
           print("\n".join(lines))
           EOF
+

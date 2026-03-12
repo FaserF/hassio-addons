@@ -60,8 +60,7 @@ permissions:
   packages: write
   actions: write
   pull-requests: read
-
-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # Apps to ignore for auto-releases (Blacklist)
   AUTO_RELEASE_IGNORE: |
     sap-abap-cloud-dev
@@ -95,14 +94,11 @@ jobs:
     steps:
       - name: ⤵️ Checkout code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
       - name: 🔍 Detect release targets
         id: detect
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
@@ -680,9 +676,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🕵️ App Linter
         uses: frenck/action-addon-linter@v2
         with:
@@ -698,7 +691,6 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Test Build
@@ -734,8 +726,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -755,7 +745,6 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔧 Fix Image Field Format (if needed)
@@ -844,7 +833,6 @@ jobs:
 
              eval "$PYTHON_CMD"
           fi
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔍 Debug Git Status (Post-Bump)
@@ -1203,7 +1191,6 @@ jobs:
 
           echo ""
           echo "⏱️  Monitor timeout reached. Jobs may still be running."
-        env:
           GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
   # ================================================================================
@@ -1223,9 +1210,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
@@ -1236,6 +1220,6 @@ jobs:
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
-        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+

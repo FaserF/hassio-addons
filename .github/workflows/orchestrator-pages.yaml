@@ -17,6 +17,7 @@ permissions:
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-deploy:
@@ -27,9 +28,6 @@ jobs:
     steps:
       - name: ⬇️ Checkout Repo
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
@@ -58,3 +56,4 @@ jobs:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

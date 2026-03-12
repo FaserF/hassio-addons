@@ -9,6 +9,7 @@ on:
     workflows: ["Orchestrator CI"]
     types:
       - completed
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   enable-auto-merge:
@@ -19,14 +20,11 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
       - name: 🔍 Find PR for this commit
         id: find-pr
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
@@ -97,7 +95,6 @@ jobs:
       - name: ❌ Report CI Failure
         if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
         uses: actions/github-script@v8
-        env:
           RUN_NUMBER: "${{ github.event.workflow_run.run_number }}"
           RUN_URL: "${{ github.event.workflow_run.html_url }}"
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
@@ -141,7 +138,6 @@ jobs:
       - name: 👤 Check if author is allowed
         id: check-author
         if: steps.find-pr.outputs.found == 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
@@ -162,7 +158,6 @@ jobs:
       - name: 🔬 Check if CI jobs actually ran and succeeded
         id: check-ci-ran
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
@@ -268,7 +263,6 @@ jobs:
       - name: 🔍 Verify PR is still up-to-date and CI is passing
         id: verify-pr-status
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
           ORIGINAL_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -365,7 +359,6 @@ jobs:
           steps.check-author.outputs.allowed == 'true' &&
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
@@ -395,7 +388,6 @@ jobs:
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
@@ -440,3 +432,4 @@ jobs:
               issue_number: prNumber,
               body: "🚀 **Auto-merge enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied."
             });
+

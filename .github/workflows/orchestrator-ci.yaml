@@ -16,6 +16,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -71,9 +72,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v6
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐍 Generate Dynamic Filters
         id: generator
         run: |
@@ -154,13 +152,10 @@ jobs:
           else
             echo "is_stale=false" >> "$GITHUB_OUTPUT"
           fi
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         if: steps.check-stale.outputs.is_stale != 'true'
         with:
           fetch-depth: 0
@@ -176,7 +171,6 @@ jobs:
       - name: 🔎 Analyze Change Types
         id: change-type
         if: steps.check-stale.outputs.is_stale != 'true'
-        env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # Get all changed files in this push/PR
@@ -277,15 +271,11 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       # 1. ShellCheck
       - name: 🐚 ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "./${{ matrix.App }}"
-        env:
           SHELLCHECK_OPTS: -s bash -e SC2086
 
       # 2. Hadolint
@@ -436,9 +426,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -466,7 +453,6 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Build amd64 (CI optimized)
@@ -1185,9 +1171,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 📝 Post Success Comment
         uses: actions/github-script@v8
         continue-on-error: true
@@ -1328,3 +1311,4 @@ jobs:
                     `, { subjectId: startComment.node_id });
                 } catch (e) { console.log("Could not minimize start comment"); }
             }
+

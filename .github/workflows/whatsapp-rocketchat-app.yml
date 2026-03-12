@@ -6,6 +6,7 @@ on:
       - 'whatsapp/rocketchat-app/**'
     branches: [main]
   workflow_dispatch:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   package:
@@ -19,8 +20,6 @@ jobs:
         run: apk add --no-cache zip git openssh-client
 
       - uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,3 +39,4 @@ jobs:
           # Only commit if changed
           git diff --staged --quiet || git commit -m "chore(whatsapp): update Rocket.Chat bridge zip [skip ci]"
           git push
+

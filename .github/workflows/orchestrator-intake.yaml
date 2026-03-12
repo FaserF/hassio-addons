@@ -21,6 +21,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   intake:
@@ -32,9 +33,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🔍 Detect New Apps
         id: new-Apps
         run: |
@@ -129,3 +127,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: register new App [skip ci]"
+

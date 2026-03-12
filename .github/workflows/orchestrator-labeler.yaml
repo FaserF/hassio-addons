@@ -15,6 +15,7 @@ on:
 concurrency:
   group: labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   label:
@@ -22,8 +23,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
@@ -407,3 +406,4 @@ jobs:
                     core.setFailed("Failed to set labels: " + error.message);
                 }
             }
+

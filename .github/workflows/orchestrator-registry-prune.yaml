@@ -15,6 +15,7 @@ on:
 permissions:
   contents: read
   packages: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   prune-registry:
@@ -26,9 +27,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
@@ -39,7 +37,7 @@ jobs:
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
-        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && 'true' || 'false' }}
+

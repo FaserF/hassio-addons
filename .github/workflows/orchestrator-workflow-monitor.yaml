@@ -43,6 +43,7 @@ permissions:
   actions: read
   # Note: Billing API access requires organization owner/admin permissions
   # The default GITHUB_TOKEN may not have access to billing endpoints
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -55,9 +56,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🧹 Run actionlint
         id: actionlint
         uses: raven-actions/actionlint@v2
@@ -69,7 +67,6 @@ jobs:
         id: lint-report
         if: steps.actionlint.outputs.exit-code != '0'
         uses: actions/github-script@v8
-        env:
           ACTIONLINT_OUTPUT: "${{ steps.actionlint.outputs.stdout }}"
           ACTIONLINT_STDERR: "${{ steps.actionlint.outputs.stderr }}"
         with:
@@ -191,7 +188,6 @@ jobs:
       - name: 📝 Post Minutes Warning
         if: steps.billing.outputs.status == 'warning' || steps.billing.outputs.status == 'critical' || steps.billing.outputs.status == 'exhausted'
         uses: actions/github-script@v8
-        env:
           BILLING_MESSAGE: ${{ steps.billing.outputs.message }}
           BILLING_STATUS: ${{ steps.billing.outputs.status }}
         with:
@@ -275,12 +271,10 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 📝 Analyze and Report Infrastructure Errors
         uses: actions/github-script@v8
         with:
           script: |
             const script = require('./.scripts/workflow_monitor.js')
             await script({github, context, core})
+

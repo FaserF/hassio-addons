@@ -17,6 +17,7 @@ on:
       - "nginx/Dockerfile"
       - ".scripts/update_php_info.py"
   workflow_dispatch:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   doc-audit:
@@ -25,9 +26,6 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 📝 Update Templates
         run: |
           python3 .scripts/sync_templates.py
@@ -48,3 +46,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: auto-update documentation standards"
+

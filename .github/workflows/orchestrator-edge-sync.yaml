@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   sync-edge:
@@ -32,8 +33,6 @@ jobs:
       - name: ⤵️ Checkout for file check
         if: github.event_name == 'push'
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
@@ -128,8 +127,6 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           ref: master
           fetch-depth: 0
@@ -201,7 +198,6 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/prepare_edge_branch.py
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔄 Update version for changed Apps only
@@ -278,3 +274,4 @@ jobs:
           git add -A
           git diff --staged --quiet || git commit -m "chore: prepare edge branch for local builds [skip ci]"
           git push origin edge --force
+

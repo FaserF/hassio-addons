@@ -35,6 +35,7 @@ permissions:
   packages: write
   actions: write
   # Note: packages: write includes delete permission for package versions
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # --------------------------------------------------------------------------------
@@ -57,9 +58,6 @@ jobs:
 
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
@@ -70,7 +68,6 @@ jobs:
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
-        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
@@ -84,16 +81,12 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🚫 Retract Logic
         run: |
           echo "Retracting ${{ github.event.inputs.App }} version ${{ github.event.inputs.version }}"
           # We assume python dependencies are installed or we use standard lib
           pip install requests
           python3 .scripts/retract_version.py "${{ github.event.inputs.App }}" "${{ github.event.inputs.version }}"
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
@@ -107,13 +100,9 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🏃 Run Move Script
         run: |
           python3 .scripts/move_unsupported.py
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Changes
@@ -132,13 +121,9 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: 🏃 Run Toggle Script
         run: |
           python3 .scripts/toggle_support.py "${{ github.event.inputs.App }}" "${{ github.event.inputs.state }}"
-        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
@@ -146,3 +131,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: mark ${{ github.event.inputs.App }} as ${{ github.event.inputs.state }} [skip ci]"
+

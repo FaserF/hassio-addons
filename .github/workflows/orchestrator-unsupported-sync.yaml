@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   sync-unsupported:
@@ -24,8 +25,6 @@ jobs:
     steps:
       - name: ⤵️ Checkout master
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           ref: master
           fetch-depth: 0
@@ -74,7 +73,6 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/prepare_unsupported_branch.py
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔄 Bump Versions (Dev)
@@ -109,3 +107,4 @@ jobs:
           git add -A
           git diff --staged --quiet || git commit -m "chore: update unsupported Apps [skip ci]"
           git push origin unsupported --force
+

@@ -14,6 +14,7 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   autofix:
@@ -29,8 +30,6 @@ jobs:
       - name: ⤵️ Check out code
         # zizmor: ignore[artipacked]
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref_name }}
@@ -237,7 +236,6 @@ jobs:
           commit_message: ${{ steps.commit_msg.outputs.message }}
           branch: ${{ github.ref_name }}
           file_pattern: .
-        env:
           # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
@@ -272,3 +270,4 @@ jobs:
           # 4. Push
           echo "Pushing changes..."
           git push origin ${{ github.ref_name }}
+

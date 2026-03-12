@@ -41,8 +41,7 @@ concurrency:
 
 permissions:
   contents: read
-
-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
   SUPERVISOR_STARTUP_TIMEOUT: 100
@@ -60,9 +59,6 @@ jobs:
     steps:
       - name: "📥 Checkout Repository"
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: "🔧 Filter Ingress-Enabled Apps"
         id: filter
         run: |
@@ -156,9 +152,6 @@ jobs:
 
       - name: "📥 Checkout Repository"
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
       - name: "🐳 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
 
@@ -352,7 +345,6 @@ jobs:
       - name: "🔍 Test Apps"
         if: steps.supervisor.outputs.supervisor_ready == 'true'
         id: test
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # shellcheck disable=SC2086,SC2129,SC2034
@@ -691,3 +683,4 @@ jobs:
               echo "✅ **All tests passed**"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
