@@ -190,6 +190,7 @@ const uiLimiter = rateLimit({
 
 logger.info('---------------------------------------------------');
 logger.info('🔒 Secure API Token loaded');
+logger.info('ℹ️  Find the API Token in the Ingress UI under "Home Assistant Setup"');
 logger.info('---------------------------------------------------');
 
 // --- Helper Functions ---
@@ -579,7 +580,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => {});
+              fs.unlink(filePath, () => { });
             }
           });
         });
@@ -705,6 +706,15 @@ async function connectToWhatsApp(sessionId = 'default') {
       if (session.sock && session.sock.user) {
         session.stats.my_number = session.sock.user.id.split(':')[0]; // Extract number from JID
         session.stats.version = BAILEYS_VERSION;
+
+        // Extract basic device info from credentials if available
+        const creds = state.creds;
+        session.deviceInfo = {
+          manufacturer: creds.registration?.deviceManufacturer || 'Unknown',
+          model: creds.registration?.deviceName || 'WhatsApp Web',
+          platform: creds.platform || 'web',
+          battery: undefined // Battery is hard to get via standard Baileys events without more complex listeners
+        };
       }
     } else if (connection === 'connecting') {
       addLog(session, 'Connecting to WhatsApp...', 'info');
@@ -1530,17 +1540,22 @@ app.get('/health', (req, res) => {
 });
 
 // --- API / Internal Dashboard Data ---
-app.get('/api/dashboard', uiAuthMiddleware, (req, res) => {
+app.get('/api/dashboard', (req, res) => {
   const sessionId = req.query.session_id || 'default';
   const session = getSession(sessionId);
 
-  const sessionList = Array.from(sessions.values()).map((s) => ({
-    id: s.id,
-    connected: s.isConnected,
-    number: s.stats.my_number || 'Unknown',
-  }));
+  logger.debug({ sessionId, requestedSessionId: sessionId }, 'Dashboard API request');
 
-  const uptimeStr = session.stats.start_time
+  const sessionList = Array.from(sessions.keys()).map((sid) => {
+    const s = sessions.get(sid);
+    return {
+      id: sid,
+      connected: s.isConnected,
+      number: s.stats?.my_number || 'Unknown',
+    };
+  });
+
+  const uptimeStr = session.stats?.start_time
     ? new Date(Date.now() - session.stats.start_time).toISOString().substr(11, 8)
     : 'N/A';
 
@@ -1550,46 +1565,104 @@ app.get('/api/dashboard', uiAuthMiddleware, (req, res) => {
     currentQR: session.currentQR,
     disconnectReason: session.disconnectReason,
     reconnectAttempts: session.reconnectAttempts,
-    stats: session.stats,
+    stats: session.stats || { sent: 0, received: 0, failed: 0 },
     uptime: uptimeStr,
     sessionList: sessionList,
-    recentLogs: session.connectionLogs.slice(0, 10),
-    recentSent: session.recentSent.slice(0, 5),
-    recentReceived: session.recentReceived.slice(0, 5),
-    recentFailures: session.recentFailures.slice(0, 5),
+    recentLogs: (session.connectionLogs || []).slice(0, 10),
+    recentSent: (session.recentSent || []).slice(0, 5),
+    recentReceived: (session.recentReceived || []).slice(0, 5),
+    recentFailures: (session.recentFailures || []).slice(0, 5),
     nodeVersion: process.version,
-    addonVersion: process.env.ADDON_VERSION || '1.3.0',
+    addonVersion: process.env.ADDON_VERSION || '0.0.0',
     baileysVersion: BAILEYS_VERSION,
+    webhookEnabled: WEBHOOK_ENABLED,
+    webhookUrl: WEBHOOK_URL,
+    deviceInfo: session.deviceInfo || {},
   });
 });
 
-// --- Dashboard (Server-Side Rendered) ---
-// Root endpoint (/) is handled by the catch-all below
-app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
-  if (
-    req.path.startsWith('/api') ||
-    req.path === '/qr' ||
-    req.path === '/status' ||
-    req.path === '/session/start' ||
-    req.path === '/send_message' ||
-    req.path === '/send_image' ||
-    req.path === '/send_poll' ||
-    req.path === '/events' ||
-    req.path === '/session' ||
-    req.path === '/logs' ||
-    req.path === '/health'
-  ) {
-    return res.status(404).send('Not Found');
+// --- API / Quick Actions ---
+app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
+  const sessionId = req.body.session_id || 'default';
+  const session = getSession(sessionId);
+  addLog(session, 'User requested session restart via Dashboard', 'warning');
+  if (session.sock) {
+    session.sock.end(new Error('User requested restart'));
+  } else {
+    connectToWhatsApp(sessionId);
   }
+  res.json({ status: 'success' });
+});
 
+app.post('/api/logs/clear', uiAuthMiddleware, (req, res) => {
+  const sessionId = req.body.session_id || 'default';
+  const session = getSession(sessionId);
+  session.connectionLogs = [];
+  addLog(session, 'Logs cleared by user', 'info');
+  res.json({ status: 'success' });
+});
+
+// --- API / Debug Download ---
+app.get('/api/debug/download', (req, res) => {
   const sessionId = req.query.session_id || 'default';
+  const session = getSession(sessionId);
 
-  res.send(`
+  const debugInfo = {
+    timestamp: new Date().toISOString(),
+    system: {
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      addon_version: process.env.ADDON_VERSION || '1.3.0',
+      baileys_version: BAILEYS_VERSION,
+      is_edge: (process.env.ADDON_VERSION || '').toLowerCase().includes('edge'),
+    },
+    config: {
+      port: PORT,
+      ui_auth_enabled: UI_AUTH_ENABLED,
+      webhook_enabled: WEBHOOK_ENABLED,
+      mask_sensitive_data: MASK_SENSITIVE_DATA,
+    },
+    session: {
+      id: session.id,
+      connected: session.isConnected,
+      reconnect_attempts: session.reconnectAttempts,
+      uptime: session.stats?.start_time ? Math.floor((Date.now() - session.stats.start_time) / 1000) : 0,
+    },
+    stats: session.stats,
+    logs: (session.connectionLogs || []).map(l => ({
+      ...l,
+      msg: l.msg
+        .replace(API_TOKEN, '[REDACTED - See Ingress UI Home Assistant Setup card for the key]')
+        .replace(WEBHOOK_TOKEN, '[REDACTED]')
+    }))
+  };
+
+  res.setHeader('Content-disposition', `attachment; filename=whatsapp-debug-${sessionId}.json`);
+  res.setHeader('Content-type', 'application/json');
+  res.write(JSON.stringify(debugInfo, null, 2));
+  res.end();
+});
+
+// --- Dashboard (Server-Side Rendered) ---
+app.get('/', uiAuthMiddleware, (req, res) => {
+  const sessionId = req.query.session_id || 'default';
+  res.send(renderDashboard(sessionId));
+});
+
+// Catch-all for other UI routes/tabs
+app.get(/^(?!\/api|\/qr|\/status|\/events|\/logs|\/health|\/media|\/session\/start).+/, uiAuthMiddleware, (req, res) => {
+  const sessionId = req.query.session_id || 'default';
+  res.send(renderDashboard(sessionId));
+});
+
+function renderDashboard(sessionId) {
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>WhatsApp Homeassistant App</title>
         <style>
             :root {
@@ -1606,39 +1679,40 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 --sidebar-bg: #111b21;
                 --sidebar-text: #ffffff;
             }
+            * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
-            
-            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; transition: all 0.3s; }
             .sidebar h1 { font-size: 1.8rem; line-height: 1.2; margin: 0; color: var(--primary); }
             .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
-            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; font-size: 0.95rem; }
             .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
 
-            .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
-            .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+            .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; }
+            .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
             .session-switcher { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-            select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; }
+            select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; font-size: 0.9rem; }
 
-            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
             .card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1rem; }
             .card-title { font-weight: 700; font-size: 1.1rem; color: var(--text); display: flex; align-items: center; gap: 10px; }
-            
-            .status-section { display: flex; flex-direction: column; align-items: center; text-align: center; }
-            .status-badge { padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin: 10px 0; letter-spacing: 0.5px; }
+
+            .status-section { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
+            .status-badge { padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin: 10px 0; letter-spacing: 0.5px; width: fit-content; }
             .status-badge.connected { background: var(--success); color: var(--primary-dark); }
             .status-badge.disconnected { background: #fee; color: var(--danger); }
             .status-badge.waiting { background: #fff8c5; color: #9a6700; }
-            
+
             .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px; }
             .stat-box { background: var(--bg); padding: 10px; border-radius: 12px; }
             .stat-val { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
             .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
 
             .qr-container { background: #fff; border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-            .qr-code { max-width: 200px; border-radius: 8px; }
+            .qr-code { max-width: 100%; height: auto; border-radius: 8px; }
 
             .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
-            .history-item { background: var(--bg); padding: 10px; border-radius: 10px; position: relative; }
+            .history-item { background: var(--bg); padding: 10px; border-radius: 10px; position: relative; word-wrap: break-word; }
             .history-item.failure { border-left: 4px solid var(--danger); }
             .history-time { font-size: 0.7rem; color: var(--text-secondary); display: block; }
             .history-target, .history-sender { font-weight: 700; font-size: 0.85rem; margin: 4px 0; display: block; }
@@ -1649,15 +1723,39 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             .details-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
             code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; }
 
-            .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 200px; overflow-y: auto; }
+            .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 250px; overflow-y: auto; }
             .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
 
-            .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; }
-            
-            @media (max-width: 900px) {
+            .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; width: 100%; }
+
+            .highlight-token { background: #fff8c5; color: #9a6700; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid #d4a017; user-select: all; }
+            .btn { cursor: pointer; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; transition: transform 0.1s, background 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; min-height: 44px; }
+            .btn:active { transform: scale(0.98); }
+            .btn-primary { background: var(--primary); color: white; }
+            .btn-primary:hover { background: var(--primary-dark); }
+            .btn-secondary { background: #e9edef; color: var(--text); }
+            .btn-secondary:hover { background: #d1d7db; }
+            .btn-danger { background: #fee; color: var(--danger); }
+            .btn-danger:hover { background: #fdd; }
+
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            .info-item { display: flex; flex-direction: column; }
+            .info-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
+            .info-value { font-weight: 600; font-size: 0.9rem; }
+
+            @media (max-width: 768px) {
                 body { flex-direction: column; }
-                .sidebar { width: auto; padding: 1rem; }
+                .sidebar { width: 100%; padding: 1rem; border-bottom: 1px solid #202c33; height: auto; }
+                .main-content { padding: 1.5rem; }
                 .grid { grid-template-columns: 1fr; }
+                .dashboard-header { flex-direction: column; align-items: flex-start; }
+            }
+
+            @media (max-width: 480px) {
+                .main-content { padding: 1rem; }
+                .card { padding: 1rem; }
+                .stats-row { grid-template-columns: 1fr 1fr; }
+                .info-grid { grid-template-columns: 1fr; }
             }
         </style>
     </head>
@@ -1668,10 +1766,10 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
                 <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
                 <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 Addon Repo</a>
-                <a href="https://ha.fabiseitz.de/config/app/whatsapp/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
+                <a href="/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
             </div>
-            
-            <div style="margin-top: auto;">
+
+            <div style="margin-top: auto; padding-top: 1rem;">
                 <div class="stat-label">System Info</div>
                 <div style="font-size: 0.8rem; color: #8696a0;">
                     Node: <span id="node-version">...</span><br>
@@ -1697,15 +1795,15 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 <div class="card">
                     <div class="card-title">🔌 Connection Status</div>
                     <div class="status-section">
-                        <div id="status-badge" class="status-badge status-badge.disconnected">Initializing...</div>
-                        <div id="disconnect-reason" style="color:var(--danger); font-size:0.8rem;"></div>
+                        <div id="status-badge" class="status-badge disconnected">Initializing...</div>
+                        <div id="disconnect-reason" style="color:var(--danger); font-size:0.8rem; margin-bottom: 10px;"></div>
                     </div>
-                    
+
                     <div id="qr-container" class="qr-container" style="display:none;">
                         <span class="stat-label">Scan to Connect</span><br>
                         <img id="qr-code" class="qr-code" src="" alt="QR" />
                     </div>
-                    
+
                     <div id="init-placeholder" class="qr-container">
                         <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
                         <span class="stat-label">Initializing WhatsApp...</span>
@@ -1717,7 +1815,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                         <div class="stat-box"><div id="stat-failed" class="stat-val">0</div><div class="stat-label">Failed</div></div>
                     </div>
                     <div style="margin-top:10px; text-align:center;">
-                        <span class="stat-label">Uptime:</span> <strong id="val-uptime">00:00:00</strong> • 
+                        <span class="stat-label">Uptime:</span> <strong id="val-uptime">00:00:00</strong> •
                         <span class="stat-label">Reconnections:</span> <strong id="val-reconnects">0</strong>
                     </div>
                 </div>
@@ -1729,19 +1827,95 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                         <span class="stat-label">Addon Host (Recommended)</span><br>
                         <code>http://605cee21_whatsapp:${PORT}</code><br>
                         <i style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8;">Note: Repo slug might vary</i><br><br>
-                        
+
                         <span class="stat-label">Dynamic Addon Host (Auto-detected)</span><br>
                         <code>http://${os.hostname()}:${PORT}</code><br><br>
 
                         <span class="stat-label">API Token</span><br>
-                        <code>${API_TOKEN}</code><br><br>
+                        <code class="highlight-token" title="Click to select all">${API_TOKEN}</code><br><br>
 
                         <span class="stat-label">Static / Internal IP</span><br>
                         <code>http://${os.networkInterfaces().eth0?.[0]?.address || 'localhost'}:${PORT}</code>
                     </div>
-                    <p style="font-size:0.8rem; color:var(--text-secondary);">
+                    <p style="font-size:0.75rem; color:var(--text-secondary);">
                         Enter one of the Host URLs in the Home Assistant integration config flow.
                     </p>
+                </div>
+
+                <!-- Webhook Status Card -->
+                <div class="card">
+                    <div class="card-title">🔗 Webhook Configuration</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span id="webhook-status" class="info-value">...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Host</span>
+                            <span id="webhook-url" class="info-value">...</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        Webhook token is active and hidden for security.
+                    </div>
+                </div>
+
+                <!-- Device Information Card -->
+                <div class="card" id="device-card">
+                    <div class="card-title">📱 Connected Device</div>
+                    <div id="device-info-grid" class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Manufacturer</span>
+                            <span id="device-manufacturer" class="info-value">...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Model</span>
+                            <span id="device-model" class="info-value">...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Platform</span>
+                            <span id="device-platform" class="info-value">...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Battery Level</span>
+                            <span id="device-battery" class="info-value">...</span>
+                        </div>
+                    </div>
+                    <div id="no-device-msg" class="empty-state" style="display:none;">
+                        Connect a device to see details.
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <div class="card-title">⚡ Quick Actions</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="restartSession()">
+                            🔄 Restart
+                        </button>
+                        <button class="btn btn-danger" onclick="clearLogs()">
+                            🧹 Clear Logs
+                        </button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+                        Restarting will attempt a fresh connection without deleting credentials.
+                    </p>
+                </div>
+
+                <!-- Bug Report Widget -->
+                <div class="card">
+                    <div class="card-title">🐛 Bug Report & Support</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary);">
+                        Encountered an issue? Download an anonymized debug bundle and report it on GitHub.
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button class="btn btn-primary" onclick="downloadDebugInfo()">
+                            📥 Download Issue Debug Info
+                        </button>
+                        <a href="https://github.com/FaserF/ha-whatsapp/issues/new" target="_blank" class="btn btn-secondary">
+                            🔗 Open GitHub Issue
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Recent Sent -->
@@ -1769,7 +1943,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 </div>
 
                 <!-- Live Logs -->
-                <div class="card">
+                <div class="card" style="grid-column: 1 / -1;">
                     <div class="card-title">📜 Connection Events</div>
                     <div id="list-logs" class="logs-view">
                         <div class="log-entry">Loading events...</div>
@@ -1793,10 +1967,63 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 updateDashboard();
             }
 
+            async function downloadDebugInfo() {
+                try {
+                    const response = await fetch('/api/debug/download?session_id=' + currentSession);
+                    if (!response.ok) throw new Error('Download failed');
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = \`whatsapp-debug-\${currentSession}.json\`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } catch (e) {
+                    alert('Failed to download debug info: ' + e.message);
+                }
+            }
+
+            async function restartSession() {
+                if (!confirm('Are you sure you want to restart this session?')) return;
+                try {
+                    const response = await fetch('/api/session/restart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: currentSession })
+                    });
+                    if (response.ok) {
+                        alert('Restart command sent successfully.');
+                        updateDashboard();
+                    }
+                } catch (e) {
+                    alert('Failed to restart session: ' + e.message);
+                }
+            }
+
+            async function clearLogs() {
+                if (!confirm('Clear all connection logs for this session?')) return;
+                try {
+                    const response = await fetch('/api/logs/clear', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: currentSession })
+                    });
+                    if (response.ok) {
+                        updateDashboard();
+                    }
+                } catch (e) {
+                    alert('Failed to clear logs: ' + e.message);
+                }
+            }
+
             async function updateDashboard() {
                 try {
-                    const response = await fetch('/api/dashboard?session_id=' + currentSession);
-                    if (!response.ok) throw new Error('API request failed');
+                    const response = await fetch('/api/dashboard?session_id=' + currentSession, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) throw new Error('API request failed with status: ' + response.status);
                     const data = await response.json();
 
                     // Update Title & Sidebar Version Info
@@ -1807,7 +2034,6 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
 
                     // Update Session Switcher
                     const select = document.getElementById('session-select');
-                    const currentVal = select.value;
                     let options = '';
                     data.sessionList.forEach(s => {
                         options += \`<option value="\${s.id}" \${s.id === currentSession ? 'selected' : ''}>\${s.id} (\${s.connected ? '✅' : '❌'})</option>\`;
@@ -1818,7 +2044,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                     const badge = document.getElementById('status-badge');
                     badge.className = 'status-badge ' + (data.isConnected ? 'connected' : (data.currentQR ? 'waiting' : 'disconnected'));
                     badge.textContent = data.isConnected ? 'Connected 🟢' : (data.currentQR ? 'Scan QR Code 📱' : (data.disconnectReason === 'logged_out' ? 'Logged Out 🚫' : 'Disconnected 🔴'));
-                    
+
                     document.getElementById('disconnect-reason').textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
 
                     // QR Code logic
@@ -1836,6 +2062,22 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                         initPlaceholder.style.display = 'none';
                     }
 
+                    // Webhook Status
+                    document.getElementById('webhook-status').textContent = data.webhookEnabled ? 'Enabled ✅' : 'Disabled ❌';
+                    document.getElementById('webhook-status').style.color = data.webhookEnabled ? 'var(--primary-dark)' : 'var(--danger)';
+                    document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not configured';
+
+                    // Device Info
+                    const hasDevice = data.deviceInfo && (data.deviceInfo.manufacturer || data.deviceInfo.model);
+                    document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
+                    document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
+                    if (hasDevice) {
+                        document.getElementById('device-manufacturer').textContent = data.deviceInfo.manufacturer || 'N/A';
+                        document.getElementById('device-model').textContent = data.deviceInfo.model || 'N/A';
+                        document.getElementById('device-platform').textContent = data.deviceInfo.platform || 'N/A';
+                        document.getElementById('device-battery').textContent = data.deviceInfo.battery !== undefined ? data.deviceInfo.battery + '%' : 'N/A';
+                    }
+
                     // Update Stats
                     document.getElementById('stat-sent').textContent = data.stats.sent;
                     document.getElementById('stat-received').textContent = data.stats.received;
@@ -1844,7 +2086,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                     document.getElementById('val-reconnects').textContent = data.reconnectAttempts;
 
                     // Update Lists
-                    document.getElementById('list-sent').innerHTML = data.recentSent.length ? 
+                    document.getElementById('list-sent').innerHTML = data.recentSent.length ?
                         data.recentSent.map(m => \`
                             <div class="history-item">
                                 <span class="history-time">\${m.timestamp}</span>
@@ -1853,7 +2095,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                             </div>
                         \`).join('') : '<div class="empty-state">No messages sent recently</div>';
 
-                    document.getElementById('list-received').innerHTML = data.recentReceived.length ? 
+                    document.getElementById('list-received').innerHTML = data.recentReceived.length ?
                         data.recentReceived.map(m => \`
                             <div class="history-item">
                                 <span class="history-time">\${m.timestamp}</span>
@@ -1862,7 +2104,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                             </div>
                         \`).join('') : '<div class="empty-state">No messages received recently</div>';
 
-                    document.getElementById('list-failures').innerHTML = data.recentFailures.length ? 
+                    document.getElementById('list-failures').innerHTML = data.recentFailures.length ?
                         data.recentFailures.map(m => \`
                             <div class="history-item failure">
                                 <span class="history-time">\${m.timestamp}</span>
@@ -1872,7 +2114,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                             </div>
                         \`).join('') : '<div class="empty-state">No failures recorded</div>';
 
-                    document.getElementById('list-logs').innerHTML = data.recentLogs.length ? 
+                    document.getElementById('list-logs').innerHTML = data.recentLogs.length ?
                         data.recentLogs.map(l => \`
                             <div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">\${l.timestamp}</span><span class="log-type-\${l.type}">\${l.msg}</span></div>
                         \`).join('') : '<div class="log-entry">No logs yet</div>';
@@ -1889,8 +2131,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
         </script>
     </body>
     </html>
-  `);
-});
+  `;
+}
 
 // POST /settings/webhook
 app.post('/settings/webhook', authMiddleware, (req, res) => {
@@ -2050,7 +2292,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => {});
+  connectToWhatsApp('default').catch(() => { });
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2060,7 +2302,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
