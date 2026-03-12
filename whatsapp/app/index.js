@@ -184,6 +184,17 @@ logger.info(
 logger.info(`👋 Welcome Message: ${WELCOME_MESSAGE_ENABLED ? 'ENABLED' : 'DISABLED'}`);
 logger.info(`🔔 Admin Notifications: ${ADMIN_NOTIFICATIONS_ENABLED ? 'ENABLED' : 'DISABLED'}`);
 
+// --- First Contact Memory ---
+const SEEN_USERS_FILE = path.join(DATA_DIR, 'seen_users.json');
+let SEEN_USERS = new Set();
+if (fs.existsSync(SEEN_USERS_FILE)) {
+  try {
+    SEEN_USERS = new Set(JSON.parse(fs.readFileSync(SEEN_USERS_FILE, 'utf8')));
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load seen users');
+  }
+}
+
 // --- Persistent System State ---
 const SYSTEM_STATE_FILE = path.join(DATA_DIR, 'system_state.json');
 let SYSTEM_STATE = {
