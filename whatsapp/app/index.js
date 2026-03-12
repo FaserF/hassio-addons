@@ -1267,7 +1267,7 @@ async function connectToWhatsApp(sessionId = 'default') {
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
     connectTimeoutMs: 90000,
     defaultQueryTimeoutMs: 90000,
-    retryRequestDelayMs: 10000,
+    retryRequestDelayMs: 5000,
     getMessage: async (key) => {
       // Check our custom store
       if (session.messageStore.has(key.id)) {
@@ -1331,7 +1331,7 @@ async function connectToWhatsApp(sessionId = 'default') {
         }
 
         // Adaptive backoff: escalate to 2min after 15min of sustained failures
-        const baseDelay = APPLY_BAILEYS_405_FIX ? 15000 : 3000;
+        const baseDelay = APPLY_BAILEYS_405_FIX ? 5000 : 3000;
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
 
@@ -2574,6 +2574,46 @@ function renderDashboard(sessionId) {
                 --border: #e9edef;
                 --sidebar-bg: #111b21;
                 --sidebar-text: #ffffff;
+                --transition: all 0.2s ease;
+                --qr-bg: #ffffff;
+                --code-bg: #e9ecef;
+                --token-bg: #fff8c5;
+                --token-text: #9a6700;
+                --token-border: #d4a017;
+                --banner-text: #856404;
+                --btn-secondary-bg: #e9edef;
+                --btn-secondary-hover: #d1d7db;
+                --btn-secondary-text: #111b21;
+                --btn-danger-bg: #fee;
+                --btn-danger-text: #ea0038;
+                --log-time-color: #8696a0;
+            }
+
+            [data-theme="dark"] {
+                --bg: #0b141a;
+                --card-bg: #111b21;
+                --text: #e9edef;
+                --text-secondary: #8696a0;
+                --border: #222d34;
+                --sidebar-bg: #202c33;
+                --success: #0b3d22;
+                --primary: #00a884;
+                --primary-dark: #00cc99;
+                --warning: #ffbc00;
+                --qr-bg: #ffffff;
+                --code-bg: #202c33;
+                --token-bg: #202c33;
+                --token-text: #00a884;
+                --token-border: #00a884;
+                --banner-bg: #2a2106;
+                --banner-border: #45370a;
+                --banner-text: #ffbc00;
+                --btn-secondary-bg: #222d34;
+                --btn-secondary-hover: #313d45;
+                --btn-secondary-text: #e9edef;
+                --btn-danger-bg: #2a0a11;
+                --btn-danger-text: #ea0038;
+                --log-time-color: #8696a0;
             }
             * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
@@ -2587,9 +2627,9 @@ function renderDashboard(sessionId) {
             .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
 
             .warning-banner {
-                background: #fff3cd;
-                border: 1px solid #ffeeba;
-                color: #856404;
+                background: var(--banner-bg);
+                border: 1px solid var(--banner-border);
+                color: var(--banner-text);
                 padding: 12px 20px;
                 border-radius: 8px;
                 margin-bottom: 5px;
@@ -2601,6 +2641,26 @@ function renderDashboard(sessionId) {
             }
             .warning-banner b { color: #533f03; }
             .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+            .header-actions { display: flex; align-items: center; gap: 1rem; }
+            .theme-toggle {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                color: var(--text);
+                cursor: pointer;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                transition: var(--transition);
+                outline: none;
+            }
+            .theme-toggle:hover {
+                background: var(--border);
+            }
             .session-switcher { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
             select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; font-size: 0.9rem; }
 
@@ -2610,16 +2670,16 @@ function renderDashboard(sessionId) {
 
             .status-section { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
             .status-badge { padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin: 10px 0; letter-spacing: 0.5px; width: fit-content; }
-            .status-badge.connected { background: var(--success); color: var(--primary-dark); }
-            .status-badge.disconnected { background: #fee; color: var(--danger); }
-            .status-badge.waiting { background: #fff8c5; color: #9a6700; }
+            .status-badge.connected { background: var(--success); color: var(--primary); }
+            .status-badge.disconnected { background: rgba(234, 0, 56, 0.1); color: var(--danger); }
+            .status-badge.waiting { background: rgba(255, 188, 0, 0.1); color: var(--warning); }
 
             .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px; }
             .stat-box { background: var(--bg); padding: 10px; border-radius: 12px; }
             .stat-val { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
             .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
 
-            .qr-container { background: #fff; border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+            .qr-container { background: var(--qr-bg); border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; }
             .qr-code { max-width: 100%; height: auto; border-radius: 8px; }
 
             .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
@@ -2627,27 +2687,27 @@ function renderDashboard(sessionId) {
             .history-item.failure { border-left: 4px solid var(--danger); }
             .history-time { font-size: 0.7rem; color: var(--text-secondary); display: block; }
             .history-target, .history-sender { font-weight: 700; font-size: 0.85rem; margin: 4px 0; display: block; }
-            .history-msg { font-size: 0.9rem; color: #111b21; white-space: pre-wrap; word-break: break-all; }
+            .history-msg { font-size: 0.9rem; color: var(--text); white-space: pre-wrap; word-break: break-all; }
             .history-reason { color: var(--danger); font-size: 0.75rem; margin-top: 5px; font-style: italic; }
             .empty-state { color: var(--text-secondary); font-style: italic; text-align: center; padding: 20px; }
 
-            .details-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
-            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; text-decoration: none; }
+            .details-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
+            code { background: var(--code-bg); color: var(--text); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; text-decoration: none; }
 
             .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 250px; overflow-y: auto; }
             .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
 
             .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; width: 100%; }
-
-            .highlight-token { background: #fff8c5; color: #9a6700; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid #d4a017; user-select: all; text-decoration: none; }
+            .log-time { color: var(--log-time-color); }
+            .highlight-token { background: var(--token-bg); color: var(--token-text); padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid var(--token-border); user-select: all; text-decoration: none; }
             .btn { cursor: pointer; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; transition: transform 0.1s, background 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; min-height: 44px; }
             .btn:active { transform: scale(0.98); }
             .btn-primary { background: var(--primary); color: white; }
             .btn-primary:hover { background: var(--primary-dark); }
-            .btn-secondary { background: #e9edef; color: var(--text); }
-            .btn-secondary:hover { background: #d1d7db; }
-            .btn-danger { background: #fee; color: var(--danger); }
-            .btn-danger:hover { background: #fdd; }
+            .btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+            .btn-secondary:hover { background: var(--btn-secondary-hover); }
+            .btn-danger { background: var(--btn-danger-bg); color: var(--btn-danger-text); }
+            .btn-danger:hover { background: rgba(234, 0, 56, 0.2); }
 
             .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
             .info-item { display: flex; flex-direction: column; }
@@ -2701,11 +2761,16 @@ function renderDashboard(sessionId) {
             </div>
             <div class="dashboard-header">
                 <h2 style="margin:0;">Dashboard Overview</h2>
-                <div class="session-switcher">
-                    <span>Session:</span>
-                    <select id="session-select" onchange="switchSession(this.value)">
-                        <!-- Populated dynamically -->
-                    </select>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
+                        🌓
+                    </button>
+                    <div class="session-switcher">
+                        <span>Session:</span>
+                        <select id="session-select" onchange="switchSession(this.value)">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -3097,6 +3162,32 @@ function renderDashboard(sessionId) {
                     console.error('Fetch error:', e);
                 }
             }
+
+            // Theme Management
+            const getInitialTheme = () => {
+                const saved = localStorage.getItem('ha-whatsapp-theme');
+                if (saved) return saved;
+                
+                // Check HA theme (if possible) or system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return 'dark';
+                }
+                return 'light';
+            };
+
+            const setTheme = (theme) => {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('ha-whatsapp-theme', theme);
+                document.getElementById('theme-toggle').innerHTML = theme === 'dark' ? '☀️' : '🌙';
+            };
+
+            const toggleTheme = () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                setTheme(current === 'dark' ? 'light' : 'dark');
+            };
+
+            // Initialize theme
+            setTheme(getInitialTheme());
 
             // Initial load
             updateDashboard();
