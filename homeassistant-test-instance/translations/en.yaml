@@ -1,7 +1,10 @@
 configuration:
-  server:
-    name: Server
-    description: "The server configuration."
+  version:
+    name: "Version"
+    description: "The version of Home Assistant to run (e.g. 2024.1.0)"
+  log_level:
+    name: "Log Level"
+    description: "The log level for the addon."
   network:
     name: Network
     description: "Network configuration."

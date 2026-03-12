@@ -1,4 +1,5 @@
 import express from 'express';
+import os from 'os';
 // Note: Bonjour is imported dynamically to handle potential environment constraints
 import {
   makeWASocket,
@@ -16,6 +17,7 @@ import path from 'path';
 import crypto from 'crypto';
 import http from 'http';
 import mime from 'mime-types';
+import { rateLimit } from 'express-rate-limit';
 
 // --- Log Level ---
 const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'info';
@@ -169,8 +171,25 @@ if (fs.existsSync(TOKEN_FILE)) {
   fs.writeFileSync(TOKEN_FILE, API_TOKEN);
 }
 
+// --- Rate Limiting ---
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+const uiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.',
+});
+
 logger.info('---------------------------------------------------');
-logger.info(`🔒 Secure API Token loaded (Masked: ${maskData(API_TOKEN)})`);
+logger.info('🔒 Secure API Token loaded');
 logger.info('---------------------------------------------------');
 
 // --- Helper Functions ---
@@ -503,29 +522,32 @@ const uiAuthMiddleware = (req, res, next) => {
 // Global IP Filter
 app.use(ipFilterMiddleware);
 
-// Protect API routes exclusively
-app.use('/session', authMiddleware);
-app.use('/qr', authMiddleware);
-app.use('/status', authMiddleware);
-app.use('/events', authMiddleware);
-app.use('/stats', authMiddleware); // Added stats to protected routes
-app.use('/send_message', authMiddleware);
-app.use('/send_image', authMiddleware);
-app.use('/send_poll', authMiddleware);
-app.use('/send_location', authMiddleware);
-app.use('/send_reaction', authMiddleware);
-app.use('/send_buttons', authMiddleware);
-app.use('/send_document', authMiddleware);
-app.use('/send_video', authMiddleware);
-app.use('/send_audio', authMiddleware);
-app.use('/send_list', authMiddleware);
-app.use('/send_contact', authMiddleware);
-app.use('/revoke_message', authMiddleware);
-app.use('/edit_message', authMiddleware);
-app.use('/set_presence', authMiddleware);
-app.use('/groups', authMiddleware);
-app.use('/mark_as_read', authMiddleware);
-app.use('/logs', authMiddleware);
+// Apply UI Rate Limit
+app.use('/', uiLimiter);
+
+// Protect API routes exclusively with Rate Limiting
+app.use('/session', apiLimiter, authMiddleware);
+app.use('/qr', apiLimiter, authMiddleware);
+app.use('/status', apiLimiter, authMiddleware);
+app.use('/events', apiLimiter, authMiddleware);
+app.use('/stats', apiLimiter, authMiddleware);
+app.use('/send_message', apiLimiter, authMiddleware);
+app.use('/send_image', apiLimiter, authMiddleware);
+app.use('/send_poll', apiLimiter, authMiddleware);
+app.use('/send_location', apiLimiter, authMiddleware);
+app.use('/send_reaction', apiLimiter, authMiddleware);
+app.use('/send_buttons', apiLimiter, authMiddleware);
+app.use('/send_document', apiLimiter, authMiddleware);
+app.use('/send_video', apiLimiter, authMiddleware);
+app.use('/send_audio', apiLimiter, authMiddleware);
+app.use('/send_list', apiLimiter, authMiddleware);
+app.use('/send_contact', apiLimiter, authMiddleware);
+app.use('/revoke_message', apiLimiter, authMiddleware);
+app.use('/edit_message', apiLimiter, authMiddleware);
+app.use('/set_presence', apiLimiter, authMiddleware);
+app.use('/groups', apiLimiter, authMiddleware);
+app.use('/mark_as_read', apiLimiter, authMiddleware);
+app.use('/logs', apiLimiter, authMiddleware);
 
 const getReqSession = (req) => {
   const rawId = req.query.session_id || req.body?.session_id || 'default';
@@ -1772,7 +1794,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                         <span class="stat-label">Addon Host (Recommended)</span><br>
                         <code>http://605cee21_whatsapp:8066</code><br><br>
                         <span class="stat-label">Docker / Internal IP</span><br>
-                        <code>http://${require('os').networkInterfaces().eth0?.[0]?.address || 'localhost'}:8066</code><br><br>
+                        <code>http://${os.networkInterfaces().eth0?.[0]?.address || 'localhost'}:8066</code><br><br>
                         <span class="stat-label">Port</span><br>
                         <code>8066</code>
                     </div>

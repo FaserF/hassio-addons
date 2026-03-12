@@ -13,7 +13,7 @@ configuration:
     description: "Steuert die Detailgenauigkeit der Protokolle."
   reset_database:
     name: Datenbank zurücksetzen
-    description: Aktivieren Sie diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
+    description: Aktiviere diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
   reset_database_confirm:
     name: Datenbank-Reset bestätigen
-    description: Bestätigen Sie den Datenbank-Reset. Beide Optionen müssen aktiviert sein.
+    description: Bestätige den Datenbank-Reset. Beide Optionen müssen aktiviert sein.

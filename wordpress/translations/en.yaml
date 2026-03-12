@@ -23,9 +23,21 @@ configuration:
   wordpress_admin_email:
     name: Admin Email
     description: Email address for the generic admin account.
+  wordpress_url:
+    name: Website URL
+    description: The URL where the WordPress site will be accessible.
+  ssl:
+    name: SSL
+    description: Enable SSL/HTTPS for the site.
+  certfile:
+    name: SSL Certificate
+    description: Name of the SSL certificate file.
+  keyfile:
+    name: SSL Key
+    description: Name of the private SSL key file.
   log_level:
     name: "Log Level"
-    description: "Controls the verbosity of the app logs."
+    description: "Adjust the verbosity of the logs."
   reset_database:
     name: Reset Database
     description: Enable this option to reset the database. WARNING - Deletes all data!

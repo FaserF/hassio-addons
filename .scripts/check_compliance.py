@@ -23,14 +23,21 @@ def check_addon(addon_path):
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:
                 cfg_content = f.read()
-            if "ghcr.io/" in cfg_content and "image:" in cfg_content:
-                # Check if image line isn't commented out
-                for line in cfg_content.splitlines():
-                    if line.strip().startswith("image:") and "ghcr.io/" in line:
-                        errors.append(
-                            "Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally."
-                        )
-                        break
+            
+            # Use regex to find image tag pointing to ghcr.io precisely
+            # This prevents bypasses like "image: my-ghcr.io/..." or "image: ghcr.io.attacker.com/..."
+            ghcr_pattern = r"^\s*image:\s*['\"]?ghcr\.io/faserf/"
+            
+            matched = False
+            for line in cfg_content.splitlines():
+                if re.search(ghcr_pattern, line, re.IGNORECASE):
+                    matched = True
+                    break
+            
+            if matched:
+                errors.append(
+                    "Unsupported addon has 'image' tag pointing to GHCR. Unsupported addons must build locally."
+                )
 
     if not os.path.exists(dockerfile_path):
         errors.append("Dockerfile missing")
@@ -101,9 +108,7 @@ def check_addon(addon_path):
         errors.append("Missing English translation (translations/en.yaml)")
 
     if not os.path.exists(os.path.join(translations_dir, "de.yaml")):
-        warnings.append(
-            "Missing German translation (translations/de.yaml) - Recommended"
-        )
+        errors.append("Missing German translation (translations/de.yaml)")
 
     # Check 6: Images
     if not os.path.exists(icon_path):

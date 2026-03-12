@@ -20,3 +20,6 @@ configuration:
   log_level:
     name: "Log Level"
     description: "Controls the verbosity of the app logs."
+  app_url:
+    name: "Application URL"
+    description: "The external URL of your Pterodactyl Panel."

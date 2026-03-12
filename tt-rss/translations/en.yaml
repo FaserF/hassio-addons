@@ -2,6 +2,9 @@ configuration:
   log_level:
     name: Log level
     description: Controls the level of log verbosity.
+  self_url:
+    name: Self URL
+    description: The URL where this instance is accessible (e.g. http://ha.local:8280).
   ssl:
     name: SSL
     description: Enables/Disables SSL (HTTPS) on the web interface.

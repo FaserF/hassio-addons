@@ -2,7 +2,10 @@
 configuration:
   agree_to_license:
     name: SAP-Lizenz akzeptieren
-    description: Sie müssen den SAP-Lizenzbedingungen zustimmen und die volle Verantwortung für Ihre Nutzung übernehmen
+    description: Du musst den SAP-Lizenzbedingungen zustimmen und die volle Verantwortung f\u00fcr deine Nutzung \u00fcbernehmen
   ignore_requirements:
     name: Anforderungen ignorieren
-    description: Empfohlene Systemanforderungen umgehen (Minimum 4 CPUs, 8GB RAM, 50GB Speicher)
+    description: Empfohlene Systemanforderungen umgehen (stattdessen mindestens 4 CPUs, 8 GB RAM, 50 GB Festplatte verwenden)
+  log_level:
+    name: Log Level
+    description: Steuert die Detailgenauigkeit der Addon-Protokole.

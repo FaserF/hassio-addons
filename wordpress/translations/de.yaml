@@ -23,14 +23,26 @@ configuration:
   wordpress_admin_email:
     name: Admin E-Mail
     description: E-Mail-Adresse für das generische Admin-Konto.
+  wordpress_url:
+    name: Website URL
+    description: Die URL, unter der die WordPress-Website erreichbar sein soll.
+  ssl:
+    name: SSL
+    description: SSL/HTTPS für die Website aktivieren.
+  certfile:
+    name: SSL-Zertifikat
+    description: Name der SSL-Zertifikatsdatei.
+  keyfile:
+    name: SSL-Schlüssel
+    description: Name der privaten SSL-Schlüsseldatei.
   log_level:
     name: "Log Level"
     description: "Steuert die Detailgenauigkeit der Protokolle."
   reset_database:
     name: Datenbank zur\u00fccksetzen
-    description: Aktivieren Sie diese Option, um die Datenbank zur\u00fcckzusetzen. WARNUNG - L\u00f6scht alle Daten!
+    description: Aktiviere diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
   reset_database_confirm:
     name: Datenbank-Reset best\u00e4tigen
-    description: Best\u00e4tigen Sie den Datenbank-Reset. Beide Optionen m\u00fcssen aktiviert sein.
+    description: Bestätige den Datenbank-Reset. Beide Optionen müssen aktiviert sein.
 network:
   80/tcp: Webinterface

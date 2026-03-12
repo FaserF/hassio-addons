@@ -4,10 +4,10 @@ configuration:
     description: "Die Zeit in Sekunden, die zwischen zwei Synchronisierungszyklen vergeht."
   log_level:
     name: "Protokollebene"
-    description: "Passen Sie die Ausführlichkeit der Add-on-Protokolle an."
+    description: "Passe die Ausf\u00fchrlichkeit der Add-on-Protokolle an."
   jobs:
     name: "Synchronisierungsaufgaben"
-    description: "Liste aller Synchronisierungsaufgaben. Sie können mehrere unabhängige Synchronisierungspaare hinzufügen (z. B. Konto A nach B, Konto C nach D)."
+    description: "Liste aller Synchronisierungsaufgaben. Du kannst mehrere unabh\u00e4ngige Synchronisierungspaare hinzuf\u00fcgen (z. B. Konto A nach B, Konto C nach D)."
   source_host:
     name: "Quell-Host"
     description: "Der Quell-IMAP-Server."
@@ -16,22 +16,25 @@ configuration:
     description: "Der Benutzername/E-Mail für den Quell-Server."
   source_auth_type:
     name: "Quelle: Authentifizierungsmethode"
-    description: "ERFORDERLICH. Wählen Sie 'password' für herkömmliche Anmeldung oder 'oauth2' für moderne Authentifizierung (Google/Microsoft)."
+    description: "ERFORDERLICH. W\u00e4hle 'password' f\u00fcr herk\u00f6mmliche Anmeldung oder 'oauth2' f\u00fcr moderne Authentifizierung (Google/Microsoft)."
   source_password:
     name: "Quelle: Passwort"
-    description: "ERFORDERLICH für 'password'. Ihr Hauptpasswort oder ein App-Passwort."
+    description: "ERFORDERLICH f\u00fcr 'password'. Dein Hauptpasswort oder ein App-Passwort."
   source_oauth2_client_id:
     name: "Quelle: OAuth2 Client ID"
-    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie diese aus der Google Cloud Console oder dem Azure Portal."
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. Erhalte diese aus der Google Cloud Console oder dem Azure Portal."
   source_oauth2_client_secret:
     name: "Quelle: OAuth2 Client Secret"
-    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie dieses aus der Google Cloud Console oder dem Azure Portal."
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. Erhalte dieses aus der Google Cloud Console oder dem Azure Portal."
   source_oauth2_refresh_token:
     name: "Quelle: OAuth2 Refresh Token"
     description: "ERFORDERLICH für 'oauth2' (Sowohl Google als auch Microsoft). Dauerhaftes Token für die Synchronisierung im Hintergrund."
   source_oauth2_tenant_id:
     name: "Quelle: OAuth2 Tenant ID"
     description: "OPTIONAL (Nur Microsoft). Wird für Google nicht verwendet. Normalerweise 'common' für persönliche Outlook/Office365-Konten."
+  source_oauth2_provider:
+    name: "Quelle: OAuth2-Provider"
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. W\u00e4hle 'google' oder 'microsoft'."
   destination_host:
     name: "Ziel-Host"
     description: "ERFORDERLICH. Der Ziel-IMAP-Server (z.B. imap.gmail.com)."
@@ -40,22 +43,25 @@ configuration:
     description: "ERFORDERLICH. Korrekter Benutzername oder E-Mail-Adresse für den Ziel-Server."
   destination_auth_type:
     name: "Ziel: Authentifizierungsmethode"
-    description: "ERFORDERLICH. Wählen Sie 'password' für herkömmliche Anmeldung oder 'oauth2' für moderne Authentifizierung (Google/Microsoft)."
+    description: "ERFORDERLICH. W\u00e4hle 'password' f\u00fcr herk\u00f6mmliche Anmeldung oder 'oauth2' f\u00fcr moderne Authentifizierung (Google/Microsoft)."
   destination_password:
     name: "Ziel: Passwort"
-    description: "ERFORDERLICH für 'password'. Ihr Hauptpasswort oder ein App-Passwort."
+    description: "ERFORDERLICH f\u00fcr 'password'. Dein Hauptpasswort oder ein App-Passwort."
   destination_oauth2_client_id:
     name: "Ziel: OAuth2 Client ID"
-    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie diese aus der Google Cloud Console oder dem Azure Portal."
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. Erhalte diese aus der Google Cloud Console oder dem Azure Portal."
   destination_oauth2_client_secret:
     name: "Ziel: OAuth2 Client Secret"
-    description: "ERFORDERLICH für 'oauth2'. Erhalten Sie dieses aus der Google Cloud Console oder dem Azure Portal."
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. Erhalte dieses aus der Google Cloud Console oder dem Azure Portal."
   destination_oauth2_refresh_token:
     name: "Ziel: OAuth2 Refresh Token"
     description: "ERFORDERLICH für 'oauth2' (Sowohl Google als auch Microsoft). Dauerhaftes Token für die Synchronisierung im Hintergrund."
   destination_oauth2_tenant_id:
     name: "Ziel: OAuth2 Tenant ID"
     description: "OPTIONAL (Nur Microsoft). Wird für Google nicht verwendet. Normalerweise 'common' für persönliche Outlook/Office365-Konten."
+  destination_oauth2_provider:
+    name: "Ziel: OAuth2-Provider"
+    description: "ERFORDERLICH f\u00fcr 'oauth2'. W\u00e4hle 'google' oder 'microsoft'."
   delete_after_sync:
     name: "Nach Synchronisierung löschen"
     description: "Wenn aktiviert, werden E-Mails von der Quelle gelöscht, nachdem sie erfolgreich auf das Ziel synchronisiert wurden. MIT VORSICHT GENIESSEN!"

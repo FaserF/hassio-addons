@@ -14,6 +14,12 @@ configuration:
   users:
     name: "Users"
     description: "List of users to create/update. Warning: Modifying this might reset passwords."
+    username:
+      name: "Username"
+      description: "The name of the user."
+    password:
+      name: "Password"
+      description: "The password for the user."
   log_level:
     name: "Log Level"
     description: "Verbosity of logs."

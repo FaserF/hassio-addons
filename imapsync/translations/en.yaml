@@ -32,6 +32,9 @@ configuration:
   source_oauth2_tenant_id:
     name: "Source: OAuth2 Tenant ID"
     description: "OPTIONAL (Microsoft Only). Not used for Google. Usually 'common' for personal Outlook/Office365 accounts."
+  source_oauth2_provider:
+    name: "Source: OAuth2 Provider"
+    description: "REQUIRED for 'oauth2'. Choose 'google' or 'microsoft'."
   destination_host:
     name: "Destination Host"
     description: "REQUIRED. The destination IMAP server (e.g., imap.gmail.com)."
@@ -56,6 +59,9 @@ configuration:
   destination_oauth2_tenant_id:
     name: "Destination: OAuth2 Tenant ID"
     description: "OPTIONAL (Microsoft Only). Not used for Google. Usually 'common' for personal Outlook/Office365 accounts."
+  destination_oauth2_provider:
+    name: "Destination: OAuth2 Provider"
+    description: "REQUIRED for 'oauth2'. Choose 'google' or 'microsoft'."
   delete_after_sync:
     name: "Delete after sync"
     description: "If enabled, e-mails will be deleted from the source after they are successfully synced to the destination. USE WITH CAUTION!"

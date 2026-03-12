@@ -1,1 +1,4 @@
-
+configuration:
+  log_level:
+    name: "Protokollebene"
+    description: "Steuert die Ausf\u00fchrlichkeit der Protokollausgabe."

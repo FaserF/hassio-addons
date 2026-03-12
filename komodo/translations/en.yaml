@@ -1,1 +1,4 @@
-
+configuration:
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the log output."

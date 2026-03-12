@@ -14,6 +14,12 @@ configuration:
   users:
     name: "Benutzer"
     description: "Liste der Benutzer. Warnung: Änderungen hier können Passwörter zurücksetzen."
+    username:
+      name: "Benutzername"
+      description: "Der Name des Benutzers."
+    password:
+      name: "Passwort"
+      description: "Das Passwort für den Benutzer."
   log_level:
     name: "Log Level"
     description: "Detailgrad der Protokolle."

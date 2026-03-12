@@ -162,7 +162,7 @@ Every app in this repository undergoes extensive CI/CD verification, including:
 
 - **Automated Builds:** Verified across multiple architectures.
 - **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and [Hadolint](https://github.com/hadolint/hadolint).
-- **Strict Linting:** Enforced by [App Linter](https://github.com/home-assistant/hassio-addons/tree/master/linter), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
+- **Strict Linting:** Enforced by [App Linter](https://developers.home-assistant.io/docs/add-ons/testing), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
 - **Code Consistency:** Automated formatting via [Prettier](https://prettier.io/), [Black](https://github.com/psf/black), and [isort](https://github.com/PyCQA/isort).
 - **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
 

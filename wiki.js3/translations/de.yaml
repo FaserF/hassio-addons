@@ -9,8 +9,11 @@ configuration:
     name: "Schlüsseldatei"
     description: "Pfad zur privaten Schlüsseldatei."
   log_level:
-    name: "Log-Level"
-    description: "Legt die Detailstufe der Protokollierung fest (z.B. error, warn, info, debug)."
+    name: "Log Level"
+    description: "Steuert die Ausf\u00fchrlichkeit der App-Protokolle."
+  db_password:
+    name: "Datenbank-Passwort"
+    description: "Passwort f\u00fcr die Datenbankverbindung."
   reset_database:
     name: "Datenbank zurücksetzen"
     description: "Setzt die Datenbank zurück. VORSICHT! Erfordert zusätzlich 'reset_database_confirm'."

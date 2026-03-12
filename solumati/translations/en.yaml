@@ -16,4 +16,7 @@ configuration:
     description: "If enabled, a landing/marketing page will be shown to unauthenticated users instead of the login screen."
   dev_use_main_branch:
     name: "Developer: Use Main Branch"
-    description: "⚠️ ADVANCED: If enabled, the app will download and build the latest code from the GitHub 'main' branch on EVERY start. This significantly increases startup time."
+    description: "\u26a0\ufe0f ADVANCED: If enabled, the app will download and build the latest code from the GitHub 'main' branch on EVERY start. This significantly increases startup time."
+  github_token:
+    name: "GitHub Token"
+    description: "Personal Access Token for GitHub API access (optional, to avoid rate limits during dev builds)."

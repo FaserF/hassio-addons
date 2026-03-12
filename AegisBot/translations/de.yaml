@@ -87,7 +87,7 @@ configuration:
 
   demo_mode_type:
     name: Demo-Modus-Typ
-    description: Wählen Sie zwischen 'ephemeral' (nur UI) oder 'persistent' (Datenbank-Simulationsmodus).
+    description: Wähle zwischen 'ephemeral' (nur UI) oder 'persistent' (Datenbank-Simulationsmodus).
 
   telegram_bot_token:
     name: Telegram Bot Token

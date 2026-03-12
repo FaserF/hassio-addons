@@ -12,6 +12,17 @@ REPO_HASH = "c1e285b7"  # Hash for FaserF/hassio-addons
 MAINTAINER = "FaserF"
 
 
+def check_domain(s, domains):
+    """Check if any of the domains exist in the string with proper boundaries."""
+    for domain in domains:
+        # Escaping dots for regex and checking for word boundaries or non-domain chars
+        # This prevents matches like trusted.com.attacker.com
+        pattern = r"(?:^|[\s\"'\(])(?:https?://)?(?:[^/\s@]+\.)?" + re.escape(domain) + r"(?:/|\s|$|[\"' \)])"
+        if re.search(pattern, s, re.IGNORECASE):
+            return True
+    return False
+
+
 BETA_NOTICE = """
 > [!CAUTION]
 > **Experimental / Beta Status**
@@ -116,10 +127,7 @@ def clean_existing_content(content):
             # Detect Badges
             if "]" in sline and (
                 "badge" in sline
-                or "shields.io" in sline
-                or "my.home-assistant.io" in sline
-                or "github.com" in sline
-                or "ko-fi" in sline
+                or check_domain(sline, ["shields.io", "my.home-assistant.io", "github.com", "ko-fi.com"])
             ):
                 continue
 
@@ -177,8 +185,7 @@ def clean_existing_content(content):
             # Filter Badges/Logos inside content body
             if "]" in sline and (
                 "badge" in sline
-                or "shields.io" in sline
-                or "my.home-assistant.io" in sline
+                or check_domain(sline, ["shields.io", "my.home-assistant.io"])
             ):
                 continue
             if "![Logo]" in sline or "logo.png" in sline or "<img src=" in sline:

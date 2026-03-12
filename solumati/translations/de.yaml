@@ -15,5 +15,8 @@ configuration:
     name: "Marketing-Seite aktivieren"
     description: "Wenn aktiviert, wird nicht angemeldeten Benutzern eine Landing-/Marketing-Seite anstelle des Anmeldebildschirms angezeigt."
   dev_use_main_branch:
-    name: "Entwickler: Main Branch nutzen"
-    description: "⚠️ FORTGESCHRITTEN: Wenn aktiviert, lädt das App bei JEDEM Start den neuesten Code aus dem GitHub 'main' Branch herunter und baut ihn neu. Dies verlängert die Startzeit erheblich."
+    name: "Entwickler: Main-Branch verwenden"
+    description: "\u26a0\ufe0f FORTGESCHRITTEN: Wenn aktiviert, l\u00e4dt die App bei JEDEM Start den neuesten Code vom GitHub-'main'-Branch herunter und baut ihn. Dies verl\u00e4ngert die Startzeit erheblich."
+  github_token:
+    name: "GitHub Token"
+    description: "Pers\u00f6nliches Zugriffs-Token f\u00fcr den GitHub-API-Zugriff (optional, um Rate-Limits bei Dev-Builds zu vermeiden)."

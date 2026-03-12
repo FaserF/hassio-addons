@@ -392,6 +392,11 @@ jobs:
           cat compliance_report.txt
           exit 1
 
+      # 7. Translation Check (EN/DE)
+      - name: 🌐 Translation Check
+        run: |
+          python3 .scripts/check_translations.py "./${{ matrix.App }}"
+
       # 6. Security Scan (Trivy)
       # Scanning the directory for vulnerabilities (fs mode)
       # Note: Scanning the built image is better, but this scans deps/conf before build.

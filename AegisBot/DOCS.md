@@ -160,7 +160,7 @@ This app uses the following folders:
 
 For issues and feature requests:
 
-- [GitHub Issues](https://github.com/FaserF/AegisBot/issues)
+- [GitHub Issues (Add-on Repository)](https://github.com/FaserF/hassio-addons/issues)
 - [Home Assistant Community Forum](https://community.home-assistant.io/)
 
 ## License

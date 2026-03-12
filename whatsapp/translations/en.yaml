@@ -32,5 +32,8 @@ configuration:
   media_folder:
     name: "Media Folder"
     description: "Path to a public folder (e.g. /media/whatsapp) to save received media. If set, automatic cleanup is DISABLED."
+  mark_online:
+    name: "Mark Online"
+    description: "Whether to mark the bot as online in WhatsApp."
 network:
   8066/tcp: Internal API port the integration connects to.

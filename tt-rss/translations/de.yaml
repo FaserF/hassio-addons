@@ -2,6 +2,9 @@ configuration:
   log_level:
     name: Log Level
     description: Steuert den Grad der Protokollausführlichkeit.
+  self_url:
+    name: Eigen-URL
+    description: Die URL, unter der diese Instanz erreichbar ist (z.B. http://ha.local:8280).
   ssl:
     name: SSL
     description: Aktiviert/Deaktiviert SSL (HTTPS) auf der Weboberfläche.
@@ -13,9 +16,9 @@ configuration:
     description: Der Name der SSL-Schlüsseldatei.
   reset_database:
     name: Datenbank zurücksetzen
-    description: Aktivieren Sie diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!
+    description: Aktiviere diese Option, um die Datenbank zur\u00fcckzusetzen. WARNUNG - L\u00f6scht alle Daten!
   reset_database_confirm:
     name: Datenbank-Reset bestätigen
-    description: Bestätigen Sie den Datenbank-Reset. Beide Optionen müssen aktiviert sein.
+    description: Best\u00e4tige den Datenbank-Reset. Beide Optionen m\u00fcssen aktiviert sein.
 network:
   80/tcp: Weboberfläche

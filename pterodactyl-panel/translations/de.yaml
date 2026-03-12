@@ -19,4 +19,7 @@ configuration:
     description: "Zusätzliche Bestätigung für den Datenbank-Reset. Muss zusammen mit 'reset_database' aktiviert werden."
   log_level:
     name: "Log Level"
-    description: "Steuert die Detailgenauigkeit der Protokolle."
+    description: "Steuert die Ausf\u00fchrlichkeit der App-Protokolle."
+  app_url:
+    name: "Anwendungs-URL"
+    description: "Die externe URL deines Pterodactyl Panels."

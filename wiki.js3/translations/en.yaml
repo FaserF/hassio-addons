@@ -10,7 +10,10 @@ configuration:
     description: "Path to the private key file."
   log_level:
     name: "Log Level"
-    description: "Sets the detail level of logging (e.g., error, warn, info, debug)."
+    description: "Controls the verbosity of the app logs."
+  db_password:
+    name: "Database Password"
+    description: "Password for the database connection."
   reset_database:
     name: "Reset Database"
     description: "Resets the database. CAUTION! Requires 'reset_database_confirm' to be enabled as well."
