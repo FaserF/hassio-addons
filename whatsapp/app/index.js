@@ -281,7 +281,10 @@ async function checkSystemUpdates(session) {
           `📋 *Recent System Logs:*\n` +
           `\`\`\`\n${haLogs}\n\`\`\``
       );
-    } else if (SYSTEM_STATE.last_ha_version !== 'Unknown' && SYSTEM_STATE.last_ha_version !== currentHAVersion) {
+    } else if (
+      SYSTEM_STATE.last_ha_version !== 'Unknown' &&
+      SYSTEM_STATE.last_ha_version !== currentHAVersion
+    ) {
       updateMessages.push(
         `✅ *Home Assistant Update Successful*\n` +
           `• *Core:* ${SYSTEM_STATE.last_ha_version} ➔ ${currentHAVersion}\n` +

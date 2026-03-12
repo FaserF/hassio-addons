@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![Docker Image](https://img.shields.io/badge/docker-1.3.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
+[![Docker Image](https://img.shields.io/badge/docker-1.4.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Home Assistant WhatsApp App (Baileys/Node.js).
@@ -54,15 +54,18 @@ To actually send messages and automate WhatsApp, you need the **WhatsApp Custom 
 > **Interactive Messages (Buttons & Lists)**: These features are increasingly restricted by Meta for unofficial APIs. They may not appear on all devices (especially iOS). If they fail for you, consider using standard text messages or **Polls**, which are much more reliable.
 
 ### 🗝️ Native Control Commands
+
 Control your addon via WhatsApp!
 
 **Public Commands:**
+
 - `ha-app-status`: Check health and versions (HA Core/OS info included).
 - `ha-app-ping`: Basic connectivity check ("Pong!").
 - `ha-app-getid`: Returns the current Chat ID (useful for Group IDs).
 - `ha-app-sponsor`: Show support and donation links.
 
 **Admin Commands (Protected):**
+
 - `ha-app-help`: Show available commands and examples.
 - `ha-app-welcome`: Manually show the role-aware welcome message.
 - `ha-app-diagnose`: Run full message type diagnostic (Buttons, Lists, etc.).
@@ -84,6 +87,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 ### Options
 
 ```yaml
+admin_notifications_enabled: true
 admin_numbers: ''
 keep_alive_interval: 30000
 log_level: info
@@ -98,7 +102,6 @@ webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
 welcome_message_enabled: true
-admin_notifications_enabled: true
 ```
 
 ---

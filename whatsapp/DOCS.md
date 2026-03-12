@@ -145,12 +145,13 @@ If `admin_notifications_enabled` is set to `true`, all configured **Admins** wil
 - **WhatsApp Connection**: Notifies when the bot loses or restores its connection to WhatsApp (includes downtime duration).
 - **Home Assistant Core**: Notifies when Home Assistant becomes unreachable or comes back online (e.g., during a restart or update).
 - **Update Detection**:
-    - **Addon/Integration**: Alerts when you've updated the WhatsApp App or the HA Integration.
-    - **HA Core**: Automatically detects if a Core update was successful and reports the version change (e.g., `2024.2.1 ➔ 2024.3.0`).
+  - **Addon/Integration**: Alerts when you've updated the WhatsApp App or the HA Integration.
+  - **HA Core**: Automatically detects if a Core update was successful and reports the version change (e.g., `2024.2.1 ➔ 2024.3.0`).
 
 ## 👋 Welcome Message (First Contact)
 
 The bot can automatically greet new users who send a direct message for the first time.
+
 - **Role Awareness**: The message identifies if the user is an **Admin** or a **Standard User**.
 - **Admin Tips**: Provides quick tips for administrators (`ha-app-status` and `ha-app-help`).
 - **Support Links**: Includes a link to the project documentation.
