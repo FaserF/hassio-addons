@@ -62,6 +62,7 @@ mask_sensitive_data: false
 ui_auth_enabled: false
 ui_auth_password: ''
 media_folder: null
+admin_numbers: ''
 ```
 
 ### Configuration Options
@@ -72,6 +73,7 @@ media_folder: null
 - `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
+- `admin_numbers`: Comma-separated list of phone numbers (e.g. `49176123456, 49176987654`) that are allowed to use `ha-app-*` admin commands.
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 - `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
 

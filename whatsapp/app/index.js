@@ -150,6 +150,7 @@ const ADMIN_NUMBERS = (process.env.ADMIN_NUMBERS || '')
   .split(',')
   .map((n) => n.trim())
   .filter((n) => n.length > 0);
+logger.info(`👥 Loaded ${ADMIN_NUMBERS.length} admin numbers from configuration.`);
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
@@ -253,15 +254,84 @@ function normalizeNumber(number) {
  * Checks if a JID is in the admin whitelist.
  */
 function isAdmin(jid) {
-  if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0) return false;
+  if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0 || !jid) return false;
 
-  const number = jid.split('@')[0];
-  const normalizedSender = normalizeNumber(number);
+  // Split by @ to get the number part, then split by : to remove device suffixes (multi-device)
+  const numberPart = jid.split('@')[0];
+  const pureNumber = numberPart.split(':')[0];
+  const normalizedSender = normalizeNumber(pureNumber);
 
   return ADMIN_NUMBERS.some((admin) => {
     const normalizedAdmin = normalizeNumber(admin);
     return normalizedSender === normalizedAdmin;
   });
+}
+
+/**
+ * Ported diagnostic logic from Integration.
+ */
+async function runDiagnostic(session, senderJid) {
+  try {
+    addLog(session, `Starting diagnostic test for ${maskData(senderJid)}`, 'info');
+
+    // 1. Text Message
+    const textMsg = await reply(session, senderJid, { text: '🧪 *Diagnostic Test [1/6]*: Text message works!' });
+    await delay(1000);
+
+    // 2. Reaction
+    if (textMsg) {
+      await reply(session, senderJid, {
+        react: { text: '✅', key: textMsg.key }
+      });
+      await delay(1000);
+    }
+
+    // 3. Buttons
+    await reply(session, senderJid, {
+      text: '🧪 *Diagnostic Test [2/6]*: Checking Buttons...',
+      footer: 'HA App Test',
+      buttons: [
+        { buttonId: 'diag_1', displayText: 'Button 1' },
+        { buttonId: 'diag_2', displayText: 'Button 2' }
+      ]
+    });
+    await delay(1000);
+
+    // 4. List
+    await reply(session, senderJid, {
+      title: '🧪 Diagnostic Test [3/6]',
+      text: 'Checking List Message...',
+      buttonText: 'View Options',
+      sections: [{
+        title: 'Test Section',
+        rows: [{ title: 'Option 1', id: 'opt_1' }, { title: 'Option 2', id: 'opt_2' }]
+      }]
+    });
+    await delay(1000);
+
+    // 5. Location
+    await reply(session, senderJid, {
+      location: { degreesLatitude: 52.52, degreesLongitude: 13.405 },
+      title: '🧪 Diagnostic Test [4/6]',
+      address: 'Berlin, Germany'
+    });
+    await delay(1000);
+
+    // 6. Final Text & Help Tip
+    await reply(session, senderJid, { text: '🧪 *Diagnostic Test [5/6]*: Overall bridge check complete.' });
+    await delay(1000);
+
+    // 7. Cleanup (Delete first message)
+    if (textMsg) {
+      await reply(session, senderJid, { delete: textMsg.key });
+      await reply(session, senderJid, { text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All tests finished!' });
+    }
+
+    addLog(session, `Diagnostic test for ${maskData(senderJid)} finished`, 'success');
+  } catch (err) {
+    logger.error({ error: err.message }, 'Diagnostic test failed');
+    await reply(session, senderJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
+  }
 }
 
 /**
@@ -423,6 +493,27 @@ function trackReceived(session, sender, message) {
     message: maskData(message),
   });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
+}
+
+/**
+ * Unified helper to send a message and track it in stats/recent outbound.
+ */
+async function reply(session, jid, content) {
+  try {
+    const result = await session.sock.sendMessage(jid, content);
+    const text = typeof content === 'string' ? content : (content.text || '[Mixed Content]');
+    const target = jid.split('@')[0].split(':')[0];
+
+    session.stats.sent += 1;
+    session.stats.last_sent_message = maskData(text);
+    session.stats.last_sent_target = maskData(target);
+    session.stats.last_sent_time = Date.now();
+    trackSent(session, target, text);
+    return result;
+  } catch (err) {
+    logger.error({ error: err.message, jid }, 'Failed to send reply');
+    return null;
+  }
 }
 
 function trackFailure(session, target, message, reason) {
@@ -1009,28 +1100,30 @@ async function connectToWhatsApp(sessionId = 'default') {
           const body = event.content.trim().toLowerCase();
           const sender = event.sender;
 
-          try {
-            // Check for / commands (ping, id, etc.) - keep these as they are simple and unprivileged
-            if (body === '/ping') {
-              await session.sock.sendMessage(sender, { text: 'Pong! 🏓' });
-              return;
-            } else if (body === '/id') {
-              await session.sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
-              return;
-            }
+            try {
+              // Check for HA App Commands (ha-app-*)
+              if (body.startsWith('ha-app-')) {
+                // For admin checks, always use the individual person ID
+                const personJid = event.raw.key.participant || event.raw.key.remoteJid;
+                const isAdminUser = isAdmin(personJid);
 
-            // Check for HA App Commands (ha-app-*)
-            if (body.startsWith('ha-app-')) {
-              const isAdminUser = isAdmin(sender);
+                if (body === 'ha-app-ping') {
+                  await reply(session, sender, { text: 'Pong! 🏓' });
+                  return;
+                } else if (body === 'ha-app-getid') {
+                  await reply(session, sender, { text: `Chat ID: \`${sender}\`` });
+                  return;
+                }
 
-              if (body === 'ha-app-status') {
+                if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
-                  const lastRequest = session.statusRateLimit.get(sender) || 0;
+                  // Rate limit based on the person
+                  const lastRequest = session.statusRateLimit.get(personJid) || 0;
                   if (now - lastRequest < 60000) {
                     return;
                   }
-                  session.statusRateLimit.set(sender, now);
+                  session.statusRateLimit.set(personJid, now);
                 }
 
                 const uptimeMs = now - session.stats.start_time;
@@ -1065,24 +1158,31 @@ async function connectToWhatsApp(sessionId = 'default') {
                   '• Docs: https://faserf.github.io/ha-whatsapp/\n' +
                   '• Issues: https://github.com/FaserF/ha-whatsapp/issues';
 
-                await session.sock.sendMessage(sender, { text: statusText });
+                await reply(session, sender, { text: statusText });
                 return;
               }
 
               // Permission check for all other commands
               if (!isAdminUser) {
-                if (!session.unauthorizedWarned.has(sender)) {
-                  await session.sock.sendMessage(sender, {
+                if (!session.unauthorizedWarned.has(personJid)) {
+                  // Debug logging - masked
+                  logger.warn(
+                    {
+                      personJid: maskData(personJid),
+                      sender: maskData(sender),
+                      normalizedSender: maskData(normalizeNumber(personJid.split('@')[0].split(':')[0])),
+                      adminListCount: ADMIN_NUMBERS.length,
+                    },
+                    '[SECURITY] Unauthorized command attempt details'
+                  );
+
+                  await reply(session, sender, {
                     text: '⛔ *Permission Denied*\nYour number is not in the admin whitelist. This attempt has been logged.',
                   });
-                  session.unauthorizedWarned.add(sender);
-                  logger.warn(
-                    { sender, sessionId: session.id },
-                    '[SECURITY] Unauthorized command attempt'
-                  );
+                  session.unauthorizedWarned.add(personJid);
                   addLog(
                     session,
-                    `Unauthorized command attempt from ${maskData(sender)}`,
+                    `Unauthorized command attempt from ${maskData(personJid)}`,
                     'warning'
                   );
                 }
@@ -1094,15 +1194,20 @@ async function connectToWhatsApp(sessionId = 'default') {
                   '📖 *HA WhatsApp Control Help*\n\n' +
                   'Available commands:\n\n' +
                   '• `ha-app-status`: Full system status report (Public)\n' +
+                  '• `ha-app-ping`: Basic connectivity check (Public)\n' +
+                  '• `ha-app-getid`: Show current Chat ID (Public)\n' +
                   '• `ha-app-help`: This help message\n' +
+                  '• `ha-app-diagnose`: Run full message type diagnostic\n' +
                   '• `ha-app-restart`: Restart the WhatsApp connection\n' +
                   '• `ha-app-logs`: View the latest 10 connection events\n' +
                   '• `ha-app-stats [range]`: View message statistics\n' +
                   '  _Examples: ha-app-stats 24h, ha-app-stats 7d_\n\n' +
                   '🔗 *Docs:* https://faserf.github.io/ha-whatsapp/';
-                await session.sock.sendMessage(sender, { text: helpText });
+                await reply(session, sender, { text: helpText });
+              } else if (body === 'ha-app-diagnose') {
+                await runDiagnostic(session, sender);
               } else if (body === 'ha-app-restart') {
-                await session.sock.sendMessage(sender, {
+                await reply(session, sender, {
                   text: '🔄 *Restarting...*\nThe connection will be reset in 2 seconds.',
                 });
                 addLog(session, `Admin ${maskData(sender)} requested restart`, 'warning');
@@ -1112,7 +1217,7 @@ async function connectToWhatsApp(sessionId = 'default') {
               } else if (body === 'ha-app-logs') {
                 const logs = session.connectionLogs.slice(0, 10);
                 if (logs.length === 0) {
-                  await session.sock.sendMessage(sender, {
+                  await reply(session, sender, {
                     text: '📜 *Logs:* No events recorded yet.',
                   });
                 } else {
@@ -1120,7 +1225,7 @@ async function connectToWhatsApp(sessionId = 'default') {
                     .map((l) => `[${l.timestamp}] ${l.msg}`)
                     .reverse()
                     .join('\n');
-                  await session.sock.sendMessage(sender, {
+                  await reply(session, sender, {
                     text: `📜 *Recent Connection Events:*\n\n${logText}`,
                   });
                 }
@@ -1132,7 +1237,7 @@ async function connectToWhatsApp(sessionId = 'default') {
                   `• Received: ${session.stats.received}\n` +
                   `• Failed: ${session.stats.failed}\n\n` +
                   '_(Note: Hourly/Daily filtering is currently being calculated based on current session life)_';
-                await session.sock.sendMessage(sender, { text: statsText });
+                await reply(session, sender, { text: statsText });
               }
             }
           } catch (cmdErr) {
