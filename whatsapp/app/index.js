@@ -174,7 +174,7 @@ if (fs.existsSync(TOKEN_FILE)) {
 // --- Rate Limiting ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window`
+  max: 2000, // Significantly increased for dynamic dashboard updates
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -182,7 +182,7 @@ const apiLimiter = rateLimit({
 
 const uiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests from this IP, please try again later.',
@@ -1529,6 +1529,40 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'whatsapp-homeassistant-app' });
 });
 
+// --- API / Internal Dashboard Data ---
+app.get('/api/dashboard', uiAuthMiddleware, (req, res) => {
+  const sessionId = req.query.session_id || 'default';
+  const session = getSession(sessionId);
+
+  const sessionList = Array.from(sessions.values()).map((s) => ({
+    id: s.id,
+    connected: s.isConnected,
+    number: s.stats.my_number || 'Unknown',
+  }));
+
+  const uptimeStr = session.stats.start_time
+    ? new Date(Date.now() - session.stats.start_time).toISOString().substr(11, 8)
+    : 'N/A';
+
+  res.json({
+    sessionId: session.id,
+    isConnected: session.isConnected,
+    currentQR: session.currentQR,
+    disconnectReason: session.disconnectReason,
+    reconnectAttempts: session.reconnectAttempts,
+    stats: session.stats,
+    uptime: uptimeStr,
+    sessionList: sessionList,
+    recentLogs: session.connectionLogs.slice(0, 10),
+    recentSent: session.recentSent.slice(0, 5),
+    recentReceived: session.recentReceived.slice(0, 5),
+    recentFailures: session.recentFailures.slice(0, 5),
+    nodeVersion: process.version,
+    addonVersion: process.env.ADDON_VERSION || '1.3.0',
+    baileysVersion: BAILEYS_VERSION,
+  });
+});
+
 // --- Dashboard (Server-Side Rendered) ---
 // Root endpoint (/) is handled by the catch-all below
 app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
@@ -1548,92 +1582,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     return res.status(404).send('Not Found');
   }
 
-  // Determine session to show (default to 'default' or first available)
   const sessionId = req.query.session_id || 'default';
-  const session = getSession(sessionId);
-
-  // List all sessions for the switcher
-  const sessionList = Array.from(sessions.values()).map((s) => ({
-    id: s.id,
-    connected: s.isConnected,
-    number: s.stats.my_number || 'Unknown',
-  }));
-
-  const sessionOptions = sessionList
-    .map(
-      (s) =>
-        `<option value="${s.id}" ${s.id === sessionId ? 'selected' : ''}>${s.id} (${s.connected ? '✅' : '❌'})</option>`
-    )
-    .join('');
-
-  // Determine current state
-  const statusClass = session.isConnected
-    ? 'connected'
-    : session.currentQR
-      ? 'waiting'
-      : 'disconnected';
-  const statusText = session.isConnected
-    ? 'Connected 🟢'
-    : session.currentQR
-      ? 'Scan QR Code 📱'
-      : `Disconnected ${session.disconnectReason === 'logged_out' ? '🚫' : '🔴'}`;
-  const showQR = !session.isConnected && session.currentQR;
-  const showQRPlaceholder = !session.isConnected && !session.currentQR;
-
-  // Recent logs (last 10)
-  const recentLogs =
-    session.connectionLogs
-      .slice(0, 10)
-      .map(
-        (l) =>
-          `<div class="log-entry"><span class="log-time">${l.timestamp}</span><span class="log-type-${l.type}">${l.msg}</span></div>`
-      )
-      .join('') || '<div class="log-entry">No logs yet</div>';
-
-  // Recent message histories
-  const sentList =
-    session.recentSent
-      .map(
-        (m) => `
-    <div class="history-item">
-      <span class="history-time">${m.timestamp}</span>
-      <span class="history-target">To: ${m.target}</span>
-      <div class="history-msg">${m.message}</div>
-    </div>
-  `
-      )
-      .join('') || '<div class="empty-state">No messages sent recently</div>';
-
-  const receivedList =
-    session.recentReceived
-      .map(
-        (m) => `
-    <div class="history-item">
-      <span class="history-time">${m.timestamp}</span>
-      <span class="history-sender">From: ${m.sender}</span>
-      <div class="history-msg">${m.message}</div>
-    </div>
-  `
-      )
-      .join('') || '<div class="empty-state">No messages received recently</div>';
-
-  const failureList =
-    session.recentFailures
-      .map(
-        (m) => `
-    <div class="history-item failure">
-      <span class="history-time">${m.timestamp}</span>
-      <span class="history-target">Target: ${m.target}</span>
-      <div class="history-msg">${m.message}</div>
-      <div class="history-reason">Error: ${m.reason}</div>
-    </div>
-  `
-      )
-      .join('') || '<div class="empty-state">No failures recorded</div>';
-
-  const uptimeStr = session.stats.start_time
-    ? new Date(Date.now() - session.stats.start_time).toISOString().substr(11, 8)
-    : 'N/A';
 
   res.send(`
     <!DOCTYPE html>
@@ -1641,8 +1590,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="refresh" content="5">
-        <title>WhatsApp Homeassistant App - ${sessionId}</title>
+        <title>WhatsApp Homeassistant App</title>
         <style>
             :root {
                 --primary: #00a884;
@@ -1661,11 +1609,10 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
             
             .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-            .sidebar h1 { font-size: 1.4rem; margin: 0; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+            .sidebar h1 { font-size: 1.8rem; line-height: 1.2; margin: 0; color: var(--primary); }
             .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
             .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
             .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
-            .sidebar-link i { font-size: 1.2rem; }
 
             .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
             .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
@@ -1700,7 +1647,7 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
             .empty-state { color: var(--text-secondary); font-style: italic; text-align: center; padding: 20px; }
 
             .details-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
-            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; }
 
             .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 200px; overflow-y: auto; }
             .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
@@ -1716,20 +1663,20 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
     </head>
     <body>
         <div class="sidebar">
-            <h1>💬 WS-HA-App</h1>
+            <h1 id="ui-title">WhatsApp<br><span style="color: var(--sidebar-text); opacity: 0.8; font-size: 1.4rem;">HA-App</span></h1>
             <div class="sidebar-links">
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
                 <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
                 <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 Addon Repo</a>
-                <a href="/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
+                <a href="https://ha.fabiseitz.de/config/app/whatsapp/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
             </div>
             
             <div style="margin-top: auto;">
                 <div class="stat-label">System Info</div>
                 <div style="font-size: 0.8rem; color: #8696a0;">
-                    Node: ${process.version}<br>
-                    Addon: v${process.env.ADDON_VERSION || '1.3.0'}<br>
-                    Baileys: v${BAILEYS_VERSION}
+                    Node: <span id="node-version">...</span><br>
+                    Addon: <span id="addon-version">...</span><br>
+                    Baileys: <span id="baileys-version">...</span>
                 </div>
             </div>
         </div>
@@ -1739,8 +1686,8 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 <h2 style="margin:0;">Dashboard Overview</h2>
                 <div class="session-switcher">
                     <span>Session:</span>
-                    <select onchange="window.location.href='?session_id=' + this.value">
-                        ${sessionOptions}
+                    <select id="session-select" onchange="switchSession(this.value)">
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
             </div>
@@ -1750,40 +1697,28 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                 <div class="card">
                     <div class="card-title">🔌 Connection Status</div>
                     <div class="status-section">
-                        <div class="status-badge ${statusClass}">${statusText}</div>
-                        ${session.disconnectReason ? `<div style="color:var(--danger); font-size:0.8rem;">Reason: ${session.disconnectReason}</div>` : ''}
+                        <div id="status-badge" class="status-badge status-badge.disconnected">Initializing...</div>
+                        <div id="disconnect-reason" style="color:var(--danger); font-size:0.8rem;"></div>
                     </div>
                     
-                    ${
-                      showQR
-                        ? `
-                        <div class="qr-container">
-                            <span class="stat-label">Scan to Connect</span><br>
-                            <img class="qr-code" src="${session.currentQR}" alt="QR" />
-                        </div>
-                    `
-                        : ''
-                    }
+                    <div id="qr-container" class="qr-container" style="display:none;">
+                        <span class="stat-label">Scan to Connect</span><br>
+                        <img id="qr-code" class="qr-code" src="" alt="QR" />
+                    </div>
                     
-                    ${
-                      showQRPlaceholder
-                        ? `
-                        <div class="qr-container">
-                            <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
-                            <span class="stat-label">Initializing WhatsApp...</span>
-                        </div>
-                    `
-                        : ''
-                    }
+                    <div id="init-placeholder" class="qr-container">
+                        <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
+                        <span class="stat-label">Initializing WhatsApp...</span>
+                    </div>
 
                     <div class="stats-row">
-                        <div class="stat-box"><div class="stat-val">${session.stats.sent}</div><div class="stat-label">Sent</div></div>
-                        <div class="stat-box"><div class="stat-val">${session.stats.received}</div><div class="stat-label">Received</div></div>
-                        <div class="stat-box"><div class="stat-val">${session.stats.failed}</div><div class="stat-label">Failed</div></div>
+                        <div class="stat-box"><div id="stat-sent" class="stat-val">0</div><div class="stat-label">Sent</div></div>
+                        <div class="stat-box"><div id="stat-received" class="stat-val">0</div><div class="stat-label">Received</div></div>
+                        <div class="stat-box"><div id="stat-failed" class="stat-val">0</div><div class="stat-label">Failed</div></div>
                     </div>
                     <div style="margin-top:10px; text-align:center;">
-                        <span class="stat-label">Uptime:</span> <strong>${uptimeStr}</strong> • 
-                        <span class="stat-label">Reconnections:</span> <strong>${session.reconnectAttempts}</strong>
+                        <span class="stat-label">Uptime:</span> <strong id="val-uptime">00:00:00</strong> • 
+                        <span class="stat-label">Reconnections:</span> <strong id="val-reconnects">0</strong>
                     </div>
                 </div>
 
@@ -1792,54 +1727,166 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                     <div class="card-title">🏠 Home Assistant Setup</div>
                     <div class="details-box">
                         <span class="stat-label">Addon Host (Recommended)</span><br>
-                        <code>http://605cee21_whatsapp:8066</code><br><br>
-                        <span class="stat-label">Docker / Internal IP</span><br>
-                        <code>http://${os.networkInterfaces().eth0?.[0]?.address || 'localhost'}:8066</code><br><br>
-                        <span class="stat-label">Port</span><br>
-                        <code>8066</code>
+                        <code>http://605cee21_whatsapp:${PORT}</code><br>
+                        <i style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8;">Note: Repo slug might vary</i><br><br>
+                        
+                        <span class="stat-label">Dynamic Addon Host (Auto-detected)</span><br>
+                        <code>http://${os.hostname()}:${PORT}</code><br><br>
+
+                        <span class="stat-label">API Token</span><br>
+                        <code>${API_TOKEN}</code><br><br>
+
+                        <span class="stat-label">Static / Internal IP</span><br>
+                        <code>http://${os.networkInterfaces().eth0?.[0]?.address || 'localhost'}:${PORT}</code>
                     </div>
                     <p style="font-size:0.8rem; color:var(--text-secondary);">
-                        Enter the Addon Host URL in the Home Assistant integration config flow to connect.
+                        Enter one of the Host URLs in the Home Assistant integration config flow.
                     </p>
                 </div>
 
                 <!-- Recent Sent -->
                 <div class="card">
                     <div class="card-title">📤 Recent Outbound</div>
-                    <div class="history-list">
-                        ${sentList}
+                    <div id="list-sent" class="history-list">
+                        <div class="empty-state">Loading...</div>
                     </div>
                 </div>
 
                 <!-- Recent Received -->
                 <div class="card">
                     <div class="card-title">📥 Recent Inbound</div>
-                    <div class="history-list">
-                        ${receivedList}
+                    <div id="list-received" class="history-list">
+                        <div class="empty-state">Loading...</div>
                     </div>
                 </div>
 
                 <!-- Recent Failures -->
                 <div class="card">
                     <div class="card-title">⚠️ Failed Actions</div>
-                    <div class="history-list">
-                        ${failureList}
+                    <div id="list-failures" class="history-list">
+                        <div class="empty-state">Loading...</div>
                     </div>
                 </div>
 
                 <!-- Live Logs -->
                 <div class="card">
                     <div class="card-title">📜 Connection Events</div>
-                    <div class="logs-view">
-                        ${recentLogs}
+                    <div id="list-logs" class="logs-view">
+                        <div class="log-entry">Loading events...</div>
                     </div>
                 </div>
             </div>
 
             <div class="footer-info">
-                WhatsApp Homeassistant App Dashboard • Auto-refreshes every 5s • Version: ${process.env.ADDON_VERSION || '1.3.0'}
+                WhatsApp Homeassistant App Dashboard • Real-time Monitoring • Version: <span id="footer-version">...</span>
             </div>
         </div>
+
+        <script>
+            let currentSession = '${sessionId}';
+
+            function switchSession(id) {
+                currentSession = id;
+                const url = new URL(window.location);
+                url.searchParams.set('session_id', id);
+                window.history.replaceState({}, '', url);
+                updateDashboard();
+            }
+
+            async function updateDashboard() {
+                try {
+                    const response = await fetch('/api/dashboard?session_id=' + currentSession);
+                    if (!response.ok) throw new Error('API request failed');
+                    const data = await response.json();
+
+                    // Update Title & Sidebar Version Info
+                    document.getElementById('node-version').textContent = data.nodeVersion;
+                    document.getElementById('addon-version').textContent = data.addonVersion;
+                    document.getElementById('baileys-version').textContent = data.baileysVersion;
+                    document.getElementById('footer-version').textContent = data.addonVersion;
+
+                    // Update Session Switcher
+                    const select = document.getElementById('session-select');
+                    const currentVal = select.value;
+                    let options = '';
+                    data.sessionList.forEach(s => {
+                        options += \`<option value="\${s.id}" \${s.id === currentSession ? 'selected' : ''}>\${s.id} (\${s.connected ? '✅' : '❌'})\</option>\`;
+                    });
+                    select.innerHTML = options;
+
+                    // Update Status Badge
+                    const badge = document.getElementById('status-badge');
+                    badge.className = 'status-badge ' + (data.isConnected ? 'connected' : (data.currentQR ? 'waiting' : 'disconnected'));
+                    badge.textContent = data.isConnected ? 'Connected 🟢' : (data.currentQR ? 'Scan QR Code 📱' : (data.disconnectReason === 'logged_out' ? 'Logged Out 🚫' : 'Disconnected 🔴'));
+                    
+                    document.getElementById('disconnect-reason').textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
+
+                    // QR Code logic
+                    const qrContainer = document.getElementById('qr-container');
+                    const initPlaceholder = document.getElementById('init-placeholder');
+                    if (!data.isConnected && data.currentQR) {
+                        qrContainer.style.display = 'block';
+                        initPlaceholder.style.display = 'none';
+                        document.getElementById('qr-code').src = data.currentQR;
+                    } else if (!data.isConnected && !data.currentQR) {
+                        qrContainer.style.display = 'none';
+                        initPlaceholder.style.display = 'block';
+                    } else {
+                        qrContainer.style.display = 'none';
+                        initPlaceholder.style.display = 'none';
+                    }
+
+                    // Update Stats
+                    document.getElementById('stat-sent').textContent = data.stats.sent;
+                    document.getElementById('stat-received').textContent = data.stats.received;
+                    document.getElementById('stat-failed').textContent = data.stats.failed;
+                    document.getElementById('val-uptime').textContent = data.uptime;
+                    document.getElementById('val-reconnects').textContent = data.reconnectAttempts;
+
+                    // Update Lists
+                    document.getElementById('list-sent').innerHTML = data.recentSent.length ? 
+                        data.recentSent.map(m => \`
+                            <div class="history-item">
+                                <span class="history-time">\${m.timestamp}</span>
+                                <span class="history-target">To: \${m.target}</span>
+                                <div class="history-msg">\${m.message}</div>
+                            </div>
+                        \`).join('') : '<div class="empty-state">No messages sent recently</div>';
+
+                    document.getElementById('list-received').innerHTML = data.recentReceived.length ? 
+                        data.recentReceived.map(m => \`
+                            <div class="history-item">
+                                <span class="history-time">\${m.timestamp}</span>
+                                <span class="history-sender">From: \${m.sender}</span>
+                                <div class="history-msg">\${m.message}</div>
+                            </div>
+                        \`).join('') : '<div class="empty-state">No messages received recently</div>';
+
+                    document.getElementById('list-failures').innerHTML = data.recentFailures.length ? 
+                        data.recentFailures.map(m => \`
+                            <div class="history-item failure">
+                                <span class="history-time">\${m.timestamp}</span>
+                                <span class="history-target">Target: \${m.target}</span>
+                                <div class="history-msg">\${m.message}</div>
+                                <div class="history-reason">Error: \${m.reason}</div>
+                            </div>
+                        \`).join('') : '<div class="empty-state">No failures recorded</div>';
+
+                    document.getElementById('list-logs').innerHTML = data.recentLogs.length ? 
+                        data.recentLogs.map(l => \`
+                            <div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">\${l.timestamp}</span><span class="log-type-\${l.type}">\${l.msg}</span></div>
+                        \`).join('') : '<div class="log-entry">No logs yet</div>';
+
+                } catch (e) {
+                    console.error('Fetch error:', e);
+                }
+            }
+
+            // Initial load
+            updateDashboard();
+            // refresh loop
+            setInterval(updateDashboard, 5000);
+        </script>
     </body>
     </html>
   `);
@@ -1996,12 +2043,14 @@ app.listen(PORT, '0.0.0.0', () => {
   logger.info({ port: PORT }, 'WhatsApp API listening');
   logger.info('✅ Service ready - Health check available at /health');
 
-  // Auto-start session for 'default' if credentials exist
+  // Auto-start session for 'default'
   const defaultDir = getAuthDir('default');
   if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
     logger.info('📦 Default session credentials found, auto-starting...');
-    connectToWhatsApp('default').catch(() => {});
+  } else {
+    logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
+  connectToWhatsApp('default').catch(() => {});
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
