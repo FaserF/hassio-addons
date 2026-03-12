@@ -880,7 +880,11 @@ function signalInterest(sessionId) {
   // If we weren't interested before, OR if we have no socket at all, start it
   // We relax this to always try if sock is null, even if alreadyInterested is true
   // This helps recover if the first attempt failed and user is still looking.
-  if ((!alreadyInterested || !session.sock) && !session.isConnected && (!session.sock || session.sock.ws?.isClosed)) {
+  if (
+    (!alreadyInterested || !session.sock) &&
+    !session.isConnected &&
+    (!session.sock || session.sock.ws?.isClosed)
+  ) {
     const authDir = getAuthDir(sessionId);
     const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
 
