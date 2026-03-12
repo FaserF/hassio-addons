@@ -187,6 +187,7 @@ ADDON_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervi
 SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
+export ADDON_VERSION="${VERSION}"
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
