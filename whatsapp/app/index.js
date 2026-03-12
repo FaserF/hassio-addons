@@ -361,7 +361,7 @@ function signalInterest(sessionId) {
     // If we DO have creds, we are likely already in a retry loop or connected.
     if (!hasCreds) {
       logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
-      connectToWhatsApp(sessionId).catch(() => {});
+      connectToWhatsApp(sessionId).catch(() => { });
     }
   }
 }
@@ -547,7 +547,29 @@ const uiAuthMiddleware = (req, res, next) => {
   }
 };
 
-// Global IP Filter
+const ingressPrefixMiddleware = (req, res, next) => {
+  const ingressPath = req.headers['x-ingress-path'];
+  if (ingressPath) {
+    const urlBefore = req.url;
+    // Handle the exact ingress path (with or without trailing slash)
+    if (req.url === ingressPath || req.url === ingressPath.replace(/\/$/, '')) {
+      req.url = '/';
+    } else {
+      // Ensure prefix ends with slash for substring matching of subpaths
+      const prefixWithSlash = ingressPath.endsWith('/') ? ingressPath : ingressPath + '/';
+      if (req.url.startsWith(prefixWithSlash)) {
+        req.url = '/' + req.url.substring(prefixWithSlash.length);
+      }
+    }
+    if (urlBefore !== req.url) {
+      logger.debug({ urlBefore, urlAfter: req.url, ingressPath }, 'Stripped Ingress prefix');
+    }
+  }
+  next();
+};
+
+// Global Middleware
+app.use(ingressPrefixMiddleware);
 app.use(ipFilterMiddleware);
 
 // Apply UI Rate Limit
@@ -607,7 +629,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => {});
+              fs.unlink(filePath, () => { });
             }
           });
         });
@@ -1721,6 +1743,7 @@ app.get(
     // If it looks like an API call but wasn't caught (e.g. missing trailing slash or prefix issue),
     // don't serve the dashboard HTML.
     if (req.path.includes('/api/')) {
+      logger.warn({ path: req.path, url: req.url, headers: req.headers }, 'Catch-all hit for API path - check Ingress prefixing');
       return res.status(404).json({ error: 'API route not found' });
     }
     const sessionId = req.query.session_id || 'default';
@@ -1986,6 +2009,21 @@ function renderDashboard(sessionId) {
                     </div>
                 </div>
 
+                <!-- Recent Failures -->
+                <div class="card" id="card-diagnostics" style="display:none;">
+                    <div class="card-title">🔍 System Diagnostics</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Base Path</span>
+                            <span id="diag-basepath" class="info-value">...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Url Path</span>
+                            <span id="diag-pathname" class="info-value">...</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Recent Sent -->
                 <div class="card">
                     <div class="card-title">📤 Recent Outbound</div>
@@ -2030,11 +2068,13 @@ function renderDashboard(sessionId) {
             // Robust base path detection for Home Assistant Ingress
             const getBasePath = () => {
                 const path = window.location.pathname;
-                if (path.endsWith('/')) return path;
-                return path.substring(0, path.lastIndexOf('/') + 1);
+                return path.endsWith('/') ? path : path + '/';
             };
             const basePath = getBasePath();
             console.log('Detected Base Path:', basePath);
+
+            document.getElementById('diag-basepath').textContent = basePath;
+            document.getElementById('diag-pathname').textContent = window.location.pathname;
 
             function switchSession(id) {
                 currentSession = id;
@@ -2105,12 +2145,17 @@ function renderDashboard(sessionId) {
                     if (!response.ok) {
                         const errorText = await response.text();
                         console.error('Update failed:', response.status, errorText);
+                        document.getElementById('card-diagnostics').style.display = 'block';
                         // If we are getting 403 or 401, maybe show something helpful?
                         if (response.status === 403) {
                             document.getElementById('status-badge').textContent = 'Access Blocked (403) ⛔';
+                        } else {
+                            document.getElementById('status-badge').textContent = 'API Error (' + response.status + ') ⚠️';
                         }
                         throw new Error('API request failed with status: ' + response.status);
                     }
+                    // Hide diagnostics if it was open from a previous error but now works
+                    document.getElementById('card-diagnostics').style.display = 'none';
                     const data = await response.json();
 
                     // Update Title & Sidebar Version Info
@@ -2379,7 +2424,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => {});
+  connectToWhatsApp('default').catch(() => { });
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2389,7 +2434,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => {});
+        connectToWhatsApp(sDir).catch(() => { });
       }
     }
   }
