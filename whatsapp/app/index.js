@@ -947,7 +947,8 @@ function trackFailure(session, target, message, reason) {
 
 function getAuthDir(sessionId) {
   const safeSessionId = sanitizeSessionId(sessionId);
-  const dir = safeSessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', safeSessionId);
+  const dir =
+    safeSessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', safeSessionId);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
