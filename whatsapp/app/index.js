@@ -275,13 +275,15 @@ async function runDiagnostic(session, senderJid) {
     addLog(session, `Starting diagnostic test for ${maskData(senderJid)}`, 'info');
 
     // 1. Text Message
-    const textMsg = await reply(session, senderJid, { text: '🧪 *Diagnostic Test [1/6]*: Text message works!' });
+    const textMsg = await reply(session, senderJid, {
+      text: '🧪 *Diagnostic Test [1/6]*: Text message works!',
+    });
     await delay(1000);
 
     // 2. Reaction
     if (textMsg) {
       await reply(session, senderJid, {
-        react: { text: '✅', key: textMsg.key }
+        react: { text: '✅', key: textMsg.key },
       });
       await delay(1000);
     }
@@ -292,8 +294,8 @@ async function runDiagnostic(session, senderJid) {
       footer: 'HA App Test',
       buttons: [
         { buttonId: 'diag_1', displayText: 'Button 1' },
-        { buttonId: 'diag_2', displayText: 'Button 2' }
-      ]
+        { buttonId: 'diag_2', displayText: 'Button 2' },
+      ],
     });
     await delay(1000);
 
@@ -302,10 +304,15 @@ async function runDiagnostic(session, senderJid) {
       title: '🧪 Diagnostic Test [3/6]',
       text: 'Checking List Message...',
       buttonText: 'View Options',
-      sections: [{
-        title: 'Test Section',
-        rows: [{ title: 'Option 1', id: 'opt_1' }, { title: 'Option 2', id: 'opt_2' }]
-      }]
+      sections: [
+        {
+          title: 'Test Section',
+          rows: [
+            { title: 'Option 1', id: 'opt_1' },
+            { title: 'Option 2', id: 'opt_2' },
+          ],
+        },
+      ],
     });
     await delay(1000);
 
@@ -313,18 +320,22 @@ async function runDiagnostic(session, senderJid) {
     await reply(session, senderJid, {
       location: { degreesLatitude: 52.52, degreesLongitude: 13.405 },
       title: '🧪 Diagnostic Test [4/6]',
-      address: 'Berlin, Germany'
+      address: 'Berlin, Germany',
     });
     await delay(1000);
 
     // 6. Final Text & Help Tip
-    await reply(session, senderJid, { text: '🧪 *Diagnostic Test [5/6]*: Overall bridge check complete.' });
+    await reply(session, senderJid, {
+      text: '🧪 *Diagnostic Test [5/6]*: Overall bridge check complete.',
+    });
     await delay(1000);
 
     // 7. Cleanup (Delete first message)
     if (textMsg) {
       await reply(session, senderJid, { delete: textMsg.key });
-      await reply(session, senderJid, { text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All tests finished!' });
+      await reply(session, senderJid, {
+        text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All tests finished!',
+      });
     }
 
     addLog(session, `Diagnostic test for ${maskData(senderJid)} finished`, 'success');
@@ -501,7 +512,7 @@ function trackReceived(session, sender, message) {
 async function reply(session, jid, content) {
   try {
     const result = await session.sock.sendMessage(jid, content);
-    const text = typeof content === 'string' ? content : (content.text || '[Mixed Content]');
+    const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
     const target = jid.split('@')[0].split(':')[0];
 
     session.stats.sent += 1;
@@ -1100,22 +1111,22 @@ async function connectToWhatsApp(sessionId = 'default') {
           const body = event.content.trim().toLowerCase();
           const sender = event.sender;
 
-            try {
-              // Check for HA App Commands (ha-app-*)
-              if (body.startsWith('ha-app-')) {
-                // For admin checks, always use the individual person ID
-                const personJid = event.raw.key.participant || event.raw.key.remoteJid;
-                const isAdminUser = isAdmin(personJid);
+          try {
+            // Check for HA App Commands (ha-app-*)
+            if (body.startsWith('ha-app-')) {
+              // For admin checks, always use the individual person ID
+              const personJid = event.raw.key.participant || event.raw.key.remoteJid;
+              const isAdminUser = isAdmin(personJid);
 
-                if (body === 'ha-app-ping') {
-                  await reply(session, sender, { text: 'Pong! 🏓' });
-                  return;
-                } else if (body === 'ha-app-getid') {
-                  await reply(session, sender, { text: `Chat ID: \`${sender}\`` });
-                  return;
-                }
+              if (body === 'ha-app-ping') {
+                await reply(session, sender, { text: 'Pong! 🏓' });
+                return;
+              } else if (body === 'ha-app-getid') {
+                await reply(session, sender, { text: `Chat ID: \`${sender}\`` });
+                return;
+              }
 
-                if (body === 'ha-app-status') {
+              if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
                   // Rate limit based on the person
@@ -1170,7 +1181,9 @@ async function connectToWhatsApp(sessionId = 'default') {
                     {
                       personJid: maskData(personJid),
                       sender: maskData(sender),
-                      normalizedSender: maskData(normalizeNumber(personJid.split('@')[0].split(':')[0])),
+                      normalizedSender: maskData(
+                        normalizeNumber(personJid.split('@')[0].split(':')[0])
+                      ),
                       adminListCount: ADMIN_NUMBERS.length,
                     },
                     '[SECURITY] Unauthorized command attempt details'

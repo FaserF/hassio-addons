@@ -77,24 +77,7 @@ webhook_token: ''
 webhook_url: ''
 ```
 
-### 🗝️ Native Control Commands
-Control your addon via WhatsApp!
-
-**Public Commands:**
-- `ha-app-status`: Check health and versions (Rate-limited for non-admins).
-- `ha-app-ping`: Basic connectivity check ("Pong!").
-- `ha-app-getid`: Returns the current Chat ID (useful for Group IDs).
-
-**Admin Commands (Protected):**
-- `ha-app-help`: Show available commands and examples.
-- `ha-app-diagnose`: Run full message type diagnostic (Buttons, Lists, etc.).
-- `ha-app-logs`: See recent connection events.
-- `ha-app-restart`: Restart the WhatsApp connection.
-
-> [!TIP]
-> Send `ha-app-help` from an admin number for a full list of commands and usage examples.
-
-
+---
 
 ## 👨‍💻 Credits & License
 

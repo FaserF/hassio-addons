@@ -197,13 +197,13 @@ export LOG_LEVEL
 bashio::log.info "Checking for native integration..."
 INTEGRATION_DIR="/config/custom_components/bash_script_executer"
 if [ ! -d "$INTEGRATION_DIR" ]; then
-    bashio::log.info "Installing native integration to Home Assistant..."
-    mkdir -p "$INTEGRATION_DIR"
-    cp /integration/* "$INTEGRATION_DIR/"
-    bashio::log.warning "Native integration installed! Please restart Home Assistant to see the button."
+	bashio::log.info "Installing native integration to Home Assistant..."
+	mkdir -p "$INTEGRATION_DIR"
+	cp /integration/* "$INTEGRATION_DIR/"
+	bashio::log.warning "Native integration installed! Please restart Home Assistant to see the button."
 else
-    # Check if we need to update (simple copy for now)
-    cp /integration/* "$INTEGRATION_DIR/"
+	# Check if we need to update (simple copy for now)
+	cp /integration/* "$INTEGRATION_DIR/"
 fi
 
 # --- Script Preparation ---
@@ -221,8 +221,8 @@ prepare_script() {
 		echo "$path"
 	elif [[ -n "$content" && "$content" != "null" ]]; then
 		local tmp_path="/tmp/script$num.sh"
-		echo "#!/bin/bash" > "$tmp_path"
-		echo "$content" >> "$tmp_path"
+		echo "#!/bin/bash" >"$tmp_path"
+		echo "$content" >>"$tmp_path"
 		chmod 711 "$tmp_path"
 		echo "$tmp_path"
 	else

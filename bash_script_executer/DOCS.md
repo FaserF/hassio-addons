@@ -18,7 +18,6 @@ script_content: |
 
 The addon automatically installs a Home Assistant integration that provides a button to start the addon. After the first run, a **Home Assistant restart** is required.
 
-
 ## 📂 Folder Usage
 
 - `/share`: Used to store your bash scripts. This is the primary directory where the app looks for scripts to execute.

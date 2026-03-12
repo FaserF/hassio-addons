@@ -54,17 +54,13 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 
 ```yaml
 log_level: info
+script2_content: ''
+script3_content: ''
+script_content: ''
 script_path: /share/scripts/mycoolscript.sh
-script_content: ""
+script_path2: 'false'
+script_path3: 'false'
 ```
-
-### 🔘 Native Start Button
-
-The addon automatically installs a Home Assistant integration that provides a button to start the addon.
-
-- **Installation**: The first time you start the addon, it copies the integration files to your Home Assistant configuration.
-- **Activation**: You must **restart Home Assistant** once after the first run for the integration to appear.
-- **Button**: A new entity `button.bash_script_executer_start` will be created. Pressing it starts the addon.
 
 ---
 
