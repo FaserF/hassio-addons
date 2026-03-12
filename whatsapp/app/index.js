@@ -2084,7 +2084,7 @@ function renderDashboard(sessionId) {
         </div>
 
         <script>
-            let currentSession = '${sessionId}';
+            let currentSession = ${JSON.stringify(sessionId)};
 
             // Robust base path detection for Home Assistant Ingress
             const getBasePath = () => {
@@ -2097,7 +2097,7 @@ function renderDashboard(sessionId) {
                     return '/';
                 }
             };
-            const basePath = getBasePath().replace(/\/+/g, '/'); 
+            const basePath = getBasePath().replace(/[/]+/g, '/'); 
             console.log('Detected Base Path:', basePath);
 
             document.getElementById('diag-basepath').textContent = basePath;
@@ -2196,7 +2196,7 @@ function renderDashboard(sessionId) {
                     let options = '';
                     data.sessionList.forEach(s => {
                         const isSelected = s.id === currentSession ? 'selected' : '';
-                        const statusIcon = s.connected ? '✅' : '❌';
+                        const statusIcon = s.connected ? '\u2705' : '\u274C';
                         options += '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + statusIcon + ')</option>';
                     });
                     select.innerHTML = options;
@@ -2204,7 +2204,7 @@ function renderDashboard(sessionId) {
                     // Update Status Badge
                     const badge = document.getElementById('status-badge');
                     badge.className = 'status-badge ' + (data.isConnected ? 'connected' : (data.currentQR ? 'waiting' : 'disconnected'));
-                    badge.textContent = data.isConnected ? 'Connected 🟢' : (data.currentQR ? 'Scan QR Code 📱' : (data.disconnectReason === 'logged_out' ? 'Logged Out 🚫' : 'Disconnected 🔴'));
+                    badge.textContent = data.isConnected ? 'Connected \u2705' : (data.currentQR ? 'Scan QR Code \uD83D\uDCF1' : (data.disconnectReason === 'logged_out' ? 'Logged Out \uD83D\uDEAB' : 'Disconnected \u274C'));
 
                     document.getElementById('disconnect-reason').textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
 
