@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-1.3.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-whatsapp)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Home Assistant WhatsApp App (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed).
+> Home Assistant WhatsApp App (Baileys/Node.js).
 
 ---
 
@@ -29,7 +29,7 @@
 <a href="https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_whatsapp" target="_blank">
 </a>
 
-> Home Assistant WhatsApp App (Baileys/Node.js). Uses Host Network (Port 8066 cannot be changed).
+
 
 ## 🐛 Report a Bug
 
@@ -37,8 +37,7 @@ If you encounter any issues with this app, please report them using the link bel
 
 **[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=0.3.0&log_information=Please+paste+the+App+log+output+here%3A%0A%0A)**
 
-> [!TIP]
-> **Auto-Discovery:** This app uses `host_network: true` by default to enable **"New devices found"** notifications in Home Assistant via mDNS. This simplifies the setup process as HA will find the app automatically.
+
 
 ## 💡 Feature Request
 
@@ -48,9 +47,6 @@ If you have an idea for a new feature or improvement, please use the link below 
 
 > [!NOTE]
 > Please use the link above to request features. This ensures that the app name is automatically included in your feature request.
-
-This project is open-source and available under the MIT License.
-Maintained by **FaserF**.
 
 ## 🛠️ Usage & Integration
 
