@@ -905,7 +905,10 @@ function trackReceived(session, sender, message) {
     message: maskData(message),
   });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
-  logger.debug({ sessionId: session.id, sender: maskData(sender) }, '📈 Stat: Received incremented');
+  logger.debug(
+    { sessionId: session.id, sender: maskData(sender) },
+    '📈 Stat: Received incremented'
+  );
 }
 
 /**
