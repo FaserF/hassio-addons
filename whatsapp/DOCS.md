@@ -63,6 +63,7 @@ ui_auth_enabled: false
 ui_auth_password: ''
 media_folder: null
 admin_numbers: ''
+welcome_message_enabled: true
 ```
 
 ### Configuration Options

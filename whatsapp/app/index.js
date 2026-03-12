@@ -150,7 +150,85 @@ const ADMIN_NUMBERS = (process.env.ADMIN_NUMBERS || '')
   .split(',')
   .map((n) => n.trim())
   .filter((n) => n.length > 0);
+const WELCOME_MESSAGE_ENABLED = process.env.WELCOME_MESSAGE_ENABLED !== 'false';
 logger.info(`👥 Loaded ${ADMIN_NUMBERS.length} admin numbers from configuration.`);
+logger.info(`👋 Welcome Message: ${WELCOME_MESSAGE_ENABLED ? 'ENABLED' : 'DISABLED'}`);
+
+// --- Persistent Seen Users ---
+const SEEN_USERS_FILE = path.join(DATA_DIR, 'seen_users.json');
+let SEEN_USERS = new Set();
+if (fs.existsSync(SEEN_USERS_FILE)) {
+  try {
+    const data = JSON.parse(fs.readFileSync(SEEN_USERS_FILE, 'utf8'));
+    SEEN_USERS = new Set(data);
+    logger.info(`📂 Loaded ${SEEN_USERS.size} seen users.`);
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load seen users');
+  }
+}
+
+function markUserAsSeen(jid) {
+  if (!SEEN_USERS.has(jid)) {
+    SEEN_USERS.add(jid);
+    try {
+      fs.writeFileSync(SEEN_USERS_FILE, JSON.stringify([...SEEN_USERS]));
+    } catch (e) {
+      logger.error({ error: e.message }, '❌ Failed to save seen users');
+    }
+    return true; // Was new
+  }
+  return false;
+}
+
+// --- Home Assistant Version Helper ---
+const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
+let cachedHAVersions = { core: 'Unknown', os: 'Unknown', lastUpdate: 0 };
+
+async function fetchHAVersions() {
+  const now = Date.now();
+  if (now - cachedHAVersions.lastUpdate < 30 * 60 * 1000) return cachedHAVersions;
+
+  if (!SUPERVISOR_TOKEN) {
+    cachedHAVersions.lastUpdate = now;
+    return cachedHAVersions;
+  }
+
+  try {
+    const fetch = async (urlPath) => {
+      const options = {
+        hostname: 'supervisor',
+        port: 80,
+        path: urlPath,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${SUPERVISOR_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      };
+      return new Promise((resolve) => {
+        const req = http.request(options, (res) => {
+          let data = '';
+          res.on('data', (c) => data += c);
+          res.on('end', () => {
+            try { resolve(JSON.parse(data)); } catch { resolve(null); }
+          });
+        });
+        req.on('error', () => resolve(null));
+        req.end();
+      });
+    };
+
+    const coreData = await fetch('/core/info');
+    const osData = await fetch('/os/info');
+
+    if (coreData && coreData.result === 'ok') cachedHAVersions.core = coreData.data.version;
+    if (osData && osData.result === 'ok') cachedHAVersions.os = osData.data.version || 'Unknown';
+    cachedHAVersions.lastUpdate = now;
+  } catch (e) {
+    logger.debug({ error: e.message }, 'Failed to fetch HA versions');
+  }
+  return cachedHAVersions;
+}
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
@@ -250,21 +328,44 @@ function normalizeNumber(number) {
   return digits;
 }
 
-/**
- * Checks if a JID is in the admin whitelist.
- */
 function isAdmin(jid) {
   if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0 || !jid) return false;
 
-  // Split by @ to get the number part, then split by : to remove device suffixes (multi-device)
+  // 1. Extract pure sender number from JID
   const numberPart = jid.split('@')[0];
-  const pureNumber = numberPart.split(':')[0];
-  const normalizedSender = normalizeNumber(pureNumber);
+  const pureSender = numberPart.split(':')[0].replace(/\D/g, ''); // e.g. 491761234567
 
-  return ADMIN_NUMBERS.some((admin) => {
-    const normalizedAdmin = normalizeNumber(admin);
-    return normalizedSender === normalizedAdmin;
+  // Normalize sender (strip leading zeros)
+  let cleanSender = pureSender;
+  if (cleanSender.startsWith('00')) cleanSender = cleanSender.substring(2);
+  if (cleanSender.startsWith('0')) cleanSender = cleanSender.substring(1);
+
+  const matched = ADMIN_NUMBERS.some((admin) => {
+    let cleanAdmin = admin.replace(/\D/g, '');
+    if (cleanAdmin.startsWith('00')) cleanAdmin = cleanAdmin.substring(2);
+    if (cleanAdmin.startsWith('0')) cleanAdmin = cleanAdmin.substring(1);
+
+    // Exact match of normalized parts
+    if (cleanSender === cleanAdmin) return true;
+
+    // Suffix match (handles one being local "176..." and other international "49176...")
+    // Only allow if both are at least 7 digits to avoid false positives
+    if (cleanSender.length >= 7 && cleanAdmin.length >= 7) {
+      if (cleanSender.endsWith(cleanAdmin) || cleanAdmin.endsWith(cleanSender)) {
+        return true;
+      }
+    }
+    return false;
   });
+
+  if (!matched) {
+    logger.debug(
+      { jid: maskData(jid), senderDigits: cleanSender.slice(-4), adminCount: ADMIN_NUMBERS.length },
+      'isAdmin check failed'
+    );
+  }
+
+  return matched;
 }
 
 /**
@@ -343,6 +444,31 @@ async function runDiagnostic(session, senderJid) {
     logger.error({ error: err.message }, 'Diagnostic test failed');
     await reply(session, senderJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
   }
+}
+
+/**
+ * Sends a role-aware welcome message.
+ */
+async function sendWelcomeMessage(session, jid) {
+  const isAdminUser = isAdmin(jid);
+  const role = isAdminUser ? '*Admin*' : '*Standard User*';
+
+  let welcomeText =
+    `👋 *Welcome to the Home Assistant WhatsApp Bridge!*\n\n` +
+    `Your current role: ${role}\n\n`;
+
+  if (isAdminUser) {
+    welcomeText += `💡 *Admin Tip:* Use \`ha-app-status\` for health checks or \`ha-app-help\` for all control commands.\n\n`;
+  } else {
+    welcomeText += `💡 *Tip:* Use \`ha-app-status\` to view the integration status.\n\n`;
+  }
+
+  welcomeText +=
+    `🔗 *Docs & Support:*\n` +
+    `• https://faserf.github.io/ha-whatsapp/\n` +
+    `• https://faserf.github.io/ha-whatsapp/support.html`;
+
+  await reply(session, jid, { text: welcomeText });
 }
 
 /**
@@ -1106,17 +1232,29 @@ async function connectToWhatsApp(sessionId = 'default') {
       for (const event of resolvedEvents) {
         triggerWebhook(event);
 
+        // --- First Contact Welcome Message ---
+        if (WELCOME_MESSAGE_ENABLED && !event.is_group && event.content) {
+          const personJid = event.raw.key.participant || event.sender;
+          if (markUserAsSeen(personJid)) {
+            logger.info({ jid: maskData(personJid) }, '👋 Sending first-contact welcome message');
+            sendWelcomeMessage(session, event.sender).catch((e) =>
+              logger.error({ error: e.message }, 'Failed to send welcome message')
+            );
+          }
+        }
+
         // --- Native Command Handling ---
         if (event.content && typeof event.content === 'string') {
           const body = event.content.trim().toLowerCase();
           const sender = event.sender;
 
-          try {
-            // Check for HA App Commands (ha-app-*)
-            if (body.startsWith('ha-app-')) {
-              // For admin checks, always use the individual person ID
-              const personJid = event.raw.key.participant || event.raw.key.remoteJid;
-              const isAdminUser = isAdmin(personJid);
+            try {
+              // Check for HA App Commands (ha-app-*)
+              if (body.startsWith('ha-app-')) {
+                // For admin checks, always use the individual person ID
+                // We use event.sender here because it has already gone through LID-swapping logic
+                const personJid = event.raw.key.participant || event.sender;
+                const isAdminUser = isAdmin(personJid);
 
               if (body === 'ha-app-ping') {
                 await reply(session, sender, { text: 'Pong! 🏓' });
@@ -1147,11 +1285,14 @@ async function connectToWhatsApp(sessionId = 'default') {
                 const displaySessionId = isAdminUser ? session.id : maskData(session.id);
                 const addonVersion = process.env.ADDON_VERSION || 'Unknown';
                 const integrationVersion = process.env.INTEGRATION_VERSION || 'Unknown';
+                const haVersions = await fetchHAVersions();
 
                 let statusText =
                   '📊 *WhatsApp Integration Status*\n\n' +
                   `• *HA App Version:* ${addonVersion} (https://github.com/FaserF/hassio-addons)\n` +
                   `• *Integration Version:* ${integrationVersion} (https://github.com/FaserF/ha-whatsapp)\n` +
+                  `• *HA Core Version:* ${haVersions.core}\n` +
+                  `• *HA OS Version:* ${haVersions.os}\n` +
                   `• *Uptime:* ${uptimeStr}\n` +
                   `• *Session:* ${displaySessionId}\n` +
                   `• *Connected:* ${session.isConnected ? '✅' : '❌'}\n\n` +
@@ -1176,14 +1317,16 @@ async function connectToWhatsApp(sessionId = 'default') {
               // Permission check for all other commands
               if (!isAdminUser) {
                 if (!session.unauthorizedWarned.has(personJid)) {
-                  // Debug logging - masked
+                  // Debug logging - masked but informative
+                  const rawNum = personJid.split('@')[0].split(':')[0];
+                  const normNum = normalizeNumber(rawNum);
+
                   logger.warn(
                     {
                       personJid: maskData(personJid),
                       sender: maskData(sender),
-                      normalizedSender: maskData(
-                        normalizeNumber(personJid.split('@')[0].split(':')[0])
-                      ),
+                      last4Digits: rawNum.slice(-4),
+                      normalizedValue: normNum.slice(-4),
                       adminListCount: ADMIN_NUMBERS.length,
                     },
                     '[SECURITY] Unauthorized command attempt details'
@@ -1209,7 +1352,9 @@ async function connectToWhatsApp(sessionId = 'default') {
                   '• `ha-app-status`: Full system status report (Public)\n' +
                   '• `ha-app-ping`: Basic connectivity check (Public)\n' +
                   '• `ha-app-getid`: Show current Chat ID (Public)\n' +
+                  '• `ha-app-sponsor`: Support this project (Public)\n' +
                   '• `ha-app-help`: This help message\n' +
+                  '• `ha-app-welcome`: Show role & welcome info\n' +
                   '• `ha-app-diagnose`: Run full message type diagnostic\n' +
                   '• `ha-app-restart`: Restart the WhatsApp connection\n' +
                   '• `ha-app-logs`: View the latest 10 connection events\n' +
@@ -1217,6 +1362,14 @@ async function connectToWhatsApp(sessionId = 'default') {
                   '  _Examples: ha-app-stats 24h, ha-app-stats 7d_\n\n' +
                   '🔗 *Docs:* https://faserf.github.io/ha-whatsapp/';
                 await reply(session, sender, { text: helpText });
+              } else if (body === 'ha-app-welcome') {
+                await sendWelcomeMessage(session, sender);
+              } else if (body === 'ha-app-sponsor') {
+                const sponsorText =
+                  '💖 *Support HA WhatsApp*\n\n' +
+                  'Thank you for your interest in supporting this project! Your contributions help keep development active.\n\n' +
+                  '🔗 *Sponsor Link:* https://faserf.github.io/ha-whatsapp/support.html';
+                await reply(session, sender, { text: sponsorText });
               } else if (body === 'ha-app-diagnose') {
                 await runDiagnostic(session, sender);
               } else if (body === 'ha-app-restart') {

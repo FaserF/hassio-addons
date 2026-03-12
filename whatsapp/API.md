@@ -345,14 +345,16 @@ Available to anyone:
 
 - **`ha-app-ping`**: Returns "Pong! 🏓" (useful for checking connection).
 - **`ha-app-getid`**: Returns the current Chat ID (useful for finding Group IDs).
-- **`ha-app-status`**: Comprehensive system status report. (Anonymized and rate-limited to 1/min for non-admins).
+- **`ha-app-sponsor`**: Show support links for the project.
+- **`ha-app-status`**: Comprehensive system status report (Includes HA Core & OS versions).
 
 #### Admin Commands (Protected)
 
 Requires the sender's number to be in the `admin_numbers` whitelist.
 
 - **`ha-app-help`**: Lists all available commands and examples.
-- **`ha-app-diagnose`**: Run full message type diagnostic (Text, Reactions, Buttons, Lists, Location).
+- **`ha-app-welcome`**: Manually trigger the role-aware welcome message.
+- **`ha-app-diagnose`**: Run full message type diagnostic.
 - **`ha-app-logs`**: Retrieves the latest 10 connection events.
 - **`ha-app-restart`**: Gracefully restarts the WhatsApp connection.
 - **`ha-app-stats`**: View message statistics.

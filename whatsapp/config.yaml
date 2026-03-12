@@ -27,6 +27,7 @@ options:
   mark_online: false
   media_folder: ""
   admin_numbers: ""
+  welcome_message_enabled: true
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -42,6 +43,7 @@ schema:
   mark_online: bool
   media_folder: str?
   admin_numbers: str?
+  welcome_message_enabled: bool
 
 ports:
   8066/tcp: 8066
