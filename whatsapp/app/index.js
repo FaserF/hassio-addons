@@ -379,7 +379,7 @@ async function monitorHACore(session) {
       // Transition from Offline -> Online
       await checkSystemUpdates(session); // Includes restore notification
     }
-  }, 60000); // Check every 1 minute
+  }, 30000); // Check every 30 seconds
 }
 
 function markUserAsSeen(jid) {
@@ -443,8 +443,15 @@ async function fetchHAVersions(forceRefresh = false) {
     if (coreData && coreData.result === 'ok') {
       cachedHAVersions.core = coreData.data.version;
       cachedHAVersions.safe_mode = coreData.data.safe_mode || false;
+    } else {
+      cachedHAVersions.core = 'Unknown';
+      cachedHAVersions.safe_mode = false;
     }
-    if (osData && osData.result === 'ok') cachedHAVersions.os = osData.data.version || 'Unknown';
+    if (osData && osData.result === 'ok') {
+      cachedHAVersions.os = osData.data.version || 'Unknown';
+    } else {
+      cachedHAVersions.os = 'Unknown';
+    }
     cachedHAVersions.lastUpdate = now;
   } catch (e) {
     logger.debug({ error: e.message }, 'Failed to fetch HA versions');
@@ -887,6 +894,7 @@ function trackSent(session, target, message) {
   const timestamp = formatHATime(new Date());
   session.recentSent.unshift({ timestamp, target: maskData(target), message: maskData(message) });
   if (session.recentSent.length > 5) session.recentSent.pop();
+  logger.debug({ sessionId: session.id, target: maskData(target) }, '📈 Stat: Sent incremented');
 }
 
 function trackReceived(session, sender, message) {
@@ -897,6 +905,7 @@ function trackReceived(session, sender, message) {
     message: maskData(message),
   });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
+  logger.debug({ sessionId: session.id, sender: maskData(sender) }, '📈 Stat: Received incremented');
 }
 
 /**
@@ -917,6 +926,7 @@ async function reply(session, jid, content) {
   } catch (err) {
     logger.error({ error: err.message, jid }, 'Failed to send reply');
     session.stats.failed += 1;
+    logger.debug({ sessionId: session.id, jid: maskData(jid) }, '📉 Stat: Failed incremented');
     return null;
   }
 }
