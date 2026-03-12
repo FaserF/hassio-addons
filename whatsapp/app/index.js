@@ -1786,14 +1786,14 @@ function renderDashboard(sessionId) {
             .empty-state { color: var(--text-secondary); font-style: italic; text-align: center; padding: 20px; }
 
             .details-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
-            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; }
+            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; text-decoration: none; }
 
             .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 250px; overflow-y: auto; }
             .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
 
             .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; width: 100%; }
 
-            .highlight-token { background: #fff8c5; color: #9a6700; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid #d4a017; user-select: all; }
+            .highlight-token { background: #fff8c5; color: #9a6700; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid #d4a017; user-select: all; text-decoration: none; }
             .btn { cursor: pointer; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; transition: transform 0.1s, background 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; min-height: 44px; }
             .btn:active { transform: scale(0.98); }
             .btn-primary { background: var(--primary); color: white; }
@@ -1889,11 +1889,7 @@ function renderDashboard(sessionId) {
                 <div class="card">
                     <div class="card-title">🏠 Home Assistant Setup</div>
                     <div class="details-box">
-                        <span class="stat-label">Addon Host (Recommended)</span><br>
-                        <code>http://605cee21_whatsapp:${PORT}</code><br>
-                        <i style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8;">Note: Repo slug might vary</i><br><br>
-
-                        <span class="stat-label">Dynamic Addon Host (Auto-detected)</span><br>
+                        <span class="stat-label">Addon Host (Auto-detected)</span><br>
                         <code>http://${os.hostname()}:${PORT}</code><br><br>
 
                         <span class="stat-label">API Token</span><br>
@@ -1969,7 +1965,7 @@ function renderDashboard(sessionId) {
 
                 <!-- Bug Report Widget -->
                 <div class="card">
-                    <div class="card-title">🐛 Bug Report & Support</div>
+                    <div class="card-title">🐛 Integration Bug Report & Support</div>
                     <p style="font-size:0.85rem; color:var(--text-secondary);">
                         Encountered an issue? Download an anonymized debug bundle and report it on GitHub.
                     </p>
@@ -2034,7 +2030,9 @@ function renderDashboard(sessionId) {
 
             async function downloadDebugInfo() {
                 try {
-                    const response = await fetch('/api/debug/download?session_id=' + currentSession);
+                    const response = await fetch('./api/debug/download?session_id=' + currentSession, {
+                        headers: { 'Accept': 'application/json' }
+                    });
                     if (!response.ok) throw new Error('Download failed');
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
@@ -2053,7 +2051,7 @@ function renderDashboard(sessionId) {
             async function restartSession() {
                 if (!confirm('Are you sure you want to restart this session?')) return;
                 try {
-                    const response = await fetch('/api/session/restart', {
+                    const response = await fetch('api/session/restart', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ session_id: currentSession })
@@ -2070,7 +2068,7 @@ function renderDashboard(sessionId) {
             async function clearLogs() {
                 if (!confirm('Clear all connection logs for this session?')) return;
                 try {
-                    const response = await fetch('/api/logs/clear', {
+                    const response = await fetch('api/logs/clear', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ session_id: currentSession })
@@ -2085,7 +2083,7 @@ function renderDashboard(sessionId) {
 
             async function updateDashboard() {
                 try {
-                    const response = await fetch('/api/dashboard?session_id=' + currentSession, {
+                    const response = await fetch('api/dashboard?session_id=' + currentSession, {
                         headers: { 'Accept': 'application/json' }
                     });
                     if (!response.ok) throw new Error('API request failed with status: ' + response.status);
