@@ -246,12 +246,27 @@ function formatDuration(ms) {
   return parts.join(' ');
 }
 
+/**
+ * Formats a date into HA-friendly string (consistent across environments)
+ * Format: YYYY-MM-DD, HH:mm:ss
+ */
+function formatHATime(date) {
+  if (!date) return 'Unknown';
+  const d = new Date(date);
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const timePart = `${pad(d.getHours())}:${pad(pad(d.getMinutes()))}:${pad(d.getSeconds())}`;
+
+  return `${datePart}, ${timePart}`;
+}
+
 async function checkSystemUpdates(session) {
   const currentAddonVersion = process.env.ADDON_VERSION || 'Unknown';
   const currentIntegrationVersion = process.env.INTEGRATION_VERSION || 'Unknown';
   const haVersions = await fetchHAVersions();
   const currentHAVersion = haVersions.core;
-  const now = new Date().toLocaleString();
+  const now = formatHATime(new Date());
 
   let updateMessages = [];
 
@@ -332,7 +347,8 @@ async function checkSystemUpdates(session) {
  */
 async function monitorHACore(session) {
   setInterval(async () => {
-    const haVersions = await fetchHAVersions();
+    // Force refresh to bypass 30m cache for critical restart detection
+    const haVersions = await fetchHAVersions(true);
     const isOnline = haVersions.core !== 'Unknown';
 
     if (!isOnline && !SYSTEM_STATE.last_ha_online) {
@@ -372,9 +388,9 @@ function markUserAsSeen(jid) {
 const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
 let cachedHAVersions = { core: 'Unknown', os: 'Unknown', safe_mode: false, lastUpdate: 0 };
 
-async function fetchHAVersions() {
+async function fetchHAVersions(forceRefresh = false) {
   const now = Date.now();
-  if (now - cachedHAVersions.lastUpdate < 30 * 60 * 1000) return cachedHAVersions;
+  if (!forceRefresh && now - cachedHAVersions.lastUpdate < 30 * 60 * 1000) return cachedHAVersions;
 
   if (!SUPERVISOR_TOKEN) {
     cachedHAVersions.lastUpdate = now;
@@ -553,8 +569,16 @@ function normalizeNumber(number) {
   return digits;
 }
 
-function isAdmin(jid) {
-  if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0 || !jid) return false;
+function isAdmin(jid, session = null) {
+  if (!jid) return false;
+
+  // 0. Implicit Admin: If it's our own JID, we are always an admin
+  if (session?.sock?.user?.id) {
+    const myJid = session.sock.user.id.replace(/:.*@/, '@');
+    if (jid.replace(/:.*@/, '@') === myJid) return true;
+  }
+
+  if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0) return false;
 
   // 1. Extract pure sender number from JID
   const numberPart = jid.split('@')[0];
@@ -819,7 +843,7 @@ function getSession(rawSessionId) {
 }
 
 function addLog(session, msg, type = 'info') {
-  const timestamp = new Date().toLocaleTimeString();
+  const timestamp = formatHATime(new Date());
   session.connectionLogs.unshift({ timestamp, msg, type });
   if (session.connectionLogs.length > 50) session.connectionLogs.pop();
 }
@@ -849,13 +873,13 @@ function signalInterest(sessionId) {
 }
 
 function trackSent(session, target, message) {
-  const timestamp = new Date().toLocaleTimeString();
+  const timestamp = formatHATime(new Date());
   session.recentSent.unshift({ timestamp, target: maskData(target), message: maskData(message) });
   if (session.recentSent.length > 5) session.recentSent.pop();
 }
 
 function trackReceived(session, sender, message) {
-  const timestamp = new Date().toLocaleTimeString();
+  const timestamp = formatHATime(new Date());
   session.recentReceived.unshift({
     timestamp,
     sender: maskData(sender),
@@ -881,12 +905,13 @@ async function reply(session, jid, content) {
     return result;
   } catch (err) {
     logger.error({ error: err.message, jid }, 'Failed to send reply');
+    session.stats.failed += 1;
     return null;
   }
 }
 
 function trackFailure(session, target, message, reason) {
-  const timestamp = new Date().toLocaleTimeString();
+  const timestamp = formatHATime(new Date());
   session.recentFailures.unshift({
     timestamp,
     target: maskData(target),
@@ -1516,23 +1541,27 @@ async function connectToWhatsApp(sessionId = 'default') {
             // Check for HA App Commands (ha-app-*)
             if (body.startsWith('ha-app-')) {
               // For admin checks, always use the individual person ID
-              // We use event.sender here because it has already gone through LID-swapping logic
               const personJid = event.raw.key.participant || event.sender;
-              const isAdminUser = isAdmin(personJid);
+              const isAdminUser = isAdmin(personJid, session);
+
+              logger.debug(
+                { body, sender, personJid: maskData(personJid), isAdminUser },
+                'Processing ha-app command'
+              );
 
               if (body === 'ha-app-ping') {
                 await reply(session, sender, { text: 'Pong! 🏓' });
-                return;
+                continue;
               } else if (body === 'ha-app-getid') {
                 await reply(session, sender, { text: `Chat ID: \`${sender}\`` });
-                return;
+                continue;
               } else if (body === 'ha-app-sponsor') {
                 const sponsorText =
                   '💖 *Support HA WhatsApp*\n\n' +
                   'Thank you for your interest in supporting this project! Your contributions help keep development active.\n\n' +
                   '🔗 *Sponsor Link:* https://faserf.github.io/ha-whatsapp/support.html';
                 await reply(session, sender, { text: sponsorText });
-                return;
+                continue;
               } else if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
@@ -1542,7 +1571,7 @@ async function connectToWhatsApp(sessionId = 'default') {
                   const recentRequests = requests.filter((t) => t > lastMinute);
 
                   if (recentRequests.length >= 5) {
-                    return;
+                    continue;
                   }
                   recentRequests.push(now);
                   session.statusRateLimit.set(personJid, recentRequests);
@@ -1584,7 +1613,7 @@ async function connectToWhatsApp(sessionId = 'default') {
                   '• Issues: https://github.com/FaserF/ha-whatsapp/issues';
 
                 await reply(session, sender, { text: statusText });
-                return;
+                continue;
               }
 
               // Permission check for all other commands
@@ -1615,7 +1644,7 @@ async function connectToWhatsApp(sessionId = 'default') {
                     'warning'
                   );
                 }
-                return;
+                continue;
               }
 
               if (body === 'ha-app-help') {
@@ -2344,6 +2373,10 @@ app.get('/api/dashboard', (req, res) => {
   signalInterest(sessionId);
 
   logger.debug({ sessionId, requestedSessionId: sessionId }, 'Dashboard API request');
+  
+  if (session.stats.sent > 0 || session.stats.received > 0) {
+    logger.debug({ sessionId, stats: session.stats }, '📊 Session has activity');
+  }
 
   const sessionList = Array.from(sessions.keys()).map((sid) => {
     const s = sessions.get(sid);
@@ -2600,7 +2633,7 @@ function renderDashboard(sessionId) {
             <div class="sidebar-links">
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
                 <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
-                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 Addon Repo</a>
+                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 HA App Repo</a>
                 <a href="logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
             </div>
 
@@ -2608,7 +2641,7 @@ function renderDashboard(sessionId) {
                 <div class="stat-label">System Info</div>
                 <div style="font-size: 0.8rem; color: #8696a0;">
                     Node: <span id="node-version">...</span><br>
-                    Addon: <span id="addon-version-sidebar" style="color: var(--primary);">...</span><br>
+                    HA App: <span id="addon-version-sidebar" style="color: var(--primary);">...</span><br>
                     Integration: <span id="int-version-sidebar" style="color: var(--primary);">...</span><br>
                     Baileys: <span id="baileys-version">...</span>
                 </div>
@@ -2800,7 +2833,7 @@ function renderDashboard(sessionId) {
                 </div>
             </div>
             <div class="footer-info">
-                 WhatsApp Homeassistant App Dashboard • Real-time Monitoring • Addon: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
+                 WhatsApp Homeassistant App Dashboard • Real-time Monitoring • HA App: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
             </div>
         </div>
 
