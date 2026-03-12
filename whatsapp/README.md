@@ -94,7 +94,7 @@ Control your addon via WhatsApp!
 > [!TIP]
 > Send `ha-app-help` from an admin number for a full list of commands and usage examples.
 
----
+
 
 ## 👨‍💻 Credits & License
 
