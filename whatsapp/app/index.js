@@ -504,10 +504,7 @@ const ipFilterMiddleware = (req, res, next) => {
 
   // If we reach here, it's potentially an external or unknown access attempt
   addLog(getSession('default'), `Blocked access attempt from ${ip}`, 'warning');
-  logger.warn(
-    { ip, headers: req.headers },
-    '[SECURITY] Blocked access attempt (UI Auth Disabled)'
-  );
+  logger.warn({ ip, headers: req.headers }, '[SECURITY] Blocked access attempt (UI Auth Disabled)');
   return res
     .status(403)
     .send('Forbidden: External access is disabled when UI Authentication is off.');
@@ -1724,7 +1721,7 @@ app.get(
     // If it looks like an API call but wasn't caught (e.g. missing trailing slash or prefix issue),
     // don't serve the dashboard HTML.
     if (req.path.includes('/api/')) {
-        return res.status(404).json({ error: 'API route not found' });
+      return res.status(404).json({ error: 'API route not found' });
     }
     const sessionId = req.query.session_id || 'default';
     res.send(renderDashboard(sessionId));
