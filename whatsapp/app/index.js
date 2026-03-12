@@ -2006,20 +2006,12 @@ function renderDashboard(sessionId) {
                     <div class="card-title">📱 Connected Device</div>
                     <div id="device-info-grid" class="info-grid">
                         <div class="info-item">
-                            <span class="info-label">Manufacturer</span>
-                            <span id="device-manufacturer" class="info-value">...</span>
-                        </div>
-                        <div class="info-item">
                             <span class="info-label">Model</span>
                             <span id="device-model" class="info-value">...</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Platform</span>
                             <span id="device-platform" class="info-value">...</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Battery Level</span>
-                            <span id="device-battery" class="info-value">...</span>
                         </div>
                     </div>
                     <div id="no-device-msg" class="empty-state" style="display:none;">
@@ -2109,7 +2101,7 @@ function renderDashboard(sessionId) {
                     </div>
                 </div>
             </div>
-
+            <div class="footer-info">
                  WhatsApp Homeassistant App Dashboard • Real-time Monitoring • Addon: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
             </div>
         </div>
@@ -2277,10 +2269,8 @@ function renderDashboard(sessionId) {
                     document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
                     document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
                     if (hasDevice) {
-                        document.getElementById('device-manufacturer').textContent = data.deviceInfo.manufacturer || 'N/A';
                         document.getElementById('device-model').textContent = data.deviceInfo.model || 'N/A';
                         document.getElementById('device-platform').textContent = data.deviceInfo.platform || 'N/A';
-                        document.getElementById('device-battery').textContent = data.deviceInfo.battery !== undefined ? data.deviceInfo.battery + '%' : 'N/A';
                     }
 
                     // Update Stats
