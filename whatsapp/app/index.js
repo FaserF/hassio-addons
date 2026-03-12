@@ -550,7 +550,7 @@ const uiAuthMiddleware = (req, res, next) => {
 const ingressPrefixMiddleware = (req, res, next) => {
   // Normalize multiple slashes at the start of any request
   if (req.url.startsWith('//')) {
-      req.url = req.url.replace(/\/+/g, '/');
+    req.url = req.url.replace(/\/+/g, '/');
   }
 
   const ingressPath = req.headers['x-ingress-path'];
@@ -562,7 +562,7 @@ const ingressPrefixMiddleware = (req, res, next) => {
       req.url = req.url.substring(cleanPrefix.length);
       if (!req.url.startsWith('/')) req.url = '/' + req.url;
     }
-    
+
     // Final normalization
     req.url = req.url.replace(/\/+/g, '/');
 
