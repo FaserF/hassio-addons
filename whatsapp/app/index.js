@@ -561,8 +561,19 @@ const ingressPrefixMiddleware = (req, res, next) => {
         req.url = '/' + req.url.substring(prefixWithSlash.length);
       }
     }
+
+    // Normalize multiple slashes (e.g. //api -> /api)
+    req.url = req.url.replace(/\/+/g, '/');
+
     if (urlBefore !== req.url) {
-      logger.debug({ urlBefore, urlAfter: req.url, ingressPath }, 'Stripped Ingress prefix');
+      logger.debug({ urlBefore, urlAfter: req.url, ingressPath }, 'Stripped Ingress prefix & normalized');
+    }
+  } else {
+    // Even without ingress, normalize slashes
+    const urlBefore = req.url;
+    req.url = req.url.replace(/\/+/g, '/');
+    if (urlBefore !== req.url) {
+      logger.debug({ urlBefore, urlAfter: req.url }, 'Normalized slashes');
     }
   }
   next();
@@ -2013,16 +2024,16 @@ function renderDashboard(sessionId) {
                 </div>
 
                 <!-- Recent Failures -->
-                <div class="card" id="card-diagnostics" style="display:none;">
+                <div class="card" id="card-diagnostics" style="display:none; border: 2px solid var(--warning); background: #fffcf0;">
                     <div class="card-title">🔍 System Diagnostics</div>
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">Base Path</span>
-                            <span id="diag-basepath" class="info-value">...</span>
+                            <span id="diag-basepath" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Url Path</span>
-                            <span id="diag-pathname" class="info-value">...</span>
+                            <span id="diag-pathname" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
                         </div>
                     </div>
                 </div>
@@ -2071,9 +2082,12 @@ function renderDashboard(sessionId) {
             // Robust base path detection for Home Assistant Ingress
             const getBasePath = () => {
                 const path = window.location.pathname;
-                return path.endsWith('/') ? path : path + '/';
+                // If it ends with a slash, use it. If not, only add one if it doesn't look like a file.
+                // But for Ingress, it's usually /endpoint/ or /endpoint.
+                if (path.endsWith('/')) return path;
+                return path + '/';
             };
-            const basePath = getBasePath();
+            const basePath = getBasePath().replace(/\/+/g, '/'); // Normalize double slashes
             console.log('Detected Base Path:', basePath);
 
             document.getElementById('diag-basepath').textContent = basePath;
