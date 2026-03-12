@@ -353,7 +353,8 @@ function getSession(rawSessionId) {
       recentReceived: [],
       recentFailures: [],
       messageStore: new Map(),
-      unauthorizedTracker: new Map(), // sender -> lastStatusTime
+      statusRateLimit: new Map(), // sender -> lastStatusTime
+      unauthorizedWarned: new Set(), // sender IDs
       lastInterestTime: 0, // Track when someone last looked at this session
       stats: {
         sent: 0,
@@ -1025,11 +1026,11 @@ async function connectToWhatsApp(sessionId = 'default') {
               if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
-                  const lastRequest = session.unauthorizedTracker.get(sender) || 0;
+                  const lastRequest = session.statusRateLimit.get(sender) || 0;
                   if (now - lastRequest < 60000) {
                     return;
                   }
-                  session.unauthorizedTracker.set(sender, now);
+                  session.statusRateLimit.set(sender, now);
                 }
 
                 const uptimeMs = now - session.stats.start_time;
@@ -1070,11 +1071,11 @@ async function connectToWhatsApp(sessionId = 'default') {
 
               // Permission check for all other commands
               if (!isAdminUser) {
-                if (!session.unauthorizedTracker.has(sender)) {
+                if (!session.unauthorizedWarned.has(sender)) {
                   await session.sock.sendMessage(sender, {
                     text: '⛔ *Permission Denied*\nYour number is not in the admin whitelist. This attempt has been logged.',
                   });
-                  session.unauthorizedTracker.set(sender, Date.now());
+                  session.unauthorizedWarned.add(sender);
                   logger.warn(
                     { sender, sessionId: session.id },
                     '[SECURITY] Unauthorized command attempt'
