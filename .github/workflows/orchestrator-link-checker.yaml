@@ -14,6 +14,9 @@ on:
       - "**/*.md"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   link-checker:
     name: 🔗 Link Checker

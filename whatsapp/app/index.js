@@ -946,7 +946,8 @@ function trackFailure(session, target, message, reason) {
 }
 
 function getAuthDir(sessionId) {
-  const dir = sessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', sessionId);
+  const safeSessionId = sanitizeSessionId(sessionId);
+  const dir = safeSessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', safeSessionId);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -2510,7 +2511,7 @@ app.get('/api/debug/download', (req, res) => {
 
 // --- Dashboard (Server-Side Rendered) ---
 app.get('/', uiAuthMiddleware, (req, res) => {
-  const sessionId = req.query.session_id || 'default';
+  const sessionId = sanitizeSessionId(req.query.session_id || 'default');
   res.send(renderDashboard(sessionId));
 });
 
@@ -2528,7 +2529,7 @@ app.get(
       );
       return res.status(404).json({ error: 'API route not found' });
     }
-    const sessionId = req.query.session_id || 'default';
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     res.send(renderDashboard(sessionId));
   }
 );
