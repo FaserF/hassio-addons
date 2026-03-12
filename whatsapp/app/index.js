@@ -213,8 +213,17 @@ function saveSystemState() {
 }
 
 async function notifyAdmins(session, text) {
-  if (!ADMIN_NOTIFICATIONS_ENABLED || !ADMIN_NUMBERS.length) return;
-  for (const admin of ADMIN_NUMBERS) {
+  if (!ADMIN_NOTIFICATIONS_ENABLED) return;
+
+  const targets = [...ADMIN_NUMBERS];
+  // If no admins are configured, send to ourself
+  if (targets.length === 0 && session.sock?.user?.id) {
+    targets.push(session.sock.user.id.split(':')[0]);
+  }
+
+  if (targets.length === 0) return;
+
+  for (const admin of targets) {
     const jid = getJid(admin);
     await reply(session, jid, { text }).catch((e) =>
       logger.error({ error: e.message, admin: maskData(jid) }, 'Failed to notify admin')
@@ -1517,9 +1526,14 @@ async function connectToWhatsApp(sessionId = 'default') {
               } else if (body === 'ha-app-getid') {
                 await reply(session, sender, { text: `Chat ID: \`${sender}\`` });
                 return;
-              }
-
-              if (body === 'ha-app-status') {
+              } else if (body === 'ha-app-sponsor') {
+                const sponsorText =
+                  '💖 *Support HA WhatsApp*\n\n' +
+                  'Thank you for your interest in supporting this project! Your contributions help keep development active.\n\n' +
+                  '🔗 *Sponsor Link:* https://faserf.github.io/ha-whatsapp/support.html';
+                await reply(session, sender, { text: sponsorText });
+                return;
+              } else if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
                   // Rate limit based on the person (array of timestamps for rolling window)
@@ -1623,12 +1637,6 @@ async function connectToWhatsApp(sessionId = 'default') {
                 await reply(session, sender, { text: helpText });
               } else if (body === 'ha-app-welcome') {
                 await sendWelcomeMessage(session, sender);
-              } else if (body === 'ha-app-sponsor') {
-                const sponsorText =
-                  '💖 *Support HA WhatsApp*\n\n' +
-                  'Thank you for your interest in supporting this project! Your contributions help keep development active.\n\n' +
-                  '🔗 *Sponsor Link:* https://faserf.github.io/ha-whatsapp/support.html';
-                await reply(session, sender, { text: sponsorText });
               } else if (body === 'ha-app-diagnose') {
                 await runDiagnostic(session, sender);
               } else if (body === 'ha-app-restart') {
@@ -1663,6 +1671,11 @@ async function connectToWhatsApp(sessionId = 'default') {
                   `• Failed: ${session.stats.failed}\n\n` +
                   '_(Note: Hourly/Daily filtering is currently being calculated based on current session life)_';
                 await reply(session, sender, { text: statsText });
+              } else {
+                // Unknown command fallback for admins
+                await reply(session, sender, {
+                  text: `❓ *Unknown Command: ${body}*\n\nSend \`ha-app-help\` to see a list of all available control commands.`,
+                });
               }
             }
           } catch (cmdErr) {
@@ -3187,3 +3200,35 @@ app.listen(PORT, '0.0.0.0', () => {
     }
   }
 });
+
+/**
+ * --- Graceful Shutdown ---
+ * Ensures system state is saved so that downtime can be tracked on restart.
+ */
+async function handleShutdown(signal) {
+  logger.info({ signal }, '👋 Shutdown signal received. Saving state and cleaning up...');
+
+  // Track downtime if any session was connected
+  let anyConnected = false;
+  for (const session of sessions.values()) {
+    if (session.isConnected) {
+      anyConnected = true;
+      break;
+    }
+  }
+
+  if (anyConnected && !SYSTEM_STATE.last_whatsapp_online) {
+    SYSTEM_STATE.last_whatsapp_online = Date.now();
+    saveSystemState();
+  }
+
+  // Graceful exit
+  setTimeout(() => {
+    logger.info('🛑 Process exiting.');
+    process.exit(0);
+  }, 500);
+}
+
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));
+process.on('SIGHUP', () => handleShutdown('SIGHUP'));
