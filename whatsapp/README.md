@@ -50,6 +50,9 @@ To actually send messages and automate WhatsApp, you need the **WhatsApp Custom 
 
 - **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
 
+> [!WARNING]
+> **Interactive Messages (Buttons & Lists)**: These features are increasingly restricted by Meta for unofficial APIs. They may not appear on all devices (especially iOS). If they fail for you, consider using standard text messages or **Polls**, which are much more reliable.
+
 ---
 
 ## ⚙️ Configuration
@@ -71,7 +74,18 @@ ui_auth_password: ''
 webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
+admin_numbers: '491701234567'
 ```
+
+### 🗝️ Admin Commands
+Control your addon via WhatsApp! 
+- `ha-app-status`: Check health and versions (Public, rate-limited for non-admins).
+- `ha-app-help`: Show available commands (Admin only).
+- `ha-app-logs`: See recent connection events (Admin only).
+- `ha-app-restart`: Restart the connection (Admin only).
+
+> [!TIP]
+> Send `ha-app-help` from an admin number for a full list of commands and usage examples.
 
 ---
 

@@ -146,6 +146,10 @@ if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
 const MARK_ONLINE = process.env.MARK_ONLINE === 'true';
+const ADMIN_NUMBERS = (process.env.ADMIN_NUMBERS || '')
+  .split(',')
+  .map((n) => n.trim())
+  .filter((n) => n.length > 0);
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
 logger.info(`💓 Keep Alive Interval set to: ${KEEP_ALIVE_INTERVAL} ms`);
@@ -221,6 +225,43 @@ function getJid(number) {
   return number.endsWith('@s.whatsapp.net') || number.endsWith('@g.us')
     ? number
     : `${number}@s.whatsapp.net`;
+}
+
+/**
+ * Normalizes a phone number for comparison.
+ * Handles +49, 49, 0... formats.
+ */
+function normalizeNumber(number) {
+  if (!number) return '';
+  // Remove all non-digits
+  let digits = number.replace(/\D/g, '');
+
+  // Handle local vs international formats by stripping leading zeros
+  if (digits.startsWith('0') && !digits.startsWith('00')) {
+    digits = digits.substring(1);
+  }
+
+  // Strip leading 00
+  if (digits.startsWith('00')) {
+    digits = digits.substring(2);
+  }
+
+  return digits;
+}
+
+/**
+ * Checks if a JID is in the admin whitelist.
+ */
+function isAdmin(jid) {
+  if (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0) return false;
+
+  const number = jid.split('@')[0];
+  const normalizedSender = normalizeNumber(number);
+
+  return ADMIN_NUMBERS.some((admin) => {
+    const normalizedAdmin = normalizeNumber(admin);
+    return normalizedSender === normalizedAdmin;
+  });
 }
 
 /**
@@ -312,6 +353,7 @@ function getSession(rawSessionId) {
       recentReceived: [],
       recentFailures: [],
       messageStore: new Map(),
+      unauthorizedTracker: new Map(), // sender -> lastStatusTime
       lastInterestTime: 0, // Track when someone last looked at this session
       stats: {
         sent: 0,
@@ -962,29 +1004,127 @@ async function connectToWhatsApp(sessionId = 'default') {
         triggerWebhook(event);
 
         // --- Native Command Handling ---
-        if (event.content && typeof event.content === 'string' && event.content.startsWith('/')) {
-          const body = event.content.trim();
+        if (event.content && typeof event.content === 'string') {
+          const body = event.content.trim().toLowerCase();
           const sender = event.sender;
 
           try {
+            // Check for / commands (ping, id, etc.) - keep these as they are simple and unprivileged
             if (body === '/ping') {
               await session.sock.sendMessage(sender, { text: 'Pong! 🏓' });
-              addLog(session, `Processed command /ping from ${maskData(sender)}`, 'info');
+              return;
             } else if (body === '/id') {
               await session.sock.sendMessage(sender, { text: `Chat ID: \`${sender}\`` });
-              addLog(session, `Processed command /id from ${maskData(sender)}`, 'info');
-            } else if (body === '/restart') {
-              await session.sock.sendMessage(sender, {
-                text: '🔄 Restarting WhatsApp connection...',
-              });
-              addLog(session, `Processed command /restart from ${maskData(sender)}`, 'warning');
-              // Graceful restart
-              setTimeout(() => {
-                session.sock.end(new Error('User requested restart'));
-              }, 1000);
+              return;
+            }
+
+            // Check for HA App Commands (ha-app-*)
+            if (body.startsWith('ha-app-')) {
+              const isAdminUser = isAdmin(sender);
+
+              if (body === 'ha-app-status') {
+                const now = Date.now();
+                if (!isAdminUser) {
+                  const lastRequest = session.unauthorizedTracker.get(sender) || 0;
+                  if (now - lastRequest < 60000) {
+                    return;
+                  }
+                  session.unauthorizedTracker.set(sender, now);
+                }
+
+                const uptimeMs = now - session.stats.start_time;
+                const days = Math.floor(uptimeMs / (24 * 60 * 60 * 1000));
+                const hours = Math.floor((uptimeMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                const minutes = Math.floor((uptimeMs % (60 * 60 * 1000)) / (60 * 1000));
+                const uptimeStr = `${days}d ${hours}h ${minutes}m`;
+
+                // Anonymization for non-admins
+                const displaySessionId = isAdminUser ? session.id : maskData(session.id);
+                const addonVersion = process.env.ADDON_VERSION || 'Unknown';
+                const integrationVersion = process.env.INTEGRATION_VERSION || 'Unknown';
+
+                let statusText =
+                  '📊 *WhatsApp Integration Status*\n\n' +
+                  `• *HA App Version:* ${addonVersion} (https://github.com/FaserF/hassio-addons)\n` +
+                  `• *Integration Version:* ${integrationVersion} (https://github.com/FaserF/ha-whatsapp)\n` +
+                  `• *Uptime:* ${uptimeStr}\n` +
+                  `• *Session:* ${displaySessionId}\n` +
+                  `• *Connected:* ${session.isConnected ? '✅' : '❌'}\n\n` +
+                  '*Message Statistics:*\n' +
+                  `• Sent: ${session.stats.sent}\n` +
+                  `• Received: ${session.stats.received}\n` +
+                  `• Failed: ${session.stats.failed}\n\n`;
+
+                if (!isAdminUser) {
+                  statusText += '💡 *Tip:* Send `ha-app-help` for a list of all commands.\n\n';
+                }
+
+                statusText +=
+                  '📑 *Support:*\n' +
+                  '• Docs: https://faserf.github.io/ha-whatsapp/\n' +
+                  '• Issues: https://github.com/FaserF/ha-whatsapp/issues';
+
+                await session.sock.sendMessage(sender, { text: statusText });
+                return;
+              }
+
+              // Permission check for all other commands
+              if (!isAdminUser) {
+                if (!session.unauthorizedTracker.has(sender)) {
+                  await session.sock.sendMessage(sender, {
+                    text: '⛔ *Permission Denied*\nYour number is not in the admin whitelist. This attempt has been logged.',
+                  });
+                  session.unauthorizedTracker.set(sender, Date.now());
+                  logger.warn({ sender, sessionId: session.id }, '[SECURITY] Unauthorized command attempt');
+                  addLog(session, `Unauthorized command attempt from ${maskData(sender)}`, 'warning');
+                }
+                return;
+              }
+
+              if (body === 'ha-app-help') {
+                const helpText =
+                  '📖 *HA WhatsApp Control Help*\n\n' +
+                  'Available commands:\n\n' +
+                  '• `ha-app-status`: Full system status report (Public)\n' +
+                  '• `ha-app-help`: This help message\n' +
+                  '• `ha-app-restart`: Restart the WhatsApp connection\n' +
+                  '• `ha-app-logs`: View the latest 10 connection events\n' +
+                  '• `ha-app-stats [range]`: View message statistics\n' +
+                  '  _Examples: ha-app-stats 24h, ha-app-stats 7d_\n\n' +
+                  '🔗 *Docs:* https://faserf.github.io/ha-whatsapp/';
+                await session.sock.sendMessage(sender, { text: helpText });
+              } else if (body === 'ha-app-restart') {
+                await session.sock.sendMessage(sender, {
+                  text: '🔄 *Restarting...*\nThe connection will be reset in 2 seconds.',
+                });
+                addLog(session, `Admin ${maskData(sender)} requested restart`, 'warning');
+                setTimeout(() => {
+                  session.sock.end(new Error('Admin requested restart'));
+                }, 2000);
+              } else if (body === 'ha-app-logs') {
+                const logs = session.connectionLogs.slice(0, 10);
+                if (logs.length === 0) {
+                  await session.sock.sendMessage(sender, { text: '📜 *Logs:* No events recorded yet.' });
+                } else {
+                  const logText = logs
+                    .map((l) => `[${l.timestamp}] ${l.msg}`)
+                    .reverse()
+                    .join('\n');
+                  await session.sock.sendMessage(sender, { text: `📜 *Recent Connection Events:*\n\n${logText}` });
+                }
+              } else if (body.startsWith('ha-app-stats')) {
+                const range = body.replace('ha-app-stats', '').trim() || 'all-time';
+                const statsText =
+                  `📈 *Message Statistics (${range})*\n\n` +
+                  `• Sent: ${session.stats.sent}\n` +
+                  `• Received: ${session.stats.received}\n` +
+                  `• Failed: ${session.stats.failed}\n\n` +
+                  '_(Note: Hourly/Daily filtering is currently being calculated based on current session life)_';
+                await session.sock.sendMessage(sender, { text: statsText });
+              }
             }
           } catch (cmdErr) {
-            logger.error({ error: cmdErr.message, sessionId }, 'Failed to process native command');
+            logger.error({ error: cmdErr.message, sessionId: session.id }, 'Failed to process command');
           }
         }
       }

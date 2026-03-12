@@ -26,6 +26,7 @@ options:
   ui_auth_password: ""
   mark_online: false
   media_folder: ""
+  admin_numbers: ""
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -40,6 +41,7 @@ schema:
   ui_auth_password: str?
   mark_online: bool
   media_folder: str?
+  admin_numbers: str?
 
 ports:
   8066/tcp: 8066
