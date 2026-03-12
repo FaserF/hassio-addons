@@ -312,6 +312,7 @@ function getSession(rawSessionId) {
       recentReceived: [],
       recentFailures: [],
       messageStore: new Map(),
+      lastInterestTime: 0, // Track when someone last looked at this session
       stats: {
         sent: 0,
         received: 0,
@@ -339,6 +340,30 @@ function addLog(session, msg, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   session.connectionLogs.unshift({ timestamp, msg, type });
   if (session.connectionLogs.length > 50) session.connectionLogs.pop();
+}
+
+/**
+ * Signals that someone is actively watching/configuring this session.
+ * Used for lazy-starting connections only when needed.
+ */
+function signalInterest(sessionId) {
+  const session = getSession(sessionId);
+  const now = Date.now();
+  const alreadyInterested = now - session.lastInterestTime < 60000;
+  session.lastInterestTime = now;
+
+  // If we weren't interested before, and we aren't connected/connecting, start it
+  if (!alreadyInterested && !session.isConnected && (!session.sock || session.sock.ws?.isClosed)) {
+    const authDir = getAuthDir(sessionId);
+    const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
+
+    // We only auto-start on interest if we DON'T have creds.
+    // If we DO have creds, we are likely already in a retry loop or connected.
+    if (!hasCreds) {
+      logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
+      connectToWhatsApp(sessionId).catch(() => {});
+    }
+  }
 }
 
 function trackSent(session, target, message) {
@@ -443,7 +468,7 @@ async function publishMDNS(name, attempt = 0) {
   }
 }
 
-const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Addon';
+const baseMDNSName = process.env.MDNS_NAME || 'whatsapp homeassistant app';
 publishMDNS(baseMDNSName);
 
 // --- Middleware ---
@@ -609,6 +634,22 @@ function bindStore(session, ev) {
 async function connectToWhatsApp(sessionId = 'default') {
   const session = getSession(sessionId);
   const sessionAuthDir = getAuthDir(sessionId);
+  const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
+
+  // Logic for QR Request Optimization (Lazy Loading)
+  // If we don't have credentials, only proceed if there is active interest
+  const now = Date.now();
+  const isInterested = now - session.lastInterestTime < 60000;
+
+  if (!hasCreds && !isInterested) {
+    logger.info(
+      { sessionId },
+      '💤 No credentials and no active interest (Dashboard/Flow closed). Skipping connection.'
+    );
+    addLog(session, 'Waiting for user to open Dashboard to start pairing...', 'info');
+    session.currentQR = null;
+    return;
+  }
 
   addLog(session, `Starting request for session: ${sessionId}...`, 'info');
   const { state, saveCreds } = await useMultiFileAuthState(sessionAuthDir);
@@ -693,7 +734,21 @@ async function connectToWhatsApp(sessionId = 'default') {
           { sessionId, attempt: session.reconnectAttempts, delayMs: reconnectDelay },
           'Scheduling reconnect'
         );
-        setTimeout(() => connectToWhatsApp(sessionId), reconnectDelay);
+
+        setTimeout(() => {
+          // Re-check interest before actually re-triggering connection if no creds
+          const authDir = getAuthDir(sessionId);
+          const stillHasNoCreds = !fs.existsSync(path.join(authDir, 'creds.json'));
+          const interestCheck = Date.now() - session.lastInterestTime < 60000;
+
+          if (stillHasNoCreds && !interestCheck) {
+            logger.info({ sessionId }, '😴 Reconnect cancelled: No interest and no credentials.');
+            addLog(session, 'Pairing paused (Dashboard closed).', 'info');
+            return;
+          }
+
+          connectToWhatsApp(sessionId);
+        }, reconnectDelay);
       }
     } else if (connection === 'open') {
       logger.info({ sessionId }, 'WhatsApp connection opened');
@@ -911,7 +966,7 @@ app.post('/session/start', (req, res) => {
     });
   }
 
-  connectToWhatsApp(session.id);
+  signalInterest(session.id);
   res.json({ status: 'starting', message: 'Session init started' });
 });
 
@@ -975,6 +1030,7 @@ app.delete('/session', async (req, res) => {
 // GET /qr
 app.get('/qr', (req, res) => {
   const session = getReqSession(req);
+  signalInterest(session.id); // Active interest from config flow
   if (session.isConnected) {
     return res.json({ status: 'connected', qr: null });
   }
@@ -1543,6 +1599,9 @@ app.get('/health', (req, res) => {
 app.get('/api/dashboard', (req, res) => {
   const sessionId = req.query.session_id || 'default';
   const session = getSession(sessionId);
+
+  // If dashboard is being polled, someone is looking!
+  signalInterest(sessionId);
 
   logger.debug({ sessionId, requestedSessionId: sessionId }, 'Dashboard API request');
 
