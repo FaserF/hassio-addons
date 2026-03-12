@@ -1075,8 +1075,15 @@ async function connectToWhatsApp(sessionId = 'default') {
                     text: '⛔ *Permission Denied*\nYour number is not in the admin whitelist. This attempt has been logged.',
                   });
                   session.unauthorizedTracker.set(sender, Date.now());
-                  logger.warn({ sender, sessionId: session.id }, '[SECURITY] Unauthorized command attempt');
-                  addLog(session, `Unauthorized command attempt from ${maskData(sender)}`, 'warning');
+                  logger.warn(
+                    { sender, sessionId: session.id },
+                    '[SECURITY] Unauthorized command attempt'
+                  );
+                  addLog(
+                    session,
+                    `Unauthorized command attempt from ${maskData(sender)}`,
+                    'warning'
+                  );
                 }
                 return;
               }
@@ -1104,13 +1111,17 @@ async function connectToWhatsApp(sessionId = 'default') {
               } else if (body === 'ha-app-logs') {
                 const logs = session.connectionLogs.slice(0, 10);
                 if (logs.length === 0) {
-                  await session.sock.sendMessage(sender, { text: '📜 *Logs:* No events recorded yet.' });
+                  await session.sock.sendMessage(sender, {
+                    text: '📜 *Logs:* No events recorded yet.',
+                  });
                 } else {
                   const logText = logs
                     .map((l) => `[${l.timestamp}] ${l.msg}`)
                     .reverse()
                     .join('\n');
-                  await session.sock.sendMessage(sender, { text: `📜 *Recent Connection Events:*\n\n${logText}` });
+                  await session.sock.sendMessage(sender, {
+                    text: `📜 *Recent Connection Events:*\n\n${logText}`,
+                  });
                 }
               } else if (body.startsWith('ha-app-stats')) {
                 const range = body.replace('ha-app-stats', '').trim() || 'all-time';
@@ -1124,7 +1135,10 @@ async function connectToWhatsApp(sessionId = 'default') {
               }
             }
           } catch (cmdErr) {
-            logger.error({ error: cmdErr.message, sessionId: session.id }, 'Failed to process command');
+            logger.error(
+              { error: cmdErr.message, sessionId: session.id },
+              'Failed to process command'
+            );
           }
         }
       }

@@ -62,6 +62,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 ### Options
 
 ```yaml
+admin_numbers: ''
 keep_alive_interval: 30000
 log_level: info
 mark_online: false
@@ -74,18 +75,7 @@ ui_auth_password: ''
 webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
-admin_numbers: '491701234567'
 ```
-
-### 🗝️ Admin Commands
-Control your addon via WhatsApp! 
-- `ha-app-status`: Check health and versions (Public, rate-limited for non-admins).
-- `ha-app-help`: Show available commands (Admin only).
-- `ha-app-logs`: See recent connection events (Admin only).
-- `ha-app-restart`: Restart the connection (Admin only).
-
-> [!TIP]
-> Send `ha-app-help` from an admin number for a full list of commands and usage examples.
 
 ---
 

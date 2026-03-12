@@ -1,6 +1,7 @@
 # WhatsApp App API Documentation
 
 This App exposes a REST API that acts as a bridge between Home Assistant (via the [ha-whatsapp integration](https://github.com/FaserF/ha-whatsapp)) and the WhatsApp network using `Baileys`.
+
 - **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
 
 > [!WARNING]
@@ -84,6 +85,7 @@ admin_numbers: '491701234567, 491707654321'
 ```
 
 ### 🗝️ Admin Security
+
 To use `ha-app-*` control commands, add your phone number to `admin_numbers`. Numbers are automatically normalized (handling `+`, `0`, and spaces). Unauthorized users receive a one-time "Permission Denied" warning.
 
 ### 2. Messaging
@@ -338,13 +340,17 @@ Sends a VCard contact.
 The App supports several commands sent via WhatsApp messages directly to the bot.
 
 #### Public Commands
+
 Available to anyone:
+
 - **`/ping`**: Returns "Pong! 🏓" (useful for checking connection).
 - **`/id`**: Returns the current Chat ID (useful for finding Group IDs).
 - **`ha-app-status`**: Comprehensive system status report. (Anonymized and rate-limited to 1/min for non-admins).
 
 #### Admin Commands (Protected)
+
 Requires the sender's number to be in the `admin_numbers` whitelist.
+
 - **`ha-app-help`**: Lists all available commands and examples.
 - **`ha-app-logs`**: Retrieves the latest 10 connection events.
 - **`ha-app-restart`**: Gracefully restarts the WhatsApp connection.
