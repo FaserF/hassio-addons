@@ -121,7 +121,8 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
 
 // --- Configuration ---
 const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
-const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
+const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '60000', 10);
+const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 
 // --- Webhook Configuration ---
@@ -1256,9 +1257,9 @@ async function connectToWhatsApp(sessionId = 'default') {
     markOnlineOnConnect: MARK_ONLINE,
 
     keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
-    connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: 60000,
-    retryRequestDelayMs: 5000,
+    connectTimeoutMs: 90000,
+    defaultQueryTimeoutMs: 90000,
+    retryRequestDelayMs: 10000,
     getMessage: async (key) => {
       // Check our custom store
       if (session.messageStore.has(key.id)) {
@@ -1292,12 +1293,13 @@ async function connectToWhatsApp(sessionId = 'default') {
     }
 
     if (connection === 'close') {
-      const isLoggedOut = lastDisconnect.error?.output?.statusCode === DisconnectReason.loggedOut;
+      const statusCode = lastDisconnect.error?.output?.statusCode;
+      const isLoggedOut = statusCode === DisconnectReason.loggedOut;
       const shouldReconnect = !isLoggedOut;
       const reason = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
-      addLog(session, `Connection closed: ${reason}`, 'warning');
+      addLog(session, `Connection closed (Code: ${statusCode || 'None'}): ${reason}`, 'warning');
 
-      logger.warn({ reason, shouldReconnect, sessionId }, 'Connection closed');
+      logger.warn({ reason, statusCode, shouldReconnect, sessionId }, 'Connection closed');
       session.isConnected = false;
 
       // Notify Admin about WhatsApp disconnect
@@ -1364,13 +1366,20 @@ async function connectToWhatsApp(sessionId = 'default') {
         const durationStr = formatDuration(downtime);
         const timestamp = new Date().toLocaleString();
 
-        notifyAdmins(
-          session,
-          `🟢 *WhatsApp Connection Restored*\n\n` +
-            `• *Time:* ${timestamp}\n` +
-            `• *Downtime:* ${durationStr}\n` +
-            `• *Status:* Bot is back online and responding to messages.`
-        );
+        if (downtime > NOTIFY_RESTORE_THRESHOLD) {
+          notifyAdmins(
+            session,
+            `🟢 *WhatsApp Connection Restored*\n\n` +
+              `• *Time:* ${timestamp}\n` +
+              `• *Downtime:* ${durationStr}\n` +
+              `• *Status:* Bot is back online and responding to messages.`
+          );
+        } else {
+          logger.info(
+            { sessionId, downtimeMs: downtime },
+            'Connection restored quickly - skipping admin notification'
+          );
+        }
         SYSTEM_STATE.last_whatsapp_online = null;
         saveSystemState();
       }
@@ -2392,7 +2401,7 @@ app.get('/health', (req, res) => {
 
 // --- API / Internal Dashboard Data ---
 app.get('/api/dashboard', (req, res) => {
-  const sessionId = req.query.session_id || 'default';
+  const sessionId = sanitizeSessionId(req.query.session_id || 'default');
   const session = getSession(sessionId);
 
   // If dashboard is being polled, someone is looking!
@@ -2442,7 +2451,7 @@ app.get('/api/dashboard', (req, res) => {
 
 // --- API / Quick Actions ---
 app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
-  const sessionId = req.body.session_id || 'default';
+  const sessionId = sanitizeSessionId(req.body.session_id || 'default');
   const session = getSession(sessionId);
   addLog(session, 'User requested session restart via Dashboard', 'warning');
   if (session.sock) {
@@ -2454,7 +2463,7 @@ app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
 });
 
 app.post('/api/logs/clear', uiAuthMiddleware, (req, res) => {
-  const sessionId = req.body.session_id || 'default';
+  const sessionId = sanitizeSessionId(req.body.session_id || 'default');
   const session = getSession(sessionId);
   session.connectionLogs = [];
   addLog(session, 'Logs cleared by user', 'info');
@@ -2463,7 +2472,7 @@ app.post('/api/logs/clear', uiAuthMiddleware, (req, res) => {
 
 // --- API / Debug Download ---
 app.get('/api/debug/download', (req, res) => {
-  const sessionId = req.query.session_id || 'default';
+  const sessionId = sanitizeSessionId(req.query.session_id || 'default');
   const session = getSession(sessionId);
 
   const debugInfo = {
