@@ -145,6 +145,7 @@ if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
 
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
+const MARK_ONLINE = process.env.MARK_ONLINE === 'true';
 // --- Admin Numbers Loading ---
 function loadAdminNumbers() {
   // 1. Try environment variables (standard and CONFIG_ prefix)
