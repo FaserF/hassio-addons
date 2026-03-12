@@ -7,6 +7,7 @@ ARG BUILD_DATE="unknown"
 RUN apk --no-cache -u add libssl3 libcrypto3 busybox-extras curl grep coreutils sed xmlstarlet bash procps
 
 # Copy data for add-on
+COPY integration /integration
 COPY run.sh /
 
 # Health check - verify run.sh process is running

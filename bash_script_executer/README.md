@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_bash_script_executer)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/addons/)
-[![Docker Image](https://img.shields.io/badge/docker-2.3.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-bashscriptexecuter)
+[![Docker Image](https://img.shields.io/badge/docker-2.4.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-bashscriptexecuter)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Execute your own bash scripts inside this Homeassistant App environment.
@@ -55,9 +55,16 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 ```yaml
 log_level: info
 script_path: /share/scripts/mycoolscript.sh
-script_path2: 'false'
-script_path3: 'false'
+script_content: ""
 ```
+
+### 🔘 Native Start Button
+
+The addon automatically installs a Home Assistant integration that provides a button to start the addon.
+
+- **Installation**: The first time you start the addon, it copies the integration files to your Home Assistant configuration.
+- **Activation**: You must **restart Home Assistant** once after the first run for the integration to appear.
+- **Button**: A new entity `button.bash_script_executer_start` will be created. Pressing it starts the addon.
 
 ---
 

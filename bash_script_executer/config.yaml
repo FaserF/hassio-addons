@@ -1,6 +1,6 @@
 ---
 name: Bash Script Executer
-version: 2.3.0
+version: 2.4.0
 slug: bashscriptexecuter
 description: >-
   Execute your own bash scripts inside this Homeassistant App environment.
@@ -11,23 +11,30 @@ arch:
 image: ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}
 map:
   - share:rw
+  - config:rw
 init: false
 panel_icon: mdi:web-box
 options:
   script_path: "/share/scripts/mycoolscript.sh"
+  script_content: ""
   script_path2: "false"
+  script2_content: ""
   script_path3: "false"
+  script3_content: ""
   log_level: info
 schema:
   script_path: str
+  script_content: str?
   script_argument1: str?
   script_argument2: str?
   script_argument3: str?
   script_path2: str
+  script2_content: str?
   script2_argument1: str?
   script2_argument2: str?
   script2_argument3: str?
   script_path3: str
+  script3_content: str?
   script3_argument1: str?
   script3_argument2: str?
   script3_argument3: str?

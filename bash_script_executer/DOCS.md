@@ -10,9 +10,14 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 script_path: /share/scripts/mycoolscript.sh
-script_path2: 'false'
-script_path3: 'false'
+script_content: |
+  echo "Hello World"
 ```
+
+## 🔘 Native Start Button
+
+The addon automatically installs a Home Assistant integration that provides a button to start the addon. After the first run, a **Home Assistant restart** is required.
+
 
 ## 📂 Folder Usage
 

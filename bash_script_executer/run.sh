@@ -170,58 +170,76 @@ set -euo pipefail
 # shellcheck disable=SC1091
 
 script_path=$(bashio::config 'script_path')
+script_content=$(bashio::config 'script_content')
 script_argument1=$(bashio::config 'script_argument1')
 script_argument2=$(bashio::config 'script_argument2')
 script_argument3=$(bashio::config 'script_argument3')
+
 script_path2=$(bashio::config 'script_path2')
+script2_content=$(bashio::config 'script2_content')
 script2_argument1=$(bashio::config 'script2_argument1')
 script2_argument2=$(bashio::config 'script2_argument2')
 script2_argument3=$(bashio::config 'script2_argument3')
+
 script_path3=$(bashio::config 'script_path3')
+script3_content=$(bashio::config 'script3_content')
 script3_argument1=$(bashio::config 'script3_argument1')
 script3_argument2=$(bashio::config 'script3_argument2')
 script3_argument3=$(bashio::config 'script3_argument3')
+
 if ! LOG_LEVEL="$(bashio::config 'log_level')" || [ -z "$LOG_LEVEL" ]; then
 	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
 	LOG_LEVEL="info"
 fi
 export LOG_LEVEL
 
-if [ "$script_path" != "false" ]; then
-	if [ ! -f "$script_path" ]; then
-		bashio::log.error "Cannot find your first script at $script_path"
-		bashio::log.error "Exiting now..."
-		exit 1
-	fi
+# --- Custom Integration Installation ---
+bashio::log.info "Checking for native integration..."
+INTEGRATION_DIR="/config/custom_components/bash_script_executer"
+if [ ! -d "$INTEGRATION_DIR" ]; then
+    bashio::log.info "Installing native integration to Home Assistant..."
+    mkdir -p "$INTEGRATION_DIR"
+    cp /integration/* "$INTEGRATION_DIR/"
+    bashio::log.warning "Native integration installed! Please restart Home Assistant to see the button."
+else
+    # Check if we need to update (simple copy for now)
+    cp /integration/* "$INTEGRATION_DIR/"
 fi
 
-if [ "$script_path2" != "false" ]; then
-	if [ ! -f "$script_path2" ]; then
-		bashio::log.error "Cannot find your second script at $script_path2"
-		bashio::log.error "Exiting now..."
-		exit 1
-	fi
-fi
+# --- Script Preparation ---
+prepare_script() {
+	local path="$1"
+	local content="$2"
+	local num="$3"
 
-if [ "$script_path3" != "false" ]; then
-	if [ ! -f "$script_path3" ]; then
-		bashio::log.error "Cannot find your third script at $script_path3"
-		bashio::log.error "Exiting now..."
-		exit 1
+	if [[ "$path" != "false" && -n "$path" ]]; then
+		if [ ! -f "$path" ]; then
+			bashio::log.error "Cannot find your script #$num at $path"
+			bashio::log.error "Exiting now..."
+			exit 1
+		fi
+		echo "$path"
+	elif [[ -n "$content" && "$content" != "null" ]]; then
+		local tmp_path="/tmp/script$num.sh"
+		echo "#!/bin/bash" > "$tmp_path"
+		echo "$content" >> "$tmp_path"
+		chmod 711 "$tmp_path"
+		echo "$tmp_path"
+	else
+		echo "false"
 	fi
-fi
+}
 
-#Set 711 rights to script
+bashio::log.info "Preparing scripts..."
+real_path1=$(prepare_script "$script_path" "$script_content" "1")
+real_path2=$(prepare_script "$script_path2" "$script2_content" "2")
+real_path3=$(prepare_script "$script_path3" "$script3_content" "3")
+
+#Set 711 rights to script paths (if they are real files)
 bashio::log.info "Fixing permissions."
-if [ "$script_path" != "false" ]; then
-	chmod 711 "$script_path"
-fi
-if [ "$script_path2" != "false" ]; then
-	chmod 711 "$script_path2"
-fi
-if [ "$script_path3" != "false" ]; then
-	chmod 711 "$script_path3"
-fi
+[[ "$real_path1" != "false" ]] && chmod 711 "$real_path1"
+[[ "$real_path2" != "false" ]] && chmod 711 "$real_path2"
+[[ "$real_path3" != "false" ]] && chmod 711 "$real_path3"
 
 # Function to execute script with filtered arguments
 execute_script() {
@@ -231,6 +249,8 @@ execute_script() {
 	local arg3="$4"
 	local num="$5"
 
+	if [[ "$path" == "false" ]]; then return; fi
+
 	local args=()
 	# Only add argument if it's not empty, 'false', or 'null'
 	[[ -n "$arg1" && "$arg1" != "false" && "$arg1" != "null" ]] && args+=("$arg1")
@@ -239,20 +259,13 @@ execute_script() {
 
 	bashio::log.info "Executing script #$num: $path with ${#args[@]} arguments..."
 	bashio::log.info "-----------------------------------------------------------"
-	bash "$path" "${args[@]}"
+	bash "$path" "${args[@]}" || bashio::log.error "Script #$num failed with exit code $?"
 }
 
-if [ "$script_path" != "false" ]; then
-	execute_script "$script_path" "$script_argument1" "$script_argument2" "$script_argument3" "1"
-fi
-
-if [ "$script_path2" != "false" ]; then
-	execute_script "$script_path2" "$script2_argument1" "$script2_argument2" "$script2_argument3" "2"
-fi
-
-if [ "$script_path3" != "false" ]; then
-	execute_script "$script_path3" "$script3_argument1" "$script3_argument2" "$script3_argument3" "3"
-fi
+# Execute all
+execute_script "$real_path1" "$script_argument1" "$script_argument2" "$script_argument3" "1"
+execute_script "$real_path2" "$script2_argument1" "$script2_argument2" "$script2_argument3" "2"
+execute_script "$real_path3" "$script3_argument1" "$script3_argument2" "$script3_argument3" "3"
 
 bashio::log.info "-----------------------------------------------------------"
 bashio::log.info "All Scripts were executed. Stopping container..."

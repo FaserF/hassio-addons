@@ -1,0 +1,9 @@
+{
+  "domain": "bash_script_executer",
+  "name": "Bash Script Executer",
+  "documentation": "https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer",
+  "dependencies": [],
+  "codeowners": ["@FaserF"],
+  "version": "1.0.0",
+  "iot_class": "local_polling"
+}
