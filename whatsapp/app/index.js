@@ -361,7 +361,7 @@ function signalInterest(sessionId) {
     // If we DO have creds, we are likely already in a retry loop or connected.
     if (!hasCreds) {
       logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
-      connectToWhatsApp(sessionId).catch(() => { });
+      connectToWhatsApp(sessionId).catch(() => {});
     }
   }
 }
@@ -644,7 +644,7 @@ if (!process.env.MEDIA_FOLDER) {
           fs.stat(filePath, (err, stats) => {
             if (err) return;
             if (now - stats.mtimeMs > maxAge) {
-              fs.unlink(filePath, () => { });
+              fs.unlink(filePath, () => {});
             }
           });
         });
@@ -804,7 +804,10 @@ async function connectToWhatsApp(sessionId = 'default') {
         // Extract basic device info from credentials if available
         const creds = state.creds;
         session.deviceInfo = {
-          manufacturer: creds.registration?.deviceManufacturer || creds.verifiedName?.details?.verifiedName || 'Unknown',
+          manufacturer:
+            creds.registration?.deviceManufacturer ||
+            creds.verifiedName?.details?.verifiedName ||
+            'Unknown',
           model: creds.registration?.deviceName || 'WhatsApp Web',
           platform: creds.platform || 'web',
           battery: undefined,
@@ -1715,7 +1718,8 @@ app.get('/api/debug/download', (req, res) => {
       addon_version: process.env.ADDON_VERSION || '1.0.0',
       integration_version: process.env.INTEGRATION_VERSION || 'Unknown',
       baileys_version: BAILEYS_VERSION,
-      is_edge: (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') ||
+      is_edge:
+        (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') ||
         (process.env.ADDON_VERSION || '').toLowerCase().includes('dev') ||
         (process.env.INTEGRATION_VERSION || '').toLowerCase().includes('dev') ||
         (process.env.INTEGRATION_VERSION || '').toLowerCase().includes('beta'),
@@ -2493,7 +2497,7 @@ app.listen(PORT, '0.0.0.0', () => {
   } else {
     logger.info('📦 First run or no credentials - auto-starting default session for pairing...');
   }
-  connectToWhatsApp('default').catch(() => { });
+  connectToWhatsApp('default').catch(() => {});
 
   // Auto-start all other sessions
   const sessionsDir = path.join(DATA_DIR, 'sessions');
@@ -2503,7 +2507,7 @@ app.listen(PORT, '0.0.0.0', () => {
       const fullPath = path.join(sessionsDir, sDir);
       if (fs.statSync(fullPath).isDirectory() && fs.existsSync(path.join(fullPath, 'creds.json'))) {
         logger.info({ sessionId: sDir }, '📦 Session credentials found, auto-starting...');
-        connectToWhatsApp(sDir).catch(() => { });
+        connectToWhatsApp(sDir).catch(() => {});
       }
     }
   }
