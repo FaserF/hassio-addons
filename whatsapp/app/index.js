@@ -201,16 +201,20 @@ async function fetchHAVersions() {
         path: urlPath,
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${SUPERVISOR_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${SUPERVISOR_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
       };
       return new Promise((resolve) => {
         const req = http.request(options, (res) => {
           let data = '';
-          res.on('data', (c) => data += c);
+          res.on('data', (c) => (data += c));
           res.on('end', () => {
-            try { resolve(JSON.parse(data)); } catch { resolve(null); }
+            try {
+              resolve(JSON.parse(data));
+            } catch {
+              resolve(null);
+            }
           });
         });
         req.on('error', () => resolve(null));
@@ -454,8 +458,7 @@ async function sendWelcomeMessage(session, jid) {
   const role = isAdminUser ? '*Admin*' : '*Standard User*';
 
   let welcomeText =
-    `👋 *Welcome to the Home Assistant WhatsApp Bridge!*\n\n` +
-    `Your current role: ${role}\n\n`;
+    `👋 *Welcome to the Home Assistant WhatsApp Bridge!*\n\n` + `Your current role: ${role}\n\n`;
 
   if (isAdminUser) {
     welcomeText += `💡 *Admin Tip:* Use \`ha-app-status\` for health checks or \`ha-app-help\` for all control commands.\n\n`;
@@ -1248,13 +1251,13 @@ async function connectToWhatsApp(sessionId = 'default') {
           const body = event.content.trim().toLowerCase();
           const sender = event.sender;
 
-            try {
-              // Check for HA App Commands (ha-app-*)
-              if (body.startsWith('ha-app-')) {
-                // For admin checks, always use the individual person ID
-                // We use event.sender here because it has already gone through LID-swapping logic
-                const personJid = event.raw.key.participant || event.sender;
-                const isAdminUser = isAdmin(personJid);
+          try {
+            // Check for HA App Commands (ha-app-*)
+            if (body.startsWith('ha-app-')) {
+              // For admin checks, always use the individual person ID
+              // We use event.sender here because it has already gone through LID-swapping logic
+              const personJid = event.raw.key.participant || event.sender;
+              const isAdminUser = isAdmin(personJid);
 
               if (body === 'ha-app-ping') {
                 await reply(session, sender, { text: 'Pong! 🏓' });
