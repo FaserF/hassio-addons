@@ -7,6 +7,7 @@ import {
   Browsers,
   delay,
   downloadMediaMessage,
+  generateMessageID,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
@@ -1168,7 +1169,7 @@ app.post('/send_buttons', async (req, res) => {
       }),
     }));
 
-    const messageId = session.sock.generateMessageID();
+    const messageId = generateMessageID();
 
     await session.sock.relayMessage(
       jid,
@@ -1176,7 +1177,10 @@ app.post('/send_buttons', async (req, res) => {
         viewOnceMessage: {
           message: {
             interactiveMessage: {
-              header: { hasMediaAttachment: false },
+              header: { 
+                title: '',
+                hasMediaAttachment: false 
+              },
               body: { text: message },
               footer: { text: footer || '' },
               nativeFlowMessage: {
@@ -1312,14 +1316,14 @@ app.post('/send_audio', async (req, res) => {
 // POST /revoke_message
 app.post('/revoke_message', async (req, res) => {
   const session = getReqSession(req);
-  const { number, message_id } = req.body;
+  const { number, message_id, fromMe } = req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   try {
     const jid = getJid(number);
     const key = {
       remoteJid: jid,
-      fromMe: true,
+      fromMe: fromMe !== undefined ? Boolean(fromMe) : true,
       id: message_id,
     };
 
@@ -1669,7 +1673,7 @@ app.post('/send_list', async (req, res) => {
       })),
     }));
 
-    const messageId = session.sock.generateMessageID();
+    const messageId = generateMessageID();
 
     await session.sock.relayMessage(
       jid,
@@ -1681,8 +1685,8 @@ app.post('/send_list', async (req, res) => {
                 title: title || '',
                 hasMediaAttachment: false,
               },
-              body: { text: text || title || 'Menu' },
-              footer: { text: title ? text : '' },
+              body: { text: text || 'Menu' },
+              footer: { text: footer || '' },
               nativeFlowMessage: {
                 buttons: [
                   {
