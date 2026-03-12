@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.4.0 (2026-03-12)
+
+### ✨ Features
+
+- **Admin Status Notifications**: Automated WhatsApp alerts for connectivity loss, Home Assistant restarts, and successful updates (Core, Addon, Integration).
+- **Persistent State Tracking**: Stores system versions and connection timestamps to provide accurate downtime and update reports.
+- **Smart Welcome Message**: Role-aware greeting for new users (Admin vs Standard) on first contact.
+- **Admin Command Suite**: Expanded `ha-app-*` commands for diagnostics, logs, and status checks.
+- **Rate Limiting**: Improved rolling-window rate limits for status commands for non-admin users.
+
+### 🛠️ Fixes & Improvements
+
+- **Admin Authentication**: Fixed issues with `ADMIN_NUMBERS` environment variable loading and number normalization.
+- **Web UI**: Corrected "Raw Backend Logs" button link for better Ingress compatibility.
+- **Dependencies**: Added `link-preview-js` to resolve Baileys preview generation errors.
+- **Performance**: Optimized memory usage and connection stability.
+
 ## 1.3.2 (2026-02-24)
 
 ### 📦 Dependencies

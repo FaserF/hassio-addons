@@ -64,6 +64,7 @@ ui_auth_password: ''
 media_folder: null
 admin_numbers: ''
 welcome_message_enabled: true
+admin_notifications_enabled: true
 ```
 
 ### Configuration Options
@@ -75,6 +76,8 @@ welcome_message_enabled: true
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 - `admin_numbers`: Comma-separated list of phone numbers (e.g. `49176123456, 49176987654`) that are allowed to use `ha-app-*` admin commands.
+- `welcome_message_enabled`: (Default: `true`) If true, the bot sends a role-aware welcome message on first-contact from a new user.
+- `admin_notifications_enabled`: (Default: `true`) Automatically notifies admins about system health (WhatsApp loss/restore, HA Core/Integration updates, HA restarts).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 - `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
 
@@ -132,3 +135,23 @@ This app can be used as a bridge for Rocket.Chat using the **Rocket.Chat Apps** 
 3. Enable Webhooks in this App and point them to your Rocket.Chat instance.
 
 See the full **[Rocket.Chat Integration Guide](https://faserf.github.io/ha-whatsapp/rocketchat.html)** for step-by-step instructions.
+
+---
+
+## 🔔 Admin Status Notifications
+
+If `admin_notifications_enabled` is set to `true`, all configured **Admins** will receive automatic WhatsApp alerts for critical system events:
+
+- **WhatsApp Connection**: Notifies when the bot loses or restores its connection to WhatsApp (includes downtime duration).
+- **Home Assistant Core**: Notifies when Home Assistant becomes unreachable or comes back online (e.g., during a restart or update).
+- **Update Detection**:
+    - **Addon/Integration**: Alerts when you've updated the WhatsApp App or the HA Integration.
+    - **HA Core**: Automatically detects if a Core update was successful and reports the version change (e.g., `2024.2.1 ➔ 2024.3.0`).
+
+## 👋 Welcome Message (First Contact)
+
+The bot can automatically greet new users who send a direct message for the first time.
+- **Role Awareness**: The message identifies if the user is an **Admin** or a **Standard User**.
+- **Admin Tips**: Provides quick tips for administrators (`ha-app-status` and `ha-app-help`).
+- **Support Links**: Includes a link to the project documentation.
+- **Manual Trigger**: Use `ha-app-welcome` (Admin only) to manually trigger the message.

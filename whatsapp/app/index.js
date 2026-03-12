@@ -145,26 +145,201 @@ if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
 
 const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';
-const MARK_ONLINE = process.env.MARK_ONLINE === 'true';
-const ADMIN_NUMBERS = (process.env.ADMIN_NUMBERS || '')
-  .split(',')
-  .map((n) => n.trim())
-  .filter((n) => n.length > 0);
-const WELCOME_MESSAGE_ENABLED = process.env.WELCOME_MESSAGE_ENABLED !== 'false';
-logger.info(`👥 Loaded ${ADMIN_NUMBERS.length} admin numbers from configuration.`);
-logger.info(`👋 Welcome Message: ${WELCOME_MESSAGE_ENABLED ? 'ENABLED' : 'DISABLED'}`);
+// --- Admin Numbers Loading ---
+function loadAdminNumbers() {
+  // 1. Try environment variables (standard and CONFIG_ prefix)
+  let raw = process.env.ADMIN_NUMBERS || process.env.CONFIG_ADMIN_NUMBERS || '';
 
-// --- Persistent Seen Users ---
-const SEEN_USERS_FILE = path.join(DATA_DIR, 'seen_users.json');
-let SEEN_USERS = new Set();
-if (fs.existsSync(SEEN_USERS_FILE)) {
-  try {
-    const data = JSON.parse(fs.readFileSync(SEEN_USERS_FILE, 'utf8'));
-    SEEN_USERS = new Set(data);
-    logger.info(`📂 Loaded ${SEEN_USERS.size} seen users.`);
-  } catch (e) {
-    logger.error({ error: e.message }, '❌ Failed to load seen users');
+  // 2. Fallback: try reading /data/options.json directly (standard for HA Addons)
+  if (!raw && fs.existsSync('/data/options.json')) {
+    try {
+      const options = JSON.parse(fs.readFileSync('/data/options.json', 'utf8'));
+      raw = options.admin_numbers || '';
+      logger.info('📂 Loaded admin_numbers directly from /data/options.json');
+    } catch (e) {
+      logger.error({ error: e.message }, '❌ Failed to read /data/options.json');
+    }
   }
+
+  return (raw || '')
+    .split(',')
+    .map((n) => n.trim())
+    .filter((n) => n.length > 0);
+}
+
+let ADMIN_NUMBERS = loadAdminNumbers();
+const WELCOME_MESSAGE_ENABLED = process.env.WELCOME_MESSAGE_ENABLED !== 'false';
+const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATIONS_ENABLED !== 'false';
+
+logger.info(
+  {
+    count: ADMIN_NUMBERS.length,
+    rawEnvPresent: !!process.env.ADMIN_NUMBERS,
+    configEnvPresent: !!process.env.CONFIG_ADMIN_NUMBERS,
+    envValueLength: (process.env.ADMIN_NUMBERS || process.env.CONFIG_ADMIN_NUMBERS || '').length,
+  },
+  '👥 admin_numbers configuration checked'
+);
+logger.info(`👋 Welcome Message: ${WELCOME_MESSAGE_ENABLED ? 'ENABLED' : 'DISABLED'}`);
+logger.info(`🔔 Admin Notifications: ${ADMIN_NOTIFICATIONS_ENABLED ? 'ENABLED' : 'DISABLED'}`);
+
+// --- Persistent System State ---
+const SYSTEM_STATE_FILE = path.join(DATA_DIR, 'system_state.json');
+let SYSTEM_STATE = {
+  last_addon_version: process.env.ADDON_VERSION || 'Unknown',
+  last_integration_version: process.env.INTEGRATION_VERSION || 'Unknown',
+  last_ha_version: 'Unknown',
+  last_ha_safe_mode: false,
+  last_whatsapp_online: null,
+  last_ha_online: null,
+};
+
+if (fs.existsSync(SYSTEM_STATE_FILE)) {
+  try {
+    const saved = JSON.parse(fs.readFileSync(SYSTEM_STATE_FILE, 'utf8'));
+    SYSTEM_STATE = { ...SYSTEM_STATE, ...saved };
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load system state');
+  }
+}
+
+function saveSystemState() {
+  try {
+    fs.writeFileSync(SYSTEM_STATE_FILE, JSON.stringify(SYSTEM_STATE, null, 2));
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to save system state');
+  }
+}
+
+async function notifyAdmins(session, text) {
+  if (!ADMIN_NOTIFICATIONS_ENABLED || !ADMIN_NUMBERS.length) return;
+  for (const admin of ADMIN_NUMBERS) {
+    const jid = getJid(admin);
+    await reply(session, jid, { text }).catch((e) =>
+      logger.error({ error: e.message, admin: maskData(jid) }, 'Failed to notify admin')
+    );
+  }
+}
+
+function formatDuration(ms) {
+  if (!ms) return 'unknown';
+  const seconds = Math.floor((ms / 1000) % 60);
+  const minutes = Math.floor((ms / (1000 * 60)) % 60);
+  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+  const parts = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+  return parts.join(' ');
+}
+
+async function checkSystemUpdates(session) {
+  const currentAddonVersion = process.env.ADDON_VERSION || 'Unknown';
+  const currentIntegrationVersion = process.env.INTEGRATION_VERSION || 'Unknown';
+  const haVersions = await fetchHAVersions();
+  const currentHAVersion = haVersions.core;
+  const now = new Date().toLocaleString();
+
+  let updateMessages = [];
+
+  // 1. Addon Update
+  if (
+    SYSTEM_STATE.last_addon_version !== 'Unknown' &&
+    SYSTEM_STATE.last_addon_version !== currentAddonVersion
+  ) {
+    updateMessages.push(
+      `📦 *WhatsApp App Updated*\n` +
+        `• *Version:* ${SYSTEM_STATE.last_addon_version} ➔ ${currentAddonVersion}`
+    );
+  }
+
+  // 2. Integration Update
+  if (
+    SYSTEM_STATE.last_integration_version !== 'Unknown' &&
+    SYSTEM_STATE.last_integration_version !== currentIntegrationVersion
+  ) {
+    updateMessages.push(
+      `🧩 *Integration Updated*\n` +
+        `• *Version:* ${SYSTEM_STATE.last_integration_version} ➔ ${currentIntegrationVersion}`
+    );
+  }
+
+  // 3. HA Core Update or Restart
+  if (SYSTEM_STATE.last_ha_online) {
+    const downtime = Date.now() - SYSTEM_STATE.last_ha_online;
+    const durationStr = formatDuration(downtime);
+
+    if (haVersions.safe_mode) {
+      const haLogs = await fetchHALogs();
+      updateMessages.push(
+        `⚠️ *Home Assistant Booted in SAFE MODE*\n` +
+          `• *Status:* Critical issue detected during boot.\n` +
+          `• *Downtime:* ${durationStr}\n\n` +
+          `📋 *Recent System Logs:*\n` +
+          `\`\`\`\n${haLogs}\n\`\`\``
+      );
+    } else if (SYSTEM_STATE.last_ha_version !== 'Unknown' && SYSTEM_STATE.last_ha_version !== currentHAVersion) {
+      updateMessages.push(
+        `✅ *Home Assistant Update Successful*\n` +
+          `• *Core:* ${SYSTEM_STATE.last_ha_version} ➔ ${currentHAVersion}\n` +
+          `• *Downtime:* ${durationStr}`
+      );
+    } else {
+      updateMessages.push(
+        `🔄 *Home Assistant back online*\n` +
+          `• *Status:* Likely restart/reboot completed.\n` +
+          `• *Downtime:* ${durationStr}`
+      );
+    }
+  }
+
+  if (updateMessages.length > 0) {
+    const fullText =
+      `🔔 *System Status Update*\n` +
+      `• *Time:* ${now}\n\n` +
+      updateMessages.join('\n\n') +
+      `\n\n✨ *Everything is up to date and running!*`;
+    await notifyAdmins(session, fullText);
+  }
+
+  // Update stored versions
+  SYSTEM_STATE.last_addon_version = currentAddonVersion;
+  SYSTEM_STATE.last_integration_version = currentIntegrationVersion;
+  SYSTEM_STATE.last_ha_version = currentHAVersion;
+  SYSTEM_STATE.last_ha_safe_mode = haVersions.safe_mode;
+  SYSTEM_STATE.last_ha_online = null; // Clear if it was set
+  saveSystemState();
+}
+
+/**
+ * Periodically checks connection to HA Core/Supervisor
+ */
+async function monitorHACore(session) {
+  setInterval(async () => {
+    const haVersions = await fetchHAVersions();
+    const isOnline = haVersions.core !== 'Unknown';
+
+    if (!isOnline && !SYSTEM_STATE.last_ha_online) {
+      // Transition from Online -> Offline
+      SYSTEM_STATE.last_ha_online = Date.now();
+      saveSystemState();
+      logger.warn('⚠️ HA Core is unreachable. Admin notification pending restore.');
+
+      notifyAdmins(
+        session,
+        `🔴 *Home Assistant Core Unreachable*\n\n` +
+          `• *Status:* The bot can no longer reach HA Core or the Supervisor.\n` +
+          `• *Likely Causes:* HA restart, update, or network issue.\n` +
+          `• *Note:* Automations are temporarily offline. The bot will notify you once restored.`
+      ).catch(() => {});
+    } else if (isOnline && SYSTEM_STATE.last_ha_online) {
+      // Transition from Offline -> Online
+      await checkSystemUpdates(session); // Includes restore notification
+    }
+  }, 60000); // Check every 1 minute
 }
 
 function markUserAsSeen(jid) {
@@ -182,7 +357,7 @@ function markUserAsSeen(jid) {
 
 // --- Home Assistant Version Helper ---
 const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
-let cachedHAVersions = { core: 'Unknown', os: 'Unknown', lastUpdate: 0 };
+let cachedHAVersions = { core: 'Unknown', os: 'Unknown', safe_mode: false, lastUpdate: 0 };
 
 async function fetchHAVersions() {
   const now = Date.now();
@@ -225,13 +400,46 @@ async function fetchHAVersions() {
     const coreData = await fetch('/core/info');
     const osData = await fetch('/os/info');
 
-    if (coreData && coreData.result === 'ok') cachedHAVersions.core = coreData.data.version;
+    if (coreData && coreData.result === 'ok') {
+      cachedHAVersions.core = coreData.data.version;
+      cachedHAVersions.safe_mode = coreData.data.safe_mode || false;
+    }
     if (osData && osData.result === 'ok') cachedHAVersions.os = osData.data.version || 'Unknown';
     cachedHAVersions.lastUpdate = now;
   } catch (e) {
     logger.debug({ error: e.message }, 'Failed to fetch HA versions');
   }
   return cachedHAVersions;
+}
+
+/**
+ * Fetches the last 50 lines of Home Assistant Core logs
+ */
+async function fetchHALogs() {
+  if (!SUPERVISOR_TOKEN) return 'Supervisor Token not available.';
+
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'supervisor',
+      port: 80,
+      path: '/core/logs',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${SUPERVISOR_TOKEN}` },
+    };
+
+    const req = http.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        // Return last 50 lines
+        const lines = data.split('\n').filter((l) => l.trim().length > 0);
+        resolve(lines.slice(-50).join('\n'));
+      });
+    });
+
+    req.on('error', (e) => resolve(`Error fetching logs: ${e.message}`));
+    req.end();
+  });
 }
 
 logger.info(`⏱️  Send Message Timeout set to: ${SEND_MESSAGE_TIMEOUT} ms`);
@@ -361,6 +569,12 @@ function isAdmin(jid) {
     }
     return false;
   });
+
+  if (!matched && (!ADMIN_NUMBERS || ADMIN_NUMBERS.length === 0)) {
+    // One-time retry if list is empty (might be late config population)
+    ADMIN_NUMBERS = loadAdminNumbers();
+    if (ADMIN_NUMBERS.length > 0) return isAdmin(jid); // Re-run once
+  }
 
   if (!matched) {
     logger.debug(
@@ -511,6 +725,8 @@ async function triggerWebhook(data) {
     const protocol = url.protocol === 'https:' ? await import('https') : http;
     const req = protocol.request(options, (res) => {
       logger.debug({ statusCode: res.statusCode }, '[Webhook] Message forwarded');
+      // Update integration state since the webhook responded
+      SYSTEM_STATE.last_integration_online = Date.now();
     });
 
     req.on('error', (e) => {
@@ -1020,6 +1236,13 @@ async function connectToWhatsApp(sessionId = 'default') {
       logger.warn({ reason, shouldReconnect, sessionId }, 'Connection closed');
       session.isConnected = false;
 
+      // Notify Admin about WhatsApp disconnect
+      if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_whatsapp_online) {
+        // Only if we were previously online or just started
+        SYSTEM_STATE.last_whatsapp_online = Date.now();
+        saveSystemState();
+      }
+
       if (isLoggedOut) {
         session.disconnectReason = 'logged_out';
         session.reconnectAttempts = 0;
@@ -1069,6 +1292,31 @@ async function connectToWhatsApp(sessionId = 'default') {
       session.isConnected = true;
       session.disconnectReason = null;
       session.reconnectAttempts = 0;
+      session.firstFailureTime = null;
+
+      // Notify Admin about WhatsApp restore
+      if (ADMIN_NOTIFICATIONS_ENABLED && SYSTEM_STATE.last_whatsapp_online) {
+        const downtime = Date.now() - SYSTEM_STATE.last_whatsapp_online;
+        const durationStr = formatDuration(downtime);
+        const timestamp = new Date().toLocaleString();
+
+        notifyAdmins(
+          session,
+          `🟢 *WhatsApp Connection Restored*\n\n` +
+            `• *Time:* ${timestamp}\n` +
+            `• *Downtime:* ${durationStr}\n` +
+            `• *Status:* Bot is back online and responding to messages.`
+        );
+        SYSTEM_STATE.last_whatsapp_online = null;
+        saveSystemState();
+      }
+
+      // Start background monitors on first open
+      if (!session._monitorsStarted) {
+        session._monitorsStarted = true;
+        checkSystemUpdates(session).catch(() => {});
+        monitorHACore(session).catch(() => {});
+      }
       session.firstFailureTime = null;
       session.currentQR = null;
       if (session.sock && session.sock.user) {
@@ -1270,12 +1518,16 @@ async function connectToWhatsApp(sessionId = 'default') {
               if (body === 'ha-app-status') {
                 const now = Date.now();
                 if (!isAdminUser) {
-                  // Rate limit based on the person
-                  const lastRequest = session.statusRateLimit.get(personJid) || 0;
-                  if (now - lastRequest < 60000) {
+                  // Rate limit based on the person (array of timestamps for rolling window)
+                  const requests = session.statusRateLimit.get(personJid) || [];
+                  const lastMinute = now - 60000;
+                  const recentRequests = requests.filter((t) => t > lastMinute);
+
+                  if (recentRequests.length >= 5) {
                     return;
                   }
-                  session.statusRateLimit.set(personJid, now);
+                  recentRequests.push(now);
+                  session.statusRateLimit.set(personJid, recentRequests);
                 }
 
                 const uptimeMs = now - session.stats.start_time;
@@ -2332,7 +2584,7 @@ function renderDashboard(sessionId) {
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
                 <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
                 <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 Addon Repo</a>
-                <a href="/logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
+                <a href="logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
             </div>
 
             <div style="margin-top: auto; padding-top: 1rem;">

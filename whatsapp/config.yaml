@@ -1,5 +1,5 @@
 name: "WhatsApp"
-version: "1.3.2"
+version: "1.4.0"
 slug: "whatsapp"
 image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
 description: "Home Assistant WhatsApp App (Baileys/Node.js)."
@@ -28,6 +28,7 @@ options:
   media_folder: ""
   admin_numbers: ""
   welcome_message_enabled: true
+  admin_notifications_enabled: true
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -44,6 +45,7 @@ schema:
   media_folder: str?
   admin_numbers: str?
   welcome_message_enabled: bool
+  admin_notifications_enabled: bool
 
 ports:
   8066/tcp: 8066

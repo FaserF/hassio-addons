@@ -81,12 +81,19 @@ ui_auth_password: ''
 webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
+welcome_message_enabled: true
+admin_notifications_enabled: true
 admin_numbers: '491701234567, 491707654321'
 ```
 
-### 🗝️ Admin Security
+### 🗝️ Admin Security & Notifications
 
-To use `ha-app-*` control commands, add your phone number to `admin_numbers`. Numbers are automatically normalized (handling `+`, `0`, and spaces). Unauthorized users receive a one-time "Permission Denied" warning.
+To use `ha-app-*` control commands, add your phone number to `admin_numbers`. Numbers are automatically normalized (handling `+`, `0`, and spaces). 
+
+**Key Features:**
+- **Automated Alerts**: If `admin_notifications_enabled` is on, admins receive proactive messages about WhatsApp disconnection/reconnection, HA Core restarts, and successful updates (detecting Core version changes).
+- **First-Contact Greeting**: If `welcome_message_enabled` is on, users receive a greeting identifying their role (Admin/Standard) on their first message.
+- **Access Control**: Unauthorized users receive a one-time "Permission Denied" warning.
 
 ### 2. Messaging
 
