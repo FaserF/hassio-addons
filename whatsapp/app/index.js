@@ -329,7 +329,11 @@ function trackSent(session, target, message) {
 
 function trackReceived(session, sender, message) {
   const timestamp = new Date().toLocaleTimeString();
-  session.recentReceived.unshift({ timestamp, sender: maskData(sender), message: maskData(message) });
+  session.recentReceived.unshift({
+    timestamp,
+    sender: maskData(sender),
+    message: maskData(message),
+  });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
 }
 
@@ -1014,11 +1018,7 @@ app.post('/send_message', async (req, res) => {
     const { expiration } = req.body;
 
     const sentMsg = await Promise.race([
-      session.sock.sendMessage(
-        jid,
-        { text: message },
-        { quoted, ephemeralExpiration: expiration }
-      ),
+      session.sock.sendMessage(jid, { text: message }, { quoted, ephemeralExpiration: expiration }),
       new Promise((_, reject) =>
         setTimeout(() => {
           logger.error(
@@ -1227,9 +1227,9 @@ app.post('/send_buttons', async (req, res) => {
         viewOnceMessage: {
           message: {
             interactiveMessage: {
-              header: { 
+              header: {
                 title: '',
-                hasMediaAttachment: false 
+                hasMediaAttachment: false,
               },
               body: { text: message },
               footer: { text: footer || '' },
@@ -1569,32 +1569,47 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
       .join('') || '<div class="log-entry">No logs yet</div>';
 
   // Recent message histories
-  const sentList = session.recentSent.map(m => `
+  const sentList =
+    session.recentSent
+      .map(
+        (m) => `
     <div class="history-item">
       <span class="history-time">${m.timestamp}</span>
       <span class="history-target">To: ${m.target}</span>
       <div class="history-msg">${m.message}</div>
     </div>
-  `).join('') || '<div class="empty-state">No messages sent recently</div>';
+  `
+      )
+      .join('') || '<div class="empty-state">No messages sent recently</div>';
 
-  const receivedList = session.recentReceived.map(m => `
+  const receivedList =
+    session.recentReceived
+      .map(
+        (m) => `
     <div class="history-item">
       <span class="history-time">${m.timestamp}</span>
       <span class="history-sender">From: ${m.sender}</span>
       <div class="history-msg">${m.message}</div>
     </div>
-  `).join('') || '<div class="empty-state">No messages received recently</div>';
+  `
+      )
+      .join('') || '<div class="empty-state">No messages received recently</div>';
 
-  const failureList = session.recentFailures.map(m => `
+  const failureList =
+    session.recentFailures
+      .map(
+        (m) => `
     <div class="history-item failure">
       <span class="history-time">${m.timestamp}</span>
       <span class="history-target">Target: ${m.target}</span>
       <div class="history-msg">${m.message}</div>
       <div class="history-reason">Error: ${m.reason}</div>
     </div>
-  `).join('') || '<div class="empty-state">No failures recorded</div>';
+  `
+      )
+      .join('') || '<div class="empty-state">No failures recorded</div>';
 
-  const uptimeStr = session.stats.start_time 
+  const uptimeStr = session.stats.start_time
     ? new Date(Date.now() - session.stats.start_time).toISOString().substr(11, 8)
     : 'N/A';
 
@@ -1717,19 +1732,27 @@ app.get(/(.*)/, uiAuthMiddleware, (req, res) => {
                         ${session.disconnectReason ? `<div style="color:var(--danger); font-size:0.8rem;">Reason: ${session.disconnectReason}</div>` : ''}
                     </div>
                     
-                    ${showQR ? `
+                    ${
+                      showQR
+                        ? `
                         <div class="qr-container">
                             <span class="stat-label">Scan to Connect</span><br>
                             <img class="qr-code" src="${session.currentQR}" alt="QR" />
                         </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     
-                    ${showQRPlaceholder ? `
+                    ${
+                      showQRPlaceholder
+                        ? `
                         <div class="qr-container">
                             <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
                             <span class="stat-label">Initializing WhatsApp...</span>
                         </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
 
                     <div class="stats-row">
                         <div class="stat-box"><div class="stat-val">${session.stats.sent}</div><div class="stat-label">Sent</div></div>
@@ -1829,7 +1852,8 @@ app.post('/settings/webhook', authMiddleware, (req, res) => {
 // POST /send_list
 app.post('/send_list', async (req, res) => {
   const session = getReqSession(req);
-  const { number, title, text, footer, button_text, sections, quotedMessageId, expiration } = req.body;
+  const { number, title, text, footer, button_text, sections, quotedMessageId, expiration } =
+    req.body;
   if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
   const quoted = getQuotedMessage(session, quotedMessageId);
