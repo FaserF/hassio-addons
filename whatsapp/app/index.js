@@ -815,7 +815,7 @@ function sanitizeSessionId(sessionId) {
   if (!sanitized || sanitized === '..' || !SESSION_ID_REGEX.test(sanitized)) {
     return 'default';
   }
-  return sanitized;
+  return sanitized.toLowerCase();
 }
 
 function getSession(rawSessionId) {
@@ -877,16 +877,20 @@ function signalInterest(sessionId) {
   const alreadyInterested = now - session.lastInterestTime < 60000;
   session.lastInterestTime = now;
 
-  // If we weren't interested before, and we aren't connected/connecting, start it
-  if (!alreadyInterested && !session.isConnected && (!session.sock || session.sock.ws?.isClosed)) {
+  // If we weren't interested before, OR if we have no socket at all, start it
+  // We relax this to always try if sock is null, even if alreadyInterested is true
+  // This helps recover if the first attempt failed and user is still looking.
+  if ((!alreadyInterested || !session.sock) && !session.isConnected && (!session.sock || session.sock.ws?.isClosed)) {
     const authDir = getAuthDir(sessionId);
     const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
 
-    // We only auto-start on interest if we DON'T have creds.
-    // If we DO have creds, we are likely already in a retry loop or connected.
     if (!hasCreds) {
       logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
-      connectToWhatsApp(sessionId).catch(() => {});
+      addLog(session, 'Interest signaled - initiating connection...', 'info');
+      connectToWhatsApp(sessionId).catch((err) => {
+        logger.error({ error: err.message, sessionId }, 'Failed to start WhatsApp connection');
+        addLog(session, `Failed to start connection: ${err.message}`, 'error');
+      });
     }
   }
 }
@@ -1409,7 +1413,7 @@ async function connectToWhatsApp(sessionId = 'default') {
         };
       }
     } else if (connection === 'connecting') {
-      addLog(session, 'Connecting to WhatsApp...', 'info');
+      addLog(session, 'Connecting to WhatsApp (Socket Handshake)...', 'info');
     }
   });
 
@@ -2868,7 +2872,7 @@ function renderDashboard(sessionId) {
                 </div>
             </div>
             <div class="footer-info">
-                 WhatsApp Homeassistant App Dashboard • Real-time Monitoring • HA App: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
+                 WhatsApp Homeassistant App Dashboard • Session: <b id="footer-session-id">...</b> (<span id="footer-session-status">...</span>) • HA App: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
             </div>
         </div>
 
@@ -3024,6 +3028,11 @@ function renderDashboard(sessionId) {
                         qrContainer.style.display = 'none';
                         initPlaceholder.style.display = 'none';
                     }
+
+                    // Debug info
+                    document.getElementById('footer-session-id').textContent = data.sessionId;
+                    document.getElementById('footer-session-status').textContent = data.isConnected ? 'Connected' : 'Disconnected';
+                    document.getElementById('footer-session-status').style.color = data.isConnected ? 'var(--primary)' : 'var(--danger)';
 
                     // Webhook Status
                     document.getElementById('webhook-status').textContent = data.webhookEnabled ? 'Enabled ✅' : 'Disabled ❌';

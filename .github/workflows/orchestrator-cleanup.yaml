@@ -3,6 +3,9 @@ name: Orchestrator Cleanup
 permissions:
   actions: write
   deployments: write
+ 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   pull_request:
