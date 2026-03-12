@@ -1713,7 +1713,9 @@ app.get('/api/debug/download', (req, res) => {
       arch: process.arch,
       addon_version: process.env.ADDON_VERSION || '1.3.2',
       baileys_version: BAILEYS_VERSION,
-      is_edge: (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') || (process.env.ADDON_VERSION || '').toLowerCase().includes('dev'),
+      is_edge:
+        (process.env.ADDON_VERSION || '').toLowerCase().includes('edge') ||
+        (process.env.ADDON_VERSION || '').toLowerCase().includes('dev'),
     },
     config: {
       port: PORT,
