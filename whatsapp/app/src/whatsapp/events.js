@@ -100,7 +100,10 @@ export async function monitorHACore(session) {
   }
 
   session.haMonitorInterval = setInterval(async () => {
-    const haVersions = await fetchHAVersions(true);
+    // Only force refresh if HA is currently offline (to detect restoration quickly)
+    // Otherwise use cached versions (15m TTL) to minimize Supervisor API noise.
+    const forceRefresh = !!SYSTEM_STATE.last_ha_online;
+    const haVersions = await fetchHAVersions(forceRefresh);
     const isOnline = haVersions.core !== 'Unknown';
 
     if (!isOnline && !SYSTEM_STATE.last_ha_online) {
@@ -117,7 +120,7 @@ export async function monitorHACore(session) {
         logger.debug('Silent fail on System Updates check:', e.message)
       );
     }
-  }, 30000);
+  }, 120000); // Poll every 2 minutes
 }
 
 export function handleIncomingMessages(session) {

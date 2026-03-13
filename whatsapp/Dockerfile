@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 RUN \
     apk add --no-cache -u libssl3 libcrypto3 git curl && \
-    apk add --no-cache nodejs~=24.14.0 npm~=24.14.0
+    apk add --no-cache nodejs npm
 
 # Addon metadata (injected by CI)
 ENV ADDON_VERSION="1.4.1"

@@ -9,7 +9,7 @@ let cachedHAVersions = { core: 'Unknown', os: 'Unknown', safe_mode: false, lastU
  */
 export async function fetchHAVersions(forceRefresh = false) {
   const now = Date.now();
-  if (!forceRefresh && now - cachedHAVersions.lastUpdate < 30 * 60 * 1000) return cachedHAVersions;
+  if (!forceRefresh && now - cachedHAVersions.lastUpdate < 15 * 60 * 1000) return cachedHAVersions;
 
   if (!SUPERVISOR_TOKEN) {
     cachedHAVersions.lastUpdate = now;
