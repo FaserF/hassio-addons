@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import mime from 'mime-types';
 import { logger } from '../logger.js';
-import { ADDON_VERSION, INTEGRATION_VERSION } from '../config.js';
+import { ADDON_VERSION, INTEGRATION_VERSION, BAILEYS_VERSION } from '../config.js';
 import { SYSTEM_STATE, saveSystemState } from '../state.js';
 import { fetchHAVersions, fetchHALogs } from '../ha.js';
 import { formatDuration, formatHATime } from '../utils/format.js';
@@ -262,11 +262,23 @@ export function handleIncomingMessages(session) {
 
               const haInfo = await fetchHAVersions();
               const statusText =
-                `🤖 *WhatsApp Bridge Status*\n\n` +
-                `• *Connected:* ${session.isConnected ? '✅' : '❌'}\n` +
-                `• *Uptime:* ${formatDuration(Date.now() - session.stats.start_time)}\n` +
+                `📊 *WhatsApp Integration Status*\n\n` +
+                `• *HA App Version:* ${ADDON_VERSION} (https://github.com/FaserF/hassio-addons)\n` +
+                `• *Integration Version:* ${INTEGRATION_VERSION} (https://github.com/FaserF/ha-whatsapp)\n` +
+                `• *Baileys Version:* ${BAILEYS_VERSION}\n` +
                 `• *HA Core:* ${haInfo.core}\n` +
-                `• *HA Safe Mode:* ${haInfo.safe_mode ? '⚠️ Yes' : 'No'}`;
+                `• *HA OS:* ${haInfo.os || 'Unknown'}\n` +
+                `• *HA Safe Mode:* ${haInfo.safe_mode ? '⚠️ Yes' : 'No'}\n` +
+                `• *Uptime:* ${formatDuration(Date.now() - session.stats.start_time)}\n` +
+                `• *Session:* ${session.id}\n` +
+                `• *Connected:* ${session.isConnected ? '✅' : '❌'}\n\n` +
+                `*Message Statistics:*\n` +
+                `• *Sent:* ${session.stats.sent || 0}\n` +
+                `• *Received:* ${session.stats.received || 0}\n` +
+                `• *Failed:* ${session.stats.failed || 0}\n\n` +
+                `📑 *Support:*\n` +
+                `• *Docs:* https://faserf.github.io/ha-whatsapp/\n` +
+                `• *Issues:* https://github.com/FaserF/ha-whatsapp/issues`;
               await reply(session, senderJid, { text: statusText });
             } else if (isAdminUser && body === 'ha-app-restart') {
               await reply(session, senderJid, {
