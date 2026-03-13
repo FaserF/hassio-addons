@@ -33,6 +33,20 @@ export const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATIONS_ENABL
 export const ADDON_VERSION = process.env.ADDON_VERSION || 'Unknown';
 export const INTEGRATION_VERSION = process.env.INTEGRATION_VERSION || 'Unknown';
 
+// --- Debugging Flags ---
+logger.info(
+  {
+    WELCOME_MESSAGE_ENABLED,
+    ADMIN_NOTIFICATIONS_ENABLED,
+    MARK_ONLINE,
+    SHOULD_RESET,
+    LOG_LEVEL: process.env.LOG_LEVEL,
+    ADDON_VERSION,
+    INTEGRATION_VERSION,
+  },
+  '🛠️ Addon Configuration Loaded'
+);
+
 // --- Baileys Version Check ---
 function getBaileysVersion() {
   try {

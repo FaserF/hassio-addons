@@ -97,7 +97,43 @@ export async function fetchHALogs() {
 }
 
 /**
+ * Fetches the current addon options from the Supervisor API.
+ */
+export async function fetchAddonSelfOptions() {
+  if (!SUPERVISOR_TOKEN) return null;
+
+  const options = {
+    hostname: 'supervisor',
+    port: 80,
+    path: '/addons/self/options',
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${SUPERVISOR_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+  };
+
+  return new Promise((resolve) => {
+    const req = http.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          resolve(json.data?.options || json.options || null);
+        } catch {
+          resolve(null);
+        }
+      });
+    });
+    req.on('error', () => resolve(null));
+    req.end();
+  });
+}
+
+/**
  * Calls the Home Assistant Supervisor API to set reset_session to false.
+ * Fetches existing options first to avoid overwriting other settings.
  */
 export async function disableResetSession() {
   if (!SUPERVISOR_TOKEN) {
@@ -105,11 +141,18 @@ export async function disableResetSession() {
     return;
   }
 
-  const data = JSON.stringify({
-    options: {
-      reset_session: false,
-    },
-  });
+  // Fetch current options to merge
+  const currentOptions = await fetchAddonSelfOptions();
+  if (!currentOptions) {
+    logger.warn('⚠️ Could not fetch current options, proceeding with partial update (risk of reset).');
+  }
+
+  const newOptions = {
+    ...(currentOptions || {}),
+    reset_session: false,
+  };
+
+  const data = JSON.stringify({ options: newOptions });
 
   const options = {
     hostname: 'supervisor',
@@ -119,14 +162,14 @@ export async function disableResetSession() {
     headers: {
       Authorization: `Bearer ${SUPERVISOR_TOKEN}`,
       'Content-Type': 'application/json',
-      'Content-Length': data.length,
+      'Content-Length': Buffer.byteLength(data),
     },
   };
 
   return new Promise((resolve) => {
     const req = http.request(options, (res) => {
       if (res.statusCode === 200) {
-        logger.info('✅ Successfully disabled reset_session via Supervisor API.');
+        logger.info('✅ Successfully disabled reset_session via Supervisor API (options preserved).');
       } else {
         logger.error(
           { statusCode: res.statusCode },

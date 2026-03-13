@@ -1,5 +1,6 @@
 import { delay } from '@whiskeysockets/baileys';
 import fs from 'fs';
+import os from 'os';
 import { authMiddleware, uiAuthMiddleware } from '../middleware.js';
 import { getReqSession, getSession, sessions, sanitizeSessionId, signalInterest, getAuthDir, addLog } from '../session.js';
 import { getJid } from '../utils/jid.js';
@@ -7,16 +8,23 @@ import { maskData, generateMessageID } from '../utils/security.js';
 import { 
     BAILEYS_VERSION, 
     SEND_MESSAGE_TIMEOUT, 
+    KEEP_ALIVE_INTERVAL,
     API_TOKEN, 
     UI_AUTH_ENABLED,
     MASK_SENSITIVE_DATA,
     ADDON_VERSION,
     INTEGRATION_VERSION,
+    ADMIN_NUMBERS,
+    WELCOME_MESSAGE_ENABLED,
+    ADMIN_NOTIFICATIONS_ENABLED,
+    MARK_ONLINE,
+    SHOULD_RESET,
     PORT
 } from '../config.js';
 import { WEBHOOK_ENABLED, WEBHOOK_URL, WEBHOOK_TOKEN, WEBHOOK_CONFIG_FILE, updateWebhookConfig } from '../webhook.js';
 import { trackSent, trackFailure } from '../whatsapp/actions.js';
 import { getQuotedMessage } from '../whatsapp/events.js';
+import { SYSTEM_STATE, SEEN_USERS } from '../state.js';
 import { logger } from '../logger.js';
 import { connectToWhatsApp } from '../whatsapp/connection.js';
 
@@ -445,15 +453,99 @@ export function registerAPIRoutes(app) {
 
   app.get('/api/debug/download', (req, res) => {
     const session = getReqSession(req);
+    
+    // Gather system metrics
+    const mem = process.memoryUsage();
+    const cpus = os.cpus();
+    const loadAvg = os.loadavg();
+    const networkInterfaces = os.networkInterfaces();
+    
     const debugInfo = {
       timestamp: new Date().toISOString(),
-      system: { node: process.version, platform: process.platform, arch: process.arch, addon_version: ADDON_VERSION, integration_version: INTEGRATION_VERSION, baileys_version: BAILEYS_VERSION },
-      config: { port: PORT, ui_auth_enabled: UI_AUTH_ENABLED, webhook_enabled: WEBHOOK_ENABLED, mask_sensitive_data: MASK_SENSITIVE_DATA },
-      session: { id: session.id, connected: session.isConnected, reconnect_attempts: session.reconnectAttempts, uptime: session.stats?.start_time ? Math.floor((Date.now() - session.stats.start_time) / 1000) : 0 },
+      metadata: {
+        generated_by: 'WhatsApp Addon',
+        version: ADDON_VERSION,
+        report_id: generateMessageID()
+      },
+      system: {
+        node: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        pid: process.pid,
+        uptime_seconds: Math.floor(process.uptime()),
+        system_uptime: Math.floor(os.uptime()),
+        memory: {
+          total: os.totalmem(),
+          free: os.freemem(),
+          process_rss: mem.rss,
+          process_heap_total: mem.heapTotal,
+          process_heap_used: mem.heapUsed,
+          process_external: mem.external
+        },
+        cpu: {
+          model: cpus[0]?.model,
+          cores: cpus.length,
+          load_avg: loadAvg
+        },
+        versions: {
+          addon: ADDON_VERSION,
+          integration: INTEGRATION_VERSION,
+          baileys: BAILEYS_VERSION
+        }
+      },
+      network: {
+        interfaces: Object.keys(networkInterfaces).reduce((acc, name) => {
+          acc[name] = networkInterfaces[name].map(iface => ({
+            family: iface.family,
+            address: iface.address.includes(':') ? 'REDACTED' : iface.address, // Partial redact IPv6
+            internal: iface.internal
+          }));
+          return acc;
+        }, {}),
+        host_networking: process.env.HASSIO_HOST_NETWORK === 'true'
+      },
+      config: {
+        port: PORT,
+        ui_auth_enabled: UI_AUTH_ENABLED,
+        webhook: {
+          enabled: WEBHOOK_ENABLED,
+          url: WEBHOOK_URL ? WEBHOOK_URL.replace(/:\/\/.*@/, '://[REDACTED]@') : 'none'
+        },
+        mask_sensitive_data: MASK_SENSITIVE_DATA,
+        welcome_message_enabled: WELCOME_MESSAGE_ENABLED,
+        admin_notifications_enabled: ADMIN_NOTIFICATIONS_ENABLED,
+        mark_online: MARK_ONLINE,
+        should_reset: SHOULD_RESET,
+        send_message_timeout: SEND_MESSAGE_TIMEOUT,
+        keep_alive_interval: KEEP_ALIVE_INTERVAL,
+        admin_numbers_count: ADMIN_NUMBERS.length,
+        admin_numbers_masked: ADMIN_NUMBERS.map(n => maskData(n))
+      },
+      state: {
+        ...SYSTEM_STATE,
+        seen_users_count: SEEN_USERS.size
+      },
+      session: {
+        id: session.id,
+        connected: session.isConnected,
+        reconnect_attempts: session.reconnectAttempts,
+        disconnect_reason: session.disconnectReason,
+        uptime: session.stats?.start_time ? Math.floor((Date.now() - session.stats.start_time) / 1000) : 0,
+        store_stats: {
+          chats: session.messageStore ? 'available' : 'disabled',
+          message_logs_count: session.connectionLogs?.length || 0
+        }
+      },
       stats: session.stats,
-      logs: (session.connectionLogs || []).map(l => ({ ...l, msg: l.msg.replace(API_TOKEN, '[REDACTED]').replace(WEBHOOK_TOKEN, '[REDACTED]') })),
+      logs: (session.connectionLogs || []).map(l => ({ 
+        ...l, 
+        msg: l.msg
+          .replace(API_TOKEN, '[REDACTED_API_TOKEN]')
+          .replace(WEBHOOK_TOKEN, '[REDACTED_WEBHOOK_TOKEN]')
+      })),
     };
-    res.setHeader('Content-disposition', `attachment; filename=whatsapp-debug-${session.id}.json`);
+    
+    res.setHeader('Content-disposition', `attachment; filename=whatsapp-debug-${session.id}-${Date.now()}.json`);
     res.setHeader('Content-type', 'application/json');
     res.write(JSON.stringify(debugInfo, null, 2));
     res.end();
