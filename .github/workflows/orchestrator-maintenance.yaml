@@ -30,12 +30,14 @@ on:
   schedule:
     - cron: "0 0 * * 0" # Weekly Cleanup
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   packages: write
   actions: write
   # Note: packages: write includes delete permission for package versions
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # --------------------------------------------------------------------------------

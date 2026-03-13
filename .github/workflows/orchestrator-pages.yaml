@@ -9,6 +9,9 @@ on:
       - "docs/**"
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   pages: write
@@ -17,7 +20,6 @@ permissions:
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-deploy:

@@ -9,6 +9,8 @@ on:
     workflows: ["Orchestrator CI"]
     types:
       - completed
+
+env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:

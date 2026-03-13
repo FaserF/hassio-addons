@@ -14,6 +14,9 @@ on:
       - "**/config.yaml"
       - "**/config.json"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -21,7 +24,6 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   intake:

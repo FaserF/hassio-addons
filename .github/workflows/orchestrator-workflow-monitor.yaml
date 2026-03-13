@@ -32,6 +32,9 @@ on:
         required: false
         default: ''
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: workflow-monitor-${{ github.event.workflow_run.id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -43,7 +46,6 @@ permissions:
   actions: read
   # Note: Billing API access requires organization owner/admin permissions
   # The default GITHUB_TOKEN may not have access to billing endpoints
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # --------------------------------------------------------------------------------

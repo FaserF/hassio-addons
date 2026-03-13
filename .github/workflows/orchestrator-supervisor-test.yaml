@@ -35,13 +35,15 @@ on:
         default: "15"
         type: string
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: supervisor-test-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
   SUPERVISOR_STARTUP_TIMEOUT: 100

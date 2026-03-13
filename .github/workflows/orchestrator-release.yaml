@@ -55,12 +55,14 @@ on:
       - "**/config.yaml"
       - ".github/workflows/orchestrator-release.yaml"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   packages: write
   actions: write
   pull-requests: read
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # Apps to ignore for auto-releases (Blacklist)
   AUTO_RELEASE_IGNORE: |
     sap-abap-cloud-dev
