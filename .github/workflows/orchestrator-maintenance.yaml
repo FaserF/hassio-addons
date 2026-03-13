@@ -70,6 +70,7 @@ jobs:
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
+        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
@@ -89,6 +90,7 @@ jobs:
           # We assume python dependencies are installed or we use standard lib
           pip install requests
           python3 .scripts/retract_version.py "${{ github.event.inputs.App }}" "${{ github.event.inputs.version }}"
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
@@ -105,6 +107,7 @@ jobs:
       - name: 🏃 Run Move Script
         run: |
           python3 .scripts/move_unsupported.py
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Commit Changes
@@ -126,6 +129,7 @@ jobs:
       - name: 🏃 Run Toggle Script
         run: |
           python3 .scripts/toggle_support.py "${{ github.event.inputs.App }}" "${{ github.event.inputs.state }}"
+        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 

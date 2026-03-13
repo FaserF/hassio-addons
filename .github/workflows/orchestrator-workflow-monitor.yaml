@@ -69,6 +69,7 @@ jobs:
         id: lint-report
         if: steps.actionlint.outputs.exit-code != '0'
         uses: actions/github-script@v8
+        env:
           ACTIONLINT_OUTPUT: "${{ steps.actionlint.outputs.stdout }}"
           ACTIONLINT_STDERR: "${{ steps.actionlint.outputs.stderr }}"
         with:
@@ -190,6 +191,7 @@ jobs:
       - name: 📝 Post Minutes Warning
         if: steps.billing.outputs.status == 'warning' || steps.billing.outputs.status == 'critical' || steps.billing.outputs.status == 'exhausted'
         uses: actions/github-script@v8
+        env:
           BILLING_MESSAGE: ${{ steps.billing.outputs.message }}
           BILLING_STATUS: ${{ steps.billing.outputs.status }}
         with:

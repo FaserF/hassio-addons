@@ -347,6 +347,7 @@ jobs:
       - name: "🔍 Test Apps"
         if: steps.supervisor.outputs.supervisor_ready == 'true'
         id: test
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # shellcheck disable=SC2086,SC2129,SC2034

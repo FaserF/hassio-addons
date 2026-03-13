@@ -200,6 +200,7 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/prepare_edge_branch.py
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔄 Update version for changed Apps only

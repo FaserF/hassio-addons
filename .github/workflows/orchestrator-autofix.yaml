@@ -239,6 +239,7 @@ jobs:
           branch: ${{ github.ref_name }}
           file_pattern: .
           # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
+        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
       # If commit failed due to workflow files, remove them and commit again

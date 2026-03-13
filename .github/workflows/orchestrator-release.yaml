@@ -101,6 +101,7 @@ jobs:
 
       - name: 🔍 Detect release targets
         id: detect
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
@@ -693,6 +694,7 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Test Build
@@ -747,6 +749,7 @@ jobs:
         run: |
           pip install pyyaml --quiet
           python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔧 Fix Image Field Format (if needed)
@@ -835,6 +838,7 @@ jobs:
 
              eval "$PYTHON_CMD"
           fi
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔍 Debug Git Status (Post-Bump)
@@ -1193,6 +1197,7 @@ jobs:
 
           echo ""
           echo "⏱️  Monitor timeout reached. Jobs may still be running."
+        env:
           GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
   # ================================================================================
@@ -1222,6 +1227,7 @@ jobs:
 
       - name: 🗑️ Prune Docker Registry
         run: python3 .scripts/prune_registry.py
+        env:
           GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }} # Needs delete:packages scope
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 

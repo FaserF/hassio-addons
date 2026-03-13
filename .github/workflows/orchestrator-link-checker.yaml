@@ -34,5 +34,6 @@ jobs:
           args: --verbose --no-progress "**/*.md"
           # Fail the job if broken links are found
           fail: true
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
