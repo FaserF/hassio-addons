@@ -3,11 +3,13 @@
 ## 2.3.1 (2026-03-13)
 
 ### 📦 Dependencies
+
 - ⬆️ Update cloudflare/cloudflared Docker tag to v2026.3.0 [skip-tests] ([`b135ae83`](https://github.com/FaserF/hassio-addons/commit/b135ae83edfc7a46be583df3ab9b951f6b28846a))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 - ⬆️ Update cloudflare/cloudflared Docker tag to v2026.2.0 [skip-tests] (#641) [skip-tests] ([`6086e70d`](https://github.com/FaserF/hassio-addons/commit/6086e70db870f39acd05560c5e949e0c90fce9fa))
 
 ### 🚀 Other
+
 - security & docs improvements codeql ([`a4a06f09`](https://github.com/FaserF/hassio-addons/commit/a4a06f09bab3956a81fe1dc81bf3ce991e3c83d1))
 - small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
 - replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
@@ -15,7 +17,6 @@
 - CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 2.3.0 (2026-01-29)
 

@@ -19,7 +19,6 @@ RUN \
     apk add --no-cache -u libssl3 libcrypto3 git curl && \
     apk add --no-cache nodejs npm
 
-
 # 2. Set workdir
 WORKDIR /opt/whatsapp
 

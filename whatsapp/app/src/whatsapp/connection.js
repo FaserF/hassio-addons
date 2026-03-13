@@ -32,7 +32,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
   const now = Date.now();
-  const isInterested = sessionId === 'default' || (now - session.lastInterestTime < 60000);
+  const isInterested = sessionId === 'default' || now - session.lastInterestTime < 60000;
 
   if (!hasCreds && !isInterested) {
     logger.info({ sessionId }, '💤 No credentials and no active interest. Skipping connection.');
@@ -79,7 +79,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
     logger.info({ sessionId, connection, hasQR: !!qr }, '🔄 connection.update');
-    
+
     if (session.sock !== sock) {
       logger.debug({ sessionId }, 'Old socket event received, ignoring');
       return;
