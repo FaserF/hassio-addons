@@ -509,7 +509,19 @@ export function registerAPIRoutes(app) {
         ui_auth_enabled: UI_AUTH_ENABLED,
         webhook: {
           enabled: WEBHOOK_ENABLED,
-          url: WEBHOOK_URL ? WEBHOOK_URL.replace(/:\/\/.*@/, '://[REDACTED]@') : 'none'
+          url: (function() {
+            if (!WEBHOOK_URL) return 'none';
+            try {
+              const u = new URL(WEBHOOK_URL);
+              if (u.password || u.username) {
+                u.username = '[REDACTED]';
+                u.password = '';
+              }
+              return u.toString();
+            } catch {
+              return '[INVALID_URL]';
+            }
+          })()
         },
         mask_sensitive_data: MASK_SENSITIVE_DATA,
         welcome_message_enabled: WELCOME_MESSAGE_ENABLED,
