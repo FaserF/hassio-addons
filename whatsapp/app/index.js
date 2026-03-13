@@ -7,7 +7,13 @@ import express from 'express';
 import { logger } from './src/logger.js';
 import { PORT } from './src/config.js';
 import { ingressPrefixMiddleware } from './src/middleware.js';
-import { startSessionCleanupTask, getSession, sessions, connectToWhatsApp, getAuthDir } from './src/session.js';
+import {
+  startSessionCleanupTask,
+  getSession,
+  sessions,
+  connectToWhatsApp,
+  getAuthDir,
+} from './src/session.js';
 import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
@@ -45,9 +51,9 @@ app.listen(PORT, '0.0.0.0', () => {
   if (!defaultSession.isConnected) {
     const defaultDir = getAuthDir('default');
     if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
-        logger.info('🚀 Auto-starting default session...');
+      logger.info('🚀 Auto-starting default session...');
     } else {
-        logger.info('🚀 First run or no credentials - auto-starting default session for pairing...');
+      logger.info('🚀 First run or no credentials - auto-starting default session for pairing...');
     }
     connectToWhatsApp('default', sessions, getSession);
   }
@@ -70,22 +76,22 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 async function handleShutdown(signal) {
-    logger.info({ signal }, '👋 Shutdown signal received. Saving state and cleaning up...');
-    let anyConnected = false;
-    for (const session of sessions.values()) {
-        if (session.isConnected) {
-            anyConnected = true;
-            break;
-        }
+  logger.info({ signal }, '👋 Shutdown signal received. Saving state and cleaning up...');
+  let anyConnected = false;
+  for (const session of sessions.values()) {
+    if (session.isConnected) {
+      anyConnected = true;
+      break;
     }
-    if (anyConnected && !SYSTEM_STATE.last_whatsapp_online) {
-        SYSTEM_STATE.last_whatsapp_online = Date.now();
-        saveSystemState();
-    }
-    setTimeout(() => {
-        logger.info('🛑 Process exiting.');
-        process.exit(0);
-    }, 500);
+  }
+  if (anyConnected && !SYSTEM_STATE.last_whatsapp_online) {
+    SYSTEM_STATE.last_whatsapp_online = Date.now();
+    saveSystemState();
+  }
+  setTimeout(() => {
+    logger.info('🛑 Process exiting.');
+    process.exit(0);
+  }, 500);
 }
 
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));

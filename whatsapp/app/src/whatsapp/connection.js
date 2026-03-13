@@ -89,11 +89,14 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.isConnected = false;
 
       if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_whatsapp_online) {
-          SYSTEM_STATE.last_whatsapp_online = Date.now();
-          saveSystemState();
-          logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
+        SYSTEM_STATE.last_whatsapp_online = Date.now();
+        saveSystemState();
+        logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
-          notifyAdmins(session, `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${reason}\n• *Status:* Attempting to reconnect.`);
+        notifyAdmins(
+          session,
+          `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${reason}\n• *Status:* Attempting to reconnect.`
+        );
       }
 
       if (isLoggedOut) {
@@ -132,7 +135,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         if (downtime > NOTIFY_RESTORE_THRESHOLD) {
           SYSTEM_STATE.last_whatsapp_online = null;
           saveSystemState();
-          notifyAdmins(session, `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}\n• *Status:* Bot is back online.`);
+          notifyAdmins(
+            session,
+            `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}\n• *Status:* Bot is back online.`
+          );
         }
       }
 
@@ -154,33 +160,33 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
  * mDNS / Bonjour advertisement
  */
 export async function publishMDNS(name, attempt = 0) {
-    try {
-        const { Bonjour } = await import('bonjour-service');
-        const instance = new Bonjour();
-        const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
+  try {
+    const { Bonjour } = await import('bonjour-service');
+    const instance = new Bonjour();
+    const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
 
-        const service = instance.publish({
-            name: serviceName,
-            type: 'ha-whatsapp',
-            protocol: 'tcp',
-            port: PORT,
-            txt: { version: '1.0.0', api_path: '/', auth_type: 'token' },
-        });
+    const service = instance.publish({
+      name: serviceName,
+      type: 'ha-whatsapp',
+      protocol: 'tcp',
+      port: PORT,
+      txt: { version: '1.0.0', api_path: '/', auth_type: 'token' },
+    });
 
-        service.on('error', (err) => {
-            if (err.message.includes('already in use') && attempt < 10) {
-                logger.warn({ serviceName }, 'mDNS name in use, retrying...');
-                instance.destroy();
-                publishMDNS(name, attempt + 1);
-            } else {
-                logger.error({ serviceName, error: err.message }, 'mDNS advertisement error');
-            }
-        });
+    service.on('error', (err) => {
+      if (err.message.includes('already in use') && attempt < 10) {
+        logger.warn({ serviceName }, 'mDNS name in use, retrying...');
+        instance.destroy();
+        publishMDNS(name, attempt + 1);
+      } else {
+        logger.error({ serviceName, error: err.message }, 'mDNS advertisement error');
+      }
+    });
 
-        service.on('up', () => {
-            logger.info({ serviceName, port: PORT }, '📢 Publishing mDNS service');
-        });
-    } catch (e) {
-        logger.warn({ error: e.message }, 'mDNS advertisement failed to initialize');
-    }
+    service.on('up', () => {
+      logger.info({ serviceName, port: PORT }, '📢 Publishing mDNS service');
+    });
+  } catch (e) {
+    logger.warn({ error: e.message }, 'mDNS advertisement failed to initialize');
+  }
 }

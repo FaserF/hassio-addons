@@ -168,7 +168,10 @@ export function startSessionCleanupTask(deleteSessionFn) {
       if (id === 'default') continue;
       if (session.isConnected) continue;
 
-      const lastActivity = Math.max(session.lastInterestTime, session.stats.last_received_time || 0);
+      const lastActivity = Math.max(
+        session.lastInterestTime,
+        session.stats.last_received_time || 0
+      );
       if (now - lastActivity > STALE_THRESHOLD) {
         logger.info({ sessionId: id }, '🧹 Removing stale in-memory session');
         await deleteSessionFn(id);
@@ -177,7 +180,9 @@ export function startSessionCleanupTask(deleteSessionFn) {
 
     const sessionsDir = path.join(DATA_DIR, 'sessions');
     if (fs.existsSync(sessionsDir)) {
-      const sessionDirs = fs.readdirSync(sessionsDir).filter(d => fs.statSync(path.join(sessionsDir, d)).isDirectory());
+      const sessionDirs = fs
+        .readdirSync(sessionsDir)
+        .filter((d) => fs.statSync(path.join(sessionsDir, d)).isDirectory());
       for (const sDir of sessionDirs) {
         if (sessions.has(sDir)) continue;
 

@@ -6,7 +6,7 @@ import { MEDIA_DIR } from '../config.js';
 
 export function registerRoutes(app) {
   app.use('/media', express.static(MEDIA_DIR));
-  
+
   // Apply limiters to route groups
   app.use('/session', apiLimiter);
   app.use('/qr', apiLimiter);
@@ -21,7 +21,7 @@ export function registerRoutes(app) {
   app.use('/mark_as_read', apiLimiter);
   app.use('/logs', apiLimiter);
   app.use('/api', apiLimiter);
-  
+
   // Root UI
   app.use('/', uiLimiter);
 

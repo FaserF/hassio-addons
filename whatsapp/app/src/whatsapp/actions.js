@@ -180,13 +180,13 @@ export async function sendWelcomeMessage(session, jid) {
 }
 
 export function handleFirstContact(session, event) {
-    if (WELCOME_MESSAGE_ENABLED && !event.is_group && event.content) {
-        const personJid = event.raw.key.participant || event.sender;
-        if (markUserAsSeen(personJid)) {
-            logger.info({ jid: maskData(personJid) }, '👋 Sending first-contact welcome message');
-            sendWelcomeMessage(session, event.sender).catch((e) =>
-                logger.error({ error: e.message }, 'Failed to send welcome message')
-            );
-        }
+  if (WELCOME_MESSAGE_ENABLED && !event.is_group && event.content) {
+    const personJid = event.raw.key.participant || event.sender;
+    if (markUserAsSeen(personJid)) {
+      logger.info({ jid: maskData(personJid) }, '👋 Sending first-contact welcome message');
+      sendWelcomeMessage(session, event.sender).catch((e) =>
+        logger.error({ error: e.message }, 'Failed to send welcome message')
+      );
     }
+  }
 }

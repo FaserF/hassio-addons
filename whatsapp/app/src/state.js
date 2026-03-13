@@ -60,20 +60,20 @@ export function saveSystemState() {
 export const WEBHOOK_CONFIG_FILE = path.join(DATA_DIR, 'webhook.json');
 
 export function loadWebhookConfig() {
-    if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
-        try {
-            return JSON.parse(fs.readFileSync(WEBHOOK_CONFIG_FILE, 'utf8'));
-        } catch (e) {
-            logger.error({ error: e.message }, '❌ Failed to load saved webhook config');
-        }
+  if (fs.existsSync(WEBHOOK_CONFIG_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(WEBHOOK_CONFIG_FILE, 'utf8'));
+    } catch (e) {
+      logger.error({ error: e.message }, '❌ Failed to load saved webhook config');
     }
-    return null;
+  }
+  return null;
 }
 
 export function saveWebhookConfig(config) {
-    try {
-        fs.writeFileSync(WEBHOOK_CONFIG_FILE, JSON.stringify(config, null, 2));
-    } catch (e) {
-        logger.error({ error: e.message }, '❌ Failed to save webhook config');
-    }
+  try {
+    fs.writeFileSync(WEBHOOK_CONFIG_FILE, JSON.stringify(config, null, 2));
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to save webhook config');
+  }
 }

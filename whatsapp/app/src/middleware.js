@@ -11,20 +11,29 @@ export const ipFilterMiddleware = (req, res, next) => {
   if (ip.startsWith('::ffff:')) ip = ip.substr(7);
   if (ip === '127.0.0.1' || ip === '::1') return next();
 
-  const isPrivate = /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
+  const isPrivate = /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(
+    ip
+  );
   if (isPrivate) return next();
 
   addLog(getSession('default'), `Blocked access attempt from ${ip}`, 'warning');
   logger.warn({ ip, headers: req.headers }, '[SECURITY] Blocked access attempt (UI Auth Disabled)');
-  return res.status(403).send('Forbidden: External access is disabled when UI Authentication is off.');
+  return res
+    .status(403)
+    .send('Forbidden: External access is disabled when UI Authentication is off.');
 };
 
 export const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
   if (providedToken !== API_TOKEN) {
     addLog(getSession('default'), `Unauthorized API access attempt from ${req.ip}`, 'error');
-    logger.warn({ ip: req.ip, path: req.originalUrl, tokenProvided: !!providedToken }, '[AUTH] Unauthorized access attempt');
-    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
+    logger.warn(
+      { ip: req.ip, path: req.originalUrl, tokenProvided: !!providedToken },
+      '[AUTH] Unauthorized access attempt'
+    );
+    return res
+      .status(401)
+      .json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
   }
   next();
 };

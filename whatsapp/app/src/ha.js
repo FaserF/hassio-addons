@@ -144,7 +144,9 @@ export async function disableResetSession() {
   // Fetch current options to merge
   const currentOptions = await fetchAddonSelfOptions();
   if (!currentOptions) {
-    logger.warn('⚠️ Could not fetch current options, proceeding with partial update (risk of reset).');
+    logger.warn(
+      '⚠️ Could not fetch current options, proceeding with partial update (risk of reset).'
+    );
   }
 
   const newOptions = {
@@ -169,7 +171,9 @@ export async function disableResetSession() {
   return new Promise((resolve) => {
     const req = http.request(options, (res) => {
       if (res.statusCode === 200) {
-        logger.info('✅ Successfully disabled reset_session via Supervisor API (options preserved).');
+        logger.info(
+          '✅ Successfully disabled reset_session via Supervisor API (options preserved).'
+        );
       } else {
         logger.error(
           { statusCode: res.statusCode },
@@ -193,32 +197,32 @@ export async function disableResetSession() {
  * Sends a persistent notification to Home Assistant.
  */
 export async function sendHANotification(title, message, notificationId = null) {
-    if (!SUPERVISOR_TOKEN) return;
+  if (!SUPERVISOR_TOKEN) return;
 
-    const data = JSON.stringify({
-        title,
-        message,
-        notification_id: notificationId,
+  const data = JSON.stringify({
+    title,
+    message,
+    notification_id: notificationId,
+  });
+
+  const options = {
+    hostname: 'supervisor',
+    port: 80,
+    path: '/core/api/services/persistent_notification/create',
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${SUPERVISOR_TOKEN}`,
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
+    },
+  };
+
+  return new Promise((resolve) => {
+    const req = http.request(options, (res) => {
+      resolve(res.statusCode === 200);
     });
-
-    const options = {
-        hostname: 'supervisor',
-        port: 80,
-        path: '/core/api/services/persistent_notification/create',
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${SUPERVISOR_TOKEN}`,
-            'Content-Type': 'application/json',
-            'Content-Length': data.length,
-        },
-    };
-
-    return new Promise((resolve) => {
-        const req = http.request(options, (res) => {
-            resolve(res.statusCode === 200);
-        });
-        req.on('error', () => resolve(false));
-        req.write(data);
-        req.end();
-    });
+    req.on('error', () => resolve(false));
+    req.write(data);
+    req.end();
+  });
 }

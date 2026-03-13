@@ -88,6 +88,6 @@ export function loadAdminNumbers() {
 export let ADMIN_NUMBERS = loadAdminNumbers();
 
 export function refreshAdminNumbers() {
-    ADMIN_NUMBERS = loadAdminNumbers();
-    return ADMIN_NUMBERS;
+  ADMIN_NUMBERS = loadAdminNumbers();
+  return ADMIN_NUMBERS;
 }

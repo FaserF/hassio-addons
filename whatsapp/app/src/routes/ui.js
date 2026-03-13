@@ -1,10 +1,7 @@
 import os from 'os';
 import { uiAuthMiddleware } from '../middleware.js';
 import { sanitizeSessionId } from '../session.js';
-import {
-  API_TOKEN,
-  PORT,
-} from '../config.js';
+import { API_TOKEN, PORT } from '../config.js';
 import { logger } from '../logger.js';
 
 export function registerUIRoutes(app) {

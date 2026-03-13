@@ -25,10 +25,10 @@ export function isAdmin(jid, session = null) {
 
   const currentAdmins = ADMIN_NUMBERS;
   if (!currentAdmins || currentAdmins.length === 0) {
-      // One-time retry if list is empty (might be late config population)
-      const refreshedAdmins = refreshAdminNumbers();
-      if (refreshedAdmins.length > 0) return isAdmin(jid, session);
-      return false;
+    // One-time retry if list is empty (might be late config population)
+    const refreshedAdmins = refreshAdminNumbers();
+    if (refreshedAdmins.length > 0) return isAdmin(jid, session);
+    return false;
   }
 
   // 1. Extract pure sender number from JID
