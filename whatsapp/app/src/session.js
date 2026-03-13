@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { LRUCache } from 'lru-cache';
 import { logger } from './logger.js';
 import { DATA_DIR, AUTH_DIR, BAILEYS_VERSION } from './config.js';
 import { formatHATime } from './utils/format.js';
@@ -53,7 +54,7 @@ export function getSession(rawSessionId) {
       recentSent: [],
       recentReceived: [],
       recentFailures: [],
-      messageStore: new Map(),
+      messageStore: new LRUCache({ max: 1000, ttl: 1000 * 60 * 60 * 24 }), // 1000 messages or 24h
       statusRateLimit: new Map(), // sender -> lastStatusTime
       unauthorizedWarned: new Set(), // sender IDs
       lastInterestTime: 0, // Track when someone last looked at this session
@@ -114,13 +115,23 @@ export async function deleteSession(sessionId) {
     }
   }
 
+  if (session && session.haMonitorInterval) {
+    clearInterval(session.haMonitorInterval);
+  }
+
   sessions.delete(sessionId);
 
   const authDir = getAuthDir(sessionId);
-  if (fs.existsSync(authDir) && sessionId !== 'default') {
-    logger.info({ sessionId, authDir }, '🗑️ Deleting session directory...');
-    fs.rmSync(authDir, { recursive: true, force: true });
-    return true;
+  if (sessionId !== 'default') {
+    try {
+      if (fs.existsSync(authDir)) {
+        logger.info({ sessionId, authDir }, '🗑️ Deleting session directory...');
+        fs.rmSync(authDir, { recursive: true, force: true });
+        return true;
+      }
+    } catch (e) {
+      logger.error({ sessionId, error: e.message }, 'Failed to delete session directory');
+    }
   }
   return false;
 }

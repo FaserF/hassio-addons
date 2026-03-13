@@ -36,7 +36,7 @@ import {
   WEBHOOK_CONFIG_FILE,
   updateWebhookConfig,
 } from '../webhook.js';
-import { trackSent, trackFailure } from '../whatsapp/actions.js';
+import { trackSent } from '../whatsapp/actions.js';
 import { getQuotedMessage } from '../whatsapp/events.js';
 import { SYSTEM_STATE, SEEN_USERS } from '../state.js';
 import { logger } from '../logger.js';
@@ -69,7 +69,11 @@ export function registerAPIRoutes(app) {
         session.sock = undefined;
       }
       const authDir = getAuthDir(session.id);
-      if (fs.existsSync(authDir)) fs.rmSync(authDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(authDir, { recursive: true, force: true });
+      } catch (e) {
+        logger.debug({ error: e.message }, 'Auth dir cleanup skipped or failed');
+      }
       fs.mkdirSync(authDir, { recursive: true });
       session.isConnected = false;
       session.currentQR = null;
@@ -170,8 +174,8 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_failed_time = Date.now();
       session.stats.last_error_reason = e.message;
-      trackFailure(session, number, message, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number, message: maskData(message) }, 'Send message failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send message' });
     }
   });
 
@@ -196,8 +200,8 @@ export function registerAPIRoutes(app) {
     } catch (e) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
-      trackFailure(session, number, caption ? `Image: ${caption}` : 'Image', e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send image failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send image' });
     }
   });
 
@@ -222,8 +226,8 @@ export function registerAPIRoutes(app) {
     } catch (e) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
-      trackFailure(session, number, `Poll: ${question}`, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send poll failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send poll' });
     }
   });
 
@@ -256,8 +260,8 @@ export function registerAPIRoutes(app) {
     } catch (e) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
-      trackFailure(session, number, `Location: ${title || 'Pinned'}`, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send location failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send location' });
     }
   });
 
@@ -272,8 +276,8 @@ export function registerAPIRoutes(app) {
       });
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
-      session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send reaction failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send reaction' });
     }
   });
 
@@ -315,8 +319,8 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent', id: messageId });
     } catch (e) {
       session.stats.failed += 1;
-      trackFailure(session, number, `Buttons: ${message}`, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send buttons failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send buttons' });
     }
   });
 
@@ -342,8 +346,8 @@ export function registerAPIRoutes(app) {
       trackSent(session, number, `Document: ${fileName || 'unnamed'}`);
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
-      session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send document failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send document' });
     }
   });
 
@@ -364,8 +368,8 @@ export function registerAPIRoutes(app) {
       trackSent(session, number, caption ? `Video: ${caption}` : 'Video');
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
-      session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send video failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send video' });
     }
   });
 
@@ -406,8 +410,8 @@ export function registerAPIRoutes(app) {
       trackSent(session, number, `Revoke: ${message_id}`);
       res.json({ status: 'sent' });
     } catch (e) {
-      session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Revoke message failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to revoke message' });
     }
   });
 
@@ -423,8 +427,8 @@ export function registerAPIRoutes(app) {
       trackSent(session, number, `Edit: ${message_id}`);
       res.json({ status: 'sent' });
     } catch (e) {
-      session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Edit message failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to edit message' });
     }
   });
 
@@ -437,7 +441,8 @@ export function registerAPIRoutes(app) {
       await session.sock.sendPresenceUpdate(presence, jid);
       res.json({ status: 'sent' });
     } catch (e) {
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Set presence failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to set presence' });
     }
   });
 
@@ -454,7 +459,8 @@ export function registerAPIRoutes(app) {
       }));
       res.json(result);
     } catch (e) {
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message }, 'Fetch groups failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to fetch groups' });
     }
   });
 
@@ -471,7 +477,8 @@ export function registerAPIRoutes(app) {
       }
       res.json({ status: 'success' });
     } catch (e) {
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Mark as read failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to mark as read' });
     }
   });
 
@@ -524,8 +531,8 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent' });
     } catch (e) {
       session.stats.failed += 1;
-      trackFailure(session, number, `List: ${title || text}`, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send list failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send list' });
     }
   });
 
@@ -552,8 +559,8 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent' });
     } catch (e) {
       session.stats.failed += 1;
-      trackFailure(session, number, `Contact: ${contact_name}`, e.message);
-      res.status(500).json({ detail: e.toString() });
+      logger.error({ error: e.message, number }, 'Send contact failed');
+      res.status(500).json({ detail: 'Internal Server Error: Failed to send contact' });
     }
   });
 

@@ -21,8 +21,8 @@ import { notifyAdmins } from './actions.js';
 import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
 import { PORT } from '../config.js';
 
-// --- Baileys 405 Workaround ---
 import { BAILEYS_VERSION } from '../config.js';
+import { delay } from '@whiskeysockets/baileys';
 const BAILEYS_405_AFFECTED_VERSION = '7.0.0-rc.9';
 const BAILEYS_405_VERSION_OVERRIDE = [2, 3000, 1033893291];
 const APPLY_BAILEYS_405_FIX = BAILEYS_VERSION === BAILEYS_405_AFFECTED_VERSION;
@@ -173,10 +173,11 @@ export async function publishMDNS(name, attempt = 0) {
       txt: { version: '1.0.0', api_path: '/', auth_type: 'token' },
     });
 
-    service.on('error', (err) => {
+    service.on('error', async (err) => {
       if (err.message.includes('already in use') && attempt < 10) {
         logger.warn({ serviceName }, 'mDNS name in use, retrying...');
         instance.destroy();
+        await delay(1000);
         publishMDNS(name, attempt + 1);
       } else {
         logger.error({ serviceName, error: err.message }, 'mDNS advertisement error');

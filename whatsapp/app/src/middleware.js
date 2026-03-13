@@ -5,22 +5,26 @@ import { getSession, addLog } from './session.js';
 
 export const ipFilterMiddleware = (req, res, next) => {
   if (UI_AUTH_ENABLED) return next();
-  if (req.headers['x-ingress-path'] || req.headers['x-hass-source']) return next();
 
   let ip = req.ip || req.connection.remoteAddress;
   if (ip.startsWith('::ffff:')) ip = ip.substr(7);
-  if (ip === '127.0.0.1' || ip === '::1') return next();
 
-  const isPrivate = /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(
-    ip
-  );
-  if (isPrivate) return next();
+  const isPrivate =
+    ip === '127.0.0.1' ||
+    ip === '::1' ||
+    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
 
-  addLog(getSession('default'), `Blocked access attempt from ${ip}`, 'warning');
-  logger.warn({ ip, headers: req.headers }, '[SECURITY] Blocked access attempt (UI Auth Disabled)');
-  return res
-    .status(403)
-    .send('Forbidden: External access is disabled when UI Authentication is off.');
+  // If IP isn't private, block immediately. No longer trusting ingress headers
+  // from public IPs as they can easily be spoofed via standard cURL requests.
+  if (!isPrivate) {
+    addLog(getSession('default'), `Blocked access attempt from public IP: ${ip}`, 'warning');
+    logger.warn({ ip, headers: req.headers }, '[SECURITY] Blocked access attempt (UI Auth Disabled)');
+    return res
+      .status(403)
+      .send('Forbidden: External access is disabled when UI Authentication is off.');
+  }
+
+  return next();
 };
 
 export const authMiddleware = (req, res, next) => {

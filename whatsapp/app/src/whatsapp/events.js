@@ -95,7 +95,11 @@ export async function checkSystemUpdates(session) {
 }
 
 export async function monitorHACore(session) {
-  setInterval(async () => {
+  if (session.haMonitorInterval) {
+    clearInterval(session.haMonitorInterval);
+  }
+
+  session.haMonitorInterval = setInterval(async () => {
     const haVersions = await fetchHAVersions(true);
     const isOnline = haVersions.core !== 'Unknown';
 
@@ -107,9 +111,9 @@ export async function monitorHACore(session) {
       notifyAdmins(
         session,
         `🔴 *Home Assistant Core Unreachable*\n\n• *Status:* Bot can no longer reach HA Core.\n• *Note:* Automations are temporarily offline.`
-      ).catch(() => {});
+      ).catch((e) => logger.debug('Silent fail on HR monitor offline notify:', e.message));
     } else if (isOnline && SYSTEM_STATE.last_ha_online) {
-      await checkSystemUpdates(session);
+      await checkSystemUpdates(session).catch((e) => logger.debug('Silent fail on System Updates check:', e.message));
     }
   }, 30000);
 }
