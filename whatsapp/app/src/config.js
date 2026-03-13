@@ -22,7 +22,9 @@ function loadOrGenerateToken() {
       const token = fs.readFileSync(TOKEN_FILE, 'utf-8').trim();
       if (token) return token;
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
   // 3. Auto-generate a new token and persist it
   const newToken = crypto.randomUUID();
   try {
