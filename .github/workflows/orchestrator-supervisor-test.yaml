@@ -37,6 +37,11 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
+  HA_PORT: 7123
+  SUPERVISOR_STARTUP_TIMEOUT: 100
+  App_INSTALL_TIMEOUT: 300
+  App_START_TIMEOUT: 600
 
 concurrency:
   group: supervisor-test-${{ github.ref }}
@@ -44,11 +49,6 @@ concurrency:
 
 permissions:
   contents: read
-  DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
-  HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 100
-  App_INSTALL_TIMEOUT: 300
-  App_START_TIMEOUT: 600
 
 jobs:
   # Filter to only ingress-enabled Apps

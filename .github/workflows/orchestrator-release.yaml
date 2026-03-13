@@ -57,12 +57,6 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-permissions:
-  contents: write
-  packages: write
-  actions: write
-  pull-requests: read
   # Apps to ignore for auto-releases (Blacklist)
   AUTO_RELEASE_IGNORE: |
     sap-abap-cloud-dev
@@ -72,6 +66,12 @@ permissions:
 
   # Labels that block auto-release
   BLOCK_LABELS: breaking-change major no-release needs-review
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+  pull-requests: read
 
 jobs:
   # ================================================================================
