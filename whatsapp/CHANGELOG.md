@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.4.1 (2026-03-13)
+
+### 📦 Dependencies
+- Update events.js ([`2d379776`](https://github.com/FaserF/hassio-addons/commit/2d37977639682d87adfbcd7bba3dc35f3675034a))
+- Update index.js ([`ea9a0aa9`](https://github.com/FaserF/hassio-addons/commit/ea9a0aa98cea774c693add6539fbc116f9f2ebe1))
+- ⬆️ Update dependency eslint to v10.0.3 [skip-tests] ([`9600b912`](https://github.com/FaserF/hassio-addons/commit/9600b912eaf60cbcc4d0e1e5d3557e3a5dd5bd2b))
+
+### 🚀 Other
+- add missing translations & linter fixes ([`125eb268`](https://github.com/FaserF/hassio-addons/commit/125eb2687c6089ba0ef09cbcafd6b217442f24b3))
+- fix token generation ([`5e19f834`](https://github.com/FaserF/hassio-addons/commit/5e19f834d29526c5db89ff0344ddf7c62d91d9bd))
+- small fixes ([`ede97d87`](https://github.com/FaserF/hassio-addons/commit/ede97d87442adae5d68fdae6aab93ddec87f0499))
+- redact username in webhook ([`55e77fa6`](https://github.com/FaserF/hassio-addons/commit/55e77fa6da8765e760e1730ac31b85622e368171))
+- improved options handling ([`aa4c3f25`](https://github.com/FaserF/hassio-addons/commit/aa4c3f25e57c90f05172b755a831594ac636142e))
+- refactor index.js for maintainability ([`afe87306`](https://github.com/FaserF/hassio-addons/commit/afe87306fed869096f4881cc04d9d41ab3ac48eb))
+- Improved bot & admin messages #671 ([`ef24ff09`](https://github.com/FaserF/hassio-addons/commit/ef24ff099e99a63c821687a975c9dcc41779a5af))
+- add dark mode support for dashboard ([`2b84f0b2`](https://github.com/FaserF/hassio-addons/commit/2b84f0b21f8a14b4e3209b72a4035b723d32be6e))
+- small fix ([`913267d0`](https://github.com/FaserF/hassio-addons/commit/913267d07ee175c3b090de681ed4d7a0ac3ce6d6))
+
+
 ## 1.4.0 (2026-03-12)
 
 ### ✨ Features
