@@ -861,6 +861,76 @@ function getSession(rawSessionId) {
   return sessions.get(sessionId);
 }
 
+/**
+ * Removes a session and its data completely.
+ */
+async function deleteSession(sessionId) {
+  const session = sessions.get(sessionId);
+  if (session && session.sock) {
+    try {
+      session.sock.logout();
+      session.sock.ev.removeAllListeners();
+      session.sock.end(new Error('Session deleted'));
+    } catch (e) {
+      logger.debug({ sessionId, error: e.message }, 'Error closing socket during delete');
+    }
+  }
+
+  sessions.delete(sessionId);
+
+  const authDir = getAuthDir(sessionId);
+  if (fs.existsSync(authDir) && sessionId !== 'default') {
+    logger.info({ sessionId, authDir }, '🗑️ Deleting session directory...');
+    fs.rmSync(authDir, { recursive: true, force: true });
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Background task to clean up stale sessions.
+ * A session is stale if it hasn't been used for 30 days and has no active connection.
+ */
+function startSessionCleanupTask() {
+  const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+  const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+  setInterval(async () => {
+    logger.info('🧹 Running session cleanup task...');
+    const now = Date.now();
+
+    // 1. Check in-memory sessions
+    for (const [id, session] of sessions.entries()) {
+      if (id === 'default') continue;
+      if (session.isConnected) continue;
+
+      const lastActivity = Math.max(session.lastInterestTime, session.stats.last_received_time || 0);
+      if (now - lastActivity > STALE_THRESHOLD) {
+        logger.info({ sessionId: id }, '🧹 Removing stale in-memory session');
+        await deleteSession(id);
+      }
+    }
+
+    // 2. Check disk sessions that aren't in memory
+    const sessionsDir = path.join(DATA_DIR, 'sessions');
+    if (fs.existsSync(sessionsDir)) {
+      const sessionDirs = fs.readdirSync(sessionsDir);
+      for (const sDir of sessionDirs) {
+        if (sessions.has(sDir)) continue;
+
+        const fullPath = path.join(sessionsDir, sDir);
+        const stats = fs.statSync(fullPath);
+        if (now - stats.mtimeMs > STALE_THRESHOLD) {
+          logger.info({ sessionId: sDir }, '🧹 Removing stale session directory from disk');
+          fs.rmSync(fullPath, { recursive: true, force: true });
+        }
+      }
+    }
+  }, CLEANUP_INTERVAL);
+}
+
+startSessionCleanupTask();
+
 function addLog(session, msg, type = 'info') {
   const timestamp = formatHATime(new Date());
   session.connectionLogs.unshift({ timestamp, msg, type });
@@ -1315,6 +1385,15 @@ async function connectToWhatsApp(sessionId = 'default') {
         // Only if we were previously online or just started
         SYSTEM_STATE.last_whatsapp_online = Date.now();
         saveSystemState();
+        logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
+
+        notifyAdmins(
+          session,
+          `🔴 *WhatsApp Disconnected*\n\n` +
+            `• *Session:* \`${sessionId}\`\n` +
+            `• *Reason:* ${reason}\n` +
+            `• *Status:* The bot is attempting to reconnect.`
+        ).catch(() => {});
       }
 
       if (isLoggedOut) {
@@ -1323,6 +1402,11 @@ async function connectToWhatsApp(sessionId = 'default') {
         session.firstFailureTime = null;
         addLog(session, 'Session logged out. Clean up metadata required.', 'error');
         logger.error({ sessionId }, `Logged out. Please delete ${sessionAuthDir} to re-pair.`);
+
+        if (sessionId !== 'default') {
+          logger.info({ sessionId }, 'Auto-cleaning logged out session...');
+          deleteSession(sessionId);
+        }
       } else {
         session.disconnectReason = 'connection_error';
         session.reconnectAttempts += 1;
@@ -1374,6 +1458,10 @@ async function connectToWhatsApp(sessionId = 'default') {
         const durationStr = formatDuration(downtime);
         const timestamp = new Date().toLocaleString();
 
+        // Clear BEFORE notifying to prevent double-trigger from other sessions
+        SYSTEM_STATE.last_whatsapp_online = null;
+        saveSystemState();
+
         if (downtime > NOTIFY_RESTORE_THRESHOLD) {
           notifyAdmins(
             session,
@@ -1388,8 +1476,6 @@ async function connectToWhatsApp(sessionId = 'default') {
             'Connection restored quickly - skipping admin notification'
           );
         }
-        SYSTEM_STATE.last_whatsapp_online = null;
-        saveSystemState();
       }
 
       // Start background monitors on first open
