@@ -1,3 +1,0 @@
-# Lychee Ignore File
-# Ignore Home Assistant redirect links as they are handled dynamically and often return 404 to crawlers.
-https://my.home-assistant.io/redirect/
