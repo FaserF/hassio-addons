@@ -11,14 +11,14 @@ import {
   startSessionCleanupTask,
   getSession,
   sessions,
-  connectToWhatsApp,
   getAuthDir,
+  deleteSession,
 } from './src/session.js';
 import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
 import { saveSystemState, SYSTEM_STATE } from './src/state.js';
-import { publishMDNS } from './src/whatsapp/connection.js';
+import { publishMDNS, connectToWhatsApp } from './src/whatsapp/connection.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -72,7 +72,7 @@ app.listen(PORT, '0.0.0.0', () => {
   }
 
   // Start background tasks
-  startSessionCleanupTask(connectToWhatsApp);
+  startSessionCleanupTask(deleteSession);
 });
 
 async function handleShutdown(signal) {
