@@ -18,7 +18,10 @@ export const ipFilterMiddleware = (req, res, next) => {
   // from public IPs as they can easily be spoofed via standard cURL requests.
   if (!isPrivate) {
     addLog(getSession('default'), `Blocked access attempt from public IP: ${ip}`, 'warning');
-    logger.warn({ ip, headers: req.headers }, '[SECURITY] Blocked access attempt (UI Auth Disabled)');
+    logger.warn(
+      { ip, headers: req.headers },
+      '[SECURITY] Blocked access attempt (UI Auth Disabled)'
+    );
     return res
       .status(403)
       .send('Forbidden: External access is disabled when UI Authentication is off.');

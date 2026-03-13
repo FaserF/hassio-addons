@@ -113,7 +113,9 @@ export async function monitorHACore(session) {
         `🔴 *Home Assistant Core Unreachable*\n\n• *Status:* Bot can no longer reach HA Core.\n• *Note:* Automations are temporarily offline.`
       ).catch((e) => logger.debug('Silent fail on HR monitor offline notify:', e.message));
     } else if (isOnline && SYSTEM_STATE.last_ha_online) {
-      await checkSystemUpdates(session).catch((e) => logger.debug('Silent fail on System Updates check:', e.message));
+      await checkSystemUpdates(session).catch((e) =>
+        logger.debug('Silent fail on System Updates check:', e.message)
+      );
     }
   }, 30000);
 }
