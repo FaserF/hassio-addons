@@ -110,6 +110,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       } else {
         session.disconnectReason = 'connection_error';
         session.reconnectAttempts += 1;
+        session.stats.totalReconnects += 1;
         if (!session.firstFailureTime) session.firstFailureTime = Date.now();
 
         const baseDelay = APPLY_BAILEYS_405_FIX ? 5000 : 3000;

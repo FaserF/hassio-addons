@@ -57,6 +57,8 @@ function renderDashboard(sessionId) {
                 --token-bg: #fff8c5;
                 --token-text: #9a6700;
                 --token-border: #d4a017;
+                --banner-bg: #fff8c5;
+                --banner-border: #d4a017;
                 --banner-text: #856404;
                 --btn-secondary-bg: #e9edef;
                 --btn-secondary-hover: #d1d7db;
@@ -116,7 +118,7 @@ function renderDashboard(sessionId) {
                 font-weight: 500;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
-            .warning-banner b { color: #533f03; }
+            .warning-banner b { color: var(--banner-text); }
             .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
             .header-actions { display: flex; align-items: center; gap: 1rem; }
             .theme-toggle {
@@ -214,7 +216,8 @@ function renderDashboard(sessionId) {
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
                 <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
                 <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 HA App Repo</a>
-                <a href="logs" target="_blank" class="sidebar-link">📄 Raw Backend Logs</a>
+                <a href="logs" target="_blank" class="sidebar-link">📄 Connection Logs</a>
+                <a id="full-logs-link" href="#" target="_top" class="sidebar-link">📋 Full System Logs</a>
             </div>
 
             <div style="margin-top: auto; padding-top: 1rem;">
@@ -543,6 +546,14 @@ function renderDashboard(sessionId) {
                                   intVer.toLowerCase().includes('pre');
                     document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
 
+                    // Update dynamic links
+                    const slug = data.addonSlug || 'unknown';
+                    const fullLogsLink = document.getElementById('full-logs-link');
+                    if (fullLogsLink) {
+                        // Point to the native HA Addon logs page
+                        fullLogsLink.href = '/config/app/' + slug + '/logs';
+                    }
+
                     // Update Session Switcher
                     const select = document.getElementById('session-select');
                     let options = '';
@@ -599,7 +610,7 @@ function renderDashboard(sessionId) {
                     document.getElementById('stat-received').textContent = data.stats.received;
                     document.getElementById('stat-failed').textContent = data.stats.failed;
                     document.getElementById('val-uptime').textContent = data.uptime;
-                    document.getElementById('val-reconnects').textContent = data.reconnectAttempts;
+                    document.getElementById('val-reconnects').textContent = data.stats?.totalReconnects ?? data.reconnectAttempts ?? 0;
 
                     // Update Lists
                     document.getElementById('list-sent').innerHTML = data.recentSent.length ?

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'node:crypto';
 import { logger } from './logger.js';
 
 export const PORT = process.env.PORT || 8066;
@@ -10,7 +11,29 @@ export const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
 export const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
 export const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 export const TOKEN_FILE = path.join(DATA_DIR, 'api_token.txt');
-export const API_TOKEN = process.env.API_TOKEN || '';
+
+// --- API Token: load from env, file, or auto-generate ---
+function loadOrGenerateToken() {
+  // 1. Prefer environment variable
+  if (process.env.API_TOKEN) return process.env.API_TOKEN;
+  // 2. Try loading from persistent file
+  try {
+    if (fs.existsSync(TOKEN_FILE)) {
+      const token = fs.readFileSync(TOKEN_FILE, 'utf-8').trim();
+      if (token) return token;
+    }
+  } catch { /* fall through */ }
+  // 3. Auto-generate a new token and persist it
+  const newToken = crypto.randomUUID();
+  try {
+    fs.writeFileSync(TOKEN_FILE, newToken, 'utf-8');
+    logger.info('🔑 Generated new API token and saved to disk.');
+  } catch (e) {
+    logger.warn({ error: e.message }, '⚠️ Could not persist API token to disk.');
+  }
+  return newToken;
+}
+export const API_TOKEN = loadOrGenerateToken();
 
 // Ensure data root exists
 if (IS_WIN && !fs.existsSync(DATA_DIR)) {
@@ -32,6 +55,7 @@ export const WELCOME_MESSAGE_ENABLED = process.env.WELCOME_MESSAGE_ENABLED !== '
 export const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATIONS_ENABLED !== 'false';
 
 export const ADDON_VERSION = process.env.ADDON_VERSION || 'Unknown';
+export const ADDON_SLUG = process.env.ADDON_SLUG || 'Unknown';
 export const INTEGRATION_VERSION = process.env.INTEGRATION_VERSION || 'Unknown';
 
 // --- Debugging Flags ---

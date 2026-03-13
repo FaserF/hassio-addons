@@ -28,6 +28,7 @@ import {
   MARK_ONLINE,
   SHOULD_RESET,
   PORT,
+  ADDON_SLUG,
 } from '../config.js';
 import {
   WEBHOOK_ENABLED,
@@ -595,6 +596,7 @@ export function registerAPIRoutes(app) {
       recentFailures: (session.recentFailures || []).slice(0, 5),
       nodeVersion: process.version,
       addonVersion: ADDON_VERSION,
+      addonSlug: ADDON_SLUG,
       integrationVersion: INTEGRATION_VERSION,
       baileysVersion: BAILEYS_VERSION,
       webhookEnabled: WEBHOOK_ENABLED,

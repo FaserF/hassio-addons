@@ -202,6 +202,7 @@ SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
 export ADDON_VERSION="${VERSION}"
+export ADDON_SLUG="${SLUG}"
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
