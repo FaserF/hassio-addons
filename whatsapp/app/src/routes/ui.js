@@ -348,6 +348,9 @@ function renderDashboard(sessionId) {
                         <button class="btn btn-danger" onclick="clearLogs()">
                             🧹 Clear Logs
                         </button>
+                        <button class="btn btn-danger" onclick="logoutSession()" style="grid-column: 1 / -1; background: var(--danger); color: white;">
+                            🚫 Logout & Hard Reset
+                        </button>
                     </div>
                     <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
                         Restarting will attempt a fresh connection without deleting credentials.
@@ -487,6 +490,23 @@ function renderDashboard(sessionId) {
                     }
                 } catch (e) {
                     alert('Failed to restart session: ' + e.message);
+                }
+            }
+
+            async function logoutSession() {
+                if (!confirm('WARNING: This will log you out and DELETE ALL authentication data for this session. You will need to scan the QR code again. Continue?')) return;
+                try {
+                    const response = await fetch(basePath + 'api/session', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: currentSession })
+                    });
+                    if (response.ok) {
+                        alert('Session logged out and cleared.');
+                        updateDashboard();
+                    }
+                } catch (e) {
+                    alert('Logout failed: ' + e.message);
                 }
             }
 

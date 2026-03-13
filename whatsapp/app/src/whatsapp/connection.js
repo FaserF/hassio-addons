@@ -22,7 +22,6 @@ import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } 
 import { PORT } from '../config.js';
 
 import { BAILEYS_VERSION } from '../config.js';
-import { delay } from '@whiskeysockets/baileys';
 const BAILEYS_405_AFFECTED_VERSION = '7.0.0-rc.9';
 const BAILEYS_405_VERSION_OVERRIDE = [2, 3000, 1033893291];
 const APPLY_BAILEYS_405_FIX = BAILEYS_VERSION === BAILEYS_405_AFFECTED_VERSION;
@@ -33,7 +32,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
   const now = Date.now();
-  const isInterested = now - session.lastInterestTime < 60000;
+  const isInterested = sessionId === 'default' || (now - session.lastInterestTime < 60000);
 
   if (!hasCreds && !isInterested) {
     logger.info({ sessionId }, '💤 No credentials and no active interest. Skipping connection.');
@@ -42,42 +41,60 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     return;
   }
 
-  addLog(session, `Starting request for session: ${sessionId}...`, 'info');
+  addLog(session, `Starting connection request for session: ${sessionId}...`, 'info');
   const { state, saveCreds } = await useMultiFileAuthState(sessionAuthDir);
 
-  session.sock = makeWASocket({
-    auth: state,
-    logger: logger.child({ module: `baileys-${sessionId}` }, { level: 'warn' }),
-    browser: Browsers.macOS('Chrome'),
-    ...(APPLY_BAILEYS_405_FIX && { version: BAILEYS_405_VERSION_OVERRIDE }),
-    syncFullHistory: false,
-    markOnlineOnConnect: MARK_ONLINE,
+  try {
+    session.sock = makeWASocket({
+      auth: state,
+      logger: logger.child({ module: `baileys-${sessionId}` }, { level: 'warn' }),
+      browser: Browsers.ubuntu('Chrome'),
+      ...(APPLY_BAILEYS_405_FIX && { version: BAILEYS_405_VERSION_OVERRIDE }),
+      syncFullHistory: false,
+      markOnlineOnConnect: MARK_ONLINE,
 
-    keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
-    connectTimeoutMs: 90000,
-    defaultQueryTimeoutMs: 90000,
-    retryRequestDelayMs: 5000,
-    getMessage: async (key) => {
-      if (session.messageStore.has(key.id)) {
-        return session.messageStore.get(key.id).message;
-      }
-      return undefined;
-    },
-  });
+      keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,
+      connectTimeoutMs: 90000,
+      defaultQueryTimeoutMs: 90000,
+      retryRequestDelayMs: 5000,
+      getMessage: async (key) => {
+        if (session.messageStore.has(key.id)) {
+          return session.messageStore.get(key.id).message;
+        }
+        return undefined;
+      },
+    });
+  } catch (err) {
+    logger.error({ sessionId, error: err.message }, '💥 Failed to initialize WASocket');
+    addLog(session, `Failed to initialize WhatsApp: ${err.message}`, 'error');
+    return;
+  }
 
   bindStore(session, session.sock.ev);
   session.sock.ev.on('creds.update', saveCreds);
 
   const sock = session.sock;
-  sock.ev.on('connection.update', async (update) => {
-    if (session.sock !== sock) return;
+  logger.info({ sessionId }, '📡 Attaching connection listeners...');
 
+  sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
+    logger.info({ sessionId, connection, hasQR: !!qr }, '🔄 connection.update');
+    
+    if (session.sock !== sock) {
+      logger.debug({ sessionId }, 'Old socket event received, ignoring');
+      return;
+    }
 
     if (qr) {
-      logger.info({ sessionId }, 'QR Code received');
-      addLog(session, 'QR Code generated. Waiting for scan...', 'success');
-      session.currentQR = await QRCode.toDataURL(qr);
+      logger.info({ sessionId }, '✨ QR Code received, converting to DataURL...');
+      try {
+        session.currentQR = await QRCode.toDataURL(qr);
+        logger.info({ sessionId }, '✅ QR Code DataURL generated');
+        addLog(session, 'QR Code generated. Please scan to connect.', 'success');
+      } catch (err) {
+        logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
+        addLog(session, 'Failed to process QR Code. Check logs.', 'error');
+      }
     }
 
     if (connection === 'close') {

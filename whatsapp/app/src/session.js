@@ -147,15 +147,15 @@ export function signalInterest(sessionId, connectFn) {
   session.lastInterestTime = now;
 
   if (
-    (!alreadyInterested || !session.sock) &&
+    (!alreadyInterested || !session.sock || sessionId === 'default') &&
     !session.isConnected &&
     (!session.sock || session.sock.ws?.isClosed)
   ) {
     const authDir = getAuthDir(sessionId);
     const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
 
-    if (!hasCreds) {
-      logger.info({ sessionId }, '🎯 Interest signaled for unauthenticated session - starting...');
+    if (!hasCreds || (sessionId === 'default' && !session.sock)) {
+      logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
       addLog(session, 'Interest signaled - initiating connection...', 'info');
       connectFn(sessionId, sessions, getSession).catch((err) => {
         logger.error({ error: err.message, sessionId }, 'Failed to start WhatsApp connection');
