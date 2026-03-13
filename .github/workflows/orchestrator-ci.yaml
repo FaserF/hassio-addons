@@ -42,11 +42,11 @@ jobs:
             });
 
             const signature = "<!-- ci-start-comment -->";
-            const body = `## 🚀 CI Build Starting\n\nI'm now running the CI checks for this PR. Please wait for the results below.\n\n${signature}`;
+            const body = ## 🚀 CI Build Starting\n\nI'm now running the CI checks for this PR. Please wait for the results below.\n\n${signature};
             const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
 
             if (existingComment) {
-                console.log(`Updating existing CI start comment ${existingComment.id}...`);
+                console.log(Updating existing CI start comment ${existingComment.id}...);
                 await github.rest.issues.updateComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -520,10 +520,10 @@ jobs:
             const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
 
             // Construct workflow run URL
-            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const workflowRunUrl = https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId};
 
             let summary = "## 🛡️ Platinum Compliance Issues\n\n";
-            summary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+            summary += > ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n;
             summary += "The following Apps failed compliance checks:\n\n";
             let hasContent = false;
             let totalIssues = 0;
@@ -544,7 +544,7 @@ jobs:
 
                    // Filter out success reports that were accidentally uploaded
                    if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) {
-                       console.log(`Report for ${AppName} contains success message. Skipping detail block.`);
+                       console.log(Report for ${AppName} contains success message. Skipping detail block.);
                        continue;
                    }
 
@@ -558,28 +558,28 @@ jobs:
                    }
                    totalIssues++;
 
-                   summary += `<details>\n<summary><strong>${AppName}</strong>: ❌ Issues Found</summary>\n\n\`\`\`\n${displayContent}\n\`\`\`\n</details>\n\n`;
+                   summary += <details>\n<summary><strong>${AppName}</strong>: ❌ Issues Found</summary>\n\n\\\\n${displayContent}\n\\\\n</details>\n\n;
                    hasContent = true;
                 }
             }
 
             // AI-optimized Platinum Compliance Summary
-            summary += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
-            summary += `> **Instructions for AI**: Fix all Platinum compliance issues below.\n\n`;
+            summary += <\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n;
+            summary += > **Instructions for AI**: Fix all Platinum compliance issues below.\n\n;
 
-            summary += "```yaml\n";
+            summary += "yaml\n";
             summary += "# Platinum Compliance Issues for AI Processing\n";
-            summary += `total_Apps_with_issues: ${totalIssues}\n\n`;
+            summary += total_Apps_with_issues: ${totalIssues}\n\n;
 
             if (missingHealthchecks > 0) {
                 summary += "healthcheck_issues:\n";
                 summary += "  count: " + missingHealthchecks + "\n";
                 summary += "  Apps:\n";
                 for (const App of AppsWithHealthcheckIssue) {
-                    summary += `    - App: "${App}"\n`;
-                    summary += `      file: "${App}/Dockerfile"\n`;
-                    summary += `      fix: "Add HEALTHCHECK instruction before CMD/ENTRYPOINT"\n`;
-                    summary += `      example: 'HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://127.0.0.1:PORT/health || exit 1'\n`;
+                    summary +=     - App: "${App}"\n;
+                    summary +=       file: "${App}/Dockerfile"\n;
+                    summary +=       fix: "Add HEALTHCHECK instruction before CMD/ENTRYPOINT"\n;
+                    summary +=       example: 'HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://127.0.0.1:PORT/health || exit 1'\n;
                 }
             }
 
@@ -588,10 +588,10 @@ jobs:
                 summary += "  count: " + missingLogos + "\n";
                 summary += "  Apps:\n";
                 for (const App of AppsWithLogoIssue) {
-                    summary += `    - App: "${App}"\n`;
-                    summary += `      missing_file: "${App}/logo.png"\n`;
-                    summary += `      requirements: "500x500px PNG with transparent background"\n`;
-                    summary += `      action: "Generate or provide logo.png image"\n`;
+                    summary +=     - App: "${App}"\n;
+                    summary +=       missing_file: "${App}/logo.png"\n;
+                    summary +=       requirements: "500x500px PNG with transparent background"\n;
+                    summary +=       action: "Generate or provide logo.png image"\n;
                 }
             }
 
@@ -606,7 +606,7 @@ jobs:
             summary += "  - OCI labels (org.opencontainers.image.*)\n";
             summary += "  - S6 Overlay integration\n";
             summary += "  - Official base image (ghcr.io/hassio-addons/base:19.0.0)\n";
-            summary += "```\n";
+            summary += "\n";
             summary += "\n</details>\n\n";
 
             summary += "💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
@@ -625,7 +625,7 @@ jobs:
 
                 for (const comment of previousComments) {
                     try {
-                        await github.graphql(`
+                        await github.graphql(
                             mutation($subjectId: ID!) {
                                 minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
                                     minimizedComment {
@@ -633,9 +633,9 @@ jobs:
                                     }
                                 }
                             }
-                        `, { subjectId: comment.node_id });
+                        , { subjectId: comment.node_id });
                     } catch (error) {
-                        console.error(`Failed to minimize comment ${comment.id}:`, error);
+                        console.error(Failed to minimize comment ${comment.id}:, error);
                     }
                 }
 
@@ -688,7 +688,7 @@ jobs:
                 const previousComments = comments.filter(c => c.user.type === 'Bot' && signatures.some(s => c.body.includes(s)));
                 for (const comment of previousComments) {
                     try {
-                        await github.graphql(`
+                        await github.graphql(
                             mutation($subjectId: ID!) {
                                 minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
                                     minimizedComment {
@@ -696,7 +696,7 @@ jobs:
                                     }
                                 }
                             }
-                        `, { subjectId: comment.node_id });
+                        , { subjectId: comment.node_id });
                     } catch (error) { console.error(error); }
                 }
             }
@@ -721,7 +721,7 @@ jobs:
               page++;
             }
 
-            console.log(`Found ${allJobs.length} total jobs in workflow run`);
+            console.log(Found ${allJobs.length} total jobs in workflow run);
 
             // Get jobs that failed directly (failure, cancelled, timed_out)
             const failedJobs = allJobs.filter(j =>
@@ -739,7 +739,7 @@ jobs:
 
             // Combine both for reporting
             const allProblematicJobs = [...failedJobs, ...jobsWithHiddenFailures];
-            console.log(`Found ${allProblematicJobs.length} problematic jobs (${failedJobs.length} failed, ${jobsWithHiddenFailures.length} with hidden failures)`);
+            console.log(Found ${allProblematicJobs.length} problematic jobs (${failedJobs.length} failed, ${jobsWithHiddenFailures.length} with hidden failures));
             if (allProblematicJobs.length === 0) return;
 
             // Filter out Compliance-only failures (handled by Platinum Report)
@@ -758,7 +758,7 @@ jobs:
                 return !allCompliance;
             });
 
-            console.log(`After filtering Compliance-only: ${nonComplianceJobs.length} jobs with non-Compliance failures`);
+            console.log(After filtering Compliance-only: ${nonComplianceJobs.length} jobs with non-Compliance failures);
 
             // If all failures are Compliance-related, skip this report (Platinum Report handles it)
             if (nonComplianceJobs.length === 0) {
@@ -773,7 +773,7 @@ jobs:
                 const previousComments = comments.filter(c => c.user.type === 'Bot' && c.body.includes(reportSignature));
                 for (const comment of previousComments) {
                     try {
-                        await github.graphql(`
+                        await github.graphql(
                             mutation($subjectId: ID!) {
                                 minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
                                     minimizedComment {
@@ -781,7 +781,7 @@ jobs:
                                     }
                                 }
                             }
-                        `, { subjectId: comment.node_id });
+                        , { subjectId: comment.node_id });
                     } catch (error) { console.error(error); }
                 }
                 return;
@@ -801,7 +801,7 @@ jobs:
                     // Updating is cleaner for the timeline.
                     // But minimizing and posting new ensures it's at the bottom.
                     // Improving logic: Minimize OLD ones, post NEW one.
-                    await github.graphql(`
+                    await github.graphql(
                         mutation($subjectId: ID!) {
                             minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
 
@@ -810,16 +810,16 @@ jobs:
                                 }
                             }
                         }
-                    `, { subjectId: comment.node_id });
+                    , { subjectId: comment.node_id });
                 } catch (error) { console.error(error); }
             }
 
             // Construct workflow run URL
-            const workflowRunUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const workflowRunUrl = https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId};
 
             let report = "## ❌ General CI Failure Report\n\n";
-            report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
-            report += `Found **${nonComplianceJobs.length}** failed jobs:\n\n`;
+            report += > ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n;
+            report += Found **${nonComplianceJobs.length}** failed jobs:\n\n;
 
             // Failed Jobs List (excluding Compliance) - with clickable links
             report += "| Job | Step | Link |\n|---|---|---|\n";
@@ -847,14 +847,14 @@ jobs:
                     const stepName = failedSteps.length > 0 ? failedSteps[0].name :
                                     (job.conclusion === 'cancelled' ? 'Job Cancelled' :
                                      job.conclusion === 'timed_out' ? 'Job Timed Out' : 'Unknown Step');
-                    const jobLink = `[${job.name}](${job.html_url})`;
-                    report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+                    const jobLink = [${job.name}](${job.html_url});
+                    report += | ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n;
                 } else {
                     // Show all non-Compliance failed steps
-                    const jobLink = `[${job.name}](${job.html_url})`;
+                    const jobLink = [${job.name}](${job.html_url});
                     for (const failedStep of nonComplianceSteps) {
                         const stepName = failedStep.name || "Unknown Step";
-                        report += `| ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n`;
+                        report += | ${jobLink} | ${stepName} | [View Logs](${job.html_url}) |\n;
 
                         // Categorize Failure (excluding Compliance)
                         if (stepName.includes("Lint") || stepName.includes("Check") || stepName.includes("Prettier")) failureTypes.add("Linting/Static Analysis");
@@ -880,8 +880,8 @@ jobs:
             report += "\n";
 
             // Build comprehensive AI-optimized summary
-            report += `<\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n`;
-            report += `> **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n`;
+            report += <\u0064etails>\n<summary>🤖 <strong>AI Fix Instructions</strong></summary>\n\n;
+            report += > **Instructions for AI**: Fix all issues below. Run local verification after each fix.\n\n;
 
             // Group jobs by failure type for better AI processing
             const lintFailures = [];
@@ -934,28 +934,28 @@ jobs:
             }
 
             // AI-optimized structured output
-            report += "```yaml\n";
+            report += "yaml\n";
             report += "# CI Failure Analysis for AI Processing\n";
-            report += `total_failures: ${nonComplianceJobs.length}\n`;
-            report += `workflow_run: ${context.runId}\n\n`;
+            report += total_failures: ${nonComplianceJobs.length}\n;
+            report += workflow_run: ${context.runId}\n\n;
 
             if (lintFailures.length > 0) {
                 report += "lint_failures:\n";
                 report += "  # Fix with: .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App <name> -Fix -Tests ShellCheck,Hadolint\n";
                 for (const f of lintFailures) {
-                    report += `  - App: "${f.App}"\n`;
-                    report += `    step: "${f.stepName}"\n`;
-                    report += `    files_to_check:\n`;
+                    report +=   - App: "${f.App}"\n;
+                    report +=     step: "${f.stepName}"\n;
+                    report +=     files_to_check:\n;
                     if (f.stepName.includes("ShellCheck")) {
-                        report += `      - "${f.App}/**/*.sh"\n`;
-                        report += `      - "${f.App}/run.sh"\n`;
+                        report +=       - "${f.App}/**/*.sh"\n;
+                        report +=       - "${f.App}/run.sh"\n;
                     }
                     if (f.stepName.includes("Hadolint")) {
-                        report += `      - "${f.App}/Dockerfile"\n`;
+                        report +=       - "${f.App}/Dockerfile"\n;
                     }
                     if (f.stepName.includes("App Linter")) {
-                        report += `      - "${f.App}/config.yaml"\n`;
-                        report += `      - "${f.App}/build.yaml"\n`;
+                        report +=       - "${f.App}/config.yaml"\n;
+                        report +=       - "${f.App}/build.yaml"\n;
                     }
                 }
             }
@@ -965,14 +965,14 @@ jobs:
                 report += "  # Docker build errors - check Dockerfile syntax and base images\n";
                 report += "  # Common issues: ARG after FROM, missing packages, invalid base image\n";
                 for (const f of buildFailures) {
-                    report += `  - App: "${f.App}"\n`;
-                    report += `    files_to_fix:\n`;
-                    report += `      - "${f.App}/Dockerfile"\n`;
-                    report += `      - "${f.App}/build.yaml"  # Check build_from image\n`;
-                    report += `    common_fixes:\n`;
-                    report += `      - "Ensure ARG BUILD_FROM is first line after comments"\n`;
-                    report += `      - "Check base image exists: ghcr.io/hassio-addons/base:19.0.0"\n`;
-                    report += `      - "Verify all APK packages exist for Alpine 3.21"\n`;
+                    report +=   - App: "${f.App}"\n;
+                    report +=     files_to_fix:\n;
+                    report +=       - "${f.App}/Dockerfile"\n;
+                    report +=       - "${f.App}/build.yaml"  # Check build_from image\n;
+                    report +=     common_fixes:\n;
+                    report +=       - "Ensure ARG BUILD_FROM is first line after comments"\n;
+                    report +=       - "Check base image exists: ghcr.io/hassio-addons/base:19.0.0"\n;
+                    report +=       - "Verify all APK packages exist for Alpine 3.21"\n;
                 }
             }
 
@@ -981,9 +981,9 @@ jobs:
                 report += "  # Trivy found vulnerabilities - may need package updates\n";
                 report += "  # NOTE: Some vulnerabilities require upstream fixes (not auto-fixable)\n";
                 for (const f of securityFailures) {
-                    report += `  - App: "${f.App}"\n`;
-                    report += `    action: "Review Trivy output and update vulnerable packages"\n`;
-                    report += `    manual_review_required: true\n`;
+                    report +=   - App: "${f.App}"\n;
+                    report +=     action: "Review Trivy output and update vulnerable packages"\n;
+                    report +=     manual_review_required: true\n;
                 }
             }
 
@@ -992,17 +992,17 @@ jobs:
                 report += "  # Supervisor integration test failures - check App installation/startup\n";
                 report += "  # Common issues: App not detected, installation failed, startup timeout\n";
                 for (const f of supervisorFailures) {
-                    report += `  - App: "${f.App}"\n`;
-                    report += `    step: "${f.stepName}"\n`;
-                    report += `    files_to_check:\n`;
-                    report += `      - "${f.App}/config.yaml"  # Check ingress, ports, schema\n`;
-                    report += `      - "${f.App}/Dockerfile"  # Check healthcheck, base image\n`;
-                    report += `      - "${f.App}/rootfs/etc/services.d/*/run"  # Check service scripts\n`;
-                    report += `    common_fixes:\n`;
-                    report += `      - "Verify ingress: true in config.yaml"\n`;
-                    report += `      - "Check that service scripts use correct shebang (#!/usr/bin/with-contenv bashio)"\n`;
-                    report += `      - "Ensure HEALTHCHECK is present in Dockerfile"\n`;
-                    report += `      - "Verify App slug matches directory name"\n`;
+                    report +=   - App: "${f.App}"\n;
+                    report +=     step: "${f.stepName}"\n;
+                    report +=     files_to_check:\n;
+                    report +=       - "${f.App}/config.yaml"  # Check ingress, ports, schema\n;
+                    report +=       - "${f.App}/Dockerfile"  # Check healthcheck, base image\n;
+                    report +=       - "${f.App}/rootfs/etc/services.d/*/run"  # Check service scripts\n;
+                    report +=     common_fixes:\n;
+                    report +=       - "Verify ingress: true in config.yaml"\n;
+                    report +=       - "Check that service scripts use correct shebang (#!/usr/bin/with-contenv bashio)"\n;
+                    report +=       - "Ensure HEALTHCHECK is present in Dockerfile"\n;
+                    report +=       - "Verify App slug matches directory name"\n;
                 }
             }
 
@@ -1010,17 +1010,17 @@ jobs:
                 report += "\nother_failures:\n";
                 report += "  # These require manual investigation\n";
                 for (const f of otherFailures) {
-                    report += `  - App: "${f.App}"\n`;
-                    report += `    step: "${f.stepName}"\n`;
-                    report += `    manual_review_required: true\n`;
+                    report +=   - App: "${f.App}"\n;
+                    report +=     step: "${f.stepName}"\n;
+                    report +=     manual_review_required: true\n;
                 }
             }
 
             report += "\n# Quick fix commands:\n";
             if (affectedApps.size > 0) {
                 const AppsList = Array.from(affectedApps).join('","');
-                report += `powershell: .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix\n`;
-                report += `bash: pwsh -File ./.scripts/verify_Apps/verify_test_Apps.ps1 -App "${AppsList}" -Fix\n`;
+                report += powershell: .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix\n;
+                report += bash: pwsh -File ./.scripts/verify_Apps/verify_test_Apps.ps1 -App "${AppsList}" -Fix\n;
             }
 
             report += "\n# Items NOT fixable by local script:\n";
@@ -1036,41 +1036,41 @@ jobs:
             }
             report += "  - Missing logo.png/icon.png (need to generate or provide images)\n";
             report += "  - Translation files (need manual creation in translations/en.yaml)\n";
-            report += "```\n";
+            report += "\n";
             report += "\n</details>\n\n";
 
             // Pre-calculate the test command
             let testsArg = "";
             if (specificTests.size > 0) {
-                testsArg = ` -Tests "${Array.from(specificTests).join('","')}"`;
+                testsArg =  -Tests "${Array.from(specificTests).join('","')}";
             }
 
             let testCommand = "";
             if (affectedApps.size > 0) {
                 const AppsList = Array.from(affectedApps).join('","');
-                testCommand = `.\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix${testsArg}`;
+                testCommand = .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App "${AppsList}" -Fix${testsArg};
             } else {
-                testCommand = `.\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App all -Fix${testsArg}`;
+                testCommand = .\\.scripts\\verify_Apps\\verify_test_Apps.ps1 -App all -Fix${testsArg};
             }
 
             // Local Test Command (expanded section)
-            report += `<details>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n`;
+            report += <details>\n<summary>💻 <strong>Local Test Command</strong></summary>\n\n;
             report += "Run this command locally to reproduce and fix issues:\n\n";
             report += "**PowerShell:**\n";
-            report += "```powershell\n";
+            report += "powershell\n";
             report += testCommand + "\n";
-            report += "```\n\n";
+            report += "\n\n";
 
             const bashCommand = "pwsh -File " + testCommand.replace(/\\/g, '/').replace(/^\.\\/, './');
             report += "**Bash:**\n";
-            report += "```bash\n";
+            report += "bash\n";
             report += bashCommand + "\n";
-            report += "```\n";
+            report += "\n";
             report += "\n</details>";
 
             // Link to Step Summary
             // workflowRunUrl is already defined in outer scope
-            report += `\n\n> 📊 **View Full Test Summary**: [GitHub Step Summary](${workflowRunUrl})\n\n`;
+            report += \n\n> 📊 **View Full Test Summary**: [GitHub Step Summary](${workflowRunUrl})\n\n;
 
             const signature = "<!-- general-ci-failure-report -->";
             const reportBody = signature + "\n" + report;
@@ -1088,15 +1088,15 @@ jobs:
 
             for (const comment of previousComments) {
                 try {
-                    await github.graphql(`
+                    await github.graphql(
                         mutation($subjectId: ID!) {
                             minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
                                 minimizedComment { isMinimized }
                             }
                         }
-                    `, { subjectId: comment.node_id });
+                    , { subjectId: comment.node_id });
                 } catch (error) {
-                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                    console.error(Failed to minimize comment ${comment.id}:, error);
                 }
             }
 
@@ -1204,7 +1204,7 @@ jobs:
 
             for (const comment of commentsToMinimize) {
                 try {
-                    await github.graphql(`
+                    await github.graphql(
                         mutation($subjectId: ID!) {
                             minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
                                 minimizedComment {
@@ -1212,9 +1212,9 @@ jobs:
                                 }
                             }
                         }
-                    `, { subjectId: comment.node_id });
+                    , { subjectId: comment.node_id });
                 } catch (error) {
-                    console.error(`Failed to minimize comment ${comment.id}:`, error);
+                    console.error(Failed to minimize comment ${comment.id}:, error);
                 }
             }
 
@@ -1234,7 +1234,7 @@ jobs:
                 // No CI ran - warn user
                 autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.\n> If this is unexpected, check for workflow configuration issues.";
             } else if (isMaintainer) {
-                autoMergeNote = "\n\n🚀 **Auto-merge will be enabled** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the `no-merge` label or run `gh pr merge --disable-auto`";
+                autoMergeNote = "\n\n🚀 **Auto-merge will be enabled** if branch protection rules are satisfied.\n\n> 🛑 To cancel: Add the no-merge label or run gh pr merge --disable-auto";
             }
 
             // Check for unresolved errors from previous runs
@@ -1308,13 +1308,12 @@ jobs:
             const startComment = comments.find(c => c.user.type === 'Bot' && c.body.includes("<!-- ci-start-comment -->"));
             if (startComment) {
                 try {
-                    await github.graphql(`
+                    await github.graphql(
                         mutation($subjectId: ID!) {
                             minimizeComment(input: {subjectId: $subjectId, classifier: RESOLVED}) {
                                 minimizedComment { isMinimized }
                             }
                         }
-                    `, { subjectId: startComment.node_id });
+                    , { subjectId: startComment.node_id });
                 } catch (e) { console.log("Could not minimize start comment"); }
             }
-

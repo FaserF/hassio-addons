@@ -41,4 +41,3 @@ jobs:
           # Only commit if changed
           git diff --staged --quiet || git commit -m "chore(whatsapp): update Rocket.Chat bridge zip [skip ci]"
           git push
-

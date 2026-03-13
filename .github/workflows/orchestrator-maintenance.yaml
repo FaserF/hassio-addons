@@ -137,4 +137,3 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: mark ${{ github.event.inputs.App }} as ${{ github.event.inputs.state }} [skip ci]"
-

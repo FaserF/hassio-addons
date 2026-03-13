@@ -441,4 +441,3 @@ jobs:
               issue_number: prNumber,
               body: "🚀 **Auto-merge enabled.**\n\nThe PR will be merged automatically once all branch protection rules are satisfied."
             });
-

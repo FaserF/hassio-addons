@@ -35,5 +35,14 @@ configuration:
   mark_online:
     name: "Mark Online"
     description: "Whether to mark the bot as online in WhatsApp."
+  admin_notifications_enabled:
+    name: "Admin Notifications"
+    description: "If enabled, the bot will send connection status and failure notifications to the listed admin numbers."
+  admin_numbers:
+    name: "Admin Phone Numbers"
+    description: "A comma-separated list of phone numbers (with country code, e.g. 491701234567) that should receive admin notifications."
+  welcome_message_enabled:
+    name: "Welcome Message"
+    description: "Whether to send a one-time welcome message to users who message the bot for the first time."
 network:
   8066/tcp: Internal API port the integration connects to.

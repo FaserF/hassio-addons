@@ -408,4 +408,3 @@ jobs:
                     core.setFailed("Failed to set labels: " + error.message);
                 }
             }
-
