@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.3 (2026-03-14)
+
+### 📦 Dependencies
+- ⬆️ Update dependency globals to v17.4.0 [skip-tests] ([`7f849b46`](https://github.com/FaserF/hassio-addons/commit/7f849b46f81550326e7d9579f1494588029ca2a1))
+- ⬆️ Update dependency fastapi to v0.135.1 [skip-tests] ([`2e785b19`](https://github.com/FaserF/hassio-addons/commit/2e785b198a961c2ecb2e1eeb4336981954f05b82))
+
+### 🚀 Other
+- use trust proxy ([`ee0563c4`](https://github.com/FaserF/hassio-addons/commit/ee0563c483227cff436012bd9fbb80f8348a88f9))
+- fix request denied for too many requests #674 ([`549407c6`](https://github.com/FaserF/hassio-addons/commit/549407c6484f6ceaf08d694d67c589e59273f41e))
+
+
 ## 1.4.2 (2026-03-14)
 
 ### 📦 Dependencies
