@@ -3,8 +3,8 @@
 ## 1.4.2 (2026-03-14)
 
 ### 📦 Dependencies
-- build(deps): bump file-type ([`3722ea7b`](https://github.com/FaserF/hassio-addons/commit/3722ea7b49f0af93417a379bd0717547e8c15433))
 
+- build(deps): bump file-type ([`3722ea7b`](https://github.com/FaserF/hassio-addons/commit/3722ea7b49f0af93417a379bd0717547e8c15433))
 
 ## 1.4.1 (2026-03-13)
 
