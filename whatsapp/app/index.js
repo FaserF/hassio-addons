@@ -23,6 +23,7 @@ import fs from 'fs';
 import path from 'path';
 
 const app = express();
+app.set('trust proxy', true);
 
 if (SHOULD_RESET) {
   logger.warn('⚠️ RESET_SESSION ENABLED - Clearing authentication data...');
