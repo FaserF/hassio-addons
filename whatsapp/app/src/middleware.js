@@ -100,6 +100,7 @@ export const uiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
+  validate: { trustProxy: false },
 });
 
 export const apiLimiter = rateLimit({
@@ -109,4 +110,5 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
+  validate: { trustProxy: false },
 });
