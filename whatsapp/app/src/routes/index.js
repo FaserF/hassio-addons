@@ -22,9 +22,9 @@ export function registerRoutes(app) {
   app.use('/logs', apiLimiter);
   app.use('/api', apiLimiter);
 
-  // Root UI
-  app.use('/', uiLimiter);
-
   registerAPIRoutes(app);
+
+  // Root UI - Apply limiter only to UI routes, after API routes are handled
+  app.use('/', uiLimiter);
   registerUIRoutes(app);
 }

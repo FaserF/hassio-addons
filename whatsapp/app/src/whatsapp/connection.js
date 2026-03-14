@@ -177,6 +177,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 /**
  * mDNS / Bonjour advertisement
  */
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function publishMDNS(name, attempt = 0) {
   try {
     const { Bonjour } = await import('bonjour-service');

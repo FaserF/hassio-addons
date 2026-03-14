@@ -81,3 +81,4 @@ validate_json.py
 *ruff*.txt
 *mypy*.txt
 *black*.txt
+whatsapp/app/eslint_errors.txt

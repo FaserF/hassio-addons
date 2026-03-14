@@ -137,6 +137,8 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     res.json({
       ...session.stats,
+      connected: session.isConnected,
+      disconnect_reason: session.isConnected ? null : session.disconnectReason,
       uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
     });
   });
@@ -565,9 +567,19 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.get('/health', (req, res) =>
-    res.status(200).json({ status: 'ok', service: 'whatsapp-homeassistant-app' })
-  );
+  app.get('/health', (req, res) => {
+    const mem = process.memoryUsage();
+    res.status(200).json({
+      status: 'ok',
+      service: 'whatsapp-homeassistant-app',
+      version: ADDON_VERSION,
+      uptime: Math.floor(process.uptime()),
+      memory: {
+        rss: Math.floor(mem.rss / 1024 / 1024) + ' MB',
+        heapUsed: Math.floor(mem.heapUsed / 1024 / 1024) + ' MB',
+      },
+    });
+  });
 
   // --- Dashboard and Settings API ---
   app.get('/api/dashboard', (req, res) => {

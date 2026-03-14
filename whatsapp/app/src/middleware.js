@@ -82,18 +82,31 @@ export const ingressPrefixMiddleware = (req, res, next) => {
   next();
 };
 
+const isPrivateIP = (ip) => {
+  if (!ip) return false;
+  let cleanIp = ip;
+  if (cleanIp.startsWith('::ffff:')) cleanIp = cleanIp.substr(7);
+  return (
+    cleanIp === '127.0.0.1' ||
+    cleanIp === '::1' ||
+    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(cleanIp)
+  );
+};
+
 export const uiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 300, // Reset to sensible default for external IPs
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
 });
 
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 60,
+  max: 60, // Reset to sensible default for external IPs
   message: 'Too many API requests from this IP, please try again after a minute',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
 });
