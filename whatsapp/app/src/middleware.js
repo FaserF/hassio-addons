@@ -91,7 +91,6 @@ const isPrivateIP = (ip) => {
     cleanIp === '::1' ||
     /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(cleanIp)
   );
-
 };
 
 export const uiLimiter = rateLimit({
@@ -104,7 +103,6 @@ export const uiLimiter = rateLimit({
   validate: { trustProxy: true },
 });
 
-
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 300, // Increased for frequent HA updates and media bursts
@@ -114,4 +112,3 @@ export const apiLimiter = rateLimit({
   skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
   validate: { trustProxy: true },
 });
-

@@ -29,4 +29,3 @@ export function registerRoutes(app) {
   app.get('/', uiLimiter);
   registerUIRoutes(app);
 }
-

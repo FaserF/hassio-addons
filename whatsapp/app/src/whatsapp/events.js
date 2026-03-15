@@ -34,9 +34,7 @@ function resolvePollVotes(pollUpdate, originalPoll) {
       pollUpdates: [pollUpdate],
     });
 
-    return votes
-      .filter((v) => v.voters.length > 0)
-      .map((v) => v.name);
+    return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
     logger.warn({ error: err.message }, 'Failed to resolve poll votes');
     return [];
@@ -263,7 +261,6 @@ export function handleIncomingMessages(session) {
           raw: msg,
           session_id: session.id,
         };
-
 
         triggerWebhook(event);
         handleFirstContact(session, event);
