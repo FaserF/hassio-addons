@@ -1,4 +1,4 @@
-import { downloadMediaMessage } from '@whiskeysockets/baileys';
+import { downloadMediaMessage, getAggregateVotesInPollMessage } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -21,6 +21,27 @@ import {
 import { addLog } from '../session.js';
 
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
+
+/**
+ * Resolves encrypted poll votes to human-readable option names.
+ */
+function resolvePollVotes(pollUpdate, originalPoll) {
+  if (!pollUpdate || !originalPoll) return [];
+
+  try {
+    const votes = getAggregateVotesInPollMessage({
+      message: originalPoll.message,
+      pollUpdates: [pollUpdate],
+    });
+
+    return votes
+      .filter((v) => v.voters.length > 0)
+      .map((v) => v.name);
+  } catch (err) {
+    logger.warn({ error: err.message }, 'Failed to resolve poll votes');
+    return [];
+  }
+}
 
 export function bindStore(session, ev) {
   ev.on('messages.upsert', ({ messages }) => {
@@ -59,8 +80,8 @@ export async function checkSystemUpdates(session) {
     );
   }
 
-  if (SYSTEM_STATE.last_ha_online) {
-    const downtime = Date.now() - SYSTEM_STATE.last_ha_online;
+  if (SYSTEM_STATE.last_ha_disconnect_time) {
+    const downtime = Date.now() - SYSTEM_STATE.last_ha_disconnect_time;
     const durationStr = formatDuration(downtime);
 
     if (haVersions.safe_mode) {
@@ -90,7 +111,7 @@ export async function checkSystemUpdates(session) {
   SYSTEM_STATE.last_integration_version = currentIntegrationVersion;
   SYSTEM_STATE.last_ha_version = currentHAVersion;
   SYSTEM_STATE.last_ha_safe_mode = haVersions.safe_mode;
-  SYSTEM_STATE.last_ha_online = null;
+  SYSTEM_STATE.last_ha_disconnect_time = null;
   saveSystemState();
 }
 
@@ -102,12 +123,12 @@ export async function monitorHACore(session) {
   session.haMonitorInterval = setInterval(async () => {
     // Only force refresh if HA is currently offline (to detect restoration quickly)
     // Otherwise use cached versions (15m TTL) to minimize Supervisor API noise.
-    const forceRefresh = !!SYSTEM_STATE.last_ha_online;
+    const forceRefresh = !!SYSTEM_STATE.last_ha_disconnect_time;
     const haVersions = await fetchHAVersions(forceRefresh);
     const isOnline = haVersions.core !== 'Unknown';
 
-    if (!isOnline && !SYSTEM_STATE.last_ha_online) {
-      SYSTEM_STATE.last_ha_online = Date.now();
+    if (!isOnline && !SYSTEM_STATE.last_ha_disconnect_time) {
+      SYSTEM_STATE.last_ha_disconnect_time = Date.now();
       saveSystemState();
       logger.warn('⚠️ HA Core is unreachable. Admin notification pending restore.');
 
@@ -115,7 +136,7 @@ export async function monitorHACore(session) {
         session,
         `🔴 *Home Assistant Core Unreachable*\n\n• *Status:* Bot can no longer reach HA Core.\n• *Note:* Automations are temporarily offline.`
       ).catch((e) => logger.debug('Silent fail on HR monitor offline notify:', e.message));
-    } else if (isOnline && SYSTEM_STATE.last_ha_online) {
+    } else if (isOnline && SYSTEM_STATE.last_ha_disconnect_time) {
       await checkSystemUpdates(session).catch((e) =>
         logger.debug('Silent fail on System Updates check:', e.message)
       );
@@ -155,14 +176,23 @@ export function handleIncomingMessages(session) {
           senderJid = remoteJidAlt;
         }
 
-        let senderNumber = senderJid.split('@')[0];
         const isGroup = senderJid.endsWith('@g.us');
         const messageType = Object.keys(msg.message || {})[0];
         let mediaUrl = null,
           mediaPath = null,
           mediaType = null,
           mimeType = null,
-          caption = null;
+          caption = null,
+          eventType = 'message',
+          vote = [];
+
+        if (messageType === 'pollUpdateMessage') {
+          eventType = 'poll_update';
+          const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
+          const originalPoll = session.messageStore.get(pollCreationId);
+          vote = resolvePollVotes(msg, originalPoll);
+          text = `[Poll Vote] ${vote.join(', ')}`;
+        }
 
         const supportedMediaTypes = [
           'imageMessage',
@@ -195,10 +225,11 @@ export function handleIncomingMessages(session) {
             }
           } catch (err) {
             text = `${text} (Media Download Failed)`;
-            trackFailure(session, senderNumber, `Media: ${messageType}`, err.message);
+            trackFailure(session, senderJid.split('@')[0], `Media: ${messageType}`, err.message);
           }
         }
 
+        const senderNumber = senderJid.split('@')[0];
         trackReceived(session, senderNumber, text);
         session.stats.last_received_message = maskData(text);
         session.stats.last_received_sender = maskData(senderNumber);
@@ -213,12 +244,16 @@ export function handleIncomingMessages(session) {
         ) {
           effectiveSenderJid = participant;
         }
-        senderNumber = effectiveSenderJid.split('@')[0];
+        const effectiveSenderNumber = effectiveSenderJid.split('@')[0];
 
         const event = {
+          id: msg.key.id,
+          type: eventType,
           content: text,
+          vote: vote,
           sender: senderJid,
-          sender_number: senderNumber,
+          from: senderJid,
+          sender_number: effectiveSenderNumber,
           is_group: isGroup,
           media_url: mediaUrl,
           media_path: mediaPath,
@@ -228,6 +263,7 @@ export function handleIncomingMessages(session) {
           raw: msg,
           session_id: session.id,
         };
+
 
         triggerWebhook(event);
         handleFirstContact(session, event);

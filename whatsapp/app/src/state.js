@@ -34,8 +34,8 @@ export let SYSTEM_STATE = {
   last_integration_version: INTEGRATION_VERSION || 'Unknown',
   last_ha_version: 'Unknown',
   last_ha_safe_mode: false,
-  last_whatsapp_online: null,
-  last_ha_online: null,
+  last_disconnect_time: null,
+  last_ha_disconnect_time: null,
   last_integration_online: null,
 };
 

@@ -85,8 +85,8 @@ async function handleShutdown(signal) {
       break;
     }
   }
-  if (anyConnected && !SYSTEM_STATE.last_whatsapp_online) {
-    SYSTEM_STATE.last_whatsapp_online = Date.now();
+  if (anyConnected && !SYSTEM_STATE.last_disconnect_time) {
+    SYSTEM_STATE.last_disconnect_time = Date.now();
     saveSystemState();
   }
   setTimeout(() => {

@@ -105,8 +105,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
       session.isConnected = false;
 
-      if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_whatsapp_online) {
-        SYSTEM_STATE.last_whatsapp_online = Date.now();
+      if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_disconnect_time) {
+        SYSTEM_STATE.last_disconnect_time = Date.now();
         saveSystemState();
         logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
@@ -155,16 +155,16 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
 
-      if (ADMIN_NOTIFICATIONS_ENABLED && SYSTEM_STATE.last_whatsapp_online) {
-        const downtime = Date.now() - SYSTEM_STATE.last_whatsapp_online;
+      if (ADMIN_NOTIFICATIONS_ENABLED && SYSTEM_STATE.last_disconnect_time) {
+        const downtime = Date.now() - SYSTEM_STATE.last_disconnect_time;
         if (downtime > NOTIFY_RESTORE_THRESHOLD) {
-          SYSTEM_STATE.last_whatsapp_online = null;
-          saveSystemState();
           notifyAdmins(
             session,
             `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}\n• *Status:* Bot is back online.`
           );
         }
+        SYSTEM_STATE.last_disconnect_time = null;
+        saveSystemState();
       }
 
       if (!session._monitorsStarted) {
