@@ -1,6 +1,6 @@
 ---
-name: Bash Script Executer
-version: 2.4.0
+name: Bash Script Executer (Edge)
+version: "2.4.1-dev-d7d58ed"
 slug: bashscriptexecuter
 description: >-
   Execute your own bash scripts inside this Homeassistant App environment.
@@ -8,7 +8,6 @@ url: https://github.com/FaserF/hassio-addons/tree/master/bash_script_executer
 arch:
   - aarch64
   - amd64
-image: ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}
 map:
   - share:rw
   - config:rw
