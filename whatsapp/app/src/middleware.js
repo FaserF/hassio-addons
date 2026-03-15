@@ -89,26 +89,29 @@ const isPrivateIP = (ip) => {
   return (
     cleanIp === '127.0.0.1' ||
     cleanIp === '::1' ||
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(cleanIp)
+    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(cleanIp)
   );
+
 };
 
 export const uiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300, // Reset to sensible default for external IPs
+  max: 1000, // Increased buffer for dashboard polling and multiple tabs
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
-  validate: { trustProxy: false },
+  validate: { trustProxy: true },
 });
+
 
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 60, // Reset to sensible default for external IPs
+  max: 300, // Increased for frequent HA updates and media bursts
   message: 'Too many API requests from this IP, please try again after a minute',
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
-  validate: { trustProxy: false },
+  validate: { trustProxy: true },
 });
+

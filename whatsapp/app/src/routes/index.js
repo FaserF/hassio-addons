@@ -11,6 +11,7 @@ export function registerRoutes(app) {
   app.use('/session', apiLimiter);
   app.use('/qr', apiLimiter);
   app.use('/status', apiLimiter);
+  app.use('/health', apiLimiter);
   app.use('/events', apiLimiter);
   app.use('/stats', apiLimiter);
   app.use('/send_', apiLimiter); // Matches send_message, send_image, etc.
@@ -25,6 +26,7 @@ export function registerRoutes(app) {
   registerAPIRoutes(app);
 
   // Root UI - Apply limiter only to UI routes, after API routes are handled
-  app.use('/', uiLimiter);
+  app.get('/', uiLimiter);
   registerUIRoutes(app);
 }
+
