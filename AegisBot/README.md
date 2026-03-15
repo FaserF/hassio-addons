@@ -79,6 +79,8 @@ log_level: info
 project_name: AegisBot
 reset_database: false
 secret_key: ''
+telegram_bot_token: ''
+telegram_bot_username: ''
 version: latest
 ```
 
