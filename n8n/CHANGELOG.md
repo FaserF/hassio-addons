@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.2 (2026-03-15)
+
+### 📦 Dependencies
+- ⬆️ Update dependency n8n to v2.11.4 [skip-tests] ([`b05c3d05`](https://github.com/FaserF/hassio-addons/commit/b05c3d05c25e91b948c88c773d992dc4d3cc228b))
+- ⬆️ Update dependency n8n to v2.9.2 [skip-tests] (#655) [skip-tests] ([`637a0aa8`](https://github.com/FaserF/hassio-addons/commit/637a0aa8dfcd82dff5e595162fec67d2e740e5e9))
+
+### 🚀 Other
+- security & docs improvements codeql ([`a4a06f09`](https://github.com/FaserF/hassio-addons/commit/a4a06f09bab3956a81fe1dc81bf3ce991e3c83d1))
+
+
 ## 1.2.1 (2026-02-23)
 
 ### 📦 Dependencies
