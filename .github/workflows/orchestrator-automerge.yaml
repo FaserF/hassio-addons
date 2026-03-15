@@ -21,7 +21,7 @@ jobs:
     # Only merges if CI succeeded (checked in steps)
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

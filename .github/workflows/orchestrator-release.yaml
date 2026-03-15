@@ -95,7 +95,7 @@ jobs:
       target_version: ${{ steps.detect.outputs.target_version }}
     steps:
       - name: ⤵️ Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -678,7 +678,7 @@ jobs:
         App: ${{ fromJson(needs.detect.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🕵️ App Linter
         uses: frenck/action-addon-linter@v2
         with:
@@ -729,7 +729,7 @@ jobs:
         App: ${{ fromJson(needs.detect.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -1216,7 +1216,7 @@ jobs:
       packages: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:

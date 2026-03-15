@@ -59,7 +59,7 @@ jobs:
           keep_minimum_runs: 5
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🚫 Retract Logic
         run: |
           echo "Retracting ${{ github.event.inputs.App }} version ${{ github.event.inputs.version }}"
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🏃 Run Move Script
         run: |
           python3 .scripts/move_unsupported.py
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🏃 Run Toggle Script
         run: |
           python3 .scripts/toggle_support.py "${{ github.event.inputs.App }}" "${{ github.event.inputs.state }}"
