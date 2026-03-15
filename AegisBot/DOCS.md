@@ -1,6 +1,6 @@
 # Home Assistant App: AegisBot
 
-Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
 for Home Assistant.
 
 ## About

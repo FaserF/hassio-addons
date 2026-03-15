@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.5.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-aegisbot)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+> Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
 
 ---
 

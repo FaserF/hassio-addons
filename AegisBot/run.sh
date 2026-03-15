@@ -310,6 +310,14 @@ fi
 PROJECT_NAME=$(bashio::config 'project_name')
 export PROJECT_NAME
 
+# Telegram Credentials
+if bashio::config.has_value 'telegram_bot_token'; then
+	export TELEGRAM_BOT_TOKEN=$(bashio::config 'telegram_bot_token')
+fi
+if bashio::config.has_value 'telegram_bot_username'; then
+	export TELEGRAM_BOT_USERNAME=$(bashio::config 'telegram_bot_username')
+fi
+
 # Debug Mode
 if bashio::config.true 'debug'; then
 	export DEBUG="true"
@@ -460,9 +468,6 @@ install_from_archive() {
 
 		bashio::log.info "Running 'npm install'..."
 		if npm install; then
-			bashio::log.info "Configuring relative paths for Ingress..."
-			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-			sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then
 				bashio::log.info "Frontend build successful. Installing..."
@@ -692,6 +697,8 @@ DATABASE_URL=${DATABASE_URL}
 DEBUG=${DEBUG}
 DEMO_MODE=${DEMO_MODE}
 DEMO_MODE_TYPE=${DEMO_MODE_TYPE}
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
 EOF
 
 # --- BACKEND START ---

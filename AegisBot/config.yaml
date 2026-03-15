@@ -3,7 +3,7 @@ name: AegisBot
 version: "0.5.0"
 slug: aegisbot
 image: ghcr.io/faserf/hassio-addons-aegisbot-{arch}
-description: Production-ready Telegram Moderation Bot with AI-driven FAQ and Security Features
+description: Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
 url: https://github.com/FaserF/AegisBot
 arch:
   - aarch64
@@ -21,6 +21,8 @@ map:
     read_only: false
 options:
   version: "latest"
+  telegram_bot_token: ""
+  telegram_bot_username: ""
   github_token: ""
   github_repo: "FaserF/AegisBot"
   developer_mode: false
@@ -34,6 +36,8 @@ options:
   demo_mode: false
   demo_mode_type: ephemeral
 schema:
+  telegram_bot_token: password?
+  telegram_bot_username: str?
   version: str
   github_token: password?
   github_repo: str?
