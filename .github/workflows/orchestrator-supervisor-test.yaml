@@ -60,7 +60,7 @@ jobs:
       has_Apps: ${{ steps.filter.outputs.has_Apps }}
     steps:
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: "🔧 Filter Ingress-Enabled Apps"
         id: filter
         run: |
@@ -153,7 +153,7 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: "📥 Checkout Repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: "🐳 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
 
