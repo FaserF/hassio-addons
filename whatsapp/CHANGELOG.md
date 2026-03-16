@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.5 (2026-03-16)
+
+### 🚀 Other
+- fixed api limit throttling #674 ([`8dfd3687`](https://github.com/FaserF/hassio-addons/commit/8dfd3687f69455f50c47e50523ff0ddc823834a7))
+
+
 ## 1.4.4 (2026-03-16)
 
 ### 📦 Dependencies
