@@ -19,7 +19,8 @@ import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
 import { saveSystemState, SYSTEM_STATE } from './src/state.js';
-import { publishMDNS, connectToWhatsApp } from './src/whatsapp/connection.js';
+import { publishMDNS, connectToWhatsApp, stopMDNS } from './src/whatsapp/connection.js';
+import { ADDON_SLUG } from './src/config.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -95,6 +96,10 @@ async function handleShutdown(signal) {
   for (const session of sessions.values()) {
     saveMessageStore(session);
   }
+
+  // Stop mDNS
+  await stopMDNS();
+
   setTimeout(() => {
     logger.info('🛑 Process exiting.');
     process.exit(0);
@@ -106,7 +111,7 @@ process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGHUP', () => handleShutdown('SIGHUP'));
 
 // Start mDNS advertisement
-const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Homeassistant App';
+const baseMDNSName = process.env.MDNS_NAME || `WhatsApp Homeassistant App (${ADDON_SLUG})`;
 publishMDNS(baseMDNSName, sessions);
 
 // --- Process Error Handling ---

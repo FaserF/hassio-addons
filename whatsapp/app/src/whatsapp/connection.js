@@ -341,3 +341,15 @@ export async function publishMDNS(name, sessions, attempt = 0) {
     logger.warn({ error: e.message }, 'mDNS advertisement failed to initialize');
   }
 }
+
+export async function stopMDNS() {
+  if (currentMdnsService) {
+    logger.info('🛑 Stopping mDNS advertisement...');
+    currentMdnsService.stop();
+    currentMdnsService = null;
+  }
+  if (mdnsInstance) {
+    mdnsInstance.destroy();
+    mdnsInstance = null;
+  }
+}
