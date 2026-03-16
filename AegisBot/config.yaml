@@ -68,4 +68,3 @@ schema:
   security_scan_api_key: password?
   ai_model: str?
   default_locale: str?
-

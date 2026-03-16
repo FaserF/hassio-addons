@@ -360,7 +360,6 @@ if bashio::config.has_value 'default_locale'; then
 	export DEFAULT_LOCALE=$(bashio::config 'default_locale')
 fi
 
-
 # GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
 bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
@@ -729,7 +728,6 @@ SECURITY_SCAN_API_KEY=${SECURITY_SCAN_API_KEY}
 AI_MODEL=${AI_MODEL}
 DEFAULT_LOCALE=${DEFAULT_LOCALE}
 EOF
-
 
 # --- BACKEND START ---
 bashio::log.info "Starting AegisBot Backend (Uvicorn)..."
