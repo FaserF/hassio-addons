@@ -100,7 +100,7 @@ process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGHUP', () => handleShutdown('SIGHUP'));
 
 // Start mDNS advertisement
-const baseMDNSName = process.env.MDNS_NAME || 'whatsapp homeassistant app';
+const baseMDNSName = process.env.MDNS_NAME || 'WhatsApp Homeassistant App';
 publishMDNS(baseMDNSName, sessions);
 
 // --- Process Error Handling ---
