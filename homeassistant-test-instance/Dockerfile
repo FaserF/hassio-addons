@@ -13,7 +13,6 @@ ENV TERM="xterm-256color"
 
 # Install dependencies for Bashio (use default shell for Alpine)
 
-
 # hadolint ignore=DL3018
 
 # Addon metadata (injected by CI)

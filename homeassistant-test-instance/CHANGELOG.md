@@ -3,6 +3,7 @@
 ## 0.2.5 (2026-03-16)
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.3.2](https://github.com/home-assistant/core/releases/tag/2026.3.2) [skip-tests] ([`a6cacca3`](https://github.com/FaserF/hassio-addons/commit/a6cacca30f5de04e9863a077372d5d9511f869e6))
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.3.1](https://github.com/home-assistant/core/releases/tag/2026.3.1) [skip-tests] ([`81f35f82`](https://github.com/FaserF/hassio-addons/commit/81f35f82fa8bd7b9c0f8b963606e8bd294f1d914))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
@@ -13,16 +14,17 @@
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.1.3](https://github.com/home-assistant/core/releases/tag/2026.1.3) [skip-tests] (#605) [skip-tests] ([`efcd0612`](https://github.com/FaserF/hassio-addons/commit/efcd06127b58728e6bde74154c18e714bc3d61f5))
 
 ### 📝 Documentation
+
 - Readme improvements ([`8a12ebd4`](https://github.com/FaserF/hassio-addons/commit/8a12ebd40149adb39f056b7dc3e10f1dd02853cb))
 
 ### 🚀 Other
+
 - security & docs improvements codeql ([`a4a06f09`](https://github.com/FaserF/hassio-addons/commit/a4a06f09bab3956a81fe1dc81bf3ce991e3c83d1))
 - small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
 - replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
 - Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 0.2.4 (2026-01-21)
 
