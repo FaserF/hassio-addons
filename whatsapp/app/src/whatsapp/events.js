@@ -25,18 +25,27 @@ const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 /**
  * Resolves encrypted poll votes to human-readable option names.
  */
-function resolvePollVotes(pollUpdate, originalPoll) {
-  if (!pollUpdate || !originalPoll) return [];
+function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
+  const update = pollUpdate.message?.pollUpdateMessage;
+  if (!update) return [];
+
+  if (!originalPoll) {
+    logger.warn(
+      { pollCreationId: update.pollCreationMessageKey?.id, sessionId },
+      'Poll vote received but original poll not found in store. Vote cannot be decrypted.'
+    );
+    return [];
+  }
 
   try {
     const votes = getAggregateVotesInPollMessage({
       message: originalPoll.message,
-      pollUpdates: [pollUpdate],
+      pollUpdates: [update],
     });
 
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
-    logger.warn({ error: err.message }, 'Failed to resolve poll votes');
+    logger.warn({ error: err.message, sessionId }, 'Failed to resolve poll votes');
     return [];
   }
 }
@@ -188,8 +197,8 @@ export function handleIncomingMessages(session) {
           eventType = 'poll_update';
           const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
           const originalPoll = session.messageStore.get(pollCreationId);
-          vote = resolvePollVotes(msg, originalPoll);
-          text = `[Poll Vote] ${vote.join(', ')}`;
+          vote = resolvePollVotes(msg, originalPoll, session.id);
+          text = vote.length > 0 ? `[Poll Vote] ${vote.join(', ')}` : `[Poll Vote] (Resolution failed - original poll not in store)`;
         }
 
         const supportedMediaTypes = [

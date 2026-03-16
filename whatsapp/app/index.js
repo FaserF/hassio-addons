@@ -13,6 +13,7 @@ import {
   sessions,
   getAuthDir,
   deleteSession,
+  saveMessageStore,
 } from './src/session.js';
 import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
@@ -88,6 +89,11 @@ async function handleShutdown(signal) {
   if (anyConnected && !SYSTEM_STATE.last_disconnect_time) {
     SYSTEM_STATE.last_disconnect_time = Date.now();
     saveSystemState();
+  }
+
+  // Save all message stores
+  for (const session of sessions.values()) {
+    saveMessageStore(session);
   }
   setTimeout(() => {
     logger.info('🛑 Process exiting.');

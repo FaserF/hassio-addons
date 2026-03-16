@@ -80,8 +80,40 @@ export function getSession(rawSessionId) {
         version: BAILEYS_VERSION,
       },
     });
+    loadMessageStore(sessions.get(sessionId));
   }
   return sessions.get(sessionId);
+}
+
+/**
+ * Persists the message store to disk.
+ */
+export function saveMessageStore(session) {
+  if (!session.messageStore) return;
+  const file = path.join(getAuthDir(session.id), 'message_store.json');
+  try {
+    const data = session.messageStore.dump();
+    fs.writeFileSync(file, JSON.stringify(data));
+    logger.debug({ sessionId: session.id }, '💾 Message store saved to disk');
+  } catch (e) {
+    logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save message store');
+  }
+}
+
+/**
+ * Loads the message store from disk.
+ */
+export function loadMessageStore(session) {
+  const file = path.join(getAuthDir(session.id), 'message_store.json');
+  if (fs.existsSync(file)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      session.messageStore.load(data);
+      logger.info({ sessionId: session.id, entries: data.length }, '📂 Message store loaded from disk');
+    } catch (e) {
+      logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load message store');
+    }
+  }
 }
 
 /**
