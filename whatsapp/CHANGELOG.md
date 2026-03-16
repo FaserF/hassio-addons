@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.5 (2026-03-16)
+
+### 🐛 Bug Fixes
+- mDNS stealth mode persistence and QR code staleness ([`b695b181`](https://github.com/FaserF/hassio-addons/commit/b695b1815683c5eb7646fb2a5ff78caab983639f))
+- mDNS discovery cleanup and slug-based naming ([`bcd890bd`](https://github.com/FaserF/hassio-addons/commit/bcd890bded43445d8abbe8c779ab424df66cb5c4))
+- poll vote decryption and message store persistence ([`3b589369`](https://github.com/FaserF/hassio-addons/commit/3b589369a1c182f289b1a3f933bfc4877bc8047a))
+
+### 📦 Dependencies
+- ⬆️ Update dependency link-preview-js to v4 [skip-tests] (#682) [skip-tests] ([`9ad7b650`](https://github.com/FaserF/hassio-addons/commit/9ad7b650ae1a00e6c343af80ffb3fb1c64556866))
+
+
 ## 1.4.4 (2026-03-16)
 
 ### 📦 Dependencies
