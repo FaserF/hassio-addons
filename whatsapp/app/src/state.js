@@ -37,6 +37,7 @@ export let SYSTEM_STATE = {
   last_disconnect_time: null,
   last_ha_disconnect_time: null,
   last_integration_online: null,
+  last_disconnect_reason: null,
 };
 
 if (fs.existsSync(SYSTEM_STATE_FILE)) {

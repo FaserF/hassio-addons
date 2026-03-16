@@ -100,19 +100,41 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     if (connection === 'close') {
       const statusCode = lastDisconnect.error?.output?.statusCode;
       const isLoggedOut = statusCode === DisconnectReason.loggedOut;
-      const reason = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
-      addLog(session, `Connection closed (Code: ${statusCode || 'None'}): ${reason}`, 'warning');
+      const errorMsg = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
+
+      // Determine disconnect reason
+      let disconnectReason = 'Connection to WhatsApp Lost';
+      const errorCode = lastDisconnect.error?.code || lastDisconnect.error?.output?.payload?.code;
+
+      if (isLoggedOut) {
+        disconnectReason = 'Session Expired / Logged Out';
+      } else if (
+        ['ENOTFOUND', 'EAI_AGAIN', 'EHOSTUNREACH', 'ETIMEDOUT', 'ECONNRESET'].includes(errorCode)
+      ) {
+        disconnectReason = 'Server Host Internet Connection Lost';
+      } else if (SYSTEM_STATE.last_ha_disconnect_time) {
+        disconnectReason = 'Home Assistant Integration Unreachable';
+      } else if (errorMsg.includes('Handshake')) {
+        disconnectReason = 'Connection Error (WhatsApp Handshake)';
+      }
+
+      addLog(
+        session,
+        `Connection closed (Code: ${statusCode || 'None'}): ${errorMsg} [Reason: ${disconnectReason}]`,
+        'warning'
+      );
 
       session.isConnected = false;
 
       if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_disconnect_time) {
         SYSTEM_STATE.last_disconnect_time = Date.now();
+        SYSTEM_STATE.last_disconnect_reason = disconnectReason;
         saveSystemState();
         logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
         notifyAdmins(
           session,
-          `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${reason}\n• *Status:* Attempting to reconnect.`
+          `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${disconnectReason}\n• *Detail:* ${errorMsg}\n• *Status:* Attempting to reconnect.`
         );
       }
 
@@ -158,12 +180,16 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       if (ADMIN_NOTIFICATIONS_ENABLED && SYSTEM_STATE.last_disconnect_time) {
         const downtime = Date.now() - SYSTEM_STATE.last_disconnect_time;
         if (downtime > NOTIFY_RESTORE_THRESHOLD) {
+          const reasonText = SYSTEM_STATE.last_disconnect_reason
+            ? `\n• *Reason:* ${SYSTEM_STATE.last_disconnect_reason}`
+            : '';
           notifyAdmins(
             session,
-            `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}\n• *Status:* Bot is back online.`
+            `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}${reasonText}\n• *Status:* Bot is back online.`
           );
         }
         SYSTEM_STATE.last_disconnect_time = null;
+        SYSTEM_STATE.last_disconnect_reason = null;
         saveSystemState();
       }
 
