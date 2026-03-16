@@ -13,13 +13,15 @@ ENV TERM="xterm-256color"
 
 # Install dependencies for Bashio (use default shell for Alpine)
 
+
+# hadolint ignore=DL3018
+
 # Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.3"
+ENV ADDON_VERSION="0.2.4"
 ENV ADDON_NAME="Home Assistant Test Instance"
 ENV ADDON_SLUG="ha_test_instance"
 ENV ADDON_UNSUPPORTED="false"
 
-# hadolint ignore=DL3018
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     bash \
     curl \
