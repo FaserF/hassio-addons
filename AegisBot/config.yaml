@@ -35,6 +35,12 @@ options:
   debug: false
   demo_mode: false
   demo_mode_type: ephemeral
+  openai_api_key: ""
+  gemini_api_key: ""
+  security_scan_api_key: ""
+  ai_model: "gpt-3.5-turbo"
+  default_locale: "en"
+
 schema:
   telegram_bot_token: password?
   telegram_bot_username: str?
@@ -57,3 +63,9 @@ schema:
   debug: bool?
   demo_mode: bool
   demo_mode_type: list(ephemeral|persistent)?
+  openai_api_key: password?
+  gemini_api_key: password?
+  security_scan_api_key: password?
+  ai_model: str?
+  default_locale: str?
+

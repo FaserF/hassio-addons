@@ -82,7 +82,7 @@ RUN \
             cd frontend && \
             npm install && \
             sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
-            sed -i "s|const API_BASE = '.*'|const API_BASE = './api/v1'|g" src/api/client.ts && \
+            sed -i "s|const API_BASE = .*|const API_BASE = './api/v1'|g" src/api/client.ts && \
             # Verify sed modifications were applied
             grep -q "base: './" vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
             grep -q "API_BASE = './api/v1'" src/api/client.ts || { echo "Failed to patch client.ts"; exit 1; } && \

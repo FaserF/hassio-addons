@@ -343,6 +343,24 @@ else
 	export DEMO_MODE_TYPE="ephemeral"
 fi
 
+# AI & Security Configurations
+if bashio::config.has_value 'openai_api_key'; then
+	export OPENAI_API_KEY=$(bashio::config 'openai_api_key')
+fi
+if bashio::config.has_value 'gemini_api_key'; then
+	export GEMINI_API_KEY=$(bashio::config 'gemini_api_key')
+fi
+if bashio::config.has_value 'security_scan_api_key'; then
+	export SECURITY_SCAN_API_KEY=$(bashio::config 'security_scan_api_key')
+fi
+if bashio::config.has_value 'ai_model'; then
+	export AI_MODEL=$(bashio::config 'ai_model')
+fi
+if bashio::config.has_value 'default_locale'; then
+	export DEFAULT_LOCALE=$(bashio::config 'default_locale')
+fi
+
+
 # GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
 bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
@@ -468,6 +486,10 @@ install_from_archive() {
 
 		bashio::log.info "Running 'npm install'..."
 		if npm install; then
+			bashio::log.info "Applying Ingress patches..."
+			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
+			sed -i "s|const API_BASE = .*|const API_BASE = './api/v1'|g" src/api/client.ts
+
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then
 				bashio::log.info "Frontend build successful. Installing..."
@@ -687,6 +709,8 @@ if [ -f "/app/backend/alembic.ini" ]; then
 	bashio::log.info "Running database migrations..."
 	cd /app/backend || exit 1
 	alembic upgrade head || bashio::log.warning "Migration failed or not needed, continuing..."
+else
+	bashio::log.info "alembic.ini not found, skipping migrations (Database initialized by app.main)."
 fi
 
 # --- CREATE .ENV FILE FOR BACKEND ---
@@ -699,7 +723,13 @@ DEMO_MODE=${DEMO_MODE}
 DEMO_MODE_TYPE=${DEMO_MODE_TYPE}
 TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
 TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+OPENAI_API_KEY=${OPENAI_API_KEY}
+GEMINI_API_KEY=${GEMINI_API_KEY}
+SECURITY_SCAN_API_KEY=${SECURITY_SCAN_API_KEY}
+AI_MODEL=${AI_MODEL}
+DEFAULT_LOCALE=${DEFAULT_LOCALE}
 EOF
+
 
 # --- BACKEND START ---
 bashio::log.info "Starting AegisBot Backend (Uvicorn)..."
