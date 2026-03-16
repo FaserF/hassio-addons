@@ -45,7 +45,7 @@ import { connectToWhatsApp } from '../whatsapp/connection.js';
 
 export function registerAPIRoutes(app) {
   // --- Session API ---
-  app.post('/session/start', (req, res) => {
+  app.post('/session/start', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     addLog(session, `Received Session Start request (session: ${session.id})`, 'info');
     if (session.isConnected) return res.json({ status: 'connected', message: 'Already connected' });
@@ -107,7 +107,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.get('/qr', (req, res) => {
+  app.get('/qr', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     signalInterest(session.id, connectToWhatsApp);
     if (session.isConnected) return res.json({ status: 'connected', qr: null });
@@ -115,7 +115,7 @@ export function registerAPIRoutes(app) {
     return res.json({ status: 'waiting', detail: 'QR generation in progress' });
   });
 
-  app.get('/status', (req, res) => {
+  app.get('/status', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     res.json({
       connected: session.isConnected,
@@ -125,7 +125,7 @@ export function registerAPIRoutes(app) {
     });
   });
 
-  app.get('/events', (req, res) => {
+  app.get('/events', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     const events = [...session.eventQueue];
     session.eventQueue = [];
@@ -133,7 +133,7 @@ export function registerAPIRoutes(app) {
   });
 
   app.get('/logs', (req, res) => res.json(getReqSession(req).connectionLogs));
-  app.get('/stats', (req, res) => {
+  app.get('/stats', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     res.json({
       ...session.stats,
@@ -144,7 +144,7 @@ export function registerAPIRoutes(app) {
   });
 
   // --- Messaging API ---
-  app.post('/send_message', async (req, res) => {
+  app.post('/send_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, message, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -182,7 +182,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_image', async (req, res) => {
+  app.post('/send_image', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, url, caption, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -208,7 +208,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_poll', async (req, res) => {
+  app.post('/send_poll', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, question, options, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -234,7 +234,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_location', async (req, res) => {
+  app.post('/send_location', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, latitude, longitude, title, description, quotedMessageId, expiration } =
       req.body;
@@ -268,7 +268,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_reaction', async (req, res) => {
+  app.post('/send_reaction', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, reaction, messageId } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -284,7 +284,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_buttons', async (req, res) => {
+  app.post('/send_buttons', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, message, buttons, footer, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -327,7 +327,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_document', async (req, res) => {
+  app.post('/send_document', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, url, fileName, caption, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -354,7 +354,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_video', async (req, res) => {
+  app.post('/send_video', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, url, caption, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -376,7 +376,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_audio', async (req, res) => {
+  app.post('/send_audio', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, url, ptt, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -397,7 +397,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/revoke_message', async (req, res) => {
+  app.post('/revoke_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, message_id, fromMe } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -418,7 +418,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/edit_message', async (req, res) => {
+  app.post('/edit_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, message_id, new_content } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -435,7 +435,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/set_presence', async (req, res) => {
+  app.post('/set_presence', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, presence } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -449,7 +449,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.get('/groups', async (req, res) => {
+  app.get('/groups', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     try {
@@ -467,7 +467,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/mark_as_read', async (req, res) => {
+  app.post('/mark_as_read', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, messageId } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
@@ -485,7 +485,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_list', async (req, res) => {
+  app.post('/send_list', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, title, text, footer, button_text, sections, quotedMessageId, expiration } =
       req.body;
@@ -539,7 +539,7 @@ export function registerAPIRoutes(app) {
     }
   });
 
-  app.post('/send_contact', async (req, res) => {
+  app.post('/send_contact', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, contact_name, contact_number, quotedMessageId, expiration } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
