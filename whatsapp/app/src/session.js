@@ -73,6 +73,8 @@ export function getSession(rawSessionId) {
         last_received_time: null,
         last_failed_time: null,
         totalReconnects: 0,
+        last_disconnect_time: null,
+        last_disconnect_reason: null,
         start_time: Date.now(),
         my_number: 'Unknown',
         version: BAILEYS_VERSION,

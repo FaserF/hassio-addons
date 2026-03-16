@@ -127,11 +127,12 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       );
 
       session.isConnected = false;
+      const sessionStats = session.stats;
 
-      if (ADMIN_NOTIFICATIONS_ENABLED && !SYSTEM_STATE.last_disconnect_time) {
-        SYSTEM_STATE.last_disconnect_time = Date.now();
-        SYSTEM_STATE.last_disconnect_reason = disconnectReason;
-        saveSystemState();
+      if (ADMIN_NOTIFICATIONS_ENABLED && !sessionStats.last_disconnect_time) {
+        sessionStats.last_disconnect_time = Date.now();
+        sessionStats.last_disconnect_reason = disconnectReason;
+
         logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
         notifyAdmins(
@@ -179,20 +180,35 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
 
-      if (ADMIN_NOTIFICATIONS_ENABLED && SYSTEM_STATE.last_disconnect_time) {
-        const downtime = Date.now() - SYSTEM_STATE.last_disconnect_time;
-        if (downtime > NOTIFY_RESTORE_THRESHOLD) {
-          const reasonText = SYSTEM_STATE.last_disconnect_reason
-            ? `\n• *Reason:* ${SYSTEM_STATE.last_disconnect_reason}`
-            : '';
-          notifyAdmins(
-            session,
-            `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}${reasonText}\n• *Status:* Bot is back online.`
-          );
+      const sessionStats = session.stats;
+
+      if (ADMIN_NOTIFICATIONS_ENABLED && sessionStats.last_disconnect_time) {
+        const downtime = Date.now() - sessionStats.last_disconnect_time;
+
+        // Clear existing timer if it exists (prevents flapping notifications)
+        if (session._restoreTimer) {
+          clearTimeout(session._restoreTimer);
         }
-        SYSTEM_STATE.last_disconnect_time = null;
-        SYSTEM_STATE.last_disconnect_reason = null;
-        saveSystemState();
+
+        if (downtime > NOTIFY_RESTORE_THRESHOLD) {
+          // Debounce restore notification by 5 seconds to ensure it stays open
+          session._restoreTimer = setTimeout(() => {
+            if (!session.isConnected) return; // Connection dropped again before notify
+
+            const reasonText = sessionStats.last_disconnect_reason
+              ? `\n• *Reason:* ${sessionStats.last_disconnect_reason}`
+              : '';
+            notifyAdmins(
+              session,
+              `🟢 *WhatsApp Connection Restored*\n\n• *Downtime:* ${formatDuration(downtime)}${reasonText}\n• *Status:* Bot is back online.`
+            );
+            sessionStats.last_disconnect_time = null;
+            sessionStats.last_disconnect_reason = null;
+          }, 5000);
+        } else {
+          sessionStats.last_disconnect_time = null;
+          sessionStats.last_disconnect_reason = null;
+        }
       }
 
       if (!session._monitorsStarted) {
