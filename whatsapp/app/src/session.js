@@ -109,7 +109,10 @@ export function loadMessageStore(session) {
     try {
       const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
       session.messageStore.load(data);
-      logger.info({ sessionId: session.id, entries: data.length }, '📂 Message store loaded from disk');
+      logger.info(
+        { sessionId: session.id, entries: data.length },
+        '📂 Message store loaded from disk'
+      );
     } catch (e) {
       logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load message store');
     }

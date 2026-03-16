@@ -198,7 +198,10 @@ export function handleIncomingMessages(session) {
           const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
           const originalPoll = session.messageStore.get(pollCreationId);
           vote = resolvePollVotes(msg, originalPoll, session.id);
-          text = vote.length > 0 ? `[Poll Vote] ${vote.join(', ')}` : `[Poll Vote] (Resolution failed - original poll not in store)`;
+          text =
+            vote.length > 0
+              ? `[Poll Vote] ${vote.join(', ')}`
+              : `[Poll Vote] (Resolution failed - original poll not in store)`;
         }
 
         const supportedMediaTypes = [
