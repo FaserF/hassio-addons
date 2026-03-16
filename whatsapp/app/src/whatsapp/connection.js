@@ -100,7 +100,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     if (connection === 'close') {
       const statusCode = lastDisconnect.error?.output?.statusCode;
       const isLoggedOut = statusCode === DisconnectReason.loggedOut;
-      const errorMsg = lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
+      const errorMsg =
+        lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
 
       // Determine disconnect reason
       let disconnectReason = 'Connection to WhatsApp Lost';
