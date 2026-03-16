@@ -2,6 +2,7 @@ import { rateLimit } from 'express-rate-limit';
 import { logger } from './logger.js';
 import { UI_AUTH_ENABLED, UI_AUTH_PASSWORD, API_TOKEN } from './config.js';
 import { getSession, addLog } from './session.js';
+import { SYSTEM_STATE, saveSystemState } from './state.js';
 
 export const ipFilterMiddleware = (req, res, next) => {
   if (UI_AUTH_ENABLED) return next();
@@ -42,6 +43,11 @@ export const authMiddleware = (req, res, next) => {
       .status(401)
       .json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
   }
+
+  // Valid token provided - update "Active Interest" for discovery logic
+  SYSTEM_STATE.last_integration_online = Date.now();
+  saveSystemState();
+
   next();
 };
 

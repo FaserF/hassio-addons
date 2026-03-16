@@ -101,7 +101,7 @@ process.on('SIGHUP', () => handleShutdown('SIGHUP'));
 
 // Start mDNS advertisement
 const baseMDNSName = process.env.MDNS_NAME || 'whatsapp homeassistant app';
-publishMDNS(baseMDNSName);
+publishMDNS(baseMDNSName, sessions);
 
 // --- Process Error Handling ---
 process.on('uncaughtException', (err) => {

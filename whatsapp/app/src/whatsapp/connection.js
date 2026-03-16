@@ -19,7 +19,7 @@ import { SYSTEM_STATE, saveSystemState } from '../state.js';
 import { formatDuration } from '../utils/format.js';
 import { notifyAdmins } from './actions.js';
 import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
-import { PORT } from '../config.js';
+import { PORT, API_TOKEN } from '../config.js';
 
 import { BAILEYS_VERSION } from '../config.js';
 const BAILEYS_405_AFFECTED_VERSION = '7.0.0-rc.9';
@@ -209,43 +209,91 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 }
 
 /**
- * mDNS / Bonjour advertisement
+ * mDNS / Bonjour advertisement - Conditional for security
  */
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let mdnsInstance = null;
+let currentMdnsService = null;
 
-export async function publishMDNS(name, attempt = 0) {
+function shouldShowSecret(sessions) {
+  // If ANY session is connected to WhatsApp, we are "set up"
+  const anyConnected = Array.from(sessions.values()).some((s) => s.isConnected);
+  if (anyConnected) return false;
+
+  // If ANY session has credentials, we are already "set up" (even if currently reconnecting)
+  const anyHasCreds = Array.from(sessions.keys()).some((id) =>
+    fs.existsSync(path.join(getAuthDir(id), 'creds.json'))
+  );
+  if (anyHasCreds) return false;
+
+  // Check if an integration has talked to us recently (Active Interest)
+  const now = Date.now();
+  const integrationActive = now - (SYSTEM_STATE.last_integration_online || 0) < 120000;
+  if (integrationActive) return false;
+
+  return true;
+}
+
+export async function publishMDNS(name, sessions, attempt = 0) {
   try {
     const { Bonjour } = await import('bonjour-service');
-    const instance = new Bonjour();
-    const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
+    if (!mdnsInstance) mdnsInstance = new Bonjour();
 
-    const service = instance.publish({
+    const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
+    const showSecret = shouldShowSecret(sessions);
+
+    const txt = {
+      version: '1.0.0',
+      api_path: '/',
+      auth_type: 'token',
+      system_id: SYSTEM_STATE.system_id,
+    };
+
+    if (showSecret) {
+      txt.api_key = API_TOKEN;
+      logger.info('🔑 Including API Key in mDNS discovery (Initial Setup Mode)');
+    }
+
+    if (currentMdnsService) {
+      currentMdnsService.stop();
+    }
+
+    currentMdnsService = mdnsInstance.publish({
       name: serviceName,
       type: 'ha-whatsapp',
       protocol: 'tcp',
       port: PORT,
-      txt: {
-        version: '1.0.0',
-        api_path: '/',
-        auth_type: 'token',
-        system_id: SYSTEM_STATE.system_id,
-      },
+      txt,
     });
 
-    service.on('error', async (err) => {
+    currentMdnsService.on('error', async (err) => {
       if (err.message.includes('already in use') && attempt < 10) {
         logger.warn({ serviceName }, 'mDNS name in use, retrying...');
-        instance.destroy();
+        currentMdnsService.stop();
         await delay(1000);
-        publishMDNS(name, attempt + 1);
+        publishMDNS(name, sessions, attempt + 1);
       } else {
         logger.error({ serviceName, error: err.message }, 'mDNS advertisement error');
       }
     });
 
-    service.on('up', () => {
-      logger.info({ serviceName, port: PORT }, '📢 Publishing mDNS service');
+    currentMdnsService.on('up', () => {
+      logger.info(
+        { serviceName, port: PORT, secretManifested: showSecret },
+        '📢 Publishing mDNS service'
+      );
     });
+
+    // Re-evaluate every 30 seconds
+    if (attempt === 0) {
+      setInterval(() => {
+        const needsUpdate = shouldShowSecret(sessions) !== showSecret;
+        if (needsUpdate) {
+          logger.info('🔄 Updating mDNS discovery properties based on connectivity change');
+          publishMDNS(name, sessions, 0);
+        }
+      }, 30000);
+    }
   } catch (e) {
     logger.warn({ error: e.message }, 'mDNS advertisement failed to initialize');
   }
