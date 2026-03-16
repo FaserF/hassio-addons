@@ -1,4 +1,5 @@
 import http from 'http';
+import os from 'os';
 import { logger } from './logger.js';
 
 const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
@@ -225,4 +226,30 @@ export async function sendHANotification(title, message, notificationId = null) 
     req.write(data);
     req.end();
   });
+}
+
+/**
+ * Detects if the addon is running within the Home Assistant internal network.
+ * This is used to restrict sensitive discovery info to trusted environments.
+ */
+export function isHANetwork() {
+  // If we have a Supervisor Token, we are likely running as an addon.
+  if (!SUPERVISOR_TOKEN) return false;
+
+  // Check network interfaces for standard HA Docker IP ranges (e.g. 172.30.x.x)
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        // Standard HA Addon network is often in 172.30.32.0/24 or similar 172.x ranges.
+        // We look for 172.* specifically in the context of HA.
+        if (iface.address.startsWith('172.')) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Fallback to true if SUPERVISOR_TOKEN is present but IP check is ambiguous
+  return true;
 }

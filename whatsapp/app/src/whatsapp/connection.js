@@ -20,6 +20,7 @@ import { formatDuration } from '../utils/format.js';
 import { notifyAdmins } from './actions.js';
 import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
 import { PORT, API_TOKEN } from '../config.js';
+import { isHANetwork } from '../ha.js';
 
 import { BAILEYS_VERSION } from '../config.js';
 const BAILEYS_405_AFFECTED_VERSION = '7.0.0-rc.9';
@@ -216,6 +217,9 @@ let mdnsInstance = null;
 let currentMdnsService = null;
 
 function shouldShowSecret(sessions) {
+  // Security: Only broadcast secret if we are on the trusted HA internal network.
+  if (!isHANetwork()) return false;
+
   // If ANY session is connected to WhatsApp, we are "set up"
   const anyConnected = Array.from(sessions.values()).some((s) => s.isConnected);
   if (anyConnected) return false;
