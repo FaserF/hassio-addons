@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 🧹 Run actionlint
         id: actionlint
         uses: raven-actions/actionlint@v2
@@ -274,7 +274,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: 📝 Analyze and Report Infrastructure Errors
         uses: actions/github-script@v8
         with:
