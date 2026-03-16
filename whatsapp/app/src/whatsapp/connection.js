@@ -224,7 +224,12 @@ export async function publishMDNS(name, attempt = 0) {
       type: 'ha-whatsapp',
       protocol: 'tcp',
       port: PORT,
-      txt: { version: '1.0.0', api_path: '/', auth_type: 'token' },
+      txt: {
+        version: '1.0.0',
+        api_path: '/',
+        auth_type: 'token',
+        system_id: SYSTEM_STATE.system_id,
+      },
     });
 
     service.on('error', async (err) => {
