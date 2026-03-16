@@ -1,11 +1,5 @@
 # Changelog
 
-## 1.4.5 (2026-03-16)
-
-### 🚀 Other
-- fixed api limit throttling #674 ([`8dfd3687`](https://github.com/FaserF/hassio-addons/commit/8dfd3687f69455f50c47e50523ff0ddc823834a7))
-
-
 ## 1.4.4 (2026-03-16)
 
 ### 📦 Dependencies
@@ -15,6 +9,7 @@
 
 ### 🚀 Other
 
+- fixed api limit throttling #674 ([`8dfd3687`](https://github.com/FaserF/hassio-addons/commit/8dfd3687f69455f50c47e50523ff0ddc823834a7))
 - secure first setup ([`632c2dd1`](https://github.com/FaserF/hassio-addons/commit/632c2dd1cb59ebcbb55ce49033d5e7b869436481))
 - change baseMDNSName ([`c94f8ccb`](https://github.com/FaserF/hassio-addons/commit/c94f8ccbdbcbfd7ec48a0280d5b0d615df8b50fa))
 - finally fully fix ha integration auto discovery ([`c6643541`](https://github.com/FaserF/hassio-addons/commit/c664354167064eda4237864804b3d30630702ce6))
