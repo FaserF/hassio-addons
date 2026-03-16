@@ -216,26 +216,36 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let mdnsInstance = null;
 let currentMdnsService = null;
 
-function shouldShowSecret(sessions) {
-  // Security: Only broadcast secret if we are on the trusted HA internal network.
-  if (!isHANetwork()) return false;
+const DISCOVERY_STATE = {
+  lastShowSecret: null,
+  lastShouldBroadcast: null,
+};
 
-  // If ANY session is connected to WhatsApp, we are "set up"
+function getDiscoveryStatus(sessions) {
   const anyConnected = Array.from(sessions.values()).some((s) => s.isConnected);
-  if (anyConnected) return false;
+  const now = Date.now();
+  const integrationActive = now - (SYSTEM_STATE.last_integration_online || 0) < 120000;
 
-  // If ANY session has credentials, we are already "set up" (even if currently reconnecting)
+  // 1. Should we broadcast at all?
+  // If we have a working connection to both sides, we stop broadcasting entirely (Stealth Mode)
+  // as requested to prevent redundant discovery.
+  const shouldBroadcast = !(anyConnected && integrationActive);
+
+  // 2. Should we include the secret?
+  // Security: Only even consider it on trusted networks.
+  let showSecret = isHANetwork();
+
+  // Hide secret if ALREADY set up (connected or has creds)
+  if (anyConnected) showSecret = false;
   const anyHasCreds = Array.from(sessions.keys()).some((id) =>
     fs.existsSync(path.join(getAuthDir(id), 'creds.json'))
   );
-  if (anyHasCreds) return false;
+  if (anyHasCreds) showSecret = false;
 
-  // Check if an integration has talked to us recently (Active Interest)
-  const now = Date.now();
-  const integrationActive = now - (SYSTEM_STATE.last_integration_online || 0) < 120000;
-  if (integrationActive) return false;
+  // Hide secret if integration is already talking to us
+  if (integrationActive) showSecret = false;
 
-  return true;
+  return { shouldBroadcast, showSecret };
 }
 
 export async function publishMDNS(name, sessions, attempt = 0) {
@@ -243,8 +253,21 @@ export async function publishMDNS(name, sessions, attempt = 0) {
     const { Bonjour } = await import('bonjour-service');
     if (!mdnsInstance) mdnsInstance = new Bonjour();
 
+    const { shouldBroadcast, showSecret } = getDiscoveryStatus(sessions);
+    DISCOVERY_STATE.lastShouldBroadcast = shouldBroadcast;
+    DISCOVERY_STATE.lastShowSecret = showSecret;
+
+    if (currentMdnsService) {
+      currentMdnsService.stop();
+      currentMdnsService = null;
+    }
+
+    if (!shouldBroadcast) {
+      logger.info('🤫 Stealth Mode: Discovery stopped (Setup complete & active)');
+      return;
+    }
+
     const serviceName = attempt === 0 ? name : `${name} ${attempt}`;
-    const showSecret = shouldShowSecret(sessions);
 
     const txt = {
       version: '1.0.0',
@@ -256,10 +279,6 @@ export async function publishMDNS(name, sessions, attempt = 0) {
     if (showSecret) {
       txt.api_key = API_TOKEN;
       logger.info('🔑 Including API Key in mDNS discovery (Initial Setup Mode)');
-    }
-
-    if (currentMdnsService) {
-      currentMdnsService.stop();
     }
 
     currentMdnsService = mdnsInstance.publish({
@@ -291,9 +310,13 @@ export async function publishMDNS(name, sessions, attempt = 0) {
     // Re-evaluate every 30 seconds
     if (attempt === 0) {
       setInterval(() => {
-        const needsUpdate = shouldShowSecret(sessions) !== showSecret;
+        const current = getDiscoveryStatus(sessions);
+        const needsUpdate =
+          current.shouldBroadcast !== DISCOVERY_STATE.lastShouldBroadcast ||
+          current.showSecret !== DISCOVERY_STATE.lastShowSecret;
+
         if (needsUpdate) {
-          logger.info('🔄 Updating mDNS discovery properties based on connectivity change');
+          logger.info('🔄 Updating mDNS discovery based on state change');
           publishMDNS(name, sessions, 0);
         }
       }, 30000);
