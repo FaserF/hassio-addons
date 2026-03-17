@@ -47,9 +47,10 @@ COPY . .
 RUN \
     if [ -d "app" ]; then \
         mv app/* ./; \
+        rm -rf app; \
         # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts
         rm -rf package-lock.json node_modules; \
-        npm install; \
+        npm install --no-audit --no-fund --legacy-peer-deps; \
         # Extract Baileys version for runtime banner
         BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown"); \
         echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment; \

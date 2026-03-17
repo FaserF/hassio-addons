@@ -15,7 +15,7 @@ import {
   ADMIN_NOTIFICATIONS_ENABLED,
 } from '../config.js';
 import { getAuthDir, addLog, deleteSession } from '../session.js';
-import { SYSTEM_STATE, saveSystemState } from '../state.js';
+import { SYSTEM_STATE } from '../state.js';
 import { formatDuration } from '../utils/format.js';
 import { notifyAdmins } from './actions.js';
 import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
