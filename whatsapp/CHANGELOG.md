@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.7 (2026-03-17)
+
+### ✨ Features
+- addon health check ([`cf3ea34e`](https://github.com/FaserF/hassio-addons/commit/cf3ea34e56c603562e09547019d9eb0787026d94))
+
+### 🚀 Other
+- fix node module folder not found ([`a161334e`](https://github.com/FaserF/hassio-addons/commit/a161334e1588f3199445f47973bd28158287f782))
+- Release Version 1.4.6 ([`db03032b`](https://github.com/FaserF/hassio-addons/commit/db03032b700f9c7cea86db56d5cb12da36a75ae4))
+- Revise changelog to reflect version 1.4.6 ([`f6bf85c7`](https://github.com/FaserF/hassio-addons/commit/f6bf85c712f93c3d70dae5a3c22830a8432e23c0))
+
+
 ## 1.4.6 (2026-03-17)
 
 ### 🚀 Other
