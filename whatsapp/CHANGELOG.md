@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.6 (2026-03-17)
+
+### 📦 Dependencies
+- ⬆️ Update dependency uvicorn to v0.42.0 [skip-tests] ([`e8b29f28`](https://github.com/FaserF/hassio-addons/commit/e8b29f283a78a88b5c76f115ce64c3da3868c491))
+
+
 ## 1.4.5 (2026-03-16)
 
 ### 🐛 Bug Fixes
