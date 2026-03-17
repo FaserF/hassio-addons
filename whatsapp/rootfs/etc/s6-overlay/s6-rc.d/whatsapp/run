@@ -267,7 +267,7 @@ if [ ! -d "$INTEGRATION_DIR" ]; then
     fi
 else
     bashio::log.info "✅ Integration found at $INTEGRATION_DIR"
-    
+
     # Export integration version for Node.js app
     if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
         INTEGRATION_VERSION=$(jq -r '.version' "$INTEGRATION_DIR/manifest.json")
@@ -318,14 +318,33 @@ else
 fi
 
 # --- Pre-flight Diagnostics ---
+cd /opt/whatsapp
 bashio::log.info "Running pre-flight diagnostics..."
 
+THROTTLE_FILE="/data/infra_failure_throttle"
+BACKOFF_DELAY=120
+
+if [ -f "$THROTTLE_FILE" ]; then
+    FAIL_COUNT=$(cat "$THROTTLE_FILE")
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    echo "$FAIL_COUNT" > "$THROTTLE_FILE"
+
+    if [ "$FAIL_COUNT" -gt 5 ]; then
+        BACKOFF_DELAY=900 # 15 minutes
+    elif [ "$FAIL_COUNT" -gt 2 ]; then
+        BACKOFF_DELAY=300 # 5 minutes
+    fi
+    bashio::log.warning "Consecutive infrastructure failures detected (#$FAIL_COUNT). Throttling restart for ${BACKOFF_DELAY}s..."
+else
+    echo "1" > "$THROTTLE_FILE"
+fi
+
 # 1. Dependency Check (node_modules)
-if [ ! -d "/opt/whatsapp/node_modules" ]; then
+if [ ! -d "node_modules" ]; then
     bashio::log.fatal "❌ CRITICAL ERROR: node_modules folder is missing!"
     bashio::log.fatal "This is usually caused by an interrupted build or a failed npm install."
     bashio::log.fatal "ACTION REQUIRED: Please try to REBUILD the addon in Home Assistant."
-    sleep 30
+    sleep "$BACKOFF_DELAY"
     exit 1
 fi
 
@@ -336,7 +355,7 @@ if ! node -e "import('express').then(() => process.exit(0)).catch((e) => { conso
     bashio::log.fatal "Internal Error: $(cat /tmp/diag_out)"
     bashio::log.fatal "NOTE: This is NOT a Baileys connection bug. It's a system-level failure."
     bashio::log.fatal "ACTION REQUIRED: Check if you are on the latest addon version or try a REBUILD."
-    sleep 30
+    sleep "$BACKOFF_DELAY"
     exit 1
 fi
 
@@ -345,12 +364,13 @@ if ! node --check index.js > /tmp/diag_out 2>&1; then
     bashio::log.fatal "❌ CRITICAL ERROR: JavaScript Syntax or Integrity error detected!"
     bashio::log.fatal "Error Detail: $(cat /tmp/diag_out)"
     bashio::log.fatal "ACTION REQUIRED: Please report this error to the addon developer."
-    sleep 30
+    sleep "$BACKOFF_DELAY"
     exit 1
 fi
 
+# Clear throttle on success
+rm -f "$THROTTLE_FILE"
 bashio::log.info "✅ Pre-flight checks passed."
 
-cd /opt/whatsapp
 bashio::app.print_banner
 exec node index.js
