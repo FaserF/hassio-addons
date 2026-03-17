@@ -317,6 +317,40 @@ else
     fi
 fi
 
+# --- Pre-flight Diagnostics ---
+bashio::log.info "Running pre-flight diagnostics..."
+
+# 1. Dependency Check (node_modules)
+if [ ! -d "/opt/whatsapp/node_modules" ]; then
+    bashio::log.fatal "❌ CRITICAL ERROR: node_modules folder is missing!"
+    bashio::log.fatal "This is usually caused by an interrupted build or a failed npm install."
+    bashio::log.fatal "ACTION REQUIRED: Please try to REBUILD the addon in Home Assistant."
+    sleep 30
+    exit 1
+fi
+
+# 2. Syntax & Module Resolution Check
+# We try to resolve 'express' as a representative for our dependencies
+if ! node -e "import('express').then(() => process.exit(0)).catch((e) => { console.error(e.message); process.exit(1); })" --input-type=module > /tmp/diag_out 2>&1; then
+    bashio::log.fatal "❌ CRITICAL ERROR: Infrastructure / Dependency resolution failed!"
+    bashio::log.fatal "Internal Error: $(cat /tmp/diag_out)"
+    bashio::log.fatal "NOTE: This is NOT a Baileys connection bug. It's a system-level failure."
+    bashio::log.fatal "ACTION REQUIRED: Check if you are on the latest addon version or try a REBUILD."
+    sleep 30
+    exit 1
+fi
+
+# 3. Code Integrity Check
+if ! node --check index.js > /tmp/diag_out 2>&1; then
+    bashio::log.fatal "❌ CRITICAL ERROR: JavaScript Syntax or Integrity error detected!"
+    bashio::log.fatal "Error Detail: $(cat /tmp/diag_out)"
+    bashio::log.fatal "ACTION REQUIRED: Please report this error to the addon developer."
+    sleep 30
+    exit 1
+fi
+
+bashio::log.info "✅ Pre-flight checks passed."
+
 cd /opt/whatsapp
 bashio::app.print_banner
 exec node index.js
