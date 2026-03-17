@@ -40,6 +40,20 @@ export let SYSTEM_STATE = {
   last_integration_online: null,
 };
 
+// --- Health State (Volatile) ---
+export const HEALTH_STATE = {
+  status: 'starting', // starting, running, connected, faulty
+  details: 'Addon is initializing',
+  last_update: Date.now(),
+};
+
+export function setHealthStatus(status, details = '') {
+  HEALTH_STATE.status = status;
+  HEALTH_STATE.details = details || (status === 'running' ? 'Addon is operational' : '');
+  HEALTH_STATE.last_update = Date.now();
+  logger.debug({ status, details: HEALTH_STATE.details }, 'Health status updated');
+}
+
 if (fs.existsSync(SYSTEM_STATE_FILE)) {
   try {
     const saved = JSON.parse(fs.readFileSync(SYSTEM_STATE_FILE, 'utf8'));

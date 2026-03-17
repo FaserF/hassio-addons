@@ -18,7 +18,7 @@ import {
 import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
-import { saveSystemState, SYSTEM_STATE } from './src/state.js';
+import { saveSystemState, SYSTEM_STATE, setHealthStatus } from './src/state.js';
 import { publishMDNS, connectToWhatsApp, stopMDNS } from './src/whatsapp/connection.js';
 import { ADDON_SLUG } from './src/config.js';
 import fs from 'fs';
@@ -48,6 +48,7 @@ registerRoutes(app);
 app.listen(PORT, '0.0.0.0', () => {
   logger.info({ port: PORT }, 'WhatsApp API listening');
   logger.info('✅ Service ready - Health check available at /health');
+  setHealthStatus('running', 'API server is listening');
 
   // Auto-start session for 'default'
   const defaultSession = getSession('default');
@@ -117,6 +118,7 @@ publishMDNS(baseMDNSName, sessions);
 // --- Process Error Handling ---
 process.on('uncaughtException', (err) => {
   logger.fatal({ error: err.message, stack: err.stack }, 'Uncaught Exception');
+  setHealthStatus('faulty', `Uncaught Exception: ${err.message}`);
   // In a container, we might want to exit and let s6-overlay restart us
   // but for now we'll just log and hope for the best
 });

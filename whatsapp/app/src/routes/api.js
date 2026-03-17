@@ -39,7 +39,7 @@ import {
 } from '../webhook.js';
 import { trackSent } from '../whatsapp/actions.js';
 import { getQuotedMessage } from '../whatsapp/events.js';
-import { SYSTEM_STATE, SEEN_USERS } from '../state.js';
+import { SYSTEM_STATE, SEEN_USERS, HEALTH_STATE } from '../state.js';
 import { logger } from '../logger.js';
 import { connectToWhatsApp } from '../whatsapp/connection.js';
 
@@ -570,7 +570,7 @@ export function registerAPIRoutes(app) {
   app.get('/health', (req, res) => {
     const mem = process.memoryUsage();
     res.status(200).json({
-      status: 'ok',
+      ...HEALTH_STATE,
       service: 'whatsapp-homeassistant-app',
       version: ADDON_VERSION,
       uptime: Math.floor(process.uptime()),

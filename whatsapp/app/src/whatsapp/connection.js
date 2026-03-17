@@ -15,7 +15,7 @@ import {
   ADMIN_NOTIFICATIONS_ENABLED,
 } from '../config.js';
 import { getAuthDir, addLog, deleteSession } from '../session.js';
-import { SYSTEM_STATE } from '../state.js';
+import { SYSTEM_STATE, setHealthStatus } from '../state.js';
 import { formatDuration } from '../utils/format.js';
 import { notifyAdmins } from './actions.js';
 import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
@@ -43,6 +43,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   addLog(session, `Starting connection request for session: ${sessionId}...`, 'info');
+  setHealthStatus('starting', `Connecting session: ${sessionId}`);
   const { state, saveCreds } = await useMultiFileAuthState(sessionAuthDir);
 
   try {
@@ -68,6 +69,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   } catch (err) {
     logger.error({ sessionId, error: err.message }, '💥 Failed to initialize WASocket');
     addLog(session, `Failed to initialize WhatsApp: ${err.message}`, 'error');
+    setHealthStatus('faulty', `Failed to initialize WASocket: ${err.message}`);
     return;
   }
 
@@ -92,9 +94,11 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         session.currentQR = await QRCode.toDataURL(qr);
         logger.info({ sessionId }, '✅ QR Code DataURL generated');
         addLog(session, 'QR Code generated. Please scan to connect.', 'success');
+        setHealthStatus('running', 'Waiting for QR scan');
       } catch (err) {
         logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
         addLog(session, 'Failed to process QR Code. Check logs.', 'error');
+        setHealthStatus('faulty', 'Failed to generate QR Code');
       }
     }
 
@@ -162,6 +166,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         session.stats.totalReconnects += 1;
         if (!session.firstFailureTime) session.firstFailureTime = Date.now();
 
+        setHealthStatus('running', `Disconnected: ${disconnectReason}`);
+
         const baseDelay = APPLY_BAILEYS_405_FIX ? 5000 : 3000;
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
@@ -179,6 +185,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.disconnectReason = null;
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
+      setHealthStatus('connected', 'WhatsApp connected');
 
       const sessionStats = session.stats;
 
