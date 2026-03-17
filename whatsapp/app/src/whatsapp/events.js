@@ -1,4 +1,8 @@
-import { downloadMediaMessage, getAggregateVotesInPollMessage, getContentType } from '@whiskeysockets/baileys';
+import {
+  downloadMediaMessage,
+  getAggregateVotesInPollMessage,
+  getContentType,
+} from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -45,7 +49,10 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
 
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
-    logger.warn({ error: err.message, sessionId, stack: err.stack }, 'Failed to resolve poll votes');
+    logger.warn(
+      { error: err.message, sessionId, stack: err.stack },
+      'Failed to resolve poll votes'
+    );
     return [];
   }
 }
