@@ -1,4 +1,4 @@
-import { downloadMediaMessage, getAggregateVotesInPollMessage } from '@whiskeysockets/baileys';
+import { downloadMediaMessage, getAggregateVotesInPollMessage, getContentType } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -40,12 +40,12 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
   try {
     const votes = getAggregateVotesInPollMessage({
       message: originalPoll.message,
-      pollUpdates: [update],
+      pollUpdates: [pollUpdate],
     });
 
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
-    logger.warn({ error: err.message, sessionId }, 'Failed to resolve poll votes');
+    logger.warn({ error: err.message, sessionId, stack: err.stack }, 'Failed to resolve poll votes');
     return [];
   }
 }
@@ -184,7 +184,7 @@ export function handleIncomingMessages(session) {
         }
 
         const isGroup = senderJid.endsWith('@g.us');
-        const messageType = Object.keys(msg.message || {})[0];
+        const messageType = getContentType(msg.message);
         let mediaUrl = null,
           mediaPath = null,
           mediaType = null,
