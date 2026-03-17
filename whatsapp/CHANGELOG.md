@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.7 (2026-03-17)
+
+### 🚀 Other
+- Improved error handling ([`ecd218a9`](https://github.com/FaserF/hassio-addons/commit/ecd218a937dac8dd1d78eb46c03ad7bd839ebb3f))
+- fix index crashing #687 ([`085e87c1`](https://github.com/FaserF/hassio-addons/commit/085e87c15e13b962184202a0d288a5dd2a2b15e6))
+
+
 ## 1.4.6 (2026-03-17)
 
 ### 📦 Dependencies
