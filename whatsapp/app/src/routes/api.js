@@ -473,33 +473,37 @@ export function registerAPIRoutes(app) {
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     try {
       if (!session.sock) throw new Error('Socket not initialized');
-      
+
       let groups = {};
-      if (!session.groupCache || session.groupCache.size === 0 || (Date.now() - (session.lastGroupFetch || 0) > 300000)) {
-          try {
-             groups = await session.sock.groupFetchAllParticipating();
-             session.lastGroupFetch = Date.now();
-          } catch (e) {
-             logger.warn({ error: e.message }, 'Failed to fetch groups, using cache');
-          }
+      if (
+        !session.groupCache ||
+        session.groupCache.size === 0 ||
+        Date.now() - (session.lastGroupFetch || 0) > 300000
+      ) {
+        try {
+          groups = await session.sock.groupFetchAllParticipating();
+          session.lastGroupFetch = Date.now();
+        } catch (e) {
+          logger.warn({ error: e.message }, 'Failed to fetch groups, using cache');
+        }
       }
-      
+
       const groupList = [];
       for (const g of Object.values(groups)) {
-          groupList.push({ id: g.id, name: g.subject });
-          session.chatCache?.set(g.id, true);
-          session.groupCache?.set(g.id, g.subject);
+        groupList.push({ id: g.id, name: g.subject });
+        session.chatCache?.set(g.id, true);
+        session.groupCache?.set(g.id, g.subject);
       }
 
       if (groupList.length === 0 && session.groupCache && session.groupCache.size > 0) {
-          for (const [id, name] of session.groupCache.entries()) {
-              groupList.push({ id, name });
-          }
+        for (const [id, name] of session.groupCache.entries()) {
+          groupList.push({ id, name });
+        }
       }
 
       res.json({
         total_chats: session.chatCache ? session.chatCache.size : groupList.length,
-        groups: groupList
+        groups: groupList,
       });
     } catch (e) {
       logger.error({ error: e.message }, 'Fetch chats failed');

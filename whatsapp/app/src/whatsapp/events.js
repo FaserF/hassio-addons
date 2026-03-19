@@ -86,7 +86,7 @@ export function bindStore(session, ev) {
       session.groupCache?.set(group.id, group.subject);
     }
   });
-  
+
   ev.on('groups.update', (groups) => {
     for (const group of groups) {
       if (group.subject) {
