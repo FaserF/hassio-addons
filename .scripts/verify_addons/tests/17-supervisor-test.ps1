@@ -256,6 +256,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",
         "-e", "SUPERVISOR_TOKEN=generated_T9k8L", # Required for direct API calls via curl
+        "-e", "SUPERVISOR_IGNORE_HEALTH_CHECK=1",
+        "-e", "HASSIO_IGNORE_HEALTH_CHECK=1",
         $devcontainerImage,
         "sleep", "infinity"
     )
@@ -292,6 +294,10 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         $checkResult = docker exec $containerName ha supervisor info 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host " Ready!" -ForegroundColor Green
+
+    # Ignore health conditions for jobs (essential for devcontainer/CI environments)
+    Write-Host "    > Configuring Supervisor to ignore health conditions..." -ForegroundColor Gray
+    docker exec $containerName ha jobs options --ignore-conditions healthy 2>&1 | Out-Null
             $supervisorReady = $true
             break
         }
@@ -535,9 +541,7 @@ except Exception as e:
                 else {
                     Write-Host "    ✅ Install successful" -ForegroundColor Green
 
-                    # SKIPPING START/CONFIG PHASE AS REQUESTED
-                    # TODO: Enable this flag when 500 errors are resolved
-                    $shouldRunRuntimeTests = $false
+                    $shouldRunRuntimeTests = $true
 
                     # Configure apache2 addons immediately after installation to prevent SSL certificate errors
                     # This must happen even in Install Only Mode to prevent addon from failing on auto-start
@@ -743,7 +747,7 @@ except Exception as e:
 
                         }
                     }
-
+                    
                     # Start add-on
                     Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
                     $startJob = Start-Job -ScriptBlock {
@@ -789,9 +793,6 @@ except Exception as e:
 
                         Start-Sleep -Seconds 2
 
-
-
-
                         # Poll for status (wait for start/pull)
                         $pollingTimeout = $addonStartTimeout
                         $started = $false
@@ -820,13 +821,13 @@ except Exception as e:
                             $testMessage = "Could not get add-on info"
                         }
                     }
-                else {
-                    Remove-Job $startJob -Force
-                    $testPassed = $false
-                    $testMessage = "Start timed out after ${addonStartTimeout}s"
+                    else {
+                        Remove-Job $startJob -Force
+                        $testPassed = $false
+                        $testMessage = "Start timed out after ${addonStartTimeout}s"
+                    }
                 }
             }
-        }
         else {
             Remove-Job $installJob -Force
             $testPassed = $false
