@@ -241,9 +241,9 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.warning "Otherwise, the database will be wiped again on next restart."
 	bashio::log.info "=================================================="
 
-	#Remove reset_database options
-	bashio::app.option 'reset_database'
-	bashio::app.option 'reset_database_confirm'
+	# Reset database options to false to prevent repeat wipes
+	bashio::app.option 'reset_database' 'false'
+	bashio::app.option 'reset_database_confirm' 'false'
 fi
 
 # --- CREATE DATA DIRECTORIES ---
