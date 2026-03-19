@@ -518,7 +518,12 @@ export function registerAPIRoutes(app) {
     try {
       const jid = getJid(number);
       if (messageId) {
-        await session.sock.readMessages([{ remoteJid: jid, id: messageId, fromMe: false }]);
+        let key = { remoteJid: jid, id: messageId, fromMe: false };
+        const msg = session.messageStore.get(messageId);
+        if (msg && msg.key) {
+           key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
+        }
+        await session.sock.readMessages([key]);
       } else {
         await session.sock.chatModify({ markRead: true, lastMessages: [] }, jid);
       }
