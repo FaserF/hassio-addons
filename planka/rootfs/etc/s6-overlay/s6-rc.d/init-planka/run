@@ -3,6 +3,7 @@
 # Ensure namespaced data directory exists
 PLANKA_DATA_DIR="/data/planka"
 mkdir -p "${PLANKA_DATA_DIR}"
+mkdir -p /opt/planka/.tmp/public/preloaded-favicons
 
 # Generate password if not exists
 if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/db_password"; then
