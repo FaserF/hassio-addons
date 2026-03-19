@@ -521,7 +521,7 @@ export function registerAPIRoutes(app) {
         let key = { remoteJid: jid, id: messageId, fromMe: false };
         const msg = session.messageStore.get(messageId);
         if (msg && msg.key) {
-           key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
+          key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
         }
         await session.sock.readMessages([key]);
       } else {
