@@ -221,6 +221,10 @@ export function registerAPIRoutes(app) {
         { quoted, ephemeralExpiration: expiration }
       );
       session.messageStore.set(sentMsg.key.id, sentMsg);
+      logger.info(
+        { pollId: sentMsg.key.id, sessionId: session.id },
+        '💾 Sent poll message saved to store'
+      );
       session.stats.sent += 1;
       session.stats.last_sent_message = `Poll: ${question}`;
       session.stats.last_sent_target = maskData(number);
@@ -518,7 +522,12 @@ export function registerAPIRoutes(app) {
     try {
       const jid = getJid(number);
       if (messageId) {
-        await session.sock.readMessages([{ remoteJid: jid, id: messageId, fromMe: false }]);
+        let key = { remoteJid: jid, id: messageId, fromMe: false };
+        const msg = session.messageStore.get(messageId);
+        if (msg && msg.key) {
+          key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
+        }
+        await session.sock.readMessages([key]);
       } else {
         await session.sock.chatModify({ markRead: true, lastMessages: [] }, jid);
       }
