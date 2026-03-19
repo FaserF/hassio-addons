@@ -32,7 +32,11 @@ export async function reply(session, jid, content) {
 export function trackSent(session, target, message) {
   const timestamp = formatHATime(new Date());
   const displayTarget = target.includes('@g.us') ? target : target.split('@')[0];
-  session.recentSent.unshift({ timestamp, target: maskData(displayTarget), message: maskData(message) });
+  session.recentSent.unshift({
+    timestamp,
+    target: maskData(displayTarget),
+    message: maskData(message),
+  });
   if (session.recentSent.length > 5) session.recentSent.pop();
 }
 
