@@ -13,7 +13,7 @@ export async function reply(session, jid, content) {
   try {
     const result = await session.sock.sendMessage(jid, content);
     const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
-    const target = jid.split('@')[0].split(':')[0];
+    const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
 
     session.stats.sent += 1;
     session.stats.last_sent_message = maskData(text);
@@ -31,15 +31,17 @@ export async function reply(session, jid, content) {
 
 export function trackSent(session, target, message) {
   const timestamp = formatHATime(new Date());
-  session.recentSent.unshift({ timestamp, target: maskData(target), message: maskData(message) });
+  const displayTarget = target.includes('@g.us') ? target : target.split('@')[0];
+  session.recentSent.unshift({ timestamp, target: maskData(displayTarget), message: maskData(message) });
   if (session.recentSent.length > 5) session.recentSent.pop();
 }
 
 export function trackReceived(session, sender, message) {
   const timestamp = formatHATime(new Date());
+  const displaySender = sender.includes('@g.us') ? sender : sender.split('@')[0];
   session.recentReceived.unshift({
     timestamp,
-    sender: maskData(sender),
+    sender: maskData(displaySender),
     message: maskData(message),
   });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
@@ -47,9 +49,10 @@ export function trackReceived(session, sender, message) {
 
 export function trackFailure(session, target, message, reason) {
   const timestamp = formatHATime(new Date());
+  const displayTarget = target.includes('@g.us') ? target : target.split('@')[0];
   session.recentFailures.unshift({
     timestamp,
-    target: maskData(target),
+    target: maskData(displayTarget),
     message: maskData(message),
     reason: reason,
   });

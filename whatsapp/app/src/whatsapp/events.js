@@ -284,10 +284,10 @@ export function handleIncomingMessages(session) {
           }
         }
 
-        const senderNumber = senderJid.split('@')[0];
-        trackReceived(session, senderNumber, text);
+        const senderDisplay = senderJid.includes('@g.us') ? senderJid : senderJid.split('@')[0];
+        trackReceived(session, senderDisplay, text);
         session.stats.last_received_message = maskData(text);
-        session.stats.last_received_sender = maskData(senderNumber);
+        session.stats.last_received_sender = maskData(senderDisplay);
         session.stats.last_received_time = Date.now();
 
         const participant = msg.key.participant || msg.participant;

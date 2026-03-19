@@ -169,9 +169,9 @@ export function registerAPIRoutes(app) {
       ]);
       session.stats.sent += 1;
       session.stats.last_sent_message = maskData(message);
-      session.stats.last_sent_target = maskData(number);
+      session.stats.last_sent_target = maskData(jid);
       session.stats.last_sent_time = Date.now();
-      trackSent(session, number, message);
+      trackSent(session, jid, message);
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       session.stats.failed += 1;
@@ -196,9 +196,9 @@ export function registerAPIRoutes(app) {
       );
       session.stats.sent += 1;
       session.stats.last_sent_message = 'Image';
-      session.stats.last_sent_target = maskData(number);
+      session.stats.last_sent_target = maskData(jid);
       session.stats.last_sent_time = Date.now();
-      trackSent(session, number, caption ? `Image: ${caption}` : 'Image');
+      trackSent(session, jid, caption ? `Image: ${caption}` : 'Image');
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       session.stats.failed += 1;
@@ -227,9 +227,9 @@ export function registerAPIRoutes(app) {
       );
       session.stats.sent += 1;
       session.stats.last_sent_message = `Poll: ${question}`;
-      session.stats.last_sent_target = maskData(number);
+      session.stats.last_sent_target = maskData(jid);
       session.stats.last_sent_time = Date.now();
-      trackSent(session, number, `Poll: ${question}`);
+      trackSent(session, jid, `Poll: ${question}`);
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       session.stats.failed += 1;
@@ -261,9 +261,9 @@ export function registerAPIRoutes(app) {
       );
       session.stats.sent += 1;
       session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
-      session.stats.last_sent_target = maskData(number);
+      session.stats.last_sent_target = maskData(jid);
       session.stats.last_sent_time = Date.now();
-      trackSent(session, number, `Location: ${title || 'Pinned'}`);
+      trackSent(session, jid, `Location: ${title || 'Pinned'}`);
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       session.stats.failed += 1;
