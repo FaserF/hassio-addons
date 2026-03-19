@@ -36,11 +36,11 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
   if (!originalPoll) {
     const allKeys = session.messageStore ? Array.from(session.messageStore.keys()) : [];
     logger.warn(
-      { 
-        pollCreationId: update.pollCreationMessageKey?.id, 
+      {
+        pollCreationId: update.pollCreationMessageKey?.id,
         sessionId,
         storeSize: allKeys.length,
-        lastKeys: allKeys.slice(-20)
+        lastKeys: allKeys.slice(-20),
       },
       'Poll vote received but original poll not found in store.'
     );
