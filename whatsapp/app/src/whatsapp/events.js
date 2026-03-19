@@ -63,6 +63,35 @@ export function bindStore(session, ev) {
       if (msg.key.id) {
         session.messageStore.set(msg.key.id, msg);
       }
+      if (msg.key.remoteJid) {
+        session.chatCache?.set(msg.key.remoteJid, true);
+      }
+    }
+  });
+
+  ev.on('chats.set', ({ chats }) => {
+    for (const chat of chats) {
+      session.chatCache?.set(chat.id, true);
+    }
+  });
+
+  ev.on('chats.upsert', (chats) => {
+    for (const chat of chats) {
+      session.chatCache?.set(chat.id, true);
+    }
+  });
+
+  ev.on('groups.upsert', (groups) => {
+    for (const group of groups) {
+      session.groupCache?.set(group.id, group.subject);
+    }
+  });
+  
+  ev.on('groups.update', (groups) => {
+    for (const group of groups) {
+      if (group.subject) {
+        session.groupCache?.set(group.id, group.subject);
+      }
     }
   });
 }
@@ -236,6 +265,9 @@ export function handleIncomingMessages(session) {
               const ext = mime.extension(mimeType) || 'bin';
               const filename = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
               const savePath = path.join(MEDIA_DIR, filename);
+              if (!fs.existsSync(MEDIA_DIR)) {
+                fs.mkdirSync(MEDIA_DIR, { recursive: true });
+              }
               fs.writeFileSync(savePath, buffer);
               mediaPath = savePath;
               mediaUrl = `/media/${filename}`;

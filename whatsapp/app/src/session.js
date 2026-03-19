@@ -55,6 +55,8 @@ export function getSession(rawSessionId) {
       recentReceived: [],
       recentFailures: [],
       messageStore: new LRUCache({ max: 1000, ttl: 1000 * 60 * 60 * 24 }), // 1000 messages or 24h
+      chatCache: new Map(),
+      groupCache: new Map(),
       statusRateLimit: new Map(), // sender -> lastStatusTime
       unauthorizedWarned: new Set(), // sender IDs
       lastInterestTime: 0, // Track when someone last looked at this session

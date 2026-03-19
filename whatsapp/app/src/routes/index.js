@@ -19,6 +19,7 @@ export function registerRoutes(app) {
   app.use('/edit_message', apiLimiter);
   app.use('/set_presence', apiLimiter);
   app.use('/groups', apiLimiter);
+  app.use('/chats', apiLimiter);
   app.use('/mark_as_read', apiLimiter);
   app.use('/logs', apiLimiter);
   app.use('/api', apiLimiter);
