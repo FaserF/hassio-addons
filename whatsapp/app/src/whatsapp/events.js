@@ -34,9 +34,15 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
   if (!update) return [];
 
   if (!originalPoll) {
+    const allKeys = session.messageStore ? Array.from(session.messageStore.keys()) : [];
     logger.warn(
-      { pollCreationId: update.pollCreationMessageKey?.id, sessionId },
-      'Poll vote received but original poll not found in store. Vote cannot be decrypted.'
+      { 
+        pollCreationId: update.pollCreationMessageKey?.id, 
+        sessionId,
+        storeSize: allKeys.length,
+        lastKeys: allKeys.slice(-20)
+      },
+      'Poll vote received but original poll not found in store.'
     );
     return [];
   }
@@ -44,7 +50,7 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
   try {
     const votes = getAggregateVotesInPollMessage({
       message: originalPoll.message,
-      pollUpdates: [pollUpdate],
+      pollUpdates: [update], // 'update' is pollUpdate.message.pollUpdateMessage
     });
 
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);

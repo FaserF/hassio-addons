@@ -221,6 +221,7 @@ export function registerAPIRoutes(app) {
         { quoted, ephemeralExpiration: expiration }
       );
       session.messageStore.set(sentMsg.key.id, sentMsg);
+      logger.info({ pollId: sentMsg.key.id, sessionId: session.id }, '💾 Sent poll message saved to store');
       session.stats.sent += 1;
       session.stats.last_sent_message = `Poll: ${question}`;
       session.stats.last_sent_target = maskData(number);
