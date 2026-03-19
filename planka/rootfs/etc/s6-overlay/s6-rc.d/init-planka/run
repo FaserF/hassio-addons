@@ -80,8 +80,8 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=========================================="
 
 	# Remove reset_database options
-	bashio::app.option 'reset_database'
-	bashio::app.option 'reset_database_confirm'
+	# bashio::app.option 'reset_database'
+	# bashio::app.option 'reset_database_confirm'
 fi
 
 # Create Planka database and user if they don't exist

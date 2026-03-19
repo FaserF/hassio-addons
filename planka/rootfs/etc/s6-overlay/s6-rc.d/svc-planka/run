@@ -7,9 +7,9 @@ bashio::log.info "Starting Planka..."
 
 # Configure environment variables
 # DB Password
-if bashio::fs.file_exists "/data/planka_db_password"; then
+if bashio::fs.file_exists "/data/planka/db_password"; then
     # Read without trailing newline
-    PLANKA_DB_PASSWORD=$(tr -d '\n' < /data/planka_db_password)
+    PLANKA_DB_PASSWORD=$(tr -d '\n' < /data/planka/db_password)
 else
     # Should not happen if init-planka ran
     PLANKA_DB_PASSWORD="planka"
@@ -36,9 +36,8 @@ export TRUST_PROXY=1
 # BASE_URL handling
 if bashio::config.has_value 'base_url'; then
     export BASE_URL="$(bashio::config 'base_url')"
-elif bashio::var.has_value "$(bashio::app.ingress_entry)"; then
-    export BASE_URL="http://localhost$(bashio::app.ingress_entry)"
 else
+    # Fallback to localhost if no base_url provided
     export BASE_URL="http://localhost:1337"
 fi
 export SAILS_SECURITY_CORS_ALLOW_ORIGINS='*'

@@ -27,6 +27,7 @@ RUN \
         curl \
         su-exec \
         openssl \
+        squid \
     && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
