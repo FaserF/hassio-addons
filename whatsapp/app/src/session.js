@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { LRUCache } from 'lru-cache';
+import { BufferJSON } from '@whiskeysockets/baileys';
 import { logger } from './logger.js';
 import { DATA_DIR, AUTH_DIR, BAILEYS_VERSION } from './config.js';
 import { formatHATime } from './utils/format.js';
@@ -95,7 +96,7 @@ export function saveMessageStore(session) {
   const file = path.join(getAuthDir(session.id), 'message_store.json');
   try {
     const data = session.messageStore.dump();
-    fs.writeFileSync(file, JSON.stringify(data));
+    fs.writeFileSync(file, JSON.stringify(data, BufferJSON.replacer));
     logger.debug({ sessionId: session.id }, '💾 Message store saved to disk');
   } catch (e) {
     logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save message store');
@@ -109,7 +110,7 @@ export function loadMessageStore(session) {
   const file = path.join(getAuthDir(session.id), 'message_store.json');
   if (fs.existsSync(file)) {
     try {
-      const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      const data = JSON.parse(fs.readFileSync(file, 'utf-8'), BufferJSON.reviver);
       session.messageStore.load(data);
       logger.info(
         { sessionId: session.id, entries: data.length },

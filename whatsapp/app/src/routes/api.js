@@ -220,6 +220,7 @@ export function registerAPIRoutes(app) {
         { poll: { name: question, values: options, selectableCount: 1 } },
         { quoted, ephemeralExpiration: expiration }
       );
+      session.messageStore.set(sentMsg.key.id, sentMsg);
       session.stats.sent += 1;
       session.stats.last_sent_message = `Poll: ${question}`;
       session.stats.last_sent_target = maskData(number);
