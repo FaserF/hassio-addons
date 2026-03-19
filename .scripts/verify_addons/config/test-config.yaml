@@ -112,5 +112,5 @@ supervisorTests:
 
   # Timeout settings (in seconds)
   supervisorStartupTimeout: 300
-  AppInstallTimeout: 300
-  AppStartTimeout: 600
+  addonInstallTimeout: 300
+  addonStartTimeout: 660

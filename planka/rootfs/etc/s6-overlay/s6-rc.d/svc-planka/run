@@ -1,4 +1,7 @@
 #!/usr/bin/env bashio
+# shellcheck disable=SC1091
+source /usr/lib/bashio/app.sh
+source /usr/lib/bashio/banner.sh
 
 # Set strict error handling
 set -o pipefail
@@ -20,6 +23,7 @@ ENCODED_PASS=$(python3 -c "import urllib.parse, os; print(urllib.parse.quote(os.
 
 export DATABASE_URL="postgresql://planka:${ENCODED_PASS}@localhost:5432/planka"
 export PORT=1337
+export NODE_ENV=production
 
 # Secret Key
 SECRET=$(bashio::config 'secret_key')
@@ -33,9 +37,13 @@ fi
 export SECRET_KEY="$SECRET"
 export TRUST_PROXY=1
 
+bashio::app.print_banner
+
 # BASE_URL handling
 if bashio::config.has_value 'base_url'; then
     export BASE_URL="$(bashio::config 'base_url')"
+elif bashio::var.has_value "$(bashio::app.ingress_entry)"; then
+    export BASE_URL="http://localhost$(bashio::app.ingress_entry)"
 else
     # Fallback to localhost if no base_url provided
     export BASE_URL="http://localhost:1337"

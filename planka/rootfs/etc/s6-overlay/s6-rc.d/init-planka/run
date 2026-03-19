@@ -1,4 +1,6 @@
 #!/usr/bin/env bashio
+# shellcheck disable=SC1091
+source /usr/lib/bashio/app.sh
 
 # Ensure namespaced data directory exists
 PLANKA_DATA_DIR="/data/planka"
@@ -81,8 +83,8 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=========================================="
 
 	# Remove reset_database options
-	# bashio::app.option 'reset_database'
-	# bashio::app.option 'reset_database_confirm'
+	bashio::app.option 'reset_database'
+	bashio::app.option 'reset_database_confirm'
 fi
 
 # Create Planka database and user if they don't exist
@@ -115,8 +117,12 @@ if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
 
     # Store credentials for later (after Planka service is running)
     cat > /data/planka/create_admin_user.sh << 'EOFSCRIPT'
-#!/bin/bash
+#!/usr/bin/env bashio
+# shellcheck disable=SC1091
+source /usr/lib/bashio/app.sh
+
 # Wait for Planka to be fully ready
+bashio::log.info "Admin creator: Waiting for Planka to be fully ready..."
 sleep 10
 
 # Read saved password
