@@ -29,7 +29,7 @@ const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 /**
  * Resolves encrypted poll votes to human-readable option names.
  */
-function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
+function resolvePollVotes(pollUpdate, originalPoll, session) {
   const update = pollUpdate.message?.pollUpdateMessage;
   if (!update) return [];
 
@@ -38,7 +38,7 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
     logger.warn(
       {
         pollCreationId: update.pollCreationMessageKey?.id,
-        sessionId,
+        sessionId: session.id,
         storeSize: allKeys.length,
         lastKeys: allKeys.slice(-20),
       },
@@ -56,7 +56,7 @@ function resolvePollVotes(pollUpdate, originalPoll, sessionId) {
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
     logger.warn(
-      { error: err.message, sessionId, stack: err.stack },
+      { error: err.message, sessionId: session.id, stack: err.stack },
       'Failed to resolve poll votes'
     );
     return [];
@@ -239,7 +239,7 @@ export function handleIncomingMessages(session) {
           eventType = 'poll_update';
           const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
           const originalPoll = session.messageStore.get(pollCreationId);
-          vote = resolvePollVotes(msg, originalPoll, session.id);
+          vote = resolvePollVotes(msg, originalPoll, session);
           text =
             vote.length > 0
               ? `[Poll Vote] ${vote.join(', ')}`

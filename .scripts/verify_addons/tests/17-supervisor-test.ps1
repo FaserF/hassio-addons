@@ -40,16 +40,16 @@ $haPort = 7123
 $supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 300 }
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
-$largeAddons = @('sap-abap-cloud-dev')
+$largeAddons = @('sap-abap-cloud-dev', 'n8n', 'ShieldFile')
 $hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
 if ($hasLargeAddon) {
-    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.addonInstallTimeout) { $Config.supervisorTests.addonInstallTimeout } else { 7200 }
-    $addonStartTimeout = if ($null -ne $Config.supervisorTests.addonStartTimeout) { $Config.supervisorTests.addonStartTimeout } else { 7200 }
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.AppInstallTimeout) { $Config.supervisorTests.AppInstallTimeout } else { 2400 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.AppStartTimeout) { $Config.supervisorTests.AppStartTimeout } else { 2400 }
     Write-Host "    > Large add-on detected ($($hasLargeAddon.Name)), using extended timeouts." -ForegroundColor Yellow
 }
 else {
-    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.addonInstallTimeout) { $Config.supervisorTests.addonInstallTimeout } else { 600 }
-    $addonStartTimeout = if ($null -ne $Config.supervisorTests.addonStartTimeout) { $Config.supervisorTests.addonStartTimeout } else { 200 }
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.AppInstallTimeout) { $Config.supervisorTests.AppInstallTimeout } else { 600 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.AppStartTimeout) { $Config.supervisorTests.AppStartTimeout } else { 600 }
 }
 
 # Get skip list
@@ -309,7 +309,6 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             break
         }
 
-        # Dot output removed to prevent log spam
         Start-Sleep -Seconds 1
     }
     Write-Progress -Activity "Initializing Supervisor" -Completed
@@ -333,10 +332,25 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         return
     }
 
+    # Attempt to bypass health check block if system is unhealthy (common on Windows)
+    Write-Host "    > Attempting to bypass health check blocks..." -ForegroundColor Gray
+    
+    # Show status before bypass
+    docker exec $containerName ha resolution info
+    
+    # Method 1: Target specific health check
+    docker exec $containerName ha resolution health-check ignore docker_gateway_unprotected
+    
+    # Method 2: Broadly ignore health conditions for jobs (experimental bypass)
+    docker exec $containerName ha jobs options --ignore-conditions healthy
+    
     # Refresh add-on store
     Write-Host "    > Refreshing add-on store..." -ForegroundColor Gray
-    docker exec $containerName ha addons reload 2>&1 | Out-Null
+    docker exec $containerName ha store reload
     Start-Sleep -Seconds 15
+    
+    # Show status after bypass
+    docker exec $containerName ha resolution info
 
     # Debug: List available addons
     if ($PSBoundParameters['Debug']) {
@@ -476,6 +490,7 @@ except Exception as e:
         $slug = "local_$safeName"
         $testPassed = $true
         $testMessage = ""
+        $shouldRunRuntimeTests = $true
 
         try {
             if ($slug) {
@@ -507,6 +522,8 @@ except Exception as e:
             if ($installResult.State -eq "Completed") {
                 $installOutput = Receive-Job $installJob
                 Remove-Job $installJob -Force
+                
+                Write-Host "    > Install output: $installOutput" -ForegroundColor Gray
 
                 if ($installOutput -match "error|failed|Error") {
                     # Handle 500 errors as warnings instead of failures

@@ -8,9 +8,11 @@ arch:
   - amd64
 init: false
 ingress: true
+ingress_port: 8098
 panel_icon: mdi:shield-lock
 ports:
   8443/tcp: 8443
+  8098/tcp: 8098
 ports_description:
   8443/tcp: "Direct Secure Access (HTTPS)"
 map:
@@ -27,7 +29,7 @@ options:
       password: "changeme1234"
   base_directory: "/share"
   port: 8443
-  log_level: "info"
+  log_level: info
 schema:
   certfile: str
   keyfile: str

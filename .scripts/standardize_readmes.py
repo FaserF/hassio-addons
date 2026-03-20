@@ -298,7 +298,7 @@ def process_addon(addon_path):
 
     # Header
     new_content = f"# {name}\n\n"
-    new_content += f'<img src="{raw_logo_url}" width="100" />\n\n'
+    new_content += f'<img src="{raw_logo_url}" width="100" alt="Logo" />\n\n'
     new_content += generate_badges(slug, name, addon_path) + "\n\n"
     new_content += f"> {description}\n\n"
     new_content += "---\n\n"

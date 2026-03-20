@@ -126,9 +126,9 @@ foreach ($addon in $Addons) {
     # Check if ingress_port matches any exposed port
     if ($ingressConfig.ingress_port -and $ingressConfig.ports) {
         $portMatched = $false
-        foreach ($portDef in $ingressConfig.ports.PSObject.Properties) {
+        foreach ($portDef in $ingressConfig.ports.GetEnumerator()) {
             # Parse port definition (e.g., "8066/tcp")
-            if ($portDef.Name -match '^(\d+)') {
+            if ($portDef.Key -match '^(\d+)') {
                 if ([int]$matches[1] -eq [int]$ingressConfig.ingress_port) {
                     $portMatched = $true
                     break

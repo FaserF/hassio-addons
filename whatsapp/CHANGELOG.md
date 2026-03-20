@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.4.8 (2026-03-19)
+
+### ✨ Features
+
+- new feat: sensor to display chats and group informations ([`0659b38d`](https://github.com/FaserF/hassio-addons/commit/0659b38d46d49d1df376eb740b745079bc81d4d4))
+
+### 📦 Dependencies
+
+- build(deps): bump music-metadata from 11.10.3 to 11.12.3 in /whatsapp/app in the npm_and_yarn group across 1 directory (#692) [skip-tests] ([`7856b5a2`](https://github.com/FaserF/hassio-addons/commit/7856b5a228aaa7e2221fad70f706d4d9dcfcb4be))
+
+### 🚀 Other
+
+- small qol improvements ([`b360430f`](https://github.com/FaserF/hassio-addons/commit/b360430fde43d889aeaad09f481ba0d7c682df7e))
+- small fix for polls #678 ([`dc6578fc`](https://github.com/FaserF/hassio-addons/commit/dc6578fc8a5a65868758606d21e280a206fdac06))
+- fix chats not being marked as read ([`b57815de`](https://github.com/FaserF/hassio-addons/commit/b57815de5f61df6c87d9bc41cb8b284a03105e62))
+- Improved polls fetching #678 ([`d630bdcc`](https://github.com/FaserF/hassio-addons/commit/d630bdccf9936e3c09cdc5facb48ab446b83a915))
+- improved poll handling #678 ([`258ed476`](https://github.com/FaserF/hassio-addons/commit/258ed4760894994ed0dcc7c9f15cc39ae0204f33))
+
 ## 1.4.7 (2026-03-17)
 
 ### ✨ Features
