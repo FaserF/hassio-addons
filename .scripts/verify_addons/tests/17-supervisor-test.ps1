@@ -37,19 +37,19 @@ $devcontainerImage = "ghcr.io/home-assistant/devcontainer:addons"
 $containerName = "ha-supervisor-test-local"
 $networkName = "ha-supervisor-test-net"
 $haPort = 7123
-$supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 300
+$supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 300 }
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
 $largeAddons = @('sap-abap-cloud-dev', 'n8n', 'ShieldFile')
 $hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
 if ($hasLargeAddon) {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 2400
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 2400
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.AppInstallTimeout) { $Config.supervisorTests.AppInstallTimeout } else { 2400 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.AppStartTimeout) { $Config.supervisorTests.AppStartTimeout } else { 2400 }
     Write-Host "    > Large add-on detected ($($hasLargeAddon.Name)), using extended timeouts." -ForegroundColor Yellow
 }
 else {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 1200
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 200
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.AppInstallTimeout) { $Config.supervisorTests.AppInstallTimeout } else { 600 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.AppStartTimeout) { $Config.supervisorTests.AppStartTimeout } else { 600 }
 }
 
 # Get skip list
@@ -294,6 +294,10 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         $checkResult = docker exec $containerName ha supervisor info 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host " Ready!" -ForegroundColor Green
+
+    # Ignore health conditions for jobs (essential for devcontainer/CI environments)
+    Write-Host "    > Configuring Supervisor to ignore health conditions..." -ForegroundColor Gray
+    docker exec $containerName ha jobs options --ignore-conditions healthy 2>&1 | Out-Null
             $supervisorReady = $true
             break
         }
@@ -343,7 +347,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     # Refresh add-on store
     Write-Host "    > Refreshing add-on store..." -ForegroundColor Gray
     docker exec $containerName ha store reload
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 15
     
     # Show status after bypass
     docker exec $containerName ha resolution info
@@ -554,11 +558,7 @@ except Exception as e:
                 else {
                     Write-Host "    ✅ Install successful" -ForegroundColor Green
 
-                    # SKIPPING START/CONFIG PHASE AS REQUESTED
-                    # For large addons, we only verify installation to avoid CI timeouts/resource issues
-                    if ($largeAddons -contains $addon.Name) {
-                        $shouldRunRuntimeTests = $false
-                    }
+                    $shouldRunRuntimeTests = $true
 
                     # Configure apache2 addons immediately after installation to prevent SSL certificate errors
                     # This must happen even in Install Only Mode to prevent addon from failing on auto-start
@@ -763,13 +763,15 @@ except Exception as e:
                             }
 
                         }
-                        # Start add-on
-                        Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
-                        $startJob = Start-Job -ScriptBlock {
-                            param($containerName, $slug, $debugPref)
-                            if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                            docker exec $containerName ha addons start $slug 2>&1
-                        } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
+                    }
+                    
+                    # Start add-on
+                    Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
+                    $startJob = Start-Job -ScriptBlock {
+                        param($containerName, $slug, $debugPref)
+                        if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
+                        docker exec $containerName ha addons start $slug 2>&1
+                    } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
 
                     $startResult = Wait-Job $startJob -Timeout $addonStartTimeout
                     if ($startResult.State -eq "Completed") {
@@ -808,9 +810,6 @@ except Exception as e:
 
                         Start-Sleep -Seconds 2
 
-
-
-
                         # Poll for status (wait for start/pull)
                         $pollingTimeout = $addonStartTimeout
                         $started = $false
@@ -839,15 +838,14 @@ except Exception as e:
                             $testPassed = $false
                             $testMessage = "Could not get add-on info"
                         }
-                        }
-                        else {
-                            Remove-Job $startJob -Force
-                            $testPassed = $false
-                            $testMessage = "Start timed out after ${addonStartTimeout}s"
-                        }
-                    } # This is the end of the runtime tests block (else from 660)
-                } # This is the end of the successful install block (else from 554)
-        }
+                    }
+                    else {
+                        Remove-Job $startJob -Force
+                        $testPassed = $false
+                        $testMessage = "Start timed out after ${addonStartTimeout}s"
+                    }
+                }
+            }
         else {
             Remove-Job $installJob -Force
             $testPassed = $false

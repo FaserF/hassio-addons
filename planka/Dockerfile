@@ -1,5 +1,5 @@
 ARG BUILD_FROM
-FROM ghcr.io/plankanban/planka:1.26.3 AS planka
+FROM ghcr.io/plankanban/planka:2.1.0 AS planka
 
 FROM ${BUILD_FROM}
 
@@ -27,6 +27,7 @@ RUN \
         curl \
         su-exec \
         openssl \
+        squid \
     && pip3 install --no-cache-dir --break-system-packages setuptools
 
 # Copy Planka
@@ -56,4 +57,8 @@ LABEL \
 
 # Healthcheck
 HEALTHCHECK \
+    --interval=30s \
+    --timeout=30s \
+    --start-period=30s \
+    --retries=3 \
     CMD curl --fail http://127.0.0.1:1337 || exit 1

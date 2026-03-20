@@ -1,8 +1,11 @@
 #!/usr/bin/env bashio
+# shellcheck disable=SC1091
+source /usr/lib/bashio/app.sh
 
 # Ensure namespaced data directory exists
 PLANKA_DATA_DIR="/data/planka"
 mkdir -p "${PLANKA_DATA_DIR}"
+mkdir -p /opt/planka/.tmp/public/preloaded-favicons
 
 # Generate password if not exists
 if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/db_password"; then
@@ -114,8 +117,12 @@ if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
 
     # Store credentials for later (after Planka service is running)
     cat > /data/planka/create_admin_user.sh << 'EOFSCRIPT'
-#!/bin/bash
+#!/usr/bin/env bashio
+# shellcheck disable=SC1091
+source /usr/lib/bashio/app.sh
+
 # Wait for Planka to be fully ready
+bashio::log.info "Admin creator: Waiting for Planka to be fully ready..."
 sleep 10
 
 # Read saved password

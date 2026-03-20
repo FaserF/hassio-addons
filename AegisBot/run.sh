@@ -312,10 +312,12 @@ export PROJECT_NAME
 
 # Telegram Credentials
 if bashio::config.has_value 'telegram_bot_token'; then
-	export TELEGRAM_BOT_TOKEN=$(bashio::config 'telegram_bot_token')
+	TELEGRAM_BOT_TOKEN=$(bashio::config 'telegram_bot_token')
+	export TELEGRAM_BOT_TOKEN
 fi
 if bashio::config.has_value 'telegram_bot_username'; then
-	export TELEGRAM_BOT_USERNAME=$(bashio::config 'telegram_bot_username')
+	TELEGRAM_BOT_USERNAME=$(bashio::config 'telegram_bot_username')
+	export TELEGRAM_BOT_USERNAME
 fi
 
 # Debug Mode
@@ -345,19 +347,24 @@ fi
 
 # AI & Security Configurations
 if bashio::config.has_value 'openai_api_key'; then
-	export OPENAI_API_KEY=$(bashio::config 'openai_api_key')
+	OPENAI_API_KEY=$(bashio::config 'openai_api_key')
+	export OPENAI_API_KEY
 fi
 if bashio::config.has_value 'gemini_api_key'; then
-	export GEMINI_API_KEY=$(bashio::config 'gemini_api_key')
+	GEMINI_API_KEY=$(bashio::config 'gemini_api_key')
+	export GEMINI_API_KEY
 fi
 if bashio::config.has_value 'security_scan_api_key'; then
-	export SECURITY_SCAN_API_KEY=$(bashio::config 'security_scan_api_key')
+	SECURITY_SCAN_API_KEY=$(bashio::config 'security_scan_api_key')
+	export SECURITY_SCAN_API_KEY
 fi
 if bashio::config.has_value 'ai_model'; then
-	export AI_MODEL=$(bashio::config 'ai_model')
+	AI_MODEL=$(bashio::config 'ai_model')
+	export AI_MODEL
 fi
 if bashio::config.has_value 'default_locale'; then
-	export DEFAULT_LOCALE=$(bashio::config 'default_locale')
+	DEFAULT_LOCALE=$(bashio::config 'default_locale')
+	export DEFAULT_LOCALE
 fi
 
 # GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
