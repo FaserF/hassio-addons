@@ -15,7 +15,7 @@ https://github.com/login.*
 https://github.com/FaserF/hassio-addons/issues/new.*
 
 # Home Assistant documentation that might be flaky or redirected
-https://www.home-assistant.io/addons/
+# (Pointed to /apps/ now)
 
 # GitHub Packages (GHCR) links that might 404 until first publish
 https://github.com/FaserF/hassio-addons/pkgs/container/.*
