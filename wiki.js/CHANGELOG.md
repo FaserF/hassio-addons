@@ -22,7 +22,7 @@
 ### 📦 Dependencies
 
 - fix App startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/App-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v20 [skip-tests] (#616) ([`09e8340b`](https://github.com/FaserF/hassio-addons/commit/09e8340b06c4263037fab6cf6d90fc913c7f99d5))
 
 ### 📝 Documentation
@@ -185,11 +185,11 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 2.2.1
 
-- Automatically updated App-base to version v19.0.0
+- Automatically updated addon-base to version v19.0.0
 
 ## 2.2.0
 
-- Automatically updated App-base to version v19.0.0
+- Automatically updated addon-base to version v19.0.0
 - Drop support for armhf, armv7, and i386 systems
 
 ## 2.1.2
@@ -198,36 +198,36 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 2.1.1
 
-- Automatically updated App-base to version v18.2.1
+- Automatically updated addon-base to version v18.2.1
 
 ## 2.1.0
 
-- Automatically updated App-base to version v18.0.1
+- Automatically updated addon-base to version v18.0.1
 
 ## 2.0.15
 
-- Automatically updated App-base to version v17.2.5
+- Automatically updated addon-base to version v17.2.5
 
 ## 2.0.14
 
-- Automatically updated App-base to version v17.2.2
+- Automatically updated addon-base to version v17.2.2
 
 ## 2.0.13
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 2.0.12
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 2.0.11
 
 - PLEASE SWITCH TO <https://github.com/jdeath/homeassistant-Apps/tree/main/wikijs>
-- Downgrade to App-base v17.1.5 since the latest 17.2.X version breaks the installation
+- Downgrade to addon-base v17.1.5 since the latest 17.2.X version breaks the installation
 
 ## 2.0.10
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 2.0.9
 
@@ -237,27 +237,27 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 2.0.8
 
-- automatically update App-base to version v17.0.1
+- automatically update addon-base to version v17.0.1
 
 ## 2.0.7
 
-- automatically update App-base to version v17.0.0
+- automatically update addon-base to version v17.0.0
 
 ## 2.0.6
 
-- automatically update App-base to version v16.3.6
+- automatically update addon-base to version v16.3.6
 
 ## 2.0.5
 
-- automatically update App-base to version v16.3.5
+- automatically update addon-base to version v16.3.5
 
 ## 2.0.4
 
-- automatically update App-base to version v16.3.4
+- automatically update addon-base to version v16.3.4
 
 ## 2.0.3
 
-- automatically update App-base to version v16.3.3
+- automatically update addon-base to version v16.3.3
 
 ## 2.0.2
 
@@ -265,34 +265,34 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 2.0.1
 
-- automatically update App-base to version v16.3.2
+- automatically update addon-base to version v16.3.2
 
 ## 2.0.0
 
-- automatically update App-base to version v16.3.1
+- automatically update addon-base to version v16.3.1
 - automatically update wikijs to version v2.5.304
 - update Node.JS to v22.9.0
 
 ## 1.7.0
 
-- automatically update App-base to version v16.3.0
+- automatically update addon-base to version v16.3.0
 
 ## 1.6.9
 
-- automatically update App-base to version v16.2.1
+- automatically update addon-base to version v16.2.1
 
 ## 1.6.8
 
-- automatically update App-base to version v16.1.3
+- automatically update addon-base to version v16.1.3
 
 ## 1.6.7
 
-- automatically update App-base to version v16.1.2
+- automatically update addon-base to version v16.1.2
 - bump yarn to 1.22.22
 
 ## 1.6.6
 
-- automatically update App-base to version v16.0.0
+- automatically update addon-base to version v16.0.0
 
 ## 1.6.5
 

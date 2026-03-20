@@ -22,11 +22,11 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 1.8.1
 
-- Automatically updated App-base to version v19.0.0
+- Automatically updated addon-base to version v19.0.0
 
 ## 1.8.0
 
-- Automatically updated App-base to version v19.0.0
+- Automatically updated addon-base to version v19.0.0
 - Drop support for armhf, armv7, and i386 systems
 
 ## 1.7.6
@@ -35,23 +35,23 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 1.7.5
 
-- Automatically updated App-base to version v18.2.1
+- Automatically updated addon-base to version v18.2.1
 
 ## 1.7.4
 
-- Automatically updated App-base to version v17.2.5
+- Automatically updated addon-base to version v17.2.5
 
 ## 1.7.3
 
-- Automatically updated App-base to version v17.2.2
+- Automatically updated addon-base to version v17.2.2
 
 ## 1.7.2
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 1.7.1
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 1.7.0
 
@@ -59,55 +59,55 @@ This release represents a significant effort to standardize and improve all Apps
 
 ## 1.6.23
 
-- Automatically updated App-base to version v17.2.1
+- Automatically updated addon-base to version v17.2.1
 
 ## 1.6.22
 
-- automatically update App-base to version v17.0.1
+- automatically update addon-base to version v17.0.1
 
 ## 1.6.21
 
-- automatically update App-base to version v17.0.0
+- automatically update addon-base to version v17.0.0
 
 ## 1.6.20
 
-- automatically update App-base to version v16.3.6
+- automatically update addon-base to version v16.3.6
 
 ## 1.6.19
 
-- automatically update App-base to version v16.3.5
+- automatically update addon-base to version v16.3.5
 
 ## 1.6.18
 
-- automatically update App-base to version v16.3.4
+- automatically update addon-base to version v16.3.4
 
 ## 1.6.17
 
-- automatically update App-base to version v16.3.3
+- automatically update addon-base to version v16.3.3
 
 ## 1.6.16
 
-- automatically update App-base to version v16.3.2
+- automatically update addon-base to version v16.3.2
 
 ## 1.6.15
 
-- automatically update App-base to version v16.3.1
+- automatically update addon-base to version v16.3.1
 
 ## 1.6.14
 
-- automatically update App-base to version v16.3.0
+- automatically update addon-base to version v16.3.0
 
 ## 1.6.13
 
-- automatically update App-base to version v16.2.1
+- automatically update addon-base to version v16.2.1
 
 ## 1.6.12
 
-- automatically update App-base to version v16.1.3
+- automatically update addon-base to version v16.1.3
 
 ## 1.6.11
 
-- automatically update App-base to version v16.0.0
+- automatically update addon-base to version v16.0.0
 
 ## 1.6.10
 
