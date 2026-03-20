@@ -699,7 +699,7 @@ jobs:
 
       - name: 🏗️ Test Build
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: home-assistant/builder@2026.03.2
+        uses: home-assistant/actions/builder@master
         with:
           args: |
             --test \
@@ -1079,7 +1079,7 @@ jobs:
             -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
             -v "$(pwd)":/data \
             -v /tmp/.buildx-cache-${{ matrix.App }}:/cache:rw \
-            ghcr.io/home-assistant/amd64-builder:2025.11.0 \
+            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
             $(echo -e "$BUILDER_ARGS") \
             --target "/data/${{ matrix.App }}" \
             --image "$IMAGE_NAME" \
