@@ -57,4 +57,8 @@ LABEL \
 
 # Healthcheck
 HEALTHCHECK \
+    --interval=30s \
+    --timeout=30s \
+    --start-period=30s \
+    --retries=3 \
     CMD curl --fail http://127.0.0.1:1337 || exit 1

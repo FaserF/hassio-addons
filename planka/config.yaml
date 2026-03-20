@@ -12,6 +12,7 @@ map:
   - ssl
 init: false
 ingress: true
+ingress_entry: /
 ingress_port: 1337
 panel_icon: mdi:kanban
 options:
@@ -31,6 +32,6 @@ schema:
   reset_database: bool?
   reset_database_confirm: bool?
 ports:
-  1337/tcp: 1337
+  "1337": 1337
 ports_description:
-  1337/tcp: Web Interface
+  "1337": Web Interface

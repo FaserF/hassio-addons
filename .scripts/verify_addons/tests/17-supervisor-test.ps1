@@ -37,19 +37,19 @@ $devcontainerImage = "ghcr.io/home-assistant/devcontainer:addons"
 $containerName = "ha-supervisor-test-local"
 $networkName = "ha-supervisor-test-net"
 $haPort = 7123
-$supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 300
+$supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 300 }
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
 $largeAddons = @('sap-abap-cloud-dev')
 $hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
 if ($hasLargeAddon) {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 7200
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 7200
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.addonInstallTimeout) { $Config.supervisorTests.addonInstallTimeout } else { 7200 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.addonStartTimeout) { $Config.supervisorTests.addonStartTimeout } else { 7200 }
     Write-Host "    > Large add-on detected ($($hasLargeAddon.Name)), using extended timeouts." -ForegroundColor Yellow
 }
 else {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 600
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 200
+    $addonInstallTimeout = if ($null -ne $Config.supervisorTests.addonInstallTimeout) { $Config.supervisorTests.addonInstallTimeout } else { 600 }
+    $addonStartTimeout = if ($null -ne $Config.supervisorTests.addonStartTimeout) { $Config.supervisorTests.addonStartTimeout } else { 200 }
 }
 
 # Get skip list
@@ -336,7 +336,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     # Refresh add-on store
     Write-Host "    > Refreshing add-on store..." -ForegroundColor Gray
     docker exec $containerName ha addons reload 2>&1 | Out-Null
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 15
 
     # Debug: List available addons
     if ($PSBoundParameters['Debug']) {
@@ -815,6 +815,7 @@ except Exception as e:
 
                         if ($started) {
                             Write-Host "    ✅ Add-on running (Simplified Check)" -ForegroundColor Green
+                            $testPassed = $true
                             $testMessage = "PASS (State: started)"
                         } else {
                             $testPassed = $false
