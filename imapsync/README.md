@@ -62,32 +62,32 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 
 ```yaml
 jobs:
-- additional_cli_args: []
-  delete_after_sync: false
-  destination_auth_type: password
-  destination_host: imap.example.net
-  destination_oauth2_client_id: ''
-  destination_oauth2_client_secret: ''
-  destination_oauth2_refresh_token: ''
-  destination_oauth2_tenant_id: ''
-  destination_password: ''
-  destination_user: dest@example.net
-  dry_run: false
-  excluded_folders: []
-  included_folders: []
-  max_age: 0
-  max_size: 0
-  source_auth_type: password
-  source_host: imap.example.com
-  source_oauth2_client_id: ''
-  source_oauth2_client_secret: ''
-  source_oauth2_refresh_token: ''
-  source_oauth2_tenant_id: ''
-  source_password: ''
-  source_user: source@example.com
-  subscribe_folders: true
-  sync_gmail_labels: false
-  sync_internal_dates: true
+  - additional_cli_args: []
+    delete_after_sync: false
+    destination_auth_type: password
+    destination_host: imap.example.net
+    destination_oauth2_client_id: ''
+    destination_oauth2_client_secret: ''
+    destination_oauth2_refresh_token: ''
+    destination_oauth2_tenant_id: ''
+    destination_password: ''
+    destination_user: dest@example.net
+    dry_run: false
+    excluded_folders: []
+    included_folders: []
+    max_age: 0
+    max_size: 0
+    source_auth_type: password
+    source_host: imap.example.com
+    source_oauth2_client_id: ''
+    source_oauth2_client_secret: ''
+    source_oauth2_refresh_token: ''
+    source_oauth2_tenant_id: ''
+    source_password: ''
+    source_user: source@example.com
+    subscribe_folders: true
+    sync_gmail_labels: false
+    sync_internal_dates: true
 log_level: info
 sync_interval: 3600
 ```
