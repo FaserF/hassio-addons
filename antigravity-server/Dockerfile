@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.1.0 # hadolint ignore=DL3008
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.2.0 # hadolint ignore=DL3008
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
