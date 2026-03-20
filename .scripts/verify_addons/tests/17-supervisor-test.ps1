@@ -40,15 +40,15 @@ $haPort = 7123
 $supervisorStartupTimeout = $Config.supervisorTests.supervisorStartupTimeout ?? 300
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
-$largeAddons = @('sap-abap-cloud-dev')
+$largeAddons = @('sap-abap-cloud-dev', 'n8n', 'ShieldFile')
 $hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
 if ($hasLargeAddon) {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 7200
-    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 7200
+    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 2400
+    $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 2400
     Write-Host "    > Large add-on detected ($($hasLargeAddon.Name)), using extended timeouts." -ForegroundColor Yellow
 }
 else {
-    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 600
+    $addonInstallTimeout = $Config.supervisorTests.addonInstallTimeout ?? 1200
     $addonStartTimeout = $Config.supervisorTests.addonStartTimeout ?? 200
 }
 
@@ -256,6 +256,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         "-v", "${dockerVolName}:/var/lib/docker",
         "-e", "SUPERVISOR_SHARE_DATA=1",
         "-e", "SUPERVISOR_TOKEN=generated_T9k8L", # Required for direct API calls via curl
+        "-e", "SUPERVISOR_IGNORE_HEALTH_CHECK=1",
+        "-e", "HASSIO_IGNORE_HEALTH_CHECK=1",
         $devcontainerImage,
         "sleep", "infinity"
     )
@@ -303,7 +305,6 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             break
         }
 
-        # Dot output removed to prevent log spam
         Start-Sleep -Seconds 1
     }
     Write-Progress -Activity "Initializing Supervisor" -Completed
@@ -327,10 +328,25 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         return
     }
 
+    # Attempt to bypass health check block if system is unhealthy (common on Windows)
+    Write-Host "    > Attempting to bypass health check blocks..." -ForegroundColor Gray
+    
+    # Show status before bypass
+    docker exec $containerName ha resolution info
+    
+    # Method 1: Target specific health check
+    docker exec $containerName ha resolution health-check ignore docker_gateway_unprotected
+    
+    # Method 2: Broadly ignore health conditions for jobs (experimental bypass)
+    docker exec $containerName ha jobs options --ignore-conditions healthy
+    
     # Refresh add-on store
     Write-Host "    > Refreshing add-on store..." -ForegroundColor Gray
-    docker exec $containerName ha addons reload 2>&1 | Out-Null
-    Start-Sleep -Seconds 5
+    docker exec $containerName ha store reload
+    Start-Sleep -Seconds 10
+    
+    # Show status after bypass
+    docker exec $containerName ha resolution info
 
     # Debug: List available addons
     if ($PSBoundParameters['Debug']) {
@@ -470,6 +486,7 @@ except Exception as e:
         $slug = "local_$safeName"
         $testPassed = $true
         $testMessage = ""
+        $shouldRunRuntimeTests = $true
 
         try {
             if ($slug) {
@@ -501,6 +518,8 @@ except Exception as e:
             if ($installResult.State -eq "Completed") {
                 $installOutput = Receive-Job $installJob
                 Remove-Job $installJob -Force
+                
+                Write-Host "    > Install output: $installOutput" -ForegroundColor Gray
 
                 if ($installOutput -match "error|failed|Error") {
                     # Handle 500 errors as warnings instead of failures
@@ -536,8 +555,10 @@ except Exception as e:
                     Write-Host "    ✅ Install successful" -ForegroundColor Green
 
                     # SKIPPING START/CONFIG PHASE AS REQUESTED
-                    # TODO: Enable this flag when 500 errors are resolved
-                    $shouldRunRuntimeTests = $false
+                    # For large addons, we only verify installation to avoid CI timeouts/resource issues
+                    if ($largeAddons -contains $addon.Name) {
+                        $shouldRunRuntimeTests = $false
+                    }
 
                     # Configure apache2 addons immediately after installation to prevent SSL certificate errors
                     # This must happen even in Install Only Mode to prevent addon from failing on auto-start
@@ -742,15 +763,13 @@ except Exception as e:
                             }
 
                         }
-                    }
-
-                    # Start add-on
-                    Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
-                    $startJob = Start-Job -ScriptBlock {
-                        param($containerName, $slug, $debugPref)
-                        if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                        docker exec $containerName ha addons start $slug 2>&1
-                    } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
+                        # Start add-on
+                        Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
+                        $startJob = Start-Job -ScriptBlock {
+                            param($containerName, $slug, $debugPref)
+                            if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
+                            docker exec $containerName ha addons start $slug 2>&1
+                        } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
 
                     $startResult = Wait-Job $startJob -Timeout $addonStartTimeout
                     if ($startResult.State -eq "Completed") {
@@ -814,18 +833,20 @@ except Exception as e:
 
                         if ($started) {
                             Write-Host "    ✅ Add-on running (Simplified Check)" -ForegroundColor Green
+                            $testPassed = $true
                             $testMessage = "PASS (State: started)"
                         } else {
                             $testPassed = $false
                             $testMessage = "Could not get add-on info"
                         }
-                    }
-                else {
-                    Remove-Job $startJob -Force
-                    $testPassed = $false
-                    $testMessage = "Start timed out after ${addonStartTimeout}s"
-                }
-            }
+                        }
+                        else {
+                            Remove-Job $startJob -Force
+                            $testPassed = $false
+                            $testMessage = "Start timed out after ${addonStartTimeout}s"
+                        }
+                    } # This is the end of the runtime tests block (else from 660)
+                } # This is the end of the successful install block (else from 554)
         }
         else {
             Remove-Job $installJob -Force

@@ -17,7 +17,13 @@ Write-Header "14. Python Checks"
 # Paths to check (Scripts + Addons)
 $pathsToCheck = @()
 if (Test-Path (Join-Path $RepoRoot ".scripts")) {
-    $pathsToCheck += Join-Path $RepoRoot ".scripts"
+    $scriptsPath = Join-Path $RepoRoot ".scripts"
+    # Only check scripts, excluding logs/temp data
+    if (Test-Path (Join-Path $scriptsPath "verify_addons")) {
+         $pathsToCheck += Join-Path $scriptsPath "verify_addons"
+    } else {
+         $pathsToCheck += $scriptsPath
+    }
 }
 
 # Scan for add-ons with python files
@@ -46,6 +52,8 @@ try {
     $argsList = @("-m", "black")
     if (-not $Fix) { $argsList += "--check" }
     $argsList += "--verbose"
+    $argsList += "--exclude"
+    $argsList += "/(node_modules|logs|venv|.git|.venv)/"
     $argsList += $pathsToCheck
 
     $proc = Start-Process -FilePath "python" -ArgumentList $argsList -NoNewWindow -PassThru -Wait
@@ -69,7 +77,7 @@ try {
     # Construct argument list properly
     $argsList = @("-m", "isort")
     if (-not $Fix) { $argsList += "--check-only" }
-    $argsList += @("--profile", "black")
+    $argsList += @("--profile", "black", "--skip", "node_modules", "--skip", "logs", "--skip", "venv", "--skip", ".git")
     $argsList += $pathsToCheck
 
     $proc = Start-Process -FilePath "python" -ArgumentList $argsList -NoNewWindow -PassThru -Wait
