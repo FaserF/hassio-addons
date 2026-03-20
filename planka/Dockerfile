@@ -8,7 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
 
-
 # hadolint ignore=DL3013
 
 # Addon metadata (injected by CI)

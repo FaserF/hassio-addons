@@ -3,14 +3,17 @@
 ## 1.3.0 (2026-03-20)
 
 ### 🐛 Bug Fixes
+
 - resolve link validation 404s and typos ([`5c06b173`](https://github.com/FaserF/hassio-addons/commit/5c06b17353ff711a1c9f526ac51f4f8631c76007))
 
 ### 📦 Dependencies
+
 - update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
 - ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2 [skip-tests] ([`5097daee`](https://github.com/FaserF/hassio-addons/commit/5097daeeb33dc5a00d18233e10fe0df2179810bc))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 
 ### 🚀 Other
+
 - addon startup fixes & improvements ([`7ed60f8c`](https://github.com/FaserF/hassio-addons/commit/7ed60f8c8fbfb387fc602398e191ea2846ade746))
 - fix planka addon start ([`ef5823eb`](https://github.com/FaserF/hassio-addons/commit/ef5823eb08a0716c5c4f5feb9e38a94dfe523b7e))
 - planka startup fixes ([`3cb9ce90`](https://github.com/FaserF/hassio-addons/commit/3cb9ce90218abb477c467a8c5ff3fc7407249edb))
@@ -22,7 +25,6 @@
 - Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 1.2.0 (2026-01-29)
 
