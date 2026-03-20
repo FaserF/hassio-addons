@@ -8,7 +8,7 @@
 
 ### 📦 Dependencies
 
-- update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
+- update home-assistant.io/apps/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
 - ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2 [skip-tests] ([`5097daee`](https://github.com/FaserF/hassio-addons/commit/5097daeeb33dc5a00d18233e10fe0df2179810bc))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 
