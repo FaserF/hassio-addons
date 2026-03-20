@@ -310,6 +310,18 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "paperless-ngx/paperless-ngx"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Home Assistant builder image in workflows",
+      "managerFilePatterns": [
+        "^\\.github/workflows/.*\\.yaml$"
+      ],
+      "matchStrings": [
+        "ghcr\\.io/home-assistant/amd64-builder:(?<currentValue>.*)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/home-assistant/amd64-builder"
     }
   ],
   "packageRules": [
