@@ -174,7 +174,7 @@ fi
 # ============================================================================
 _show_startup_banner() {
 	local VERSION
-	if ! VERSION=$(bashio::app.version 2>/dev/null); then
+	if ! VERSION=$(bashio::addon.version 2>/dev/null); then
 		VERSION="unknown"
 	fi
 	if [ -z "$VERSION" ]; then
@@ -408,8 +408,7 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=================================================="
 
 	# Reset database options to false to prevent repeat wipes
-	bashio::app.option 'reset_database' 'false'
-	bashio::app.option 'reset_database_confirm' 'false'
+	bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
 fi
 
 # --- CREATE DATA DIRECTORIES ---
@@ -532,6 +531,20 @@ if bashio::config.has_value 'default_locale'; then
 	DEFAULT_LOCALE=$(bashio::config 'default_locale')
 	export DEFAULT_LOCALE
 fi
+
+if bashio::config.has_value 'ai_provider'; then
+	AI_PROVIDER=$(bashio::config 'ai_provider')
+	export AI_PROVIDER
+fi
+if bashio::config.has_value 'release_type'; then
+	RELEASE_TYPE=$(bashio::config 'release_type')
+	export RELEASE_TYPE
+fi
+if bashio::config.has_value 'environment'; then
+	ENVIRONMENT=$(bashio::config 'environment')
+	export ENVIRONMENT
+fi
+export API_V1_STR="/api/v1"
 
 # GitHub OAuth (Optional) - Removed from Env, driven by DB/UI now
 bashio::log.info "Note: Authentication settings are now configured via Web UI."
@@ -661,6 +674,8 @@ install_from_archive() {
 			bashio::log.info "Applying Ingress patches..."
 			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
 			sed -i "s|const API_BASE = .*|const API_BASE = './api/v1'|g" src/api/client.ts
+			# Handle official repo's now exported API_BASE
+			sed -i "s|export const API_BASE = .*|export const API_BASE = './api/v1'|g" src/api/client.ts
 
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then
@@ -899,6 +914,10 @@ OPENAI_API_KEY=${OPENAI_API_KEY}
 GEMINI_API_KEY=${GEMINI_API_KEY}
 SECURITY_SCAN_API_KEY=${SECURITY_SCAN_API_KEY}
 AI_MODEL=${AI_MODEL}
+AI_PROVIDER=${AI_PROVIDER:-gemini}
+RELEASE_TYPE=${RELEASE_TYPE:-stable}
+ENVIRONMENT=${ENVIRONMENT:-production}
+API_V1_STR=${API_V1_STR:-/api/v1}
 DEFAULT_LOCALE=${DEFAULT_LOCALE}
 EOF
 
