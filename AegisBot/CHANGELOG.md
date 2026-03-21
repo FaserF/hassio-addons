@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.1 (2026-03-21)
+
+### 🐛 Bug Fixes
+- robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
+- resolve linting and formatting issues across addons ([`e0aa8bfc`](https://github.com/FaserF/hassio-addons/commit/e0aa8bfc74561c7a8365c4915bed108d882bce8f))
+
+### 📦 Dependencies
+- update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
+- Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
+
+### 🚀 Other
+- fix db reset ([`07da1eea`](https://github.com/FaserF/hassio-addons/commit/07da1eeab9b67b2c21fa73e5c07b1ff417243b49))
+- Small new config options for AegisBot ([`1f34e963`](https://github.com/FaserF/hassio-addons/commit/1f34e963a791123b0c1c1d4ed44551e546800f00))
+- make AegisBot app compatible with latest version ([`f6dec35b`](https://github.com/FaserF/hassio-addons/commit/f6dec35b14a4375ce307e011cbdc3962ee79b798))
+- security & docs improvements codeql ([`a4a06f09`](https://github.com/FaserF/hassio-addons/commit/a4a06f09bab3956a81fe1dc81bf3ce991e3c83d1))
+- small fixes & linter improvements ([`33150324`](https://github.com/FaserF/hassio-addons/commit/331503241aa11ccfb398a6cbf5b850aeec084ef2))
+- replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
+- Linter fixes ([`5fa8fca4`](https://github.com/FaserF/hassio-addons/commit/5fa8fca4bfabea6d9334340f98ff57bb89ea9ed5))
+- CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
+- Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
+- Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
+
+
 ## 0.5.0 (2026-01-29)
 
 ### 📦 Dependencies
