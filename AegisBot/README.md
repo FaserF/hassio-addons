@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_AegisBot)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.5.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-aegisbot)
+[![Docker Image](https://img.shields.io/badge/docker-0.5.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-aegisbot)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
@@ -68,6 +68,7 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 
 ```yaml
 ai_model: gpt-3.5-turbo
+ai_provider: gemini
 database:
   type: sqlite
 debug: false
@@ -75,12 +76,14 @@ default_locale: en
 demo_mode: false
 demo_mode_type: ephemeral
 developer_mode: false
+environment: production
 gemini_api_key: ''
 github_repo: FaserF/AegisBot
 github_token: ''
 log_level: info
 openai_api_key: ''
 project_name: AegisBot
+release_type: stable
 reset_database: false
 secret_key: ''
 security_scan_api_key: ''

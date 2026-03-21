@@ -12,7 +12,6 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 
-
 # Install System Requirements including Node.js
 # hadolint ignore=DL3018,DL3017
 
