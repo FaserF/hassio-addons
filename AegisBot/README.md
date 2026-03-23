@@ -67,7 +67,6 @@ Configure the add-on via the **Configuration** tab in the Home Assistant App pag
 ### Options
 
 ```yaml
-ai_model: gpt-3.5-turbo
 ai_provider: gemini
 database:
   type: sqlite
@@ -77,18 +76,13 @@ demo_mode: false
 demo_mode_type: ephemeral
 developer_mode: false
 environment: production
-gemini_api_key: ''
 github_repo: FaserF/AegisBot
 github_token: ''
 log_level: info
-openai_api_key: ''
 project_name: AegisBot
 release_type: stable
 reset_database: false
 secret_key: ''
-security_scan_api_key: ''
-telegram_bot_token: ''
-telegram_bot_username: ''
 version: latest
 ```
 
