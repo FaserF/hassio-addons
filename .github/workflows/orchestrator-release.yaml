@@ -1048,35 +1048,52 @@ jobs:
             BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
           fi
 
-          echo "🏗️ Building with args:"
-          echo -e "$BUILDER_ARGS"
-
-          # Extract image name from config.yaml
-          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-
-          if [ -z "$IMAGE_FROM_CONFIG" ]; then
-            SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-            IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
-          else
-            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
-          fi
-
-          echo "📦 Using image name: $IMAGE_NAME"
-          
-          # Export to GITHUB_ENV for the next step
-          echo "BUILDER_ARGS=$BUILDER_ARGS" >> "$GITHUB_ENV"
+          # Detected architectures
+          echo "ARCHS=$ARCHS" >> "$GITHUB_ENV"
+          # Convert space-separated ARCHS to JSON array for publish-multi-arch-manifest
+          # shellcheck disable=SC2001
+          ARCH_JSON=$(echo "$ARCHS" | jq -R -c 'split(" ")')
+          echo "ARCH_JSON=$ARCH_JSON" >> "$GITHUB_ENV"
           echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
 
-      - name: 🏗️ Build & Push App
-        if: matrix.App != 'sap-abap-cloud-dev'
-        uses: home-assistant/builder@master
+      - name: 🏗️ Build amd64
+        if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
+        uses: home-assistant/builder/actions/build-image@master
         with:
-          args: |
-            ${{ env.BUILDER_ARGS }} \
-            --target "${{ matrix.App }}" \
-            --image "${{ env.IMAGE_NAME }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          arch: amd64
+          image: ghcr.io/${{ github.repository_owner }}/amd64-${{ env.IMAGE_NAME }}
+          image-tags: |
+             ${{ github.sha }}
+             latest
+          push: true
+          context: ./${{ matrix.App }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ github.sha }}
+
+      - name: 🏗️ Build aarch64
+        if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
+        uses: home-assistant/builder/actions/build-image@master
+        with:
+          arch: aarch64
+          image: ghcr.io/${{ github.repository_owner }}/aarch64-${{ env.IMAGE_NAME }}
+          image-tags: |
+             ${{ github.sha }}
+             latest
+          push: true
+          context: ./${{ matrix.App }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ github.sha }}
+
+      - name: 📢 Publish Multi-Arch Manifest
+        if: matrix.App != 'sap-abap-cloud-dev'
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@master
+        with:
+          image-name: ${{ env.IMAGE_NAME }}
+          image-tags: |
+             ${{ github.sha }}
+             latest
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          architectures: ${{ env.ARCH_JSON }}
 
       - name: 📢 Release Summary
         run: |

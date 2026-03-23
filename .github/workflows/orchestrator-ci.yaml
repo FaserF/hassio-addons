@@ -462,15 +462,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Build amd64 (CI optimized)
-        uses: home-assistant/builder@master
+        uses: home-assistant/builder/actions/build-image@master
         with:
-          args: |
-            --test \
-            --amd64 \
-            --target "${{ matrix.App }}" \
-            --image "$IMAGE" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          arch: amd64
+          image: ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-${{ steps.info.outputs.slug }}
+          image-tags: latest
+          push: false
+          context: ./${{ matrix.App }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ steps.info.outputs.version }}
 
       - name: ✅ Build Success
         run: echo "✅ amd64 build successful"
