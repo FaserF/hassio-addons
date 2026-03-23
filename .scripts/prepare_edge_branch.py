@@ -15,7 +15,7 @@ Usage:
 import json
 import os
 import re
-
+import subprocess
 import yaml
 
 
@@ -236,6 +236,63 @@ def update_repository_json() -> bool:
         return False
 
 
+def update_integration_for_edge() -> bool:
+    """Update webserver_app integration for edge branch."""
+    manifest_path = "custom_components/webserver_app/manifest.json"
+    readme_path = "custom_components/webserver_app/README.md"
+    
+    if not os.path.exists(manifest_path):
+        return False
+
+    try:
+        # 1. Update manifest.json version
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+        
+        # Get current version and strip any existing -dev suffix
+        base_version = manifest["version"].split("-")[0]
+        
+        # Get current commit SHA
+        try:
+            commit_sha = subprocess.check_output(
+                ["git", "rev-parse", "--short", "HEAD"],
+                text=True,
+                encoding="utf-8"
+            ).strip()
+        except Exception:
+            commit_sha = "unknown"
+            
+        manifest["version"] = f"{base_version}-dev-{commit_sha}"
+        
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+            f.write("\n")
+        print(f"   ✅ Updated integration version to {manifest['version']}")
+
+        # 2. Update README HACS link
+        if os.path.exists(readme_path):
+            with open(readme_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            
+            # Replace master link with edge branch link
+            new_link = "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge"
+            new_content = re.sub(
+                r"https://my.home-assistant.io/redirect/hacs_repository/\?owner=FaserF&repository=hassio-addons&category=integration",
+                new_link,
+                content
+            )
+            
+            if new_content != content:
+                with open(readme_path, "w", encoding="utf-8") as f:
+                    f.write(new_content)
+                print("   ✅ Updated HACS link in integration README to edge branch")
+
+        return True
+    except Exception as e:
+        print(f"⚠️ Error updating integration for edge: {e}")
+        return False
+
+
 def main():
     print("🔧 Preparing edge branch for local builds...")
 
@@ -292,6 +349,9 @@ def main():
     main_readme = "README.MD"
     if add_edge_notice_to_readme(main_readme):
         print("📝 Added edge notice to main README.MD")
+
+    # Update webserver_app integration
+    update_integration_for_edge()
 
     print("\n✅ Edge preparation complete!")
     print(f"   📦 Images removed: {images_removed}")

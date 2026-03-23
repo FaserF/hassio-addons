@@ -56,7 +56,8 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 COPY rootfs /
 COPY index.html /
 
-RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run
+RUN chmod +x /etc/cont-init.d/apache2.sh /etc/services.d/apache2/run /usr/bin/webserver_app_integration.sh
+
 
 # Labels
 LABEL org.opencontainers.image.title="Apache2 Minimal with MariaDB Client"

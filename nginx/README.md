@@ -15,11 +15,22 @@
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+> It is not extensively testet yet, but is expected to work fundamentally.
 
 ---
 
 ## 📖 About
+
+
+
+---
+
+## 🏠 Home Assistant Integration
+
+This addon supports the **Webserver App** integration for Home Assistant. 
+The integration is automatically installed/updated when the addon starts.
+
+For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).
 
 ---
 

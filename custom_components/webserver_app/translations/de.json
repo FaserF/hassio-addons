@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Webserver App konfigurieren",
+        "description": "Wähle das Addon aus, das du überwachen möchtest. Erkannt: {detected}",
+        "data": {
+          "addon_slug": "Addon Slug",
+          "port": "Lokaler Port"
+        }
+      },
+      "hassio_confirm": {
+        "title": "Webserver App über Supervisor konfigurieren",
+        "description": "Möchtest du die Webserver App Integration für das Addon {addon} hinzufügen?"
+      }
+    },
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "not_supported": "Dieses Addon wird von Webserver App nicht unterstützt."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "ssl_expiry": { "name": "SSL Ablaufdatum" },
+      "ssl_days_remaining": { "name": "SSL Tage verbleibend" },
+      "active_connections": { "name": "Aktive Verbindungen" },
+      "total_requests": { "name": "Anfragen Gesamt" },
+      "log_errors": { "name": "Log Fehler" },
+      "log_warnings": { "name": "Log Warnungen" }
+    },
+    "button": {
+      "reload": { "name": "Webserver neu laden" }
+    }
+  }
+}
+

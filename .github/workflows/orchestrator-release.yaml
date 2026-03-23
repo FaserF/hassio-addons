@@ -891,6 +891,16 @@ jobs:
             echo "✅ Local changes preserved for ${{ matrix.App }}"
           fi
 
+      - name: 📝 Sync Integration Version
+        if: |
+          contains(fromJSON('["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]'), matrix.App) ||
+          contains(fromJSON('["apache2-edge", "apache2-minimal-edge", "apache2-minimal-mariadb-edge", "nginx-edge"]'), matrix.App)
+        run: |
+          APACHE_VERSION=$(grep "^version:" "apache2/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          echo "🔄 Syncing Webserver App integration version to $APACHE_VERSION (from apache2)"
+          sed -i "s/\"version\": \".*\"/\"version\": \"$APACHE_VERSION\"/" custom_components/webserver_app/manifest.json
+          # No git add here, we handle it in the commit step to avoid confusion with rebase/pull
+
       - name: 🚀 Commit & Push (with Retry)
         run: |
           git config user.name "github-actions[bot]"
@@ -902,7 +912,10 @@ jobs:
             echo "Attempt $i of $MAX_RETRIES..."
 
             # 1. Check status and Commit
-            if [ -n "$(git status --porcelain "${{ matrix.App }}")" ]; then
+            # Add manifest.json if it was changed by the sync step
+            git add custom_components/webserver_app/manifest.json 2>/dev/null || true
+            
+            if [ -n "$(git status --porcelain "${{ matrix.App }}")" ] || [ -n "$(git status --porcelain "custom_components/webserver_app/manifest.json")" ]; then
               git add "${{ matrix.App }}"
               COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.App) || format('🚀 release({0}): version bump [skip-tests]', matrix.App) }}"
               git commit -m "$COMMIT_MSG" --author="FaserF <12374134+FaserF@users.noreply.github.com>" || echo "Commit failed or empty"

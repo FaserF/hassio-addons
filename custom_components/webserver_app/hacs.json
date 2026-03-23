@@ -1,0 +1,6 @@
+{
+  "name": "Webserver App",
+  "render_readme": true,
+  "hide_default_branch": true,
+  "homeassistant": "2024.1.0"
+}

@@ -3,6 +3,9 @@
 # shellcheck shell=bash
 
 ssl=$(bashio::config 'ssl')
+# Run integration manager
+/usr/bin/webserver_app_integration.sh || true
+
 website_name=$(bashio::config 'website_name')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
@@ -213,6 +216,22 @@ server {
 }
 EOF
 fi
+
+# Enable nginx_status for monitoring
+cat >/etc/nginx/sites-enabled/status.conf <<EOF
+server {
+    listen 8080;
+    server_name localhost;
+    location /nginx_status {
+        stub_status on;
+        access_log off;
+        allow 127.0.0.1;
+        allow 172.30.0.0/16;
+        deny all;
+    }
+}
+EOF
+
 
 # Include sites-enabled in main nginx.conf
 if ! grep -q "include /etc/nginx/sites-enabled" /etc/nginx/nginx.conf; then

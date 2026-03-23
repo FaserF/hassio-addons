@@ -27,8 +27,20 @@ BETA_NOTICE = """
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+> It is not extensively testet yet, but is expected to work fundamentally.
 """
+
+WEBSERVER_INTEGRATION_NOTICE = """
+## 🏠 Home Assistant Integration
+
+This addon supports the **Webserver App** integration for Home Assistant. 
+The integration is automatically installed/updated when the addon starts.
+
+For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).
+"""
+
+WEBSERVER_ADDONS = ["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]
+
 
 
 def load_addon_config(addon_path):
@@ -177,7 +189,9 @@ def clean_existing_content(content):
                 "## 📖 About",
                 "## About",
                 "## ❤️ Support This Project",
+                "## 🏠 Home Assistant Integration",
                 "## 🐛 Report a Bug",
+
                 "## 💡 Feature Request",
                 "## 🛠️ Usage & Integration",
                 "## ⚠️ IMPORTANT DISCLAIMERS",
@@ -352,6 +366,12 @@ def process_addon(addon_path):
     new_content += "## 📖 About\n\n"
     new_content += body_content + "\n\n"
     new_content += "---\n\n"
+
+    # Home Assistant Integration (Specific to Webserver addons)
+    if addon_dirname in WEBSERVER_ADDONS:
+        new_content += WEBSERVER_INTEGRATION_NOTICE.strip() + "\n\n"
+        new_content += "---\n\n"
+
 
     # Configuration
     new_content += "## ⚙️ Configuration\n\n"
