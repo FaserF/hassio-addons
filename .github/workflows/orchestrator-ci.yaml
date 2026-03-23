@@ -480,6 +480,7 @@ jobs:
           image: ${{ steps.prep.outputs.image }}
           image-tags: latest
           push: false
+          cosign: false
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.info.outputs.version }}
