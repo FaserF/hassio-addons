@@ -462,25 +462,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Build amd64 (CI optimized)
-        run: |
-          IMAGE=$(echo "${{ steps.info.outputs.image }}" | cut -d'/' -f3)
-
-          echo "Building ${{ matrix.App }} for amd64 only (CI optimization)"
-          echo "Other architectures are built during release."
-
-          docker run --rm --privileged \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$(pwd)":/data \
-            -v /tmp/.buildx-cache:/cache:rw \
-            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
+        uses: home-assistant/builder@master
+        with:
+          args: |
             --test \
             --amd64 \
-            --target "/data/${{ matrix.App }}" \
+            --target "${{ matrix.App }}" \
             --image "$IMAGE" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon || exit 1
+            --addon
 
-          echo "✅ amd64 build successful"
+      - name: ✅ Build Success
+        run: echo "✅ amd64 build successful"
 
   report:
     name: 📊 CI & Compliance Report

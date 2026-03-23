@@ -1052,37 +1052,29 @@ jobs:
           echo -e "$BUILDER_ARGS"
 
           # Extract image name from config.yaml
-          # Format should be: ghcr.io/faserf/hassio-addons-{slug}-{arch}
-          # Builder expects: hassio-addons-{slug}-{arch} (without registry prefix)
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
-            # Fallback: use slug from config
             SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
             IMAGE_NAME="hassio-addons-${SLUG}-{arch}"
           else
-            # Remove ghcr.io/faserf/ prefix to get package name
-            # shellcheck disable=SC2001
             IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||')
           fi
 
           echo "📦 Using image name: $IMAGE_NAME"
+          
+          # Export to GITHUB_ENV for the next step
+          echo "BUILDER_ARGS=$BUILDER_ARGS" >> "$GITHUB_ENV"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
 
-          # Use docker run directly to have full control over args
-          # Mount Docker config so builder can access GHCR credentials
-          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
-          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
-          # Mount cache directory for faster builds (caching enabled, --no-cache removed)
-          # shellcheck disable=SC2046,SC2001
-          docker run --rm --privileged \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
-            -v "$(pwd)":/data \
-            -v /tmp/.buildx-cache-${{ matrix.App }}:/cache:rw \
-            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
-            $(echo -e "$BUILDER_ARGS") \
-            --target "/data/${{ matrix.App }}" \
-            --image "$IMAGE_NAME" \
+      - name: 🏗️ Build & Push App
+        if: matrix.App != 'sap-abap-cloud-dev'
+        uses: home-assistant/builder@master
+        with:
+          args: |
+            ${{ env.BUILDER_ARGS }} \
+            --target "${{ matrix.App }}" \
+            --image "${{ env.IMAGE_NAME }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon
 
