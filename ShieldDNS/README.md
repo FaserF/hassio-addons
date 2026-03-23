@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+High-performance DoT proxy for AdGuard Home
 
 ---
 

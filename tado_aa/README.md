@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Tado Auto-Assist for Geofencing and open Window detection
 
 ---
 

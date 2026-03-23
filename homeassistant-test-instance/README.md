@@ -21,7 +21,7 @@
 
 ## 📖 About
 
-
+A standalone Home Assistant Core instance for testing purposes.
 
 ---
 

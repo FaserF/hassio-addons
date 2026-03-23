@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Self-hosted, privacy-first PDF toolkit
 
 ---
 

@@ -21,7 +21,7 @@
 
 ## 📖 About
 
-
+Sync IMAP accounts easily and reliably.
 
 ---
 

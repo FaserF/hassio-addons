@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
 
 ---
 

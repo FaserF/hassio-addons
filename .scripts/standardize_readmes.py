@@ -185,8 +185,6 @@ def clean_existing_content(content):
 
             # Headers to skip entirely (and their content)
             HEADERS_TO_SKIP = [
-                "## 📖 About",
-                "## About",
                 "## ❤️ Support This Project",
                 "## 🏠 Home Assistant Integration",
                 "## 🐛 Report a Bug",
@@ -362,7 +360,38 @@ def process_addon(addon_path):
 
     # About
     new_content += "## 📖 About\n\n"
-    new_content += body_content + "\n\n"
+    
+    # Special Handling for Webserver Addons About Section
+    if addon_dirname in WEBSERVER_ADDONS:
+        if addon_dirname == "apache2":
+            new_content += "Apache HTTP Server is a powerful, flexible, and robust open-source web server. This addon provides a pre-configured Apache2 environment with full PHP support and MariaDB client integration, making it ideal for hosting dynamic websites and PHP-based applications (like WordPress or custom dashboards) directly within Home Assistant.\n\n"
+        elif addon_dirname == "apache2-minimal":
+            new_content += "A lightweight, security-focused version of the Apache HTTP Server. This addon provides a bare-bones web server optimized for static content and performance. It excludes PHP and extra modules to minimize the footprint and attack surface, making it perfect for simple HTML sites, documentation, or serving assets.\n\n"
+        elif addon_dirname == "apache2-minimal-mariadb":
+            new_content += "This version of the Apache web server strikes a balance between performance and functionality. It includes the MariaDB client and essential PHP modules needed for database communication, while remaining more lightweight than the full Apache2 addon. Recommended for database-driven applications that don't require the full suite of Apache modules.\n\n"
+        elif addon_dirname == "nginx":
+            new_content += "NGINX is a high-performance HTTP server and reverse proxy renowned for its stability, rich feature set, and low resource consumption. This addon provides NGINX with PHP-FPM and MariaDB client support, offering a modern and extremely fast alternative to Apache for serving complex web applications and handling high-concurrency environments.\n\n"
+        
+        # Add Comparison Table for Apache2 variants
+        if addon_dirname.startswith("apache2"):
+            new_content += "### Apache2 Variant Comparison\n\n"
+            new_content += "| Feature | Apache2 (Full) | Apache2 Minimal | Apache2 Minimal + MariaDB |\n"
+            new_content += "| :--- | :--- | :--- | :--- |\n"
+            new_content += "| **PHP Support** | ✅ Yes (Full) | ❌ No | ✅ Yes (Basic) |\n"
+            new_content += "| **MariaDB Client** | ✅ Yes | ❌ No | ✅ Yes |\n"
+            new_content += "| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |\n"
+            new_content += "| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |\n\n"
+    
+    # Use body content if available, otherwise fallback to description
+    if body_content.strip():
+        # Avoid duplicating the text if we already injected it for webserver addons
+        if addon_dirname not in WEBSERVER_ADDONS:
+            new_content += body_content + "\n\n"
+    else:
+        # Fallback to description if About was empty (and not a webserver addon where we just injected text)
+        if addon_dirname not in WEBSERVER_ADDONS:
+            new_content += f"{description}\n\n"
+            
     new_content += "---\n\n"
 
     # Home Assistant Integration (Specific to Webserver addons)

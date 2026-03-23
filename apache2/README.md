@@ -13,11 +13,22 @@
 
 ## 📖 About
 
+Apache HTTP Server is a powerful, flexible, and robust open-source web server. This addon provides a pre-configured Apache2 environment with full PHP support and MariaDB client integration, making it ideal for hosting dynamic websites and PHP-based applications (like WordPress or custom dashboards) directly within Home Assistant.
+
+### Apache2 Variant Comparison
+
+| Feature | Apache2 (Full) | Apache2 Minimal | Apache2 Minimal + MariaDB |
+| :--- | :--- | :--- | :--- |
+| **PHP Support** | ✅ Yes (Full) | ❌ No | ✅ Yes (Basic) |
+| **MariaDB Client** | ✅ Yes | ❌ No | ✅ Yes |
+| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |
+| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |
+
 ---
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant.
+This addon supports the **Webserver App** integration for Home Assistant. 
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).

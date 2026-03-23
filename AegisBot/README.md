@@ -21,7 +21,7 @@
 
 ## 📖 About
 
-
+Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
 
 ---
 

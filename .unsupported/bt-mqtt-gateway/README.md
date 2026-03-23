@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Unsupported - Bluetooth MQTT Gateway Server (no longer maintained) (Unsupported)
 
 ---
 

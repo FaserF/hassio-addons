@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Secure, Web-based File Manager (SFTP over HTTPS)
 
 ---
 

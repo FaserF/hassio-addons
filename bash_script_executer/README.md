@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Execute your own bash scripts inside this Homeassistant App environment.
 
 ---
 

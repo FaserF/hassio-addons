@@ -12,6 +12,7 @@ image: ghcr.io/faserf/hassio-addons-nginx-{arch}
 map:
   - ssl:rw
   - share:rw
+  - homeassistant_config:rw
 ingress: true
 ingress_port: 80
 hassio_api: true

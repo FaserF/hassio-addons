@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
 
 ---
 

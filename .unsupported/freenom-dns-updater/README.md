@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Unsupported - Freenom Registrar Domain Management (Freenom service discontinued) (Unsupported)
 
 ---
 

@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Unsupported - Xiaomi router firmware modification scripts (no longer maintained) (Unsupported)
 
 ---
 

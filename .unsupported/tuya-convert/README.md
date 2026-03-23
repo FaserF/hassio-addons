@@ -21,7 +21,7 @@
 
 ## 📖 About
 
-
+Unsupported - Tuya-Convert flash utility (Tuya patched vulnerability, no longer works) (Unsupported)
 
 ---
 

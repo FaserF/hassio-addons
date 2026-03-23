@@ -13,7 +13,7 @@
 
 ## 📖 About
 
-
+Workflow automation tool. N8n extends your Home Assistant with powerful workflow automation.
 
 ---
 

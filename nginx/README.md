@@ -21,11 +21,13 @@
 
 ## 📖 About
 
+NGINX is a high-performance HTTP server and reverse proxy renowned for its stability, rich feature set, and low resource consumption. This addon provides NGINX with PHP-FPM and MariaDB client support, offering a modern and extremely fast alternative to Apache for serving complex web applications and handling high-concurrency environments.
+
 ---
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant.
+This addon supports the **Webserver App** integration for Home Assistant. 
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).
