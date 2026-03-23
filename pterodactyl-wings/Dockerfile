@@ -3,13 +3,15 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.3.0"
-ENV ADDON_NAME="pterodactyl Wings Gameserver"
-ENV ADDON_SLUG="pterodactyl_wings"
-ENV ADDON_UNSUPPORTED="false"
 
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.3.0"
+ENV APP_NAME="pterodactyl Wings Gameserver"
+ENV APP_SLUG="pterodactyl_wings"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk add --no-cache -u libssl3 libcrypto3 ca-certificates curl tini tzdata && \
     mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl
 

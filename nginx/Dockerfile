@@ -13,11 +13,13 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.1"
-ENV ADDON_NAME="NGINX"
-ENV ADDON_SLUG="nginx"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.3.0"
+ENV APP_NAME="NGINX"
+ENV APP_SLUG="nginx"
+ENV APP_UNSUPPORTED="false"
 
 WORKDIR /tmp
 

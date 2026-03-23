@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Add addon-specific content sections to all README files.
+Add app-specific content sections to all README files.
 """
 
 import argparse
@@ -49,7 +49,7 @@ def get_apache2_versions_table():
 def get_bt_mqtt_gateway_warning():
     """Get bt-mqtt-gateway unsupported warning."""
     return """> [!WARNING]
-> **This add-on is no longer supported.**
+> **This App is no longer supported.**
 > The original repository (wealth/bt-mqtt-gateway) was archived in October 2023.
 >
 > **Recommended Alternatives for 2025:**
@@ -65,7 +65,7 @@ def get_minimal_apache_docs_link():
     """Get link to full Apache2 documentation for minimal variants."""
     return """## 📚 Documentation
 
-For complete documentation, configuration options, and detailed information, please refer to the **[Full Apache2 Add-on Documentation](https://github.com/FaserF/hassio-addons/tree/master/apache2)**.
+For complete documentation, configuration options, and detailed information, please refer to the **[Full Apache2 App Documentation](https://github.com/FaserF/hassio-addons/tree/master/apache2)**.
 
 This minimal variant shares the same core functionality and configuration options as the full version, but with reduced dependencies.
 
@@ -85,15 +85,57 @@ def extract_about_from_docs(addon_path):
     about_match = re.search(r"##\s+About\s*\n(.*?)(?=\n##|$)", docs_content, re.DOTALL | re.IGNORECASE)
     if about_match:
         about_text = about_match.group(1).strip()
-        # Clean up the text (remove excessive newlines)
-        about_text = re.sub(r"\n{3,}", "\n\n", about_text)
-        return about_text
+    else:
+        # Fallback: take the text after the first H1 if no ## About exists
+        h1_match = re.search(r"^#\s+.*?\n+(.*?)(?=\n##|$)", docs_content, re.DOTALL)
+        if h1_match:
+            about_text = h1_match.group(1).strip()
+        else:
+            return None
 
-    return None
+    # Clean up the text (remove excessive newlines)
+    about_text = re.sub(r"\n{3,}", "\n\n", about_text)
+    return about_text
+
+
+def get_sap_abap_specific_content():
+    """Get SAP ABAP Cloud specific content."""
+    return """## ⚠️ IMPORTANT DISCLAIMERS
+
+> **NO LICENSE PROVIDED**: this app does NOT include any SAP license. You must obtain your own license from SAP and agree to SAP's terms of use.
+>
+> **NO WARRANTY**: this app is provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss, system damage, or any other issues arising from the use of this app.
+>
+> **FOR TESTING ONLY**: this app is intended solely for personal learning, skill development, and testing SAP ABAP. It is NOT intended for production use.
+
+## 🧰 Hardware Requirements
+
+> ⚠️ **Resource Intensive App:**
+>
+> - **Minimum RAM:** 16 GB (32 GB recommended)
+> - **Minimum CPUs:** 4
+> - **Minimum Disk:** 150 GB free space
+> - **Architecture:** amd64 only (x86_64)
+
+"""
+
+
+def get_whatsapp_usage_section():
+    """Get WhatsApp usage and integration section."""
+    return """## 🛠️ Usage & Integration
+
+To actually send messages and automate WhatsApp, you need the **WhatsApp Custom Integration** for Home Assistant.
+
+- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
+
+> [!WARNING]
+> **Interactive Messages (Buttons & Lists)**: These features are increasingly restricted by Meta for unofficial APIs. They may not appear on all devices (especially iOS). If they fail for you, consider using standard text messages or **Polls**, which are much more reliable.
+
+"""
 
 
 def get_addon_specific_content(addon_dirname, config, addon_path):
-    """Get addon-specific content based on addon name."""
+    """Get app-specific content based on app name."""
 
     # Apache2 - Versions table
     if addon_dirname == "apache2":
@@ -107,7 +149,15 @@ def get_addon_specific_content(addon_dirname, config, addon_path):
     if addon_dirname == "bt-mqtt-gateway":
         return get_bt_mqtt_gateway_warning()
 
-    # For other addons, try to extract About from DOCS.md or use description
+    # SAP ABAP - Resources and Disclaimers
+    if addon_dirname == "sap-abap-cloud-dev":
+        return get_sap_abap_specific_content()
+
+    # WhatsApp - Usage Section
+    if addon_dirname == "whatsapp":
+        return get_whatsapp_usage_section()
+
+    # For other apps, try to extract About from DOCS.md or use description
     about_text = extract_about_from_docs(addon_path)
     if not about_text and config:
         description = config.get("description", "")
@@ -240,11 +290,22 @@ def process_addon(addon_path, dry_run=False):
         print(f"[SKIP] Skipping {addon_dirname}: Warning already exists")
         return False
 
-    # For other addons with About section
+    # For other apps with About section
     if specific_content and "## 📖 About" in specific_content:
         if "## 📖 About" in content:
             print(f"[SKIP] Skipping {addon_dirname}: About section already exists")
             return False
+
+    # Check for specific headers to avoid duplicates
+    if "## ⚠️ IMPORTANT DISCLAIMERS" in specific_content and "## ⚠️ IMPORTANT DISCLAIMERS" in content:
+        print(f"[SKIP] Skipping {addon_dirname}: Disclaimers already exist")
+        return False
+    if "## 🛠️ Usage & Integration" in specific_content and "## 🛠️ Usage & Integration" in content:
+        print(f"[SKIP] Skipping {addon_dirname}: Usage section already exists")
+        return False
+    if "## 🧰 Versions" in specific_content and "## 🧰 Versions" in content:
+        print(f"[SKIP] Skipping {addon_dirname}: Versions table already exists")
+        return False
 
     # Find insertion point
     insert_line = find_insertion_point(content, addon_dirname)
@@ -279,7 +340,7 @@ def process_addon(addon_path, dry_run=False):
 
 
 def find_addons(base_path):
-    """Recursively find add-ons (directories with config.yaml/json)."""
+    """Recursively find apps (directories with config.yaml/json)."""
     addons = []
 
     # Root level check
@@ -314,7 +375,7 @@ if __name__ == "__main__":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-    parser = argparse.ArgumentParser(description="Add addon-specific content sections to README files")
+    parser = argparse.ArgumentParser(description="Add app-specific content sections to README files")
     parser.add_argument(
         "--addon",
         help="Process specific addon directory only",

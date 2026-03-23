@@ -10,11 +10,13 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.3.0"
-ENV ADDON_NAME="Apache2"
-ENV ADDON_SLUG="apache2"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="3.3.0"
+ENV APP_NAME="Apache2"
+ENV APP_SLUG="apache2"
+ENV APP_UNSUPPORTED="false"
 
 WORKDIR /tmp
 # renovate: datasource=github-releases depName=php/php-src

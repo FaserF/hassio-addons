@@ -3,3 +3,4 @@ node_modules
 .github/ACTION_Standard.md
 dist
 build
+tmp/

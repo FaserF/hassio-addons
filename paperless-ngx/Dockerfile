@@ -12,14 +12,16 @@ ENV \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.1.0"
-ENV ADDON_NAME="Paperless-ngx"
-ENV ADDON_SLUG="paperless-ngx"
-ENV ADDON_UNSUPPORTED="false"
 
 # Install Alpine dependencies
 # hadolint ignore=DL3018,DL3013
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.1.0"
+ENV APP_NAME="Paperless-ngx"
+ENV APP_SLUG="paperless-ngx"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     apk add libssl3 libcrypto3 --no-cache -u \
         build-base \

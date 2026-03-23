@@ -4,11 +4,13 @@ FROM $BUILD_FROM
 # Setup base
 # hadolint ignore=DL3003
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.1.1"
-ENV ADDON_NAME="Tiny Tiny RSS"
-ENV ADDON_SLUG="tt-rss"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.0"
+ENV APP_NAME="Tiny Tiny RSS"
+ENV APP_SLUG="tt-rss"
+ENV APP_UNSUPPORTED="false"
 
 RUN \
     apk add libssl3 libcrypto3 --no-cache -u \

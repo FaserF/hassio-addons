@@ -16,11 +16,13 @@ ARG PHP_VERSION="8.5"
 
 # hadolint ignore=DL4006,DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.3.0"
-ENV ADDON_NAME="Apache2 Minimal with MariaDB Client"
-ENV ADDON_SLUG="apache2-minimal-mariadb"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="3.3.0"
+ENV APP_NAME="Apache2 Minimal with MariaDB Client"
+ENV APP_SLUG="apache2-minimal-mariadb"
+ENV APP_UNSUPPORTED="false"
 
 RUN mkdir /run/apache2 \
  && apk --no-cache -u add libcrypto3 libssl3 \

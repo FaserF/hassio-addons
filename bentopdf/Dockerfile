@@ -11,6 +11,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Nginx
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.0"
+ENV APP_NAME="BentoPDF"
+ENV APP_SLUG="bentopdf"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk add --no-cache -u libssl3 libcrypto3 \
         nginx \
         curl \

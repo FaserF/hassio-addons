@@ -14,11 +14,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.3.0"
-ENV ADDON_NAME="Tado Auto Assist"
-ENV ADDON_SLUG="tado_aa"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.3.0"
+ENV APP_NAME="Tado Auto Assist"
+ENV APP_SLUG="tado_aa"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add libssl3 libcrypto3 --no-cache -u curl
 

@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/sap-abap-cloud-dev/logo.png" width="100" alt="Logo" />
 
-[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_sap-abap-cloud-dev)
-[![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/apps/)
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_sap-abap-cloud-dev)
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 [![Docker Image](https://img.shields.io/badge/docker-0.2.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-sap-abap-cloud-dev)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
@@ -14,30 +14,12 @@
 > [!CAUTION]
 > **Experimental / Beta Status**
 >
-> This add-on is still in development and/or primarily developed for personal use.
+> This App is still in development and/or primarily developed for personal use.
 > It is not extensively tested yet, but is expected to work fundamentally.
 
 ---
 
 ## 📖 About
-
-## ❤️ Support This Project
-
-> I maintain all these add-ons in my **free time alongside a regular job**. Test devices cost money, and every donation helps me stay independent and invest more time into open-source work.
->
-> Donations are completely voluntary — but the more support I receive, the less I depend on other income and the more time I can dedicate to these projects.
-
-<div align="center">
-
-</div>
-
-> [!CAUTION]
-> **Experimental / Beta Status**
->
-> This add-on is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-SAP ABAP Cloud Developer Trial for Home Assistant OS
 
 ## ⚠️ IMPORTANT DISCLAIMERS
 
@@ -46,31 +28,6 @@ SAP ABAP Cloud Developer Trial for Home Assistant OS
 > **NO WARRANTY**: this app is provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss, system damage, or any other issues arising from the use of this app.
 >
 > **FOR TESTING ONLY**: this app is intended solely for personal learning, skill development, and testing SAP ABAP. It is NOT intended for production use.
->
-> **SAP LICENSE TERMS**: You must comply with all SAP licensing terms and conditions. Visit [SAP's Terms](https://hub.docker.com/r/sapse/abap-cloud-developer-trial#licenses) for details.
-
-This app provides the official SAP ABAP Cloud Developer Trial environment, allowing you to run a complete SAP ABAP Platform on SAP HANA 2.0 directly from Home Assistant.
-
-**Features:**
-
-- SAP ABAP Platform Trial with SAP HANA database
-- SAP Fiori Launchpad
-- Sample applications for learning ABAP
-
-**Use Cases:**
-
-- Learn ABAP programming
-- Improve SAP development skills
-- Test SAP integrations in a sandbox environment
-
-## Requirements
-
-> ⚠️ **Hardware Requirements:**
->
-> - **Minimum RAM:** 16 GB (32 GB recommended)
-> - **Minimum CPUs:** 4
-> - **Minimum Disk:** 150 GB free space
-> - **Architecture:** amd64 only (x86_64)
 
 ## Installation
 
@@ -84,7 +41,7 @@ This app provides the official SAP ABAP Cloud Developer Trial environment, allow
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant App page.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 

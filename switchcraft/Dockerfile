@@ -7,11 +7,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup application directory
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.1.0"
-ENV ADDON_NAME="SwitchCraft"
-ENV ADDON_SLUG="switchcraft"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.2.0"
+ENV APP_NAME="SwitchCraft"
+ENV APP_SLUG="switchcraft"
+ENV APP_UNSUPPORTED="false"
 
 WORKDIR /app
 

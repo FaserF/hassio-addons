@@ -13,11 +13,13 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.3.0"
-ENV ADDON_NAME="Netboot.xyz"
-ENV ADDON_SLUG="netboot-xyz"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.3.1"
+ENV APP_NAME="Netboot.xyz"
+ENV APP_SLUG="netboot-xyz"
+ENV APP_UNSUPPORTED="false"
 
 RUN \
   echo "**** install runtime packages ****" && \

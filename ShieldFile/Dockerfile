@@ -17,11 +17,13 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # We grab the binary from the official image
 # hadolint ignore=DL3018,DL4006
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.3.0"
-ENV ADDON_NAME="ShieldFile"
-ENV ADDON_SLUG="shieldfile"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.3.0"
+ENV APP_NAME="ShieldFile"
+ENV APP_SLUG="shieldfile"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add --no-cache -u libssl3 libcrypto3 curl bash dos2unix openssl nginx \
     && mkdir -p /data/database

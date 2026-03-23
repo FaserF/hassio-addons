@@ -13,11 +13,13 @@ ARG BUILD_DATE="unknown"
 
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.5.2"
-ENV ADDON_NAME="Wiki.JS (Version 3 - Alpha)"
-ENV ADDON_SLUG="wiki.js3"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.6.0"
+ENV APP_NAME="Wiki.JS (Version 3 - Alpha)"
+ENV APP_SLUG="wiki.js3"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \

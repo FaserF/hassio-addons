@@ -11,11 +11,13 @@ ARG WORDPRESS_VERSION="6.8"
 
 # hadolint ignore=DL3018,DL3003
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.1"
-ENV ADDON_NAME="Wordpress"
-ENV ADDON_SLUG="wordpress"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.3.0"
+ENV APP_NAME="Wordpress"
+ENV APP_SLUG="wordpress"
+ENV APP_UNSUPPORTED="false"
 
 RUN \
  apk add --no-cache -u libssl3 libcrypto3 \

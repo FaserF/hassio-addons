@@ -6,15 +6,17 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell with pipefail for Alpine
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.0.1"
-ENV ADDON_NAME="Imapsync"
-ENV ADDON_SLUG="imapsync"
-ENV ADDON_UNSUPPORTED="false"
 
 # Install Perl and imapsync dependencies natively
 # hadolint ignore=DL3018
 ARG IMAPSYNC_VERSION=2.229
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.3.0"
+ENV APP_NAME="Imapsync"
+ENV APP_SLUG="imapsync"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk --no-cache -u add \
     expect \
     perl \

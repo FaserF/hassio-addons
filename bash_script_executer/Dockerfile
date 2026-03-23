@@ -4,6 +4,13 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.4.0"
+ENV APP_NAME="Bash Script Executer"
+ENV APP_SLUG="bashscriptexecuter"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk --no-cache -u add libssl3 libcrypto3 busybox-extras curl grep coreutils sed xmlstarlet bash procps
 
 # Copy data for add-on

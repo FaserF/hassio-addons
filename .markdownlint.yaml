@@ -24,3 +24,6 @@ MD033:
     - details
     - summary
 MD025: false # Allow frontmatter title + H1 if needed, or just handle manually
+MD028: false # Allow blank lines between blockquotes (needed for GH alerts)
+MD036: false # Allow emphasis as heading
+MD046: false # Code block style (indent vs fence)

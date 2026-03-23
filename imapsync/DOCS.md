@@ -1,31 +1,31 @@
-# 📖 Imapsync Add-on: Complete Documentation
+# Imapsync Add-on: Complete Documentation
 
 Welcome to the definitive guide for the Home Assistant Imapsync Add-on. This tool is a powerful wrapper around the industry-standard `imapsync` utility, designed for heavy-duty mail migration, backup, and synchronization.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [Core Concepts](#-core-concepts)
-2. [OAuth2 Authentication (Modern Auth)](#-oauth2-authentication-modern-auth)
-3. [Global Configuration](#-global-configuration)
-4. [Job Configuration](#-job-configuration)
-5. [Multi-Account Sync Example](#-multi-account-sync-example)
-6. [Provider-Specific Guide (Critical)](#-provider-specific-guide)
+1. [Core Concepts](#core-concepts)
+2. [OAuth2 Authentication (Modern Auth)](#oauth2-authentication-modern-auth)
+3. [Global Configuration](#global-configuration)
+4. [Job Configuration](#job-configuration)
+5. [Multi-Account Sync Example](#multi-account-sync-example)
+6. [Provider-Specific Guide (Critical)](#provider-specific-guide)
    - [Gmail](#gmail)
    - [Yahoo Mail](#yahoo-mail)
    - [Outlook / Office 365](#outlook--office-365)
    - [iCloud](#icloud)
    - [GMX / Web.de](#gmx--webde)
    - [Fastmail](#fastmail)
-7. [Advanced CLI Flags](#-advanced-cli-flags)
-8. [Performance & Large Migrations](#-performance--large-migrations)
-9. [Troubleshooting & FAQ](#-troubleshooting--faq)
-10. [Security Best Practices](#-security-best-practices)
+7. [Advanced CLI Flags](#advanced-cli-flags)
+8. [Performance & Large Migrations](#performance--large-migrations)
+9. [Troubleshooting & FAQ](#troubleshooting--faq)
+10. [Security Best Practices](#security-best-practices)
 
 ---
 
-## 🧠 Core Concepts
+## Core Concepts
 
 Imapsync works by connecting to two IMAP servers (Source and Destination) and copying messages between them.
 
@@ -36,13 +36,13 @@ Imapsync works by connecting to two IMAP servers (Source and Destination) and co
 
 ---
 
-## 🔐 OAuth2 Authentication (Modern Auth)
+## OAuth2 Authentication (Modern Auth)
 
 This add-on supports OAuth2 for Google (Gmail/Advanced Protection) and Microsoft (Office 365/Outlook). This is the recommended method for these providers as it avoids "Less Secure App" issues.
 
 ---
 
-## 🌐 Global Configuration
+## Global Configuration
 
 Located in the main configuration tab of the add-on.
 
@@ -56,7 +56,7 @@ Located in the main configuration tab of the add-on.
 
 ---
 
-## 🛠️ Job Configuration
+## Job Configuration
 
 The `jobs` section is a list (array), meaning you can sync multiple accounts. **This allows you to sync Account A to Account B, and Account C to Account D independently in the same cycle.**
 
@@ -82,7 +82,7 @@ jobs:
 
 ---
 
-## 🚀 Multi-Account Sync Example
+## Multi-Account Sync Example
 
 You can sync completely different accounts in the same add-on run:
 
@@ -105,7 +105,7 @@ jobs:
 
 ---
 
-## 🚀 Provider-Specific Guide
+## Provider-Specific Guide
 
 Most issues arise from provider security settings. Follow these steps exactly.
 
@@ -165,7 +165,7 @@ Most issues arise from provider security settings. Follow these steps exactly.
 
 ---
 
-## ⚡ Advanced CLI Flags
+## Advanced CLI Flags
 
 Most common `imapsync` flags are now available directly in the **Configuration UI**. Use the `additional_cli_args` section for everything else.
 
@@ -188,7 +188,7 @@ Most common `imapsync` flags are now available directly in the **Configuration U
 
 ---
 
-## 🏎️ Performance & Large Migrations
+## Performance & Large Migrations
 
 For mailboxes exceeding 10GB or 100,000 messages:
 
@@ -200,7 +200,7 @@ For mailboxes exceeding 10GB or 100,000 messages:
 
 ---
 
-## ❓ Troubleshooting & FAQ
+## Troubleshooting & FAQ
 
 ### "Authentication Failed"
 
@@ -222,7 +222,7 @@ For mailboxes exceeding 10GB or 100,000 messages:
 
 ---
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
 1. **Minimal Permissions**: When creating App Passwords, select the "Mail" scope only if available.
 2. **Secrets Storage**: Always use the Home Assistant `!secret` tag in your YAML configuration if you are editing via the file editor, or rely on the UI which handles masked password fields.

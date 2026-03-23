@@ -20,11 +20,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3008,DL3013,DL3018,DL3042
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.3.0"
-ENV ADDON_NAME="ER-Startseite (Dashboard)"
-ENV ADDON_SLUG="er-dashboard"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.3.1"
+ENV APP_NAME="ER-Startseite (Dashboard)"
+ENV APP_SLUG="er-dashboard"
+ENV APP_UNSUPPORTED="false"
 
 RUN \
  apk add --no-cache -u libssl3 libcrypto3 \

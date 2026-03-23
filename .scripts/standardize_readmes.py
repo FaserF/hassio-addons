@@ -26,7 +26,7 @@ BETA_NOTICE = """
 > [!CAUTION]
 > **Experimental / Beta Status**
 >
-> This add-on is still in development and/or primarily developed for personal use.
+> This App is still in development and/or primarily developed for personal use.
 > It is not extensively tested yet, but is expected to work fundamentally.
 """
 
@@ -103,8 +103,8 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
         # Fallback badge
         docker_badge = f"[![Docker Image](https://img.shields.io/badge/docker-available-blue.svg?logo=docker&style=flat-square)](https://github.com/{MAINTAINER}/hassio-addons/pkgs/container)"
 
-    return f"""[![Open your Home Assistant instance and show the add-on dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon={addon_slug})
-[![Home Assistant App](https://img.shields.io/badge/home%20assistant-addon-blue.svg)](https://www.home-assistant.io/apps/)
+    return f"""[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon={addon_slug})
+[![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 {docker_badge}
 ![Project Maintenance](https://img.shields.io/badge/maintainer-{MAINTAINER}-blue?style=flat-square)"""
 
@@ -171,6 +171,53 @@ def clean_existing_content(content):
 
         else:
             # --- CONTENT PROCESSING (AGGRESSIVE) ---
+            
+            # Headers to skip entirely (and their content)
+            HEADERS_TO_SKIP = [
+                "## 📖 About", "## About",
+                "## ❤️ Support This Project",
+                "## 🐛 Report a Bug",
+                "## 💡 Feature Request",
+                "## 🛠️ Usage & Integration",
+                "## ⚠️ IMPORTANT DISCLAIMERS",
+                "## 🧰 Hardware Requirements", "## Hardware Requirements",
+                "## Requirements", # Also skip Requirements header
+                "## 🧰 Versions", "## Versions", 
+                "## 📚 Documentation",
+                "## 👨‍💻 Credits & License", "## Credits", "## License",
+                "## ⚙️ Configuration", "## Configuration",
+                "### Options", # Also skip nested options header
+            ]
+            
+            # If we hit one of these headers, skip until the next header
+            matching_header = False
+            for h in HEADERS_TO_SKIP:
+                if sline.startswith(h):
+                    matching_header = True
+                    break
+            
+            if matching_header:
+                # Enter a sub-skip mode until next header
+                # We can do this by just not appending and setting a flag
+                # But to keep it simple in this loop, we skip this line and 
+                # we need to skip subsequent lines too.
+                # Let's adjust the logic slightly.
+                pass # Handled below
+            
+            # Revised logic for block skipping
+            if any(sline.startswith(h) for h in HEADERS_TO_SKIP):
+                skip_block = True
+                continue
+            
+            # If we were skipping a block and hit a NEW header NOT in HEADERS_TO_SKIP, stop skipping
+            if 'skip_block' in locals() and skip_block:
+                if sline.startswith("##"):
+                    if not any(sline.startswith(h) for h in HEADERS_TO_SKIP):
+                        skip_block = False
+                    else:
+                        continue # Still in a skippable header
+                else:
+                    continue # Still in content of a skippable header
 
             # Filter H1 titles inside body (Artifacts)
             if sline.startswith("# "):
@@ -181,19 +228,6 @@ def clean_existing_content(content):
                 continue
             if "![Logo]" in sline or "logo.png" in sline or "<img src=" in sline:
                 continue
-
-            # Filter headers that we RE-ADD (Duplicates)
-            if sline.startswith("## About") or sline.startswith("## 📖 About"):
-                continue
-            if sline.startswith("## Credits") or sline.startswith("## 👨‍💻 Credits"):
-                continue
-            if sline.startswith("## License"):
-                continue
-
-            # Filter Configuration Header -> STOP PROCESSING
-            # We regenerate this section fully
-            if sline.startswith("## Configuration") or sline.startswith("## ⚙️ Configuration"):
-                break
 
             # Filter HRs in content to avoid stacking separators
             if sline == "---" or sline == "***":
@@ -315,7 +349,7 @@ def process_addon(addon_path):
 
     # Configuration
     new_content += "## ⚙️ Configuration\n\n"
-    new_content += "Configure the add-on via the **Configuration** tab in the Home Assistant App page.\n\n"
+    new_content += "Configure the app via the **Configuration** tab in the Home Assistant App page.\n\n"
     new_content += "### Options\n\n"
     new_content += maximize_config_example(config, config_type) + "\n\n"
     new_content += "---\n\n"

@@ -7,6 +7,13 @@ ENV PTERODACTYL_VERSION="v1.12.0"
 # Install system requirements
 # Pterodactyl Panel v1.11+ requires PHP 8.2/8.3
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.0"
+ENV APP_NAME="pterodactyl Panel Gameserver"
+ENV APP_SLUG="pterodactyl_panel"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     redis \
     curl \
@@ -73,11 +80,6 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 FROM base as production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.0"
-ENV ADDON_NAME="pterodactyl Panel Gameserver"
-ENV ADDON_SLUG="pterodactyl_panel"
-ENV ADDON_UNSUPPORTED="false"
 
 WORKDIR /var/www/html
 

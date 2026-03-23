@@ -3,13 +3,15 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 FROM ${BUILD_FROM} AS builder
 
 # Install requirements for building
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="2.3.0"
-ENV ADDON_NAME="Switch LAN Play Server"
-ENV ADDON_SLUG="switch-lan-play-server"
-ENV ADDON_UNSUPPORTED="false"
 
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.3.0"
+ENV APP_NAME="Switch LAN Play Server"
+ENV APP_SLUG="switch-lan-play-server"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk -U --no-cache -u add libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \

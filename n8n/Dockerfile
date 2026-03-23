@@ -11,11 +11,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.1"
-ENV ADDON_NAME="N8n"
-ENV ADDON_SLUG="n8n"
-ENV ADDON_UNSUPPORTED="false"
+
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.2"
+ENV APP_NAME="N8n"
+ENV APP_SLUG="n8n"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add --no-cache \
     curl \
