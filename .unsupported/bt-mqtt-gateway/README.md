@@ -9,17 +9,6 @@
 
 > Unsupported - Bluetooth MQTT Gateway Server (no longer maintained) (Unsupported)
 
-> [!WARNING]
-> **This App is no longer supported.**
-> The original repository (wealth/bt-mqtt-gateway) was archived in October 2023.
->
-> **Recommended Alternatives for 2025:**
->
-> * **OpenMQTTGateway**: Supports ESP32/ESP8266 devices.
-> * **Theengs Gateway**: Ideal for Raspberry Pi or existing Linux hosts.
-> * **ESPHome Bluetooth Proxy**: Good for Home Assistant native integration (note: may not publish raw MQTT as freely as the others).
-
-
 ---
 
 ## 📖 About

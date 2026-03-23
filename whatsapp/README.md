@@ -13,17 +13,6 @@
 
 ## 📖 About
 
-## 🛠️ Usage & Integration
-
-To actually send messages and automate WhatsApp, you need the **WhatsApp Custom Integration** for Home Assistant.
-
-- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
-
-> [!WARNING]
-> **Interactive Messages (Buttons & Lists)**: These features are increasingly restricted by Meta for unofficial APIs. They may not appear on all devices (especially iOS). If they fail for you, consider using standard text messages or **Polls**, which are much more reliable.
-
-
-
 ### 🗝️ Native Control Commands
 
 Control your addon via WhatsApp!

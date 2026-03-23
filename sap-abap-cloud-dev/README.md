@@ -21,14 +21,6 @@
 
 ## 📖 About
 
-## ⚠️ IMPORTANT DISCLAIMERS
-
-> **NO LICENSE PROVIDED**: this app does NOT include any SAP license. You must obtain your own license from SAP and agree to SAP's terms of use.
->
-> **NO WARRANTY**: this app is provided "AS IS" without any warranty. The maintainer assumes NO LIABILITY for data loss, system damage, or any other issues arising from the use of this app.
->
-> **FOR TESTING ONLY**: this app is intended solely for personal learning, skill development, and testing SAP ABAP. It is NOT intended for production use.
-
 ## Installation
 
 1. Add this repository to your Home Assistant App store

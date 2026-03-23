@@ -9,13 +9,6 @@
 
 > Open Source Webserver without PHP and minimal extra modules.
 
-## 📚 Documentation
-
-For complete documentation, configuration options, and detailed information, please refer to the **[Full Apache2 App Documentation](https://github.com/FaserF/hassio-addons/tree/master/apache2)**.
-
-This minimal variant shares the same core functionality and configuration options as the full version, but with reduced dependencies.
-
-
 ---
 
 ## 📖 About
