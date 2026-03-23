@@ -7,11 +7,6 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.components.hassio import (
-    AddonInfo,
-    AddonManager,
-    is_hassio,
-)
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
@@ -54,19 +49,7 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data=user_input,
             )
 
-        # Auto-detect addons if running on Hass.io
-        detected_addons = []
-        if is_hassio(self.hass):
-            try:
-                # We can't easily list all addons via AddonManager here without a lot of overhead
-                # but we can try to see which ones are installed
-                for slug in SUPPORTED_ADDON_SLUGS:
-                    # This is a bit hacky but works for discovery
-                    addon_info = await self._async_get_addon_info(slug)
-                    if addon_info and addon_info.get("installed"):
-                        detected_addons.append(slug)
-            except Exception:
-                _LOGGER.error("Error detecting addons")
+        detected_addons = SUPPORTED_ADDON_SLUGS
 
         data_schema = vol.Schema(
             {
@@ -84,15 +67,6 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"detected": ", ".join(detected_addons)},
         )
 
-    async def _async_get_addon_info(self, slug: str) -> dict | None:
-        """Get addon info from supervisor."""
-        try:
-            # Using the internal hassio component to talk to supervisor
-            from homeassistant.components.hassio import async_get_addon_info
-
-            return await async_get_addon_info(self.hass, slug)
-        except Exception:
-            return None
 
     async def async_step_hassio(self, discovery_info: dict[str, Any]) -> FlowResult:
         """Handle supervisor discovery."""
