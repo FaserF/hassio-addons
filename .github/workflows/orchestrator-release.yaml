@@ -1049,6 +1049,7 @@ jobs:
           fi
 
           # Extraction and normalization
+          VERSION=$(grep "^version:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then
@@ -1075,46 +1076,35 @@ jobs:
           echo "ARCH_JSON=$ARCH_JSON" >> "$GITHUB_ENV"
           echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
           echo "OWNER=$OWNER" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: 🏗️ Build amd64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
         uses: home-assistant/builder/actions/build-image@master
         with:
           arch: amd64
-          image: ghcr.io/${{ env.OWNER }}/amd64-${{ env.IMAGE_NAME }}
+          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
           image-tags: |
-             ${{ github.sha }}
+             ${{ env.VERSION }}
              latest
           push: true
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ github.sha }}
+          version: ${{ env.VERSION }}
 
       - name: 🏗️ Build aarch64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
         uses: home-assistant/builder/actions/build-image@master
         with:
           arch: aarch64
-          image: ghcr.io/${{ env.OWNER }}/aarch64-${{ env.IMAGE_NAME }}
+          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64
           image-tags: |
-             ${{ github.sha }}
+             ${{ env.VERSION }}
              latest
           push: true
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ github.sha }}
-
-      - name: 📢 Publish Multi-Arch Manifest
-        if: matrix.App != 'sap-abap-cloud-dev'
-        uses: home-assistant/builder/actions/publish-multi-arch-manifest@master
-        with:
-          image-name: ${{ env.IMAGE_NAME }}
-          registry-prefix: ghcr.io/${{ env.OWNER }}
-          image-tags: |
-             ${{ github.sha }}
-             latest
-          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          architectures: ${{ env.ARCH_JSON }}
+          version: ${{ env.VERSION }}
 
       - name: 📢 Release Summary
         run: |
