@@ -360,7 +360,7 @@ def process_addon(addon_path):
 
     # About
     new_content += "## 📖 About\n\n"
-    
+
     # Special Handling for Webserver Addons About Section
     if addon_dirname in WEBSERVER_ADDONS:
         if addon_dirname == "apache2":
@@ -371,7 +371,7 @@ def process_addon(addon_path):
             new_content += "This version of the Apache web server strikes a balance between performance and functionality. It includes the MariaDB client and essential PHP modules needed for database communication, while remaining more lightweight than the full Apache2 addon. Recommended for database-driven applications that don't require the full suite of Apache modules.\n\n"
         elif addon_dirname == "nginx":
             new_content += "NGINX is a high-performance HTTP server and reverse proxy renowned for its stability, rich feature set, and low resource consumption. This addon provides NGINX with PHP-FPM and MariaDB client support, offering a modern and extremely fast alternative to Apache for serving complex web applications and handling high-concurrency environments.\n\n"
-        
+
         # Add Comparison Table for Apache2 variants
         if addon_dirname.startswith("apache2"):
             new_content += "### Apache2 Variant Comparison\n\n"
@@ -381,7 +381,7 @@ def process_addon(addon_path):
             new_content += "| **MariaDB Client** | ✅ Yes | ❌ No | ✅ Yes |\n"
             new_content += "| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |\n"
             new_content += "| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |\n\n"
-    
+
     # Use body content if available, otherwise fallback to description
     if body_content.strip():
         # Avoid duplicating the text if we already injected it for webserver addons
@@ -391,7 +391,7 @@ def process_addon(addon_path):
         # Fallback to description if About was empty (and not a webserver addon where we just injected text)
         if addon_dirname not in WEBSERVER_ADDONS:
             new_content += f"{description}\n\n"
-            
+
     new_content += "---\n\n"
 
     # Home Assistant Integration (Specific to Webserver addons)
