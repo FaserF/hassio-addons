@@ -3,7 +3,6 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
 
-
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)

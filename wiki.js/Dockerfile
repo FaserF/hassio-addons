@@ -11,8 +11,6 @@ ARG BUILD_DATE="unknown"
 
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="3.4.1"
 ENV APP_NAME="Wiki.JS"

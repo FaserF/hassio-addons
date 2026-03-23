@@ -13,8 +13,6 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # renovate: datasource=github-releases depName=php/php-src
 ARG PHP_VERSION="8.5"
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="0.3.0"
 ENV APP_NAME="NGINX"

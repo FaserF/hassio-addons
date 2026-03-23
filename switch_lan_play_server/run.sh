@@ -164,10 +164,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
-# </App_BANNER_INJECTION>
-
 # Enable strict mode
 set -e
 

@@ -124,6 +124,13 @@ jobs:
           python3 .scripts/intake.py --fix
           python3 .scripts/sync_templates.py
 
+      - name: 🔄 Pull latest changes (Handle non-fast-forward)
+        if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin master
+
       - name: 💾 Commit Changes
         if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v7

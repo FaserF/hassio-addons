@@ -6,8 +6,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="3.3.0"
 ENV APP_NAME="Apache2 Minimal"

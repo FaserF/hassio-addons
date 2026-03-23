@@ -21,8 +21,6 @@
 
 ## 📖 About
 
-
-
 ---
 
 ## ⚙️ Configuration

@@ -5,7 +5,7 @@
 ### 📦 Dependencies
 
 - fix App startups after base image update 20.0.0 (#617) [skip-tests] ([`04c90f6d`](https://github.com/FaserF/hassio-addons/commit/04c90f6d2ea1a75af00b8f6d80ed170271f144d1))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.1](https://github.com/hassio-addons/addon-base/releases/tag/v20.0.1) [skip-tests] (#618) ([`62a7ed57`](https://github.com/FaserF/hassio-addons/commit/62a7ed5794451961add1f8ec065f5cbe863d1623))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v20 [skip-tests] (#616) ([`09e8340b`](https://github.com/FaserF/hassio-addons/commit/09e8340b06c4263037fab6cf6d90fc913c7f99d5))
 
 ### 📝 Documentation
@@ -21,7 +21,7 @@
 
 ### 📦 Dependencies
 
-- ⬆️ Update dependency pterodactyl/wings to v[1.12.1](https://github.com/pterodactyl/wings/releases/tag/1.12.1) [skip-tests] (#584) [skip-tests] ([`c16d9275`](https://github.com/FaserF/hassio-addons/commit/c16d92753239d06465cc254278bcf3d0221adbe9))
+- ⬆️ Update dependency pterodactyl/wings to v[1.12.1](https://github.com/pterodactyl/wings/releases/tag/v1.12.1) [skip-tests] (#584) [skip-tests] ([`c16d9275`](https://github.com/FaserF/hassio-addons/commit/c16d92753239d06465cc254278bcf3d0221adbe9))
 
 ### 🚀 Other
 

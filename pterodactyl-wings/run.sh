@@ -1,5 +1,6 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+# Enable strict mode
 
 # <App_BANNER_INJECTION>
 
@@ -164,9 +165,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
-# Enable strict mode
 set -e
 # shellcheck disable=SC1091,SC2034
 

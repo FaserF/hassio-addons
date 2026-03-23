@@ -12,13 +12,14 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="1.2.0"
-ENV ADDON_NAME="Antigravity-Server"
-ENV ADDON_SLUG="antigravity-server"
-ENV ADDON_UNSUPPORTED="false"
-
 # hadolint ignore=DL3008,SC1091
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.1"
+ENV APP_NAME="Antigravity-Server"
+ENV APP_SLUG="antigravity-server"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \

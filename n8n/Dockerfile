@@ -11,8 +11,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3018
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.2.2"
 ENV APP_NAME="N8n"

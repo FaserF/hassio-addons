@@ -20,8 +20,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # security updates are applied when the image is rebuilt. Reproducibility is less
 # critical here as the SAP runtime is already pinned via the base image.
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="0.2.0"
 ENV APP_NAME="SAP ABAP Cloud Developer Trial"

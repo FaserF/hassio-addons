@@ -80,7 +80,6 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 FROM base as production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-
 WORKDIR /var/www/html
 
 COPY --from=build --chown=nginx:nginx /var/www/html /var/www/html

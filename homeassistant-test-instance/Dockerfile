@@ -15,11 +15,11 @@ ENV TERM="xterm-256color"
 
 # hadolint ignore=DL3018
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="0.2.4"
-ENV ADDON_NAME="Home Assistant Test Instance"
-ENV ADDON_SLUG="ha_test_instance"
-ENV ADDON_UNSUPPORTED="false"
+# App metadata (injected by CI)
+ENV APP_VERSION="0.2.5"
+ENV APP_NAME="Home Assistant Test Instance"
+ENV APP_SLUG="ha_test_instance"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add --no-cache -u libssl3 libcrypto3 \
     bash \

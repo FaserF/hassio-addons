@@ -13,8 +13,6 @@
 
 ## 📖 About
 
-
-
 ---
 
 ## ⚙️ Configuration

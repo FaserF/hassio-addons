@@ -16,8 +16,6 @@ ARG PHP_VERSION="8.5"
 
 # hadolint ignore=DL4006,DL3018
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="3.3.0"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"

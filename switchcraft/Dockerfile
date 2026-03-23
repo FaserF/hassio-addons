@@ -7,8 +7,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup application directory
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="0.2.0"
 ENV APP_NAME="SwitchCraft"

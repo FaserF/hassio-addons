@@ -17,8 +17,6 @@ ENV CLOUDFLARED_VERSION="2025.11.1"
 
 # Setup CoreDNS and Cloudflared
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="2.3.1"
 ENV APP_NAME="ShieldDNS"

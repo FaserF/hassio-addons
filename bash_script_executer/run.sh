@@ -163,8 +163,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
 # Enable strict mode
 set -euo pipefail
 # shellcheck disable=SC1091

@@ -163,36 +163,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 PGDATA="/data/postgresql"
 
 # Initialize PostgreSQL data directory if it doesn't exist

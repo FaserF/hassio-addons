@@ -6,7 +6,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # Set shell with pipefail for Alpine
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-
 # Install Perl and imapsync dependencies natively
 # hadolint ignore=DL3018
 ARG IMAPSYNC_VERSION=2.229

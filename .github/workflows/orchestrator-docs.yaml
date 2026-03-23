@@ -44,6 +44,12 @@ jobs:
         run: |
           python3 .scripts/update_php_info.py
 
+      - name: 🔄 Pull latest changes (Handle non-fast-forward)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin master
+
       - name: 💾 Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v7
         with:

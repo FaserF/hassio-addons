@@ -14,7 +14,6 @@ ENV PYTHONUNBUFFERED=1
 
 # Install System Requirements including Node.js
 
-
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)

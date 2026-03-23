@@ -4,8 +4,6 @@ FROM $BUILD_FROM
 # Setup base
 # hadolint ignore=DL3003
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.2.0"
 ENV APP_NAME="Tiny Tiny RSS"

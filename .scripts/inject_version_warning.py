@@ -245,26 +245,26 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
         content = f.read()
 
     version = addon_info["version"]
-    name = addon_info["name"]
-    slug = addon_info["slug"]
-
     def escape_env(val):
         return val.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
-    env_block = f"""
-# App metadata (injected by CI)
+    # Generate ENV block (no internal leading/trailing newlines)
+    env_block = f"""# App metadata (injected by CI)
 ENV APP_VERSION="{escape_env(version)}"
 ENV APP_NAME="{escape_env(name)}"
 ENV APP_SLUG="{escape_env(slug)}"
-ENV APP_UNSUPPORTED="{str(unsupported).lower()}"
-"""
+ENV APP_UNSUPPORTED="{str(unsupported).lower()}" """
 
     # Remove existing injection if present (Both App and legacy Addon)
+    # This now captures surrounding optional whitespace
     content = re.sub(
-        r'\n# (App|Addon) metadata \(injected by CI\)\nENV (APP|ADDON)_VERSION="[^"]*"\nENV (APP|ADDON)_NAME="[^"]*"\nENV (APP|ADDON)_SLUG="[^"]*"\nENV (APP|ADDON)_UNSUPPORTED="[^"]*"\n',
+        r'\n?\n?# (App|Addon) metadata \(injected by CI\)\nENV (APP|ADDON)_VERSION="[^"]*"\nENV (APP|ADDON)_NAME="[^"]*"\nENV (APP|ADDON)_SLUG="[^"]*"\nENV (APP|ADDON)_UNSUPPORTED="[^"]*"\n\n?',
         "\n",
         content,
     )
+
+    # Collapse multiple blank lines (handles lines with only whitespace)
+    content = re.sub(r"\n\s*\n\s*\n+", "\n\n", content)
 
     # Find place to insert (after FROM/ARG but before RUN)
     lines = content.split("\n")
@@ -272,21 +272,25 @@ ENV APP_UNSUPPORTED="{str(unsupported).lower()}"
 
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if stripped.startswith(("RUN ", "COPY ", "ADD ", "WORKDIR ")) and not stripped.startswith("# "):
+        if stripped.startswith(("RUN ", "COPY ", "ADD ", "WORKDIR ", "USER ", "EXPOSE ", "HEALTHCHECK ")) and not stripped.startswith("# "):
             insert_idx = i
             break
 
-    lines.insert(insert_idx, env_block)
+    # Insert with surrounding newlines only if needed
+    lines.insert(insert_idx, f"\n{env_block.strip()}\n")
     content = "\n".join(lines)
 
-    with open(dockerfile_path, "w", encoding="utf-8") as f:
-        f.write(content)
+    # Final pass to ensure no triple newlines
+    content = re.sub(r"\n\s*\n\s*\n+", "\n\n", content)
+
+    with open(dockerfile_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content.replace("\r\n", "\n").strip() + "\n")
 
     print("✅ Injected ENV vars into Dockerfile")
     return True
 
 
-def find_run_script(addon_path: str) -> str | None:
+def find_run_script(addon_path: str) -> str:
     """Find the main run script for the addon."""
     candidates = [
         os.path.join(addon_path, "run.sh"),
@@ -320,40 +324,42 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
     with open(run_script, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Valid markers
-    START_MARKER = "# <App_BANNER_INJECTION>"
-    END_MARKER = "# </App_BANNER_INJECTION>"
+    # Robust cleanup of any existing markers (App or Addon, with or without #)
+    # This now captures surrounding optional whitespace to prevent accumulation
+    banner_patterns = [
+        r"\n?\n?(#\s*)?<App_BANNER_INJECTION>.*?(#\s*)?</App_BANNER_INJECTION>\n?\n?",
+        r"\n?\n?(#\s*)?<ADDON_BANNER_INJECTION>.*?(#\s*)?</ADDON_BANNER_INJECTION>\n?\n?",
+    ]
+    
+    for pattern in banner_patterns:
+        content = re.sub(pattern, "\n", content, flags=re.DOTALL)
 
-    # Legacy markers to clean up
-    LEGACY_START = "# <ADDON_BANNER_INJECTION>"
-    LEGACY_END = "# </ADDON_BANNER_INJECTION>"
+    # Specific cleanup for stray/malformed markers
+    stray_markers = [
+        "# <App_BANNER_INJECTION>", "# </App_BANNER_INJECTION>",
+        "<App_BANNER_INJECTION>", "</App_BANNER_INJECTION>",
+        "# <ADDON_BANNER_INJECTION>", "# </ADDON_BANNER_INJECTION>",
+        "<ADDON_BANNER_INJECTION>", "</ADDON_BANNER_INJECTION>"
+    ]
+    for marker in stray_markers:
+        content = content.replace(marker, "")
 
-    # Remove legacy injection if present
-    if LEGACY_START in content and LEGACY_END in content:
-        print("[INFO] Legacy startup banner found, removing...")
-        pattern = re.escape(LEGACY_START) + r".*?" + re.escape(LEGACY_END) + r"\n?"
-        content = re.sub(pattern, "", content, flags=re.DOTALL)
-
-    # Check if already injected (Markers)
-    if START_MARKER in content and END_MARKER in content:
-        print("[INFO] Startup banner (markers) found, updating...")
-        # Remove old injection with markers
-        pattern = re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER) + r"\n?"
-        content = re.sub(pattern, "", content, flags=re.DOTALL)
-
-    # Legacy cleanup (Regex or function names)
-    elif "_show_startup_banner" in content or "_show_app_banner" in content:
-        print("[INFO] Legacy startup banner (no markers) found, upgrading to markers...")
+    # Legacy function cleanup
+    if "_show_startup_banner" in content or "_show_app_banner" in content:
+        print("[INFO] Legacy startup banner function found, cleaning up...")
         content = re.sub(
-            r"\n# =+\n# (App|Addon) Startup Banner.*?_show_(startup|app)_banner\nfi\n",
+            r"\n?\n?# =+\n# (App|Addon) Startup Banner.*?_show_(startup|app)_banner\nfi\n\n?",
             "\n",
             content,
-            flags=re.DOTALL,
+            flags=re.DOTALL | re.IGNORECASE,
         )
 
-    # Generate banner code with markers
+    # Collapse multiple blank lines (handles lines with only whitespace)
+    content = re.sub(r"\n\s*\n\s*\n+", "\n\n", content)
+
+    # Generate banner code with markers (no internal leading/trailing newlines)
     banner_body = generate_startup_banner_code(addon_info, unsupported)
-    banner_code = f"\n{START_MARKER}\n{banner_body}\n{END_MARKER}\n"
+    banner_code = f"# <App_BANNER_INJECTION>\n{banner_body}\n# </App_BANNER_INJECTION>"
 
     # Insert after shebang
     lines = content.split("\n")
@@ -364,15 +370,19 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
             insert_idx = i + 1
             break
 
-    # Also skip any initial comment blocks
-    while insert_idx < len(lines) and lines[insert_idx].strip().startswith("#"):
+    # Also skip any initial comment blocks (but not the banner if it somehow stayed)
+    while insert_idx < len(lines) and lines[insert_idx].strip().startswith("#") and "<App_BANNER_INJECTION>" not in lines[insert_idx]:
         insert_idx += 1
 
-    lines.insert(insert_idx, banner_code)
+    # Insert with surrounding newlines only if needed
+    lines.insert(insert_idx, f"\n{banner_code}\n")
     content = "\n".join(lines)
 
+    # Final pass to ensure no triple newlines
+    content = re.sub(r"\n\s*\n\s*\n+", "\n\n", content)
+
     with open(run_script, "w", encoding="utf-8", newline="\n") as f:
-        f.write(content.replace("\r\n", "\n"))
+        f.write(content.replace("\r\n", "\n").strip() + "\n")
 
     print(f"✅ Injected startup banner into {run_script}")
     return True
@@ -407,8 +417,6 @@ def main():
 
     if not success_env and not success_run:
         print("⚠️ No changes made (no Dockerfile or run script found).")
-        # If neither succeeded, we might want to flag it?
-        # User requested considering exit status.
         sys.exit(1)
 
     print("✅ Injection complete!")

@@ -6,9 +6,8 @@ def clean_lines(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Replace 3 or more newlines with 2 newlines (max 1 blank line)
-    # Using regex: \n{3,} -> \n\n
-    new_content = re.sub(r"\n{3,}", "\n\n", content)
+    # Replace 3 or more newlines (potentially with whitespace) with 2 newlines (max 1 blank line)
+    new_content = re.sub(r"\n\s*\n\s*\n+", "\n\n", content)
 
     # Also trim trailing newlines at the end of file to exactly one
     new_content = new_content.rstrip() + "\n"
@@ -27,8 +26,8 @@ def main():
     count = 0
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        if ".git" in dirpath:
-            continue
+        # Skip hidden and cache directories
+        dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in ["__pycache__", "node_modules", "venv"]]
 
         for filename in filenames:
             if any(filename.endswith(ext) or filename == ext for ext in extensions):

@@ -14,8 +14,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="2.3.0"
 ENV APP_NAME="Tado Auto Assist"

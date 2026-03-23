@@ -11,11 +11,11 @@ ARG BUILD_DATE="unknown"
 
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
-# Addon metadata (injected by CI)
-ENV ADDON_VERSION="3.4.0"
-ENV ADDON_NAME="Wiki.JS"
-ENV ADDON_SLUG="wiki.js"
-ENV ADDON_UNSUPPORTED="false"
+# App metadata (injected by CI)
+ENV APP_VERSION="3.4.1"
+ENV APP_NAME="Wiki.JS"
+ENV APP_SLUG="wiki.js"
+ENV APP_UNSUPPORTED="false"
 
 RUN apk add --no-cache -u libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 

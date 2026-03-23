@@ -17,8 +17,6 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # We grab the binary from the official image
 # hadolint ignore=DL3018,DL4006
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="2.3.0"
 ENV APP_NAME="ShieldFile"

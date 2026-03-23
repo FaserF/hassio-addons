@@ -165,9 +165,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
-
 # Source bashio early for banner functions
 source /usr/lib/bashio/bashio.sh
 

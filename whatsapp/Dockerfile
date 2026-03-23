@@ -9,8 +9,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # 1. Install Node.js & Git
 # hadolint ignore=DL3018
 
-
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.4.8"
 ENV APP_NAME="WhatsApp"

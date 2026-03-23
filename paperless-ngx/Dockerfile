@@ -12,7 +12,6 @@ ENV \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-
 # Install Alpine dependencies
 # hadolint ignore=DL3018,DL3013
 

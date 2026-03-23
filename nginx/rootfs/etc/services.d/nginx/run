@@ -163,44 +163,9 @@ fi
 
 # </App_BANNER_INJECTION>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Enable strict mode
 set -e
 # shellcheck disable=SC1091
-
-
 
 # Get local IP
 # We can use the Supervisor API to get the Host IP
