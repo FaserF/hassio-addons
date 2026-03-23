@@ -1048,6 +1048,21 @@ jobs:
             BUILDER_ARGS=$(echo -e "$BUILDER_ARGS" | sed 's/\\\\n[[:space:]]*$//')
           fi
 
+          # Extract image name from config.yaml
+          IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+
+          if [ -z "$IMAGE_FROM_CONFIG" ]; then
+            SLUG=$(grep "^slug:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+            if [ -z "$SLUG" ]; then
+                SLUG=$(echo "${{ matrix.App }}" | tr '[:upper:]' '[:lower:]')
+            fi
+            IMAGE_NAME="hassio-addons-${SLUG}"
+          else
+            # Remove registry and {arch} suffix
+            # shellcheck disable=SC2001
+            IMAGE_NAME=$(echo "$IMAGE_FROM_CONFIG" | sed 's|ghcr.io/faserf/||' | sed 's/-{arch}//')
+          fi
+
           # Detected architectures
           echo "ARCHS=$ARCHS" >> "$GITHUB_ENV"
           # Convert space-separated ARCHS to JSON array for publish-multi-arch-manifest
