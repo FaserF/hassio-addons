@@ -57,6 +57,7 @@ jobs:
             -not -name ".git" \
             -not -name ".github" \
             -not -name ".scripts" \
+            -not -name "custom_components" \
             -exec rm -rf {} +
 
           # Remove all files in root except needed

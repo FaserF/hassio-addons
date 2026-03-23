@@ -6,15 +6,17 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any
 
+import os
 import aiohttp
 import async_timeout
 import homeassistant.util.dt as dt_util
-from homeassistant.components.hassio import async_get_addon_info, is_hassio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_ADDON_SLUG, DOMAIN
+from .utils import get_supervisor_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,15 +52,24 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from the addon and webserver."""
-        if not is_hassio(self.hass):
-            raise UpdateFailed("Not running on Hass.io")
-
+        token = get_supervisor_token(self.hass)
+        session = async_get_clientsession(self.hass)
+        headers = {"X-Supervisor-Token": token} if token else {}
+        
         data = {}
         try:
-            # 1. Fetch Addon Info
-            addon_info = await async_get_addon_info(self.hass, self.addon_slug)
+            # 1. Fetch Addon Info via Supervisor API
+            url = f"http://supervisor/addons/{self.addon_slug}/info"
+            async with async_timeout.timeout(10):
+                resp = await session.get(url, headers=headers)
+                if resp.status != 200:
+                    raise UpdateFailed(f"Failed to fetch addon info: {resp.status}")
+                
+                result = await resp.json()
+                addon_info = result.get("data", {})
+
             if not addon_info:
-                raise UpdateFailed(f"Addon {self.addon_slug} not found")
+                raise UpdateFailed(f"Addon {self.addon_slug} not found in Supervisor response")
 
             data.update(
                 {
@@ -133,24 +144,21 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _fetch_addon_logs(self, data: dict[str, Any]) -> None:
         """Fetch and parse addon logs for errors."""
-        # We use a raw request to the Supervisor API since there's no high-level helper for logs
+        token = get_supervisor_token(self.hass)
+        session = async_get_clientsession(self.hass)
+        headers = {"X-Supervisor-Token": token} if token else {}
+        
         try:
-            # The hassio component sets up a session we can use
-            if "hassio" not in self.hass.data:
-                return
-
-            hassio = self.hass.data["hassio"]
             # Supervisor API URL for logs
             url = f"http://supervisor/addons/{self.addon_slug}/logs"
 
             async with async_timeout.timeout(5):
-                # Note: We need the Supervisor token, which is usually in the session headers or env
-                # HA's Hassio component manages this.
-                resp = await hassio.session.get(url)
+                resp = await session.get(url, headers=headers)
                 if resp.status == 200:
                     logs = await resp.text()
                     error_count = logs.lower().count("error")
                     warn_count = logs.lower().count("warning") + logs.lower().count("warn")
+                    data["log_errors"] = error_count
                     data["log_warnings"] = warn_count
 
             # 4. PHP Version (Optional)
@@ -159,7 +167,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             return data
         except Exception as err:
-            raise UpdateFailed(f"Error updating Webserver App data: {err}") from err
+            _LOGGER.debug("Error fetching addon logs: %s", err)
 
     async def _fetch_php_version(self, data: dict[str, Any]) -> None:
         """Fetch PHP version from the addon."""

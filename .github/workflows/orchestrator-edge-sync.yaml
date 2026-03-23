@@ -87,7 +87,7 @@ jobs:
             grep -E "^[^./][^/]+/" | \
             cut -d'/' -f1 | \
             sort -u | \
-            grep -v "^\\." || echo "")
+            grep -v -E "^(\\.|custom_components$)" || echo "")
 
           echo "Changed Apps: $CHANGED_AppS"
           # Save to output (newline-separated -> space-separated for easier parsing)

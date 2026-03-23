@@ -70,7 +70,7 @@ jobs:
             console.log(`App list: ${totalApps.join(', ')}`);
 
             // Blocklist of known non-App directories
-            const BLOCKLIST = ['docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests', 'node_modules'];
+            const BLOCKLIST = ['custom_components', 'docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests', 'node_modules'];
 
             // Sanity check: filter out any obviously wrong entries
             const validAppPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;

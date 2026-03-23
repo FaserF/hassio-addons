@@ -1,16 +1,13 @@
-"""Button platform for the Webserver App integration."""
-
-from __future__ import annotations
-
+import os
 import logging
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.components.hassio import async_restart_addon
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.update_coordinator import CoordinatorEntity, UpdateFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_ADDON_SLUG, DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
@@ -46,7 +43,20 @@ class WebserverAppReloadButton(CoordinatorEntity[WebserverAppDataUpdateCoordinat
     async def async_press(self) -> None:
         """Handle the button press."""
         _LOGGER.info("Reload requested for addon %s", self.addon_slug)
-        # Graceful reload is hard via Supervisor API for generic addons,
-        # so we perform a restart of the addon.
-        await async_restart_addon(self.hass, self.addon_slug)
+        
+        token = os.environ.get("SUPERVISOR_TOKEN")
+        session = async_get_clientsession(self.coordinator.hass)
+        headers = {"X-Supervisor-Token": token} if token else {}
+        
+        url = f"http://supervisor/addons/{self.addon_slug}/restart"
+        
+        try:
+            async with session.post(url, headers=headers) as resp:
+                if resp.status != 200:
+                    _LOGGER.error("Failed to restart addon %s: %s", self.addon_slug, resp.status)
+                else:
+                    _LOGGER.info("Addon %s restart signal sent", self.addon_slug)
+        except Exception as err:
+            _LOGGER.error("Error calling Supervisor API for restart: %s", err)
+
         await self.coordinator.async_request_refresh()

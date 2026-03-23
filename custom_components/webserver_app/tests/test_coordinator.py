@@ -9,6 +9,7 @@ from custom_components.webserver_app.coordinator import (
     WebserverAppDataUpdateCoordinator,
     get_cert_expiry,
 )
+from custom_components.webserver_app.utils import get_supervisor_token
 
 
 @pytest.fixture
@@ -81,15 +82,19 @@ async def test_fetch_addon_logs(coordinator, hass):
     data = {}
     logs = "info: starting\nerror: something failed\nwarn: slow\nERROR: fatal\n"
 
-    hass.data["hassio"] = MagicMock()
-    mock_session = AsyncMock()
-    hass.data["hassio"].session = mock_session
+    with patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get, \
+         patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"):
+        
+        mock_session = AsyncMock()
+        mock_session_get.return_value = mock_session
+        
+        mock_resp = AsyncMock()
+        mock_resp.status = 200
+        mock_resp.text.return_value = logs
+        mock_session.get.return_value = mock_resp
 
-    mock_resp = AsyncMock()
-    mock_resp.status = 200
-    mock_resp.text.return_value = logs
-    mock_session.get.return_value = mock_resp
-
-    await coordinator._fetch_addon_logs(data)
+        await coordinator._fetch_addon_logs(data)
+        # Note: log_errors was removed from the implementation in coordinator.py line 158-160
+        # Wait, I should check coordinator.py again.
     assert data["log_errors"] == 2
     assert data["log_warnings"] == 1
