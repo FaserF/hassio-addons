@@ -1088,6 +1088,7 @@ jobs:
              ${{ env.VERSION }}
              latest
           push: true
+          cosign: false
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ env.VERSION }}
@@ -1102,6 +1103,7 @@ jobs:
              ${{ env.VERSION }}
              latest
           push: true
+          cosign: false
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ env.VERSION }}
