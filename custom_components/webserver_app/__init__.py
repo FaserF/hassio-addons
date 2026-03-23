@@ -7,9 +7,9 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from . import config_flow  # noqa: F401
 from .const import DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
-from . import config_flow  # noqa: F401
 
 _LOGGER = logging.getLogger(__name__)
 

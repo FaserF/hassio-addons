@@ -67,7 +67,6 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"detected": ", ".join(detected_addons)},
         )
 
-
     async def async_step_hassio(self, discovery_info: dict[str, Any]) -> FlowResult:
         """Handle supervisor discovery."""
         slug = discovery_info.get("slug")
