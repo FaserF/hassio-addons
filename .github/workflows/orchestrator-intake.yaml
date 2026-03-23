@@ -129,7 +129,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin master
+          git pull --rebase --autostash origin master
 
       - name: 💾 Commit Changes
         if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push'

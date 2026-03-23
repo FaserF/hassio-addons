@@ -3,6 +3,7 @@
 # Home Assistant App: N8n
 # Runs N8n
 # ==============================================================================
+# Ensure persistence directory exists
 
 # <App_BANNER_INJECTION>
 
@@ -81,7 +82,7 @@ _show_app_banner() {
     # ========================================================================
     # Smart Update Check
     # ========================================================================
-    if command -v curl &>/dev/null; then
+    if command -v curl > /dev/null 2>&1; then
         local UPDATE_MSG=""
 
         # Ensure we don't fail on pipe errors
@@ -161,13 +162,12 @@ _show_app_banner() {
 }
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue > /dev/null 2>&1; then
     _show_app_banner
 fi
 
 # </App_BANNER_INJECTION>
 
-# Ensure persistence directory exists
 if ! bashio::fs.directory_exists "/data/n8n"; then
     bashio::log.info "Creating persistent storage directory..."
     mkdir -p -m 755 /data/n8n

@@ -14,7 +14,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.0"
+ENV APP_VERSION="2.3.1"
 ENV APP_NAME="Solumati"
 ENV APP_SLUG="solumati"
 ENV APP_UNSUPPORTED="false"
@@ -37,10 +37,10 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # --- SOURCE CODE FETCH STAGE ---
 # Download the specific release tarball
-ARG SOLUMATI_VERSION="v2026.2.0a1"
+ARG SOLUMATI_VERSION="v2026.3.0a3"
 ENV SOLUMATI_VERSION=${SOLUMATI_VERSION}
 # renovate: datasource=github-releases depName=FaserF/Solumati
-ARG SOLUMATI_SHA256="66a22a143d7e69fd9cb63c315c9e55deff3adfd78f8cf2c5cfe31763958db8d4"
+ARG SOLUMATI_SHA256="1B9DE6C05599863A29B0D18F802CDDEC37E217AD1805D577C1FEE27299FC44C3"
 WORKDIR /tmp
 RUN mkdir src && \
     curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \

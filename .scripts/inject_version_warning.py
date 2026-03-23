@@ -147,7 +147,7 @@ _show_app_banner() {{
     # ========================================================================
     # Smart Update Check
     # ========================================================================
-    if command -v curl &>/dev/null; then
+    if command -v curl > /dev/null 2>&1; then
         local UPDATE_MSG=""
 
         # Ensure we don't fail on pipe errors
@@ -227,7 +227,7 @@ _show_app_banner() {{
 }}
 
 # Show banner on startup
-if type bashio::log.blue &>/dev/null 2>&1; then
+if type bashio::log.blue > /dev/null 2>&1; then
     _show_app_banner
 fi
 """
@@ -245,6 +245,8 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
         content = f.read()
 
     version = addon_info["version"]
+    name = addon_info["name"]
+    slug = addon_info["slug"]
 
     def escape_env(val):
         return val.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
