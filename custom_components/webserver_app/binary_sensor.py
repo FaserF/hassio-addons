@@ -1,9 +1,10 @@
 """Binary sensor entities for the Webserver App integration."""
+
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -12,8 +13,9 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_ADDON_SLUG
+from .const import CONF_ADDON_SLUG, DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -29,12 +31,15 @@ async def async_setup_entry(
         ]
     )
 
+
 class WebserverAppBinarySensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], BinarySensorEntity):
     """Base class for Webserver App binary sensors."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator, description: BinarySensorEntityDescription) -> None:
+    def __init__(
+        self, coordinator: WebserverAppDataUpdateCoordinator, description: BinarySensorEntityDescription
+    ) -> None:
         """Initialize."""
         super().__init__(coordinator)
         self.entity_description = description
@@ -48,6 +53,7 @@ class WebserverAppBinarySensor(CoordinatorEntity[WebserverAppDataUpdateCoordinat
             sw_version=coordinator.data.get("version"),
             configuration_url=f"https://github.com/FaserF/hassio-addons/tree/master/{self.addon_slug}",
         )
+
 
 class WebserverAppUpdateBinarySensor(WebserverAppBinarySensor):
     """Update sensor for Webserver App."""

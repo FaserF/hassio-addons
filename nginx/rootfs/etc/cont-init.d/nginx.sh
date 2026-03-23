@@ -232,7 +232,6 @@ server {
 }
 EOF
 
-
 # Include sites-enabled in main nginx.conf
 if ! grep -q "include /etc/nginx/sites-enabled" /etc/nginx/nginx.conf; then
 	# Add include directive in http block

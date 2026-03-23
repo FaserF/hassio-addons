@@ -42,7 +42,6 @@ For more information and configuration details, please refer to the [Integration
 WEBSERVER_ADDONS = ["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]
 
 
-
 def load_addon_config(addon_path):
     """Load config.yaml or config.json."""
     config_yaml = os.path.join(addon_path, "config.yaml")
@@ -191,7 +190,6 @@ def clean_existing_content(content):
                 "## ❤️ Support This Project",
                 "## 🏠 Home Assistant Integration",
                 "## 🐛 Report a Bug",
-
                 "## 💡 Feature Request",
                 "## 🛠️ Usage & Integration",
                 "## ⚠️ IMPORTANT DISCLAIMERS",
@@ -371,7 +369,6 @@ def process_addon(addon_path):
     if addon_dirname in WEBSERVER_ADDONS:
         new_content += WEBSERVER_INTEGRATION_NOTICE.strip() + "\n\n"
         new_content += "---\n\n"
-
 
     # Configuration
     new_content += "## ⚙️ Configuration\n\n"

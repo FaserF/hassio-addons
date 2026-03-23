@@ -1,7 +1,9 @@
 """Button platform for the Webserver App integration."""
+
 from __future__ import annotations
 
 import logging
+
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.hassio import async_restart_addon
 from homeassistant.config_entries import ConfigEntry
@@ -10,10 +12,11 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_ADDON_SLUG
+from .const import CONF_ADDON_SLUG, DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -23,6 +26,7 @@ async def async_setup_entry(
     """Set up the button platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([WebserverAppReloadButton(coordinator)])
+
 
 class WebserverAppReloadButton(CoordinatorEntity[WebserverAppDataUpdateCoordinator], ButtonEntity):
     """Button to reload the webserver (via addon restart for now)."""

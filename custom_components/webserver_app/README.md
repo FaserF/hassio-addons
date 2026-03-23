@@ -21,7 +21,7 @@ This integration provides monitoring for Apache2 and Nginx addons from the Faser
 
 ## Installation
 
-This integration is automatically installed and updated by the supported addons upon startup. 
+This integration is automatically installed and updated by the supported addons upon startup.
 Manual installation can be done by copying the `webserver_app` folder to your `custom_components` directory.
 
 ## Configuration

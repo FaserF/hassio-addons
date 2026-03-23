@@ -16,6 +16,7 @@ import json
 import os
 import re
 import subprocess
+
 import yaml
 
 
@@ -240,7 +241,7 @@ def update_integration_for_edge() -> bool:
     """Update webserver_app integration for edge branch."""
     manifest_path = "custom_components/webserver_app/manifest.json"
     readme_path = "custom_components/webserver_app/README.md"
-    
+
     if not os.path.exists(manifest_path):
         return False
 
@@ -248,22 +249,20 @@ def update_integration_for_edge() -> bool:
         # 1. Update manifest.json version
         with open(manifest_path, "r", encoding="utf-8") as f:
             manifest = json.load(f)
-        
+
         # Get current version and strip any existing -dev suffix
         base_version = manifest["version"].split("-")[0]
-        
+
         # Get current commit SHA
         try:
             commit_sha = subprocess.check_output(
-                ["git", "rev-parse", "--short", "HEAD"],
-                text=True,
-                encoding="utf-8"
+                ["git", "rev-parse", "--short", "HEAD"], text=True, encoding="utf-8"
             ).strip()
         except Exception:
             commit_sha = "unknown"
-            
+
         manifest["version"] = f"{base_version}-dev-{commit_sha}"
-        
+
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
             f.write("\n")
@@ -273,15 +272,15 @@ def update_integration_for_edge() -> bool:
         if os.path.exists(readme_path):
             with open(readme_path, "r", encoding="utf-8") as f:
                 content = f.read()
-            
+
             # Replace master link with edge branch link
             new_link = "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge"
             new_content = re.sub(
                 r"https://my.home-assistant.io/redirect/hacs_repository/\?owner=FaserF&repository=hassio-addons&category=integration",
                 new_link,
-                content
+                content,
             )
-            
+
             if new_content != content:
                 with open(readme_path, "w", encoding="utf-8") as f:
                     f.write(new_content)

@@ -41,7 +41,7 @@ fi
 # Enable mod_status for monitoring
 sed -i 's/^#\(LoadModule status_module modules\/mod_status.so\)/\1/' /etc/apache2/httpd.conf
 if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then
-    cat >> /etc/apache2/httpd.conf <<EOF
+	cat >>/etc/apache2/httpd.conf <<EOF
 <Location /server-status>
     SetHandler server-status
     Order deny,allow
