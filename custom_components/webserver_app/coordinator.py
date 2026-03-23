@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Any
 
-import os
 import aiohttp
 import async_timeout
 import homeassistant.util.dt as dt_util
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_ADDON_SLUG, DOMAIN
 from .utils import get_supervisor_token
@@ -55,7 +55,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         token = get_supervisor_token(self.hass)
         session = async_get_clientsession(self.hass)
         headers = {"X-Supervisor-Token": token} if token else {}
-        
+
         data = {}
         try:
             # 1. Fetch Addon Info via Supervisor API
@@ -64,7 +64,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 resp = await session.get(url, headers=headers)
                 if resp.status != 200:
                     raise UpdateFailed(f"Failed to fetch addon info: {resp.status}")
-                
+
                 result = await resp.json()
                 addon_info = result.get("data", {})
 
@@ -147,7 +147,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         token = get_supervisor_token(self.hass)
         session = async_get_clientsession(self.hass)
         headers = {"X-Supervisor-Token": token} if token else {}
-        
+
         try:
             # Supervisor API URL for logs
             url = f"http://supervisor/addons/{self.addon_slug}/logs"

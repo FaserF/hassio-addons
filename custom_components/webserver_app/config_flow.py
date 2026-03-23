@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 import os
 from typing import Any
-import voluptuous as vol
+
 import async_timeout
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
@@ -41,7 +42,7 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-             # ... existing input handling ...
+            # ... existing input handling ...
             self._addon_slug = user_input[CONF_ADDON_SLUG]
             self._port = user_input[CONF_PORT]
             await self.async_set_unique_id(f"{self._addon_slug}_{self._port}")
@@ -51,15 +52,15 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Try to detect installed addons via Supervisor API
         detected_addons = []
         _LOGGER.error("ConfigFlow: Starting detection")
-        
+
         token = get_supervisor_token(self.hass)
         if not token:
             _LOGGER.error("ConfigFlow: NO SUPERVISOR_TOKEN found")
-        
+
         try:
             session = async_get_clientsession(self.hass)
             headers = {"X-Supervisor-Token": token} if token else {}
-            
+
             async with async_timeout.timeout(10):
                 _LOGGER.error("ConfigFlow: Calling Supervisor API http://supervisor/addons")
                 resp = await session.get("http://supervisor/addons", headers=headers)
@@ -68,13 +69,13 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     result = await resp.json()
                     data_node = result.get("data", result)
                     addons = data_node.get("addons", [])
-                    
+
                     _LOGGER.error("ConfigFlow: Supervisor API returned %s addons", len(addons))
-                    
+
                     for addon in addons:
                         slug = addon.get("slug", "")
                         is_installed = addon.get("installed", False)
-                        
+
                         # Match if any supported slug is in the addon slug
                         # We only match if the slug ends with the supported slug (e.g. local_apache2)
                         # or if it is exactly the supported slug.
@@ -87,7 +88,7 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     _LOGGER.error("ConfigFlow: Failed to fetch addons from Supervisor: %s", resp.status)
         except Exception as err:
             _LOGGER.error("ConfigFlow: Exception in detection: %s", err)
-        
+
         # If we detected something, prioritize it. Otherwise use the full list.
         display_addons = detected_addons if detected_addons else SUPPORTED_ADDON_SLUGS
         _LOGGER.error("ConfigFlow: Displaying addons: %s", display_addons)

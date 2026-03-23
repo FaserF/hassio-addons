@@ -82,12 +82,14 @@ async def test_fetch_addon_logs(coordinator, hass):
     data = {}
     logs = "info: starting\nerror: something failed\nwarn: slow\nERROR: fatal\n"
 
-    with patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get, \
-         patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"):
-        
+    with (
+        patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get,
+        patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"),
+    ):
+
         mock_session = AsyncMock()
         mock_session_get.return_value = mock_session
-        
+
         mock_resp = AsyncMock()
         mock_resp.status = 200
         mock_resp.text.return_value = logs

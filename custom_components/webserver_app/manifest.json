@@ -5,14 +5,8 @@
   "config_flow": true,
   "documentation": "https://github.com/FaserF/hassio-addons/tree/master/custom_components/webserver_app",
   "issue_tracker": "https://github.com/FaserF/hassio-addons/issues",
-  "dependencies": [
-    "hassio"
-  ],
-  "codeowners": [
-    "@FaserF"
-  ],
+  "dependencies": ["hassio"],
+  "codeowners": ["@FaserF"],
   "iot_class": "local_polling",
-  "discovery": [
-    "hassio"
-  ]
+  "discovery": ["hassio"]
 }

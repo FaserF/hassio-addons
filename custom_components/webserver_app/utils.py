@@ -13,13 +13,13 @@ def get_supervisor_token(hass: HomeAssistant) -> str | None:
     token = os.environ.get("SUPERVISOR_TOKEN")
     if token:
         return token
-    
+
     # Try to get it from hassio component
     if "hassio" in hass.data:
         hassio = hass.data["hassio"]
         # In Home Assistant Core, the HassIO object usually stores the token in _token
         return getattr(hassio, "_token", None)
-    
+
     return None
 
 

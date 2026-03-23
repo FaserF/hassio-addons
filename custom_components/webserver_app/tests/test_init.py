@@ -20,12 +20,14 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
     entry.entry_id = "test_entry"
 
     # Mock Supervisor API
-    with patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"), \
-         patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get:
-        
+    with (
+        patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"),
+        patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get,
+    ):
+
         mock_session = AsyncMock()
         mock_session_get.return_value = mock_session
-        
+
         mock_resp = AsyncMock()
         mock_resp.status = 200
         mock_resp.json.return_value = {
