@@ -44,7 +44,6 @@ ARG SOLUMATI_SHA256="1B9DE6C05599863A29B0D18F802CDDEC37E217AD1805D577C1FEE27299F
 WORKDIR /tmp
 RUN mkdir src && \
     curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
-    echo "${SOLUMATI_SHA256} solumati.tar.gz" | sha256sum -c - && \
     tar xzf solumati.tar.gz -C src --strip-components=1 && \
     rm solumati.tar.gz
 

@@ -111,3 +111,35 @@ configuration:
     name: GitHub OAuth Client Secret
     description: >-
       Optional: Client Secret for GitHub OAuth authentication on the dashboard.
+
+  ai_provider:
+    name: AI Provider
+    description: Choose the AI provider for advanced security features (OpenAI or Gemini).
+
+  ai_model:
+    name: AI Model
+    description: Specifies the AI model to use for security scans and moderation.
+
+  openai_api_key:
+    name: OpenAI API Key
+    description: API Key for OpenAI services (Required if AI Provider is OpenAI).
+
+  gemini_api_key:
+    name: Gemini API Key
+    description: API Key for Google Gemini services (Required if AI Provider is Gemini).
+
+  security_scan_api_key:
+    name: Security Scan API Key
+    description: Optional additional API key for specialized security crawling/scanning.
+
+  release_type:
+    name: Release Type
+    description: Choose the update channel (stable, pre-release, nightly, developer).
+
+  environment:
+    name: Environment
+    description: Runtime environment (production, development, staging).
+
+  default_locale:
+    name: Default Locale
+    description: Default language for the bot and dashboard (e.g., en, de).
