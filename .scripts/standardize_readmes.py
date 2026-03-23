@@ -171,53 +171,59 @@ def clean_existing_content(content):
 
         else:
             # --- CONTENT PROCESSING (AGGRESSIVE) ---
-            
+
             # Headers to skip entirely (and their content)
             HEADERS_TO_SKIP = [
-                "## 📖 About", "## About",
+                "## 📖 About",
+                "## About",
                 "## ❤️ Support This Project",
                 "## 🐛 Report a Bug",
                 "## 💡 Feature Request",
                 "## 🛠️ Usage & Integration",
                 "## ⚠️ IMPORTANT DISCLAIMERS",
-                "## 🧰 Hardware Requirements", "## Hardware Requirements",
-                "## Requirements", # Also skip Requirements header
-                "## 🧰 Versions", "## Versions", 
+                "## 🧰 Hardware Requirements",
+                "## Hardware Requirements",
+                "## Requirements",  # Also skip Requirements header
+                "## 🧰 Versions",
+                "## Versions",
                 "## 📚 Documentation",
-                "## 👨‍💻 Credits & License", "## Credits", "## License",
-                "## ⚙️ Configuration", "## Configuration",
-                "### Options", # Also skip nested options header
+                "## 👨‍💻 Credits & License",
+                "## Credits",
+                "## License",
+                "## ⚙️ Configuration",
+                "## Configuration",
+                "### Options",  # Also skip nested options header
             ]
-            
+
             # If we hit one of these headers, skip until the next header
             matching_header = False
             for h in HEADERS_TO_SKIP:
                 if sline.startswith(h):
                     matching_header = True
                     break
-            
+
             if matching_header:
                 # Enter a sub-skip mode until next header
                 # We can do this by just not appending and setting a flag
-                # But to keep it simple in this loop, we skip this line and 
+                # But to keep it simple in this loop, we skip this line and
                 # we need to skip subsequent lines too.
                 # Let's adjust the logic slightly.
-                pass # Handled below
-            
+                pass  # Handled below
+
             # Revised logic for block skipping
             if any(sline.startswith(h) for h in HEADERS_TO_SKIP):
                 skip_block = True
                 continue
-            
+
             # If we were skipping a block and hit a NEW header NOT in HEADERS_TO_SKIP, stop skipping
-            if 'skip_block' in locals() and skip_block:
+            if "skip_block" in locals() and skip_block:
                 if sline.startswith("##"):
                     if not any(sline.startswith(h) for h in HEADERS_TO_SKIP):
                         skip_block = False
                     else:
-                        continue # Still in a skippable header
+                        continue  # Still in a skippable header
                 else:
-                    continue # Still in content of a skippable header
+                    continue  # Still in content of a skippable header
 
             # Filter H1 titles inside body (Artifacts)
             if sline.startswith("# "):

@@ -27,7 +27,9 @@ def main():
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
         # Skip hidden and cache directories
-        dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in ["__pycache__", "node_modules", "venv"]]
+        dirnames[:] = [
+            d for d in dirnames if not d.startswith(".") and d not in ["__pycache__", "node_modules", "venv"]
+        ]
 
         for filename in filenames:
             if any(filename.endswith(ext) or filename == ext for ext in extensions):

@@ -245,6 +245,7 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
         content = f.read()
 
     version = addon_info["version"]
+
     def escape_env(val):
         return val.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
@@ -272,7 +273,9 @@ ENV APP_UNSUPPORTED="{str(unsupported).lower()}" """
 
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if stripped.startswith(("RUN ", "COPY ", "ADD ", "WORKDIR ", "USER ", "EXPOSE ", "HEALTHCHECK ")) and not stripped.startswith("# "):
+        if stripped.startswith(
+            ("RUN ", "COPY ", "ADD ", "WORKDIR ", "USER ", "EXPOSE ", "HEALTHCHECK ")
+        ) and not stripped.startswith("# "):
             insert_idx = i
             break
 
@@ -330,16 +333,20 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
         r"\n?\n?(#\s*)?<App_BANNER_INJECTION>.*?(#\s*)?</App_BANNER_INJECTION>\n?\n?",
         r"\n?\n?(#\s*)?<ADDON_BANNER_INJECTION>.*?(#\s*)?</ADDON_BANNER_INJECTION>\n?\n?",
     ]
-    
+
     for pattern in banner_patterns:
         content = re.sub(pattern, "\n", content, flags=re.DOTALL)
 
     # Specific cleanup for stray/malformed markers
     stray_markers = [
-        "# <App_BANNER_INJECTION>", "# </App_BANNER_INJECTION>",
-        "<App_BANNER_INJECTION>", "</App_BANNER_INJECTION>",
-        "# <ADDON_BANNER_INJECTION>", "# </ADDON_BANNER_INJECTION>",
-        "<ADDON_BANNER_INJECTION>", "</ADDON_BANNER_INJECTION>"
+        "# <App_BANNER_INJECTION>",
+        "# </App_BANNER_INJECTION>",
+        "<App_BANNER_INJECTION>",
+        "</App_BANNER_INJECTION>",
+        "# <ADDON_BANNER_INJECTION>",
+        "# </ADDON_BANNER_INJECTION>",
+        "<ADDON_BANNER_INJECTION>",
+        "</ADDON_BANNER_INJECTION>",
     ]
     for marker in stray_markers:
         content = content.replace(marker, "")
@@ -371,7 +378,11 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
             break
 
     # Also skip any initial comment blocks (but not the banner if it somehow stayed)
-    while insert_idx < len(lines) and lines[insert_idx].strip().startswith("#") and "<App_BANNER_INJECTION>" not in lines[insert_idx]:
+    while (
+        insert_idx < len(lines)
+        and lines[insert_idx].strip().startswith("#")
+        and "<App_BANNER_INJECTION>" not in lines[insert_idx]
+    ):
         insert_idx += 1
 
     # Insert with surrounding newlines only if needed
