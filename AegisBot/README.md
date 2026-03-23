@@ -15,11 +15,13 @@
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+> It is not extensively testet yet, but is expected to work fundamentally.
 
 ---
 
 ## 📖 About
+
+
 
 ---
 
