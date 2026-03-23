@@ -12,9 +12,12 @@ ENV APP_NAME="Apache2 Minimal"
 ENV APP_SLUG="apache2-minimal"
 ENV APP_UNSUPPORTED="false"
 
+# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
+ARG APACHE2_VERSION="2.4.66-r0"
+
 RUN mkdir /run/apache2 \
  && apk --no-cache add libcrypto3 libssl3 \
-    apache2 \
+    apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \
         libxml2-dev \
         apache2-utils \
         apache2-mod-wsgi \

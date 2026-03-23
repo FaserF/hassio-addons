@@ -322,6 +322,19 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/home-assistant/amd64-builder"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Apache2 Alpine package version",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose\\nARG APACHE2_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
+      ],
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "alpine_3_21/apache2",
+      "versioningTemplate": "loose"
     }
   ],
   "packageRules": [
@@ -460,7 +473,7 @@
       "ignoreUnstable": false
     },
     {
-      "description": "NGINX - auto-update Alpine package version",
+      "description": "NGINX - auto-update Alpine package version and bump addon version",
       "matchDepNames": [
         "alpine_3_21/nginx"
       ],
@@ -468,7 +481,41 @@
         "nginx/Dockerfile"
       ],
       "automerge": true,
-      "ignoreTests": false
+      "ignoreTests": false,
+      "postUpgradeTasks": {
+        "commands": [
+          "python3 .scripts/bump_version.py nginx patch --message \"Automatic release after NGINX update to {{{newVersion}}}\""
+        ],
+        "fileFilters": [
+          "nginx/config.yaml",
+          "nginx/CHANGELOG.md"
+        ],
+        "executionMode": "branch"
+      }
+    },
+    {
+      "description": "Apache2 - auto-update Alpine package version and bump addon version",
+      "matchDepNames": [
+        "alpine_3_21/apache2"
+      ],
+      "automerge": true,
+      "ignoreTests": false,
+      "postUpgradeTasks": {
+        "commands": [
+          "python3 .scripts/bump_version.py apache2 patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
+          "python3 .scripts/bump_version.py apache2-minimal patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
+          "python3 .scripts/bump_version.py apache2-minimal-mariadb patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\""
+        ],
+        "fileFilters": [
+          "apache2/config.yaml",
+          "apache2/CHANGELOG.md",
+          "apache2-minimal/config.yaml",
+          "apache2-minimal/CHANGELOG.md",
+          "apache2-minimal-mariadb/config.yaml",
+          "apache2-minimal-mariadb/CHANGELOG.md"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "matchManagers": [
