@@ -78,6 +78,14 @@ if [ "$LOCAL_VERSION" != "$REMOTE_VERSION" ]; then
 		curl -sSL -m 10 "$GITHUB_RAW_URL/translations/$t_file" -o "$INTEGRATION_PATH/translations/$t_file" || true
 	done
 
+	# Handle brand images (logo and icon)
+	mkdir -p "$INTEGRATION_PATH/brand"
+	BRAND_FILES=$(curl -sSL -m 10 -H "Accept: application/vnd.github.v3+json" "$GITHUB_API_URL/brand" | jq -r '.[] | select(.type == "file") | .name' 2>/dev/null || echo "")
+	for b_file in $BRAND_FILES; do
+		bashio::log.info "Downloading brand image $b_file..."
+		curl -sSL -m 10 "$GITHUB_RAW_URL/brand/$b_file" -o "$INTEGRATION_PATH/brand/$b_file" || true
+	done
+
 	bashio::log.green "Webserver App integration successfully updated to $REMOTE_VERSION."
 	bashio::log.info "Please restart Home Assistant to apply changes."
 else
