@@ -21,8 +21,6 @@ map:
     read_only: false
 options:
   version: "latest"
-  telegram_bot_token: ""
-  telegram_bot_username: ""
   github_token: ""
   github_repo: "FaserF/AegisBot"
   developer_mode: false
@@ -35,10 +33,6 @@ options:
   debug: false
   demo_mode: false
   demo_mode_type: ephemeral
-  openai_api_key: ""
-  gemini_api_key: ""
-  security_scan_api_key: ""
-  ai_model: "gpt-3.5-turbo"
   ai_provider: "gemini"
   release_type: "stable"
   environment: "production"
