@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2 (2026-03-23)
+
+### 🚀 Other
+- make config options optional ([`bef307b3`](https://github.com/FaserF/hassio-addons/commit/bef307b3c385b67dbab2ada58524a1bc71e4e312))
+
+
 ## 0.5.1 (2026-03-21)
 
 ### 🐛 Bug Fixes
