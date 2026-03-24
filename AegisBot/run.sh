@@ -235,10 +235,14 @@ if bashio::config.true 'reset_database'; then
 		sync # Ensure filesystem changes are written
 	fi
 
-	# Verify database is gone
+	# Verify database is gone (check for current filename)
 	if [ -f "$DB_DIR/aegisbot.db" ]; then
 		bashio::log.error "Failed to delete database file! Forced removal..."
 		rm -f "$DB_DIR/aegisbot.db"
+	fi
+	# For legacy reasons, also check for .sqlite
+	if [ -f "$DB_DIR/aegisbot.sqlite" ]; then
+		rm -f "$DB_DIR/aegisbot.sqlite"
 	fi
 
 	bashio::log.info "=================================================="
