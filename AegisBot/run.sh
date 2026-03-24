@@ -524,11 +524,10 @@ install_from_archive() {
 
 		bashio::log.info "Running 'npm install'..."
 		if npm install; then
-			bashio::log.info "Applying Ingress patches..."
+			# Apply Ingress patches
 			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-			sed -i "s|const API_BASE = .*|const API_BASE = './api/v1'|g" src/api/client.ts
-			# Handle official repo's now exported API_BASE
-			sed -i "s|export const API_BASE = .*|export const API_BASE = './api/v1'|g" src/api/client.ts
+			# We now handle API_BASE dynamically in source, but ensure it's not hardcoded to a legacy value
+			sed -i "s|import.meta.env.VITE_API_URL || '/api/v1'|getApiBase()|g" src/api/client.ts
 
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then
@@ -783,7 +782,7 @@ cd /app/backend || exit 1
 export PYTHONPATH=/app/backend
 
 # Start Uvicorn in background
-uvicorn app.main:app --host 127.0.0.1 --port 8001 --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
 
 # --- NGINX START ---
