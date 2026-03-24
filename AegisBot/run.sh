@@ -273,7 +273,7 @@ mkdir -p "$UPLOADS_DIR"
 bashio::log.info "Reading configuration from Home Assistant..."
 
 # Version
-VERSION=$(bashio::config 'version')
+VERSION=$(bashio::config 'version' | xargs)
 bashio::log.info "Target Version: $VERSION"
 
 # Log Level
@@ -404,7 +404,7 @@ bashio::log.info "Note: Authentication settings are now configured via Web UI."
 
 # GitHub Repo Configuration
 if bashio::config.has_value 'github_repo' && [ -n "$(bashio::config 'github_repo')" ]; then
-	GITHUB_REPO=$(bashio::config 'github_repo')
+	GITHUB_REPO=$(bashio::config 'github_repo' | xargs)
 	export GITHUB_REPO
 	bashio::log.info "GitHub Repo set to: $GITHUB_REPO"
 else
