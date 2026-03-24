@@ -1,4 +1,8 @@
 #!/usr/bin/with-contenv bashio
+
+# Load custom bashio libraries
+# shellcheck source=/dev/null
+. /usr/lib/bashio/app.sh
 # shellcheck disable=SC2034,SC2129,SC2016
 # shellcheck shell=bash
 # Enable strict mode

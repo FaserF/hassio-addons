@@ -117,6 +117,7 @@ RUN \
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
 # Copy Run Script
+COPY rootfs /
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 

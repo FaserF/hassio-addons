@@ -1,4 +1,8 @@
 #!/usr/bin/with-contenv bashio
+
+# Load custom bashio libraries
+# shellcheck source=/dev/null
+. /usr/lib/bashio/app.sh
 # shellcheck shell=bash
 
 bashio::log.info "Initialize Wordpress..."

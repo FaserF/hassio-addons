@@ -1,5 +1,9 @@
 #!/usr/bin/with-contenv bashio
 
+# Load custom bashio libraries
+# shellcheck source=/dev/null
+. /usr/lib/bashio/app.sh
+
 # Wait for PostgreSQL to be ready
 bashio::log.info "Waiting for PostgreSQL to be ready..."
 max_retries=30

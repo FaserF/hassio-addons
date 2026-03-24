@@ -1,5 +1,9 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+
+# Load custom bashio libraries
+# shellcheck source=/dev/null
+. /usr/lib/bashio/app.sh
 # Enable strict mode
 
 # <App_BANNER_INJECTION>
@@ -248,19 +252,11 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=================================================="
 
 	# Reset database options to false to prevent repeat wipes
-	# Fetch current options and merge using jq to ensure required fields (like log_level) are preserved
-	options=""
-	if options=$(bashio::api.supervisor "GET" "/addons/self/options"); then
-		new_options=""
-		if new_options=$(echo "$options" | jq -c '.data.options | .reset_database = false | .reset_database_confirm = false' 2>/dev/null) && [ -n "$new_options" ]; then
-			bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": ${new_options}}"
-		else
-			bashio::log.error "Failed to process options with jq. Required fields may be missing in update."
-			bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
-		fi
+	# This uses the shared bashio::app.option helper for a robust update
+	if bashio::app.option 'reset_database' && bashio::app.option 'reset_database_confirm'; then
+		bashio::log.info "Database reset flags successfully cleared."
 	else
-		bashio::log.error "Failed to fetch current options from Supervisor API."
-		bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
+		bashio::log.error "Failed to clear database reset flags! Loop may occur."
 	fi
 fi
 
