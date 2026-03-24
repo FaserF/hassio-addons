@@ -225,8 +225,16 @@ if bashio::config.true 'reset_database'; then
 
 	# Delete all data
 	if [ -d "$DATA_DIR" ]; then
-		bashio::log.info "Deleting all data..."
-		rm -rf "$DATA_DIR"
+		bashio::log.info "Deleting all data in $DATA_DIR..."
+		# Safely delete all contents including hidden files
+		find "$DATA_DIR" -mindepth 1 -delete
+		sync # Ensure filesystem changes are written
+	fi
+
+	# Verify database is gone
+	if [ -f "$DB_DIR/aegisbot.db" ]; then
+		bashio::log.error "Failed to delete database file! Forced removal..."
+		rm -f "$DB_DIR/aegisbot.db"
 	fi
 
 	bashio::log.info "=================================================="
@@ -240,7 +248,20 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.info "=================================================="
 
 	# Reset database options to false to prevent repeat wipes
-	bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
+	# Fetch current options and merge using jq to ensure required fields (like log_level) are preserved
+	local options
+	if options=$(bashio::api.supervisor "GET" "/addons/self/options"); then
+		local new_options
+		if new_options=$(echo "$options" | jq -c '.data.options | .reset_database = false | .reset_database_confirm = false' 2>/dev/null) && [ -n "$new_options" ]; then
+			bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": ${new_options}}"
+		else
+			bashio::log.error "Failed to process options with jq. Required fields may be missing in update."
+			bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
+		fi
+	else
+		bashio::log.error "Failed to fetch current options from Supervisor API."
+		bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": {\"reset_database\": false, \"reset_database_confirm\": false}}"
+	fi
 fi
 
 # --- CREATE DATA DIRECTORIES ---

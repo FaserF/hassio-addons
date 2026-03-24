@@ -35,7 +35,8 @@ RUN \
     postgresql-client \
     xz \
     nodejs \
-    npm && \
+    npm \
+    jq && \
     # Verify Node.js version
     node --version && \
     npm --version
