@@ -249,9 +249,9 @@ if bashio::config.true 'reset_database'; then
 
 	# Reset database options to false to prevent repeat wipes
 	# Fetch current options and merge using jq to ensure required fields (like log_level) are preserved
-	local options
+	options=""
 	if options=$(bashio::api.supervisor "GET" "/addons/self/options"); then
-		local new_options
+		new_options=""
 		if new_options=$(echo "$options" | jq -c '.data.options | .reset_database = false | .reset_database_confirm = false' 2>/dev/null) && [ -n "$new_options" ]; then
 			bashio::api.supervisor "POST" "/addons/self/options" "{\"options\": ${new_options}}"
 		else
