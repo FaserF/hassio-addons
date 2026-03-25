@@ -1,4 +1,23 @@
 # Changelog
+2. 
+3. ## 2.4.0 (2026-03-25)
+4. 
+5. ### ✨ Features
+6. 
+7. - 🚀 **Premium Admin Dashboard**: Completely redesigned dark-themed UI with glassmorphism.
+8. - 🛡️ **Setup Wizard**: New multi-step first-run experience for easy configuration.
+9. - 📊 **Traffic Analytics**: Real-time Chart.js integration and hourly query history.
+10. - 📝 **Live Query Log**: Real-time table of all DNS requests and blocking status.
+11. - 🔍 **Blocklist Search**: Verify if domains are blocked directly from the UI.
+12. - 📦 **Suggested Presets**: One-click activation for popular blocklists (OISD, Hagezi, etc.).
+13. - 🔐 **Security**: Mandatory 12-character bcrypt password protection and session management.
+14. - 📋 **Quick-Copy**: Easy configuration for DoT (Android) and DoH (Windows/iOS).
+15. 
+16: ### 🚀 Other
+17: 
+18: - 📝 **Docs**: Clarified native dual support for DoT and DoH in README.
+19: - 🔧 **Backend**: Implemented Go sidecar for CoreDNS management and API.
+20: 
 
 ## 2.3.1 (2026-03-13)
 

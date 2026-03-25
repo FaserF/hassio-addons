@@ -8,6 +8,8 @@ arch:
   - amd64
 init: false
 host_network: true
+ingress: true
+ingress_port: 8080
 map:
   - homeassistant_config:rw
   - ssl:rw
@@ -15,20 +17,18 @@ options:
   upstream_dns: "192.168.1.2"
   certfile: "fullchain.pem"
   keyfile: "privkey.pem"
-  enable_info_page: false
   log_level: "info"
   # DoT Port (Required for Android "Private DNS" Native Setting)
   # SAFE DEFAULT: 8853 (To avoid conflict with AdGuard Home on 853)
   # SETUP: Map WAN Port 853 -> LAN Port 8853 in your Router for Android to work.
   dot_port: 8853
-  doh_port: 3443
+  doh_port: 443
   fallback_dns: false
   fallback_dns_server: "1.1.1.1"
 schema:
   upstream_dns: str
   certfile: str
   keyfile: str
-  enable_info_page: bool?
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   dot_port: port?
   doh_port: port?

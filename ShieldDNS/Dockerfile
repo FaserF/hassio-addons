@@ -1,30 +1,32 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
-
-# Define external images as build stages (fixes DL3022)
-# hadolint ignore=DL3007
-FROM coredns/coredns:1.14.2 AS coredns
-
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-# Software versions (from image tags above)
+# Software versions
 ENV COREDNS_VERSION="1.14.2"
-
-# Setup CoreDNS and Cloudflared
-
-# App metadata (injected by CI)
-ENV APP_VERSION="2.3.1"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
 
-COPY --from=coredns /coredns /usr/bin/coredns
+# Setup directories
+RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
+
+# Download assets from ShieldDNS releases
+# Note: In a real CI environment, we would use the dynamic APP_VERSION.
+# For now, we use curl to fetch the pre-compiled binary and www assets.
+RUN curl -L -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
+    && tar -xzf /usr/bin/coredns -C /usr/bin/ \
+    && rm /usr/bin/coredns \
+    && curl -L -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-amd64" \
+    && chmod +x /usr/bin/shielddns-admin \
+    && curl -L -o /tmp/www.tar.gz "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/www.tar.gz" \
+    && tar -xzf /tmp/www.tar.gz -C /var/www/admin \
+    && rm /tmp/www.tar.gz
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
-RUN apk add --no-cache -u libssl3 libcrypto3 bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl \
-    && mkdir -p /var/www/html /run/nginx /etc/services.d/shielddns
+RUN apk add --no-cache -u libssl3 libcrypto3 bind-tools openssl nginx netcat-openbsd net-tools dos2unix curl
 
 # Copy Web Assets
 COPY www/index.html /var/www/html/index.html
@@ -36,7 +38,7 @@ RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
-    CMD curl -fS http://localhost:8080/health || exit 1
+    CMD curl -fS http://localhost:8080/api/stats || exit 1
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"
