@@ -12,10 +12,11 @@ ENV APP_UNSUPPORTED="false"
 # Setup directories
 RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
 
-# Download assets from ShieldDNS releases
-# Note: In a real CI environment, we would use the dynamic APP_VERSION.
-# For now, we use curl to fetch the pre-compiled binary and www assets.
-RUN curl -L -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
+# Install core dependencies and ShieldDNS assets
+# We fetch pre-compiled binaries and assets from the ShieldDNS releases to ensure
+# consistency and performance.
+RUN set -x \
+    && curl -L -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
     && tar -xzf /usr/bin/coredns -C /usr/bin/ \
     && rm /usr/bin/coredns \
     && curl -L -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-amd64" \
