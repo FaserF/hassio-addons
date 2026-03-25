@@ -12,16 +12,14 @@ ENV APP_UNSUPPORTED="false"
 # Setup directories
 RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
 
-# Install core dependencies and ShieldDNS assets
-# We fetch pre-compiled binaries and assets from the ShieldDNS releases to ensure
-# consistency and performance.
+# Fetch ShieldDNS binaries and assets from official releases
 RUN set -x \
-    && curl -L -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
+    && curl -L -s -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
     && tar -xzf /usr/bin/coredns -C /usr/bin/ \
     && rm /usr/bin/coredns \
-    && curl -L -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-amd64" \
+    && curl -L -s -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-amd64" \
     && chmod +x /usr/bin/shielddns-admin \
-    && curl -L -o /tmp/www.tar.gz "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/www.tar.gz" \
+    && curl -L -s -o /tmp/www.tar.gz "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/www.tar.gz" \
     && tar -xzf /tmp/www.tar.gz -C /var/www/admin \
     && rm /tmp/www.tar.gz
 
