@@ -2,13 +2,13 @@
 
 1.
 
-3. ## 2.4.0 (2026-03-25)
+2. ## 2.4.0 (2026-03-25)
 
-4.
+3.
 
-5. ### ✨ Features
+4. ### ✨ Features
 
-6.
+5.
 6. - 🚀 **Premium Admin Dashboard**: Completely redesigned dark-themed UI with glassmorphism.
 7. - 🛡️ **Setup Wizard**: New multi-step first-run experience for easy configuration.
 8. - 📊 **Traffic Analytics**: Real-time Chart.js integration and hourly query history.
