@@ -5,6 +5,7 @@ ShieldDNS is a high-performance DNS solution for **DNS-over-TLS (DoT)** and **DN
 ## 🖥️ Admin Dashboard & Ingress
 
 ShieldDNS features a premium Admin Dashboard available directly via **Home Assistant Ingress**.
+
 - **Access**: Click "Open Web UI" on the addon page.
 - **Initial Setup**: On your first visit, you must set a password (min 12 characters).
 - **Features**: Real-time query stats, blocklist management, and upstream configuration.
@@ -24,11 +25,15 @@ Initial setup is done via the **Configuration** tab in Home Assistant.
 ## 📱 Protocol Setup
 
 ### DoT (DNS-over-TLS)
+
 To use DoT on Android (Private DNS), you typically need to map your WAN port `853` to the internal `dot_port` (e.g., `8853`) in your router.
+
 - **Hostname**: `dns.yourdomain.com`
 
 ### DoH (DNS-over-HTTPS)
+
 For Windows 11 or Brousers, use the DoH endpoint.
+
 - **URL**: `https://dns.yourdomain.com/dns-query` (ensure port `443` is forwarded to `doh_port`).
 
 ## 📂 Folder Usage

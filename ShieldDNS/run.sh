@@ -18,48 +18,48 @@ echo "➡️  Starting ShieldDNS Initialization..."
 # 1. Environment Detection & Configuration
 # ------------------------------------------------------------------------------
 if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
-    bashio::log.info "ℹ️  Home Assistant Addon environment detected."
-    
-    UPSTREAM_DNS=$(bashio::config 'upstream_dns')
-    CERT_FILE=$(bashio::config 'certfile')
-    KEY_FILE=$(bashio::config 'keyfile')
-    LOG_LEVEL=$(bashio::config 'log_level')
-    DOT_PORT=$(bashio::config 'dot_port')
-    DOH_PORT=$(bashio::config 'doh_port')
-    FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')
-    FALLBACK_DNS_SERVER=$(bashio::config 'fallback_dns_server')
+	bashio::log.info "ℹ️  Home Assistant Addon environment detected."
 
-    # Prepend /ssl/ to cert paths if they are just filenames
-    if [[ "$CERT_FILE" != /* ]]; then CERT_FILE="/ssl/$CERT_FILE"; fi
-    if [[ "$KEY_FILE" != /* ]]; then KEY_FILE="/ssl/$KEY_FILE"; fi
+	UPSTREAM_DNS=$(bashio::config 'upstream_dns')
+	CERT_FILE=$(bashio::config 'certfile')
+	KEY_FILE=$(bashio::config 'keyfile')
+	LOG_LEVEL=$(bashio::config 'log_level')
+	DOT_PORT=$(bashio::config 'dot_port')
+	DOH_PORT=$(bashio::config 'doh_port')
+	FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')
+	FALLBACK_DNS_SERVER=$(bashio::config 'fallback_dns_server')
+
+	# Prepend /ssl/ to cert paths if they are just filenames
+	if [[ "$CERT_FILE" != /* ]]; then CERT_FILE="/ssl/$CERT_FILE"; fi
+	if [[ "$KEY_FILE" != /* ]]; then KEY_FILE="/ssl/$KEY_FILE"; fi
 else
-    echo "ℹ️  Standard Docker environment detected."
-    UPSTREAM_DNS=${UPSTREAM_DNS:-$DEFAULT_UPSTREAM}
-    CERT_FILE=${CERT_FILE:-"/ssl/fullchain.pem"}
-    KEY_FILE=${KEY_FILE:-"/ssl/privkey.pem"}
-    LOG_LEVEL=${LOG_LEVEL:-"info"}
-    DOT_PORT=${DOT_PORT:-853}
-    DOH_PORT=${DOH_PORT:-443}
-    FALLBACK_DNS_ENABLED=${FALLBACK_DNS_ENABLED:-"false"}
-    FALLBACK_DNS_SERVER=${FALLBACK_DNS_SERVER:-"1.1.1.1"}
+	echo "ℹ️  Standard Docker environment detected."
+	UPSTREAM_DNS=${UPSTREAM_DNS:-$DEFAULT_UPSTREAM}
+	CERT_FILE=${CERT_FILE:-"/ssl/fullchain.pem"}
+	KEY_FILE=${KEY_FILE:-"/ssl/privkey.pem"}
+	LOG_LEVEL=${LOG_LEVEL:-"info"}
+	DOT_PORT=${DOT_PORT:-853}
+	DOH_PORT=${DOH_PORT:-443}
+	FALLBACK_DNS_ENABLED=${FALLBACK_DNS_ENABLED:-"false"}
+	FALLBACK_DNS_SERVER=${FALLBACK_DNS_SERVER:-"1.1.1.1"}
 fi
 
 # ------------------------------------------------------------------------------
 # 2. Port Conflict & Availability Checks
 # ------------------------------------------------------------------------------
 is_port_busy() {
-    local PORT=$1
-    if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
-        if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then return 0; fi
-    fi
-    return 1
+	local PORT=$1
+	if [ -n "$PORT" ] && [ "$PORT" != "null" ]; then
+		if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then return 0; fi
+	fi
+	return 1
 }
 
 if is_port_busy "${DOT_PORT}"; then
-    if [ "${DOT_PORT}" = "853" ]; then
-        echo "⚠️  Port 853 is BUSY. Switching DoT to Fallback Port: 8853"
-        DOT_PORT="8853"
-    fi
+	if [ "${DOT_PORT}" = "853" ]; then
+		echo "⚠️  Port 853 is BUSY. Switching DoT to Fallback Port: 8853"
+		DOT_PORT="8853"
+	fi
 fi
 
 # ------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ ADMIN_PID=$!
 # Initial Corefile (if backend hasn't generated one yet)
 ACTUAL_COREDNS_PORT="${INTERNAL_DOH_PORT}"
 if [ ! -f "$COREFILE_PATH" ]; then
-    cat <<EOF > $COREFILE_PATH
+	cat <<EOF >$COREFILE_PATH
 .:53 {
     bind 0.0.0.0
     forward . ${UPSTREAM_DNS}
