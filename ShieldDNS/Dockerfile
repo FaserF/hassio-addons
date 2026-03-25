@@ -9,25 +9,17 @@ ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
 
+# Use the official ShieldDNS image as source for binaries and assets
+# This ensures perfect synchronization without manual downloads
+FROM ghcr.io/faserf/shielddns:${APP_VERSION} AS source
+
 # Setup directories
 RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
 
-ARG BUILD_ARCH
-# Fetch ShieldDNS binaries and assets from official releases
-RUN set -xe \
-    && case ${BUILD_ARCH} in \
-        aarch64) ARCH="arm64" ;; \
-        amd64) ARCH="amd64" ;; \
-        *) echo "Unsupported architecture: ${BUILD_ARCH}"; exit 1 ;; \
-    esac \
-    && curl -L -s -o /tmp/coredns.tgz "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz" \
-    && tar -xzf /tmp/coredns.tgz -C /usr/bin/ \
-    && rm /tmp/coredns.tgz \
-    && curl -L -s -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-${ARCH}" \
-    && chmod +x /usr/bin/shielddns-admin \
-    && curl -L -s -o /tmp/www.tar.gz "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/www.tar.gz" \
-    && tar -xzf /tmp/www.tar.gz -C /var/www/admin \
-    && rm /tmp/www.tar.gz
+# Copy pre-compiled binaries and assets from the main image
+COPY --from=source /usr/bin/shielddns-admin /usr/bin/shielddns-admin
+COPY --from=source /usr/bin/coredns /usr/bin/coredns
+COPY --from=source /var/www/admin /var/www/admin
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018
