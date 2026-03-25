@@ -12,12 +12,18 @@ ENV APP_UNSUPPORTED="false"
 # Setup directories
 RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
 
+ARG BUILD_ARCH
 # Fetch ShieldDNS binaries and assets from official releases
-RUN set -x \
-    && curl -L -s -o /usr/bin/coredns "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" \
-    && tar -xzf /usr/bin/coredns -C /usr/bin/ \
-    && rm /usr/bin/coredns \
-    && curl -L -s -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-amd64" \
+RUN set -xe \
+    && case ${BUILD_ARCH} in \
+        aarch64) ARCH="arm64" ;; \
+        amd64) ARCH="amd64" ;; \
+        *) echo "Unsupported architecture: ${BUILD_ARCH}"; exit 1 ;; \
+    esac \
+    && curl -L -s -o /tmp/coredns.tgz "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz" \
+    && tar -xzf /tmp/coredns.tgz -C /usr/bin/ \
+    && rm /tmp/coredns.tgz \
+    && curl -L -s -o /usr/bin/shielddns-admin "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/shielddns-admin-linux-${ARCH}" \
     && chmod +x /usr/bin/shielddns-admin \
     && curl -L -s -o /tmp/www.tar.gz "https://github.com/FaserF/ShieldDNS/releases/download/v${APP_VERSION}/www.tar.gz" \
     && tar -xzf /tmp/www.tar.gz -C /var/www/admin \
