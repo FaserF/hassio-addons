@@ -280,7 +280,6 @@ if [[ "${LOG_LEVEL}" == "debug" ]]; then
 	DNS_LOG_CONFIG="${DNS_LOG_CONFIG}\n    debug"
 fi
 
-
 # Generate Corefile
 # Read port configuration
 DOT_PORT=$(bashio::config 'dot_port')
