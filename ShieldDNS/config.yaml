@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "2.3.1"
+version: "2.4.0"
 slug: "shielddns"
 description: "High-performance DoT proxy for AdGuard Home"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
@@ -15,7 +15,6 @@ options:
   upstream_dns: "192.168.1.2"
   certfile: "fullchain.pem"
   keyfile: "privkey.pem"
-  cloudflare_tunnel_token: ""
   enable_info_page: false
   log_level: "info"
   # DoT Port (Required for Android "Private DNS" Native Setting)
@@ -29,7 +28,6 @@ schema:
   upstream_dns: str
   certfile: str
   keyfile: str
-  cloudflare_tunnel_token: str?
   enable_info_page: bool?
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   dot_port: port?

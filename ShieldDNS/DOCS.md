@@ -10,7 +10,6 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 certfile: fullchain.pem
-cloudflare_tunnel_token: ''
 doh_port: 3443
 dot_port: 8853
 enable_info_page: false

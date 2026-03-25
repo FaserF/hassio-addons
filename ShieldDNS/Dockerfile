@@ -4,16 +4,12 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
 # hadolint ignore=DL3007
 FROM coredns/coredns:1.14.2 AS coredns
 
-# hadolint ignore=DL3007
-FROM cloudflare/cloudflared:2026.3.0 AS cloudflared
-
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Software versions (from image tags above)
-ENV COREDNS_VERSION="1.14.0"
-ENV CLOUDFLARED_VERSION="2025.11.1"
+ENV COREDNS_VERSION="1.14.2"
 
 # Setup CoreDNS and Cloudflared
 
@@ -24,7 +20,6 @@ ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
 
 COPY --from=coredns /coredns /usr/bin/coredns
-COPY --from=cloudflared /usr/local/bin/cloudflared /usr/bin/cloudflared
 
 # We add netcat-openbsd for port checking (nc) and net-tools for netstat
 # hadolint ignore=DL3018

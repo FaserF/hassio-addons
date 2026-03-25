@@ -181,7 +181,6 @@ bashio::log.info "Starting ShieldDNS App..."
 UPSTREAM_DNS=$(bashio::config 'upstream_dns')
 CERT_FILE=$(bashio::config 'certfile')
 KEY_FILE=$(bashio::config 'keyfile')
-TUNNEL_TOKEN=$(bashio::config 'cloudflare_tunnel_token')
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
 	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
 	LOG_LEVEL="info"
@@ -281,18 +280,6 @@ if [[ "${LOG_LEVEL}" == "debug" ]]; then
 	DNS_LOG_CONFIG="${DNS_LOG_CONFIG}\n    debug"
 fi
 
-# Start Cloudflare Tunnel (Background)
-if bashio::config.has_value 'cloudflare_tunnel_token'; then
-	bashio::log.info "🚇 Starting Cloudflare Tunnel..."
-
-	TUNNEL_LOG="info"
-	if [[ "${LOG_LEVEL}" == "debug" ]]; then TUNNEL_LOG="debug"; fi
-	if [[ "${LOG_LEVEL}" == "error" ]]; then TUNNEL_LOG="error"; fi
-
-	cloudflared tunnel run --token "${TUNNEL_TOKEN}" --loglevel "${TUNNEL_LOG}" &
-else
-	bashio::log.info "🚇 Cloudflare Tunnel disabled."
-fi
 
 # Generate Corefile
 # Read port configuration
@@ -488,12 +475,12 @@ EOF
 fi
 
 # Start CoreDNS (Foreground or Wait)
-if [ -n "${TUNNEL_PID:-}" ] || [ -n "${NGINX_PID:-}" ]; then
+if [ -n "${NGINX_PID:-}" ]; then
 	/usr/bin/coredns -conf ${COREFILE_PATH} &
 	DNS_PID=$!
 
 	# Wait for ANY
-	PIDS="$DNS_PID ${TUNNEL_PID:-} ${NGINX_PID:-}"
+	PIDS="$DNS_PID ${NGINX_PID:-}"
 	# Clean PIDS list (remove empty)
 	PIDS=$(echo "$PIDS" | xargs)
 
