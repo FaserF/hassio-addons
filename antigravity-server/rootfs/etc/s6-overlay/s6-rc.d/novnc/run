@@ -22,7 +22,13 @@ for i in {1..20}; do
     sleep 0.5
 done
 
-# Start NoVNC websocket proxy
-exec /usr/share/novnc/utils/novnc_proxy \
-    --listen 6080 \
-    --vnc localhost:5901
+# Locate websockify dynamically
+WEBSOCKIFY_CMD=$(command -v websockify || echo "/usr/local/bin/websockify")
+if [ ! -x "$WEBSOCKIFY_CMD" ]; then
+    WEBSOCKIFY_CMD="$HOME/.local/bin/websockify"
+fi
+
+# Start NoVNC websocket proxy (using websockify directly)
+exec "$WEBSOCKIFY_CMD" \
+    --web /usr/share/novnc/ \
+    6080 localhost:5901
