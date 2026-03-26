@@ -59,10 +59,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         adwaita-icon-theme \
         fonts-noto \
         fonts-noto-color-emoji \
+        xfce4-appfinder \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: Node.js (v22.x) and Python 3
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+# Layer 3: Node.js (v24.x) and Python 3
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get update && apt-get install -y --no-install-recommends \
         nodejs \
         python3 \
