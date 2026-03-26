@@ -276,7 +276,7 @@ def update_integration_for_edge() -> bool:
             # Replace master link with edge branch link
             new_link = "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge"
             new_content = re.sub(
-                r"https://my.home-assistant.io/redirect/hacs_repository/\?owner=FaserF&repository=hassio-addons&category=integration",
+                r"https://my\.home-assistant\.io/redirect/hacs_repository/\?owner=FaserF&repository=hassio-addons&category=integration",
                 new_link,
                 content,
             )
