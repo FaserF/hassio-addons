@@ -1,6 +1,7 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck disable=SC1091
 # shellcheck shell=bash
+# Source bashio early for banner functions
 
 # <App_BANNER_INJECTION>
 
@@ -165,7 +166,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-# Source bashio early for banner functions
 [ -f /usr/lib/bashio/bashio.sh ] && source /usr/lib/bashio/bashio.sh
 
 # Enable strict mode
