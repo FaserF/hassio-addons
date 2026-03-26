@@ -104,7 +104,9 @@ fallback_dns: false
 fallback_dns_server: 1.1.1.1
 keyfile: privkey.pem
 log_level: info
-upstream_dns: 192.168.1.2
+prefer_encrypted: true
+upstream_dns: 86.54.11.100 1.1.1.1 9.9.9.9 8.8.8.8 1.0.0.1
+upstream_dot: unfiltered.joindns4.eu dns.quad9.net one.one.one.one dns.google
 ```
 
 ---
