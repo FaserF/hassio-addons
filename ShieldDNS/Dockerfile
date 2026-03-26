@@ -14,6 +14,13 @@ ENV APP_UNSUPPORTED="false"
 FROM ghcr.io/faserf/shielddns:${APP_VERSION} AS source
 
 # Setup directories
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.4.0"
+ENV APP_NAME="ShieldDNS"
+ENV APP_SLUG="shielddns"
+ENV APP_UNSUPPORTED="false"
+
 RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
 
 # Copy pre-compiled binaries and assets from the main image
