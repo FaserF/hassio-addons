@@ -79,16 +79,16 @@ RUN ARCH=$(dpkg --print-architecture) && \
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
         apt-get update && apt-get install -y --no-install-recommends google-chrome-stable && \
         # Create a wrapper for Chrome to run with --no-sandbox (required for root in HA)
-        printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox --test-type --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome && \
-        chmod +x /usr/local/bin/google-chrome && \
-        ln -sf /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable; \
+        printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable --no-sandbox --test-type --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome; \
     else \
         apt-get update && apt-get install -y --no-install-recommends chromium && \
         # Create a wrapper for Chromium
-        printf '#!/bin/bash\nexec /usr/bin/chromium --no-sandbox --test-type --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome && \
-        chmod +x /usr/local/bin/google-chrome && \
-        ln -sf /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable; \
+        printf '#!/bin/bash\nexec /usr/bin/chromium --no-sandbox --test-type --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"' > /usr/local/bin/google-chrome; \
     fi && \
+    chmod +x /usr/local/bin/google-chrome && \
+    ln -sf /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable && \
+    update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/local/bin/google-chrome 100 && \
+    update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser /usr/local/bin/google-chrome 100 && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
