@@ -78,9 +78,7 @@ def update_addon_stage(addon_path, stage):
                 return False
 
             # Replace existing stage
-            new_content = re.sub(
-                stage_pattern, f"stage: {stage}", content, flags=re.MULTILINE
-            )
+            new_content = re.sub(stage_pattern, f"stage: {stage}", content, flags=re.MULTILINE)
         else:
             # Does not exist, append at the end (ensure newline)
             if not content.endswith("\n"):
