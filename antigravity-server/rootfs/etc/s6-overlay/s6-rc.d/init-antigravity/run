@@ -23,8 +23,8 @@ fi
 
 # Cleanup old locks (comprehensive)
 bashio::log.info "Cleaning up old locks..."
-rm -rf /tmp/.X*-lock /tmp/.X11-unix/* /root/.config/google-chrome/SingletonLock
-rm -f /root/.Xauthority-* /root/.ICEauthority-*
+rm -rf /tmp/.X*-lock /tmp/.X11-unix/* /home/dev/.config/google-chrome/SingletonLock
+rm -f /home/dev/.Xauthority-* /home/dev/.ICEauthority-*
 
 # Setup VNC password
 if bashio::config.has_value 'vnc_password' && [ -n "$(bashio::config 'vnc_password')" ]; then
@@ -93,6 +93,10 @@ fi
 
 chmod 600 /home/dev/.config/tigervnc/passwd
 bashio::log.info "VNC password set successfully."
+
+# Sync VNC password to dev user's system password (allows sudo if needed)
+echo "dev:${VNC_PASSWORD}" | chpasswd
+bashio::log.info "Synchronized 'dev' user system password."
 
 # Create xstartup script for XFCE4
 # Also create Antigravity data directory (namespaced)
@@ -178,6 +182,60 @@ x-scheme-handler/https=google-chrome.desktop
 x-scheme-handler/about=google-chrome.desktop
 x-scheme-handler/unknown=google-chrome.desktop
 EOF
+
+# 4. Dynamic Package Installation (Ported from upstream)
+PACKAGES_TO_INSTALL=""
+
+if bashio::config.true 'install_android_tools'; then
+    bashio::log.info "Adding Android tools to installation list..."
+    PACKAGES_TO_INSTALL="${PACKAGES_TO_INSTALL} android-sdk-platform-tools-common adb fastboot"
+fi
+
+if bashio::config.true 'install_dev_tools'; then
+    bashio::log.info "Adding Dev tools to installation list..."
+    PACKAGES_TO_INSTALL="${PACKAGES_TO_INSTALL} build-essential cmake gdb clang"
+fi
+
+if bashio::config.true 'install_windows_tools'; then
+    bashio::log.info "Adding Windows cross-compilation tools to installation list..."
+    PACKAGES_TO_INSTALL="${PACKAGES_TO_INSTALL} mingw-w64"
+fi
+
+if bashio::config.true 'install_linter_tools'; then
+    bashio::log.info "Adding Linter tools to installation list..."
+    PACKAGES_TO_INSTALL="${PACKAGES_TO_INSTALL} make"
+fi
+
+# Add custom packages from list
+if bashio::config.has_value 'additional_packages'; then
+    for pkg in $(bashio::config 'additional_packages'); do
+        bashio::log.info "Adding custom package: ${pkg}"
+        PACKAGES_TO_INSTALL="${PACKAGES_TO_INSTALL} ${pkg}"
+    done
+fi
+
+if [ -n "${PACKAGES_TO_INSTALL}" ]; then
+    bashio::log.info "Installing additional packages: ${PACKAGES_TO_INSTALL}"
+    if apt-get update; then
+        # shellcheck disable=SC2086
+        if apt-get install -y ${PACKAGES_TO_INSTALL}; then
+            bashio::log.info "Packages installed successfully."
+        else
+            bashio::log.error "Failed to install some packages. Continuing anyway..."
+        fi
+        apt-get clean && rm -rf /var/lib/apt/lists/*
+    else
+        bashio::log.error "apt-get update failed. Skipping package installation."
+    fi
+fi
+
+if bashio::config.true 'install_linter_tools'; then
+    bashio::log.info "Installing advanced linter tools (ACT, Poetry, Pre-commit)..."
+    (
+        curl -fsSL https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+        python3 -m pip install poetry pre-commit --break-system-packages
+    ) || bashio::log.warning "Some linter tools failed to install."
+fi
 
 
 # 4. Verify Tools

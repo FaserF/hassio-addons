@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         gnupg \
         lsb-release \
+        software-properties-common \
         curl \
         wget \
         sudo \
@@ -91,6 +92,10 @@ RUN ARCH=$(dpkg --print-architecture) && \
     fi && \
     chmod +x /usr/local/bin/google-chrome && \
     ln -sf /usr/local/bin/google-chrome /usr/local/bin/google-chrome-stable && \
+    # Fix Chrome password store to basic to avoid keyring prompts in VNC
+    if [ -f /opt/google/chrome/google-chrome ]; then \
+        sed -i 's/exec -a "$0" "$HERE\/chrome" "$@"/exec -a "$0" "$HERE\/chrome" --password-store=basic "$@"/' /opt/google/chrome/google-chrome; \
+    fi && \
     update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/local/bin/google-chrome 100 && \
     update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser /usr/local/bin/google-chrome 100 && \
     install -m 0755 -d /etc/apt/keyrings && \

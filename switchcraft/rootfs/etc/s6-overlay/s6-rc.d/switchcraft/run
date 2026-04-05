@@ -69,6 +69,17 @@ if bashio::config.has_value 'base_url'; then
     export SC_BASE_URL=$(bashio::config 'base_url')
 fi
 
+# Always disable authentication by default for Home Assistant Ingress/Addon
+# This resolves the 401 Unauthorized issue during Ingress checks.
+export SWITCHCRAFT_AUTH_DISABLED=true
+
+# Apply runtime patches if the code doesn't support the bypass natively yet
+# (e.g. if the downloaded container image is using an older SwitchCraft version)
+if [ -f "/usr/local/bin/patch_switchcraft.py" ]; then
+    bashio::log.info "Applying SwitchCraft Auth Patch..."
+    python3 /usr/local/bin/patch_switchcraft.py || bashio::log.warning "Patching failed, continuing anyway..."
+fi
+
 bashio::log.info "Starting uvicorn server on port 8080..."
 
 # Execute uvicorn

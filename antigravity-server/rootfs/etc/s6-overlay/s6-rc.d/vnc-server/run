@@ -13,5 +13,5 @@ exec gosu dev vncserver :1 \
     -geometry 1920x1080 \
     -depth 24 \
     -fg \
-    -SecurityTypes VncAuth \
+    -SecurityTypes VncAuth,TLSVnc \
     -rfbauth /home/dev/.config/tigervnc/passwd

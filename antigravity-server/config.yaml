@@ -25,9 +25,19 @@ options:
   vnc_password: ""
   log_level: info
   autostart_antigravity: true
+  install_android_tools: false
+  install_dev_tools: false
+  install_windows_tools: false
+  install_linter_tools: false
+  additional_packages: []
 
 schema:
   vnc_password: match(^.{0,8}$)?
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   autostart_antigravity: bool
+  install_android_tools: bool?
+  install_dev_tools: bool?
+  install_windows_tools: bool?
+  install_linter_tools: bool?
+  additional_packages: list(str)?
 stage: stable

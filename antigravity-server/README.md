@@ -27,7 +27,18 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 autostart_antigravity: true
 log_level: info
 vnc_password: ''
+install_android_tools: false
+install_dev_tools: false
+install_windows_tools: false
+install_linter_tools: false
+additional_packages: []
 ```
+
+### Advanced Features
+
+- **Dynamic Toolsets**: Enable specialized tools for Android, C++/Dev, Windows (MinGW), or Linters on-the-fly.
+- **Persistence**: Your settings and tools persist in the `/data` directory.
+- **Ingress Support**: Securely access the desktop via Home Assistant Ingress.
 
 ---
 
