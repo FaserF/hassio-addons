@@ -18,7 +18,6 @@
 - 📝 **Docs**: Clarified native dual support for DoT and DoH in README.
 - 🔧 **Backend**: Implemented Go sidecar for CoreDNS management and API.
 
-
 ## 2.3.1 (2026-03-13)
 
 ### 📦 Dependencies
