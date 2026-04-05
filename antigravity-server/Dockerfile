@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         gnupg \
         lsb-release \
-        software-properties-common \
         curl \
         wget \
         sudo \
@@ -78,6 +77,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 4: Browsers & Docker CLI (Debian-specific paths)
+# shellcheck disable=SC2016
 RUN ARCH=$(dpkg --print-architecture) && \
     if [ "$ARCH" = "amd64" ]; then \
         curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
@@ -130,6 +130,7 @@ RUN (id -u ubuntu >/dev/null 2>&1 && userdel -f ubuntu || true) && \
 USER dev
 WORKDIR /home/dev
 RUN curl -fsSL https://claude.ai/install.sh | bash
+# hadolint ignore=DL3002
 USER root
 
 # App metadata (injected by CI)

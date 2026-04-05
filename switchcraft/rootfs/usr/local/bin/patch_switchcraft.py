@@ -4,23 +4,26 @@ import sys
 from pathlib import Path
 
 
-def patch_file(file_path: Path, search_text: str, replacement_text: str):
+def patch_file(file_path: Path, search_text: str, insertion_text: str, after: bool = True):
     if not file_path.exists():
         print(f"Skipping patch: {file_path} not found")
         return
 
     content = file_path.read_text()
-    if search_text in content:
-        if replacement_text in content:
-            print(f"Patch already applied to {file_path.name}")
-            return
+    if insertion_text in content:
+        print(f"Patch already applied to {file_path.name}")
+        return
 
+    if search_text in content:
         print(f"Applying patch to {file_path.name}...")
-        new_content = content.replace(search_text, replacement_text)
+        if after:
+            new_content = content.replace(search_text, search_text + "\n" + insertion_text)
+        else:
+            new_content = content.replace(search_text, insertion_text + "\n" + search_text)
         file_path.write_text(new_content)
         print(f"Successfully patched {file_path.name}")
     else:
-        print(f"Warning: Could not find target pattern in {file_path.name}")
+        print(f"Warning: Could not find target pattern '{search_text}' in {file_path.name}")
 
 
 def main():
@@ -31,43 +34,26 @@ def main():
 
     # 1. Patch app.py (get_current_user)
     app_py = app_dir / "app.py"
-    get_user_search = """def get_current_user(request: Request):
-    \"\"\"Retrieve user from session cookie.\"\"\"
-    token = request.cookies.get(\"sc_session\")"""
-
-    get_user_replace = """def get_current_user(request: Request):
-    \"\"\"Retrieve user from session cookie or via auth bypass (Ingress/Env).\"\"\"
-    
-    # 1. Force Disable via Env Var (e.g. for HA Addon)
+    # We insert our bypass at the start of the function body
+    get_user_search = "def get_current_user(request: Request):"
+    get_user_bypass = """    # --- Home Assistant Ingress/Env Bypass ---
     if os.environ.get(\"SWITCHCRAFT_AUTH_DISABLED\", \"\").lower() == \"true\":
         return \"admin\"
-
-    # 2. Home Assistant Ingress Bypass
     if request.headers.get(\"x-hass-source\") == \"Home Assistant\" or request.headers.get(\"x-ingress-name\"):
         return \"admin\"
-
-    # 3. Session Cookie
-    token = request.cookies.get(\"sc_session\")"""
-
-    patch_file(app_py, get_user_search, get_user_replace)
+    # -----------------------------------------"""
+    
+    patch_file(app_py, get_user_search, get_user_bypass, after=True)
 
     # 2. Patch auth_config.py (load_config)
     auth_config_py = app_dir / "auth_config.py"
-    load_config_search = """                if \"session_cookie_secure\" not in data:
-                    data[\"session_cookie_secure\"] = False
-
-                if data.get(\"first_run\"):"""
-
-    load_config_replace = """                if \"session_cookie_secure\" not in data:
-                    data[\"session_cookie_secure\"] = False
-
-                # Force disable via Env if set
+    # We insert our force-disable logic inside load_config where data is processed
+    load_config_search = "if \"session_cookie_secure\" not in data:"
+    load_config_bypass = """                # Force disable auth via Env (HA Addon)
                 if os.environ.get(\"SWITCHCRAFT_AUTH_DISABLED\", \"\").lower() == \"true\":
-                    data[\"auth_disabled\"] = True
+                    data[\"auth_disabled\"] = True"""
 
-                if data.get(\"first_run\"):"""
-
-    patch_file(auth_config_py, load_config_search, load_config_replace)
+    patch_file(auth_config_py, load_config_search, load_config_bypass, after=True)
 
 
 if __name__ == "__main__":

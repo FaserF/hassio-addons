@@ -73,6 +73,17 @@ fi
 # This resolves the 401 Unauthorized issue during Ingress checks.
 export SWITCHCRAFT_AUTH_DISABLED=true
 
+# Force auth_disabled in the configuration file as well (Secondary Bypass)
+CONFIG_PATH=\"/data/.switchcraft/server/auth_config.json\"
+mkdir -p \"$(dirname \"$CONFIG_PATH\")\"
+if [ -f \"$CONFIG_PATH\" ]; then
+    bashio::log.info \"Forcing auth_disabled in existing config...\"
+    jq '.auth_disabled = true | .first_run = false' \"$CONFIG_PATH\" > /tmp/auth_config.json && mv /tmp/auth_config.json \"$CONFIG_PATH\"
+else
+    bashio::log.info \"Creating default auth config with auth_disabled=true...\"
+    echo '{\"auth_disabled\": true, \"first_run\": false}' > \"$CONFIG_PATH\"
+fi
+
 # Apply runtime patches if the code doesn't support the bypass natively yet
 # (e.g. if the downloaded container image is using an older SwitchCraft version)
 if [ -f "/usr/local/bin/patch_switchcraft.py" ]; then
