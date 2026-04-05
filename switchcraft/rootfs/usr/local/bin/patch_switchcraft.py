@@ -35,7 +35,7 @@ def main():
 
     # 1. Patch app.py (get_current_user and Middleware)
     app_py = app_dir / "app.py"
-    
+
     # Bypass logic with logging
     get_user_search = "def get_current_user(request: Request):"
     get_user_bypass = """    # --- Home Assistant Ingress/Env Bypass ---
