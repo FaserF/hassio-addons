@@ -127,13 +127,6 @@ RUN (id -u ubuntu >/dev/null 2>&1 && userdel -f ubuntu || true) && \
     mkdir -p /home/dev/.vnc && \
     chown -R dev:dev /home/dev
 
-# Install Claude Code CLI as dev user
-USER dev
-WORKDIR /home/dev
-RUN curl -fsSL https://claude.ai/install.sh | bash
-# hadolint ignore=DL3002
-USER root
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.3.0"
 ENV APP_NAME="Antigravity-Server"
