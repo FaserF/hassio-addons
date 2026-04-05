@@ -2,6 +2,12 @@ configuration:
   upstream_dns:
     name: Upstream DNS Server
     description: "The IP address of your upstream DNS server (e.g., AdGuard Home or 1.1.1.1)."
+  upstream_dot:
+    name: Upstream DoT Server
+    description: "The hostname(s) of the upstream DNS-over-TLS (DoT) server(s)."
+  prefer_encrypted:
+    name: Prefer Encrypted DNS
+    description: "If enabled, ShieldDNS will prioritize using DNS-over-TLS (DoT) for upstream queries."
   certfile:
     name: Certificate File
     description: "Your SSL certificate file name in /ssl/."

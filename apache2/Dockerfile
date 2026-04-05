@@ -25,7 +25,7 @@ ARG PHP_VERSION="8.5"
 ARG APACHE2_VERSION="2.4.66-r0"
 
 # Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
-# hadolint ignore=DL3018,DL3047,DL4006
+# hadolint ignore=DL3018,DL3047,DL4006,DL3003
 RUN mkdir /run/apache2 \
     && apk --no-cache -u add libcrypto3 libssl3 \
     apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \

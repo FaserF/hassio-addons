@@ -22,7 +22,7 @@ ENV APP_UNSUPPORTED="false"
 WORKDIR /tmp
 
 # Create directory for nginx to store PID file and install dependencies
-# hadolint ignore=DL3018
+# hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
   && apk --no-cache -u add libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \

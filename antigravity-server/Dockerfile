@@ -77,7 +77,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 4: Browsers & Docker CLI (Debian-specific paths)
-# shellcheck disable=SC2016
+# hadolint ignore=SC2016
 RUN ARCH=$(dpkg --print-architecture) && \
     if [ "$ARCH" = "amd64" ]; then \
         curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
@@ -122,6 +122,7 @@ RUN (id -u ubuntu >/dev/null 2>&1 && userdel -f ubuntu || true) && \
     groupadd -g 1000 dev && \
     useradd -u 1000 -g dev -m -s /bin/bash dev && \
     echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    (getent group docker || groupadd docker) && \
     usermod -aG docker dev && \
     mkdir -p /home/dev/.vnc && \
     chown -R dev:dev /home/dev
