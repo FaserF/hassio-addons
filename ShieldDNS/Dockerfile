@@ -27,9 +27,10 @@ ARG SHIELDDNS_VERSION="1.4.0"
 WORKDIR /app
 RUN apk add --no-cache curl \
     && curl -L "https://github.com/FaserF/ShieldDNS/archive/refs/tags/v${SHIELDDNS_VERSION}.tar.gz" -o source.tar.gz \
-    && tar -xzf source.tar.gz --strip-components=1 \
-    && cd admin \
-    && go mod download \
+    && tar -xzf source.tar.gz --strip-components=1
+
+WORKDIR /app/admin
+RUN go mod download \
     && GOOS=linux GOARCH=$TARGETARCH go build -o shielddns-admin .
 
 # --- STAGE 3: RUNTIME IMAGE ---

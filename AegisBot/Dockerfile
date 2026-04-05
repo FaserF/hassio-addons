@@ -49,7 +49,7 @@ ARG AEGISBOT_VERSION="latest"
 ENV AEGISBOT_VERSION=${AEGISBOT_VERSION}
 
 WORKDIR /tmp/build
-# hadolint ignore=DL3003,DL3018
+# hadolint ignore=DL3018
 RUN \
     echo "Attempting to fetch AegisBot version: ${AEGISBOT_VERSION}" && \
     # 1. Resolve Version URL
@@ -84,18 +84,17 @@ RUN \
             \
             # Setup Frontend \
             mkdir -p /app/frontend && \
-            cd frontend && \
+            (cd frontend && \
             npm install && \
             sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
             sed -i "s|import.meta.env.VITE_API_URL || '/api/v1'|getApiBase()|g" src/api/client.ts && \
-            # Verify sed modifications were applied
+            # Verify sed modifications were applied \
             grep -q "base: './" vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
             grep -q "getApiBase()" src/api/client.ts || { echo "Failed to patch client.ts"; exit 1; } && \
             npm run build && \
-            cp -r dist/* /app/frontend/ && \
+            cp -r dist/* /app/frontend/) && \
             \
             # Cleanup \
-            cd / && \
             rm -rf /tmp/build && \
             echo "✅ Build complete. Image is self-contained."; \
         else \

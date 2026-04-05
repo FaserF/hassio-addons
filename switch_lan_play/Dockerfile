@@ -22,16 +22,16 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 
 # Pin to specific commit for reproducible builds (v0.2.3)
 WORKDIR /switch-lan-play
-# hadolint ignore=DL3003
 RUN git clone https://github.com/spacemeowx2/switch-lan-play.git . \
     && git checkout c0c663e3fdc95d6d6e8ab401caa2bfb5b5872e00 \
     && git submodule update --init --recursive \
     && sed -i '/execute_process(COMMAND git submodule update --init -- external\/libuv/,/)/d' external/external.cmake \
     && sed -i '/execute_process(COMMAND git submodule update --init -- external\/uvw/,/)/d' external/external.cmake \
     && find . -name CMakeLists.txt -exec sed -i 's/cmake_minimum_required(VERSION [0-9\.]*)/cmake_minimum_required(VERSION 3.5)/' {} + \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
+    && mkdir build
+
+WORKDIR /switch-lan-play/build
+RUN cmake .. \
     && make
 
 # Runtime stage

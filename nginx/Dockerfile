@@ -22,7 +22,7 @@ ENV APP_UNSUPPORTED="false"
 WORKDIR /tmp
 
 # Create directory for nginx to store PID file and install dependencies
-# hadolint ignore=DL3018,DL3003
+# hadolint ignore=DL3018
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
   && apk --no-cache -u add libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
@@ -66,9 +66,8 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     ffmpeg \
     cmake make musl-dev gcc gettext-dev libintl libxml2 git \
     && git clone --depth 1 --branch master https://gitlab.com/rilian-la-te/musl-locales.git musl-locales-master \
-    && cd musl-locales-master \
-    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-    && cd .. && rm -rf musl-locales-master \
+    && (cd musl-locales-master && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install) \
+    && rm -rf musl-locales-master \
     && apk del --no-cache cmake make musl-dev gcc gettext-dev libintl
 
 # Configure Logging
