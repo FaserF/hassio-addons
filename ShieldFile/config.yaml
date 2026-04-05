@@ -40,4 +40,4 @@ schema:
   port: port
   log_level: list(trace|debug|info|notice|warning|error|fatal)
 image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}
-stage: stable
+

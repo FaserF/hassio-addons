@@ -13,7 +13,7 @@ Legend:
 This script also automatically injects/updates the 'stage' field in config.yaml:
 - deprecated: for unsupported addons
 - experimental: for versions < 1.0.0
-- stable: for all others
+- stable: field is REMOVED (default/implied)
 
 Expected Table Format:
 | **[Name](path)** | Description | ✅ |
@@ -70,13 +70,18 @@ def update_addon_stage(addon_path, stage):
             content = f.read()
 
         # Check if stage field exists (simple regex)
-        stage_pattern = r"^stage:\s*(stable|experimental|deprecated|beta)\b"
-        if re.search(stage_pattern, content, re.MULTILINE):
-            # Already exists, check if it needs update
-            current_stage_match = re.search(stage_pattern, content, re.MULTILINE)
-            if current_stage_match.group(1) == stage:
-                return False
+        stage_match = re.search(stage_pattern, content, re.MULTILINE)
 
+        if stage == "stable":
+            if stage_match:
+                # Remove existing stage field (including trailing newline)
+                new_content = re.sub(stage_pattern + r"\n?", "", content, flags=re.MULTILINE)
+            else:
+                return False
+        elif stage_match:
+            # Already exists, check if it needs update
+            if stage_match.group(1) == stage:
+                return False
             # Replace existing stage
             new_content = re.sub(stage_pattern, f"stage: {stage}", content, flags=re.MULTILINE)
         else:

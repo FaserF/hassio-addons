@@ -65,15 +65,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         xfce4-appfinder \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: Node.js (v24.x) and Python 3.14
+# Layer 3: Node.js (v24.x) and Python 3.13
 RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get update && apt-get install -y --no-install-recommends \
         nodejs \
-        python3.14 \
-        python3.14-venv \
-        python3.14-dev \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.14 1 \
-    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.14 - --break-system-packages \
+        python3.13 \
+        python3.13-venv \
+        python3.13-dev \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1 \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.13 - --break-system-packages \
     && python3 -m pip install --no-cache-dir websockify numpy --break-system-packages \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
