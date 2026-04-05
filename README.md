@@ -75,7 +75,6 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant | ⚠️     | 2026-01 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                         | ✅     | 2023-05 |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator           | ✅     | 2023-05 |
-| **[Paperless-ngx](paperless-ngx)**                              | Document Management System                  | ⚠️     | 2026-01 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                     | ⚠️     | 2023-05 |
 | **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                     | ✅     | 2023-05 |
 | **[Planka](planka)**                                            | Project Tracking Tool                       | ⚠️     | 2026-01 |
