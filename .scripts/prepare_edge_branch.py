@@ -109,6 +109,40 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
         return False
 
 
+def ensure_experimental_stage(config_path: str) -> bool:
+    """Ensure that the 'stage' field in config.yaml is set to 'experimental'."""
+    if not os.path.exists(config_path):
+        return False
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Pattern to find 'stage:' field
+        # Use regex to find it regardless of whitespace or quotes around value
+        pattern = re.compile(r"^stage:\s*.*$", re.MULTILINE)
+
+        if pattern.search(content):
+            # If stage exists, update it to experimental
+            new_content = pattern.sub("stage: experimental", content)
+        else:
+            # If stage doesn't exist, append it at a logical place (before image or at end)
+            # Ensure there's a newline at the end if we append
+            if not content.endswith("\n"):
+                content += "\n"
+            new_content = content + "stage: experimental\n"
+
+        if new_content != content:
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            return True
+
+        return False
+    except Exception as e:
+        print(f"⚠️ Error updating stage in {config_path}: {e}")
+        return False
+
+
 def remap_ports_in_config(config_path: str) -> bool:
     """
     Remap default ports in config.yaml for Edge/Dev builds.
@@ -335,6 +369,9 @@ def main():
         suffix = " (Unsupported)" if ".unsupported" in addon_dir else " (Edge)"
         if update_addon_name(config_path, suffix):
             print(f"   🏷️  Updated name in {addon_dir} with suffix '{suffix}'")
+
+        if ensure_experimental_stage(config_path):
+            print(f"   🧪 Set stage to 'experimental' in {addon_dir}")
 
         if add_edge_notice_to_readme(readme_path):
             print(f"   📝 Added edge notice to {addon_dir}/README.md")

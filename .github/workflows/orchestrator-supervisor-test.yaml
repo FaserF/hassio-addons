@@ -521,6 +521,9 @@ jobs:
                 OPTS='{"media_folder": "/share/whatsapp"}'
                 echo "Ensuring WhatsApp share directory exists..."
                 mkdir -p /tmp/ha-data/share/whatsapp
+              elif [ "$App" = "antigravity-server" ]; then
+                # Disable tool installations to avoid CI timeouts or errors
+                OPTS='{"install_android_tools": false, "install_dev_tools": false, "install_windows_tools": false, "install_linter_tools": false}'
               fi
 
               if [ -n "$OPTS" ]; then

@@ -166,7 +166,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-[ -f /usr/lib/bashio/bashio.sh ] && source /usr/lib/bashio/bashio.sh
 
 # Enable strict mode
 set -e
@@ -255,6 +254,13 @@ if is_port_busy "${DOT_PORT}"; then
 	fi
 fi
 
+if is_port_busy "${DOH_PORT}"; then
+	if [ "${DOH_PORT}" = "443" ]; then
+		bashio::log.warning "⚠️  Port 443 is BUSY. Switching DoH to Fallback Port: 3443"
+		DOH_PORT="3443"
+	fi
+fi
+
 # ------------------------------------------------------------------------------
 # 3. Multiplexed Port 443 Configuration (DoH + Admin UI)
 # ------------------------------------------------------------------------------
@@ -317,7 +323,14 @@ server {
 }
 EOF
 
-nginx -g 'daemon off;' &
+# Verify Nginx configuration before starting
+if ! nginx -t >/dev/null 2>&1; then
+	bashio::log.error "❌ Nginx configuration is invalid:"
+	nginx -t
+	exit 1
+fi
+
+nginx -g 'daemon off;' >/dev/null 2>&1 &
 NGINX_PID=$!
 
 # ------------------------------------------------------------------------------
@@ -337,6 +350,22 @@ export ADMIN_PORT=${ADMIN_BACKEND_PORT}
 
 /usr/bin/shielddns-admin &
 ADMIN_PID=$!
+
+# Give services a moment to start
+sleep 2
+
+# Check if services are still running
+if ! kill -0 $NGINX_PID 2>/dev/null; then
+	bashio::log.error "❌ Nginx failed to start. Check configuration."
+	exit 1
+fi
+
+if ! kill -0 $ADMIN_PID 2>/dev/null; then
+	bashio::log.error "❌ ShieldDNS Admin failed to start. Check logs."
+	exit 1
+fi
+
+bashio::log.info "✅ Services started successfully."
 
 # Initial Corefile (if backend hasn't generated one yet)
 ACTUAL_COREDNS_PORT="${INTERNAL_DOH_PORT}"
