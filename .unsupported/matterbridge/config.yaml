@@ -18,3 +18,4 @@ options:
 schema:
   config_path: str
   log_level: list(info|debug)
+stage: deprecated

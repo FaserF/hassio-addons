@@ -38,3 +38,4 @@ schema:
   marketing_page_enabled: bool?
   dev_use_main_branch: bool?
   github_token: password?
+stage: stable

@@ -20,3 +20,4 @@ ports:
   9120/tcp: 9120
 ports_description:
   9120/tcp: Web Interface
+stage: experimental

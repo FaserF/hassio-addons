@@ -74,3 +74,4 @@ schema:
       sync_gmail_labels: bool?
       dry_run: bool?
       additional_cli_args: list(str)?
+stage: experimental

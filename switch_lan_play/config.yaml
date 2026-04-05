@@ -19,3 +19,4 @@ schema:
   server: str
   log_level: list(trace|debug|info|notice|warning|error|fatal)
 ports: {}
+stage: stable

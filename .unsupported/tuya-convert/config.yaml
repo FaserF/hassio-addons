@@ -22,3 +22,4 @@ slug: tuya-convert
 image: ghcr.io/faserf/hassio-addons-tuya-convert-{arch}
 url: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
 version: 0.2.0
+stage: deprecated

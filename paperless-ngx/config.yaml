@@ -42,3 +42,4 @@ schema:
   reset_database: bool?
   reset_database_confirm: bool?
 image: ghcr.io/faserf/hassio-addons-paperless-ngx-{arch}
+stage: experimental

@@ -8,7 +8,12 @@ the README table Status column accordingly.
 Legend:
 - ✅ = Stable (version >= 1.0.0)
 - ⚠️ = Beta (version < 1.0.0, functional but in development)
-- ❌ = Unsupported (in .unsupported/ folder)
+- ❌ = Unsupported (in .unsupported/ folder) -> stage: deprecated
+
+This script also automatically injects/updates the 'stage' field in config.yaml:
+- deprecated: for unsupported addons
+- experimental: for versions < 1.0.0
+- stable: for all others
 
 Expected Table Format:
 | **[Name](path)** | Description | ✅ |
@@ -54,6 +59,42 @@ def is_prerelease_version(version_str):
     return False
 
 
+def update_addon_stage(addon_path, stage):
+    """Update the 'stage' field in config.yaml using regex to preserve comments."""
+    config_path = os.path.join(addon_path, "config.yaml")
+    if not os.path.exists(config_path):
+        return False
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Check if stage field exists (simple regex)
+        stage_pattern = r"^stage:\s*(stable|experimental|deprecated|beta)\b"
+        if re.search(stage_pattern, content, re.MULTILINE):
+            # Already exists, check if it needs update
+            current_stage_match = re.search(stage_pattern, content, re.MULTILINE)
+            if current_stage_match.group(1) == stage:
+                return False
+
+            # Replace existing stage
+            new_content = re.sub(
+                stage_pattern, f"stage: {stage}", content, flags=re.MULTILINE
+            )
+        else:
+            # Does not exist, append at the end (ensure newline)
+            if not content.endswith("\n"):
+                content += "\n"
+            new_content = content + f"stage: {stage}\n"
+
+        with open(config_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(new_content)
+        return True
+    except Exception as e:
+        print(f"  ⚠️ Error updating config for {addon_path}: {e}")
+        return False
+
+
 def get_addon_status(addon_path, is_unsupported=False):
     """Determine addon status based on version string and location."""
     config_path = os.path.join(addon_path, "config.yaml")
@@ -76,16 +117,23 @@ def get_addon_status(addon_path, is_unsupported=False):
     version = str(config.get("version", ""))
     name = config.get("name", os.path.basename(addon_path))
 
-    # Determine status
+    # Determine status and stage
     if is_unsupported:
         status = "❌"
         status_name = "Unsupported"
+        stage = "deprecated"
     elif is_prerelease_version(version):
         status = "⚠️"
         status_name = "Beta"
+        stage = "experimental"
     else:
         status = "✅"
         status_name = "Stable"
+        stage = "stable"
+
+    # Update config.yaml with correct stage
+    if update_addon_stage(addon_path, stage):
+        print(f"  ✨ Updated {name} stage to: {stage}")
 
     return {
         "name": name,

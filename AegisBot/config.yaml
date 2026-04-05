@@ -68,3 +68,4 @@ schema:
   release_type: list(developer|nightly|pre-release|stable)?
   environment: str?
   default_locale: str?
+stage: experimental

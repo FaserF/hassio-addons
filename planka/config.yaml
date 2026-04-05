@@ -35,3 +35,4 @@ ports:
   "1337": 1337
 ports_description:
   "1337": Web Interface
+stage: stable
