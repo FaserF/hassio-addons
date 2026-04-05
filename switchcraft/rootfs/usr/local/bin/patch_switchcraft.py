@@ -43,7 +43,7 @@ def main():
     if request.headers.get(\"x-hass-source\") == \"Home Assistant\" or request.headers.get(\"x-ingress-name\"):
         return \"admin\"
     # -----------------------------------------"""
-    
+
     patch_file(app_py, get_user_search, get_user_bypass, after=True)
 
     # 2. Patch auth_config.py (load_config)
