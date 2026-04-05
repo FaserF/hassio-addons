@@ -17,6 +17,7 @@ def patch_file(file_path: Path, search_text: str, insertion_text: str, after: bo
     if search_text in content:
         print(f"Applying patch to {file_path.name}...")
         if after:
+            # We add a newline BEFORE insertion to keep following code correctly indented
             new_content = content.replace(search_text, search_text + "\n" + insertion_text)
         else:
             new_content = content.replace(search_text, insertion_text + "\n" + search_text)
@@ -42,13 +43,14 @@ def main():
     if request.headers.get(\"x-hass-source\") == \"Home Assistant\" or request.headers.get(\"x-ingress-name\"):
         return \"admin\"
     # -----------------------------------------"""
-
+    
     patch_file(app_py, get_user_search, get_user_bypass, after=True)
 
     # 2. Patch auth_config.py (load_config)
     auth_config_py = app_dir / "auth_config.py"
-    # We insert our force-disable logic inside load_config where data is processed
-    load_config_search = 'if "session_cookie_secure" not in data:'
+    # We insert our force-disable logic right after JSON loading
+    # Indentation: data = json.load(f) has 16 spaces
+    load_config_search = "data = json.load(f)"
     load_config_bypass = """                # Force disable auth via Env (HA Addon)
                 if os.environ.get(\"SWITCHCRAFT_AUTH_DISABLED\", \"\").lower() == \"true\":
                     data[\"auth_disabled\"] = True"""
