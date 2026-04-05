@@ -6,7 +6,7 @@ description: Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC 
 url: https://github.com/FaserF/hassio-addons/tree/master/antigravity-server
 arch:
   - amd64
-  - arm64
+  - aarch64
 image: ghcr.io/faserf/hassio-addons-antigravity-server-{arch}
 init: false
 ingress: true

@@ -470,8 +470,16 @@ jobs:
           fi
           # Docker/GHCR requires lowercase repository names
           IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
+          
+          # Extract build_from from build.yaml (legacy format)
+          BUILD_FROM=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          if [ -z "$BUILD_FROM" ]; then
+            BUILD_FROM=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          fi
+          
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "build_from=$BUILD_FROM" >> "$GITHUB_OUTPUT"
 
       - name: 🏗️ Build amd64 (CI optimized)
         uses: home-assistant/builder/actions/build-image@master
@@ -484,6 +492,8 @@ jobs:
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.info.outputs.version }}
+          build-args: |
+            BUILD_FROM=${{ steps.prep.outputs.build_from }}
 
       - name: ✅ Build Success
         run: echo "✅ amd64 build successful"

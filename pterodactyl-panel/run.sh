@@ -881,7 +881,7 @@ if bashio::config.true 'ssl'; then
 		cat /etc/nginx/templates/http.conf >/etc/nginx/conf.d/default.conf
 	else
 		echo "[setup] SSL has been enabled. Setting nginx settings for ssl usage with ${SSL_CERT} and ${SSL_CERT_KEY}."
-		envsubst '${SSL_CERT} ${SSL_CERT_KEY}' \
+		envsubst "\${SSL_CERT} \${SSL_CERT_KEY}" \
 			</etc/nginx/templates/https.conf >/etc/nginx/conf.d/default.conf
 	fi
 else
@@ -902,7 +902,6 @@ ensure_admin_user "${host}" "${port}" "pterodactyl" "${db}" "${password_mariadb}
 echo "[start] Starting nginx and php"
 # PHP-FPM is configured to run as nginx user in pool config
 /usr/sbin/php-fpm83 --nodaemonize -c /etc/php83 &
-php_service_pid=$!
 
 echo "[start] Starting Pterodactyl Panel"
 

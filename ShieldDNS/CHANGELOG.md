@@ -1,27 +1,23 @@
 # Changelog
 
-1.
+## 2.4.0 (2026-03-25)
 
-2. ## 2.4.0 (2026-03-25)
+### ✨ Features
 
-3.
+- 🚀 **Premium Admin Dashboard**: Completely redesigned dark-themed UI with glassmorphism.
+- 🛡️ **Setup Wizard**: New multi-step first-run experience for easy configuration.
+- 📊 **Traffic Analytics**: Real-time Chart.js integration and hourly query history.
+- 📝 **Live Query Log**: Real-time table of all DNS requests and blocking status.
+- 🔍 **Blocklist Search**: Verify if domains are blocked directly from the UI.
+- 📦 **Suggested Presets**: One-click activation for popular blocklists (OISD, Hagezi, etc.).
+- 🔐 **Security**: Mandatory 12-character bcrypt password protection and session management.
+- 📋 **Quick-Copy**: Easy configuration for DoT (Android) and DoH (Windows/iOS).
 
-4. ### ✨ Features
+### 🚀 Other
 
-5.
-6. - 🚀 **Premium Admin Dashboard**: Completely redesigned dark-themed UI with glassmorphism.
-7. - 🛡️ **Setup Wizard**: New multi-step first-run experience for easy configuration.
-8. - 📊 **Traffic Analytics**: Real-time Chart.js integration and hourly query history.
-9. - 📝 **Live Query Log**: Real-time table of all DNS requests and blocking status.
-10. - 🔍 **Blocklist Search**: Verify if domains are blocked directly from the UI.
-11. - 📦 **Suggested Presets**: One-click activation for popular blocklists (OISD, Hagezi, etc.).
-12. - 🔐 **Security**: Mandatory 12-character bcrypt password protection and session management.
-13. - 📋 **Quick-Copy**: Easy configuration for DoT (Android) and DoH (Windows/iOS).
-14. 16: ### 🚀 Other
-    17:
-    18: - 📝 **Docs**: Clarified native dual support for DoT and DoH in README.
-    19: - 🔧 **Backend**: Implemented Go sidecar for CoreDNS management and API.
-    20:
+- 📝 **Docs**: Clarified native dual support for DoT and DoH in README.
+- 🔧 **Backend**: Implemented Go sidecar for CoreDNS management and API.
+
 
 ## 2.3.1 (2026-03-13)
 

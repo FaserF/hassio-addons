@@ -28,7 +28,7 @@ if [ ! -x "$WEBSOCKIFY_CMD" ]; then
     WEBSOCKIFY_CMD="$HOME/.local/bin/websockify"
 fi
 
-# Start NoVNC websocket proxy (using websockify directly)
-exec "$WEBSOCKIFY_CMD" \
+# Start NoVNC websocket proxy (using websockify directly) as dev user
+exec gosu dev "$WEBSOCKIFY_CMD" \
     --web /usr/share/novnc/ \
     6080 localhost:5901

@@ -173,7 +173,6 @@ set -e
 
 # Define local paths
 COREFILE_PATH="/etc/Corefile"
-DEFAULT_UPSTREAM="1.1.1.1"
 
 echo "➡️  Starting ShieldDNS Initialization..."
 
@@ -327,7 +326,8 @@ NGINX_PID=$!
 mkdir -p /etc/shielddns /var/www/admin
 
 # Dynamically set GOMAXPROCS to match the available CPU count.
-export GOMAXPROCS=$(nproc 2>/dev/null || echo 1)
+GOMAXPROCS=$(nproc 2>/dev/null || echo 1)
+export GOMAXPROCS
 
 # Export for Go backend
 export CERT_FILE
@@ -369,6 +369,9 @@ fi
 wait -n $ADMIN_PID $NGINX_PID
 bashio::log.info "⏹️  Shutting down services..."
 # Kill all background jobs gracefully
-kill -TERM $(jobs -p) 2>/dev/null || true
+mapfile -t PIDS < <(jobs -p)
+if [ ${#PIDS[@]} -gt 0 ]; then
+	kill -TERM "${PIDS[@]}" 2>/dev/null || true
+fi
 bashio::log.info "ℹ️  ShieldDNS has stopped."
 exit 0

@@ -229,6 +229,28 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/ShieldDNS/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/ShieldDNS"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/ShieldDNS/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG COREDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "coredns/coredns"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/antigravity-server/Dockerfile$/"
       ],
       "matchStrings": [
@@ -403,7 +425,9 @@
         "WordPress/WordPress",
         "n8n",
         "FaserF/SwitchCraft",
-        "imapsync/imapsync"
+        "imapsync/imapsync",
+        "FaserF/ShieldDNS",
+        "coredns/coredns"
       ],
       "automerge": false
     },

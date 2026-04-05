@@ -1090,6 +1090,20 @@ jobs:
           echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
           echo "OWNER=$OWNER" >> "$GITHUB_ENV"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          
+          # Extract build_from from build.yaml (legacy format)
+          BUILD_FROM_AMD64=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          if [ -z "$BUILD_FROM_AMD64" ]; then
+            BUILD_FROM_AMD64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          fi
+          
+          BUILD_FROM_AARCH64=$(grep "^  aarch64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          if [ -z "$BUILD_FROM_AARCH64" ]; then
+            BUILD_FROM_AARCH64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          fi
+          
+          echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64" >> "$GITHUB_ENV"
+          echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64" >> "$GITHUB_ENV"
 
       - name: 🏗️ Build amd64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
@@ -1105,6 +1119,8 @@ jobs:
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ env.VERSION }}
+          build-args: |
+             BUILD_FROM=${{ env.BUILD_FROM_AMD64 }}
 
       - name: 🏗️ Build aarch64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
@@ -1120,6 +1136,8 @@ jobs:
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ env.VERSION }}
+          build-args: |
+             BUILD_FROM=${{ env.BUILD_FROM_AARCH64 }}
 
       - name: 📢 Release Summary
         run: |

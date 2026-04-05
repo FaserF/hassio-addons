@@ -4,7 +4,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.2.0
 FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=Eidolf/Docker-AntiGravity versioning=loose
-ARG ANTIGRAVITY_VERSION="2026.3.19"
+ARG ANTIGRAVITY_VERSION="2026.3.20"
 ENV ANTIGRAVITY_VERSION=${ANTIGRAVITY_VERSION}
 ARG LAZYGIT_VERSION=0.40.2
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -24,7 +24,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         net-tools \
         dbus-x11 \
-        software-properties-common \
         wmctrl \
         dirmngr \
         apt-transport-https \
@@ -40,6 +39,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         zip \
         unzip \
         jq \
+        gosu \
+        iptables \
+        fuse-overlayfs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 2: Minimal XFCE Desktop
@@ -62,14 +64,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         xfce4-appfinder \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: Node.js (v24.x) and Python 3
+# Layer 3: Node.js (v24.x) and Python 3.14
 RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get update && apt-get install -y --no-install-recommends \
         nodejs \
-        python3 \
-        python3-pip \
-        python3-venv \
-        python3-numpy \
+        python3.14 \
+        python3.14-venv \
+        python3.14-dev \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.14 1 \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.14 - --break-system-packages \
+    && python3 -m pip install --no-cache-dir websockify numpy --break-system-packages \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 4: Browsers & Docker CLI (Debian-specific paths)
@@ -107,8 +111,24 @@ RUN curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | gpg --
     rm lazygit.tar.gz lazygit && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Final Setup: User, Claude Code, and permissions
+RUN (id -u ubuntu >/dev/null 2>&1 && userdel -f ubuntu || true) && \
+    (getent group ubuntu >/dev/null 2>&1 && groupdel ubuntu || true) && \
+    groupadd -g 1000 dev && \
+    useradd -u 1000 -g dev -m -s /bin/bash dev && \
+    echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    usermod -aG docker dev && \
+    mkdir -p /home/dev/.vnc && \
+    chown -R dev:dev /home/dev
+
+# Install Claude Code CLI as dev user
+USER dev
+WORKDIR /home/dev
+RUN curl -fsSL https://claude.ai/install.sh | bash
+USER root
+
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.1"
+ENV APP_VERSION="1.3.0"
 ENV APP_NAME="Antigravity-Server"
 ENV APP_SLUG="antigravity-server"
 ENV APP_UNSUPPORTED="false"
