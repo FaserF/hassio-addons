@@ -42,13 +42,13 @@ def main():
     if request.headers.get(\"x-hass-source\") == \"Home Assistant\" or request.headers.get(\"x-ingress-name\"):
         return \"admin\"
     # -----------------------------------------"""
-    
+
     patch_file(app_py, get_user_search, get_user_bypass, after=True)
 
     # 2. Patch auth_config.py (load_config)
     auth_config_py = app_dir / "auth_config.py"
     # We insert our force-disable logic inside load_config where data is processed
-    load_config_search = "if \"session_cookie_secure\" not in data:"
+    load_config_search = 'if "session_cookie_secure" not in data:'
     load_config_bypass = """                # Force disable auth via Env (HA Addon)
                 if os.environ.get(\"SWITCHCRAFT_AUTH_DISABLED\", \"\").lower() == \"true\":
                     data[\"auth_disabled\"] = True"""
