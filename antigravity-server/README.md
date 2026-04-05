@@ -15,6 +15,12 @@
 
 Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
 
+### Advanced Features
+
+- **Dynamic Toolsets**: Enable specialized tools for Android, C++/Dev, Windows (MinGW), or Linters on-the-fly.
+- **Persistence**: Your settings and tools persist in the `/data` directory.
+- **Ingress Support**: Securely access the desktop via Home Assistant Ingress.
+
 ---
 
 ## ⚙️ Configuration
@@ -24,21 +30,15 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ### Options
 
 ```yaml
+additional_packages: []
 autostart_antigravity: true
-log_level: info
-vnc_password: ''
 install_android_tools: false
 install_dev_tools: false
-install_windows_tools: false
 install_linter_tools: false
-additional_packages: []
+install_windows_tools: false
+log_level: info
+vnc_password: ''
 ```
-
-### Advanced Features
-
-- **Dynamic Toolsets**: Enable specialized tools for Android, C++/Dev, Windows (MinGW), or Linters on-the-fly.
-- **Persistence**: Your settings and tools persist in the `/data` directory.
-- **Ingress Support**: Securely access the desktop via Home Assistant Ingress.
 
 ---
 

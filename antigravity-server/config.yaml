@@ -40,4 +40,3 @@ schema:
   install_windows_tools: bool?
   install_linter_tools: bool?
   additional_packages: list(str)?
-

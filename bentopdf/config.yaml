@@ -28,4 +28,3 @@ ports_description:
 ingress: true
 ingress_port: 8035
 panel_icon: mdi:file-pdf-box
-

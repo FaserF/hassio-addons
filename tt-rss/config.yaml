@@ -37,4 +37,3 @@ ingress: true
 ingress_port: 8280
 panel_icon: mdi:rss
 image: ghcr.io/faserf/hassio-addons-tt-rss-{arch}
-

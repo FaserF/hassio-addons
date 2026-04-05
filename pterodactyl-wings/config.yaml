@@ -25,4 +25,3 @@ options:
 schema:
   config_file: str
   log_level: list(trace|debug|info|notice|warning|error|fatal)
-

@@ -28,4 +28,3 @@ ingress_stream: true
 panel_icon: mdi:view-dashboard-variant
 ports:
   9123/tcp: 9123 # Web UI (direct access)
-
