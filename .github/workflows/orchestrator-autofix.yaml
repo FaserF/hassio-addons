@@ -249,7 +249,7 @@ jobs:
           echo "Rebasing on top of origin/${{ github.ref_name }}..."
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          
+
           if ! git pull --rebase origin ${{ github.ref_name }}; then
             echo "Rebase failed. Conflict likely. Aborting."
             exit 1
@@ -263,7 +263,7 @@ jobs:
                 echo "Detected workflow files in local commit. Removing them..."
                 git reset --soft HEAD~1
                 git checkout .github/workflows/*.yaml 2>/dev/null || true
-                
+
                 # Only re-commit if there are actually other changes staged
                 if git diff --cached --quiet; then
                    echo "No other changes left to commit. Skipping re-commit."
