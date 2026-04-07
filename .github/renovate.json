@@ -309,6 +309,18 @@
     },
     {
       "customType": "regex",
+      "description": "Track DBF version in Dockerfile",
+      "managerFilePatterns": [
+        "/dbf/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG DBF_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "derf/db-fakedisplay"
+    },
+    {
+      "customType": "regex",
       "description": "Track PHP version in Dockerfiles",
       "managerFilePatterns": [
         "/(^|/)Dockerfile$/"
@@ -427,7 +439,8 @@
         "FaserF/SwitchCraft",
         "imapsync/imapsync",
         "FaserF/ShieldDNS",
-        "coredns/coredns"
+        "coredns/coredns",
+        "derf/db-fakedisplay"
       ],
       "automerge": false
     },

@@ -1,0 +1,21 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant App: DBF (DB-Infoscreen)
+# Updates the zugbildungsplan.json data from lib.finalrewind.org
+# ==============================================================================
+
+RESOURCE_URL="https://lib.finalrewind.org/dbdb/db_zugbildung_v1.json"
+TARGET_FILE="/app/share/zugbildungsplan.json"
+
+bashio::log.info "Checking for background data updates (zugbildungsplan.json)..."
+
+if curl --silent --fail --output "${TARGET_FILE}.new" "${RESOURCE_URL}"; then
+    if [ -f "${TARGET_FILE}.new" ] && [ -s "${TARGET_FILE}.new" ]; then
+        mv "${TARGET_FILE}.new" "${TARGET_FILE}"
+        bashio::log.info "Successfully updated zugbildungsplan.json."
+    else
+        bashio::log.warning "Downloaded file is empty or missing, skipping update."
+    fi
+else
+    bashio::log.warning "Failed to download update from ${RESOURCE_URL}. Will try again later."
+fi

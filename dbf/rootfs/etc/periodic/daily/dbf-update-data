@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant App: DBF (DB-Infoscreen)
+# Daily cron job for data updates
+# ==============================================================================
+
+/usr/bin/dbf-update-data

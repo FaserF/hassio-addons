@@ -1,0 +1,79 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant App: DBF (DB-Infoscreen)
+# Runs the DBF service using Hypnotoad
+# ==============================================================================
+
+# Set Bashio log level
+if bashio::config.has_value 'log_level'; then
+    bashio::log.level "$(bashio::config 'log_level')"
+fi
+
+# Create stats file if it does not exist
+if [ ! -f "/data/stats.json" ]; then
+    bashio::log.info "Initializing stats file..."
+    echo '{"api_requests": 0}' > /data/stats.json
+    chown -R root:root /data/stats.json
+fi
+
+# Ensure cache directories exist
+mkdir -p /data/iris_cache /data/irisrt_cache /app/share
+
+# Set environment variables from options
+export DBFAKEDISPLAY_WORKERS=$(bashio::config 'workers' '2')
+export DBFAKEDISPLAY_STATS="/data/stats.json"
+export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
+export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"
+export DBFAKEDISPLAY_LISTEN="http://*:8092"
+
+# Prepare templates (imprint and privacy)
+bashio::log.info "Preparing templates..."
+IMPRINT_NAME=$(bashio::config 'imprint_name' 'Home Assistant User')
+IMPRINT_ADDRESS=$(bashio::config 'imprint_address' 'Localhost')
+
+cat <<EOF > /app/ext-templates/imprint.html.ep
+% layout 'default';
+% title 'Imprint';
+<h1>Imprint</h1>
+<p>
+    <strong>Name:</strong> ${IMPRINT_NAME}<br>
+    <strong>Address:</strong> ${IMPRINT_ADDRESS}
+</p>
+EOF
+
+PRIVACY_URL=$(bashio::config 'privacy_policy_url' '')
+if [ -n "${PRIVACY_URL}" ]; then
+cat <<EOF > /app/ext-templates/privacy.html.ep
+% layout 'default';
+% title 'Privacy Policy';
+<h1>Privacy Policy</h1>
+<p>
+    Please see our external privacy policy at:
+    <a href="${PRIVACY_URL}">${PRIVACY_URL}</a>
+</p>
+EOF
+else
+cat <<EOF > /app/ext-templates/privacy.html.ep
+% layout 'default';
+% title 'Privacy Policy';
+<h1>Privacy Policy</h1>
+<p>
+    This service is running locally on your Home Assistant instance.
+    No tracking is enabled.
+</p>
+EOF
+fi
+
+# Run initial data update
+/usr/bin/dbf-update-data
+
+# Run integration manager (install/update integration)
+/usr/bin/dbf-integration-manager
+
+bashio::log.info "Starting DBF (DB-Infoscreen)..."
+
+# Change directory to app root
+cd /app || exit 1
+
+# Start Hypnotoad in foreground
+exec hypnotoad -f index.pl

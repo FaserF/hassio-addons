@@ -1,0 +1,33 @@
+name: "DBF (DB-Infoscreen)"
+version: "0.0.1"
+slug: "dbf"
+description: "Railway departure display (formerly db-fakescreen) as a Home Assistant App."
+url: "https://github.com/FaserF/hassio-addons/tree/master/dbf"
+arch:
+  - aarch64
+  - amd64
+init: false
+ingress: true
+ingress_port: 8092
+ingress_entry: "/"
+panel_icon: "mdi:train"
+map:
+  - homeassistant_config:rw
+  - ssl:rw
+ports:
+  8092/tcp: null
+ports_description:
+  8092/tcp: "Web Interface (Optional)"
+options:
+  log_level: info
+  workers: 2
+  imprint_name: ""
+  imprint_address: ""
+  privacy_policy_url: ""
+schema:
+  log_level: list(debug|info|warning|error|fatal)?
+  workers: int?
+  imprint_name: str?
+  imprint_address: str?
+  privacy_policy_url: str?
+image: ghcr.io/faserf/hassio-addons-dbf-{arch}
