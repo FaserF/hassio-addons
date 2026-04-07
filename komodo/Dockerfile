@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.2.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.3.0
 ARG KOMODO_VERSION=2.1.1
 FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
 FROM ${BUILD_FROM}
