@@ -17,7 +17,7 @@ ENV \
     DBFAKEDISPLAY_WORKERS=2
 
 # Build arguments
-ARG DBF_VERSION="v0.95.1"
+ARG DBF_VERSION="4.37.28"
 
 # Install dependencies and build db-infoscreen
 # hadolint ignore=DL3003,DL3018
