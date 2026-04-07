@@ -374,66 +374,49 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             # Configure MariaDB (Password is required)
             Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
 
-            # Use Python API to set options reliably (avoiding CLI quoting issues)
-            $mariaDbOpts = @{
-                databases = @("homeassistant")
-                logins    = @(
-                    @{ username = "homeassistant"; password = "generated_m7R2x" }
-                )
-                rights    = @(
-                    @{ username = "homeassistant"; database = "homeassistant" }
-                )
-            } | ConvertTo-Json -Depth 5 -Compress
-
-            # Escape for Python string
-            $mariaDbOptsStr = $mariaDbOpts.Replace('"', '\"')
-
-            $pyScript = @"
-import os, sys, json, urllib.request, urllib.error
-token = os.environ.get("SUPERVISOR_TOKEN")
-url = "http://supervisor/addons/core_mariadb/options"
-data = json.loads("$mariaDbOptsStr")
-req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
-req.add_header("Authorization", f"Bearer {token}")
-req.add_header("Content-Type", "application/json")
-try:
-    with urllib.request.urlopen(req) as response:
-        print(response.getcode())
-except Exception as e:
-    print(e)
-    sys.exit(1)
-"@
-            $tmpPyFile = Join-Path $env:TEMP "set_options_mariadb.py"
-            [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
-            docker cp $tmpPyFile "${containerName}:/tmp/set_options_mariadb.py" 2>$null | Out-Null
-            docker exec $containerName python3 /tmp/set_options_mariadb.py 2>&1 | Out-Null
-            Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
-
-            $start = docker exec $containerName ha addons start core_mariadb 2>&1
+            # Set options with ha CLI. We include both logins and a root password to be safe across versions.
+            $mariaOptions = '{
+                "databases": ["homeassistant"],
+                "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}],
+                "rights": [{"username": "homeassistant", "database": "homeassistant"}],
+                "password": "generated_m7R2x"
+            }'
+            
+            # Write options to file and apply
+            $mariaOptions | docker exec -i $containerName sh -c "cat > /tmp/maria_opt.json"
+            $optSet = docker exec $containerName sh -c 'ha addons options core_mariadb --options "$(cat /tmp/maria_opt.json)"' 2>&1
+            
             if ($LASTEXITCODE -ne 0) {
-                Write-Warning "Failed to start MariaDB: $start"
+                Write-Warning "Failed to set MariaDB options: $optSet"
                 $mysqlFailed = $true
             }
             else {
-                Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
-                $mariadbReady = $false
-                $maxWait = 60
-                $mariadbWaitStart = Get-Date
-                while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
-                    $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
-                    if ($statusJson) {
-                        $status = $statusJson | ConvertFrom-Json
-                        if ($status.data.state -eq "started") {
-                            Write-Host "    ✅ MariaDB is ready." -ForegroundColor Green
-                            $mariadbReady = $true
-                            break
-                        }
-                    }
-                    Start-Sleep -Seconds 5
-                }
-                if (-not $mariadbReady) {
-                    Write-Warning "MariaDB failed to reach 'started' state within ${maxWait}s"
+                $start = docker exec $containerName ha addons start core_mariadb 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "Failed to start MariaDB: $start"
                     $mysqlFailed = $true
+                }
+                else {
+                    Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
+                    $mariadbReady = $false
+                    $maxWait = 60
+                    $mariadbWaitStart = Get-Date
+                    while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
+                        $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
+                        if ($statusJson) {
+                            $status = $statusJson | ConvertFrom-Json
+                            if ($status.data.state -eq "started") {
+                                Write-Host "    ✅ MariaDB is ready." -ForegroundColor Green
+                                $mariadbReady = $true
+                                break
+                            }
+                        }
+                        Start-Sleep -Seconds 5
+                    }
+                    if (-not $mariadbReady) {
+                        Write-Warning "MariaDB failed to reach 'started' state within ${maxWait}s"
+                        $mysqlFailed = $true
+                    }
                 }
             }
         }

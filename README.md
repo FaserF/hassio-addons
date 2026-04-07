@@ -93,7 +93,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Wordpress](wordpress)**                                      | The most popular publication platform     | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)    | ❌     | 2023-05 |
 
-**Dropped HA Apps**: N8N, Paperless. [Get it here instead.](https://github.com/fabio-garavini/hassio-addons/tree/main/n8n)
+**Dropped HA Apps**: N8N, Paperless. [Get it here instead.](https://github.com/fabio-garavini/hassio-addons)
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
