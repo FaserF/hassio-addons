@@ -686,9 +686,16 @@ jobs:
 
       - name: ℹ️ Get App Info
         id: info
-        uses: home-assistant/actions/helpers/info@master
-        with:
-          path: "./${{ matrix.App }}"
+        shell: bash
+        run: |
+          SLUG=$(yq -r '.slug' "${{ matrix.App }}/config.yaml")
+          if [ -z "$SLUG" ] || [ "$SLUG" == "null" ]; then
+            SLUG=$(echo "${{ matrix.App }}" | tr '[:upper:]' '[:lower:]')
+          fi
+          # Docker/GHCR requires lowercase repository names
+          IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Inject Version Warning
         run: |
@@ -699,15 +706,16 @@ jobs:
 
       - name: 🏗️ Test Build
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: home-assistant/actions/builder@master
+        uses: home-assistant/builder/actions/build-image@2026.03.2
         with:
-          args: |
-            --test \
-            --amd64 \
-            --target /data/${{ matrix.App }} \
-            --image "${{ steps.info.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          arch: amd64
+          image: ${{ steps.info.outputs.image }}
+          image-tags: latest
+          push: false
+          cosign: false
+          context: ./${{ matrix.App }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          version: test
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -775,9 +783,15 @@ jobs:
 
       - name: ℹ️ Get App Info
         id: info
-        uses: home-assistant/actions/helpers/info@master
-        with:
-          path: "./${{ matrix.App }}"
+        shell: bash
+        run: |
+          VERSION=$(yq -r '.version' "${{ matrix.App }}/config.yaml")
+          SLUG=$(yq -r '.slug' "${{ matrix.App }}/config.yaml")
+          if [ -z "$SLUG" ] || [ "$SLUG" == "null" ]; then
+            SLUG=$(echo "${{ matrix.App }}" | tr '[:upper:]' '[:lower:]')
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
       - name: 🐋 Login to GitHub Container Registry
         if: matrix.App != 'sap-abap-cloud-dev'
@@ -914,7 +928,7 @@ jobs:
             # 1. Check status and Commit
             # Add manifest.json if it was changed by the sync step
             git add custom_components/webserver_app/manifest.json 2>/dev/null || true
-            
+
             if [ -n "$(git status --porcelain "${{ matrix.App }}")" ] || [ -n "$(git status --porcelain "custom_components/webserver_app/manifest.json")" ]; then
               git add "${{ matrix.App }}"
               COMMIT_MSG="${{ github.event.inputs.changelog_only == 'true' && format('📝 release({0}): update changelog [skip-tests]', matrix.App) || format('🚀 release({0}): version bump [skip-tests]', matrix.App) }}"
@@ -949,9 +963,15 @@ jobs:
 
       - name: ℹ️ Get App Info (Post-Bump)
         id: info_build
-        uses: home-assistant/actions/helpers/info@master
-        with:
-          path: "./${{ matrix.App }}"
+        shell: bash
+        run: |
+          VERSION=$(yq -r '.version' "${{ matrix.App }}/config.yaml")
+          SLUG=$(yq -r '.slug' "${{ matrix.App }}/config.yaml")
+          if [ -z "$SLUG" ] || [ "$SLUG" == "null" ]; then
+            SLUG=$(echo "${{ matrix.App }}" | tr '[:upper:]' '[:lower:]')
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
       - name: 🗑️ Delete existing image version (if exists)
         continue-on-error: true
@@ -1092,18 +1112,18 @@ jobs:
             echo "OWNER=$OWNER"
             echo "VERSION=$VERSION"
           } >> "$GITHUB_ENV"
-          
+
           # Extract build_from from build.yaml (legacy format)
           BUILD_FROM_AMD64=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           if [ -z "$BUILD_FROM_AMD64" ]; then
             BUILD_FROM_AMD64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           fi
-          
+
           BUILD_FROM_AARCH64=$(grep "^  aarch64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           if [ -z "$BUILD_FROM_AARCH64" ]; then
             BUILD_FROM_AARCH64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           fi
-          
+
           {
             echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64"
             echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64"
@@ -1111,7 +1131,7 @@ jobs:
 
       - name: 🏗️ Build amd64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
-        uses: home-assistant/builder/actions/build-image@master
+        uses: home-assistant/builder/actions/build-image@2026.03.2
         with:
           arch: amd64
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
@@ -1128,7 +1148,7 @@ jobs:
 
       - name: 🏗️ Build aarch64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
-        uses: home-assistant/builder/actions/build-image@master
+        uses: home-assistant/builder/actions/build-image@2026.03.2
         with:
           arch: aarch64
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64
