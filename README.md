@@ -4,7 +4,7 @@ This repository contains a collection of custom **Home Assistant Apps** (formerl
 maintained by FaserF.
 
 > [!IMPORTANT]
-> **Detailed documentation for all apps can be found here:** [faserf.github.io/hassio-addons](https://faserf.github.io/hassio-addons)
+> **Detailed documentation for all apps can be found here:** [hassio-addons.fabiseitz.de](https://hassio-addons.fabiseitz.de/)
 
 > [!NOTE]
 > These apps are primarily intended for my own private use. I strive to fix bugs or implement feature requests, but I cannot guarantee it. Apps that I no longer use myself receive poorer support from me.
@@ -118,7 +118,7 @@ The table below shows **all apps** in this repository, including unsupported one
 <div align="center">
 
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20on-GitHub-%23EA4AAA?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/FaserF)&nbsp;&nbsp;
-[![PayPal](https://img.shields.io/badge/Donate%20via-PayPal-%2300457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/FaserF)
+[![PayPal](https://img.shields.io/badge/Donate%20via-PayPal-%2300457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/FaserF)
 
 </div>
 
@@ -199,8 +199,8 @@ This repository adheres to a **Platinum Standard** for Home Assistant Apps, ensu
 Every app in this repository undergoes extensive CI/CD verification, including:
 
 - **Automated Builds:** Verified across multiple architectures.
-- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/woodruffw/zizmor) and [Hadolint](https://github.com/hadolint/hadolint).
-- **Strict Linting:** Enforced by [App Linter](https://developers.home-assistant.io/docs/add-ons/testing), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
+- **Security Scanning:** Proactive checks with [Zizmor](https://github.com/zizmorcore/zizmor) and [Hadolint](https://github.com/hadolint/hadolint).
+- **Strict Linting:** Enforced by [App Linter](https://developers.home-assistant.io/docs/apps/testing/), [Actionlint](https://github.com/rhysd/actionlint), [MarkdownLint](https://github.com/DavidAnson/markdownlint), and [ShellCheck](https://github.com/koalaman/shellcheck).
 - **Code Consistency:** Automated formatting via [Prettier](https://prettier.io/), [Black](https://github.com/psf/black), and [isort](https://github.com/PyCQA/isort).
 - **Local Verification:** Universal testing scripts aimed at reproducible results on any machine.
 
