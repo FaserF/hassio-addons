@@ -39,4 +39,4 @@ schema:
   install_dev_tools: bool?
   install_windows_tools: bool?
   install_linter_tools: bool?
-  additional_packages: list(str)?
+  additional_packages: [str]?

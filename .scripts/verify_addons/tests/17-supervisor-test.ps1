@@ -573,11 +573,14 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                             $opts = ($baseOpts | ConvertTo-Json -Compress)
 
-                            # Create text file with options locally
                             $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
                             $opts | Out-File -FilePath $tmpOptsFile -Encoding utf8 -Force
                             docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
                             Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
+
+                            # Create document root via docker exec to avoid permission issues
+                            docker exec $containerName mkdir -p /share/htdocs
+                            docker exec $containerName sh -c "echo '<html><body>Test</body></html>' > /share/htdocs/index.html"
 
                             # Create Python script to set options (Bypasses shell/curl issues)
                             $pyScript = @"
@@ -777,7 +780,7 @@ except Exception as e:
                     $hasMandatoryService = $false
                     if (Test-Path $configFile) {
                         $configYml = Get-Content $configFile -Raw
-                        if ($configYml -match "mysql:need") {
+                        if ($configYml -match ":need") {
                             $hasMandatoryService = $true
                         }
                     }
