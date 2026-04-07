@@ -27,7 +27,7 @@ options:
   mark_online: false
   media_folder: ""
   admin_numbers: ""
-  welcome_message_enabled: true
+  welcome_message_enabled: false
   admin_notifications_enabled: true
 
 schema:
