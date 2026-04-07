@@ -1,6 +1,6 @@
 # Tado Auto Assist
 
-<img src="logo.png" width="100" alt="Logo" />
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/tado_aa/logo.png" width="100" alt="Logo" />
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_tado_aa)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
