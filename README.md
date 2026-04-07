@@ -72,7 +72,6 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Imapsync](imapsync)**                                        | Sync IMAP accounts easily and reliably.     | ⚠️     | 2026-02 |
 | **[Komodo](komodo)**                                            | Build and deploy software on many servers   | ⚠️     | 2026-01 |
 | **[Matterbridge](.unsupported/matterbridge)**                   | Simple chat bridge (Unsupported)            | ❌     | 2023-05 |
-| **[N8n](n8n)**                                                  | Workflow automation tool for Home Assistant | ⚠️     | 2026-01 |
 | **[Netboot.xyz](netboot-xyz)**                                  | PXE Booting Service                         | ✅     | 2023-05 |
 | **[OpenSSL](openssl)**                                          | Self-signed certificate generator           | ✅     | 2023-05 |
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                     | ⚠️     | 2023-05 |
@@ -93,6 +92,9 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                           | ⚠️     | 2026-01 |
 | **[Wordpress](wordpress)**                                      | The most popular publication platform       | ⚠️     | 2026-01 |
 | **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)      | ❌     | 2023-05 |
+
+
+**Dropped HA Apps**: N8N, Paperless. [Get it here instead.](https://github.com/fabio-garavini/hassio-addons/tree/main/n8n)
 
 <!-- markdownlint-enable MD060 -->
 <!-- markdownlint-disable MD028 -->
