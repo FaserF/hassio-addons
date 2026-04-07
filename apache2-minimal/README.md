@@ -17,12 +17,12 @@ A lightweight, security-focused version of the Apache HTTP Server. This addon pr
 
 ### Apache2 Variant Comparison
 
-| Feature            | Apache2 (Full)      | Apache2 Minimal | Apache2 Minimal + MariaDB |
-| :----------------- | :------------------ | :-------------- | :------------------------ |
-| **PHP Support**    | ✅ Yes (Full)       | ❌ No           | ✅ Yes (Basic)            |
-| **MariaDB Client** | ✅ Yes              | ❌ No           | ✅ Yes                    |
-| **Footprint**      | 🖥️ Large            | ⚡ Smallest     | ⚖️ Medium                 |
-| **Best For**       | WordPress, Full CMS | Static Sites    | Simple PHP Apps           |
+| Feature | Apache2 (Full) | Apache2 Minimal | Apache2 Minimal + MariaDB |
+| :--- | :--- | :--- | :--- |
+| **PHP Support** | ✅ Yes (Full) | ❌ No | ✅ Yes (Basic) |
+| **MariaDB Client** | ✅ Yes | ❌ No | ✅ Yes |
+| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |
+| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |
 
 ---
 
