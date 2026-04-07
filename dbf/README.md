@@ -1,6 +1,6 @@
 # DBF (DB-Infoscreen)
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/dbf/logo.png" width="100" alt="Logo" />
+<img src="./logo.png" width="100" alt="Logo" />
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_dbf)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
@@ -26,7 +26,7 @@ This add-on brings the powerful `db-infoscreen` software to Home Assistant, allo
 
 ## 🧩 Home Assistant Integration
 
-This add-on is designed to work seamlessly with the **DB Infoscreen Integration**. 
+This add-on is designed to work seamlessly with the **DB Infoscreen Integration**.
 
 - **Auto-Installation**: When you start this add-on, it will automatically check if the integration is installed in your `custom_components` folder. If missing or outdated, it will dynamically fetch and install the latest release directly from GitHub.
 - **Manual Control**: You can also find the source code and report issues for the integration at: [github.com/FaserF/ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen).

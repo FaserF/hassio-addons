@@ -39,7 +39,6 @@ install_integration() {
         CLONE_ARGS=()
     fi
 
-    mkdir -p "/tmp/ha-db_infoscreen_install"
     rm -rf "/tmp/ha-db_infoscreen_install"
 
     if git clone --depth 1 "${CLONE_ARGS[@]}" "${REPO_URL}" "/tmp/ha-db_infoscreen_install" > /dev/null 2>&1; then
@@ -64,10 +63,16 @@ install_integration() {
                     TITLE="DB Infoscreen Integration Installed"
                 fi
                 bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
+                
+                PAYLOAD=$(jq -n \
+                    --arg title "$TITLE" \
+                    --arg msg "$MSG" \
+                    '{title: $title, message: $msg, notification_id: "dbf_restart_required"}')
+
                 curl -s -X POST \
                     -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
                     -H "Content-Type: application/json" \
-                    -d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"dbf_restart_required\"}" \
+                    -d "$PAYLOAD" \
                     http://supervisor/core/api/services/persistent_notification/create > /dev/null
             else
                 bashio::log.error "❌ Copy failed: $INTEGRATION_DIR does not exist."

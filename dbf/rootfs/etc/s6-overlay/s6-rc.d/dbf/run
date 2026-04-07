@@ -26,30 +26,41 @@ export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
 export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"
 export DBFAKEDISPLAY_LISTEN="http://*:8092"
 
+# HTML Escaping helper
+# Replaces &, <, >, ", and ' with entities
+escape_html() {
+    local input="$1"
+    echo "${input}" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g'
+}
+
 # Prepare templates (imprint and privacy)
 bashio::log.info "Preparing templates..."
 IMPRINT_NAME=$(bashio::config 'imprint_name' 'Home Assistant User')
 IMPRINT_ADDRESS=$(bashio::config 'imprint_address' 'Localhost')
+
+ESCAPED_IMPRINT_NAME=$(escape_html "${IMPRINT_NAME}")
+ESCAPED_IMPRINT_ADDRESS=$(escape_html "${IMPRINT_ADDRESS}")
 
 cat <<EOF > /app/ext-templates/imprint.html.ep
 % layout 'default';
 % title 'Imprint';
 <h1>Imprint</h1>
 <p>
-    <strong>Name:</strong> ${IMPRINT_NAME}<br>
-    <strong>Address:</strong> ${IMPRINT_ADDRESS}
+    <strong>Name:</strong> ${ESCAPED_IMPRINT_NAME}<br>
+    <strong>Address:</strong> ${ESCAPED_IMPRINT_ADDRESS}
 </p>
 EOF
 
 PRIVACY_URL=$(bashio::config 'privacy_policy_url' '')
 if [ -n "${PRIVACY_URL}" ]; then
+    ESCAPED_PRIVACY_URL=$(escape_html "${PRIVACY_URL}")
 cat <<EOF > /app/ext-templates/privacy.html.ep
 % layout 'default';
 % title 'Privacy Policy';
 <h1>Privacy Policy</h1>
 <p>
     Please see our external privacy policy at:
-    <a href="${PRIVACY_URL}">${PRIVACY_URL}</a>
+    <a href="${ESCAPED_PRIVACY_URL}">${ESCAPED_PRIVACY_URL}</a>
 </p>
 EOF
 else

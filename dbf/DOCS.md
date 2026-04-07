@@ -34,19 +34,19 @@ The app can be configured via the **Configuration** tab in the App page.
 
 ### Log Level
 
--   `log_level`: Set the logging level for the app. Possible values are `debug`, `info`, `warning`, `error`, `fatal`. Default is `info`.
+- `log_level`: Set the logging level for the app. Possible values are `debug`, `info`, `warning`, `error`, `fatal`. Default is `info`.
 
 ### Workers
 
--   `workers`: Number of worker processes for the `hypnotoad` web server. Default is `2`.
+- `workers`: Number of worker processes for the `hypnotoad` web server. Default is `2`.
 
 ## 📜 Legal Information
 
 The software allows you to provide an **Imprint** and a **Privacy Policy** page. You can configure these in the configuration tab:
 
--   `imprint_name`: Name to be displayed in the imprint.
--   `imprint_address`: Address to be displayed in the imprint.
--   `privacy_policy_url`: URL to an external privacy policy page.
+- `imprint_name`: Name to be displayed in the imprint.
+- `imprint_address`: Address to be displayed in the imprint.
+- `privacy_policy_url`: URL to an external privacy policy page.
 
 ## 🚞 Wagon Orders
 

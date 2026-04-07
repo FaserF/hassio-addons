@@ -3,6 +3,11 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
+# Build arguments
+ARG BUILD_DATE
+ARG BUILD_REF
+ARG BUILD_VERSION
+
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

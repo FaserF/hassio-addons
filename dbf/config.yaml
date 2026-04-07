@@ -13,7 +13,6 @@ ingress_entry: "/"
 panel_icon: "mdi:train"
 map:
   - homeassistant_config:rw
-  - ssl:rw
 ports:
   8092/tcp: null
 ports_description:

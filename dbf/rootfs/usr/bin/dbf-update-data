@@ -9,7 +9,7 @@ TARGET_FILE="/app/share/zugbildungsplan.json"
 
 bashio::log.info "Checking for background data updates (zugbildungsplan.json)..."
 
-if curl --silent --fail --output "${TARGET_FILE}.new" "${RESOURCE_URL}"; then
+if curl --silent --fail --connect-timeout 10 --max-time 30 --retry 3 --output "${TARGET_FILE}.new" "${RESOURCE_URL}"; then
     if [ -f "${TARGET_FILE}.new" ] && [ -s "${TARGET_FILE}.new" ]; then
         mv "${TARGET_FILE}.new" "${TARGET_FILE}"
         bashio::log.info "Successfully updated zugbildungsplan.json."
