@@ -6,4 +6,4 @@
 
 > ([Github link][autolink-references] to related issues or pull requests)
 
-[autolink-references]: https://help.github.com/articles/autolinked-references-and-urls/
+[autolink-references]: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls
