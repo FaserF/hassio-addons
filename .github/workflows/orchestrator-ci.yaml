@@ -477,9 +477,11 @@ jobs:
             BUILD_FROM=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           fi
           
-          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
-          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
-          echo "build_from=$BUILD_FROM" >> "$GITHUB_OUTPUT"
+          {
+            echo "slug=$SLUG"
+            echo "image=$IMAGE"
+            echo "build_from=$BUILD_FROM"
+          } >> "$GITHUB_OUTPUT"
 
       - name: 🏗️ Build amd64 (CI optimized)
         uses: home-assistant/builder/actions/build-image@master

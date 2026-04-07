@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gosu \
         iptables \
         fuse-overlayfs \
+        build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 2: Minimal XFCE Desktop
@@ -73,7 +74,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
         python3.13-dev \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1 \
     && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.13 - --break-system-packages \
-    && python3 -m pip install --no-cache-dir websockify numpy --break-system-packages \
+    && python3 -m pip install --no-cache-dir --ignore-installed \
+        websockify==0.11.0 \
+        --break-system-packages \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Layer 4: Browsers & Docker CLI (Debian-specific paths)

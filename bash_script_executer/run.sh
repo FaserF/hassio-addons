@@ -213,8 +213,9 @@ prepare_script() {
 	if [[ "$path" != "false" && -n "$path" ]]; then
 		if [ ! -f "$path" ]; then
 			bashio::log.error "Cannot find your script #$num at $path"
-			bashio::log.error "Exiting now..."
-			exit 1
+			bashio::log.error "Continuing without this script..."
+			echo "false"
+			return
 		fi
 		echo "$path"
 	elif [[ -n "$content" && "$content" != "null" ]]; then

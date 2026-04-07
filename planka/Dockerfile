@@ -8,14 +8,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
 
-# hadolint ignore=DL3013
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.3.0"
 ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
 
+# hadolint ignore=DL3013
 RUN \
     apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \
@@ -29,7 +28,7 @@ RUN \
         su-exec \
         openssl \
         squid \
-    && pip3 install --no-cache-dir --break-system-packages setuptools
+    && pip3 install --no-cache-dir --break-system-packages setuptools==75.8.0
 
 # Copy Planka
 WORKDIR /opt/planka

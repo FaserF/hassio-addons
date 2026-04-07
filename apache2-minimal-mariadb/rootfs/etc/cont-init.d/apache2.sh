@@ -68,6 +68,9 @@ fi
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."
 	while read -r cmd; do
+		if [[ -z "${cmd}" || "${cmd}" == "[]" ]]; then
+			continue
+		fi
 		eval "${cmd}" ||
 			bashio::exit.nok "Failed executing init command: ${cmd}"
 	done <<<"$(bashio::config 'init_commands')"
@@ -94,22 +97,32 @@ fi
 
 #Set rights to web folders and create user
 if [ -d "$DocumentRoot" ]; then
-	find "$DocumentRoot" -type d -exec chmod 771 {} +
+	target_user="www-data"
 	if [ -n "$username" ] && [ -n "$password" ] && [ "$username" != "null" ] && [ "$password" != "null" ]; then
-		if ! id "$username" &>/dev/null; then
-			adduser "$username" -G www-data -D
+		target_user="$username"
+	fi
+
+	# Optimization: Only run recursive chown/chmod if the root folder ownership/perms are wrong
+	# This avoids massive IO overhead on shared volumes (especially on Windows hosts)
+	if [ "$(stat -c %U "$DocumentRoot")" != "$target_user" ] || [ "$(stat -c %a "$DocumentRoot")" != "771" ]; then
+		echo "Updating ownership and permissions for $DocumentRoot (this may take a while)..."
+		find "$DocumentRoot" -type d -exec chmod 771 {} +
+		if [ "$target_user" != "www-data" ]; then
+			if ! id "$target_user" &>/dev/null; then
+				adduser "$target_user" -G www-data -D
+			fi
+			echo "$target_user:$password" | chpasswd
+			chown -R "$target_user":www-data "$DocumentRoot"
+		else
+			echo "No username and/or password was provided. Skipping account set up."
+			if ! grep -q "^www-data:" /etc/group; then
+				addgroup -S www-data
+			fi
+			if ! id www-data &>/dev/null; then
+				adduser -S -G www-data www-data
+			fi
+			chown -R www-data:www-data "$DocumentRoot"
 		fi
-		echo "$username:$password" | chpasswd
-		chown -R "$username":www-data "$DocumentRoot"
-	else
-		echo "No username and/or password was provided. Skipping account set up."
-		if ! grep -q "^www-data:" /etc/group; then
-			addgroup -S www-data
-		fi
-		if ! id www-data &>/dev/null; then
-			adduser -S -G www-data www-data
-		fi
-		chown -R www-data:www-data "$DocumentRoot"
 	fi
 fi
 

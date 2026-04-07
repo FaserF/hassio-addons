@@ -69,6 +69,10 @@ fi
 if bashio::config.has_value 'init_commands'; then
 	echo "Detected custom init commands. Running them now."
 	while read -r cmd; do
+		# Skip empty or '[]' placeholder (often provided by automated tests)
+		if [ -z "$cmd" ] || [ "$cmd" = "[]" ]; then
+			continue
+		fi
 		eval "${cmd}" ||
 			bashio::exit.nok "Failed executing init command: ${cmd}"
 	done <<<"$(bashio::config 'init_commands')"

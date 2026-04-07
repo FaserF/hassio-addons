@@ -40,7 +40,7 @@ $global:TestTimings = @{}
 . "$ModuleDir/lib/common.ps1"
 
 # Check and Install Dependencies
-Install-Dependencies
+Install-Dependencies -ActiveTests $Tests
 
 # Load Configuration
 $Config = Get-TestConfig "$ModuleDir/config/test-config.yaml"

@@ -83,7 +83,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 WORKDIR /var/www/html
 
 COPY --from=build --chown=nginx:nginx /var/www/html /var/www/html
-COPY ./root/ /
+COPY ./rootfs/ /
 
 # Copy data for add-on
 COPY run.sh /

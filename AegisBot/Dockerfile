@@ -84,15 +84,14 @@ RUN \
             \
             # Setup Frontend \
             mkdir -p /app/frontend && \
-            (cd frontend && \
-            npm install && \
-            sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts && \
-            sed -i "s|import.meta.env.VITE_API_URL || '/api/v1'|getApiBase()|g" src/api/client.ts && \
+            npm --prefix frontend install && \
+            sed -i "s|defineConfig({|defineConfig({ base: './',|g" frontend/vite.config.ts && \
+            sed -i "s|import.meta.env.VITE_API_URL || '/api/v1'|getApiBase()|g" frontend/src/api/client.ts && \
             # Verify sed modifications were applied \
-            grep -q "base: './" vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
-            grep -q "getApiBase()" src/api/client.ts || { echo "Failed to patch client.ts"; exit 1; } && \
-            npm run build && \
-            cp -r dist/* /app/frontend/) && \
+            grep -q "base: './" frontend/vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
+            grep -q "getApiBase()" frontend/src/api/client.ts || { echo "Failed to patch client.ts"; exit 1; } && \
+            npm --prefix frontend run build && \
+            cp -r frontend/dist/* /app/frontend/ && \
             \
             # Cleanup \
             rm -rf /tmp/build && \

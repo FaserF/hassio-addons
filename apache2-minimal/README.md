@@ -17,18 +17,18 @@ A lightweight, security-focused version of the Apache HTTP Server. This addon pr
 
 ### Apache2 Variant Comparison
 
-| Feature | Apache2 (Full) | Apache2 Minimal | Apache2 Minimal + MariaDB |
-| :--- | :--- | :--- | :--- |
-| **PHP Support** | ✅ Yes (Full) | ❌ No | ✅ Yes (Basic) |
-| **MariaDB Client** | ✅ Yes | ❌ No | ✅ Yes |
-| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |
-| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |
+| Feature            | Apache2 (Full)      | Apache2 Minimal | Apache2 Minimal + MariaDB |
+| :----------------- | :------------------ | :-------------- | :------------------------ |
+| **PHP Support**    | ✅ Yes (Full)       | ❌ No           | ✅ Yes (Basic)            |
+| **MariaDB Client** | ✅ Yes              | ❌ No           | ✅ Yes                    |
+| **Footprint**      | 🖥️ Large            | ⚡ Smallest     | ⚖️ Medium                 |
+| **Best For**       | WordPress, Full CMS | Static Sites    | Simple PHP Apps           |
 
 ---
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant. 
+This addon supports the **Webserver App** integration for Home Assistant.
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).

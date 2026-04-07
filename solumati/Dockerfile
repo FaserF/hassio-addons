@@ -60,7 +60,7 @@ WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
 RUN cp /tmp/src/frontend/package.json . && \
     (cp /tmp/src/frontend/package-lock.json* . || true) && \
-    npm install && \
+    npm install --legacy-peer-deps && \
     cp -r /tmp/src/frontend/. . && \
     if [ -f "vite.config.ts" ]; then \
         sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts; \

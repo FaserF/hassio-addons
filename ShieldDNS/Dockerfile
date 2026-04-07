@@ -1,4 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.1
+ARG TARGETARCH
 # hadolint ignore=DL3006
 
 # --- STAGE 1: CORE DNS BINARY ---

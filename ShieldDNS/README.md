@@ -78,8 +78,8 @@ Since you are exposing a DNS server to the public, you should secure it:
 
 ## 💡 Concepts & Protocols
 
-| Protocol | Port  | Port (TCP)                 | Description                             | Support |
-| :------- | :---- | :------------------------- | :-------------------------------------- | :------ |
+| Protocol | Port  | Description                | Support                                 |
+| :------- | :---- | :------------------------- | :-------------------------------------- |
 | **DoT**  | `853` | Dedicated secure DNS port. | **Native** (Android Private DNS).       |
 | **DoH**  | `443` | Standard HTTPS web port.   | **Native** (Windows 11, iOS, Browsers). |
 

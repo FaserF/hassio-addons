@@ -53,18 +53,18 @@ COPY --from=backend /app/pyproject.toml /app/pyproject.toml
 # Installing directly from the dependencies listed in pyproject.toml
 # hadolint ignore=DL3013
 RUN pip3 install --no-cache-dir --break-system-packages \
-    fastapi \
-    "uvicorn[standard]" \
-    httpx \
-    "pydantic[email]" \
-    pydantic-settings \
-    sqlalchemy \
-    alembic \
-    asyncpg \
-    python-multipart \
-    "python-jose[cryptography]" \
-    "passlib[bcrypt]" \
-    structlog
+    fastapi==0.115.8 \
+    "uvicorn[standard]==0.34.0" \
+    httpx==0.28.1 \
+    "pydantic[email]==2.10.6" \
+    pydantic-settings==2.7.1 \
+    sqlalchemy==2.0.37 \
+    alembic==1.14.1 \
+    asyncpg==0.30.0 \
+    python-multipart==0.0.20 \
+    "python-jose[cryptography]==3.3.0" \
+    "passlib[bcrypt]==1.7.4" \
+    structlog==25.1.0
 
 # Copy root filesystem
 COPY rootfs /

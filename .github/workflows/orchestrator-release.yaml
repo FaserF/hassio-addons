@@ -1082,14 +1082,16 @@ jobs:
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
 
           # Detected architectures
-          echo "ARCHS=$ARCHS" >> "$GITHUB_ENV"
-          # Convert space-separated ARCHS to JSON array for publish-multi-arch-manifest
-          # shellcheck disable=SC2001
-          ARCH_JSON=$(echo "$ARCHS" | jq -R -c 'split(" ")')
-          echo "ARCH_JSON=$ARCH_JSON" >> "$GITHUB_ENV"
-          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
-          echo "OWNER=$OWNER" >> "$GITHUB_ENV"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          {
+            echo "ARCHS=$ARCHS"
+            # Convert space-separated ARCHS to JSON array for publish-multi-arch-manifest
+            # shellcheck disable=SC2001
+            ARCH_JSON=$(echo "$ARCHS" | jq -R -c 'split(" ")')
+            echo "ARCH_JSON=$ARCH_JSON"
+            echo "IMAGE_NAME=$IMAGE_NAME"
+            echo "OWNER=$OWNER"
+            echo "VERSION=$VERSION"
+          } >> "$GITHUB_ENV"
           
           # Extract build_from from build.yaml (legacy format)
           BUILD_FROM_AMD64=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
@@ -1102,8 +1104,10 @@ jobs:
             BUILD_FROM_AARCH64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
           fi
           
-          echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64" >> "$GITHUB_ENV"
-          echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64" >> "$GITHUB_ENV"
+          {
+            echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64"
+            echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64"
+          } >> "$GITHUB_ENV"
 
       - name: 🏗️ Build amd64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
