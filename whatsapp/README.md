@@ -61,7 +61,7 @@ ui_auth_password: ''
 webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
-welcome_message_enabled: true
+welcome_message_enabled: false
 ```
 
 ---
