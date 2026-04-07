@@ -5,7 +5,7 @@ set -e
 
 
 # Get App Version
-App_version=$(bashio::app.version)
+App_version=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null) || App_version="unknown"
 
 # Run App
 cd /app

@@ -10,8 +10,8 @@
 # ============================================================================
 _show_app_banner() {
 	local VERSION
-	if ! VERSION=$(bashio::app.version 2>/dev/null); then
-		if ! VERSION=$(bashio::addon.version 2>/dev/null); then
+	if ! VERSION=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null); then
+		if ! VERSION=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null); then
 			VERSION="unknown"
 		fi
 	fi

@@ -9,7 +9,7 @@
 _show_startup_banner() {
 	# shellcheck disable=SC2034,SC2155
 	local VERSION
-	VERSION="$(bashio::app.version)"
+	VERSION="$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null))"
 	local NAME="xqrepack (Unsupported)"
 	local SLUG="xqrepack"
 	local UNSUPPORTED="true"

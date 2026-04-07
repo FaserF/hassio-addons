@@ -5,7 +5,7 @@
 
 bashio::app.print_banner() {
 	local App_version
-	App_version=$(bashio::addon.version)
+	App_version=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null))
 
 	bashio::log.blue " \n"
 	bashio::log.blue "-----------------------------------------------------------"

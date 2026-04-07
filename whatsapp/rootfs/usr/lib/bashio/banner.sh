@@ -5,7 +5,7 @@
 
 bashio::app.print_banner() {
 	local app_version
-	app_version=$(bashio::addon.version)
+	app_version=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null))
 
 	# Load Baileys version from environment file
 	if [ -f /etc/environment ]; then

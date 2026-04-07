@@ -5,7 +5,7 @@
 
 bashio::app.print_banner() {
 	local App_version
-	App_version=$(bashio::app.version)
+	App_version=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null) || App_version="unknown"
 
 	# Load Wiki.js version from environment file
 	if [ -f /etc/environment ]; then

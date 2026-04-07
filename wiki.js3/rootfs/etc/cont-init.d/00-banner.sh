@@ -6,7 +6,7 @@
 # ============================================================================
 _show_startup_banner() {
 	local VERSION
-	VERSION=$(bashio::app.version)
+	VERSION=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null) || VERSION="unknown"
 	local SLUG="wiki.js3"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"

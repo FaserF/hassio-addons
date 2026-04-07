@@ -9,7 +9,7 @@
 _show_startup_banner() {
 	# shellcheck disable=SC2034,SC2155
 	local VERSION
-	if ! VERSION=$(bashio::app.version 2>/dev/null); then
+	if ! VERSION=$(bashio::app.version 2>/dev/null || bashio::addon.version 2>/dev/null); then
 		VERSION="unknown"
 	fi
 	[ -z "$VERSION" ] && VERSION="unknown"

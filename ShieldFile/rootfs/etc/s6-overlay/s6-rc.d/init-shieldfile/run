@@ -110,8 +110,8 @@ fi
 # ------------------------------------------------------------------------------
 
 # Get Ingress Entry
-if bashio::var.has_value "$(bashio::addon.ingress_entry)"; then
-	INGRESS_ENTRY=$(bashio::addon.ingress_entry)
+if bashio::var.has_value "$(bashio::app.ingress_entry 2>/dev/null || bashio::addon.ingress_entry 2>/dev/null)"; then
+	INGRESS_ENTRY=$(bashio::app.ingress_entry 2>/dev/null || bashio::addon.ingress_entry 2>/dev/null)
 else
 	INGRESS_ENTRY="/"
 fi
