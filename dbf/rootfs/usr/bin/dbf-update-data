@@ -6,8 +6,16 @@
 
 RESOURCE_URL="https://lib.finalrewind.org/dbdb/db_zugbildung_v1.json"
 TARGET_FILE="/app/share/zugbildungsplan.json"
+LOCKFILE="/tmp/dbf-update-data.lock"
 
 bashio::log.info "Checking for background data updates (zugbildungsplan.json)..."
+
+# Use flock to serialize concurrent invocations (startup + daily cron)
+exec 200>"${LOCKFILE}"
+if ! flock -n 200; then
+    bashio::log.info "Another dbf-update-data instance is running. Skipping."
+    exit 0
+fi
 
 if curl --silent --fail --connect-timeout 10 --max-time 30 --retry 3 --output "${TARGET_FILE}.new" "${RESOURCE_URL}"; then
     if [ -f "${TARGET_FILE}.new" ] && [ -s "${TARGET_FILE}.new" ]; then
@@ -15,7 +23,9 @@ if curl --silent --fail --connect-timeout 10 --max-time 30 --retry 3 --output "$
         bashio::log.info "Successfully updated zugbildungsplan.json."
     else
         bashio::log.warning "Downloaded file is empty or missing, skipping update."
+        rm -f "${TARGET_FILE}.new"
     fi
 else
     bashio::log.warning "Failed to download update from ${RESOURCE_URL}. Will try again later."
+    rm -f "${TARGET_FILE}.new"
 fi

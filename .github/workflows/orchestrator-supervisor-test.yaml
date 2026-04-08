@@ -195,6 +195,7 @@ jobs:
           mkdir -p /tmp/ha-data/share
           mkdir -p /tmp/ha-data/media
           mkdir -p /tmp/ha-data/ssl
+          mkdir -p /tmp/ha-data/docker
 
           # Generate dummy SSL certs for universal support
           openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
@@ -269,8 +270,8 @@ jobs:
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
-            -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
-            -v ha-docker-data:/var/lib/docker \
+            --mount type=bind,source=/tmp/ha-data/ssl,target=/mnt/supervisor/ssl \
+            --mount type=bind,source=/tmp/ha-data/docker,target=/var/lib/docker \
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
@@ -306,9 +307,9 @@ jobs:
             exit 1
           fi
 
-          # Start Supervisor in background with pseudo-TTY via script
-          # Using script -qfc (without -e) to provide TTY for stty calls without exit-on-error
-          docker exec -d ha-supervisor-test script -qfc "supervisor_run" /tmp/supervisor.log
+          # Start Supervisor in background with output redirected to log file
+          # Using nohup+bash instead of 'script' because 'script' killed the container
+          docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
@@ -799,7 +800,6 @@ jobs:
           echo "Stopping and removing containers..."
           docker stop ha-supervisor-test 2>/dev/null || true
           docker rm -f ha-supervisor-test 2>/dev/null || true
-          docker volume rm ha-docker-data 2>/dev/null || true
           docker network rm ha-test-net 2>/dev/null || true
           sudo rm -rf /tmp/ha-data
 

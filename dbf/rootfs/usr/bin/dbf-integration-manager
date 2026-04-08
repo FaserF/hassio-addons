@@ -41,53 +41,69 @@ install_integration() {
 
     rm -rf "/tmp/ha-db_infoscreen_install"
 
-    if git clone --depth 1 "${CLONE_ARGS[@]}" "${REPO_URL}" "/tmp/ha-db_infoscreen_install" > /dev/null 2>&1; then
-        if [ -d "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}" ]; then
-            if [ -d "$INTEGRATION_DIR" ]; then
-                 bashio::log.info "Removing old integration version..."
-                 rm -rf "$INTEGRATION_DIR"
-            fi
+    # Disable interactive git prompts and bound clone duration
+    export GIT_TERMINAL_PROMPT=0
+    if ! timeout 60 git clone --depth 1 "${CLONE_ARGS[@]}" "${REPO_URL}" "/tmp/ha-db_infoscreen_install" > /dev/null 2>&1; then
+        bashio::log.error "❌ Failed to clone repository (timed out or network error)."
+        rm -rf "/tmp/ha-db_infoscreen_install"
+        return 1
+    fi
 
-            mkdir -p "${HA_CONFIG_ROOT}/custom_components"
-            cp -rf "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}" "${HA_CONFIG_ROOT}/custom_components/"
+    if [ -d "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}" ]; then
+        # Stage into a temp directory for atomic swap
+        STAGING_DIR=$(mktemp -d "${HA_CONFIG_ROOT}/custom_components/.${INTEGRATION_SLUG}.XXXXXX")
+        cp -rf "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}/." "${STAGING_DIR}/"
 
-            if [ -d "$INTEGRATION_DIR" ]; then
-                bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
+        if [ $? -ne 0 ] || [ ! -f "${STAGING_DIR}/manifest.json" ]; then
+            bashio::log.error "❌ Copy to staging failed. Aborting to preserve existing installation."
+            rm -rf "${STAGING_DIR}"
+            rm -rf "/tmp/ha-db_infoscreen_install"
+            return 1
+        fi
 
-                # Trigger persistent notification in HA to restart
-                if [ "$IS_UPDATE" = "true" ]; then
-                    MSG="The DB Infoscreen integration has been updated to ${TAG_NAME}. Please restart Home Assistant."
-                    TITLE="DB Infoscreen Integration Updated"
-                else
-                    MSG="The DB Infoscreen integration has been installed. Please restart Home Assistant."
-                    TITLE="DB Infoscreen Integration Installed"
-                fi
-                bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
-                
-                PAYLOAD=$(jq -n \
-                    --arg title "$TITLE" \
-                    --arg msg "$MSG" \
-                    '{title: $title, message: $msg, notification_id: "dbf_restart_required"}')
+        # Atomic swap: remove old, move staged into place
+        if [ -d "$INTEGRATION_DIR" ]; then
+            bashio::log.info "Removing old integration version..."
+            rm -rf "$INTEGRATION_DIR"
+        fi
 
-                curl -s -X POST \
-                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                    -H "Content-Type: application/json" \
-                    -d "$PAYLOAD" \
-                    http://supervisor/core/api/services/persistent_notification/create > /dev/null
+        mkdir -p "${HA_CONFIG_ROOT}/custom_components"
+        mv "${STAGING_DIR}" "${INTEGRATION_DIR}"
+
+        if [ -d "$INTEGRATION_DIR" ]; then
+            bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
+
+            # Trigger persistent notification in HA to restart
+            if [ "$IS_UPDATE" = "true" ]; then
+                MSG="The DB Infoscreen integration has been updated to ${TAG_NAME}. Please restart Home Assistant."
+                TITLE="DB Infoscreen Integration Updated"
             else
-                bashio::log.error "❌ Copy failed: $INTEGRATION_DIR does not exist."
+                MSG="The DB Infoscreen integration has been installed. Please restart Home Assistant."
+                TITLE="DB Infoscreen Integration Installed"
             fi
+            bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
+            
+            PAYLOAD=$(jq -n \
+                --arg title "$TITLE" \
+                --arg msg "$MSG" \
+                '{title: $title, message: $msg, notification_id: "dbf_restart_required"}')
+
+            curl -s --connect-timeout 5 --max-time 10 -X POST \
+                -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "$PAYLOAD" \
+                http://supervisor/core/api/services/persistent_notification/create > /dev/null || true
         else
-            bashio::log.error "❌ Could not find 'custom_components/${INTEGRATION_SLUG}' in the repository."
+            bashio::log.error "❌ Atomic swap failed: $INTEGRATION_DIR does not exist."
         fi
     else
-        bashio::log.error "❌ Failed to clone repository."
+        bashio::log.error "❌ Could not find 'custom_components/${INTEGRATION_SLUG}' in the repository."
     fi
     rm -rf "/tmp/ha-db_infoscreen_install"
 }
 
 # Determine Channel (Edge vs Stable)
-ADDON_INFO=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
+ADDON_INFO=$(curl -s --connect-timeout 5 --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
 SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
@@ -105,7 +121,7 @@ else
 fi
 
 bashio::log.info "Fetching release information from GitHub..."
-RELEASES_JSON=$(curl -s -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-db_infoscreen/releases")
+RELEASES_JSON=$(curl -s --connect-timeout 10 --max-time 30 -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-db_infoscreen/releases")
 
 if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
     bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
@@ -117,15 +133,12 @@ if [ "$RELEASES_JSON" != "[]" ]; then
     if [ "$CHANNEL" == "edge" ]; then
         TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
     else
+        # Stable channel: only consider non-prerelease releases
         TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
     fi
 
     if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
-        if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
-            fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
-            bashio::log.info "No stable release found, falling back to latest tag: $fallback"
-            TARGET_TAG="$fallback"
-        fi
+        bashio::log.info "No stable (non-prerelease) release found. Skipping install/update on stable channel."
     fi
 fi
 
@@ -134,9 +147,11 @@ if [ ! -d "$INTEGRATION_DIR" ]; then
     if [ -n "$TARGET_TAG" ]; then
         bashio::log.info "Target version (Initial Install): $TARGET_TAG"
         install_integration "$TARGET_TAG" "false"
-    else
-        bashio::log.info "No releases found. Installing from Main branch..."
+    elif [ "$CHANNEL" == "edge" ]; then
+        bashio::log.info "No releases found. Installing from Main branch (edge channel)..."
         install_integration "" "false"
+    else
+        bashio::log.info "No stable release available. Skipping initial install on stable channel."
     fi
 else
     bashio::log.info "✅ Integration found at $INTEGRATION_DIR"
@@ -174,6 +189,12 @@ else
         fi
     else
         bashio::log.warning "Manifest not found. Cannot check version. Reinstalling..."
-        install_integration "$TARGET_TAG" "true"
+        if [ -n "$TARGET_TAG" ]; then
+            install_integration "$TARGET_TAG" "true"
+        elif [ "$CHANNEL" == "edge" ]; then
+            install_integration "" "true"
+        else
+            bashio::log.info "No stable release available. Skipping reinstall on stable channel."
+        fi
     fi
 fi
