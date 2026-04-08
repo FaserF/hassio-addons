@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.4.9 (2026-04-08)
+
+### 🐛 Bug Fixes
+- robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
+- resolve link validation 404s and typos ([`5c06b173`](https://github.com/FaserF/hassio-addons/commit/5c06b17353ff711a1c9f526ac51f4f8631c76007))
+
+### 📦 Dependencies
+- ⬆️ Update dependency lru-cache to v11.3.3 [skip-tests] ([`9c97264c`](https://github.com/FaserF/hassio-addons/commit/9c97264c51586a3ec10b7f5c8eaa06e61091e8bd))
+- ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
+- ⬆️ Update dependency lru-cache to v11.3.2 [skip-tests] (#733) [skip-tests] ([`b29111aa`](https://github.com/FaserF/hassio-addons/commit/b29111aa106a1205516fcc847345698a95275adf))
+- ⬆️ Update dependency uvicorn to v0.44.0 [skip-tests] (#732) [skip-tests] ([`c4061b6b`](https://github.com/FaserF/hassio-addons/commit/c4061b6b8887c58ace7576fb44217593df7041a9))
+- ⬆️ Update dependency lru-cache to v11.3.0 [skip-tests] (#730) [skip-tests] ([`c5a36f98`](https://github.com/FaserF/hassio-addons/commit/c5a36f98bd1fc1cba0cb63f4c4ce0393e8578215))
+- ⬆️ Update dependency eslint to v10.2.0 [skip-tests] (#722) [skip-tests] ([`8c69ce7a`](https://github.com/FaserF/hassio-addons/commit/8c69ce7a85411ce23a2a7359fe09dacd939a0a7a))
+- ⬆️ Update dependency uvicorn to v0.43.0 [skip-tests] (#723) [skip-tests] ([`2676dece`](https://github.com/FaserF/hassio-addons/commit/2676dece0d56134b1f7a70f969c0550830faf7bc))
+- ⬆️ Update dependency fastapi to v0.135.3 [skip-tests] (#717) [skip-tests] ([`1bb75581`](https://github.com/FaserF/hassio-addons/commit/1bb75581d9dfe09c2bc2c5f003b5d365e3050ec6))
+- ⬆️ Update dependency express-rate-limit to v8.3.2 [skip-tests] (#712) [skip-tests] ([`a70fff15`](https://github.com/FaserF/hassio-addons/commit/a70fff15a48e322085d50c80297f7be19123fe69))
+- build(deps): bump path-to-regexp from 8.3.0 to 8.4.0 in /whatsapp/app in the npm_and_yarn group across 1 directory (#709) [skip-tests] ([`70bd10f8`](https://github.com/FaserF/hassio-addons/commit/70bd10f8ec3db52812980092ffb60c38f95f1df2))
+- ⬆️ Update dependency fastapi to v0.135.2 [skip-tests] (#699) [skip-tests] ([`37f1f1f9`](https://github.com/FaserF/hassio-addons/commit/37f1f1f9c858d288e8b88d86d5d39a0f97639f39))
+- ⬆️ Update dependency eslint to v10.1.0 [skip-tests] (#694) [skip-tests] ([`c0bd254b`](https://github.com/FaserF/hassio-addons/commit/c0bd254bf7eb20489c987df3d311c685f37427f4))
+- update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
+- build(deps-dev): bump flatted from 3.3.3 to 3.4.2 in /whatsapp/app in the npm_and_yarn group across 1 directory (#693) [skip-tests] ([`6d1bee1d`](https://github.com/FaserF/hassio-addons/commit/6d1bee1db6bec19c865b169c0f8b7141953de9eb))
+
+### 🚀 Other
+- remove n8n ([`5527a8ef`](https://github.com/FaserF/hassio-addons/commit/5527a8efd422443dbe3ea0bd2583a5a08605ae94))
+- app version injection improvements ([`63580a20`](https://github.com/FaserF/hassio-addons/commit/63580a201a16724ac7712b1ed52c4f195ab05fe4))
+- remove default config values ([`74346eb7`](https://github.com/FaserF/hassio-addons/commit/74346eb75c99ea420ce8494ad59512c1507cb24f))
+- Add stage tags ([`75528e61`](https://github.com/FaserF/hassio-addons/commit/75528e6193a0ce55537d2f89fe6069a703f7da88))
+- more small linter improvements ([`c1c2a452`](https://github.com/FaserF/hassio-addons/commit/c1c2a4528971f3fdc96892b37f5f6af6ae246c43))
+- linter fixes & improved default app banner ([`19bc94d9`](https://github.com/FaserF/hassio-addons/commit/19bc94d9e306bb9f425a2a96bbb94dc47809cead))
+
+
 ## 1.4.8 (2026-03-19)
 
 ### ✨ Features
