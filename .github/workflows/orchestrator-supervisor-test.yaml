@@ -279,9 +279,31 @@ jobs:
 
           echo "Container started, waiting for initialization..."
 
-          # Prepare environment and start Supervisor via script to provide TTY
-          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true"
-          docker exec -d ha-supervisor-test script -efq -c "supervisor_run" /tmp/supervisor.log
+          # Verify container is actually running
+          CONTAINER_STATUS="$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null || echo 'not found')"
+          if [ "$CONTAINER_STATUS" != "running" ]; then
+            echo "❌ Container failed to start (Status: $CONTAINER_STATUS)"
+            docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State, Config: {Entrypoint, Cmd}}' || true
+            docker logs ha-supervisor-test 2>&1 || true
+            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "Container running (PID $(docker inspect -f '{{.State.Pid}}' ha-supervisor-test))"
+
+          # Prepare environment: remove debugpy to avoid port conflicts
+          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
+
+          # Verify supervisor_run is available
+          if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
+            echo "❌ supervisor_run not found in container"
+            docker exec ha-supervisor-test ls -la /usr/bin/supervisor* /usr/local/bin/supervisor* 2>&1 || echo "No supervisor binaries found"
+            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          # Start Supervisor in background with output redirected to log file
+          # Using nohup+bash instead of 'script -efq' for broader compatibility
+          docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
@@ -306,7 +328,19 @@ jobs:
             # Fail fast if container crashed
             if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
               echo "Container stopped unexpectedly!"
-              docker logs ha-supervisor-test
+              echo "::group::Container Inspect (Exit Info)"
+              docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State}' || true
+              echo "::endgroup::"
+              echo "::group::Supervisor Logs (via docker cp)"
+              docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null || true
+              cat /tmp/supervisor-crash.log 2>/dev/null || echo "No supervisor log recovered"
+              echo "::endgroup::"
+              echo "::group::Docker Logs (stdout/stderr)"
+              docker logs ha-supervisor-test 2>&1 || true
+              echo "::endgroup::"
+              echo "::group::Host dmesg (OOM check)"
+              sudo dmesg | tail -30 2>/dev/null || true
+              echo "::endgroup::"
               break
             fi
 
@@ -316,11 +350,13 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
-            echo "::group::Internal Supervisor Logs (Full)"
-            docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
+            echo "::group::Internal Supervisor Logs"
+            docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null || \
+              (docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null && cat /tmp/supervisor-crash.log) || \
+              echo "No internal logs found"
             echo "::endgroup::"
             echo "::group::Docker Logs"
-            docker logs ha-supervisor-test
+            docker logs ha-supervisor-test 2>&1 || true
             echo "::endgroup::"
             echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
             exit 1
