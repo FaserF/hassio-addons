@@ -195,7 +195,6 @@ jobs:
           mkdir -p /tmp/ha-data/share
           mkdir -p /tmp/ha-data/media
           mkdir -p /tmp/ha-data/ssl
-          mkdir -p /tmp/ha-data/docker
 
           # Generate dummy SSL certs for universal support
           openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
@@ -261,7 +260,7 @@ jobs:
 
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
           # Using DinD (Docker-in-Docker) model - removed host socket linkage
-          
+
           docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
@@ -272,7 +271,8 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             --mount type=bind,source=/tmp/ha-data/ssl,target=/mnt/supervisor/ssl \
-            --mount type=bind,source=/tmp/ha-data/docker,target=/var/lib/docker \
+            -v ha-supervisor-storage:/var/lib/docker \
+            -v /home/runner/.docker/config.json:/root/.docker/config.json:ro \
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
@@ -299,7 +299,7 @@ jobs:
           # Verify supervisor_run is available
           if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
             echo "❌ supervisor_run not found in container"
-            docker exec ha-supervisor-test ls -la /usr/bin/supervisor* /usr/local/bin/supervisor* 2>&1 || echo "No supervisor binaries found"
+            docker exec ha-supervisor-test sh -lc 'ls -la /usr/bin/supervisor* /usr/local/bin/supervisor* 2>&1 || echo "No supervisor binaries found"'
             echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi

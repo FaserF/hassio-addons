@@ -4,9 +4,9 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 # Build arguments
-ARG BUILD_DATE
-ARG BUILD_REF
-ARG BUILD_VERSION
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
+ARG BUILD_REF="main"
+ARG BUILD_VERSION="dev"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

@@ -12,19 +12,19 @@ The software utilizes the IRIS (Interaktives Reise-Informations-System) backend 
 
 To install this app, you need to add this repository to your Home Assistant Supervisor.
 
-1.  Navigate to the **Add-on Store** in your Home Assistant instance.
-2.  Search for **DBF** and click on the app card.
-3.  Click the **Install** button.
-4.  Once installed, you can find the app in the **Apps** section.
+1. Navigate to the **Add-on Store** in your Home Assistant instance.
+2. Search for **DBF** and click on the app card.
+3. Click the **Install** button.
+4. Once installed, you can find the app in the **Apps** section.
 
 ## 🧩 Automatic Integration Management
 
 This add-on is equipped with a self-managed integration system. When the add-on starts:
 
-1.  **Detection**: It scans your Home Assistant `custom_components` directory for the `db_infoscreen` integration.
-2.  **Version Check**: It queries the GitHub API for the latest release of `ha-db_infoscreen` and compares it with your installed version.
-3.  **Synchronization**: If the integration is missing or outdated, it automatically downloads the latest code from GitHub and installs/updates it.
-4.  **Notification**: If action is taken, a persistent notification will appear in your Home Assistant dashboard, informing you that a restart is required.
+1. **Detection**: It scans your Home Assistant `custom_components` directory for the `db_infoscreen` integration.
+2. **Version Check**: It queries the GitHub API for the latest release of `ha-db_infoscreen` and compares it with your installed version.
+3. **Synchronization**: If the integration is missing or outdated, it automatically downloads the latest code from GitHub and installs/updates it.
+4. **Notification**: If action is taken, a persistent notification will appear in your Home Assistant dashboard, informing you that a restart is required.
 
 This feature ensures that you always have the correct version of the integration to work with the add-on's API.
 

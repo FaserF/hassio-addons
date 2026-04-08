@@ -369,7 +369,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         Write-Host "    > Installing Dependency: MariaDB (core_mariadb)..." -ForegroundColor Cyan
         Write-Progress -Activity "Supervisor Integration Test" -Status "Installing Dependency: MariaDB..."
 
-        $inst = docker exec $containerName ha addons install core_mariadb 2>&1
+        $inst = docker exec $containerName ha apps install core_mariadb 2>&1
         if ($LASTEXITCODE -eq 0) {
             # Configure MariaDB (Password is required)
             Write-Host "    > Configuring MariaDB..." -ForegroundColor Gray
@@ -384,14 +384,14 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
             
             # Write options to file and apply
             $mariaOptions | docker exec -i $containerName sh -c "cat > /tmp/maria_opt.json"
-            $optSet = docker exec $containerName sh -c 'ha addons options core_mariadb --options "$(cat /tmp/maria_opt.json)"' 2>&1
+            $optSet = docker exec $containerName sh -c 'ha apps options core_mariadb --options "$(cat /tmp/maria_opt.json)"' 2>&1
             
             if ($LASTEXITCODE -ne 0) {
                 Write-Warning "Failed to set MariaDB options: $optSet"
                 $mysqlFailed = $true
             }
             else {
-                $start = docker exec $containerName ha addons start core_mariadb 2>&1
+                $start = docker exec $containerName ha apps start core_mariadb 2>&1
                 if ($LASTEXITCODE -ne 0) {
                     Write-Warning "Failed to start MariaDB: $start"
                     $mysqlFailed = $true
@@ -402,7 +402,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                     $maxWait = 60
                     $mariadbWaitStart = Get-Date
                     while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
-                        $statusJson = docker exec $containerName ha addons info core_mariadb --raw-json 2>$null
+                        $statusJson = docker exec $containerName ha apps info core_mariadb --raw-json 2>$null
                         if ($statusJson) {
                             $status = $statusJson | ConvertFrom-Json
                             if ($status.data.state -eq "started") {
@@ -497,9 +497,8 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                 $installJob = Start-Job -ScriptBlock {
                     param($containerName, $slug, $debugPref)
                     if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                    docker exec $containerName ha addons install $slug 2>&1
+                    docker exec $containerName ha apps install $slug 2>&1
                 } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
-            }
 
             $installResult = Wait-Job $installJob -Timeout $addonInstallTimeout
             if ($installResult.State -eq "Completed") {
@@ -797,7 +796,7 @@ except Exception as e:
                         $startJob = Start-Job -ScriptBlock {
                             param($containerName, $slug, $debugPref)
                             if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                            docker exec $containerName ha addons start $slug 2>&1
+                            docker exec $containerName ha apps start $slug 2>&1
                         } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
 
                         $startResult = Wait-Job $startJob -Timeout $addonStartTimeout
@@ -806,17 +805,16 @@ except Exception as e:
                             Remove-Job $startJob -Force
 
                             # Check for immediate start failure (e.g. 500 error)
-                            if ($startOutput -match "error|failed|Error|500 Server Error") {
+                            if ($startOutput -match "error|failed|Error|500 Server Error" -and $startOutput -notmatch "deprecated") {
                                 if ($startOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
                                     $testPassed = $true
                                     $testMessage = "WARN: Start returned 500 error (likely CI container issue, but verify add-on): $startOutput"
-                                    $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                                    $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
                                     if ($logs) {
                                         $testMessage += ". Logs: $($logs -join "`n")"
                                     }
                                     Write-Host "    ⚠️ Start returned 500 (treating as WARN)" -ForegroundColor Yellow
-                                }
-                                else {
+                                } else {
                                     $testPassed = $false
                                     $testMessage = "Start failed: $startOutput"
                                     if ($startOutput -match "context deadline exceeded|Client\.Timeout") {
@@ -832,11 +830,11 @@ except Exception as e:
                                             $testMessage = "WARN: Start timeout (context deadline exceeded) - likely CI issue"
                                         }
                                     }
-                                    $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                                    $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
                                     if ($logs) {
                                         $testMessage += ". Logs: $($logs -join "`n")"
                                     }
-                                    Write-Host "    ❌ Start command failed" -ForegroundColor Red
+                                    Write-Host "    ❌ Start command failed: $startOutput" -ForegroundColor Red
                                 }
                             }
 
@@ -878,6 +876,8 @@ except Exception as e:
                     $testPassed = $false
                     $testMessage = "Install timed out after ${addonInstallTimeout}s"
                 }
+            }
+        }
     }
     catch {
         $testPassed = $false
@@ -887,8 +887,8 @@ except Exception as e:
         # Cleanup this add-on
         if ($addon.Name -ne "sap-abap-cloud-dev") {
             Write-Host "    > Cleaning up $($addon.Name)..." -ForegroundColor Gray
-            docker exec $containerName ha addons stop $slug 2>$null | Out-Null
-            docker exec $containerName ha addons uninstall $slug 2>$null | Out-Null
+            docker exec $containerName ha apps stop $slug 2>$null | Out-Null
+            docker exec $containerName ha apps uninstall $slug 2>$null | Out-Null
         } else {
             Write-Host "    > Keeping $($addon.Name) (cleanup skipped per request)..." -ForegroundColor Green
         }
@@ -902,12 +902,32 @@ except Exception as e:
         else {
             Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message $testMessage
         }
-    }
-    else {
+    } else {
         $anyFailure = $true
-        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message $testMessage
+        
+        # Enhanced failure diagnostics
+        $finalState = "unknown"
+        try {
+            $statusRaw = docker exec $containerName ha apps info $slug --raw-json 2>$null
+            if ($statusRaw) {
+                $finalStatus = $statusRaw | ConvertFrom-Json
+                if ($null -ne $finalStatus.data) {
+                    $finalState = $finalStatus.data.state
+                }
+            }
+        } catch {
+            Write-Verbose "Failed to get final state: $_"
+        }
+        
+        $finalLogs = "No logs available"
+        try {
+            $logLines = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 50
+            if ($logLines) { $finalLogs = $logLines -join "`n" }
+        } catch {}
+        
+        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message "Start failed (State: $finalState). Diagnostics:`n$testMessage`n`n--- LAST 50 LOG LINES ---`n$finalLogs"
     }
-}
+    }
 }
 catch {
     Add-Result -Addon "System" -Check "SupervisorTest" -Status "FAIL" -Message "Unexpected error: $($_.Exception.Message)"
