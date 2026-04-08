@@ -259,6 +259,7 @@ jobs:
           mkdir -p /tmp/ha-data/media
 
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
+          # Docker volume for /var/lib/docker is required for DinD (supervisor_run starts its own Docker daemon)
           docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
@@ -269,6 +270,7 @@ jobs:
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
             -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
+            -v ha-docker-data:/var/lib/docker \
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
@@ -293,6 +295,9 @@ jobs:
           # Prepare environment: remove debugpy to avoid port conflicts
           docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
 
+          # Ensure /var/lib/docker exists for DinD (belt-and-suspenders with volume mount)
+          docker exec ha-supervisor-test mkdir -p /var/lib/docker
+
           # Verify supervisor_run is available
           if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
             echo "❌ supervisor_run not found in container"
@@ -301,9 +306,9 @@ jobs:
             exit 1
           fi
 
-          # Start Supervisor in background with output redirected to log file
-          # Using nohup+bash instead of 'script -efq' for broader compatibility
-          docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
+          # Start Supervisor in background with pseudo-TTY via script
+          # Using script -qfc (without -e) to provide TTY for stty calls without exit-on-error
+          docker exec -d ha-supervisor-test script -qfc "supervisor_run" /tmp/supervisor.log
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
@@ -794,6 +799,7 @@ jobs:
           echo "Stopping and removing containers..."
           docker stop ha-supervisor-test 2>/dev/null || true
           docker rm -f ha-supervisor-test 2>/dev/null || true
+          docker volume rm ha-docker-data 2>/dev/null || true
           docker network rm ha-test-net 2>/dev/null || true
           sudo rm -rf /tmp/ha-data
 
