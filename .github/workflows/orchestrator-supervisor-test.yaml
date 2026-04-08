@@ -260,7 +260,8 @@ jobs:
           mkdir -p /tmp/ha-data/media
 
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
-          # Docker volume for /var/lib/docker is required for DinD (supervisor_run starts its own Docker daemon)
+          # Using DinD (Docker-in-Docker) model - removed host socket linkage
+          
           docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
@@ -276,7 +277,6 @@ jobs:
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
             -e SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN" \
-            -v /var/run/docker.sock:/var/run/docker.sock \
             "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
@@ -295,9 +295,6 @@ jobs:
 
           # Prepare environment: remove debugpy to avoid port conflicts
           docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
-
-          # Ensure /var/lib/docker exists for DinD (belt-and-suspenders with volume mount)
-          docker exec ha-supervisor-test mkdir -p /var/lib/docker
 
           # Verify supervisor_run is available
           if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
