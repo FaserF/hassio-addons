@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.4.1 (2026-04-09)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
+- ⬆️ Update alpine Docker tag to v3.23 [skip-tests] ([`62d6686b`](https://github.com/FaserF/hassio-addons/commit/62d6686bd7e00833f032ed317b25a078fc0f49ab))
+
+### 🚀 Other
+- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
+- HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
+- app version injection improvements ([`63580a20`](https://github.com/FaserF/hassio-addons/commit/63580a201a16724ac7712b1ed52c4f195ab05fe4))
+- use docker WORKDIR ([`928d223a`](https://github.com/FaserF/hassio-addons/commit/928d223a27fbdae3e6e0db8a5d37ef13416e6d6b))
+- remove default config values ([`74346eb7`](https://github.com/FaserF/hassio-addons/commit/74346eb75c99ea420ce8494ad59512c1507cb24f))
+- CI & building fixes ([`9073d6ca`](https://github.com/FaserF/hassio-addons/commit/9073d6cad25ac37bbb8c1373b3fc016ed26b3fd7))
+- Add stage tags ([`75528e61`](https://github.com/FaserF/hassio-addons/commit/75528e6193a0ce55537d2f89fe6069a703f7da88))
+
+
 ## 2.4.0 (2026-03-25)
 
 ### ✨ Features

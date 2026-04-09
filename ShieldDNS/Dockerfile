@@ -7,6 +7,13 @@ FROM --platform=$BUILDPLATFORM alpine:3.23 AS binary
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=coredns/coredns
 ARG COREDNS_VERSION="1.14.2"
+
+# App metadata (injected by CI)
+ENV APP_VERSION="2.4.0"
+ENV APP_NAME="ShieldDNS"
+ENV APP_SLUG="shielddns"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk add --no-cache curl \
     && case "${TARGETARCH}" in \
         "amd64") \
