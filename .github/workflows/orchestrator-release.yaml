@@ -801,6 +801,10 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🐳 Set up QEMU
+        if: matrix.App != 'sap-abap-cloud-dev'
+        uses: docker/setup-qemu-action@v3
+
       - name: 🐳 Set up Docker Buildx
         if: matrix.App != 'sap-abap-cloud-dev'
         uses: docker/setup-buildx-action@v4
@@ -1132,6 +1136,8 @@ jobs:
       - name: 🏗️ Build amd64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
         uses: home-assistant/builder/actions/build-image@2026.03.2
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
         with:
           arch: amd64
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
@@ -1149,6 +1155,8 @@ jobs:
       - name: 🏗️ Build aarch64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
         uses: home-assistant/builder/actions/build-image@2026.03.2
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/arm64
         with:
           arch: aarch64
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64
