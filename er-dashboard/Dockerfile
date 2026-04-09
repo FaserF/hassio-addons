@@ -72,7 +72,7 @@ COPY rootfs /
 # Fix S6 Overlay line endings and force correct type definitions
 # We use sed -i to safely strip \r from all files
 RUN find /etc/s6-overlay/s6-rc.d -type f -exec sed -i 's/\r$//' {} \; && \
-    find /etc/services.d -type f -exec sed -i 's/\r$//' {} \; 2>/dev/null || true && \
+    if [ -d /etc/services.d ]; then find /etc/services.d -type f -exec sed -i 's/\r$//' {} \;; fi && \
     echo "oneshot" > /etc/s6-overlay/s6-rc.d/init-secrets/type && \
     echo "oneshot" > /etc/s6-overlay/s6-rc.d/init-postgres/type && \
     echo "longrun" > /etc/s6-overlay/s6-rc.d/svc-postgres/type && \
