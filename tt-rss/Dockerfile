@@ -5,7 +5,7 @@ FROM $BUILD_FROM
 # hadolint ignore=DL3003
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.0"
+ENV APP_VERSION="1.2.1"
 ENV APP_NAME="Tiny Tiny RSS"
 ENV APP_SLUG="tt-rss"
 ENV APP_UNSUPPORTED="false"
