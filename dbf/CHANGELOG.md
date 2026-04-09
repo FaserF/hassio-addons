@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0 (2026-04-09)
+
+- Initial stable HA App release for DBF
+
+
 ## 0.1.1 (2026-04-09)
 
 ### 📦 Dependencies
