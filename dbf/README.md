@@ -1,6 +1,6 @@
 # DBF (DB-Infoscreen)
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/dbf/logo.png" width="100" alt="Logo" />
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/refs/heads/new-app-dbf/dbf/logo.png" width="100" alt="Logo" />
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_dbf)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
@@ -15,7 +15,7 @@
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively testet yet, but is expected to work fundamentally.
+> It is not extensively tested yet, but is expected to work fundamentally.
 
 ---
 

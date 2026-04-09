@@ -36,8 +36,9 @@ Write-Header "17. Supervisor Integration Test (Real Environment)"
 $devcontainerImage = "ghcr.io/home-assistant/devcontainer:addons"
 $containerName = "ha-supervisor-test-local"
 $networkName = "ha-supervisor-test-net"
+$dockerVolName = "ha-supervisor-test-docker-lib"
 $haPort = 7123
-$supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 300 }
+$supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 600 }
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
 $largeAddons = @('sap-abap-cloud-dev', 'n8n', 'ShieldFile')
@@ -89,12 +90,12 @@ try {
     docker stop $containerName 2>$null | Out-Null
     docker rm -f $containerName 2>$null | Out-Null
     docker network rm $networkName 2>$null | Out-Null
+    docker volume rm $dockerVolName 2>$null | Out-Null
 
     # Create network
     docker network create $networkName 2>$null | Out-Null
 
     # Create docker volume for performance (overlay2 vs vfs)
-    $dockerVolName = "ha-supervisor-test-docker-lib"
     docker volume create $dockerVolName | Out-Null
 
     # Create data directories
@@ -278,6 +279,11 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     # Note: Named volume mount handles this, but keeping for safety
     docker exec $containerName mkdir -p /var/lib/docker
 
+    # Patch stty sane to be non-fatal (no TTY available in background mode)
+    # Without this, supervisor_run dies immediately due to set -e
+    Write-Host "    > Patching supervisor scripts inside container..." -ForegroundColor Gray
+    docker exec $containerName sed -i 's/stty sane/stty sane || true/' /etc/supervisor_scripts/common
+
     # Start Supervisor inside the container (detached with logging + TTY fix via script)
     Write-Host "    > Initializing Supervisor..." -ForegroundColor Gray
     # Use 'script' to maintain TTY for stty commands while logging to file
@@ -355,7 +361,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
     # Debug: List available addons
     if ($PSBoundParameters['Debug']) {
         Write-Host "    > Debug: Available addons:" -ForegroundColor DarkGray
-        docker exec $containerName ha addons list 2>&1
+        docker exec $containerName ha apps list 2>&1
     }
 
     # Check dependencies
@@ -488,7 +494,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                     # Debug: list addons
                     if ($PSBoundParameters['Debug']) {
-                        docker exec $containerName ha addons 2>&1 | Out-Host
+                        docker exec $containerName ha apps 2>&1 | Out-Host
                     }
                 }
 
@@ -516,7 +522,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         $testMessage = "WARN: Install returned 500 error (likely CI container issue, but verify add-on): $installOutput"
 
                         # Try to fetch logs for investigation
-                        $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                        $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
                         if ($logs) {
                             $logStr = $logs -join "`n"
                             $testMessage += ". Logs: $logStr"
@@ -529,7 +535,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
                         # Try to fetch logs if install failed (sometimes helpful)
                         if ($installOutput -match "500") {
-                            $logs = docker exec $containerName ha addons logs $slug 2>&1 | Select-Object -Last 25
+                            $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
                             if ($logs) {
                                 $logStr = $logs -join "`n"
                                 $testMessage += ". Logs: $logStr"
@@ -551,7 +557,7 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                         if ($addon.Name -match "apache2") {
                             # Stop addon if it auto-started during installation (to prevent SSL errors)
                             Write-Host "    > Stopping addon (if running) to configure SSL settings..." -ForegroundColor Gray
-                            docker exec $containerName ha addons stop $slug 2>&1 | Out-Null
+                            docker exec $containerName ha apps stop $slug 2>&1 | Out-Null
 
                             # Handle all apache2 variants - configure SSL to false immediately after installation
                             # This prevents the addon from failing when it tries to start with default SSL enabled
@@ -701,7 +707,7 @@ except Exception as e:
                             }
 
                             if ($opts) {
-                                Write-Host "    > Configuring options (using ha addons options via strict file pass)..." -ForegroundColor Gray
+                                Write-Host "    > Configuring options (using ha apps options via strict file pass)..." -ForegroundColor Gray
 
                                 # Debug: Show what we are sending
                                 if ($PSBoundParameters['Debug']) {
@@ -923,7 +929,10 @@ except Exception as e:
         try {
             $logLines = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 50
             if ($logLines) { $finalLogs = $logLines -join "`n" }
-        } catch {}
+        } catch {
+            $ex = $_.Exception
+            Write-Verbose "Failed to fetch apps logs. Exception: $($ex.Message) Stack trace: $($ex.StackTrace)"
+        }
         
         Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message "Start failed (State: $finalState). Diagnostics:`n$testMessage`n`n--- LAST 50 LOG LINES ---`n$finalLogs"
     }
@@ -946,6 +955,7 @@ finally {
         Write-Host "    > Cleaning up Supervisor environment..." -ForegroundColor Gray
         docker stop $containerName 2>$null | Out-Null
         docker rm -f $containerName 2>$null | Out-Null
+        docker volume rm $dockerVolName 2>$null | Out-Null
         docker network rm $networkName 2>$null | Out-Null
     }
 

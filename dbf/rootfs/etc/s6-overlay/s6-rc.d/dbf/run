@@ -9,10 +9,10 @@ if bashio::config.has_value 'log_level'; then
     bashio::log.level "$(bashio::config 'log_level')"
 fi
 
-# Create stats file if it does not exist
-if [ ! -f "/data/stats.json" ]; then
-    bashio::log.info "Initializing stats file..."
-    echo '{"api_requests": 0}' > /data/stats.json
+# Fix/Create stats file (must be raw number, not JSON)
+if [ ! -f "/data/stats.json" ] || grep -q "{" "/data/stats.json"; then
+    bashio::log.info "Initializing/Correcting stats file format..."
+    echo '0' > /data/stats.json
     chown -R root:root /data/stats.json
 fi
 

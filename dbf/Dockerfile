@@ -36,7 +36,6 @@ RUN \
         libxml2-dev \
         zlib-dev \
         db-dev \
-        git \
     && apk add --no-cache \
         perl \
         perl-app-cpanminus \
@@ -48,6 +47,7 @@ RUN \
         zlib \
         db \
         curl \
+        git \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git /app \
     && cd /app \
     && cpanm -n --no-man-pages --installdeps . \
@@ -60,8 +60,9 @@ RUN \
 # Copy rootfs
 COPY rootfs /
 
-# Ensure scripts are executable
-RUN chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager /etc/s6-overlay/s6-rc.d/dbf/run /etc/periodic/daily/dbf-update-data
+# Ensure scripts are executable and have Unix line endings
+RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed -i 's/\r$//' {} + \
+    && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager /etc/s6-overlay/s6-rc.d/dbf/run /etc/s6-overlay/s6-rc.d/dbf-periodic/run /etc/periodic/daily/dbf-update-data
 
 # Metadata
 LABEL \
