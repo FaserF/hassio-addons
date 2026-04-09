@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# Load custom bashio libraries
+# shellcheck source=/dev/null
 
 # <App_BANNER_INJECTION>
 
@@ -163,8 +165,6 @@ fi
 
 # </App_BANNER_INJECTION>
 
-# Load custom bashio libraries
-# shellcheck source=/dev/null
 . /usr/lib/bashio/app.sh
 
 password=$(bashio::config 'db_password')
