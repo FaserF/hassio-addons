@@ -2,16 +2,8 @@
 
 ## 1.5.0 (2026-04-09)
 
-- Manual release via Orchestrator
-
-
-## 1.4.10 (2026-04-09)
-
 ### ✨ Features
 - allow polls with multiple replies ([`80f4cbd8`](https://github.com/FaserF/hassio-addons/commit/80f4cbd8423f116e0b1bfe0278d4a788ba23d832))
-
-### 📦 Dependencies
-- Update events.js ([`914430a5`](https://github.com/FaserF/hassio-addons/commit/914430a529d546ca129dd4ce0ad7b388dcc59157))
 
 ### 🚀 Other
 - fixed self messaging ([`1ff20d14`](https://github.com/FaserF/hassio-addons/commit/1ff20d14b18e138778aabd84fbb4fc4b260c8c7f))
@@ -20,12 +12,6 @@
 - small HA app fixes ([`380ca2d0`](https://github.com/FaserF/hassio-addons/commit/380ca2d04e02d5a9da59c33f5c7eb2557f267e2a))
 - Improved self messaging ([`be182a3c`](https://github.com/FaserF/hassio-addons/commit/be182a3c4aae1b6a8e3bb49a83b84718be1099a8))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
-
-
-## 1.4.9 (2026-04-08)
-
-### 🐛 Bug Fixes
-
 - robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
 - resolve link validation 404s and typos ([`5c06b173`](https://github.com/FaserF/hassio-addons/commit/5c06b17353ff711a1c9f526ac51f4f8631c76007))
 
