@@ -31,7 +31,7 @@ options:
   admin_notifications_enabled: true
 
 schema:
-  log_level: trace|debug|info|notice|warning|error|fatal
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
   reset_session: bool
   send_message_timeout: int
   keep_alive_interval: int

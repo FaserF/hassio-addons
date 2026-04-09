@@ -17,5 +17,5 @@ init: false
 options:
   log_level: "info"
 schema:
-  log_level: trace|debug|info|warning|error|fatal
+  log_level: list(trace|debug|info|warning|error|fatal)
 stage: experimental
