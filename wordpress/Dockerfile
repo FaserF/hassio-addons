@@ -59,7 +59,9 @@ RUN \
 # Copy root filesystem
 COPY rootfs /
 
-RUN find /etc/s6-overlay/s6-rc.d -mindepth 2 -name run -exec chmod +x {} \;
+# Ensure scripts are executable and have Unix line endings
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec sed -i 's/\r$//' {} + \
+    && find /etc/s6-overlay/s6-rc.d -mindepth 2 -name run -exec chmod +x {} \;
 
 # Build arguments
 ARG BUILD_ARCH

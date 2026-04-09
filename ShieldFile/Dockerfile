@@ -34,8 +34,9 @@ COPY rootfs /
 # Set S6 behavior to fail the container if any service fails
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# Set executable permissions
-RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down || true
+# Set executable permissions and fix line endings
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
+    && chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down || true
 
 # Healthcheck
 HEALTHCHECK \

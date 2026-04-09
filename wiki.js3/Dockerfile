@@ -41,8 +41,9 @@ RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || 
 
 COPY rootfs /
 
-RUN chmod +x /etc/cont-init.d/*.sh /etc/services.d/*/run \
-    && dos2unix /etc/cont-init.d/*.sh /etc/services.d/*/run
+# Ensure scripts are executable and have Unix line endings (covers v2 and v3 paths)
+RUN find /etc/cont-init.d /etc/services.d /etc/s6-overlay/s6-rc.d -type f -name "*" -exec dos2unix {} + \
+    && find /etc/cont-init.d /etc/services.d /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "*.sh" \) -exec chmod +x {} +
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
