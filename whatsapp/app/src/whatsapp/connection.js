@@ -23,8 +23,6 @@ import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } 
 import { PORT, API_TOKEN } from '../config.js';
 import { isHANetwork } from '../ha.js';
 
-
-
 export async function connectToWhatsApp(sessionId = 'default', sessions, getSession) {
   const session = getSession(sessionId);
   const sessionAuthDir = getAuthDir(sessionId);
