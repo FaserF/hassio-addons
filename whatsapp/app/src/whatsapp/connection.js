@@ -171,7 +171,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
         setHealthStatus('running', `Disconnected: ${disconnectReason}`);
 
-        const baseDelay = APPLY_BAILEYS_405_FIX ? 5000 : 3000;
+        const baseDelay = 3000;
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
 
