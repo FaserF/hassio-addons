@@ -65,6 +65,9 @@ webhook_url: ''
 welcome_message_enabled: false
 ```
 
+> [!NOTE]
+> **Mark as Read**: This feature is configured via the **Home Assistant Integration** settings (Devices & Services > WhatsApp > Configure), not the Addon configuration.
+
 ---
 
 ## 👨‍💻 Credits & License

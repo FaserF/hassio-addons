@@ -44,8 +44,5 @@ configuration:
   welcome_message_enabled:
     name: "Willkommensnachricht"
     description: "Gibt an, ob eine einmalige Willkommensnachricht an Benutzer gesendet werden soll, die den Bot zum ersten Mal anschreiben."
-  auto_mark_read:
-    name: "Automatisch gelesen markieren"
-    description: "Ob eingehende Nachrichten automatisch als gelesen markiert werden sollen (blaue Haken)."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.

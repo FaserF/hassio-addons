@@ -8,7 +8,7 @@ import path from 'path';
 import crypto from 'crypto';
 import mime from 'mime-types';
 import { logger } from '../logger.js';
-import { ADDON_VERSION, INTEGRATION_VERSION, BAILEYS_VERSION, AUTO_MARK_READ } from '../config.js';
+import { ADDON_VERSION, INTEGRATION_VERSION, BAILEYS_VERSION } from '../config.js';
 import { SYSTEM_STATE, saveSystemState } from '../state.js';
 import { fetchHAVersions, fetchHALogs } from '../ha.js';
 import { formatDuration, formatHATime } from '../utils/format.js';
@@ -198,22 +198,6 @@ export function handleIncomingMessages(session) {
     if (!m.messages || m.messages.length === 0) return;
     session.stats.received += m.messages.length;
 
-    // Handle auto-mark as read
-    if (AUTO_MARK_READ) {
-      try {
-        const keys = m.messages.map((msg) => msg.key);
-        await session.sock.readMessages(keys);
-        logger.debug(
-          { count: keys.length, sessionId: session.id },
-          '✅ Auto-marked messages as read'
-        );
-      } catch (err) {
-        logger.warn(
-          { error: err.message, sessionId: session.id },
-          '⚠️ Failed to auto-mark messages as read'
-        );
-      }
-    }
 
     const events = m.messages
       .filter((msg) => {

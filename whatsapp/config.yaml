@@ -29,7 +29,6 @@ options:
   admin_numbers: ""
   welcome_message_enabled: false
   admin_notifications_enabled: true
-  auto_mark_read: true
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -47,7 +46,6 @@ schema:
   admin_numbers: str?
   welcome_message_enabled: bool
   admin_notifications_enabled: bool
-  auto_mark_read: bool
 
 ports:
   8066/tcp: 8066

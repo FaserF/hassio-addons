@@ -55,7 +55,6 @@ export const SHOULD_RESET = process.env.RESET_SESSION === 'true';
 
 export const WELCOME_MESSAGE_ENABLED = process.env.WELCOME_MESSAGE_ENABLED !== 'false';
 export const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATIONS_ENABLED !== 'false';
-export const AUTO_MARK_READ = process.env.AUTO_MARK_READ !== 'false';
 
 export const ADDON_VERSION = process.env.ADDON_VERSION || 'Unknown';
 export const ADDON_SLUG = process.env.ADDON_SLUG || 'Unknown';
@@ -66,7 +65,6 @@ logger.info(
   {
     WELCOME_MESSAGE_ENABLED,
     ADMIN_NOTIFICATIONS_ENABLED,
-    AUTO_MARK_READ,
     MARK_ONLINE,
     SHOULD_RESET,
     LOG_LEVEL: process.env.LOG_LEVEL,

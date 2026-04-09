@@ -89,13 +89,6 @@ else
     export ADMIN_NOTIFICATIONS_ENABLED="true"
 fi
 
-# Auto Mark Read (Default true)
-if bashio::config.false 'auto_mark_read'; then
-    export AUTO_MARK_READ="false"
-else
-    export AUTO_MARK_READ="true"
-fi
-
 # Welcome Message (Default true)
 if bashio::config.false 'welcome_message_enabled'; then
     export WELCOME_MESSAGE_ENABLED="false"

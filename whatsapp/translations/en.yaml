@@ -44,8 +44,5 @@ configuration:
   welcome_message_enabled:
     name: "Welcome Message"
     description: "Whether to send a one-time welcome message to users who message the bot for the first time."
-  auto_mark_read:
-    name: "Auto Mark Read"
-    description: "Whether to automatically mark incoming messages as read (blue checks) on your phone."
 network:
   8066/tcp: Internal API port the integration connects to.
