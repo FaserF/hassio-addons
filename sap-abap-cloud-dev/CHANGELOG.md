@@ -111,4 +111,3 @@
 - S6-overlay integration for Home Assistant
 - Ingress support for web access
 - License agreement configuration option
-
