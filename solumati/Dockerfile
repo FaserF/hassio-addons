@@ -14,7 +14,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.0"
+ENV APP_VERSION="2.3.1"
 ENV APP_NAME="Solumati"
 ENV APP_SLUG="solumati"
 ENV APP_UNSUPPORTED="false"
