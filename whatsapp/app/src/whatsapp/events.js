@@ -198,7 +198,6 @@ export function handleIncomingMessages(session) {
     if (!m.messages || m.messages.length === 0) return;
     session.stats.received += m.messages.length;
 
-
     const events = m.messages
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
