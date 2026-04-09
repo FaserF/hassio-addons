@@ -12,7 +12,7 @@ ARG WORDPRESS_VERSION="6.8"
 # hadolint ignore=DL3018,DL3003
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.3.0"
+ENV APP_VERSION="0.3.1"
 ENV APP_NAME="Wordpress"
 ENV APP_SLUG="wordpress"
 ENV APP_UNSUPPORTED="false"
