@@ -246,6 +246,12 @@ is_port_busy() {
 	return 1
 }
 
+DNS_PORT="53"
+if is_port_busy "${DNS_PORT}"; then
+	echo "⚠️  Port 53 is BUSY. Switching DNS to Fallback Port: 10053"
+	DNS_PORT="10053"
+fi
+
 if is_port_busy "${DOT_PORT}"; then
 	if [ "${DOT_PORT}" = "853" ]; then
 		bashio::log.warning "⚠️  Port 853 is BUSY. Switching DoT to Fallback Port: 8853"
@@ -348,6 +354,8 @@ export CERT_FILE
 export KEY_FILE
 export INTERNAL_DOH_PORT
 export ADMIN_PORT=${ADMIN_BACKEND_PORT}
+export DNS_PORT
+export DOT_PORT
 
 /usr/bin/shielddns-admin &
 ADMIN_PID=$!
@@ -372,13 +380,13 @@ bashio::log.info "✅ Services started successfully."
 ACTUAL_COREDNS_PORT="${INTERNAL_DOH_PORT}"
 if [ ! -f "$COREFILE_PATH" ]; then
 	cat <<EOF >$COREFILE_PATH
-.:53 {
+.:${DNS_PORT} {
     bind 0.0.0.0
     forward . ${UPSTREAM_DNS}
     log
     errors
 }
-tls://.:853 {
+tls://.:${DOT_PORT} {
     tls ${CERT_FILE} ${KEY_FILE}
     forward . ${UPSTREAM_DNS}
     log
