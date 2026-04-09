@@ -70,8 +70,9 @@ if bashio::config.true 'reset_database'; then
 	# Drop database if it exists
 	psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS planka;" || bashio::log.warning "Failed to drop database"
 
-	# Remove admin created marker so it will be recreated
+	# Remove admin markers and saved password so they will be recreated
 	rm -f "${PLANKA_DATA_DIR}/admin_created"
+	rm -f "${PLANKA_DATA_DIR}/admin_password"
 
 	bashio::log.info "=========================================="
 	bashio::log.info "   ✅ DATABASE RESET COMPLETE"
@@ -82,9 +83,9 @@ if bashio::config.true 'reset_database'; then
 	bashio::log.warning "Otherwise, the database will be wiped again on next restart."
 	bashio::log.info "=========================================="
 
-	# Remove reset_database options
-	bashio::app.option 'reset_database'
-	bashio::app.option 'reset_database_confirm'
+	# Remove reset_database options - don't exit if the API is forbidden
+	bashio::app.option 'reset_database' || bashio::log.warning "Could not reset 'reset_database' option via API"
+	bashio::app.option 'reset_database_confirm' || bashio::log.warning "Could not reset 'reset_database_confirm' option via API"
 fi
 
 # Create Planka database and user if they don't exist
@@ -108,72 +109,45 @@ psql -h localhost -U postgres -d planka -c "ALTER DEFAULT PRIVILEGES IN SCHEMA p
 
 # Create default admin user on first start
 if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
-    bashio::log.info "First start detected - admin user will be created after Planka starts..."
+    bashio::log.info "First start detected - creating initial admin user via database seed..."
 
-    # Generate secure password
-    ADMIN_PASSWORD=$(openssl rand -base64 24)
-    echo -n "$ADMIN_PASSWORD" > "${PLANKA_DATA_DIR}/admin_password"
-    chmod 600 "${PLANKA_DATA_DIR}/admin_password"
-
-    # Store credentials for later (after Planka service is running)
-    cat > /data/planka/create_admin_user.sh << 'EOFSCRIPT'
-#!/usr/bin/env bashio
-# shellcheck disable=SC1091
-source /usr/lib/bashio/app.sh
-
-# Wait for Planka to be fully ready
-bashio::log.info "Admin creator: Waiting for Planka to be fully ready..."
-sleep 10
-
-# Read saved password
-ADMIN_PASSWORD=$(cat /data/planka/admin_password)
-
-# Check if Planka is responding
-for i in {1..30}; do
-    if curl -sf http://localhost:1337 > /dev/null; then
-        break
+    # Generate secure password if not already generated
+    if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_password"; then
+        ADMIN_PASSWORD=$(openssl rand -base64 24 | tr -d '\n')
+        echo -n "$ADMIN_PASSWORD" > "${PLANKA_DATA_DIR}/admin_password"
+        chmod 600 "${PLANKA_DATA_DIR}/admin_password"
     fi
-    sleep 2
-done
+    ADMIN_PASSWORD=$(cat "${PLANKA_DATA_DIR}/admin_password")
 
-# Create admin user via Planka's registration endpoint
-# Planka allows the first user to register without authentication
-RESPONSE=$(curl -s -X POST http://localhost:1337/api/users \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"email\": \"admin@planka.local\",
-    \"password\": \"$ADMIN_PASSWORD\",
-    \"name\": \"Administrator\",
-    \"username\": \"admin\"
-  }")
+    # Set environment variables for the Planka seed
+    export DEFAULT_ADMIN_EMAIL="admin@planka.local"
+    export DEFAULT_ADMIN_PASSWORD="$ADMIN_PASSWORD"
+    export DEFAULT_ADMIN_NAME="Administrator"
+    export DEFAULT_ADMIN_USERNAME="admin"
+    export NODE_ENV=production
+    
+    # Construct DATABASE_URL for knex
+    ENCODED_DB_PASS=$(python3 -c "import urllib.parse; import sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "${PLANKA_DB_PASSWORD}")
+    export DATABASE_URL="postgresql://planka:${ENCODED_DB_PASS}@localhost:5432/planka"
 
-if echo "$RESPONSE" | grep -q "id"; then
-    # Mark as created
-    touch /data/planka/admin_created
-
-    # Display credentials prominently
-    bashio::log.warning "=========================================="
-    bashio::log.warning "   🔐 PLANKA ADMIN CREDENTIALS"
-    bashio::log.warning "=========================================="
-    bashio::log.warning "Username: admin"
-    bashio::log.warning "Email: admin@planka.local"
-    bashio::log.warning "Password: ${ADMIN_PASSWORD}"
-    bashio::log.warning "=========================================="
-    bashio::log.warning "⚠️  SAVE THIS PASSWORD NOW!"
-    bashio::log.warning "It will not be shown again."
-    bashio::log.warning "Password saved to: /data/planka/admin_password"
-    bashio::log.warning "=========================================="
-else
-    bashio::log.error "Failed to create admin user. You may need to register manually."
-    bashio::log.error "Response: $RESPONSE"
-fi
-
-# Cleanup
-rm -f /data/planka/create_admin_user.sh
-EOFSCRIPT
-
-    chmod +x /data/planka/create_admin_user.sh
-
-    # Run in background after this script completes
-    nohup /data/planka/create_admin_user.sh > /proc/1/fd/1 2>&1 &
+    # Run migrations then the specific seed using Planka's knex instance
+    cd /opt/planka || exit 1
+    ./node_modules/.bin/knex migrate:latest --cwd db
+    if ./node_modules/.bin/knex seed:run --cwd db --specific default.js; then
+        touch "${PLANKA_DATA_DIR}/admin_created"
+        
+        # Display credentials prominently
+        bashio::log.warning "=========================================="
+        bashio::log.warning "   🔐 PLANKA ADMIN CREDENTIALS"
+        bashio::log.warning "=========================================="
+        bashio::log.warning "Username: admin"
+        bashio::log.warning "Email: admin@planka.local"
+        bashio::log.warning "Password: ${ADMIN_PASSWORD}"
+        bashio::log.warning "=========================================="
+        bashio::log.warning "⚠️  SAVE THIS PASSWORD NOW!"
+        bashio::log.warning "It will not be shown again."
+        bashio::log.warning "=========================================="
+    else
+        bashio::log.error "Failed to seed admin user. You may need to register manually or check logs."
+    fi
 fi

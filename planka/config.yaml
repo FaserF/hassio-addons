@@ -11,6 +11,7 @@ arch:
 map:
   - ssl
 init: false
+hassio_api: true
 ingress: true
 ingress_entry: /
 ingress_port: 1337
@@ -22,6 +23,9 @@ options:
   log_level: "info"
   secret_key: ""
   base_url: ""
+  public_domain: ""
+  reset_database: false
+  reset_database_confirm: false
 schema:
   ssl: bool
   certfile: str
@@ -29,6 +33,7 @@ schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   secret_key: str?
   base_url: str?
+  public_domain: str?
   reset_database: bool?
   reset_database_confirm: bool?
 ports:
