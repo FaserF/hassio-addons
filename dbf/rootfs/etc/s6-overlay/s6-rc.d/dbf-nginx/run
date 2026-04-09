@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant App: DBF (DB-Infoscreen)
+# Runs Nginx as ingress reverse proxy
+# ==============================================================================
+
+# Remove default nginx config if exists
+rm -f /etc/nginx/http.d/default.conf
+
+# Create required directories
+mkdir -p /var/log/nginx /run/nginx
+
+bashio::log.info "Starting Nginx ingress proxy on port 8099..."
+
+exec nginx -g "daemon off;"

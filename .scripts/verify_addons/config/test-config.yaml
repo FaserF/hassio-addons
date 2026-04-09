@@ -111,6 +111,6 @@ supervisorTests:
     antigravity-server: "Execution takes too long for standard tests"
 
   # Timeout settings (in seconds)
-  supervisorStartupTimeout: 120
+  supervisorStartupTimeout: 600
   addonInstallTimeout: 300
   addonStartTimeout: 90

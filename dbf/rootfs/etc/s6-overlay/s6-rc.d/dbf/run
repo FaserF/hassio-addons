@@ -1,0 +1,91 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant App: DBF (DB-Infoscreen)
+# Runs the DBF service using Hypnotoad
+# ==============================================================================
+
+# Set Bashio log level
+if bashio::config.has_value 'log_level'; then
+    bashio::log.level "$(bashio::config 'log_level')"
+fi
+
+# Fix/Create stats file (must be raw number, not JSON)
+if [ ! -f "/data/stats.json" ] || grep -q "{" "/data/stats.json"; then
+    bashio::log.info "Initializing/Correcting stats file format..."
+    echo '0' > /data/stats.json
+    chown -R root:root /data/stats.json
+fi
+
+# Ensure cache directories exist
+mkdir -p /data/iris_cache /data/irisrt_cache /app/share
+
+# Set environment variables from options
+export DBFAKEDISPLAY_WORKERS=$(bashio::config 'workers' '2')
+export DBFAKEDISPLAY_STATS="/data/stats.json"
+export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
+export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"
+export DBFAKEDISPLAY_LISTEN="http://*:8092"
+export MOJO_REVERSE_PROXY=1
+
+# HTML Escaping helper
+# Replaces &, <, >, ", and ' with entities
+escape_html() {
+    local input="$1"
+    echo "${input}" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g'
+}
+
+# Prepare templates (imprint and privacy)
+bashio::log.info "Preparing templates..."
+IMPRINT_NAME=$(bashio::config 'imprint_name' 'Home Assistant User')
+IMPRINT_ADDRESS=$(bashio::config 'imprint_address' 'Localhost')
+
+ESCAPED_IMPRINT_NAME=$(escape_html "${IMPRINT_NAME}")
+ESCAPED_IMPRINT_ADDRESS=$(escape_html "${IMPRINT_ADDRESS}")
+
+cat <<EOF > /app/ext-templates/imprint.html.ep
+% layout 'default';
+% title 'Imprint';
+<h1>Imprint</h1>
+<p>
+    <strong>Name:</strong> ${ESCAPED_IMPRINT_NAME}<br>
+    <strong>Address:</strong> ${ESCAPED_IMPRINT_ADDRESS}
+</p>
+EOF
+
+PRIVACY_URL=$(bashio::config 'privacy_policy_url' '')
+if [ -n "${PRIVACY_URL}" ]; then
+    ESCAPED_PRIVACY_URL=$(escape_html "${PRIVACY_URL}")
+cat <<EOF > /app/ext-templates/privacy.html.ep
+% layout 'default';
+% title 'Privacy Policy';
+<h1>Privacy Policy</h1>
+<p>
+    Please see our external privacy policy at:
+    <a href="${ESCAPED_PRIVACY_URL}">${ESCAPED_PRIVACY_URL}</a>
+</p>
+EOF
+else
+cat <<EOF > /app/ext-templates/privacy.html.ep
+% layout 'default';
+% title 'Privacy Policy';
+<h1>Privacy Policy</h1>
+<p>
+    This service is running locally on your Home Assistant instance.
+    No tracking is enabled.
+</p>
+EOF
+fi
+
+# Run initial data update
+/usr/bin/dbf-update-data
+
+# Run integration manager (install/update integration)
+/usr/bin/dbf-integration-manager
+
+bashio::log.info "Starting DBF (DB-Infoscreen)..."
+
+# Change directory to app root
+cd /app || exit 1
+
+# Start Hypnotoad in foreground
+exec hypnotoad -f index.pl

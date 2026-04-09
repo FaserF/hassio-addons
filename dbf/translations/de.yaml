@@ -1,0 +1,18 @@
+configuration:
+  log_level:
+    name: "Log-Level"
+    description: "Steuert die Detailgenauigkeit der Anwendungsprotokolle."
+  workers:
+    name: "Worker"
+    description: "Anzahl der Worker-Prozesse für den web server (Standard: 2)."
+  imprint_name:
+    name: "Impressum Name"
+    description: "Der Name, der auf der Impressum-Seite angezeigt werden soll."
+  imprint_address:
+    name: "Impressum Adresse"
+    description: "Die Adresse, die auf der Impressum-Seite angezeigt werden soll."
+  privacy_policy_url:
+    name: "Datenschutzerklärung URL"
+    description: "URL, die auf eine externe Datenschutzerklärung verweist. Wenn leer, wird ein lokaler Standardplatzhalter verwendet."
+network:
+  8092/tcp: Web-Interface-Port für DBF. Wird für die Integration in der Home Assistant App benötigt, ist aber für den Ingress-Zugriff im Browser nicht erforderlich.

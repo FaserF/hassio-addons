@@ -84,6 +84,7 @@ body:
         - bash_script_executer
         - bentopdf
         - er-dashboard
+        - dbf
         - homeassistant-test-instance
         - imapsync
         - komodo

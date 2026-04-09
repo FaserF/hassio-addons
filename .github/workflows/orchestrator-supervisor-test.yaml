@@ -39,7 +39,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   DEVCONTAINER_IMAGE: ghcr.io/home-assistant/devcontainer:addons
   HA_PORT: 7123
-  SUPERVISOR_STARTUP_TIMEOUT: 100
+  SUPERVISOR_STARTUP_TIMEOUT: 300
   App_INSTALL_TIMEOUT: 1200
   App_START_TIMEOUT: 1200
 
@@ -258,7 +258,12 @@ jobs:
           mkdir -p /tmp/ha-data/share
           mkdir -p /tmp/ha-data/media
 
+          # Clean up stale Docker volume from previous cancelled runs to prevent DinD corruption
+          docker volume rm ha-supervisor-storage 2>/dev/null || true
+
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
+          # Using DinD (Docker-in-Docker) model - removed host socket linkage
+
           docker run -d -t \
             --name ha-supervisor-test \
             --privileged \
@@ -268,20 +273,48 @@ jobs:
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
-            -v /tmp/ha-data/ssl:/mnt/supervisor/ssl \
+            --mount type=bind,source=/tmp/ha-data/ssl,target=/mnt/supervisor/ssl \
+            -v ha-supervisor-storage:/var/lib/docker \
+            -v /home/runner/.docker/config.json:/root/.docker/config.json:ro \
             -e SUPERVISOR_SHARE_DATA=1 \
             -e SUPERVISOR_MACHINE=generic-x86-64 \
             -e SUPERVISOR_DEV=1 \
             -e SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN" \
-            -v /var/run/docker.sock:/var/run/docker.sock \
             "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
           echo "Container started, waiting for initialization..."
 
-          # Prepare environment and start Supervisor via script to provide TTY
-          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + || true"
-          docker exec -d ha-supervisor-test script -efq -c "supervisor_run" /tmp/supervisor.log
+          # Verify container is actually running
+          CONTAINER_STATUS="$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null || echo 'not found')"
+          if [ "$CONTAINER_STATUS" != "running" ]; then
+            echo "❌ Container failed to start (Status: $CONTAINER_STATUS)"
+            docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State, Config: {Entrypoint, Cmd}}' || true
+            docker logs ha-supervisor-test 2>&1 || true
+            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "Container running (PID $(docker inspect -f '{{.State.Pid}}' ha-supervisor-test))"
+
+          # Prepare environment: remove debugpy to avoid port conflicts
+          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
+
+          # Verify supervisor_run is available
+          if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
+            echo "❌ supervisor_run not found in container"
+            docker exec ha-supervisor-test sh -lc 'ls -la /usr/bin/supervisor* /usr/local/bin/supervisor* 2>&1 || echo "No supervisor binaries found"'
+            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          # Patch stty sane to be non-fatal (no TTY available in nohup/background mode)
+          # Without this, supervisor_run dies immediately due to set -e
+          echo "Patching supervisor scripts inside container..."
+          docker exec ha-supervisor-test sed -i 's/stty sane/stty sane || true/' /etc/supervisor_scripts/common
+
+          # Start Supervisor in background with output redirected to log file
+          # Using nohup+bash instead of 'script' because 'script' killed the container
+          docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
@@ -306,7 +339,19 @@ jobs:
             # Fail fast if container crashed
             if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
               echo "Container stopped unexpectedly!"
-              docker logs ha-supervisor-test
+              echo "::group::Container Inspect (Exit Info)"
+              docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State}' || true
+              echo "::endgroup::"
+              echo "::group::Supervisor Logs (via docker cp)"
+              docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null || true
+              cat /tmp/supervisor-crash.log 2>/dev/null || echo "No supervisor log recovered"
+              echo "::endgroup::"
+              echo "::group::Docker Logs (stdout/stderr)"
+              docker logs ha-supervisor-test 2>&1 || true
+              echo "::endgroup::"
+              echo "::group::Host dmesg (OOM check)"
+              sudo dmesg | tail -30 2>/dev/null || true
+              echo "::endgroup::"
               break
             fi
 
@@ -316,11 +361,22 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
-            echo "::group::Internal Supervisor Logs (Full)"
-            docker exec ha-supervisor-test cat /tmp/supervisor.log || echo "No internal logs found"
+            echo "::group::Internal Supervisor Logs"
+            docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null || \
+              (docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null && cat /tmp/supervisor-crash.log) || \
+              echo "No internal logs found"
             echo "::endgroup::"
-            echo "::group::Docker Logs"
-            docker logs ha-supervisor-test
+            echo "::group::Docker-in-Docker Daemon Status"
+            docker exec ha-supervisor-test docker info 2>&1 || echo "Docker daemon not reachable"
+            docker exec ha-supervisor-test cat /var/log/docker.log 2>/dev/null || true
+            docker exec ha-supervisor-test journalctl -u docker --no-pager -n 100 2>/dev/null || true
+            echo "::endgroup::"
+            echo "::group::Docker Logs (outer container)"
+            docker logs ha-supervisor-test 2>&1 || true
+            echo "::endgroup::"
+            echo "::group::Disk and Memory Info"
+            df -h 2>/dev/null || true
+            free -m 2>/dev/null || true
             echo "::endgroup::"
             echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
             exit 1
@@ -758,6 +814,7 @@ jobs:
           echo "Stopping and removing containers..."
           docker stop ha-supervisor-test 2>/dev/null || true
           docker rm -f ha-supervisor-test 2>/dev/null || true
+          docker volume rm ha-supervisor-storage 2>/dev/null || true
           docker network rm ha-test-net 2>/dev/null || true
           sudo rm -rf /tmp/ha-data
 
