@@ -3,9 +3,11 @@
 ## 0.5.3 (2026-04-09)
 
 ### 📦 Dependencies
+
 - Update run.sh ([`e2459f57`](https://github.com/FaserF/hassio-addons/commit/e2459f576abaca3ad4221fa58fb8820607369a5d))
 
 ### 🚀 Other
+
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
 - remove n8n ([`5527a8ef`](https://github.com/FaserF/hassio-addons/commit/5527a8efd422443dbe3ea0bd2583a5a08605ae94))
@@ -19,7 +21,6 @@
 - improved DB reset option ([`01cb6fed`](https://github.com/FaserF/hassio-addons/commit/01cb6fed05abe9406223d3b93a5a7b9f968d0f95))
 - fix DB reset ([`dc9fd3d5`](https://github.com/FaserF/hassio-addons/commit/dc9fd3d530abcaf07ffe7fc4f7ea605f69bfacb6))
 - fixes for new webserver integration ([`5e1439dd`](https://github.com/FaserF/hassio-addons/commit/5e1439dd399069225f4dcbcc9494000134b8efe0))
-
 
 ## 0.5.2 (2026-03-23)
 

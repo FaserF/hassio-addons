@@ -3,9 +3,11 @@
 ## 0.1.1 (2026-04-09)
 
 ### 🐛 Bug Fixes
+
 - robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
 - ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.1.1 [skip-tests] ([`af146b62`](https://github.com/FaserF/hassio-addons/commit/af146b6228568b5dbe844a8fc782303b298a50b8))
 - ⬆️ Update dependency moghtech/komodo to v2.1.1 [skip-tests] ([`d5d346ad`](https://github.com/FaserF/hassio-addons/commit/d5d346ad278db5e823e578ebc5d57e3e9bd167ae))
@@ -18,6 +20,7 @@
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 
 ### 🚀 Other
+
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
 - Add stage tags ([`75528e61`](https://github.com/FaserF/hassio-addons/commit/75528e6193a0ce55537d2f89fe6069a703f7da88))
@@ -31,7 +34,6 @@
 - CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 0.1.0 (2026-01-29)
 

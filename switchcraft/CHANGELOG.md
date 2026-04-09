@@ -3,9 +3,11 @@
 ## 0.2.1 (2026-04-09)
 
 ### 🐛 Bug Fixes
+
 - robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.3.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.3.0) [skip-tests] ([`3a7c8859`](https://github.com/FaserF/hassio-addons/commit/3a7c8859254672301e169ab959c32f913a6cd8b8))
 - Update patch_switchcraft.py ([`6786e2b3`](https://github.com/FaserF/hassio-addons/commit/6786e2b34d7ba565727277a650ff0631bd51dfcc))
 - ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.3.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.3.0) [skip-tests] ([`31cad42b`](https://github.com/FaserF/hassio-addons/commit/31cad42b5c0174bb0586cd350295d6cca2174b6a))
@@ -15,6 +17,7 @@
 - ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.2.0) [skip-tests] (#624) [skip-tests] ([`dcf52e6e`](https://github.com/FaserF/hassio-addons/commit/dcf52e6e0c7581c897c891b353f35d20c767757c))
 
 ### 🚀 Other
+
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
 - docker build fixes ([`f0638b5e`](https://github.com/FaserF/hassio-addons/commit/f0638b5e069e1a7151c28a2004ecde64ee71e2d1))
@@ -27,7 +30,6 @@
 - replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
 - Link fixes ([`80a29ecd`](https://github.com/FaserF/hassio-addons/commit/80a29ecd14061b993f8fcde6d8c1865d15cce14e))
-
 
 ## 0.2.0 (2026-01-29)
 

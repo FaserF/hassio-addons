@@ -3,8 +3,8 @@
 ## 0.3.1 (2026-04-09)
 
 ### 🚀 Other
-- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 
+- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 
 ## 0.3.0
 

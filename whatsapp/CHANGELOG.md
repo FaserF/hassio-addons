@@ -3,9 +3,11 @@
 ## 1.5.0 (2026-04-09)
 
 ### ✨ Features
+
 - allow polls with multiple replies ([`80f4cbd8`](https://github.com/FaserF/hassio-addons/commit/80f4cbd8423f116e0b1bfe0278d4a788ba23d832))
 
 ### 🚀 Other
+
 - fixed self messaging ([`1ff20d14`](https://github.com/FaserF/hassio-addons/commit/1ff20d14b18e138778aabd84fbb4fc4b260c8c7f))
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - remove temp Bayleys fix ([`346742a2`](https://github.com/FaserF/hassio-addons/commit/346742a23cdeb19c117aaba7c33bf56bf867fda5))

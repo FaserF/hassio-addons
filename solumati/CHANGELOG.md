@@ -3,9 +3,11 @@
 ## 2.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes
+
 - robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
 
 ### 📦 Dependencies
+
 - update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 - Update auth_bypass.patch ([`3be861f1`](https://github.com/FaserF/hassio-addons/commit/3be861f133316fc071c07f9674c433d4a1e847a1))
@@ -14,6 +16,7 @@
 - Update Dockerfile ([`34edbde3`](https://github.com/FaserF/hassio-addons/commit/34edbde3aee42cbd904ff41578acd09ef4b9a09d))
 
 ### 🚀 Other
+
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
 - app version injection improvements ([`63580a20`](https://github.com/FaserF/hassio-addons/commit/63580a201a16724ac7712b1ed52c4f195ab05fe4))
@@ -29,7 +32,6 @@
 - small fix ([`ede074b4`](https://github.com/FaserF/hassio-addons/commit/ede074b45c5bc12410b58e4adb263df90a89d4db))
 - fix patch ([`c5339f06`](https://github.com/FaserF/hassio-addons/commit/c5339f0612a5c0c856b1de356aca28f59452b141))
 - test fixes ([`6aa2141b`](https://github.com/FaserF/hassio-addons/commit/6aa2141b7932f265222ed644f78d0b49b54fcae0))
-
 
 ## 2.3.0 (2026-01-29)
 

@@ -3,10 +3,12 @@
 ## 2.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes
+
 - robust ingress auth and restore /apps/ links ([`1ec04eb3`](https://github.com/FaserF/hassio-addons/commit/1ec04eb3bebea8dcbf983d9d6340d303be6af7d7))
 - resolve link validation 404s and typos ([`5c06b173`](https://github.com/FaserF/hassio-addons/commit/5c06b17353ff711a1c9f526ac51f4f8631c76007))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
 - ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.1 [skip-tests] (#726) [skip-tests] ([`2c3d00d9`](https://github.com/FaserF/hassio-addons/commit/2c3d00d97085e671e69bf94deb87ad5acde73aab))
 - ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.0 [skip-tests] (#725) [skip-tests] ([`1e3dace2`](https://github.com/FaserF/hassio-addons/commit/1e3dace2227a52a0abd70d71b51ef46e5f2b0a5b))
@@ -17,6 +19,7 @@
 - ⬆️ Update filebrowser/filebrowser Docker tag to v2.57.0 [skip-tests] (#632) [skip-tests] ([`677bd541`](https://github.com/FaserF/hassio-addons/commit/677bd54134d224a15f46943a293dc93b54549843))
 
 ### 🚀 Other
+
 - fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
 - HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
 - Unix LF fixes ([`7ef9b1f5`](https://github.com/FaserF/hassio-addons/commit/7ef9b1f5723dfdbfcca3cbe2de944538bc095fb9))
@@ -32,7 +35,6 @@
 - replace basio addon with bashio apps ([`2caaf920`](https://github.com/FaserF/hassio-addons/commit/2caaf920939dbb61243d2ed1e8f63518a3199aa9))
 - CI & Linter fixes ([`f14e1e62`](https://github.com/FaserF/hassio-addons/commit/f14e1e6259a33a82f6321be9a71b9b41b0e82ea2))
 - Follow new Homeassistant Apps naming ([`a63066b1`](https://github.com/FaserF/hassio-addons/commit/a63066b111f275f9b359bf0e1cea3c49a14fb31c))
-
 
 ## 2.3.0 (2026-01-29)
 
