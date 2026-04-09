@@ -49,6 +49,7 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ```yaml
 admin_notifications_enabled: true
 admin_numbers: ''
+auto_mark_read: true
 keep_alive_interval: 30000
 log_level: info
 mark_online: false
@@ -62,7 +63,6 @@ webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
 welcome_message_enabled: false
-auto_mark_read: true
 ```
 
 ---

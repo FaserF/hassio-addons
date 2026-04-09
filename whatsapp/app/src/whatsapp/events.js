@@ -203,9 +203,15 @@ export function handleIncomingMessages(session) {
       try {
         const keys = m.messages.map((msg) => msg.key);
         await session.sock.readMessages(keys);
-        logger.debug({ count: keys.length, sessionId: session.id }, '✅ Auto-marked messages as read');
+        logger.debug(
+          { count: keys.length, sessionId: session.id },
+          '✅ Auto-marked messages as read'
+        );
       } catch (err) {
-        logger.warn({ error: err.message, sessionId: session.id }, '⚠️ Failed to auto-mark messages as read');
+        logger.warn(
+          { error: err.message, sessionId: session.id },
+          '⚠️ Failed to auto-mark messages as read'
+        );
       }
     }
 
