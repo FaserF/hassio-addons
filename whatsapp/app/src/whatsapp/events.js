@@ -202,20 +202,16 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.key.fromMe) {
-          const myJid = session.sock.user?.id?.replace(/:.*@/, '@');
-          if (!myJid) return false;
+          // Allow outgoing messages if they are to an admin (usually to self)
+          const isToAdmin = isAdmin(msg.key.remoteJid, session);
 
-          const myId = myJid.split('@')[0];
-          const remoteId = msg.key.remoteJid.split('@')[0];
-          const isToMe = myId === remoteId;
-
-          if (!isToMe) {
+          if (!isToAdmin) {
             logger.debug(
-              { myJid, remoteJid: msg.key.remoteJid, sessionId: session.id },
-              '🔍 Outgoing message filtered (not sent to self)'
+              { remoteJid: msg.key.remoteJid, sessionId: session.id },
+              '🔍 Outgoing message filtered (not sent to admin/self)'
             );
           }
-          return isToMe;
+          return isToAdmin;
         }
         return true;
       })
@@ -338,7 +334,7 @@ export function handleIncomingMessages(session) {
           const body = text.trim().toLowerCase();
           if (body.startsWith('ha-app-')) {
             const personJid = msg.key.participant || senderJid;
-            const isAdminUser = isAdmin(personJid, session);
+            const isAdminUser = isAdmin(personJid, session) || msg.key.fromMe;
 
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });

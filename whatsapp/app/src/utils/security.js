@@ -19,8 +19,16 @@ export function isAdmin(jid, session = null) {
 
   // 0. Implicit Admin: If it's our own JID, we are always an admin
   if (session?.sock?.user?.id) {
-    const myJid = session.sock.user.id.replace(/:.*@/, '@');
-    if (jid.replace(/:.*@/, '@') === myJid) return true;
+    const myNormalizedJid = session.sock.user.id.replace(/:.*@/, '@');
+    const targetNormalizedJid = jid.replace(/:.*@/, '@');
+
+    // Strict Match
+    if (targetNormalizedJid === myNormalizedJid) return true;
+
+    // Cross-Format Match (PN vs LID) via session prefix
+    const myId = myNormalizedJid.split('@')[0];
+    const targetId = targetNormalizedJid.split('@')[0];
+    if (myId === targetId) return true;
   }
 
   const currentAdmins = ADMIN_NUMBERS;
