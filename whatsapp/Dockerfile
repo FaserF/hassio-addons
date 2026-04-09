@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.10"
+ENV APP_VERSION="1.5.0"
 ENV APP_NAME="WhatsApp"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
