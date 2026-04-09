@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.2 (2026-04-09)
+
+### 🚀 Other
+- fix planka web ui access #647 ([`5b904ac4`](https://github.com/FaserF/hassio-addons/commit/5b904ac47283b24fdf0775a39c636c5077453764))
+- fix planka web ui access #647 ([`b7df590f`](https://github.com/FaserF/hassio-addons/commit/b7df590f66290ad8091bc4530bab44ed248ea028))
+
+
 ## 1.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes
