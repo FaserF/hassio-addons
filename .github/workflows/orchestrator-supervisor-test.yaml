@@ -65,9 +65,8 @@ jobs:
       - name: "🔧 Filter Ingress-Enabled Apps"
         id: filter
         run: |
-          # shellcheck disable=SC2086,SC2129
           # Parse input - handle both JSON array (from workflow_call) and comma-separated (from dispatch)
-          INPUT='${{ inputs.Apps }}'
+          INPUT="${{ inputs.Apps }}"
 
           # Check if it's a JSON array
           if echo "$INPUT" | jq -e 'type == "array"' > /dev/null 2>&1; then
@@ -95,9 +94,9 @@ jobs:
           # Filter to only ingress-enabled Apps
           # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
           INGRESS_AppS=""
-          # shellcheck disable=SC2086
-          for App in $AppS; do
+          while IFS= read -r App || [ -n "$App" ]; do
             App=$(echo "$App" | xargs)  # trim whitespace
+            [ -z "$App" ] && continue
 
             # Skip .unsupported Apps - they are built locally from unsupported branch
             if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -f "./.unsupported/$App/config.yaml" ]; then
@@ -124,16 +123,20 @@ jobs:
             else
               echo "⏭️ $App does not have ingress - skipping"
             fi
-          done
+          done <<< "$AppS"
 
           if [ -z "$INGRESS_AppS" ]; then
             echo "No ingress-enabled Apps to test"
-            echo "ingress_Apps=" >> "$GITHUB_OUTPUT"
-            echo "has_Apps=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "ingress_Apps="
+              echo "has_Apps=false"
+            } >> "$GITHUB_OUTPUT"
           else
             echo "Ingress Apps to test: $INGRESS_AppS"
-            echo "ingress_Apps=$INGRESS_AppS" >> "$GITHUB_OUTPUT"
-            echo "has_Apps=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "ingress_Apps=$INGRESS_AppS"
+              echo "has_Apps=true"
+            } >> "$GITHUB_OUTPUT"
           fi
 
   supervisor-test:
@@ -180,12 +183,10 @@ jobs:
       - name: "🚀 Start Supervisor Environment"
         id: supervisor
         run: |
-          # shellcheck disable=SC2086
           # Generate a random Supervisor token for this run
           SUPERVISOR_TOKEN="$(openssl rand -hex 16)"
           echo "SUPERVISOR_TOKEN=$SUPERVISOR_TOKEN" >> "$GITHUB_ENV"
 
-          # shellcheck disable=SC2086,SC2129,SC2034
           # Create network
           docker network create ha-test-net 2>/dev/null || true
 
@@ -342,19 +343,21 @@ jobs:
             # Fail fast if container crashed
             if [ "$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null)" != "running" ]; then
               echo "Container stopped unexpectedly!"
-              echo "::group::Container Inspect (Exit Info)"
-              docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State}' || true
-              echo "::endgroup::"
-              echo "::group::Supervisor Logs (via docker cp)"
-              docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null || true
-              cat /tmp/supervisor-crash.log 2>/dev/null || echo "No supervisor log recovered"
-              echo "::endgroup::"
-              echo "::group::Docker Logs (stdout/stderr)"
-              docker logs ha-supervisor-test 2>&1 || true
-              echo "::endgroup::"
-              echo "::group::Host dmesg (OOM check)"
-              sudo dmesg | tail -30 2>/dev/null || true
-              echo "::endgroup::"
+              {
+                echo "::group::Container Inspect (Exit Info)"
+                docker inspect ha-supervisor-test 2>/dev/null | jq '.[] | {State}' || true
+                echo "::endgroup::"
+                echo "::group::Supervisor Logs (via docker cp)"
+                docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null || true
+                cat /tmp/supervisor-crash.log 2>/dev/null || echo "No supervisor log recovered"
+                echo "::endgroup::"
+                echo "::group::Docker Logs (stdout/stderr)"
+                docker logs ha-supervisor-test 2>&1 || true
+                echo "::endgroup::"
+                echo "::group::Host dmesg (OOM check)"
+                sudo dmesg | tail -30 2>/dev/null || true
+                echo "::endgroup::"
+              }
               break
             fi
 
@@ -364,24 +367,26 @@ jobs:
 
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
-            echo "::group::Internal Supervisor Logs"
-            docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null || \
-              (docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null && cat /tmp/supervisor-crash.log) || \
-              echo "No internal logs found"
-            echo "::endgroup::"
-            echo "::group::Docker-in-Docker Daemon Status"
-            timeout 10s docker exec ha-supervisor-test docker info 2>&1 || echo "Docker daemon not reachable"
-            timeout 10s docker exec ha-supervisor-test cat /var/log/docker.log 2>/dev/null || true
-            timeout 10s docker exec ha-supervisor-test journalctl -u docker --no-pager -n 100 2>/dev/null || true
-            echo "::endgroup::"
-            echo "::group::Docker Logs (outer container)"
-            docker logs ha-supervisor-test 2>&1 || true
-            echo "::endgroup::"
-            echo "::group::Disk and Memory Info"
-            df -h 2>/dev/null || true
-            free -m 2>/dev/null || true
-            echo "::endgroup::"
-            echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "::group::Internal Supervisor Logs"
+              docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null || \
+                (docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null && cat /tmp/supervisor-crash.log) || \
+                echo "No internal logs found"
+              echo "::endgroup::"
+              echo "::group::Docker-in-Docker Daemon Status"
+              timeout 10s docker exec ha-supervisor-test docker info 2>&1 || echo "Docker daemon not reachable"
+              timeout 10s docker exec ha-supervisor-test cat /var/log/docker.log 2>/dev/null || true
+              timeout 10s docker exec ha-supervisor-test journalctl -u docker --no-pager -n 100 2>/dev/null || true
+              echo "::endgroup::"
+              echo "::group::Docker Logs (outer container)"
+              docker logs ha-supervisor-test 2>&1 || true
+              echo "::endgroup::"
+              echo "::group::Disk and Memory Info"
+              df -h 2>/dev/null || true
+              free -m 2>/dev/null || true
+              echo "::endgroup::"
+              echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
+            }
             exit 1
           fi
 
@@ -437,11 +442,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # shellcheck disable=SC2086,SC2129,SC2034
           RESULTS=""
           FAILED=0
-          # TIMEOUT="${{ inputs.timeout || '15' }}" # Unused currently
-          # TIMEOUT=15
 
           IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
 
@@ -451,7 +453,7 @@ jobs:
 
             # Check for newer commit before starting this App test
             # This allows cancelling long-running test sequences if a newer PR version is available
-            LATEST_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq '.headRefOid' 2>/dev/null || echo "")
+            LATEST_SHA=$(gh pr view "${{ github.event.pull_request.number }}" --json headRefOid --jq '.headRefOid' 2>/dev/null || echo "")
             CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
             if [ -n "$LATEST_SHA" ] && [ "$LATEST_SHA" != "$CURRENT_SHA" ]; then
                echo "::warning title=Skipped for newer commit::Stopping tests because a newer commit ($LATEST_SHA) is available for this PR."
@@ -502,7 +504,7 @@ jobs:
 
             # Check supervisor logs for discovery errors
             echo "Checking supervisor logs for discovery/validation errors..."
-            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|warn|validation|failed to load|invalid|$App|$SLUG)" || echo "No discovery errors found in logs"
+            docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -200 | grep -iE "(error|warn|validation|failed to load|invalid|$App|$SLUG)" | grep -vE "error=None|warning=None|PullLogEntry" || echo "No discovery errors found in logs"
 
             # Verify App is detected
             echo "Checking if App is detected..."
@@ -521,7 +523,7 @@ jobs:
               docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$App/" 2>&1 || echo "App directory not found"
               echo ""
               echo "Checking for validation errors in supervisor logs..."
-              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(validation|error|$App|$SLUG)" || echo "No validation errors found"
+              docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -200 | grep -iE "(validation|error|$App|$SLUG)" | grep -vE "error=None|warning=None|PullLogEntry" || echo "No validation errors found"
             fi
 
             # Install App
@@ -543,7 +545,7 @@ jobs:
             # Handle 500 errors as warnings instead of failures
             # Note: This is likely a CI container issue, but could also indicate real App start problems
             # Should be investigated if it occurs frequently
-            if [ $INSTALL_EXIT -ne 0 ]; then
+            if [ "$INSTALL_EXIT" -ne 0 ]; then
               if echo "$INSTALL_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                 echo "⚠️ Install returned 500 error (treating as WARN - likely CI container issue, but verify App)"
                 docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -25 || true
@@ -562,7 +564,7 @@ jobs:
                 elif [ "$App_INSTALLED" = "false" ]; then
                   echo "❌ App was NOT installed despite 500 error (installed: false)"
                   echo "Checking supervisor logs for validation errors..."
-                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -200 | grep -iE "(error|$App|$SLUG|install|validation)" | grep -vE "error=None|warning=None|PullLogEntry" || echo "No relevant errors in supervisor logs"
                   RESULTS="$RESULTS\n❌ $App: FAIL (Install 500 error and not installed)"
                   FAILED=1
                   INSTALL_EXIT=1
@@ -577,7 +579,7 @@ jobs:
               else
                 echo "❌ Install failed with exit code $INSTALL_EXIT"
                 echo "Checking supervisor logs for more details..."
-                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -100 | grep -iE "(error|$App|$SLUG|install|validation)" || echo "No relevant errors in supervisor logs"
+                docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -200 | grep -iE "(error|$App|$SLUG|install|validation)" | grep -vE "error=None|warning=None|PullLogEntry" || echo "No relevant errors in supervisor logs"
                 echo "Checking App info..."
                 docker exec ha-supervisor-test ha apps info "$SLUG" 2>&1 || echo "Could not get App info"
                 docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || echo "Could not get App logs"
@@ -586,7 +588,7 @@ jobs:
               fi
             fi
 
-            if [ $INSTALL_EXIT -eq 0 ]; then
+            if [ "$INSTALL_EXIT" -eq 0 ]; then
               echo "✅ Install successful"
 
               # Configure options if needed (matching PowerShell logic)
@@ -672,7 +674,7 @@ jobs:
               set -e # Re-enable exit on error
 
               # Handle 500 errors and context deadline exceeded as warnings instead of failures
-              if [ $START_EXIT -ne 0 ]; then
+              if [ "$START_EXIT" -ne 0 ]; then
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
                   echo "⚠️ Start returned 500 error (treating as WARN - likely CI issue)"
                   RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500)"
@@ -700,7 +702,7 @@ jobs:
                 fi
               fi
 
-              if [ $START_EXIT -eq 0 ]; then
+              if [ "$START_EXIT" -eq 0 ]; then
                 echo "✅ Start command successful"
 
                 # Check for mandatory service dependencies (like mysql:need)
@@ -815,11 +817,13 @@ jobs:
         if: always()
         run: |
           echo "Stopping and removing containers..."
-          docker stop ha-supervisor-test 2>/dev/null || true
-          docker rm -f ha-supervisor-test 2>/dev/null || true
-          docker volume rm ha-supervisor-storage 2>/dev/null || true
-          docker network rm ha-test-net 2>/dev/null || true
-          sudo rm -rf /tmp/ha-data
+          {
+            docker stop ha-supervisor-test 2>/dev/null || true
+            docker rm -f ha-supervisor-test 2>/dev/null || true
+            docker volume rm ha-supervisor-storage 2>/dev/null || true
+            docker network rm ha-test-net 2>/dev/null || true
+            sudo rm -rf /tmp/ha-data
+          }
 
       - name: "📊 Summary"
         if: always()
