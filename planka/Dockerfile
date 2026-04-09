@@ -7,6 +7,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
+# hadolint ignore=DL3013
 
 # App metadata (injected by CI)
 ENV APP_VERSION="1.3.0"
@@ -14,7 +15,6 @@ ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
 
-# hadolint ignore=DL3013
 RUN \
     apk add --no-cache -u libssl3 libcrypto3 \
         nodejs \
