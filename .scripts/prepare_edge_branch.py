@@ -398,7 +398,7 @@ def main():
         if add_edge_notice_to_readme(readme_path):
             print(f"   📝 Added edge notice to {addon_dir}/README.md")
             readmes_updated += 1
-            
+
         if update_badge_hash_in_readme(readme_path, "605cee21", "edfe50eb"):
             print(f"   🔥 Updated supervisor badge hash to edge in {addon_dir}/README.md")
 
