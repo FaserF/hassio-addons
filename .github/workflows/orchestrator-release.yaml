@@ -803,7 +803,7 @@ jobs:
 
       - name: 🐳 Set up QEMU
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: 🐳 Set up Docker Buildx
         if: matrix.App != 'sap-abap-cloud-dev'
