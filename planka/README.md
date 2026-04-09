@@ -32,6 +32,9 @@ base_url: ''
 certfile: fullchain.pem
 keyfile: privkey.pem
 log_level: info
+public_domain: ''
+reset_database: false
+reset_database_confirm: false
 secret_key: ''
 ssl: false
 ```

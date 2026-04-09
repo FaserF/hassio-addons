@@ -49,19 +49,19 @@ bashio::app.option() {
 # Get the ingress entry point
 # ------------------------------------------------------------------------------
 bashio::app.ingress_entry() {
-    bashio::addon.ingress_entry "$@"
+	bashio::addon.ingress_entry "$@"
 }
 
 # ------------------------------------------------------------------------------
 # Get the ingress port
 # ------------------------------------------------------------------------------
 bashio::app.ingress_port() {
-    bashio::addon.ingress_port "$@"
+	bashio::addon.ingress_port "$@"
 }
 
 # ------------------------------------------------------------------------------
 # Get the app version
 # ------------------------------------------------------------------------------
 bashio::app.version() {
-    bashio::addon.version "$@"
+	bashio::addon.version "$@"
 }
