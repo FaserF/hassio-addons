@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 (2026-04-09)
+
+### 📦 Dependencies
+- Update CHANGELOG.md ([`8e912b6d`](https://github.com/FaserF/hassio-addons/commit/8e912b6ddc4a4c84d3cdd80eba72815c5a772ef3))
+
+
 ## 0.1.0 (2026-04-09)
 
 ### 🚀 Other
