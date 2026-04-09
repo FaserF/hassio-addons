@@ -278,7 +278,7 @@ mkdir -p /run/nginx /etc/nginx/http.d
 
 cat <<EOF >/etc/nginx/http.d/default.conf
 server {
-    listen 80;
+    listen 8099;
     server_name _;
     
     location / {
@@ -289,6 +289,10 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_set_header X-Hass-Source "Ingress";
         proxy_set_header X-Ingress-Name "ShieldDNS";
+        
+        # Proper Ingress support
+        proxy_set_header X-Ingress-Path \$http_x_ingress_path;
+        proxy_set_header X-Forwarded-Host \$host;
     }
 }
 

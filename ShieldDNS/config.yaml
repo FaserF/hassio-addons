@@ -9,8 +9,7 @@ arch:
 init: false
 host_network: true
 ingress: true
-ingress_port: 80
-ingress_entry: "/"
+ingress_entry: "/admin"
 panel_icon: "mdi:shield-dns"
 map:
   - homeassistant_config:rw
