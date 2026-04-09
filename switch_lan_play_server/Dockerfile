@@ -7,7 +7,7 @@ FROM ${BUILD_FROM} AS builder
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.0"
+ENV APP_VERSION="2.3.1"
 ENV APP_NAME="Switch LAN Play Server"
 ENV APP_SLUG="switch-lan-play-server"
 ENV APP_UNSUPPORTED="false"
