@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Layer 1: Core System Tools & VNC Setup
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.1"
+ENV APP_VERSION="1.2.2"
 ENV APP_NAME="Antigravity-Server"
 ENV APP_SLUG="antigravity-server"
 ENV APP_UNSUPPORTED="false"
