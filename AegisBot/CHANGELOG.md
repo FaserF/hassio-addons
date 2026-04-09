@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.3 (2026-04-09)
+
+### 📦 Dependencies
+- Update run.sh ([`e2459f57`](https://github.com/FaserF/hassio-addons/commit/e2459f576abaca3ad4221fa58fb8820607369a5d))
+
+### 🚀 Other
+- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
+- HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
+- remove n8n ([`5527a8ef`](https://github.com/FaserF/hassio-addons/commit/5527a8efd422443dbe3ea0bd2583a5a08605ae94))
+- app version injection improvements ([`63580a20`](https://github.com/FaserF/hassio-addons/commit/63580a201a16724ac7712b1ed52c4f195ab05fe4))
+- use docker WORKDIR ([`928d223a`](https://github.com/FaserF/hassio-addons/commit/928d223a27fbdae3e6e0db8a5d37ef13416e6d6b))
+- CI Test fixes ([`5d9969b0`](https://github.com/FaserF/hassio-addons/commit/5d9969b06c47352cdd4ce1703ced2903bc370fdb))
+- Add stage tags ([`75528e61`](https://github.com/FaserF/hassio-addons/commit/75528e6193a0ce55537d2f89fe6069a703f7da88))
+- small fix ([`07257a4f`](https://github.com/FaserF/hassio-addons/commit/07257a4f5531437b83ebc513d3ffae4b4d532dfd))
+- fix repo link ([`bddaa7bd`](https://github.com/FaserF/hassio-addons/commit/bddaa7bd419f7f35aa3343dfc704507544958c14))
+- fix DB reset ([`c891d261`](https://github.com/FaserF/hassio-addons/commit/c891d26105c96c6f034ece97c3de9b61e5b9dbb9))
+- improved DB reset option ([`01cb6fed`](https://github.com/FaserF/hassio-addons/commit/01cb6fed05abe9406223d3b93a5a7b9f968d0f95))
+- fix DB reset ([`dc9fd3d5`](https://github.com/FaserF/hassio-addons/commit/dc9fd3d530abcaf07ffe7fc4f7ea605f69bfacb6))
+- fixes for new webserver integration ([`5e1439dd`](https://github.com/FaserF/hassio-addons/commit/5e1439dd399069225f4dcbcc9494000134b8efe0))
+
+
 ## 0.5.2 (2026-03-23)
 
 ### 🚀 Other
