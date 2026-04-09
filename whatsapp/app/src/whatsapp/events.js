@@ -205,7 +205,9 @@ export function handleIncomingMessages(session) {
           // Allow outgoing messages if they are to an admin (usually to self)
           // We check both the primary JID and the alternative JID (handles LID<>PN mismatch)
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
-          const isToAdminAlt = msg.key.remoteJidAlt ? isAdmin(msg.key.remoteJidAlt, session) : false;
+          const isToAdminAlt = msg.key.remoteJidAlt
+            ? isAdmin(msg.key.remoteJidAlt, session)
+            : false;
           const isToAdmin = isToAdminPrimary || isToAdminAlt;
 
           if (!isToAdmin) {
