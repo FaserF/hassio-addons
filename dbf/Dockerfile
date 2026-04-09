@@ -48,6 +48,7 @@ RUN \
         db \
         curl \
         git \
+        nginx \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git /app \
     && cd /app \
     && cpanm -n --no-man-pages --installdeps . \
@@ -61,8 +62,14 @@ RUN \
 COPY rootfs /
 
 # Ensure scripts are executable and have Unix line endings
-RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed -i 's/\r$//' {} + \
-    && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager /etc/s6-overlay/s6-rc.d/dbf/run /etc/s6-overlay/s6-rc.d/dbf-periodic/run /etc/periodic/daily/dbf-update-data
+RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic /etc/nginx -type f -exec sed -i 's/\r$//' {} + \
+    && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager \
+        /etc/s6-overlay/s6-rc.d/dbf/run \
+        /etc/s6-overlay/s6-rc.d/dbf-periodic/run \
+        /etc/s6-overlay/s6-rc.d/dbf-nginx/run \
+        /etc/periodic/daily/dbf-update-data \
+    && rm -f /etc/nginx/http.d/default.conf \
+    && mkdir -p /run/nginx
 
 # Metadata
 LABEL \

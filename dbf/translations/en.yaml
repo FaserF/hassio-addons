@@ -15,4 +15,4 @@ configuration:
     name: "Privacy Policy URL"
     description: "URL pointing to an external privacy policy page. If left blank, a local default placeholder will be used."
 network:
-  8092/tcp: Web interface port to access DBF outside of Home Assistant (Optional).
+  8092/tcp: DBF web interface port. Required for the Home Assistant integration app to connect, but not needed for Ingress access.

@@ -25,6 +25,7 @@ export DBFAKEDISPLAY_STATS="/data/stats.json"
 export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
 export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"
 export DBFAKEDISPLAY_LISTEN="http://*:8092"
+export MOJO_REVERSE_PROXY=1
 
 # HTML Escaping helper
 # Replaces &, <, >, ", and ' with entities

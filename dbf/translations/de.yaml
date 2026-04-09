@@ -15,4 +15,4 @@ configuration:
     name: "Datenschutzerklärung URL"
     description: "URL, die auf eine externe Datenschutzerklärung verweist. Wenn leer, wird ein lokaler Standardplatzhalter verwendet."
 network:
-  8092/tcp: Web-Interface-Port für den externen Zugriff auf DBF außerhalb von Home Assistant (Optional).
+  8092/tcp: Web-Interface-Port für DBF. Wird für die Integration in der Home Assistant App benötigt, ist aber für den Ingress-Zugriff im Browser nicht erforderlich.

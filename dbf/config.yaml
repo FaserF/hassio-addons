@@ -8,15 +8,14 @@ arch:
   - amd64
 init: false
 ingress: true
-ingress_port: 8092
 ingress_entry: "/"
 panel_icon: "mdi:train"
 map:
   - homeassistant_config:rw
 ports:
-  8092/tcp: null
+  8092/tcp: 8092
 ports_description:
-  8092/tcp: "Web Interface (Optional)"
+  8092/tcp: "Web Interface (Required for HA App integration, not needed for Ingress)"
 options:
   log_level: info
   workers: 2
