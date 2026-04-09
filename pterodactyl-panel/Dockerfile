@@ -68,6 +68,7 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
     && rm /tmp/composer-setup.php \
     && cp .env.example .env \
     && composer install --ansi --no-dev --optimize-autoloader \
+    && rm -rf .git \
     && chown -R nginx:nginx . \
     && yarn install --production \
     && yarn add cross-env \
