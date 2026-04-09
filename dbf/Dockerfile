@@ -1,6 +1,4 @@
-# ARG BASE_IMAGE points to the hassio-addons base image
-# This allows building for multiple architectures
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
 FROM ${BUILD_FROM}
 
 # Build arguments
@@ -48,28 +46,34 @@ RUN \
         db \
         curl \
         git \
-        nginx \
+        curl \
+        git \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git /app \
     && cd /app \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \
     && ln -sf ../ext-templates/imprint.html.ep templates/imprint.html.ep \
-    && ln -sf ../ext-templates/privacy.html.ep templates/privacy.html.ep \
-    && apk del --no-cache .build-dependencies
+    && ln -sf ../ext-templates/privacy.html.ep templates/privacy.html.ep
+
+# Copy the patch script and apply it
+COPY patch_ingress.pl /app/patch_ingress.pl
+RUN perl /app/patch_ingress.pl /app/lib/DBInfoscreen.pm && rm /app/patch_ingress.pl
+
+# Clean up build dependencies
+RUN apk del --no-cache .build-dependencies
 
 # Copy rootfs
 COPY rootfs /
 
 # Ensure scripts are executable and have Unix line endings
-RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic /etc/nginx -type f -exec sed -i 's/\r$//' {} + \
+RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed -i 's/\r$//' {} + \
     && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager \
         /etc/s6-overlay/s6-rc.d/dbf/run \
         /etc/s6-overlay/s6-rc.d/dbf-periodic/run \
-        /etc/s6-overlay/s6-rc.d/dbf-nginx/run \
         /etc/periodic/daily/dbf-update-data \
-    && rm -f /etc/nginx/http.d/default.conf \
-    && mkdir -p /run/nginx
+    && rm -rf /etc/s6-overlay/s6-rc.d/dbf-nginx \
+    && rm -f /etc/s6-overlay/s6-rc.d/user/contents.d/dbf-nginx
 
 # Metadata
 LABEL \

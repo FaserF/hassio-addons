@@ -84,3 +84,4 @@ validate_json.py
 *lint*.txt
 *markdown*.txt
 *error*.txt
+/scratch
