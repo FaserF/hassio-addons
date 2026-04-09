@@ -5,15 +5,14 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Create directory for apache2 to store PID file and install dependencies
 # hadolint ignore=DL3018
+# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
+ARG APACHE2_VERSION="2.4.66-r0"
 
 # App metadata (injected by CI)
 ENV APP_VERSION="3.3.0"
 ENV APP_NAME="Apache2 Minimal"
 ENV APP_SLUG="apache2-minimal"
 ENV APP_UNSUPPORTED="false"
-
-# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
-ARG APACHE2_VERSION="2.4.66-r0"
 
 RUN mkdir /run/apache2 \
  && apk --no-cache add libcrypto3 libssl3 \
