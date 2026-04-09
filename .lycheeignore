@@ -12,6 +12,8 @@ https://lan-play.com/
 
 # GitHub redirects that Lychee sometimes flags
 https://github.com/login.*
+https://github.com/settings/personal-access-tokens/new
+https://github.com/settings/tokens
 https://github.com/FaserF/hassio-addons/issues/new.*
 
 # Home Assistant documentation that might be flaky or redirected
