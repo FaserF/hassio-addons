@@ -135,9 +135,12 @@ Sends a poll.
 {
   "number": "1234567890",
   "question": "Pizza or Burger?",
-  "options": ["Pizza", "Burger", "Both"]
+  "options": ["Pizza", "Burger", "Both"],
+  "selectableCount": 1
 }
 ```
+
+- **selectableCount**: Set to `1` for single-choice polls, or `0` for multi-choice polls.
 
 #### `POST /send_location`
 

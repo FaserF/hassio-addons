@@ -202,8 +202,20 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.key.fromMe) {
-          const myJid = session.sock.user.id.replace(/:.*@/, '@');
-          return msg.key.remoteJid === myJid;
+          const myJid = session.sock.user?.id?.replace(/:.*@/, '@');
+          if (!myJid) return false;
+
+          const myId = myJid.split('@')[0];
+          const remoteId = msg.key.remoteJid.split('@')[0];
+          const isToMe = myId === remoteId;
+
+          if (!isToMe) {
+            logger.debug(
+              { myJid, remoteJid: msg.key.remoteJid, sessionId: session.id },
+              '🔍 Outgoing message filtered (not sent to self)'
+            );
+          }
+          return isToMe;
         }
         return true;
       })

@@ -215,14 +215,18 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      let normalizedSelectableCount =
-        selectableCount === undefined || selectableCount === null ? 1 : Number(selectableCount);
-      if (
-        !Number.isInteger(normalizedSelectableCount) ||
-        normalizedSelectableCount < 0 ||
-        normalizedSelectableCount > options.length
-      ) {
-        normalizedSelectableCount = 1;
+      const optionsValid = Array.isArray(options) && options.length > 0;
+      const optionsLength = optionsValid ? options.length : 0;
+
+      let normalizedSelectableCount = Number(selectableCount ?? 1);
+      if (isNaN(normalizedSelectableCount)) normalizedSelectableCount = 1;
+      normalizedSelectableCount = Math.floor(normalizedSelectableCount);
+
+      if (normalizedSelectableCount < 0) normalizedSelectableCount = 0;
+      if (normalizedSelectableCount > optionsLength) normalizedSelectableCount = optionsLength;
+
+      if (!optionsValid) {
+        normalizedSelectableCount = 0;
       }
       const sentMsg = await session.sock.sendMessage(
         jid,
