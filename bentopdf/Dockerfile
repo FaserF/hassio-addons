@@ -13,7 +13,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.0"
+ENV APP_VERSION="1.2.1"
 ENV APP_NAME="BentoPDF"
 ENV APP_SLUG="bentopdf"
 ENV APP_UNSUPPORTED="false"
