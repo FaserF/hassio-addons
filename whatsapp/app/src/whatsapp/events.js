@@ -203,12 +203,14 @@ export function handleIncomingMessages(session) {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self)
-          const isToAdmin = isAdmin(msg.key.remoteJid, session);
+          // We check both the primary JID and the alternative JID (handles LID<>PN mismatch)
+          const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
+          const isToAdminAlt = msg.key.remoteJidAlt ? isAdmin(msg.key.remoteJidAlt, session) : false;
+          const isToAdmin = isToAdminPrimary || isToAdminAlt;
 
           if (!isToAdmin) {
-            logger.debug(
-              { remoteJid: msg.key.remoteJid, sessionId: session.id },
-              '🔍 Outgoing message filtered (not sent to admin/self)'
+            logger.info(
+              `🔍 Outgoing message filtered. session.user.id: ${session.sock?.user?.id}, remoteJid: ${msg.key.remoteJid}, remoteJidAlt: ${msg.key.remoteJidAlt || 'N/A'}`
             );
           }
           return isToAdmin;
