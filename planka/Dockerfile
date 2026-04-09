@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3013
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.3.0"
+ENV APP_VERSION="1.3.1"
 ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
