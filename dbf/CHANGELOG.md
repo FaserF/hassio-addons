@@ -4,6 +4,11 @@
 
 - Initial stable HA App release for DBF
 
+### 🚀 Other
+- Port fallback usage if port is already in use ([`ff92c112`](https://github.com/FaserF/hassio-addons/commit/ff92c112d3c16e64e8e21ca3d7e52f4aa2a46960))
+- small fix ([`825f53dc`](https://github.com/FaserF/hassio-addons/commit/825f53dc686dcbb37044145e6d7c895601903b5a))
+
+
 ## 0.1.0 (2026-04-09)
 
 ### 🚀 Other

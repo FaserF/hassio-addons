@@ -26,7 +26,7 @@ ARG DBF_VERSION="4.37.28"
 # hadolint ignore=DL3003,DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.1.1"
+ENV APP_VERSION="1.0.0"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"
