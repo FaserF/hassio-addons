@@ -1,6 +1,6 @@
 ---
 name: Bash Script Executer
-version: 2.4.0
+version: 2.4.1
 slug: bashscriptexecuter
 description: >-
   Execute your own bash scripts inside this Homeassistant App environment.
