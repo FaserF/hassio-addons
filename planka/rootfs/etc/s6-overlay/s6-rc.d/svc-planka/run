@@ -73,14 +73,14 @@ bashio::app.print_banner
 DETECTED_BASE_URL=""
 
 if bashio::var.has_value "$(bashio::config 'base_url')"; then
-    DETECTED_BASE_URL="$(bashio::config 'base_url')"
-    # Prepend protocol if missing to avoid 'Invalid URL' crash
-    if [[ ! "$DETECTED_BASE_URL" =~ ^https?:// ]]; then
-        if bashio::config.true 'ssl'; then
-            DETECTED_BASE_URL="https://${DETECTED_BASE_URL}"
-        else
-            DETECTED_BASE_URL="http://${DETECTED_BASE_URL}"
-        fi
+    # Aggressively strip any provided protocol and trailing slash
+    CLEAN_BASE=$(echo "$(bashio::config 'base_url')" | sed -E 's|^https?://||' | sed 's|/$||')
+    
+    # Strictly re-assemble based on addon SSL setting
+    if bashio::config.true 'ssl'; then
+        DETECTED_BASE_URL="https://${CLEAN_BASE}"
+    else
+        DETECTED_BASE_URL="http://${CLEAN_BASE}"
     fi
 elif bashio::var.has_value "$(bashio::app.ingress_entry)"; then
     DETECTED_BASE_URL="http://localhost$(bashio::app.ingress_entry)"
@@ -116,36 +116,20 @@ case "$App_LOG_LEVEL" in
     error|fatal)  export LOG_LEVEL="error" ;;
     *)            export LOG_LEVEL="info"  ;;
 esac
-# 1. Restricted CORS Configuration (with robust fail-safes)
-# Start with absolute defaults that always work
-CORS_ORIGINS="http://localhost:1337,http://127.0.0.1:1337"
-CORS_ORIGINS="${CORS_ORIGINS},http://homeassistant.local:8123,https://homeassistant.local:8123"
-CORS_ORIGINS="${CORS_ORIGINS},http://homeassistant:8123,https://homeassistant:8123"
 
-# Try to fetch HA IP (Using 2026 silent DNS standards to avoid privileged API blocks)
-# We resolve 'homeassistant' as it is the fastest, zero-permission way to find the core IP.
-if ! LOCAL_IP=$(getent hosts homeassistant | awk '{ print $1 }' | head -n 1) || [ -z "$LOCAL_IP" ]; then
-    bashio::log.info "Internal DNS discovery for 'homeassistant' failed. Falling back to local detection..."
-    LOCAL_IP=$(hostname -i | awk '{print $1}')
-fi
+# 4. Configure Secure CORS Whitelist
+# We starts with trusted local origins
+CORS_ORIGINS="http://localhost:1337,http://127.0.0.1:1337,http://homeassistant:1337,http://homeassistant.local:1337"
 
-# Add the detected IP if valid
-if [ -n "$LOCAL_IP" ] && [ "$LOCAL_IP" != "null" ]; then
+# Add Home Assistant's internal IP for robust local access
+LOCAL_IP=$(getent hosts homeassistant | awk '{ print $1 }' | head -n 1)
+if [ -n "$LOCAL_IP" ]; then
     CORS_ORIGINS="${CORS_ORIGINS},http://${LOCAL_IP}:8123,https://${LOCAL_IP}:8123,http://${LOCAL_IP}:1337"
 fi
 
-# Add user-defined public domain
-PUBLIC_DOMAIN=$(bashio::config 'public_domain')
-if [ -n "$PUBLIC_DOMAIN" ]; then
-    # Strip protocol if the user provided it anyway to ensure consistency
-    CLEAN_DOMAIN=$(echo "${PUBLIC_DOMAIN}" | sed -E 's|^https?://||' | sed 's|/$||')
-    
-    # Determine protocol based on SSL setting
-    if bashio::config.true 'ssl'; then
-        CORS_ORIGINS="${CORS_ORIGINS},https://${CLEAN_DOMAIN}"
-    else
-        CORS_ORIGINS="${CORS_ORIGINS},http://${CLEAN_DOMAIN}"
-    fi
+# Add the re-assembled BASE_URL origin to CORS whitelist
+if [ -n "$BASE_URL" ]; then
+    CORS_ORIGINS="${CORS_ORIGINS},${BASE_URL}"
 fi
 
 # Apply restricted CORS to Sails

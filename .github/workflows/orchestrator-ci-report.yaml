@@ -43,7 +43,7 @@ jobs:
             const path = require('path');
             const run = context.payload.workflow_run;
             const pr = run.pull_requests[0];
-            
+
             if (!pr) {
               console.log("No pull request found for this workflow run.");
               return;
@@ -72,7 +72,7 @@ jobs:
             // 2. Determine if we should post SUCCESS or FAILURE report
             // Success = everything passed (conclusion is success)
             // Failure = conclusion is failure, cancelled, or timed_out
-            
+
             const isSuccess = run.conclusion === 'success';
 
             // Fetch existing comments to minimize old ones
@@ -111,11 +111,11 @@ jobs:
             if (isSuccess) {
                 // --- SUCCESS FLOW ---
                 console.log("Processing Success Report...");
-                
+
                 // Get job results for the success message
                 const buildJob = allJobs.find(j => j.name.includes("Test Build"));
                 const lintJob = allJobs.find(j => j.name.includes("Lint & Validate"));
-                
+
                 const buildSkipped = buildJob ? buildJob.conclusion === 'skipped' : true;
                 const lintSkipped = lintJob ? lintJob.conclusion === 'skipped' : true;
                 const allSkipped = buildSkipped && lintSkipped;
@@ -137,7 +137,7 @@ jobs:
                     skipped: allSkipped,
                     buildStatus: buildStatus,
                     autoMergeNote: autoMergeNote,
-                    previousErrorsNote: "" 
+                    previousErrorsNote: ""
                 });
 
                 await github.rest.issues.createComment({
@@ -166,35 +166,35 @@ jobs:
             } else {
                 // --- FAILURE FLOW ---
                 console.log("Processing Failure Report...");
-                
+
                 // [Logic for Platinum Compliance Report]
                 let platinumSummary = "";
                 if (fs.existsSync('reports')) {
                     const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
                     let complianceContent = "";
                     let totalIssues = 0;
-                    
+
                     for (const dir of dirs) {
                         const reportPath = path.join('reports', dir, 'compliance_report.txt');
                         if (fs.existsSync(reportPath)) {
                             const content = fs.readFileSync(reportPath, 'utf8');
                             if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) continue;
-                            
+
                             const AppMatch = content.match(/^App: (.+)$/m);
                             const AppName = AppMatch ? AppMatch[1] : dir.replace('compliance-', '');
                             const displayContent = content.replace(/^App: .+\n/, '');
-                            
+
                             complianceContent += `<details>\n<summary><strong>${AppName}</strong>: ❌ Issues Found</summary>\n\n${displayContent}\n</details>\n\n`;
                             totalIssues++;
                         }
                     }
-                    
+
                     if (totalIssues > 0) {
                         platinumSummary = "## 🛡️ Platinum Compliance Issues\n\n";
                         platinumSummary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
                         platinumSummary += complianceContent;
                         platinumSummary += "\n💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
-                        
+
                         await github.rest.issues.createComment({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
@@ -205,11 +205,11 @@ jobs:
                 }
 
                 // [Logic for General Failure Report]
-                const problematicJobs = allJobs.filter(j => 
+                const problematicJobs = allJobs.filter(j =>
                     j.conclusion === 'failure' || j.conclusion === 'cancelled' || j.conclusion === 'timed_out' ||
                     (j.conclusion === 'success' && j.steps && j.steps.some(s => s.conclusion === 'failure'))
                 );
-                
+
                 const nonComplianceJobs = problematicJobs.filter(job => {
                     const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure') : [];
                     return failedSteps.length === 0 || !failedSteps.every(step => step.name && step.name.includes("Compliance"));
@@ -219,12 +219,12 @@ jobs:
                     let report = "## ❌ General CI Failure Report\n\n";
                     report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
                     report += "| Job | Step | Link |\n|---|---|---|\n";
-                    
+
                     for (const job of nonComplianceJobs) {
                         const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out') : [];
                         const displaySteps = failedSteps.filter(s => !s.name || !s.name.includes("Compliance"));
                         const jobLink = `[${job.name}](${job.html_url})`;
-                        
+
                         if (displaySteps.length === 0) {
                             report += `| ${jobLink} | Job Failed | [View Logs](${job.html_url}) |\n`;
                         } else {
@@ -233,7 +233,7 @@ jobs:
                             }
                         }
                     }
-                    
+
                     await github.rest.issues.createComment({
                         owner: context.repo.owner,
                         repo: context.repo.repo,

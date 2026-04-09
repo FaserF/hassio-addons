@@ -16,7 +16,7 @@ configuration:
     description: Geheimer Schlüssel zum Signieren von Sitzungen.
   base_url:
     name: Basis-URL
-    description: Benutzerdefinierte Basis-URL für Planka (optional).
+    description: Benutzerdefinierte Basis-URL für Planka für CORS whitelisting (z. B. planka.example.com).
   reset_database:
     name: Datenbank zurücksetzen
     description: Aktiviere diese Option, um die Datenbank zurückzusetzen. WARNUNG - Löscht alle Daten!

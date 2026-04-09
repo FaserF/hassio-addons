@@ -16,7 +16,7 @@ configuration:
     description: Secret key used for session signing.
   base_url:
     name: Base URL
-    description: Custom base URL for Planka (optional).
+    description: Custom base URL for Planka for CORS whitelisting (f.e. planka.example.com).
   reset_database:
     name: Reset Database
     description: Enable this option to reset the database. WARNING - Deletes all data!

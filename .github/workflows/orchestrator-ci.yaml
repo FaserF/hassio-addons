@@ -446,7 +446,6 @@ jobs:
       - name: ✅ Build Success
         run: echo "✅ amd64 build successful"
 
-
   # --------------------------------------------------------------------------------
   # SUPERVISOR TEST: Real Supervisor Integration (Only on PRs with code changes)
   # --------------------------------------------------------------------------------
@@ -472,4 +471,3 @@ jobs:
     with:
       Apps: ${{ needs.filter.outputs.Apps }}
       timeout: "15"
-
