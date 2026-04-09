@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.4.10 (2026-04-09)
+
+### ✨ Features
+- allow polls with multiple replies ([`80f4cbd8`](https://github.com/FaserF/hassio-addons/commit/80f4cbd8423f116e0b1bfe0278d4a788ba23d832))
+
+### 📦 Dependencies
+- Update events.js ([`914430a5`](https://github.com/FaserF/hassio-addons/commit/914430a529d546ca129dd4ce0ad7b388dcc59157))
+
+### 🚀 Other
+- fixed self messaging ([`1ff20d14`](https://github.com/FaserF/hassio-addons/commit/1ff20d14b18e138778aabd84fbb4fc4b260c8c7f))
+- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
+- remove temp Bayleys fix ([`346742a2`](https://github.com/FaserF/hassio-addons/commit/346742a23cdeb19c117aaba7c33bf56bf867fda5))
+- small HA app fixes ([`380ca2d0`](https://github.com/FaserF/hassio-addons/commit/380ca2d04e02d5a9da59c33f5c7eb2557f267e2a))
+- Improved self messaging ([`be182a3c`](https://github.com/FaserF/hassio-addons/commit/be182a3c4aae1b6a8e3bb49a83b84718be1099a8))
+- HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
+
+
 ## 1.4.9 (2026-04-08)
 
 ### 🐛 Bug Fixes
