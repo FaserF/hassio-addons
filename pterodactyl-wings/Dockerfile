@@ -6,7 +6,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.0"
+ENV APP_VERSION="2.3.1"
 ENV APP_NAME="pterodactyl Wings Gameserver"
 ENV APP_SLUG="pterodactyl_wings"
 ENV APP_UNSUPPORTED="false"
