@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3008
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.1.0"
+ENV APP_VERSION="0.1.1"
 ENV APP_NAME="Komodo"
 ENV APP_SLUG="komodo"
 ENV APP_UNSUPPORTED="false"
