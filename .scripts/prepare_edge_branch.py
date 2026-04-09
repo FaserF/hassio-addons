@@ -236,6 +236,28 @@ def add_edge_notice_to_readme(readme_path: str) -> bool:
         return False
 
 
+def update_badge_hash_in_readme(readme_path: str, old_hash: str, new_hash: str) -> bool:
+    """Update the supervisor addon badge hash for the edge branch."""
+    if not os.path.exists(readme_path):
+        return False
+
+    try:
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        new_content = content.replace(f"addon={old_hash}_", f"addon={new_hash}_")
+
+        if new_content != content:
+            with open(readme_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            return True
+
+        return False
+    except (OSError, ValueError) as e:
+        print(f"⚠️ Error updating badge hash in {readme_path}: {e}")
+        return False
+
+
 def update_repository_json() -> bool:
     """Update repository.json to indicate edge channel."""
     repo_json_path = "repository.json"
@@ -376,6 +398,9 @@ def main():
         if add_edge_notice_to_readme(readme_path):
             print(f"   📝 Added edge notice to {addon_dir}/README.md")
             readmes_updated += 1
+            
+        if update_badge_hash_in_readme(readme_path, "605cee21", "edfe50eb"):
+            print(f"   🔥 Updated supervisor badge hash to edge in {addon_dir}/README.md")
 
     # Update main repository.json
     if update_repository_json():

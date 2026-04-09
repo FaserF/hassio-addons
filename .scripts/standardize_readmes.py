@@ -7,7 +7,7 @@ import yaml
 
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"
-REPO_HASH = "c1e285b7"  # Hash for FaserF/hassio-addons
+REPO_HASH = "605cee21"  # Hash for FaserF/hassio-addons
 MAINTAINER = "FaserF"
 
 

@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/apache2/logo.png" width="100" alt="Logo" />
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=c1e285b7_apache2)
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_apache2)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 [![Docker Image](https://img.shields.io/badge/docker-3.3.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-apache2)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
@@ -28,7 +28,7 @@ Apache HTTP Server is a powerful, flexible, and robust open-source web server. T
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant.
+This addon supports the **Webserver App** integration for Home Assistant. 
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).
