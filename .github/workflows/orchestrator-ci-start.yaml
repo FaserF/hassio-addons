@@ -1,0 +1,49 @@
+name: Orchestrator CI (Start)
+
+on:
+  pull_request_target:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  ci_start:
+    name: 🚀 CI Start Notification (Privileged)
+    # Only run on actual PRs
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📝 Post CI Starting Comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+            });
+
+            const signature = "<!-- ci-start-comment -->";
+            const body = `## 🚀 CI Build Starting\n\nI'm now running the CI checks for this PR. Please wait for the results below.\n\n${signature}`;
+            const existingComment = comments.find(c => c.user.type === 'Bot' && c.body.includes(signature));
+
+            if (existingComment) {
+                console.log(`Updating existing CI start comment ${existingComment.id}...`);
+                await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: existingComment.id,
+                    body: body
+                });
+            } else {
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: body
+                });
+            }

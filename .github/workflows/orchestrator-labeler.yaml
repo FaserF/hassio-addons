@@ -6,7 +6,7 @@ permissions:
   issues: write
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - master
     types: [opened, synchronize, reopened]
@@ -73,7 +73,7 @@ jobs:
             const BLOCKLIST = ['custom_components', 'docker', 'config', 'scripts', 'docs', 'images', 'assets', 'src', 'lib', 'bin', 'test', 'tests', 'node_modules'];
 
             // Sanity check: filter out any obviously wrong entries
-            const validAppPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
+            const validAppPattern = /^[a-zA-Z][a-zA-Z0-9_.-]*$/;
             const validApps = totalApps.filter(name => {
                 if (BLOCKLIST.includes(name.toLowerCase())) {
                     console.log(`Warning: Blocklisted name filtered: ${name}`);

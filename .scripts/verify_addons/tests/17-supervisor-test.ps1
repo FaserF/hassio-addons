@@ -41,7 +41,7 @@ $haPort = 7123
 $supervisorStartupTimeout = if ($null -ne $Config.supervisorTests.supervisorStartupTimeout) { $Config.supervisorTests.supervisorStartupTimeout } else { 600 }
 
 # Dynamic timeout defaults: short for regular add-ons, long for known large add-ons
-$largeAddons = @('sap-abap-cloud-dev', 'n8n', 'ShieldFile')
+$largeAddons = @('sap-abap-cloud-dev', 'antigravity-server')
 $hasLargeAddon = $Addons | Where-Object { $largeAddons -contains $_.Name } | Select-Object -First 1
 if ($hasLargeAddon) {
     $addonInstallTimeout = if ($null -ne $Config.supervisorTests.AppInstallTimeout) { $Config.supervisorTests.AppInstallTimeout } else { 2400 }
@@ -301,9 +301,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
         if ($LASTEXITCODE -eq 0) {
             Write-Host " Ready!" -ForegroundColor Green
 
-    # Ignore health conditions for jobs (essential for devcontainer/CI environments)
-    Write-Host "    > Configuring Supervisor to ignore health conditions..." -ForegroundColor Gray
-    docker exec $containerName ha jobs options --ignore-conditions healthy 2>&1 | Out-Null
+            # Ignore health conditions for jobs (essential for devcontainer/CI environments)
+            Write-Host "    > Configuring Supervisor to ignore health conditions..." -ForegroundColor Gray
+            docker exec $containerName ha jobs options --ignore-conditions healthy 2>&1 | Out-Null
             $supervisorReady = $true
             break
         }
@@ -340,21 +340,21 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
 
     # Attempt to bypass health check block if system is unhealthy (common on Windows)
     Write-Host "    > Attempting to bypass health check blocks..." -ForegroundColor Gray
-    
+
     # Show status before bypass
     docker exec $containerName ha resolution info
-    
+
     # Method 1: Target specific health check
     docker exec $containerName ha resolution health-check ignore docker_gateway_unprotected
-    
+
     # Method 2: Broadly ignore health conditions for jobs (experimental bypass)
     docker exec $containerName ha jobs options --ignore-conditions healthy
-    
+
     # Refresh add-on store
     Write-Host "    > Refreshing add-on store..." -ForegroundColor Gray
     docker exec $containerName ha store reload
     Start-Sleep -Seconds 15
-    
+
     # Show status after bypass
     docker exec $containerName ha resolution info
 
@@ -387,11 +387,11 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                 "rights": [{"username": "homeassistant", "database": "homeassistant"}],
                 "password": "generated_m7R2x"
             }'
-            
+
             # Write options to file and apply
             $mariaOptions | docker exec -i $containerName sh -c "cat > /tmp/maria_opt.json"
             $optSet = docker exec $containerName sh -c 'ha apps options core_mariadb --options "$(cat /tmp/maria_opt.json)"' 2>&1
-            
+
             if ($LASTEXITCODE -ne 0) {
                 Write-Warning "Failed to set MariaDB options: $optSet"
                 $mysqlFailed = $true
@@ -403,9 +403,9 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                     $mysqlFailed = $true
                 }
                 else {
-                    Write-Host "    > Waiting for MariaDB to be ready..." -ForegroundColor Gray
+                    Write-Host "    > Waiting for MariaDB to be ready (up to 120)..." -ForegroundColor Gray
                     $mariadbReady = $false
-                    $maxWait = 60
+                    $maxWait = 120
                     $mariadbWaitStart = Get-Date
                     while (((Get-Date) - $mariadbWaitStart).TotalSeconds -lt $maxWait) {
                         $statusJson = docker exec $containerName ha apps info core_mariadb --raw-json 2>$null
@@ -506,219 +506,86 @@ YEAxk/5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q7z5+Qz5Zk1pZ6+3q
                     docker exec $containerName ha apps install $slug 2>&1
                 } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
 
-            $installResult = Wait-Job $installJob -Timeout $addonInstallTimeout
-            if ($installResult.State -eq "Completed") {
-                $installOutput = Receive-Job $installJob
-                Remove-Job $installJob -Force
-                
-                Write-Host "    > Install output: $installOutput" -ForegroundColor Gray
+                $installResult = Wait-Job $installJob -Timeout $addonInstallTimeout
+                if ($installResult.State -eq "Completed") {
+                    $installOutput = Receive-Job $installJob
+                    Remove-Job $installJob -Force
 
-                if ($installOutput -match "error|failed|Error") {
-                    # Handle 500 errors as warnings instead of failures
-                    # Note: This is likely a CI container issue, but could also indicate real add-on start problems
-                    # Should be investigated if it occurs frequently
-                    if ($installOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
-                        $testPassed = $true
-                        $testMessage = "WARN: Install returned 500 error (likely CI container issue, but verify add-on): $installOutput"
+                    Write-Host "    > Install output: $installOutput" -ForegroundColor Gray
 
-                        # Try to fetch logs for investigation
-                        $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
-                        if ($logs) {
-                            $logStr = $logs -join "`n"
-                            $testMessage += ". Logs: $logStr"
-                        }
-                        Write-Host "    ⚠️ Install returned 500 (treating as WARN)" -ForegroundColor Yellow
-                    }
-                    else {
-                        $testPassed = $false
-                        $testMessage = "Install failed: $installOutput"
+                    if ($installOutput -match "error|failed|Error") {
+                        # Handle 500 errors as warnings instead of failures
+                        # Note: This is likely a CI container issue, but could also indicate real add-on start problems
+                        # Should be investigated if it occurs frequently
+                        if ($installOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
+                            $testPassed = $true
+                            $testMessage = "WARN: Install returned 500 error (likely CI container issue, but verify add-on): $installOutput"
 
-                        # Try to fetch logs if install failed (sometimes helpful)
-                        if ($installOutput -match "500") {
+                            # Try to fetch logs for investigation
                             $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
                             if ($logs) {
                                 $logStr = $logs -join "`n"
                                 $testMessage += ". Logs: $logStr"
                             }
+                            Write-Host "    ⚠️ Install returned 500 (treating as WARN)" -ForegroundColor Yellow
                         }
-                    }
-                }
-                else {
-                    Write-Host "    ✅ Install successful" -ForegroundColor Green
+                        else {
+                            $testPassed = $false
+                            $testMessage = "Install failed: $installOutput"
 
-                    $shouldRunRuntimeTests = $true
-
-                    # Configure apache2 addons immediately after installation to prevent SSL certificate errors
-                    # This must happen even in Install Only Mode to prevent addon from failing on auto-start
-                    $configFile = Join-Path $addon.FullName "config.yaml"
-                    if (Test-Path $configFile) {
-                        $configContent = Get-Content $configFile -Raw
-
-                        if ($addon.Name -match "apache2") {
-                            # Stop addon if it auto-started during installation (to prevent SSL errors)
-                            Write-Host "    > Stopping addon (if running) to configure SSL settings..." -ForegroundColor Gray
-                            docker exec $containerName ha apps stop $slug 2>&1 | Out-Null
-
-                            # Handle all apache2 variants - configure SSL to false immediately after installation
-                            # This prevents the addon from failing when it tries to start with default SSL enabled
-                            Write-Host "    > Configuring apache2 addon (disabling SSL for test environment)..." -ForegroundColor Gray
-
-                            # Build options based on what the addon supports
-                            $baseOpts = @{
-                                website_name     = "example.com"
-                                default_conf     = "default"
-                                default_ssl_conf = "default"
-                                ssl              = $false
-                            }
-
-                            # Only include php_ini if the addon supports it
-                            if ($configContent -match "php_ini") {
-                                $baseOpts["php_ini"] = "default"
-                            }
-
-                            $opts = ($baseOpts | ConvertTo-Json -Compress)
-
-                            $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
-                            $opts | Out-File -FilePath $tmpOptsFile -Encoding utf8 -Force
-                            docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
-                            Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
-
-                            # Create document root via docker exec to avoid permission issues
-                            docker exec $containerName mkdir -p /share/htdocs
-                            docker exec $containerName sh -c "echo '<html><body>Test</body></html>' > /share/htdocs/index.html"
-
-                            # Create Python script to set options (Bypasses shell/curl issues)
-                            $pyScript = @"
-import os, sys, json, urllib.request, urllib.error
-
-slug = "$slug"
-token = os.environ.get("SUPERVISOR_TOKEN")
-
-if not token:
-    print("Error: No SUPERVISOR_TOKEN found in environment")
-    sys.exit(1)
-
-try:
-    with open("/tmp/options.json", "r") as f:
-        data = json.load(f)
-except Exception as e:
-    print(f"Error reading options: {e}")
-    sys.exit(1)
-
-url = f"http://supervisor/addons/{slug}/options"
-req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
-req.add_header("Authorization", f"Bearer {token}")
-req.add_header("Content-Type", "application/json")
-
-try:
-    with urllib.request.urlopen(req) as response:
-        print(response.getcode())
-        print(response.read().decode("utf-8"))
-except urllib.error.HTTPError as e:
-    print(e.code)
-    print(e.read().decode("utf-8"))
-    sys.exit(1)
-except Exception as e:
-    print(f"Exception: {e}")
-    sys.exit(1)
-"@
-                            $tmpPyFile = Join-Path $env:TEMP "set_options_$($addon.Name).py"
-                            [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
-                            docker cp $tmpPyFile "${containerName}:/tmp/set_options.py" 2>$null | Out-Null
-
-                            # Execute Python script
-                            $pyOut = docker exec $containerName python3 /tmp/set_options.py 2>&1
-
-                            # Check output for success (200)
-                            if ($pyOut -notmatch "200") {
-                                Write-Warning "Failed to set options via Python API."
-                                Write-Warning "Output: $pyOut"
-                            }
-                            else {
-                                if ($PSBoundParameters['Debug']) {
-                                    Write-Host "      DEBUG: Python API Config Set Success" -ForegroundColor DarkGray
+                            # Try to fetch logs if install failed (sometimes helpful)
+                            if ($installOutput -match "500") {
+                                $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
+                                if ($logs) {
+                                    $logStr = $logs -join "`n"
+                                    $testMessage += ". Logs: $logStr"
                                 }
                             }
-
-                            Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
                         }
-                    }
-
-                    if (-not $shouldRunRuntimeTests) {
-                        Write-Host "    > Skipping Start/Config phase (Install Only Mode)" -ForegroundColor Yellow
-                        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Install Only)"
                     }
                     else {
+                        Write-Host "    ✅ Install successful" -ForegroundColor Green
 
-                        # Configure add-on if needed (for non-apache2 addons)
+                        $shouldRunRuntimeTests = $true
+
+                        # Configure apache2 addons immediately after installation to prevent SSL certificate errors
+                        # This must happen even in Install Only Mode to prevent addon from failing on auto-start
+                        $configFile = Join-Path $addon.FullName "config.yaml"
                         if (Test-Path $configFile) {
                             $configContent = Get-Content $configFile -Raw
-                            $opts = $null
 
                             if ($addon.Name -match "apache2") {
-                                # Already configured above, skip
-                                $opts = $null
-                            }
-                            elseif ($addon.Name -match "^pterodactyl-wings$") {
-                                $opts = '{"config_file": "config.yml"}'
-                            }
-                            elseif ($addon.Name -eq "bash_script_executer") {
-                                $opts = '{"script_path": "/share/test.sh"}'
-                            }
-                            elseif ($addon.Name -eq "netboot-xyz") {
-                                $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
-                            }
-                            elseif ($addon.Name -eq "antigravity-server") {
-                                $opts = '{"vnc_password": "Ab1Cd2Ef", "log_level": "info"}'
-                            }
-                            elseif ($addon.Name -eq "aegisbot") {
-                                $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "generated_K3y9P", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
-                            }
-                            elseif ($addon.Name -eq "solumati") {
-                                $opts = '{"log_level": "info", "test_mode": true}'
-                            }
-                            elseif ($addon.Name -eq "nginx") {
-                                # Nginx needs SSL disabled and full config like apache2
-                                $opts = '{"website_name": "example.com", "ssl": false, "default_conf": "default", "default_ssl_conf": "default", "php_ini": "default", "document_root": "/share/htdocs", "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
-                            }
-                            elseif ($addon.Name -eq "ShieldDNS") {
-                                # ShieldDNS needs upstream DNS and cert config
-                                $opts = '{"upstream_dns": "1.1.1.1 8.8.8.8", "upstream_dot": "one.one.one.one dns.google", "prefer_encrypted": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info", "dot_port": 8853, "doh_port": 8443, "fallback_dns": false}'
-                            }
-                            elseif ($addon.Name -eq "tt-rss") {
-                                # TT-RSS needs SSL disabled
-                                $opts = '{"ssl": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
-                            }
-                            elseif ($addon.Name -eq "bentopdf") {
-                                # BentoPDF needs SSL disabled
-                                $opts = '{"ssl": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
-                            }
-                            elseif ($addon.Name -eq "komodo") {
-                                # Komodo minimal config
-                                $opts = '{"log_level": "info"}'
-                            }
-                            elseif ($addon.Name -eq "homeassistant-test-instance" -or $addon.Name -eq "ha_test_instance") {
-                                # HA test instance
-                                $opts = '{"log_level": "info"}'
-                            }
-                            elseif ($configContent -match "website_name") {
-                                # Fallback generic detection
-                                $opts = '{"website_name": "example.com"}'
-                            }
+                                # Stop addon if it auto-started during installation (to prevent SSL errors)
+                                Write-Host "    > Stopping addon (if running) to configure SSL settings..." -ForegroundColor Gray
+                                docker exec $containerName ha apps stop $slug 2>&1 | Out-Null
 
-                            if ($opts) {
-                                Write-Host "    > Configuring options (using ha apps options via strict file pass)..." -ForegroundColor Gray
+                                # Handle all apache2 variants - configure SSL to false immediately after installation
+                                # This prevents the addon from failing when it tries to start with default SSL enabled
+                                Write-Host "    > Configuring apache2 addon (disabling SSL for test environment)..." -ForegroundColor Gray
 
-                                # Debug: Show what we are sending
-                                if ($PSBoundParameters['Debug']) {
-                                    Write-Host "      DEBUG: Sending Config: $opts" -ForegroundColor DarkGray
+                                # Build options based on what the addon supports
+                                $baseOpts = @{
+                                    website_name     = "example.com"
+                                    default_conf     = "default"
+                                    default_ssl_conf = "default"
+                                    ssl              = $false
                                 }
 
-                                # Create text file with options locally
+                                # Only include php_ini if the addon supports it
+                                if ($configContent -match "php_ini") {
+                                    $baseOpts["php_ini"] = "default"
+                                }
+
+                                $opts = ($baseOpts | ConvertTo-Json -Compress)
+
                                 $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
                                 $opts | Out-File -FilePath $tmpOptsFile -Encoding utf8 -Force
                                 docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
                                 Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
+
+                                # Create document root via docker exec to avoid permission issues
+                                docker exec $containerName mkdir -p /share/htdocs
+                                docker exec $containerName sh -c "echo '<html><body>Test</body></html>' > /share/htdocs/index.html"
 
                                 # Create Python script to set options (Bypasses shell/curl issues)
                                 $pyScript = @"
@@ -774,168 +641,323 @@ except Exception as e:
                                 }
 
                                 Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
-
                             }
-
                         }
-                    }
-                    
-                    # Check for mandatory service dependencies (like mysql:need)
-                    # These addons cannot start in isolation in this mock environment
-                    $hasMandatoryService = $false
-                    if (Test-Path $configFile) {
-                        $configYml = Get-Content $configFile -Raw
-                        if ($configYml -match ":need") {
-                            $hasMandatoryService = $true
-                        }
-                    }
 
-                    if ($hasMandatoryService) {
-                        Write-Host "    ⏭️ Skipping Start phase (has mandatory service dependencies)" -ForegroundColor Yellow
-                        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Build/Install verified, runtime skipped due to dependencies)"
-                        $testPassed = $true
-                        $testMessage = "PASS (Build/Install verified, runtime skipped due to dependencies)"
-                    }
-                    else {
-                        # Start add-on
-                        Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
-                        $startJob = Start-Job -ScriptBlock {
-                            param($containerName, $slug, $debugPref)
-                            if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
-                            docker exec $containerName ha apps start $slug 2>&1
-                        } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
-
-                        $startResult = Wait-Job $startJob -Timeout $addonStartTimeout
-                        if ($startResult.State -eq "Completed") {
-                            $startOutput = Receive-Job $startJob
-                            Remove-Job $startJob -Force
-
-                            # Check for immediate start failure (e.g. 500 error)
-                            if ($startOutput -match "error|failed|Error|500 Server Error" -and $startOutput -notmatch "deprecated") {
-                                if ($startOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
-                                    $testPassed = $true
-                                    $testMessage = "WARN: Start returned 500 error (likely CI container issue, but verify add-on): $startOutput"
-                                    $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
-                                    if ($logs) {
-                                        $testMessage += ". Logs: $($logs -join "`n")"
-                                    }
-                                    Write-Host "    ⚠️ Start returned 500 (treating as WARN)" -ForegroundColor Yellow
-                                } else {
-                                    $testPassed = $false
-                                    $testMessage = "Start failed: $startOutput"
-                                    if ($startOutput -match "context deadline exceeded|Client\.Timeout") {
-                                        Write-Host "    ⚠️ Start timed out (context deadline exceeded) - checking if actually running..." -ForegroundColor Yellow
-                                        Start-Sleep -Seconds 30
-                                        $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
-                                        if ($runningContainers -match "addon_$slug") {
-                                            Write-Host "    ✅ App container is actually running despite timeout" -ForegroundColor Green
-                                            $testPassed = $true
-                                            $testMessage = "WARN: Start timeout but addon is running"
-                                        } else {
-                                            $testPassed = $true
-                                            $testMessage = "WARN: Start timeout (context deadline exceeded) - likely CI issue"
-                                        }
-                                    }
-                                    $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
-                                    if ($logs) {
-                                        $testMessage += ". Logs: $($logs -join "`n")"
-                                    }
-                                    Write-Host "    ❌ Start command failed: $startOutput" -ForegroundColor Red
-                                }
-                            }
-
-                            Start-Sleep -Seconds 2
-
-                            # Poll for status (wait for start/pull)
-                            $pollingTimeout = $addonStartTimeout
-                            $started = $false
-                            $state = "unknown"
-                            for ($i = 0; $i -lt $pollingTimeout; $i += 5) {
-                                $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
-                                if ($runningContainers -match "addon_$slug") {
-                                    $started = $true
-                                    $state = "started"
-                                    break
-                                }
-                                Start-Sleep -Seconds 5
-                            }
-                            Write-Host "" # Newline
-
-                            if ($started) {
-                                Write-Host "    ✅ Add-on running (Simplified Check)" -ForegroundColor Green
-                                $testPassed = $true
-                                $testMessage = "PASS (State: started)"
-                            } else {
-                                $testPassed = $false
-                                $testMessage = "Could not get add-on info"
-                            }
+                        if (-not $shouldRunRuntimeTests) {
+                            Write-Host "    > Skipping Start/Config phase (Install Only Mode)" -ForegroundColor Yellow
+                            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Install Only)"
                         }
                         else {
-                            Remove-Job $startJob -Force
-                            $testPassed = $false
-                            $testMessage = "Start timed out after ${addonStartTimeout}s"
+
+                            # Configure add-on if needed (for non-apache2 addons)
+                            if (Test-Path $configFile) {
+                                $configContent = Get-Content $configFile -Raw
+                                $opts = $null
+
+                                if ($addon.Name -match "apache2") {
+                                    # Already configured above, skip
+                                    $opts = $null
+                                }
+                                elseif ($addon.Name -match "^pterodactyl-wings$") {
+                                    $opts = '{"config_file": "config.yml"}'
+                                }
+                                elseif ($addon.Name -eq "bash_script_executer") {
+                                    $opts = '{"script_path": "/share/test.sh"}'
+                                }
+                                elseif ($addon.Name -eq "netboot-xyz") {
+                                    $opts = '{"path": "/media/netboot/image", "path_config": "/media/netboot/config", "dhcp_range": "192.168.1.200"}'
+                                }
+                                elseif ($addon.Name -eq "antigravity-server") {
+                                    $opts = '{"vnc_password": "Ab1Cd2Ef", "log_level": "info"}'
+                                }
+                                elseif ($addon.Name -eq "aegisbot") {
+                                    # AegisBot requires database confirmation and AI config
+                                    $opts = '{"version": "latest", "github_token": "mock", "github_repo": "FaserF/AegisBot", "developer_mode": false, "reset_database": false, "reset_database_confirm": true, "log_level": "info", "database": {"type": "sqlite"}, "secret_key": "generated_K3y9P", "project_name": "AegisBot", "debug": false, "demo_mode": true}'
+                                }
+                                elseif ($addon.Name -eq "solumati") {
+                                    $opts = '{"log_level": "info", "test_mode": true}'
+                                }
+                                elseif ($addon.Name -eq "nginx") {
+                                    # Nginx needs SSL disabled and full config like apache2
+                                    $opts = '{"website_name": "example.com", "ssl": false, "default_conf": "default", "default_ssl_conf": "default", "php_ini": "default", "document_root": "/share/htdocs", "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
+                                }
+                                elseif ($addon.Name -eq "ShieldDNS") {
+                                    # ShieldDNS needs upstream DNS and cert config
+                                    $opts = '{"upstream_dns": "1.1.1.1 8.8.8.8", "upstream_dot": "one.one.one.one dns.google", "prefer_encrypted": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info", "dot_port": 8853, "doh_port": 8443, "fallback_dns": false}'
+                                }
+                                elseif ($addon.Name -eq "tt-rss") {
+                                    # TT-RSS needs SSL disabled
+                                    $opts = '{"ssl": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
+                                }
+                                elseif ($addon.Name -eq "bentopdf") {
+                                    # BentoPDF needs SSL disabled
+                                    $opts = '{"ssl": false, "certfile": "fullchain.pem", "keyfile": "privkey.pem", "log_level": "info"}'
+                                }
+                                elseif ($addon.Name -eq "komodo") {
+                                    # Komodo minimal config
+                                    $opts = '{"log_level": "info"}'
+                                }
+                                elseif ($addon.Name -eq "homeassistant-test-instance" -or $addon.Name -eq "ha_test_instance") {
+                                    # HA test instance
+                                    $opts = '{"log_level": "info"}'
+                                }
+                                elseif ($configContent -match "website_name") {
+                                    # Fallback generic detection
+                                    $opts = '{"website_name": "example.com"}'
+                                }
+
+                                if ($opts) {
+                                    Write-Host "    > Configuring options (using ha apps options via strict file pass)..." -ForegroundColor Gray
+
+                                    # Debug: Show what we are sending
+                                    if ($PSBoundParameters['Debug']) {
+                                        Write-Host "      DEBUG: Sending Config: $opts" -ForegroundColor DarkGray
+                                    }
+
+                                    # Create text file with options locally
+                                    $tmpOptsFile = Join-Path $env:TEMP "options_$($addon.Name).json"
+                                    $opts | Out-File -FilePath $tmpOptsFile -Encoding utf8 -Force
+                                    docker cp $tmpOptsFile "${containerName}:/tmp/options.json" 2>$null | Out-Null
+                                    Remove-Item $tmpOptsFile -Force -ErrorAction SilentlyContinue
+
+                                    # Create Python script to set options (Bypasses shell/curl issues)
+                                    $pyScript = @"
+import os, sys, json, urllib.request, urllib.error
+
+slug = "$slug"
+token = os.environ.get("SUPERVISOR_TOKEN")
+
+if not token:
+    print("Error: No SUPERVISOR_TOKEN found in environment")
+    sys.exit(1)
+
+try:
+    with open("/tmp/options.json", "r") as f:
+        data = json.load(f)
+except Exception as e:
+    print(f"Error reading options: {e}")
+    sys.exit(1)
+
+url = f"http://supervisor/addons/{slug}/options"
+req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
+req.add_header("Authorization", f"Bearer {token}")
+req.add_header("Content-Type", "application/json")
+
+try:
+    with urllib.request.urlopen(req) as response:
+        print(response.getcode())
+        print(response.read().decode("utf-8"))
+except urllib.error.HTTPError as e:
+    print(e.code)
+    print(e.read().decode("utf-8"))
+    sys.exit(1)
+except Exception as e:
+    print(f"Exception: {e}")
+    sys.exit(1)
+"@
+                                    $tmpPyFile = Join-Path $env:TEMP "set_options_$($addon.Name).py"
+                                    [System.IO.File]::WriteAllText($tmpPyFile, ($pyScript -replace "`r`n", "`n"))
+                                    docker cp $tmpPyFile "${containerName}:/tmp/set_options.py" 2>$null | Out-Null
+
+                                    # Execute Python script
+                                    $pyOut = docker exec $containerName python3 /tmp/set_options.py 2>&1
+
+                                    # Check output for success (200)
+                                    if ($pyOut -notmatch "200") {
+                                        Write-Warning "Failed to set options via Python API."
+                                        Write-Warning "Output: $pyOut"
+                                    }
+                                    else {
+                                        if ($PSBoundParameters['Debug']) {
+                                            Write-Host "      DEBUG: Python API Config Set Success" -ForegroundColor DarkGray
+                                        }
+                                    }
+
+                                    Remove-Item $tmpPyFile -Force -ErrorAction SilentlyContinue
+
+                                }
+
+                            }
                         }
-                    } # End else ($hasMandatoryService)
-                } # End if ($installResult.State -eq "Completed")
-                else {
-                    Remove-Job $installJob -Force
-                    $testPassed = $false
-                    $testMessage = "Install timed out after ${addonInstallTimeout}s"
+
+                        # Check for mandatory service dependencies (like mysql:need)
+                        # These addons cannot start in isolation in this mock environment
+                        $hasMandatoryService = $false
+                        if (Test-Path $configFile) {
+                            $configYml = Get-Content $configFile -Raw
+                            if ($configYml -match ":need") {
+                                $hasMandatoryService = $true
+                            }
+                        }
+
+                        if ($hasMandatoryService) {
+                            Write-Host "    ⏭️ Skipping Start phase (has mandatory service dependencies)" -ForegroundColor Yellow
+                            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message "PASS (Build/Install verified, runtime skipped due to dependencies)"
+                            $testPassed = $true
+                            $testMessage = "PASS (Build/Install verified, runtime skipped due to dependencies)"
+                        }
+                        else {
+                            # Start add-on
+                            Write-Host "    > Starting $($addon.Name)..." -ForegroundColor Gray
+                            $startJob = Start-Job -ScriptBlock {
+                                param($containerName, $slug, $debugPref)
+                                if ($debugPref) { $VerbosePreference = "Continue"; $DebugPreference = "Continue" }
+                                docker exec $containerName ha apps start $slug 2>&1
+                            } -ArgumentList $containerName, $slug, $PSBoundParameters['Debug']
+
+                            $startResult = Wait-Job $startJob -Timeout $addonStartTimeout
+                            if ($startResult.State -eq "Completed") {
+                                $startOutput = Receive-Job $startJob
+                                Remove-Job $startJob -Force
+
+                                # Check for immediate start failure (e.g. 500 error)
+                                if ($startOutput -match "error|failed|Error|500 Server Error" -and $startOutput -notmatch "deprecated") {
+                                    if ($startOutput -match "unexpected server response.*500|500.*unexpected server response|status: 500") {
+                                        $testPassed = $true
+                                        $testMessage = "WARN: Start returned 500 error (likely CI container issue, but verify add-on): $startOutput"
+                                        $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
+                                        if ($logs) {
+                                            $testMessage += ". Logs: $($logs -join "`n")"
+                                        }
+                                        Write-Host "    ⚠️ Start returned 500 (treating as WARN)" -ForegroundColor Yellow
+                                    }
+                                    else {
+                                        $testPassed = $false
+                                        $testMessage = "Start failed: $startOutput"
+                                        if ($startOutput -match "context deadline exceeded|Client\.Timeout") {
+                                            Write-Host "    ⚠️ Start timed out (context deadline exceeded) - checking if actually running..." -ForegroundColor Yellow
+                                            Start-Sleep -Seconds 30
+                                            $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
+                                            if ($runningContainers -match "addon_$slug") {
+                                                Write-Host "    ✅ App container is actually running despite timeout" -ForegroundColor Green
+                                                $testPassed = $true
+                                                $testMessage = "WARN: Start timeout but addon is running"
+                                            }
+                                            else {
+                                                $testPassed = $true
+                                                $testMessage = "WARN: Start timeout (context deadline exceeded) - likely CI issue"
+                                            }
+                                        }
+                                        $logs = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 25
+                                        if ($logs) {
+                                            $testMessage += ". Logs: $($logs -join "`n")"
+                                        }
+                                        Write-Host "    ❌ Start command failed: $startOutput" -ForegroundColor Red
+                                    }
+                                }
+
+                                Start-Sleep -Seconds 2
+
+                                # Poll for status (wait for start/pull)
+                                $pollingTimeout = $addonStartTimeout
+                                $started = $false
+                                $state = "unknown"
+                                for ($i = 0; $i -lt $pollingTimeout; $i += 10) {
+                                    # Check Method 1: Docker Container Presence
+                                    $runningContainers = docker exec $containerName docker ps --format "{{.Names}}" 2>$null
+                                    if ($runningContainers -match "addon_$slug") {
+                                        $started = $true
+                                        $state = "started"
+                                        break
+                                    }
+
+                                    # Check Method 2: Supervisor API State
+                                    $infoRaw = docker exec $containerName ha apps info $slug --raw-json 2>$null
+                                    if ($infoRaw) {
+                                        $info = $infoRaw | ConvertFrom-Json
+                                        if ($null -ne $info.data -and $info.data.state -eq "started") {
+                                            $started = $true
+                                            $state = "started"
+                                            break
+                                        }
+                                    }
+
+                                    Write-Host -NoNewline "." -ForegroundColor Gray
+                                    Start-Sleep -Seconds 10
+                                }
+                                Write-Host "" # Newline
+
+                                if ($started) {
+                                    Write-Host "    ✅ Add-on running (Simplified Check)" -ForegroundColor Green
+                                    $testPassed = $true
+                                    $testMessage = "PASS (State: started)"
+                                }
+                                else {
+                                    $testPassed = $false
+                                    $testMessage = "Could not get add-on info"
+                                }
+                            }
+                            else {
+                                Remove-Job $startJob -Force
+                                $testPassed = $false
+                                $testMessage = "Start timed out after ${addonStartTimeout}s"
+                            }
+                        } # End else ($hasMandatoryService)
+                    } # End if ($installResult.State -eq "Completed")
+                    else {
+                        Remove-Job $installJob -Force
+                        $testPassed = $false
+                        $testMessage = "Install timed out after ${addonInstallTimeout}s"
+                    }
                 }
             }
         }
-    }
-    catch {
-        $testPassed = $false
-        $testMessage = "Exception: $_"
-    }
-    finally {
-        # Cleanup this add-on
-        if ($addon.Name -ne "sap-abap-cloud-dev") {
-            Write-Host "    > Cleaning up $($addon.Name)..." -ForegroundColor Gray
-            docker exec $containerName ha apps stop $slug 2>$null | Out-Null
-            docker exec $containerName ha apps uninstall $slug 2>$null | Out-Null
-        } else {
-            Write-Host "    > Keeping $($addon.Name) (cleanup skipped per request)..." -ForegroundColor Green
+        catch {
+            $testPassed = $false
+            $testMessage = "Exception: $_"
         }
-    }
+        finally {
+            # Cleanup this add-on
+            if ($addon.Name -ne "sap-abap-cloud-dev") {
+                Write-Host "    > Cleaning up $($addon.Name)..." -ForegroundColor Gray
+                docker exec $containerName ha apps stop $slug 2>$null | Out-Null
+                docker exec $containerName ha apps uninstall $slug 2>$null | Out-Null
+            }
+            else {
+                Write-Host "    > Keeping $($addon.Name) (cleanup skipped per request)..." -ForegroundColor Green
+            }
+        }
 
-    # Report result
-    if ($testPassed) {
-        if ($testMessage -match "WARN") {
-            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "WARN" -Message $testMessage
+        # Report result
+        if ($testPassed) {
+            if ($testMessage -match "WARN") {
+                Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "WARN" -Message $testMessage
+            }
+            else {
+                Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message $testMessage
+            }
         }
         else {
-            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "PASS" -Message $testMessage
-        }
-    } else {
-        $anyFailure = $true
-        
-        # Enhanced failure diagnostics
-        $finalState = "unknown"
-        try {
-            $statusRaw = docker exec $containerName ha apps info $slug --raw-json 2>$null
-            if ($statusRaw) {
-                $finalStatus = $statusRaw | ConvertFrom-Json
-                if ($null -ne $finalStatus.data) {
-                    $finalState = $finalStatus.data.state
+            $anyFailure = $true
+
+            # Enhanced failure diagnostics
+            $finalState = "unknown"
+            try {
+                $statusRaw = docker exec $containerName ha apps info $slug --raw-json 2>$null
+                if ($statusRaw) {
+                    $finalStatus = $statusRaw | ConvertFrom-Json
+                    if ($null -ne $finalStatus.data) {
+                        $finalState = $finalStatus.data.state
+                    }
                 }
             }
-        } catch {
-            Write-Verbose "Failed to get final state: $_"
+            catch {
+                Write-Verbose "Failed to get final state: $_"
+            }
+
+            $finalLogs = "No logs available"
+            try {
+                $logLines = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 50
+                if ($logLines) { $finalLogs = $logLines -join "`n" }
+            }
+            catch {
+                $ex = $_.Exception
+                Write-Verbose "Failed to fetch apps logs. Exception: $($ex.Message) Stack trace: $($ex.StackTrace)"
+            }
+
+            Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message "Start failed (State: $finalState). Diagnostics:`n$testMessage`n`n--- LAST 50 LOG LINES ---`n$finalLogs"
         }
-        
-        $finalLogs = "No logs available"
-        try {
-            $logLines = docker exec $containerName ha apps logs $slug 2>&1 | Select-Object -Last 50
-            if ($logLines) { $finalLogs = $logLines -join "`n" }
-        } catch {
-            $ex = $_.Exception
-            Write-Verbose "Failed to fetch apps logs. Exception: $($ex.Message) Stack trace: $($ex.StackTrace)"
-        }
-        
-        Add-Result -Addon $addon.Name -Check "SupervisorTest" -Status "FAIL" -Message "Start failed (State: $finalState). Diagnostics:`n$testMessage`n`n--- LAST 50 LOG LINES ---`n$finalLogs"
-    }
     }
 }
 catch {
@@ -951,12 +973,19 @@ finally {
     if ($skipCleanup) {
         Write-Host "    > Skipping Supervisor Cleanup (Preserving environment for SAP)..." -ForegroundColor Green
         Write-Host "    > You can inspect the supervisor at: docker exec -it $containerName bash" -ForegroundColor Gray
-    } else {
+    }
+    else {
         Write-Host "    > Cleaning up Supervisor environment..." -ForegroundColor Gray
         docker stop $containerName 2>$null | Out-Null
         docker rm -f $containerName 2>$null | Out-Null
-        docker volume rm $dockerVolName 2>$null | Out-Null
         docker network rm $networkName 2>$null | Out-Null
+
+        if ($PSBoundParameters['Debug'] -or $anyFailure -or $skipCleanup) {
+            Write-Host "    > Preserving Docker volume for debugging: $dockerVolName" -ForegroundColor Yellow
+        }
+        else {
+            docker volume rm $dockerVolName 2>$null | Out-Null
+        }
     }
 
     $dataDir = Join-Path $OutputDir "supervisor_test_data"

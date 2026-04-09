@@ -1,0 +1,260 @@
+name: Orchestrator CI (Report)
+
+on:
+  workflow_run:
+    workflows: ["Orchestrator CI"]
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+  issues: write
+  actions: read
+  contents: read
+
+jobs:
+  reporter:
+    name: 📊 Results Reporter (Privileged)
+    runs-on: ubuntu-latest
+    if: |
+      github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: ⤵️ Check out master code
+        uses: actions/checkout@v6
+        with:
+          # We check out master to get the shared scripts (compliance check scripts, success message generator)
+          ref: master
+
+      - name: 📥 Download Compliance Artifacts
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: compliance-*
+          merge-multiple: false
+          path: reports
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Post Results Comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const run = context.payload.workflow_run;
+            const pr = run.pull_requests[0];
+            
+            if (!pr) {
+              console.log("No pull request found for this workflow run.");
+              return;
+            }
+
+            const issue_number = pr.number;
+            const workflowRunUrl = run.html_url;
+            console.log(`Reporting for PR #${issue_number} based on run ${run.id} (${run.conclusion})`);
+
+            // 1. Fetch ALL jobs for the run
+            const allJobs = [];
+            let page = 1;
+            while (true) {
+              const { data } = await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+                per_page: 100,
+                page: page,
+              });
+              allJobs.push(...data.jobs);
+              if (data.jobs.length < 100) break;
+              page++;
+            }
+
+            // 2. Determine if we should post SUCCESS or FAILURE report
+            // Success = everything passed (conclusion is success)
+            // Failure = conclusion is failure, cancelled, or timed_out
+            
+            const isSuccess = run.conclusion === 'success';
+
+            // Fetch existing comments to minimize old ones
+            const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: issue_number,
+            });
+
+            const signaturesToMinimize = [
+                "<!-- ci-start-comment -->",
+                "## 🛡️ Platinum Compliance Issues",
+                "<!-- general-ci-failure-report -->",
+                "## ❌ General CI Failure Report",
+                "## ✅ Verification Successful"
+            ];
+
+            const commentsToMinimize = comments.filter(c =>
+                c.user.type === 'Bot' && signaturesToMinimize.some(sig => c.body.includes(sig))
+            );
+
+            for (const comment of commentsToMinimize) {
+                try {
+                    await github.graphql(`
+                        mutation($subjectId: ID!) {
+                            minimizeComment(input: {subjectId: $subjectId, classifier: OUTDATED}) {
+                                minimizedComment { isMinimized }
+                            }
+                        }
+                    `, { subjectId: comment.node_id });
+                } catch (e) {
+                    console.error(`Failed to minimize comment ${comment.id}:`, e);
+                }
+            }
+
+            if (isSuccess) {
+                // --- SUCCESS FLOW ---
+                console.log("Processing Success Report...");
+                
+                // Get job results for the success message
+                const buildJob = allJobs.find(j => j.name.includes("Test Build"));
+                const lintJob = allJobs.find(j => j.name.includes("Lint & Validate"));
+                
+                const buildSkipped = buildJob ? buildJob.conclusion === 'skipped' : true;
+                const lintSkipped = lintJob ? lintJob.conclusion === 'skipped' : true;
+                const allSkipped = buildSkipped && lintSkipped;
+                const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
+
+                const author = pr.user.login;
+                const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
+
+                let autoMergeNote = "";
+                if (allSkipped) {
+                    autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.";
+                } else if (isMaintainer) {
+                    autoMergeNote = "\n\n🚀 **Auto-merge will be enabled** if branch protection rules are satisfied.";
+                }
+
+                // Generate message using the script we checked out
+                const generateMessage = require('./.scripts/generate_ci_success_message.js');
+                const body = generateMessage({
+                    skipped: allSkipped,
+                    buildStatus: buildStatus,
+                    autoMergeNote: autoMergeNote,
+                    previousErrorsNote: "" 
+                });
+
+                await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue_number,
+                    body: body
+                });
+
+                // Update Labels
+                const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue_number,
+                });
+                const labelsToRemove = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+                const filteredLabels = currentLabels.map(l => l.name).filter(n => !labelsToRemove.includes(n));
+                filteredLabels.push('ci/passed');
+                await github.rest.issues.setLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue_number,
+                    labels: filteredLabels
+                });
+
+            } else {
+                // --- FAILURE FLOW ---
+                console.log("Processing Failure Report...");
+                
+                // [Logic for Platinum Compliance Report]
+                let platinumSummary = "";
+                if (fs.existsSync('reports')) {
+                    const dirs = fs.readdirSync('reports').filter(f => fs.statSync(path.join('reports', f)).isDirectory());
+                    let complianceContent = "";
+                    let totalIssues = 0;
+                    
+                    for (const dir of dirs) {
+                        const reportPath = path.join('reports', dir, 'compliance_report.txt');
+                        if (fs.existsSync(reportPath)) {
+                            const content = fs.readFileSync(reportPath, 'utf8');
+                            if (content.includes("passed all basic compliance checks") && !content.includes("Errors:") && !content.includes("Warnings:")) continue;
+                            
+                            const AppMatch = content.match(/^App: (.+)$/m);
+                            const AppName = AppMatch ? AppMatch[1] : dir.replace('compliance-', '');
+                            const displayContent = content.replace(/^App: .+\n/, '');
+                            
+                            complianceContent += `<details>\n<summary><strong>${AppName}</strong>: ❌ Issues Found</summary>\n\n${displayContent}\n</details>\n\n`;
+                            totalIssues++;
+                        }
+                    }
+                    
+                    if (totalIssues > 0) {
+                        platinumSummary = "## 🛡️ Platinum Compliance Issues\n\n";
+                        platinumSummary += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+                        platinumSummary += complianceContent;
+                        platinumSummary += "\n💎 **Platinum Standards:** Translations (EN/DE) • Images (Icon/Logo) • Official Base Image • S6 Overlay & Healthchecks";
+                        
+                        await github.rest.issues.createComment({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue_number,
+                            body: platinumSummary
+                        });
+                    }
+                }
+
+                // [Logic for General Failure Report]
+                const problematicJobs = allJobs.filter(j => 
+                    j.conclusion === 'failure' || j.conclusion === 'cancelled' || j.conclusion === 'timed_out' ||
+                    (j.conclusion === 'success' && j.steps && j.steps.some(s => s.conclusion === 'failure'))
+                );
+                
+                const nonComplianceJobs = problematicJobs.filter(job => {
+                    const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure') : [];
+                    return failedSteps.length === 0 || !failedSteps.every(step => step.name && step.name.includes("Compliance"));
+                });
+
+                if (nonComplianceJobs.length > 0) {
+                    let report = "## ❌ General CI Failure Report\n\n";
+                    report += `> ⚠️ **Note**: This automated summary may contain errors. Always verify by checking the [live workflow logs](${workflowRunUrl}).\n\n`;
+                    report += "| Job | Step | Link |\n|---|---|---|\n";
+                    
+                    for (const job of nonComplianceJobs) {
+                        const failedSteps = job.steps ? job.steps.filter(s => s.conclusion === 'failure' || s.conclusion === 'cancelled' || s.conclusion === 'timed_out') : [];
+                        const displaySteps = failedSteps.filter(s => !s.name || !s.name.includes("Compliance"));
+                        const jobLink = `[${job.name}](${job.html_url})`;
+                        
+                        if (displaySteps.length === 0) {
+                            report += `| ${jobLink} | Job Failed | [View Logs](${job.html_url}) |\n`;
+                        } else {
+                            for (const step of displaySteps) {
+                                report += `| ${jobLink} | ${step.name || 'Unknown'} | [View Logs](${job.html_url}) |\n`;
+                            }
+                        }
+                    }
+                    
+                    await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue_number,
+                        body: report + "\n<!-- general-ci-failure-report -->"
+                    });
+                }
+
+                // Update Labels to Failed
+                const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue_number,
+                });
+                const ciLabels = ['ci/passed', 'ci/failed', 'ci/platinum-issues'];
+                const filteredLabels = currentLabels.map(l => l.name).filter(n => !ciLabels.includes(n));
+                filteredLabels.push('ci/failed');
+                await github.rest.issues.setLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue_number,
+                    labels: filteredLabels
+                });
+            }
