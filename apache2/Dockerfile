@@ -11,7 +11,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.3.0"
+ENV APP_VERSION="3.3.1"
 ENV APP_NAME="Apache2"
 ENV APP_SLUG="apache2"
 ENV APP_UNSUPPORTED="false"
