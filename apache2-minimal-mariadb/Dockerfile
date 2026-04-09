@@ -15,15 +15,14 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG PHP_VERSION="8.5"
 
 # hadolint ignore=DL4006,DL3018
+# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
+ARG APACHE2_VERSION="2.4.66-r0"
 
 # App metadata (injected by CI)
 ENV APP_VERSION="3.3.0"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
 ENV APP_UNSUPPORTED="false"
-
-# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
-ARG APACHE2_VERSION="2.4.66-r0"
 
 RUN mkdir /run/apache2 \
  && apk --no-cache -u add libcrypto3 libssl3 \
