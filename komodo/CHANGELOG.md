@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 (2026-04-09)
+
+### 🚀 Other
+
+- Remove aarch64 support due to MongoDB 7.0 limitations on Debian 12 arm64
+
 ## 0.1.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

@@ -6,7 +6,6 @@ image: ghcr.io/faserf/hassio-addons-komodo-{arch}
 description: A tool to build and deploy software on many servers
 url: https://github.com/moghtech/komodo
 arch:
-  - aarch64
   - amd64
 init: false
 ingress: true
