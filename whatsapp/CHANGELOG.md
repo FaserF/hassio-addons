@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (2026-04-09)
+
+- Manual release via Orchestrator
+
+
 ## 1.4.10 (2026-04-09)
 
 ### ✨ Features
