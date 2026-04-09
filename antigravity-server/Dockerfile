@@ -14,6 +14,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Layer 1: Core System Tools & VNC Setup
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.2.1"
+ENV APP_NAME="Antigravity-Server"
+ENV APP_SLUG="antigravity-server"
+ENV APP_UNSUPPORTED="false"
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         gnupg \
@@ -129,13 +136,6 @@ RUN (id -u ubuntu >/dev/null 2>&1 && userdel -f ubuntu || true) && \
     usermod -aG docker dev && \
     mkdir -p /home/dev/.vnc && \
     chown -R dev:dev /home/dev
-
-# App metadata (injected by CI)
-ENV APP_VERSION="1.3.0"
-ENV APP_NAME="Antigravity-Server"
-ENV APP_SLUG="antigravity-server"
-ENV APP_UNSUPPORTED="false"
-
 # Setup paths and environment
 RUN mkdir -p /run/nginx /root/.vnc /root/.config/tigervnc && \
     ln -sf "$(which fdfind)" /usr/local/bin/fd && \
