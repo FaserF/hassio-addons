@@ -21,7 +21,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # critical here as the SAP runtime is already pinned via the base image.
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.2.0"
+ENV APP_VERSION="0.2.1"
 ENV APP_NAME="SAP ABAP Cloud Developer Trial"
 ENV APP_SLUG="sap-abap-cloud-dev"
 ENV APP_UNSUPPORTED="false"
