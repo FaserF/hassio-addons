@@ -18,7 +18,7 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # hadolint ignore=DL3018,DL4006
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.0"
+ENV APP_VERSION="2.3.1"
 ENV APP_NAME="ShieldFile"
 ENV APP_SLUG="shieldfile"
 ENV APP_UNSUPPORTED="false"
