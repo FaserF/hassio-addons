@@ -7,13 +7,14 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install requirements
+# hadolint ignore=DL3008
+
 # App metadata (injected by CI)
 ENV APP_VERSION="0.1.0"
 ENV APP_NAME="Komodo"
 ENV APP_SLUG="komodo"
 ENV APP_UNSUPPORTED="false"
 
-# hadolint ignore=DL3008
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \
