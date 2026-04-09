@@ -35,7 +35,11 @@ if [ -z "$SECRET" ]; then
     SECRET=$(cat /data/secret_key)
 fi
 export SECRET_KEY="$SECRET"
-export TRUST_PROXY=1
+export TRUST_PROXY="true"
+export TRUST_PROXY_BOOLEAN="true"
+export TRUST_PROXY_VALUES="true"
+# Note: Planka 2.x uses TRUST_PROXY="true" string for boolean behavior
+export TRUST_PROXY_REAL="true"
 
 bashio::app.print_banner
 
@@ -66,6 +70,27 @@ esac
 
 if ! cd /opt/planka; then
     bashio::exit.nok "Failed to change directory to /opt/planka"
+fi
+
+# Patch Planka to support Ingress dynamically
+if [ -f api/controllers/index.js ]; then
+    bashio::log.info "Patching Planka for dynamic Ingress support..."
+    cat << 'EOF' > api/controllers/index.js
+module.exports = {
+  exits: {
+    success: {
+      responseType: 'view',
+      viewTemplatePath: 'index',
+    },
+  },
+  fn(req) {
+    const ingressPath = req.headers['x-ingress-path'];
+    return {
+      basePath: ingressPath ? ingressPath.replace(/\/$/, '') : sails.config.custom.baseUrlPath,
+    };
+  },
+};
+EOF
 fi
 
 # Start Planka
