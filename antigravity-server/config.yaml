@@ -23,7 +23,7 @@ ports_description:
   5901/tcp: "VNC Client Port"
 options:
   vnc_password: ""
-  log_level: info
+  log_level: "info"
   autostart_antigravity: true
   install_android_tools: false
   install_dev_tools: false
@@ -33,7 +33,7 @@ options:
 
 schema:
   vnc_password: match(^.{0,8}$)?
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: trace|debug|info|notice|warning|error|fatal?
   autostart_antigravity: bool
   install_android_tools: bool?
   install_dev_tools: bool?

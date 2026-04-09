@@ -13,7 +13,7 @@ map:
   - homeassistant_config:rw
 options:
   sync_interval: 3600
-  log_level: info
+  log_level: "info"
   jobs:
     - source_host: imap.example.com
       source_user: source@example.com
@@ -44,26 +44,26 @@ options:
 schema:
   # Minimum 90 seconds to prevent overlapping sync cycles
   sync_interval: int(90,)
-  log_level: list(trace|debug|info|warning|error)?
+  log_level: trace|debug|info|warning|error?
   jobs:
     - source_host: "str"
       source_user: "str"
-      source_auth_type: "list(password|oauth2)"
+      source_auth_type: password|oauth2
       source_password: "password?"
       source_oauth2_client_id: "str?"
       source_oauth2_client_secret: "str?"
       source_oauth2_refresh_token: "str?"
       source_oauth2_tenant_id: "str?"
-      source_oauth2_provider: "list(google|microsoft)?"
+      source_oauth2_provider: google|microsoft?
       destination_host: "str"
       destination_user: "str"
-      destination_auth_type: "list(password|oauth2)"
+      destination_auth_type: password|oauth2
       destination_password: "password?"
       destination_oauth2_client_id: "str?"
       destination_oauth2_client_secret: "str?"
       destination_oauth2_refresh_token: "str?"
       destination_oauth2_tenant_id: "str?"
-      destination_oauth2_provider: "list(google|microsoft)?"
+      destination_oauth2_provider: google|microsoft?
       delete_after_sync: "bool?"
       included_folders: list(str)?
       excluded_folders: list(str)?

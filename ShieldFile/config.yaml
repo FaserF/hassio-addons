@@ -30,7 +30,7 @@ options:
       password: "changeme1234"
   base_directory: "/share"
   port: 8443
-  log_level: info
+  log_level: "info"
 schema:
   certfile: str
   keyfile: str
@@ -39,5 +39,5 @@ schema:
       password: str
   base_directory: str
   port: port
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
 image: ghcr.io/faserf/hassio-addons-shieldfile-{arch}

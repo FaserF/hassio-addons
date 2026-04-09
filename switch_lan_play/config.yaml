@@ -14,8 +14,8 @@ host_ipc: true
 host_dbus: true
 options:
   server: "switch.lan-play.com:11451"
-  log_level: info
+  log_level: "info"
 schema:
   server: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
 ports: {}

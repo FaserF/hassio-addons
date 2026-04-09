@@ -14,8 +14,8 @@ init: false
 panel_icon: mdi:bridge
 options:
   config_path: /share/matterbridge/matterbridge.toml
-  log_level: info
+  log_level: "info"
 schema:
   config_path: str
-  log_level: list(info|debug)
+  log_level: info|debug
 stage: deprecated

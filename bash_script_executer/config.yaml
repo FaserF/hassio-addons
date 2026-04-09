@@ -21,7 +21,7 @@ options:
   script2_content: ""
   script_path3: "false"
   script3_content: ""
-  log_level: info
+  log_level: "info"
 schema:
   script_path: str
   script_content: str?
@@ -38,4 +38,4 @@ schema:
   script3_argument1: str?
   script3_argument2: str?
   script3_argument3: str?
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal

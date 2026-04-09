@@ -21,7 +21,7 @@ options:
   prefer_encrypted: true
   certfile: fullchain.pem
   keyfile: privkey.pem
-  log_level: info
+  log_level: "info"
   # DoT Port (Required for Android "Private DNS" Native Setting)
   # SAFE DEFAULT: 8853 (To avoid conflict with AdGuard Home on 853)
   # SETUP: Map WAN Port 853 -> LAN Port 8853 in your Router for Android to work.
@@ -35,7 +35,7 @@ schema:
   prefer_encrypted: bool?
   certfile: str
   keyfile: str
-  log_level: list(debug|info|warning|error|fatal)?
+  log_level: debug|info|warning|error|fatal?
   dot_port: port?
   doh_port: port?
   fallback_dns: bool?

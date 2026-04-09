@@ -19,14 +19,14 @@ options:
   ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
-  log_level: info
+  log_level: "info"
   secret_key: ""
   base_url: ""
 schema:
   ssl: bool
   certfile: str
   keyfile: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
   secret_key: str?
   base_url: str?
   reset_database: bool?

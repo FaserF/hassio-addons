@@ -14,7 +14,7 @@ map:
   - media:rw
 panel_icon: mdi:whatsapp
 options:
-  log_level: info
+  log_level: "info"
   reset_session: false
   send_message_timeout: 25000
   keep_alive_interval: 30000
@@ -31,7 +31,7 @@ options:
   admin_notifications_enabled: true
 
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
   reset_session: bool
   send_message_timeout: int
   keep_alive_interval: int

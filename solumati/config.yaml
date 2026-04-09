@@ -23,7 +23,7 @@ ports:
 ports_description:
   80/tcp: "Web Interface Port (use Ingress for secure access)"
 options:
-  log_level: info
+  log_level: "info"
   test_mode: false
   app_base_url: ""
   factory_reset: false
@@ -31,7 +31,7 @@ options:
   dev_use_main_branch: false
   github_token: ""
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
   test_mode: bool
   app_base_url: str?
   factory_reset: bool?

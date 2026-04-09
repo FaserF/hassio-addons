@@ -25,7 +25,7 @@ options:
   github_repo: "FaserF/AegisBot"
   developer_mode: false
   reset_database: false
-  log_level: info
+  log_level: "info"
   database:
     type: sqlite
   secret_key: ""
@@ -47,9 +47,9 @@ schema:
   developer_mode: bool
   reset_database: bool
   reset_database_confirm: bool?
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: trace|debug|info|notice|warning|error|fatal
   database:
-    type: list(sqlite|postgresql)
+    type: sqlite|postgresql
     postgresql_host: str?
     postgresql_port: port?
     postgresql_user: str?
@@ -59,13 +59,13 @@ schema:
   project_name: str?
   debug: bool?
   demo_mode: bool
-  demo_mode_type: list(ephemeral|persistent)?
+  demo_mode_type: ephemeral|persistent?
   openai_api_key: password?
   gemini_api_key: password?
   security_scan_api_key: password?
   ai_model: str?
-  ai_provider: list(openai|gemini)?
-  release_type: list(developer|nightly|pre-release|stable)?
+  ai_provider: openai|gemini?
+  release_type: developer|nightly|pre-release|stable?
   environment: str?
   default_locale: str?
 stage: experimental
