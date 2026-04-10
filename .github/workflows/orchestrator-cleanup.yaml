@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧹 Cleanup PR Workflow Runs and Artifacts
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -124,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🗑️ Delete Old Deployments (Keep Recent 10)
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const KEEP_RECENT = 10; // Number of recent deployments to keep
