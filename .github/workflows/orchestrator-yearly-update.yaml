@@ -102,7 +102,7 @@ jobs:
       - name: 🔍 Check for existing PR
         if: steps.check-changes.outputs.has_changes == 'true'
         id: check-pr
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const CURRENT_YEAR = parseInt('${{ steps.years.outputs.current_year }}');
@@ -126,7 +126,7 @@ jobs:
 
       - name: 📝 Create Pull Request
         if: steps.check-changes.outputs.has_changes == 'true' && (steps.check-pr.outputs.pr_exists != 'true')
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const CURRENT_YEAR = parseInt('${{ steps.years.outputs.current_year }}');

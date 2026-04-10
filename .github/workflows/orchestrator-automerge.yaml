@@ -97,7 +97,7 @@ jobs:
 
       - name: ❌ Report CI Failure
         if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           RUN_NUMBER: "${{ github.event.workflow_run.run_number }}"
           RUN_URL: "${{ github.event.workflow_run.html_url }}"
@@ -419,7 +419,7 @@ jobs:
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');

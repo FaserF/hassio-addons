@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: 👤 Auto-assign Issues
         if: github.event_name == 'issues' && github.event.action == 'opened'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             // Auto-assign all new issues to FaserF
@@ -54,7 +54,7 @@ jobs:
 
       - name: 🏷️ Label Issues (Form-based)
         if: github.event_name == 'issues'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const body = context.payload.issue.body;
