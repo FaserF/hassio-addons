@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.2 (2026-04-10)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on Softwares [skip-tests] (#734) [skip-tests] ([`a66190c5`](https://github.com/FaserF/hassio-addons/commit/a66190c5cb3a4d4178f11e8e1285fec4c6641210))
+
+
 ## 2.4.1 (2026-04-09)
 
 ### 📦 Dependencies
