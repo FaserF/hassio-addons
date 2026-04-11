@@ -12,7 +12,7 @@ ENV APP_NAME="Switch LAN Play Server"
 ENV APP_SLUG="switch-lan-play-server"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache \
+RUN apk add --no-cache -u \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     libssl3 libcrypto3 \
@@ -43,7 +43,7 @@ ARG BUILD_DATE="unknown"
 
 # Install runtime requirements
 # hadolint ignore=DL3018
-RUN apk add --no-cache \
+RUN apk add --no-cache -u \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     libssl3 libcrypto3 \

@@ -33,7 +33,7 @@ WORKDIR /app
 # Install dependencies and build db-infoscreen
 # hadolint ignore=DL3003,DL3018
 RUN \
-    apk add --no-cache \
+    apk add --no-cache -u \
         --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
         --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
         gcc \
