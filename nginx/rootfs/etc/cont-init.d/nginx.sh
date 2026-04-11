@@ -148,7 +148,7 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 	cat >/etc/nginx/sites-enabled/default.conf <<EOF
 server {
     listen 80;
-    server_name ${website_name};
+    server_name ${website_name} _;
 
     # Redirect all HTTP to HTTPS
     return 301 https://\$host\$request_uri;
@@ -159,7 +159,7 @@ EOF
 	cat >/etc/nginx/sites-enabled/default-ssl.conf <<EOF
 server {
     listen 443 ssl http2;
-    server_name ${website_name};
+    server_name ${website_name} _;
 
     root ${webrootdocker};
     index index.html index.htm index.php;
@@ -196,7 +196,7 @@ else
 	cat >/etc/nginx/sites-enabled/default.conf <<EOF
 server {
     listen 80;
-    server_name ${website_name};
+    server_name ${website_name} _;
 
     root ${webrootdocker};
     index index.html index.htm index.php;

@@ -775,6 +775,8 @@ jobs:
                           sleep 15
                         else
                           echo "❌ Ingress check failed after retries (HTTP $HTTP_CODE)"
+                          echo "Dumping App logs for debugging..."
+                          docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -100 || echo "⚠️ Could not retrieve logs"
                           RESULTS="$RESULTS\n❌ $App: FAIL (Ingress $HTTP_CODE)"
                           FAILED=1
                         fi

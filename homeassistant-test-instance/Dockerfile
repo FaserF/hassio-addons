@@ -22,10 +22,8 @@ ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
-    && apk add --no-cache musl musl-dev \
-    && apk upgrade --no-cache --available \
+    apk update \
+    && apk upgrade --no-cache \
     && apk add --no-cache \
         bash \
         curl \
