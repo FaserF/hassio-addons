@@ -403,13 +403,21 @@ jobs:
                  echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
                  echo "Configuring MariaDB options..."
+
                  # Set mandatory options (password is required)
-                 MARIA_OPTS='{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}'
-                 docker exec -i ha-supervisor-test sh -c "cat > /tmp/maria_opt.json" <<< "$MARIA_OPTS"
+                 # Use a heredoc to write the JSON to avoid quoting issues in bash
+                 docker exec ha-supervisor-test sh -c "cat > /tmp/maria_opt.json << 'EOF'
+{
+  \"databases\": [\"homeassistant\"],
+  \"logins\": [{\"username\": \"homeassistant\", \"password\": \"generated_m7R2x\"}],
+  \"rights\": [{\"username\": \"homeassistant\", \"database\": \"homeassistant\"}],
+  \"password\": \"generated_m7R2x\"
+}
+EOF"
                  docker exec ha-supervisor-test curl -s -X POST \
-                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                    -H "Authorization: Bearer \" \
                     -H "Content-Type: application/json" \
-                    -d "$MARIA_OPTS" \
+                    -d "@/tmp/maria_opt.json" \
                     "http://supervisor/addons/core_mariadb/options" || echo "⚠️ Failed to set MariaDB options via API"
 
                  if ! docker exec ha-supervisor-test ha apps start core_mariadb; then
