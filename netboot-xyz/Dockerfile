@@ -22,7 +22,7 @@ ENV APP_UNSUPPORTED="false"
 RUN \
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
   && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
-  && apk add --no-cache --available musl musl-dev \
+  && apk add --no-cache musl musl-dev \
   && apk upgrade --no-cache --available \
   && echo "**** install runtime packages ****" && \
   apk add --no-cache libssl3 libcrypto3 \

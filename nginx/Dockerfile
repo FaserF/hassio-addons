@@ -26,7 +26,7 @@ WORKDIR /tmp
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
-    && apk add --no-cache --available musl musl-dev \
+    && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
