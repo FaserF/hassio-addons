@@ -61,7 +61,7 @@ RUN \
         perl-dbd-sqlite \
         perl-datetime \
         perl-libwww \
-    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-infoscreen.git . \
+    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \
