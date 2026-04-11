@@ -16,7 +16,10 @@ ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache libssl3 libcrypto3 git curl && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 git curl && \
     apk add --no-cache nodejs npm
 
 # 2. Set workdir

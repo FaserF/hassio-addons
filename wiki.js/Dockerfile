@@ -17,7 +17,11 @@ ENV APP_NAME="Wiki.JS"
 ENV APP_SLUG="wiki.js"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
+RUN \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

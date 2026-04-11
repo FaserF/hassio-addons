@@ -14,7 +14,11 @@ ENV APP_NAME="pterodactyl Panel Gameserver"
 ENV APP_SLUG="pterodactyl_panel"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     redis \
     curl \
     gettext \
@@ -56,7 +60,11 @@ WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
 # hadolint ignore=DL3018
     # Safe Composer installation \
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     yarn \
     git \
     && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch "release/${PTERODACTYL_VERSION}" \

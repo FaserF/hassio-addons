@@ -15,7 +15,10 @@ ENV APP_SLUG="apache2-minimal"
 ENV APP_UNSUPPORTED="false"
 
 RUN mkdir /run/apache2 \
- && apk --no-cache add libcrypto3 libssl3 \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libcrypto3 libssl3 \
     apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \
         libxml2-dev \
         apache2-utils \

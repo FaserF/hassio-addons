@@ -61,7 +61,11 @@ COPY --from=admin-build /app/admin/www /var/www/admin
 
 # Install dependencies
 # hadolint ignore=DL3018
-RUN apk add --no-cache \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     libssl3 \
     libcrypto3 \
     bind-tools \

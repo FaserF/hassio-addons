@@ -29,7 +29,6 @@ ARG APACHE2_VERSION="2.4.66-r0"
 RUN mkdir /run/apache2 \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/testing" >> /etc/apk/repositories \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libcrypto3 libssl3 \
     apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \

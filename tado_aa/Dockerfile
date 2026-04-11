@@ -20,7 +20,11 @@ ENV APP_NAME="Tado Auto Assist"
 ENV APP_SLUG="tado_aa"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add libssl3 libcrypto3 --no-cache -u curl
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 curl
 
 # Download and patch tado_aa.py to use environment variables
 # Latest commit from adrianslabu/tado_aa (archived repo)

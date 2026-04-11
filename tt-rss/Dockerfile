@@ -11,7 +11,10 @@ ENV APP_SLUG="tt-rss"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-    apk add libssl3 libcrypto3 --no-cache -u \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 \
         nginx \
         postgresql \
         postgresql-contrib \
