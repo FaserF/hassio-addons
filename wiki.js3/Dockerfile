@@ -19,7 +19,7 @@ ENV APP_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV APP_SLUG="wiki.js3"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN apk add --no-cache libssl3 libcrypto3 \
     --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository https://dl-cdn.alpinelinux.org/alpine/edge/community \
     nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec git openssh-client pandoc \

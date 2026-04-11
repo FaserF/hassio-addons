@@ -17,7 +17,7 @@ ENV APP_NAME="Wiki.JS"
 ENV APP_SLUG="wiki.js"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
+RUN apk add --no-cache libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .

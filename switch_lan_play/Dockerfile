@@ -12,7 +12,7 @@ ENV APP_NAME="Switch LAN Play Client"
 ENV APP_SLUG="switch-lan-play"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN apk add --no-cache libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \
     git \
@@ -43,7 +43,7 @@ ENV SWITCH_LAN_PLAY_VERSION="v0.2.3"
 
 # Install runtime dependencies (procps for pgrep)
 # hadolint ignore=DL3018
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN apk add --no-cache libssl3 libcrypto3 \
     libpcap \
     libuv \
     procps \

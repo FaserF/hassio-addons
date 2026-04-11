@@ -22,15 +22,16 @@ ENV \
 # Build arguments
 ARG DBF_VERSION="4.37.28"
 
-# Install dependencies and build db-infoscreen
-# hadolint ignore=DL3003,DL3018
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.0.0"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"
 
+WORKDIR /app
+
+# Install dependencies and build db-infoscreen
+# hadolint ignore=DL3003,DL3018
 RUN \
     apk add --no-cache --virtual .build-dependencies \
         gcc \
@@ -53,10 +54,11 @@ RUN \
         db \
         curl \
         git \
-        curl \
-        git \
-    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git /app \
-    && cd /app \
+        perl-dbd-mysql \
+        perl-dbd-sqlite \
+        perl-datetime \
+        perl-libwww \
+    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-infoscreen.git . \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \
