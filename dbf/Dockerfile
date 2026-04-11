@@ -37,7 +37,7 @@ RUN \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
-    && apk add --no-cache \
+    && apk add --no-cache --virtual .build-dependencies \
         gcc \
         make \
         musl-dev \
@@ -46,6 +46,7 @@ RUN \
         libxml2-dev \
         zlib-dev \
         db-dev \
+    && apk add --no-cache \
         perl \
         perl-app-cpanminus \
         perl-io-socket-ssl \
