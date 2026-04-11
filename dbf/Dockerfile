@@ -35,6 +35,7 @@ WORKDIR /app
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache --available musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache \
         gcc \

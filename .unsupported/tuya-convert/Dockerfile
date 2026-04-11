@@ -13,6 +13,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache --available musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 python3 python3-dev py3-pip bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 ncurses && \
     python3 -m venv $VIRTUAL_ENV && \

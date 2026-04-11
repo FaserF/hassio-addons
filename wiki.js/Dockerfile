@@ -20,6 +20,7 @@ ENV APP_UNSUPPORTED="false"
 RUN \
     echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache --available musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 nodejs npm yarn wget dos2unix mariadb-client git openssh-client pandoc libc6-compat
 

@@ -22,6 +22,7 @@ ENV APP_UNSUPPORTED="false"
 RUN \
     echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache --available musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache \
     nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec git openssh-client pandoc \
@@ -32,7 +33,8 @@ WORKDIR /wiki
 COPY --from=wiki_release /wiki .
 # Reinstall dependencies for Node 24 compatibility
 RUN \
-    apk upgrade --no-cache --available \
+    apk add --no-cache --available musl musl-dev \
+    && apk upgrade --no-cache --available \
     && apk add --no-cache --virtual .build-deps build-base python3 && \
     rm -rf node_modules && \
     yarn install --production && \

@@ -14,6 +14,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache --available musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache \
     curl \

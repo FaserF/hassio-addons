@@ -24,33 +24,33 @@ RUN \
     gettext \
     mariadb-client \
     nginx \
-    php83 \
-    php83-bcmath \
-    php83-common \
-    php83-dom \
-    php83-fileinfo \
-    php83-fpm \
-    php83-gd \
-    php83-pecl-memcached \
-    php83-mbstring \
-    php83-openssl \
-    php83-posix \
-    php83-pdo \
-    php83-phar \
-    php83-sodium \
-    php83-pdo_mysql \
-    php83-session \
-    php83-simplexml \
-    php83-tokenizer \
-    php83-ctype \
-    php83-zip \
-    php83-xmlwriter \
-    php83-iconv \
+    php85 \
+    php85-bcmath \
+    php85-common \
+    php85-dom \
+    php85-fileinfo \
+    php85-fpm \
+    php85-gd \
+    php85-pecl-memcached \
+    php85-mbstring \
+    php85-openssl \
+    php85-posix \
+    php85-pdo \
+    php85-phar \
+    php85-sodium \
+    php85-pdo_mysql \
+    php85-session \
+    php85-simplexml \
+    php85-tokenizer \
+    php85-ctype \
+    php85-zip \
+    php85-xmlwriter \
+    php85-iconv \
     tini \
     su-exec \
     openssl \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/ \
-    && ln -sf /usr/bin/php83 /usr/bin/php
+    && ln -sf /usr/bin/php85 /usr/bin/php
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
