@@ -16,7 +16,11 @@ ENV APP_NAME="Imapsync"
 ENV APP_SLUG="imapsync"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk --no-cache -u add \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     expect \
     perl \
     perl-cgi \

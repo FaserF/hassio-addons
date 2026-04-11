@@ -45,7 +45,6 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-fpm" \
     "php${PHP_V}-mysqli" \
     "php${PHP_V}-mysqlnd" \
-    "php${PHP_V}-opcache" \
     "php${PHP_V}-gd" \
     "php${PHP_V}-intl" \
     "php${PHP_V}-curl" \
@@ -65,7 +64,6 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-xmlreader" \
     "php${PHP_V}-xmlwriter" \
     "php${PHP_V}-fileinfo" \
-    "php${PHP_V}-xmlrpc" \
     "php${PHP_V}-soap" \
     "php${PHP_V}-gettext" \
     "php${PHP_V}-bz2" \
@@ -74,7 +72,6 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-ldap" \
     "php${PHP_V}-pecl-redis" \
     "php${PHP_V}-pecl-imagick" \
-    "php${PHP_V}-pecl-mcrypt" \
     "php${PHP_V}-sqlite3" \
     "php${PHP_V}-bcmath" \
     "php${PHP_V}-calendar" \
@@ -87,8 +84,8 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-sodium" \
     "php${PHP_V}-cgi" \
     "php${PHP_V}-sockets" \
-    "php${PHP_V}-imap" \
-    "php${PHP_V}-apcu" \
+    "php${PHP_V}-pecl-imap" \
+    "php${PHP_V}-pecl-apcu" \
     mosquitto \
     mariadb-client \
     ffmpeg \

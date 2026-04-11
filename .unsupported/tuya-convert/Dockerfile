@@ -10,7 +10,11 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Pin sslpsk to specific commit for reproducible builds
 # hadolint ignore=DL3018,DL3013,DL3042
 
-RUN apk add --no-cache -u libssl3 libcrypto3 python3 python3-dev py3-pip bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 ncurses && \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 python3 python3-dev py3-pip bash git iw dnsmasq hostapd screen curl mosquitto haveged net-tools openssl openssl-dev gcc musl-dev linux-headers sudo coreutils grep iproute2 ncurses && \
     python3 -m venv $VIRTUAL_ENV && \
     pip install --no-cache-dir --upgrade paho-mqtt tornado git+https://github.com/drbild/sslpsk.git@d88123a75786953f82f5e25d6c43d9d9259acb62 pycryptodomex && \
     git clone https://github.com/ct-Open-Source/tuya-convert /usr/local/tuya-convert

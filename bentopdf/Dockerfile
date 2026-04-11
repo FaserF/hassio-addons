@@ -18,7 +18,11 @@ ENV APP_NAME="BentoPDF"
 ENV APP_SLUG="bentopdf"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 \
         nginx \
         curl \
     && rm -f /etc/nginx/http.d/default.conf

@@ -18,39 +18,38 @@ RUN \
         nginx \
         postgresql \
         postgresql-contrib \
-        php84 \
-        php84-curl \
-        php84-dom \
-        php84-fileinfo \
-        php84-fpm \
-        php84-gd \
-        php84-iconv \
-        php84-intl \
-        php84-json \
-        php84-mbstring \
-        php84-mysqlnd \
-        php84-opcache \
-        php84-openssl \
-        php84-pdo \
-        php84-pdo_mysql \
-        php84-pdo_pgsql \
-        php84-pdo_sqlite \
-        php84-pecl-apcu \
-        php84-pcntl \
-        php84-pgsql \
-        php84-phar \
-        php84-posix \
-        php84-session \
-        php84-simplexml \
-        php84-sqlite3 \
-        php84-tokenizer \
-        php84-xml \
-        php84-xmlwriter \
-        php84-zip \
+        php85 \
+        php85-curl \
+        php85-dom \
+        php85-fileinfo \
+        php85-fpm \
+        php85-gd \
+        php85-iconv \
+        php85-intl \
+        php85-json \
+        php85-mbstring \
+        php85-mysqlnd \
+        php85-openssl \
+        php85-pdo \
+        php85-pdo_mysql \
+        php85-pdo_pgsql \
+        php85-pdo_sqlite \
+        php85-pecl-apcu \
+        php85-pcntl \
+        php85-pgsql \
+        php85-phar \
+        php85-posix \
+        php85-session \
+        php85-simplexml \
+        php85-sqlite3 \
+        php85-tokenizer \
+        php85-xml \
+        php85-xmlwriter \
+        php85-zip \
         git \
         openssl \
     \
-    && ln -sf /usr/bin/php84 /usr/bin/php \
+    && ln -sf /usr/bin/php85 /usr/bin/php \
     \
     && git clone --depth 1 https://git.tt-rss.org/fox/tt-rss.git /var/www/tt-rss \
     \
@@ -59,8 +58,8 @@ RUN \
 # Copy root filesystem
 COPY rootfs /
 
-# Move custom PHP config to correct location for PHP 8.4
-RUN if [ -d /etc/php ]; then cp -r /etc/php/* /etc/php84/ && rm -rf /etc/php; fi
+# Move custom PHP config to correct location for PHP 8.5
+RUN if [ -d /etc/php ]; then cp -r /etc/php/* /etc/php85/ && rm -rf /etc/php; fi
 
 # Set permissions
 RUN \

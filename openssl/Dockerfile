@@ -11,7 +11,11 @@ ENV APP_NAME="OpenSSL"
 ENV APP_SLUG="openssl"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk --no-cache -u add libssl3 libcrypto3 openssl
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 openssl
 
 # Copy data for add-on
 WORKDIR /

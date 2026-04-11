@@ -11,8 +11,25 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 #WORKDIR /opt/freenom_dns_updater
 # hadolint ignore=DL3018,DL3013,DL3042
 
-RUN apk add --no-cache -u libssl3 libcrypto3 zlib openssl-dev binutils python3 py3-pip && \
-    pip install --no-cache-dir freenom-dns-updater
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
+    curl \
+    mosquitto \
+    openssl \
+    python3 \
+    py3-pip \
+    bash \
+    iw \
+    dnsmasq \
+    hostapd \
+    screen \
+    wireless-tools \
+    iproute2 \
+    sudo \
+    && pip3 install --no-cache-dir --break-system-packages paho-mqtt==2.1.0 tornado==6.5.0 freenom-dns-updater
 #RUN rm -rf /opt/freenom_dns_updater
 
 # Copy data for add-on

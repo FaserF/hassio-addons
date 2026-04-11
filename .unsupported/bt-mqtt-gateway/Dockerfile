@@ -17,10 +17,22 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 RUN mkdir /application && \
- apk add --no-cache -u libssl3 libcrypto3 tzdata bluez bluez-libs sudo bluez-deprecated python3 && \
- apk add --no-cache -u --virtual build-dependencies git bluez-dev musl-dev make gcc glib-dev python3-dev && \
- apk add --no-cache -u wget && \
-    wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
+        bluez \
+        bluez-libs \
+        bluez-deprecated \
+        glib \
+        python3 \
+        py3-pip \
+        git \
+        gcc \
+        linux-headers \
+        musl-dev \
+        glib-dev \
+    && wget -nv "https://github.com/zewelor/bt-mqtt-gateway/archive/${BT_MQTT_VERSION}.tar.gz" -O "${BT_MQTT_VERSION}.tar.gz" && \
     echo "${BT_MQTT_SHA256}  ${BT_MQTT_VERSION}.tar.gz" | sha256sum -c - && \
     tar xzf "${BT_MQTT_VERSION}.tar.gz" -C /tmp/ && \
     rm "${BT_MQTT_VERSION}.tar.gz" && \
