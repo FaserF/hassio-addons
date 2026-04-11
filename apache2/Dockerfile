@@ -27,15 +27,16 @@ ARG APACHE2_VERSION="2.4.66-r0"
 # Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
 # hadolint ignore=DL3018,DL3047,DL4006,DL3003
 RUN mkdir /run/apache2 \
-    && apk --no-cache add libcrypto3 libssl3 \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/testing" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libcrypto3 libssl3 \
     apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \
     curl \
     jq \
     && PHP_V=$(echo "${PHP_VERSION}" | cut -d. -f1-2 | tr -d '.') \
     && apk add --no-cache \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     "php${PHP_V}-apache2" \
     apache2-utils \
     apache2-mod-wsgi \
@@ -44,35 +45,56 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}" \
     "php${PHP_V}-fpm" \
     "php${PHP_V}-mysqli" \
+    "php${PHP_V}-mysqlnd" \
+    "php${PHP_V}-opcache" \
     "php${PHP_V}-gd" \
-    zlib \
+    "php${PHP_V}-intl" \
     "php${PHP_V}-curl" \
     "php${PHP_V}-phar" \
     "php${PHP_V}-mbstring" \
     "php${PHP_V}-zip" \
+    "php${PHP_V}-xml" \
+    "php${PHP_V}-iconv" \
     "php${PHP_V}-pdo" \
     "php${PHP_V}-pdo_mysql" \
-    "php${PHP_V}-iconv" \
-    "php${PHP_V}-dom" \
-    "php${PHP_V}-session" \
-    "php${PHP_V}-intl" \
-    "php${PHP_V}-soap" \
-    "php${PHP_V}-fileinfo" \
-    "php${PHP_V}-xml" \
-    "php${PHP_V}-ctype" \
     "php${PHP_V}-pdo_sqlite" \
-    "php${PHP_V}-tokenizer" \
-    "php${PHP_V}-exif" \
-    "php${PHP_V}-xmlwriter" \
-    "php${PHP_V}-cgi" \
+    "php${PHP_V}-session" \
+    "php${PHP_V}-ctype" \
     "php${PHP_V}-simplexml" \
+    "php${PHP_V}-dom" \
+    "php${PHP_V}-tokenizer" \
+    "php${PHP_V}-xmlreader" \
+    "php${PHP_V}-xmlwriter" \
+    "php${PHP_V}-fileinfo" \
+    "php${PHP_V}-xmlrpc" \
+    "php${PHP_V}-soap" \
+    "php${PHP_V}-gettext" \
+    "php${PHP_V}-bz2" \
+    "php${PHP_V}-shmop" \
+    "php${PHP_V}-posix" \
+    "php${PHP_V}-ldap" \
+    "php${PHP_V}-pecl-redis" \
+    "php${PHP_V}-pecl-imagick" \
+    "php${PHP_V}-pecl-mcrypt" \
+    "php${PHP_V}-sqlite3" \
+    "php${PHP_V}-bcmath" \
+    "php${PHP_V}-calendar" \
+    "php${PHP_V}-exif" \
+    "php${PHP_V}-ftp" \
+    "php${PHP_V}-sysvsem" \
+    "php${PHP_V}-sysvshm" \
+    "php${PHP_V}-sysvmsg" \
+    "php${PHP_V}-pcntl" \
+    "php${PHP_V}-sodium" \
+    "php${PHP_V}-cgi" \
     "php${PHP_V}-sockets" \
     "php${PHP_V}-imap" \
     "php${PHP_V}-apcu" \
     mosquitto \
     mariadb-client \
     ffmpeg \
-    musl-locales
+    musl-locales \
+    && rm -f /var/www/localhost/htdocs/index.html
 
 # Configure Logging
 # shellcheck disable

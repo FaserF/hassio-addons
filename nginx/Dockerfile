@@ -24,40 +24,62 @@ WORKDIR /tmp
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
+  && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+  && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+  && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/testing" >> /etc/apk/repositories \
+  && apk upgrade --no-cache --available \
   && apk --no-cache add libssl3 libcrypto3 \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
     && PHP_V=$(echo "${PHP_VERSION}" | awk -F. '{print $1$2}') \
     && apk add --no-cache \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     "php${PHP_V}-fpm" \
     "php${PHP_V}" \
     "php${PHP_V}-mysqli" \
+    "php${PHP_V}-mysqlnd" \
+    "php${PHP_V}-opcache" \
     "php${PHP_V}-gd" \
     zlib \
+    "php${PHP_V}-intl" \
     "php${PHP_V}-curl" \
     "php${PHP_V}-phar" \
     "php${PHP_V}-mbstring" \
     "php${PHP_V}-zip" \
+    "php${PHP_V}-xml" \
+    "php${PHP_V}-iconv" \
     "php${PHP_V}-pdo" \
     "php${PHP_V}-pdo_mysql" \
-    "php${PHP_V}-iconv" \
-    "php${PHP_V}-dom" \
-    "php${PHP_V}-session" \
-    "php${PHP_V}-intl" \
-    "php${PHP_V}-soap" \
-    "php${PHP_V}-fileinfo" \
-    "php${PHP_V}-xml" \
-    "php${PHP_V}-ctype" \
     "php${PHP_V}-pdo_sqlite" \
-    "php${PHP_V}-tokenizer" \
-    "php${PHP_V}-exif" \
-    "php${PHP_V}-xmlwriter" \
-    "php${PHP_V}-cgi" \
+    "php${PHP_V}-session" \
+    "php${PHP_V}-ctype" \
     "php${PHP_V}-simplexml" \
+    "php${PHP_V}-dom" \
+    "php${PHP_V}-tokenizer" \
+    "php${PHP_V}-xmlreader" \
+    "php${PHP_V}-xmlwriter" \
+    "php${PHP_V}-fileinfo" \
+    "php${PHP_V}-xmlrpc" \
+    "php${PHP_V}-soap" \
+    "php${PHP_V}-gettext" \
+    "php${PHP_V}-bz2" \
+    "php${PHP_V}-shmop" \
+    "php${PHP_V}-posix" \
+    "php${PHP_V}-ldap" \
+    "php${PHP_V}-pecl-redis" \
+    "php${PHP_V}-pecl-imagick" \
+    "php${PHP_V}-pecl-mcrypt" \
+    "php${PHP_V}-sqlite3" \
+    "php${PHP_V}-bcmath" \
+    "php${PHP_V}-calendar" \
+    "php${PHP_V}-exif" \
+    "php${PHP_V}-ftp" \
+    "php${PHP_V}-sysvsem" \
+    "php${PHP_V}-sysvshm" \
+    "php${PHP_V}-sysvmsg" \
+    "php${PHP_V}-pcntl" \
+    "php${PHP_V}-sodium" \
+    "php${PHP_V}-cgi" \
     "php${PHP_V}-sockets" \
     "php${PHP_V}-imap" \
     "php${PHP_V}-apcu" \

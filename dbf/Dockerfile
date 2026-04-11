@@ -33,9 +33,10 @@ WORKDIR /app
 # Install dependencies and build db-infoscreen
 # hadolint ignore=DL3003,DL3018
 RUN \
-    apk add --no-cache -u \
-        --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-        --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
         gcc \
         make \
         musl-dev \

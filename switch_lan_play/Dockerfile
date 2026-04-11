@@ -12,9 +12,11 @@ ENV APP_NAME="Switch LAN Play Client"
 ENV APP_SLUG="switch-lan-play"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \
@@ -46,9 +48,11 @@ ENV SWITCH_LAN_PLAY_VERSION="v0.2.3"
 
 # Install runtime dependencies (procps for pgrep)
 # hadolint ignore=DL3018
-RUN apk add --no-cache -u \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     libssl3 libcrypto3 \
     libpcap \
     libuv \
