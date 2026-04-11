@@ -16,7 +16,7 @@ ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-    apk add --no-cache -u libssl3 libcrypto3 git curl && \
+    apk add --no-cache libssl3 libcrypto3 git curl && \
     apk add --no-cache nodejs npm
 
 # 2. Set workdir

@@ -33,7 +33,9 @@ WORKDIR /app
 # Install dependencies and build db-infoscreen
 # hadolint ignore=DL3003,DL3018
 RUN \
-    apk add --no-cache --virtual .build-dependencies \
+    apk add --no-cache \
+        --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+        --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
         gcc \
         make \
         musl-dev \
@@ -42,7 +44,6 @@ RUN \
         libxml2-dev \
         zlib-dev \
         db-dev \
-    && apk add --no-cache \
         perl \
         perl-app-cpanminus \
         perl-io-socket-ssl \

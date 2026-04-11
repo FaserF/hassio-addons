@@ -61,7 +61,7 @@ COPY --from=admin-build /app/admin/www /var/www/admin
 
 # Install dependencies
 # hadolint ignore=DL3018
-RUN apk add --no-cache -u \
+RUN apk add --no-cache \
     libssl3 \
     libcrypto3 \
     bind-tools \
