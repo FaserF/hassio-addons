@@ -85,6 +85,9 @@ fi
 
 # Ensure nginx can write to log directories
 mkdir -p /var/log/nginx /var/run
+# Ensure Nginx temporary directories exist for Alpine 3.23
+mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+chown -R nginx:nginx /var/lib/nginx
 touch /var/log/nginx/access.log /var/log/nginx/error.log
 chmod 755 /var/log/nginx /var/run
 chmod 644 /var/log/nginx/*.log 2>/dev/null || true

@@ -275,6 +275,9 @@ ADMIN_BACKEND_PORT="8080"
 bashio::log.info "🌍 Unifying DoH and Admin UI on Port ${DOH_PORT} (multiplexed via Nginx)..."
 
 mkdir -p /run/nginx /etc/nginx/http.d
+# Ensure Nginx temporary directories exist for Alpine 3.23
+mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+chown -R nginx:nginx /var/lib/nginx
 
 cat <<EOF >/etc/nginx/http.d/default.conf
 server {

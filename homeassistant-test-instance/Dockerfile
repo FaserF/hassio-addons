@@ -21,11 +21,18 @@ ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
-    bash \
-    curl \
-    jq \
-    sed
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
+        bash \
+        curl \
+        jq \
+        sed \
+        libssl3 \
+        libcrypto3
 
 # Set shell to bash after installation
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

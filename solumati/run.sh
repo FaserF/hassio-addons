@@ -467,6 +467,9 @@ BACKEND_PID=$!
 # --- NGINX START ---
 bashio::log.info "Starting Nginx (Frontend)..."
 mkdir -p /run/nginx
+# Ensure Nginx temporary directories exist for Alpine 3.23
+mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+chown -R nginx:nginx /var/lib/nginx
 nginx -g "daemon off;" &
 NGINX_PID=$!
 

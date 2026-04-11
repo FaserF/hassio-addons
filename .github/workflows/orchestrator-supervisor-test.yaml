@@ -406,7 +406,11 @@ jobs:
                  # Set mandatory options (password is required)
                  MARIA_OPTS='{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}'
                  docker exec -i ha-supervisor-test sh -c "cat > /tmp/maria_opt.json" <<< "$MARIA_OPTS"
-                 docker exec ha-supervisor-test sh -c 'ha apps options core_mariadb --options "$(cat /tmp/maria_opt.json)"' || echo "⚠️ Failed to set MariaDB options"
+                 docker exec ha-supervisor-test curl -s -X POST \
+                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    -d "$MARIA_OPTS" \
+                    "http://supervisor/addons/core_mariadb/options" || echo "⚠️ Failed to set MariaDB options via API"
 
                  if ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                       echo "⚠️ Failed to start core_mariadb"
@@ -659,11 +663,15 @@ jobs:
                 # Verify options were applied
                 ACTUAL_OPTS=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -rc '.data.user_options // .data.options // "{}"')
                 echo "Options in Supervisor: $ACTUAL_OPTS"
-                if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
-                  echo "⚠️ Warning: media_folder not found in actual options. Retrying once..."
-                  docker exec ha-supervisor-test ha apps options "$SLUG" --options "$OPTS"
-                  sleep 2
-                fi
+                  if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
+                    echo "⚠️ Warning: media_folder not found in actual options. Retrying once via API..."
+                    docker exec ha-supervisor-test curl -s -X POST \
+                      -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                      -H "Content-Type: application/json" \
+                      -d "{\"options\": $OPTS}" \
+                      "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API (retry)"
+                    sleep 2
+                  fi
               fi
 
               # Start App

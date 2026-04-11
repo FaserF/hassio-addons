@@ -42,7 +42,6 @@ if bashio::config.true 'ingress'; then
     fi
 fi
 
-# Validate SSL files if SSL is enabled
 if bashio::config.true 'ssl'; then
     certfile="/ssl/$(bashio::config 'certfile')"
     keyfile="/ssl/$(bashio::config 'keyfile')"
@@ -57,5 +56,13 @@ if bashio::config.true 'ssl'; then
     fi
     bashio::log.info "SSL certificates validated."
 fi
+
+# Ensure Nginx working directories exist for Alpine 3.23 compatibility
+mkdir -p /var/lib/nginx/tmp/client_body \
+    /var/lib/nginx/tmp/proxy \
+    /var/lib/nginx/tmp/fastcgi \
+    /var/lib/nginx/tmp/uwsgi \
+    /var/lib/nginx/tmp/scgi
+chown -R root:root /var/lib/nginx
 
 exec nginx -g "daemon off;"
