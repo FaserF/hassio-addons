@@ -417,9 +417,12 @@ jobs:
           IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
 
           # Extract build_from from build.yaml (legacy format)
-          BUILD_FROM=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-          if [ -z "$BUILD_FROM" ]; then
-            BUILD_FROM=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          BUILD_FROM=$(yq -r '.build_from.amd64' "${{ matrix.App }}/build.yaml")
+          if [ "$BUILD_FROM" == "null" ] || [ -z "$BUILD_FROM" ]; then
+            BUILD_FROM=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml")
+          fi
+          if [ "$BUILD_FROM" == "null" ] || [ -z "$BUILD_FROM" ]; then
+            BUILD_FROM=""
           fi
 
           {
