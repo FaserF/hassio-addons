@@ -1105,14 +1105,20 @@ jobs:
           } >> "$GITHUB_ENV"
 
           # Extract build_from from build.yaml (legacy format)
-          BUILD_FROM_AMD64=$(grep "^  amd64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-          if [ -z "$BUILD_FROM_AMD64" ]; then
-            BUILD_FROM_AMD64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          BUILD_FROM_AMD64=$(yq -r '.build_from.amd64' "${{ matrix.App }}/build.yaml")
+          if [ "$BUILD_FROM_AMD64" == "null" ] || [ -z "$BUILD_FROM_AMD64" ]; then
+            BUILD_FROM_AMD64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml")
+          fi
+          if [ "$BUILD_FROM_AMD64" == "null" ] || [ -z "$BUILD_FROM_AMD64" ]; then
+            BUILD_FROM_AMD64=""
           fi
 
-          BUILD_FROM_AARCH64=$(grep "^  aarch64:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
-          if [ -z "$BUILD_FROM_AARCH64" ]; then
-            BUILD_FROM_AARCH64=$(grep "^build_from:" "${{ matrix.App }}/build.yaml" | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          BUILD_FROM_AARCH64=$(yq -r '.build_from.aarch64' "${{ matrix.App }}/build.yaml")
+          if [ "$BUILD_FROM_AARCH64" == "null" ] || [ -z "$BUILD_FROM_AARCH64" ]; then
+            BUILD_FROM_AARCH64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml")
+          fi
+          if [ "$BUILD_FROM_AARCH64" == "null" ] || [ -z "$BUILD_FROM_AARCH64" ]; then
+            BUILD_FROM_AARCH64=""
           fi
 
           {
