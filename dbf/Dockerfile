@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 FROM ${BUILD_FROM}
 
 # Build arguments
@@ -22,17 +22,22 @@ ENV \
 # Build arguments
 ARG DBF_VERSION="4.37.28"
 
-# Install dependencies and build db-infoscreen
-# hadolint ignore=DL3003,DL3018
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.0.0"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"
 
+WORKDIR /app
+
+# Install dependencies and build db-infoscreen
+# hadolint ignore=DL3003,DL3018
 RUN \
-    apk add --no-cache --virtual .build-dependencies \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache --virtual .build-dependencies \
         gcc \
         make \
         musl-dev \
@@ -53,10 +58,11 @@ RUN \
         db \
         curl \
         git \
-        curl \
-        git \
-    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git /app \
-    && cd /app \
+        perl-dbd-mysql \
+        perl-dbd-sqlite \
+        perl-datetime \
+        perl-libwww \
+    && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \

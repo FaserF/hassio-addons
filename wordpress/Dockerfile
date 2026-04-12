@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -18,27 +18,31 @@ ENV APP_SLUG="wordpress"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
- apk add --no-cache -u libssl3 libcrypto3 \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 \
         nginx \
         mariadb-client \
         openssl \
-        php84 \
-        php84-fpm \
-        php84-mysqli \
-        php84-openssl \
-        php84-curl \
-        php84-zlib \
-        php84-xml \
-        php84-phar \
-        php84-intl \
-        php84-dom \
-        php84-ctype \
-        php84-session \
-        php84-mbstring \
-        php84-gd \
-        php84-iconv \
-        php84-zip \
-        php84-fileinfo \
+        php85 \
+        php85-fpm \
+        php85-mysqli \
+        php85-openssl \
+        php85-curl \
+        php85-zlib \
+        php85-xml \
+        php85-phar \
+        php85-intl \
+        php85-dom \
+        php85-ctype \
+        php85-session \
+        php85-mbstring \
+        php85-gd \
+        php85-iconv \
+        php85-zip \
+        php85-fileinfo \
     && curl -J -L -o /tmp/wordpress.tar.gz \
         "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \
     # SHA256 from https://wordpress.org/wordpress-6.8.tar.gz.sha256 (verified 2026-01)
@@ -50,8 +54,8 @@ RUN \
     && echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  /usr/local/bin/wp" | sha256sum -c - \
     && chmod +x /usr/local/bin/wp \
     # Create PHP symlinks
-    && ln -sf /usr/bin/php84 /usr/bin/php \
-    && ln -sf /usr/sbin/php-fpm84 /usr/sbin/php-fpm \
+    && ln -sf /usr/bin/php85 /usr/bin/php \
+    && ln -sf /usr/sbin/php-fpm85 /usr/sbin/php-fpm \
     # Cleanup
     && rm -f /etc/nginx/http.d/default.conf \
     && rm -rf /var/cache/apk/*

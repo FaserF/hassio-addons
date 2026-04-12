@@ -919,4 +919,7 @@ chown -R nginx:nginx /var/log/nginx /var/www/html/storage/logs
 su-exec nginx php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3 &
 
 # Start nginx in foreground (it's configured with "daemon off")
+# Ensure Nginx temporary directories exist for Alpine 3.23
+mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+chown -R nginx:nginx /var/lib/nginx
 exec /usr/sbin/nginx -g "daemon off;"

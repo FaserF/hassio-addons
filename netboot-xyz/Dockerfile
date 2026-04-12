@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -20,8 +20,12 @@ ENV APP_SLUG="netboot-xyz"
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-  echo "**** install runtime packages ****" && \
- apk add --no-cache -u libssl3 libcrypto3 \
+  echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+  && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+  && apk add --no-cache musl musl-dev \
+  && apk upgrade --no-cache --available \
+  && echo "**** install runtime packages ****" && \
+  apk add --no-cache libssl3 libcrypto3 \
     bash \
     curl \
     dnsmasq \

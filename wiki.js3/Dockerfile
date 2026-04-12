@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
 # Note: This uses Wiki.js V3 Beta/Alpha - Renovate tracks ARG WIKIJS_VERSION
 ARG WIKIJS_VERSION=3.0.0-alpha.413
@@ -19,9 +19,12 @@ ENV APP_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV APP_SLUG="wiki.js3"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
-    --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository https://dl-cdn.alpinelinux.org/alpine/edge/community \
+RUN \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     nodejs npm yarn wget dos2unix postgresql postgresql-client postgresql-contrib su-exec git openssh-client pandoc \
     && mkdir -p /var/lib/postgresql/data /run/postgresql \
     && chown -R postgres:postgres /var/lib/postgresql /run/postgresql
@@ -29,7 +32,10 @@ RUN apk add --no-cache -u libssl3 libcrypto3 \
 WORKDIR /wiki
 COPY --from=wiki_release /wiki .
 # Reinstall dependencies for Node 24 compatibility
-RUN apk add --no-cache --virtual .build-deps build-base python3 && \
+RUN \
+    apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache --virtual .build-deps build-base python3 && \
     rm -rf node_modules && \
     yarn install --production && \
     yarn cache clean && \

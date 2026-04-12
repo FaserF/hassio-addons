@@ -1,7 +1,7 @@
 ARG HA_VERSION=2026.4.2
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
-FROM ghcr.io/hassio-addons/base:20.0.2 AS addon-base
+FROM ghcr.io/hassio-addons/base:20.0.3 AS addon-base
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -21,11 +21,16 @@ ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk add --no-cache -u libssl3 libcrypto3 \
-    bash \
-    curl \
-    jq \
-    sed
+RUN \
+    apk update \
+    && apk upgrade --no-cache \
+    && apk add --no-cache \
+        bash \
+        curl \
+        jq \
+        sed \
+        libssl3 \
+        libcrypto3
 
 # Set shell to bash after installation
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

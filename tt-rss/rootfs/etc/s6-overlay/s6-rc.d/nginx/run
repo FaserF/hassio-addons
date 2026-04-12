@@ -2,4 +2,7 @@
 # shellcheck shell=bash
 
 bashio::log.info "Starting Nginx..."
+# Ensure Nginx temporary directories exist for Alpine 3.23
+mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+chown -R nginx:nginx /var/lib/nginx
 exec nginx -g "daemon off;"

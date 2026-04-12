@@ -73,34 +73,65 @@ if ($content !~ /Ingress Patch Start/) {
     }
 }
 
-# 2. Surgical Template Relativizer (Sweep v10.1)
-print "Starting Surgical Template Relativization (v10.1)...\n";
+# 2. Surgical Template Relativizer (Sweep v10.2: Native Perl Edition)
+print "Starting Surgical Template Relativization (v10.2: Native Perl)...\n";
 
-# Using q() to avoid quote confusion in the patterns array
+use File::Find;
+
 my @patterns = (
-    [ q("/static/),  q("static/) ],
-    [ q('/static/),  q('static/) ],
-    [ q("/dyn/),     q("dyn/) ],
-    [ q('/dyn/),     q('dyn/) ],
-    [ q("/Station/), q("Station/) ],
-    [ q('/Station/), q('Station/) ],
-    [ q(href="/"),   q(href="./") ],
-    [ q(action="/"), q(action="./") ],
-    [ q("/_),        q("./_) ],
-    [ q('/_),        q('./_) ],
+    [ qr(="/static/),  q(="static/) ],
+    [ qr(='/static/),  q(='static/) ],
+    [ qr(="/dyn/),     q(="dyn/) ],
+    [ qr(='/dyn/),     q(='dyn/) ],
+    [ qr(="/Station/), q(="Station/) ],
+    [ qr(='/Station/), q(='Station/) ],
+    [ qr(href="/"),   q(href="./") ],
+    [ qr(action="/"), q(action="./") ],
+    [ qr(="/_),        q(="./_) ],
+    [ qr(='/_),        q(='./_) ],
 );
 
-foreach my $p (@patterns) {
-    my ($from, $to) = @$p;
-    print "  Relativizing: $from -> $to\n";
-    # Scan templates
-    system("find /app/templates -type f -exec sed -i \"s|$from|$to|g\" {} +");
-    # Scan public assets
-    system("find /app/public -type f -exec sed -i \"s|$from|$to|g\" {} +");
+sub process_files {
+    my $dir = shift;
+    return unless -d $dir;
+    
+    find(sub {
+        return unless -f $_;
+        my $fname = $File::Find::name;
+        
+        # Read file
+        open my $rfh, '<', $_ or return;
+        my $fcontent = do { local $/; <$rfh> };
+        close $rfh;
+        
+        my $changed = 0;
+        
+        # Apply patterns
+        foreach my $p (@patterns) {
+            my ($from, $to) = @$p;
+            if ($fcontent =~ s/$from/$to/g) {
+                $changed = 1;
+            }
+        }
+        
+        # Special CSS patch
+        if ($fname =~ /\.css$/) {
+            if ($fcontent =~ s/url\("?\/static\//url\("..\/static\//g) {
+                $changed = 1;
+            }
+        }
+
+        # Write back if changed
+        if ($changed) {
+            open my $wfh, '>', $_ or die "Can't write to $fname: $!\n";
+            print $wfh $fcontent;
+            close $wfh;
+            print "  Relativized: $fname\n";
+        }
+    }, $dir);
 }
 
-# Special patch for absolute font/icon paths inside CSS
-system("find /app/public -type f -name '*.css' -exec sed -i 's|url(\"/static/|url(\"../|g' {} +");
-system("find /app/public -type f -name '*.css' -exec sed -i 's|url(/static/|url(../|g' {} +");
+process_files("/app/templates");
+process_files("/app/public");
 
 print "Surgical Relativization complete.\n";

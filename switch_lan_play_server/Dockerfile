@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS builder
 
@@ -12,7 +12,13 @@ ENV APP_NAME="Switch LAN Play Server"
 ENV APP_SLUG="switch-lan-play-server"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk -U --no-cache -u add libssl3 libcrypto3 \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
+    libssl3 libcrypto3 \
     libpcap-dev \
     libuv-dev \
     git \
@@ -40,7 +46,13 @@ ARG BUILD_DATE="unknown"
 
 # Install runtime requirements
 # hadolint ignore=DL3018
-RUN apk -U --no-cache -u add libssl3 libcrypto3 \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
+    libssl3 libcrypto3 \
     libpcap \
     libuv \
     npm \

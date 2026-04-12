@@ -186,6 +186,10 @@ log INFO " Web interface will be available on the configured port."
 log INFO " Note: First startup may take several minutes while"
 log INFO "       Home Assistant initializes the database."
 log INFO "-----------------------------------------------------------"
+# Runtime diagnostics
+hass --version 2>&1 | log INFO
+python3 --version 2>&1 | log INFO
+ldd /usr/local/bin/hass 2>&1 | log DEBUG
 
 # Ensure config directory exists
 mkdir -p "$CONFIG_DIR"

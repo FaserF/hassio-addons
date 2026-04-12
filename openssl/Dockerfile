@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
@@ -11,7 +11,12 @@ ENV APP_NAME="OpenSSL"
 ENV APP_SLUG="openssl"
 ENV APP_UNSUPPORTED="false"
 
-RUN apk --no-cache -u add libssl3 libcrypto3 openssl
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache libssl3 libcrypto3 openssl
 
 # Copy data for add-on
 WORKDIR /

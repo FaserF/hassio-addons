@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 ARG TARGETARCH
 # hadolint ignore=DL3006
 
@@ -61,7 +61,12 @@ COPY --from=admin-build /app/admin/www /var/www/admin
 
 # Install dependencies
 # hadolint ignore=DL3018
-RUN apk add --no-cache -u \
+RUN \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && apk add --no-cache musl musl-dev \
+    && apk upgrade --no-cache --available \
+    && apk add --no-cache \
     libssl3 \
     libcrypto3 \
     bind-tools \
