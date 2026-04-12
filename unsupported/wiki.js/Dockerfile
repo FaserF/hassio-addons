@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
 ARG WIKIJS_VERSION=2.5.312
 FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
