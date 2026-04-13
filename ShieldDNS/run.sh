@@ -267,90 +267,15 @@ if is_port_busy "${DOH_PORT}"; then
 fi
 
 # ------------------------------------------------------------------------------
-# 3. Multiplexed Port 443 Configuration (DoH + Admin UI)
+# 3. Port Configuration (DoH + Admin UI)
 # ------------------------------------------------------------------------------
-INTERNAL_DOH_PORT="5553"
-ADMIN_BACKEND_PORT="8080"
-
-bashio::log.info "🌍 Unifying DoH and Admin UI on Port ${DOH_PORT} (multiplexed via Nginx)..."
-
-mkdir -p /run/nginx /etc/nginx/http.d
-# Ensure Nginx temporary directories exist for Alpine 3.23
-mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
-chown -R nginx:nginx /var/lib/nginx
-
-cat <<EOF >/etc/nginx/http.d/default.conf
-server {
-    listen 8099;
-    server_name _;
-    
-    location / {
-        proxy_pass http://127.0.0.1:${ADMIN_BACKEND_PORT};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_set_header X-Hass-Source "Ingress";
-        proxy_set_header X-Ingress-Name "ShieldDNS";
-        
-        # Proper Ingress support
-        proxy_set_header X-Ingress-Path \$http_x_ingress_path;
-        proxy_set_header X-Forwarded-Host \$host;
-    }
-}
-
-server {
-    listen ${DOH_PORT} ssl;
-    http2 on;
-    server_name _;
-
-    ssl_certificate ${CERT_FILE};
-    ssl_certificate_key ${KEY_FILE};
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    error_log /dev/stderr info;
-    access_log /dev/stdout;
-
-    location /dns-query {
-        proxy_pass https://127.0.0.1:${INTERNAL_DOH_PORT};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_http_version 1.1;
-        proxy_ssl_verify off;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:${ADMIN_BACKEND_PORT};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        # SSE optimization
-        proxy_set_header Connection '';
-        proxy_http_version 1.1;
-        proxy_buffering off;
-        proxy_cache off;
-        proxy_read_timeout 24h;
-        gzip off;
-    }
-}
-EOF
-
-# Verify Nginx configuration before starting
-if ! nginx -t >/dev/null 2>&1; then
-	bashio::log.error "❌ Nginx configuration is invalid:"
-	nginx -t
-	exit 1
-fi
-
-nginx -g 'daemon off;' >/dev/null 2>&1 &
-NGINX_PID=$!
+bashio::log.info "🌍 Unifying DoH and Admin UI on Port ${DOH_PORT}..."
+bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)"
 
 # ------------------------------------------------------------------------------
 # 4. ShieldDNS Admin & CoreDNS Execution
 # ------------------------------------------------------------------------------
-mkdir -p /etc/shielddns /var/www/admin
+mkdir -p /etc/shielddns
 
 # Dynamically set GOMAXPROCS to match the available CPU count.
 GOMAXPROCS=$(nproc 2>/dev/null || echo 1)
@@ -359,11 +284,16 @@ export GOMAXPROCS
 # Export for Go backend
 export CERT_FILE
 export KEY_FILE
-export INTERNAL_DOH_PORT
-export ADMIN_PORT=${ADMIN_BACKEND_PORT}
+export ADMIN_PORT=${DOH_PORT}
+export INGRESS_PORT=8099
 export DNS_PORT
 export DOT_PORT
+export DATA_DIR="/etc/shielddns"
 
+# Start the unified ShieldDNS Admin backend
+# It will listen on:
+# - :$ADMIN_PORT (TLS) for DoH and Admin UI
+# - :8099 (Plain HTTP) for HA Ingress
 /usr/bin/shielddns-admin &
 ADMIN_PID=$!
 
@@ -371,20 +301,14 @@ ADMIN_PID=$!
 sleep 2
 
 # Check if services are still running
-if ! kill -0 $NGINX_PID 2>/dev/null; then
-	bashio::log.error "❌ Nginx failed to start. Check configuration."
-	exit 1
-fi
-
 if ! kill -0 $ADMIN_PID 2>/dev/null; then
 	bashio::log.error "❌ ShieldDNS Admin failed to start. Check logs."
 	exit 1
 fi
 
-bashio::log.info "✅ Services started successfully."
+bashio::log.info "✅ ShieldDNS Started Successfully."
 
 # Initial Corefile (if backend hasn't generated one yet)
-ACTUAL_COREDNS_PORT="${INTERNAL_DOH_PORT}"
 if [ ! -f "$COREFILE_PATH" ]; then
 	cat <<EOF >$COREFILE_PATH
 .:${DNS_PORT} {
@@ -399,7 +323,7 @@ tls://.:${DOT_PORT} {
     log
     errors
 }
-https://.:${ACTUAL_COREDNS_PORT} {
+https://.:${ADMIN_PORT} {
     tls ${CERT_FILE} ${KEY_FILE}
     forward . ${UPSTREAM_DNS}
     log
@@ -411,12 +335,7 @@ fi
 # CoreDNS is managed by the Go backend (shielddns-admin)
 # so it handles log parsing and restarts automatically.
 
-wait -n $ADMIN_PID $NGINX_PID
+wait $ADMIN_PID
 bashio::log.info "⏹️  Shutting down services..."
-# Kill all background jobs gracefully
-mapfile -t PIDS < <(jobs -p)
-if [ ${#PIDS[@]} -gt 0 ]; then
-	kill -TERM "${PIDS[@]}" 2>/dev/null || true
-fi
 bashio::log.info "ℹ️  ShieldDNS has stopped."
 exit 0

@@ -52,12 +52,11 @@ ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
 
 # Setup directories
-RUN mkdir -p /var/www/admin /var/www/html /run/nginx /etc/services.d/shielddns /etc/shielddns
+RUN mkdir -p /etc/services.d/shielddns /etc/shielddns
 
-# Copy pre-compiled binaries and assets from build stages
+# Copy pre-compiled binaries from build stages
 COPY --from=binary /coredns /usr/bin/coredns
 COPY --from=admin-build /app/admin/shielddns-admin /usr/bin/shielddns-admin
-COPY --from=admin-build /app/admin/www /var/www/admin
 
 # Install dependencies
 # hadolint ignore=DL3018
@@ -71,17 +70,12 @@ RUN \
     libcrypto3 \
     bind-tools \
     openssl \
-    nginx \
     netcat-openbsd \
     net-tools \
     dos2unix \
     curl \
     jq \
     ca-certificates
-
-# Copy Web Assets
-COPY www/index.html /var/www/html/index.html
-COPY www/logo.png /var/www/html/logo.png
 
 # Copy Addon run script to S6 services directory
 COPY run.sh /etc/services.d/shielddns/run
