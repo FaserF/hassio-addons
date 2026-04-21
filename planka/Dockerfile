@@ -1,6 +1,6 @@
 FROM ghcr.io/plankanban/planka:2.1.1 AS planka
 
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.0
 FROM ${BUILD_FROM}
 
 # Set shell

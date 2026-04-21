@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.0.3
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.0
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=filebrowser/filebrowser
 FROM filebrowser/filebrowser:v2.63.2 AS filebrowser
