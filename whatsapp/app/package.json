@@ -21,7 +21,7 @@
   },
   "overrides": {
     "link-preview-js": "^4.0.0",
-    "protobufjs": "^7.5.5"
+    "protobufjs": "^8.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
