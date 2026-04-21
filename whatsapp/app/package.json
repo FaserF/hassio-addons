@@ -20,7 +20,8 @@
     "qrcode": "^1.5.3"
   },
   "overrides": {
-    "link-preview-js": "^4.0.0"
+    "link-preview-js": "^4.0.0",
+    "protobufjs": "^7.5.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

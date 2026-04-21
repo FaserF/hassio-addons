@@ -5,7 +5,7 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # renovate: datasource=repology depName=alpine_edge/nginx versioning=loose
-ARG NGINX_VERSION="1.28.3-r0"
+ARG NGINX_VERSION="1.30.0-r0"
 
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
@@ -24,8 +24,8 @@ WORKDIR /tmp
 # Create directory for nginx to store PID file and install dependencies
 # hadolint ignore=DL3018,DL3003
 RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 \
