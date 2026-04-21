@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.5.1 (2026-04-21)
+
+### ✨ Features
+- option to configure auto mark as read ([`b0584fa2`](https://github.com/FaserF/hassio-addons/commit/b0584fa2c0e20c881ab534a4624e85bf4595e3ee))
+
+### 📦 Dependencies
+- ⬆️ Update dependency uvicorn to v0.45.0 [skip-tests] (#766) ([`012fe7c0`](https://github.com/FaserF/hassio-addons/commit/012fe7c05c9b0711fe907425db5128944ecb0b93))
+- ⬆️ Update dependency eslint to v10.2.1 [skip-tests] (#762) [skip-tests] ([`7f19a807`](https://github.com/FaserF/hassio-addons/commit/7f19a807c1ac6174e399d4d6a45edfe3a05c4163))
+- Bump protobufjs from 7.5.4 to 7.5.5 in /whatsapp/app in the npm_and_yarn group across 1 directory (#761) [skip-tests] ([`b6e579d7`](https://github.com/FaserF/hassio-addons/commit/b6e579d7b5ebdd052a461ce2adc82945639c4cc8))
+- ⬆️ Update dependency fastapi to v0.136.0 [skip-tests] (#760) [skip-tests] ([`297d18fa`](https://github.com/FaserF/hassio-addons/commit/297d18fa50da231ff70226093ab1b950a4a5bdb3))
+- ⬆️ Update dependency lru-cache to v11.3.5 [skip-tests] (#755) [skip-tests] ([`6b65159b`](https://github.com/FaserF/hassio-addons/commit/6b65159bd0f0d94d04be0c40092906471cabdfb2))
+- ⬆️ Update dependency lru-cache to v11.3.4 [skip-tests] (#754) [skip-tests] ([`8f69f61c`](https://github.com/FaserF/hassio-addons/commit/8f69f61cfb289403cc2dec90a9d5f79cd2635df6))
+- ⬆️ Update dependency globals to v17.5.0 [skip-tests] (#752) [skip-tests] ([`92ffa7da`](https://github.com/FaserF/hassio-addons/commit/92ffa7daa6e75d7499d2f2afb1da3ff7301497cc))
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+- fix docker build in newer alpine version ([`2fcb0e33`](https://github.com/FaserF/hassio-addons/commit/2fcb0e33989a51b0ce36a32544b0281b8d82279f))
+- small fix ([`fb4c9f1e`](https://github.com/FaserF/hassio-addons/commit/fb4c9f1ef6e702318f1b296db67aa3b8c824b7c1))
+- only search files if folder exists ([`937106d3`](https://github.com/FaserF/hassio-addons/commit/937106d3053ab164dd74d977f0f985e5b188f0ab))
+
+
 ## 1.5.0 (2026-04-09)
 
 ### ✨ Features
