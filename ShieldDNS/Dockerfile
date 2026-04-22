@@ -6,7 +6,7 @@ ARG TARGETARCH
 FROM --platform=$BUILDPLATFORM alpine:3.23 AS binary
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=coredns/coredns
-ARG COREDNS_VERSION="1.14.2"
+ARG COREDNS_VERSION="1.14.3"
 
 # App metadata (injected by CI)
 ENV APP_VERSION="2.4.2"
