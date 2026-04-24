@@ -15,5 +15,5 @@ schema:
   firmware_path: str
 slug: xqrepack
 url: https://github.com/FaserF/hassio-addons/tree/master/xqrepack
-version: 2.0.0
+version: 2.0.1-dev-ebc71eb
 stage: deprecated
