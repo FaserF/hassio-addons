@@ -1,32 +1,29 @@
 import os from 'os';
 import { uiAuthMiddleware } from '../middleware.js';
-import { sanitizeSessionId } from '../session.js';
+import { sanitizeSessionId, sessions } from '../session.js';
 import { API_TOKEN, PORT } from '../config.js';
 import { logger } from '../logger.js';
 
 export function registerUIRoutes(app) {
   // --- Dashboard ---
   app.get('/', uiAuthMiddleware, (req, res) => {
-    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    let sessionId = req.query.session_id;
+    if (!sessionId) {
+      // Preference: 1. Connected session, 2. 'default' session, 3. First available session
+      const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
+      if (connectedSession) {
+        sessionId = connectedSession.id;
+      } else if (sessions.has('default')) {
+        sessionId = 'default';
+      } else if (sessions.size > 0) {
+        sessionId = Array.from(sessions.keys())[0];
+      } else {
+        sessionId = 'default';
+      }
+    }
+    sessionId = sanitizeSessionId(sessionId);
     res.send(renderDashboard(sessionId));
   });
-
-  // Catch-all for other UI routes
-  app.get(
-    /^(?!\/(api|qr|status|events|logs|health|media|session\/start)).+/,
-    uiAuthMiddleware,
-    (req, res) => {
-      if (req.path.includes('/api/')) {
-        logger.warn(
-          { path: req.path, url: req.url, headers: req.headers },
-          'Catch-all hit for API path'
-        );
-        return res.status(404).json({ error: 'API route not found' });
-      }
-      const sessionId = sanitizeSessionId(req.query.session_id || 'default');
-      res.send(renderDashboard(sessionId));
-    }
-  );
 }
 
 function renderDashboard(sessionId) {
@@ -37,6 +34,7 @@ function renderDashboard(sessionId) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>WhatsApp Homeassistant App</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
         <style>
             :root {
                 --primary: #00a884;
@@ -570,8 +568,16 @@ function renderDashboard(sessionId) {
                     const slug = data.addonSlug || 'unknown';
                     const fullLogsLink = document.getElementById('full-logs-link');
                     if (fullLogsLink) {
-                        // Point to the native HA Addon logs page
-                        fullLogsLink.href = '/config/app/' + slug + '/logs';
+                        const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
+                        if (isIngress) {
+                            fullLogsLink.style.display = 'flex';
+                            // Point to the native HA Addon logs page (only works via Ingress)
+                            fullLogsLink.href = '/config/app/' + slug + '/logs';
+                            fullLogsLink.target = '_top';
+                        } else {
+                            // Hide if accessed directly via IP:PORT as the relative path would be wrong
+                            fullLogsLink.style.display = 'none';
+                        }
                     }
 
                     // Update Session Switcher
