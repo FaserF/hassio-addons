@@ -45,7 +45,7 @@ services:
       - KEY_FILE=/certs/privkey.pem
     volumes:
       - ./certs:/certs
-      - ./data:/etc/shielddns # Persistent config and stats
+      - ./data:/data # Persistent config and stats
 ```
 
 ## 🖥️ Admin Dashboard

@@ -45,14 +45,8 @@ RUN go mod download \
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
-# App metadata (Single set, consolidated)
-ENV APP_VERSION="2.4.4"
-ENV APP_NAME="ShieldDNS"
-ENV APP_SLUG="shielddns"
-ENV APP_UNSUPPORTED="false"
-
 # Setup directories
-RUN mkdir -p /etc/services.d/shielddns /etc/shielddns
+RUN mkdir -p /etc/services.d/shielddns /data
 
 # Copy pre-compiled binaries from build stages
 COPY --from=binary /coredns /usr/bin/coredns

@@ -5,7 +5,11 @@ import { getSession, addLog } from './session.js';
 import { SYSTEM_STATE, saveSystemState } from './state.js';
 
 export const ipFilterMiddleware = (req, res, next) => {
+  // If UI Auth is enabled, we don't need IP filtering
   if (UI_AUTH_ENABLED) return next();
+
+  // Always allow Ingress
+  if (req.headers['x-ingress-path']) return next();
 
   let ip = req.ip || req.connection.remoteAddress;
   if (ip.startsWith('::ffff:')) ip = ip.substr(7);
@@ -13,19 +17,17 @@ export const ipFilterMiddleware = (req, res, next) => {
   const isPrivate =
     ip === '127.0.0.1' ||
     ip === '::1' ||
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:/.test(ip);
+    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(ip);
 
-  // If IP isn't private, block immediately. No longer trusting ingress headers
-  // from public IPs as they can easily be spoofed via standard cURL requests.
   if (!isPrivate) {
-    addLog(getSession('default'), `Blocked access attempt from public IP: ${ip}`, 'warning');
+    addLog(getSession('default'), `Blocked external access attempt from ${ip} (UI Auth Disabled)`, 'warning');
     logger.warn(
       { ip, headers: req.headers },
-      '[SECURITY] Blocked access attempt (UI Auth Disabled)'
+      '[SECURITY] Blocked external access attempt while UI Auth is disabled'
     );
     return res
       .status(403)
-      .send('Forbidden: External access is disabled when UI Authentication is off.');
+      .send('Forbidden: External access is disabled when UI Authentication is off. Enable UI Auth or use Ingress.');
   }
 
   return next();
@@ -52,6 +54,9 @@ export const authMiddleware = (req, res, next) => {
 };
 
 export const uiAuthMiddleware = (req, res, next) => {
+  // Always skip if Ingress is used (Home Assistant handles auth)
+  if (req.headers['x-ingress-path']) return next();
+
   if (!UI_AUTH_ENABLED) return next();
   const authHeader = req.headers.authorization;
   if (!authHeader) {

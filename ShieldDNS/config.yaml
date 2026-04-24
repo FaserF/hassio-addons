@@ -10,7 +10,7 @@ init: false
 host_network: true
 ingress: true
 ingress_entry: "/admin"
-panel_icon: "mdi:shield-dns"
+panel_icon: "mdi:shield-check-outline"
 map:
   - homeassistant_config:rw
   - ssl:rw

@@ -1,7 +1,7 @@
 import express from 'express';
 import { registerAPIRoutes } from './api.js';
 import { registerUIRoutes } from './ui.js';
-import { apiLimiter, uiLimiter } from '../middleware.js';
+import { apiLimiter, uiLimiter, ipFilterMiddleware } from '../middleware.js';
 import { MEDIA_DIR } from '../config.js';
 
 export function registerRoutes(app) {
@@ -26,7 +26,7 @@ export function registerRoutes(app) {
 
   registerAPIRoutes(app);
 
-  // Root UI - Apply limiter only to UI routes, after API routes are handled
-  app.get('/', uiLimiter);
+  // Root UI - Apply limiter and IP filter to UI routes
+  app.get('/', uiLimiter, ipFilterMiddleware);
   registerUIRoutes(app);
 }

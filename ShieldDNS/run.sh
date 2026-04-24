@@ -170,7 +170,7 @@ fi
 set -e
 
 # Define local paths
-COREFILE_PATH="/etc/Corefile"
+COREFILE_PATH="/data/Corefile"
 
 echo "➡️  Starting ShieldDNS Initialization..."
 
@@ -190,6 +190,7 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	DOH_PORT=$(bashio::config 'doh_port')
 	FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')
 	FALLBACK_DNS_SERVER=$(bashio::config 'fallback_dns_server')
+	export DATA_DIR="/data"
 
 	# Prepend /ssl/ to cert paths if they are just filenames
 	if [[ "$CERT_FILE" != /* ]]; then CERT_FILE="/ssl/$CERT_FILE"; fi
@@ -219,9 +220,9 @@ if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
 	bashio::log.warning "⚠️  WARNING: SSL Certificates not found at ${CERT_FILE} or ${KEY_FILE}!"
 	bashio::log.info "⚙️  Generating self-signed fallback certificate..."
 
-	mkdir -p /etc/shielddns/ssl
-	FALLBACK_CERT="/etc/shielddns/ssl/selfsigned.crt"
-	FALLBACK_KEY="/etc/shielddns/ssl/selfsigned.key"
+	mkdir -p /data/ssl
+	FALLBACK_CERT="/data/ssl/selfsigned.crt"
+	FALLBACK_KEY="/data/ssl/selfsigned.key"
 
 	if [ ! -f "$FALLBACK_CERT" ]; then
 		openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -275,7 +276,7 @@ bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)
 # ------------------------------------------------------------------------------
 # 4. ShieldDNS Admin & CoreDNS Execution
 # ------------------------------------------------------------------------------
-mkdir -p /etc/shielddns
+mkdir -p /data
 
 # Dynamically set GOMAXPROCS to match the available CPU count.
 GOMAXPROCS=$(nproc 2>/dev/null || echo 1)
@@ -288,7 +289,6 @@ export ADMIN_PORT=${DOH_PORT}
 export INGRESS_PORT=8099
 export DNS_PORT
 export DOT_PORT
-export DATA_DIR="/etc/shielddns"
 
 # Start the unified ShieldDNS Admin backend
 # It will listen on:
