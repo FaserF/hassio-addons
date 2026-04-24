@@ -95,10 +95,10 @@ function renderDashboard(sessionId) {
             * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
 
-            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; transition: all 0.3s; }
-            .sidebar h1 { font-size: 1.8rem; line-height: 1.2; margin: 0; color: var(--primary); }
-            .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
-            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; font-size: 0.95rem; }
+            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; transition: all 0.3s; position: sticky; top: 0; height: 100vh; }
+            .sidebar h1 { font-size: 1.8rem; line-height: 1.2; margin: 0; color: var(--primary); flex-shrink: 0; }
+            .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; flex-grow: 1; overflow-y: auto; }
+            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; font-size: 0.95rem; flex-shrink: 0; }
             .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
 
             .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
@@ -218,7 +218,7 @@ function renderDashboard(sessionId) {
                 <a id="full-logs-link" href="#" target="_top" class="sidebar-link">📋 Full System Logs</a>
             </div>
 
-            <div style="margin-top: auto; padding-top: 1rem;">
+            <div style="margin-top: auto; padding-top: 1rem; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.05);">
                 <div class="stat-label">System Info</div>
                 <div style="font-size: 0.8rem; color: #8696a0;">
                     Node: <span id="node-version">...</span><br>
@@ -494,7 +494,7 @@ function renderDashboard(sessionId) {
             async function logoutSession() {
                 if (!confirm('WARNING: This will log you out and DELETE ALL authentication data for this session. You will need to scan the QR code again. Continue?')) return;
                 try {
-                    const response = await fetch(basePath + 'api/session', {
+                    const response = await fetch(basePath + 'session', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ session_id: currentSession })
