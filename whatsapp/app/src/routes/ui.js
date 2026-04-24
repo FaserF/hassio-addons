@@ -365,7 +365,7 @@ function renderDashboard(sessionId) {
                         <button class="btn btn-primary" onclick="downloadDebugInfo()">
                             📥 Download Issue Debug Info
                         </button>
-                        <a href="https://github.com/FaserF/ha-whatsapp/issues/new" target="_blank" class="btn btn-secondary">
+                        <a href="https://github.com/FaserF/ha-whatsapp/issues/new?template=bug_report.yml" target="_blank" class="btn btn-secondary">
                             🔗 Open GitHub Issue
                         </a>
                     </div>
