@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.4.5 (2026-04-24)
+
+### 📦 Dependencies
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.7.0 [skip-tests] (#771) [skip-tests] ([`e124a4d6`](https://github.com/FaserF/hassio-addons/commit/e124a4d6ef139eb59216dabe4b730578ace82b87))
+- ⬆️ Update dependency coredns/coredns to v1.14.3 [skip-tests] (#768) [skip-tests] ([`c5194348`](https://github.com/FaserF/hassio-addons/commit/c519434854888ac489e0101e24f55dd785925047))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.6.4 [skip-tests] (#765) [skip-tests] ([`001c7080`](https://github.com/FaserF/hassio-addons/commit/001c70805361d5b9f6d8fd139089b718a8e7cabd))
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.6.3 [skip-tests] (#759) [skip-tests] ([`cdbadab6`](https://github.com/FaserF/hassio-addons/commit/cdbadab6e9862cdb589d23933c23d2daa3c36989))
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.6.1 [skip-tests] (#758) [skip-tests] ([`91b5d366`](https://github.com/FaserF/hassio-addons/commit/91b5d3668c6b06ee8dc76882788e320a28248b1a))
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+- small improvement ([`6d9a62b0`](https://github.com/FaserF/hassio-addons/commit/6d9a62b0579c0d15dc0eab3e3eade0671ea0742d))
+- small improvement ([`9ac5fc69`](https://github.com/FaserF/hassio-addons/commit/9ac5fc69462c4811e416c8e5c518c79e172c1477))
+- small code improvements ([`485e807a`](https://github.com/FaserF/hassio-addons/commit/485e807a6b8e989216de479c89700d2889b1c030))
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+- Ingress & Security improvements ([`53e608f4`](https://github.com/FaserF/hassio-addons/commit/53e608f41c969f8b08a47e129757a82fba95a414))
+- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+- fix docker build in newer alpine version ([`2fcb0e33`](https://github.com/FaserF/hassio-addons/commit/2fcb0e33989a51b0ce36a32544b0281b8d82279f))
+
+
 ## 2.4.3 (2026-04-11)
 
 ### 📦 Dependencies
