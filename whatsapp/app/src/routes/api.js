@@ -115,6 +115,24 @@ export function registerAPIRoutes(app) {
     return res.json({ status: 'waiting', detail: 'QR generation in progress' });
   });
 
+  app.post('/session/pair', authMiddleware, async (req, res) => {
+    const session = getReqSession(req);
+    const { phone_number } = req.body;
+    if (session.isConnected) return res.json({ status: 'connected', message: 'Already connected' });
+    if (!session.sock) return res.status(400).json({ status: 'error', message: 'Session not initialized' });
+
+    try {
+      signalInterest(session.id, connectToWhatsApp);
+      const code = await session.sock.requestPairingCode(phone_number);
+      addLog(session, `Requested pairing code for ${phone_number}`, 'info');
+      res.json({ status: 'success', code });
+    } catch (e) {
+      logger.error({ error: e.message }, 'Failed to request pairing code');
+      addLog(session, `Failed to request pairing code: ${e.message}`, 'error');
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  });
+
   app.get('/status', authMiddleware, (req, res) => {
     const session = getReqSession(req);
     res.json({
