@@ -20,14 +20,20 @@ export const ipFilterMiddleware = (req, res, next) => {
     /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(ip);
 
   if (!isPrivate) {
-    addLog(getSession('default'), `Blocked external access attempt from ${ip} (UI Auth Disabled)`, 'warning');
+    addLog(
+      getSession('default'),
+      `Blocked external access attempt from ${ip} (UI Auth Disabled)`,
+      'warning'
+    );
     logger.warn(
       { ip, headers: req.headers },
       '[SECURITY] Blocked external access attempt while UI Auth is disabled'
     );
     return res
       .status(403)
-      .send('Forbidden: External access is disabled when UI Authentication is off. Enable UI Auth or use Ingress.');
+      .send(
+        'Forbidden: External access is disabled when UI Authentication is off. Enable UI Auth or use Ingress.'
+      );
   }
 
   return next();
