@@ -16,6 +16,15 @@ import subprocess
 import sys
 from datetime import datetime
 
+# Handle Windows console encoding for emojis
+if sys.platform == "win32":
+    try:
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    except Exception:
+        pass
+
 # GitHub repository for commit links
 GITHUB_REPO = "https://github.com/FaserF/hassio-addons"
 
@@ -178,8 +187,10 @@ def make_version_link(text, version):
     return version
 
 
-def categorize_commits(commits, repo_url):
+def categorize_commits(commits, repo_url, addon_slug=None):
     """Categorize commits with clickable links."""
+    # Use addon_slug to skip release commits for the current addon
+    target_addon = (addon_slug or "").lower()
     categories = {
         "✨ Features": [],
         "🐛 Bug Fixes": [],
@@ -202,18 +213,15 @@ def categorize_commits(commits, repo_url):
         if msg_lower.startswith("merge ") or "[skip ci]" in msg_lower:
             continue
 
-        # Skip release commits for OTHER addons (e.g. release(n8n) in pterodactyl history)
-        # This can happen if file patterns were missing in previous commits
-        # Get addon name from the path passed to the script
+        # Skip release commits for this or other addons
         match = re.search(r"release\(([^)]+)\)", msg_lower)
         if match:
             trigger_addon = match.group(1).lower()
-            # If we are in the bump_version script, we know which addon we are processing
-            # We skip if the release message mentions a different addon
-            target_addon = os.path.basename(os.getcwd()).lower()
-            # Note: bump_version.py is usually called with addon_path as arg
-            if trigger_addon != target_addon and trigger_addon != "all":
+            if target_addon and trigger_addon != target_addon and trigger_addon != "all":
+                # Skip if it mentions a different addon
                 continue
+            # Also skip if it IS the target addon (we don't want the bump commit in its own changelog)
+            continue
 
         # Skip version bump commits, auto-fix commits and CI fixes
         if any(
@@ -249,13 +257,13 @@ def categorize_commits(commits, repo_url):
         entry = f"{clean_msg} ({commit_link})"
 
         # Categorize
-        if any(prefix in msg_lower for prefix in ["feat:", "feat(", "add:", "new:"]):
+        if any(x in msg_lower for x in ["feat:", "feat(", "add:", "new:", "added:", "new feat:"]):
             categories["✨ Features"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["fix:", "fix(", "bug:", "bugfix:"]):
+        elif any(x in msg_lower for x in ["fix:", "fix(", "bug:", "bugfix:", "fixed:", "bugfix("]):
             categories["🐛 Bug Fixes"].append(entry)
         elif any(
-            prefix in msg_lower
-            for prefix in [
+            x in msg_lower
+            for x in [
                 "deps:",
                 "dep:",
                 "⬆️",
@@ -263,18 +271,19 @@ def categorize_commits(commits, repo_url):
                 "renovate",
                 "dependency",
                 "update",
+                "updated:",
             ]
         ):
             categories["📦 Dependencies"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["config:", "conf:", "chore:"]):
+        elif any(x in msg_lower for x in ["config:", "conf:", "chore:", "setup:"]):
             categories["🔧 Configuration"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["docs:", "doc:", "readme"]):
+        elif any(x in msg_lower for x in ["docs:", "doc:", "readme", "documentation:"]):
             categories["📝 Documentation"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["style:", "format:", "lint:"]):
+        elif any(x in msg_lower for x in ["style:", "format:", "lint:", "prettier:"]):
             categories["🎨 Style"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["refactor:", "refact:", "clean:"]):
+        elif any(x in msg_lower for x in ["refactor:", "refact:", "clean:", "improved:"]):
             categories["♻️ Refactor"].append(entry)
-        elif any(prefix in msg_lower for prefix in ["security:", "sec:", "vuln:"]):
+        elif any(x in msg_lower for x in ["security:", "sec:", "vuln:", "cve:"]):
             categories["🔒 Security"].append(entry)
         else:
             categories["🚀 Other"].append(entry)
@@ -307,6 +316,7 @@ def parse_existing_changelog_entry(content: str) -> dict:
 def generate_changelog_entry(version, addon_path, changelog_message=None, existing_entry=None):
     """Generate a detailed changelog entry with clickable links."""
     entry_date = datetime.now().strftime("%Y-%m-%d")
+    addon_slug = os.path.basename(addon_path.rstrip("/\\"))
     heading = f"## {version} ({entry_date})"
     entry = f"{heading}\n\n"
 
@@ -315,7 +325,7 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
     commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
 
     if commits:
-        categories = categorize_commits(commits, repo_url)
+        categories = categorize_commits(commits, repo_url, addon_slug)
 
         # Merge with existing categories if present
         if existing_entry:

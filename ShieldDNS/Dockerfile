@@ -9,7 +9,7 @@ ARG TARGETARCH
 ARG COREDNS_VERSION="1.14.3"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.4.2"
+ENV APP_VERSION="2.4.4"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
@@ -76,7 +76,7 @@ COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+HEALTHCHECK --interval=5s --timeout=3s --retries=3 --start-period=10s \
     CMD curl -fS http://localhost:8080/api/health/live || exit 1
 
 # Labels
