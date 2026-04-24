@@ -119,7 +119,8 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     const { phone_number } = req.body;
     if (session.isConnected) return res.json({ status: 'connected', message: 'Already connected' });
-    if (!session.sock) return res.status(400).json({ status: 'error', message: 'Session not initialized' });
+    if (!session.sock)
+      return res.status(400).json({ status: 'error', message: 'Session not initialized' });
 
     try {
       signalInterest(session.id, connectToWhatsApp);
