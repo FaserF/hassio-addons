@@ -10,7 +10,7 @@
 
 - ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
 - update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
-- ⬆️ Update ghcr.io/hassio-addons/debian-base Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/v9.2.0) [skip-tests] ([`1dbf04d8`](https://github.com/FaserF/hassio-addons/commit/1dbf04d8803f0000a3afcce47d044f594c10ec70))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base Docker tag to v[9.2.0](https://github.com/hassio-addons/app-debian-base/releases/tag/v9.2.0) [skip-tests] ([`1dbf04d8`](https://github.com/FaserF/hassio-addons/commit/1dbf04d8803f0000a3afcce47d044f594c10ec70))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
 
 ### 🚀 Other

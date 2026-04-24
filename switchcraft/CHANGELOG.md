@@ -8,13 +8,13 @@
 
 ### 📦 Dependencies
 
-- ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.3.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/v9.3.0) [skip-tests] ([`3a7c8859`](https://github.com/FaserF/hassio-addons/commit/3a7c8859254672301e169ab959c32f913a6cd8b8))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.3.0](https://github.com/hassio-addons/app-debian-base/releases/tag/v9.3.0) [skip-tests] ([`3a7c8859`](https://github.com/FaserF/hassio-addons/commit/3a7c8859254672301e169ab959c32f913a6cd8b8))
 - Update patch_switchcraft.py ([`6786e2b3`](https://github.com/FaserF/hassio-addons/commit/6786e2b34d7ba565727277a650ff0631bd51dfcc))
-- ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.3.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/v9.3.0) [skip-tests] ([`31cad42b`](https://github.com/FaserF/hassio-addons/commit/31cad42b5c0174bb0586cd350295d6cca2174b6a))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.3.0](https://github.com/hassio-addons/app-debian-base/releases/tag/v9.3.0) [skip-tests] ([`31cad42b`](https://github.com/FaserF/hassio-addons/commit/31cad42b5c0174bb0586cd350295d6cca2174b6a))
 - update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
 - Update README information with support info ([`c70fff01`](https://github.com/FaserF/hassio-addons/commit/c70fff01378d531e3dffc35dc2bf94b49237f541))
-- ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/v9.2.0) [skip-tests] (#625) [skip-tests] ([`c5614ab3`](https://github.com/FaserF/hassio-addons/commit/c5614ab301e79dd3e1cfa4f462e1f1b26c1c9482))
-- ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.2.0](https://github.com/hassio-addons/addon-debian-base/releases/tag/v9.2.0) [skip-tests] (#624) [skip-tests] ([`dcf52e6e`](https://github.com/FaserF/hassio-addons/commit/dcf52e6e0c7581c897c891b353f35d20c767757c))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/amd64 Docker tag to v[9.2.0](https://github.com/hassio-addons/app-debian-base/releases/tag/v9.2.0) [skip-tests] (#625) [skip-tests] ([`c5614ab3`](https://github.com/FaserF/hassio-addons/commit/c5614ab301e79dd3e1cfa4f462e1f1b26c1c9482))
+- ⬆️ Update ghcr.io/hassio-addons/debian-base/aarch64 Docker tag to v[9.2.0](https://github.com/hassio-addons/app-debian-base/releases/tag/v9.2.0) [skip-tests] (#624) [skip-tests] ([`dcf52e6e`](https://github.com/FaserF/hassio-addons/commit/dcf52e6e0c7581c897c891b353f35d20c767757c))
 
 ### 🚀 Other
 

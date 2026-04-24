@@ -10,7 +10,7 @@
 
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.4.3](https://github.com/home-assistant/core/releases/tag/2026.4.3) [skip-tests] ([`b1d86b60`](https://github.com/FaserF/hassio-addons/commit/b1d86b601ba52e4a3399823835bf213d82f9740c))
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.4.2](https://github.com/home-assistant/core/releases/tag/2026.4.2) [skip-tests] (#751) [skip-tests] ([`59934bf7`](https://github.com/FaserF/hassio-addons/commit/59934bf777fde504c03b11efc806b0532cdd35a5))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/app-base/releases/tag/v20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
 - ⬆️ Update Add-on base images [skip-tests] (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.4.1](https://github.com/home-assistant/core/releases/tag/2026.4.1) [skip-tests] ([`8949c4e4`](https://github.com/FaserF/hassio-addons/commit/8949c4e421cce83ccb8ef84bdce28a17fce779ee))
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.4.0](https://github.com/home-assistant/core/releases/tag/2026.4.0) [skip-tests] ([`a30de363`](https://github.com/FaserF/hassio-addons/commit/a30de36311dec41e545c6bea123ed90874cca271))

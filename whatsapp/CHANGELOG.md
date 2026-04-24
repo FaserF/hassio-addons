@@ -16,7 +16,7 @@
 - ⬆️ Update dependency lru-cache to v11.3.4 [skip-tests] (#754) [skip-tests] ([`8f69f61c`](https://github.com/FaserF/hassio-addons/commit/8f69f61cfb289403cc2dec90a9d5f79cd2635df6))
 - ⬆️ Update dependency globals to v17.5.0 [skip-tests] (#752) [skip-tests] ([`92ffa7da`](https://github.com/FaserF/hassio-addons/commit/92ffa7daa6e75d7499d2f2afb1da3ff7301497cc))
 - fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/app-base/releases/tag/v20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
 
 ### 🚀 Other
 
