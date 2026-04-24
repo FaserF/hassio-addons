@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.5.2 (2026-04-24)
+
+### ✨ Features
+- allow pairing via phone number #774 ([`4247a0a4`](https://github.com/FaserF/hassio-addons/commit/4247a0a40a1fbd8346ec0bf12e965da46700f182))
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.136.1 [skip-tests] (#773) [skip-tests] ([`7feb3041`](https://github.com/FaserF/hassio-addons/commit/7feb3041e4d66ae29305ee7e24cb7a0756013b30))
+- ⬆️ Update dependency uvicorn to v0.46.0 [skip-tests] (#770) [skip-tests] ([`97fcdefb`](https://github.com/FaserF/hassio-addons/commit/97fcdefbb3ba4f74a23f85cc91b18c04973d4f9d))
+- ⬆️ Update dependency express-rate-limit to v8.4.0 [skip-tests] (#769) [skip-tests] ([`8f864b21`](https://github.com/FaserF/hassio-addons/commit/8f864b21b2394988a22425f1d6eef8cb2cd6001c))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- ⬆️ Update dependency protobufjs to v8 [skip-tests] (#767) [skip-tests] ([`ab6ee70a`](https://github.com/FaserF/hassio-addons/commit/ab6ee70aa7b92061d249f3ab8081fd746133ea96))
+
+### 🚀 Other
+- allow Self messaging in Groups ([`529a109b`](https://github.com/FaserF/hassio-addons/commit/529a109b6d13a775645ddadf87281d47d209246d))
+- use bug report template in github issue link ([`090cba45`](https://github.com/FaserF/hassio-addons/commit/090cba455f087a6ab70a3f1299bc68157914f43f))
+- small improvement ([`9ac5fc69`](https://github.com/FaserF/hassio-addons/commit/9ac5fc69462c4811e416c8e5c518c79e172c1477))
+- small code improvements ([`485e807a`](https://github.com/FaserF/hassio-addons/commit/485e807a6b8e989216de479c89700d2889b1c030))
+- small frontend fixes & improvements ([`c417bc9c`](https://github.com/FaserF/hassio-addons/commit/c417bc9c6bae4027cca2a2e58567e56639ff8352))
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+
+
 ## 1.5.1 (2026-04-21)
 
 ### ✨ Features
