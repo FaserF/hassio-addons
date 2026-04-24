@@ -1,5 +1,0 @@
-#!/usr/bin/env bashio
-
-bashio::log.info "Starting PostgreSQL..."
-
-exec s6-setuidgid postgres postgres -D /data/database
