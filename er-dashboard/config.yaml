@@ -1,7 +1,6 @@
-name: "ER-Startseite (Dashboard)"
-version: "1.3.2"
+name: "ER-Startseite (Dashboard) (Edge)"
+version: "1.3.3-dev-709f788"
 slug: er-dashboard
-image: ghcr.io/faserf/hassio-addons-er-dashboard-{arch}
 description: "A modern, highly customizable dashboard with a neon aesthetic."
 url: "https://github.com/Eidolf/ER-Startseite"
 arch:
@@ -28,3 +27,4 @@ ingress_stream: true
 panel_icon: mdi:view-dashboard-variant
 ports:
   9123/tcp: 9123 # Web UI (direct access)
+stage: experimental

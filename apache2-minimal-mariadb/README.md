@@ -1,8 +1,17 @@
 # Apache2 Minimal with MariaDB Client
 
+> [!CAUTION]
+> **EDGE/DEVELOPMENT BUILD**
+>
+> You are viewing the `edge` branch. This version is built locally from source
+> and may contain bugs or incomplete features. For stable releases, switch to
+> the `master` branch or use the stable repository URL.
+
+
+
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/apache2-minimal-mariadb/logo.png" width="100" alt="Logo" />
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_apache2-minimal-mariadb)
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=edfe50eb_apache2-minimal-mariadb)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 [![Docker Image](https://img.shields.io/badge/docker-3.3.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-apache2-minimal-mariadb)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)

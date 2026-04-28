@@ -1,6 +1,6 @@
 # Webserver App Integration
 
-[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration)
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge)
 
 This integration provides monitoring for Apache2 and Nginx addons from the FaserF/hassio-addons repository.
 

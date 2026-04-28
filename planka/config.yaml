@@ -1,8 +1,7 @@
 ---
-name: Planka
-version: 1.3.2
+name: Planka (Edge)
+version: "1.3.3-dev-709f788"
 slug: planka
-image: ghcr.io/faserf/hassio-addons-planka-{arch}
 description: The elegant open source project tracking tool
 url: https://github.com/plankanban/planka
 arch:
@@ -38,3 +37,4 @@ ports:
   "1337": 1337
 ports_description:
   "1337": Web Interface
+stage: experimental

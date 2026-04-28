@@ -1,8 +1,17 @@
 # Planka
 
+> [!CAUTION]
+> **EDGE/DEVELOPMENT BUILD**
+>
+> You are viewing the `edge` branch. This version is built locally from source
+> and may contain bugs or incomplete features. For stable releases, switch to
+> the `master` branch or use the stable repository URL.
+
+
+
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/planka/logo.png" width="100" alt="Logo" />
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_planka)
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=edfe50eb_planka)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 [![Docker Image](https://img.shields.io/badge/docker-1.3.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-planka)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
