@@ -16,7 +16,7 @@ ENV TERM="xterm-256color"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.2.5"
+ENV APP_VERSION="0.2.6"
 ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"
