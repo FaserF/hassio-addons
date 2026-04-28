@@ -130,37 +130,39 @@ Tested on **amd64** architecture.
 ---
 
 <!-- START_HA_INTEGRATIONS -->
-
 ## 🧩 Other Home Assistant Integrations
 
 In addition to my apps, I also maintain several other Home Assistant integrations that you might find useful. Here is an overview of my other projects:
 
-| Integration                                                                       | Description                                                                                      | Created | Status |
-| :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- | :------ | :----- |
-| **[NintendoSwitchCFW](https://github.com/FaserF/ha-NintendoSwitchCFW)**           | Homeassistant Integration to integrate a Nintento Switch with Custom Firmware into Homeassistant | 2026-03 | ✅     |
-| **[Bahnvorhersage](https://github.com/FaserF/ha-bahnvorhersage)**                 | bahnvorhersage.de Homeassistant fetching                                                         | 2025-01 | ❌     |
-| **[Boulderwelt](https://github.com/FaserF/ha-boulderwelt)**                       | Fetch Boulderwelt full utilization for Homeassistant                                             | 2024-08 | ✅     |
-| **[Chefkoch](https://github.com/FaserF/ha-chefkoch)**                             | Homeassistant Custom Integration for Chefkoch.de                                                 | 2023-08 | ✅     |
-| **[Ctgpdx](https://github.com/FaserF/ha-ctgpdx)**                                 | Homeassistant Integration for fetching latest ctgpdx version                                     | 2025-10 | ✅     |
-| **[Db_Infoscreen](https://github.com/FaserF/ha-db_infoscreen)**                   | db-infoscreen Homeassistant fetching (superior of ha-deutschebahn)                               | 2025-01 | ✅     |
-| **[Deutschebahn](https://github.com/FaserF/ha-deutschebahn)**                     | Unofficial HA DB Integration, due to removal as of Home Assistant 2022.11                        | 2022-09 | ❌     |
-| **[Dieliga](https://github.com/FaserF/ha-dieliga)**                               | Homeassistant integration for "dieLiga" based ranking sites                                      | 2024-10 | ✅     |
-| **[Eversports](https://github.com/FaserF/ha-eversports)**                         | Homeassistant Integration to get eversports sports data                                          | 2025-10 | ✅     |
-| **[Foodsharing](https://github.com/FaserF/ha-foodsharing)**                       | Homeassistant Integration for foodsharing.de                                                     | 2022-06 | ✅     |
-| **[Github Release Tracker](https://github.com/FaserF/ha-github-release-tracker)** | Homeassistant Integration to track latest Repository releases                                    | 2024-10 | ❌     |
-| **[Gsa](https://github.com/FaserF/ha-gsa)**                                       | Homeassistant Integration for fetching latest Global Secure Access client version                | 2025-10 | ❌     |
-| **[Kadermanager](https://github.com/FaserF/ha-kadermanager)**                     | HA Kadermanager integration, to view Kadermanager events                                         | 2024-06 | ✅     |
-| **[Keyforsteam](https://github.com/FaserF/ha-keyforsteam)**                       | Homeassistant integration to track keyforsteam game prices                                       | 2024-10 | ✅     |
-| **[Openwrt](https://github.com/FaserF/ha-openwrt)**                               | Home Assistant integration for OpenWrt devices                                                   | 2026-03 | ✅     |
-| **[Oraclecloud](https://github.com/FaserF/ha-oraclecloud)**                       | Homeassistant Integration to interact with Oracle Cloud and manage VMs                           | 2026-03 | ✅     |
-| **[Phoenixbad](https://github.com/FaserF/ha-phoenixbad)**                         | Homeassistant Integration for Phönix Bad Ottobrunn occupancy                                     | 2024-10 | ✅     |
-| **[Rewe](https://github.com/FaserF/ha-rewe)**                                     | Rewe Discounts Homeassistant Integration                                                         | 2022-08 | ❌     |
-| **[Shielddns](https://github.com/FaserF/ha-shielddns)**                           | ShieldDNS Homeassistant Integration to control your ShieldDNS instance                           | 2026-03 | ✅     |
-| **[Tasmota Fwupdate](https://github.com/FaserF/ha-tasmota-fwupdate)**             | Clone of the official HA tasmota integration with extended firmware update functionality         | 2024-09 | ✅     |
-| **[Whatsapp](https://github.com/FaserF/ha-whatsapp)**                             | Homeassistant Integration to interact with WhatsApp                                              | 2025-12 | ✅     |
+| Integration | Description | Created | Status |
+| :--- | :--- | :--- | :--- |
+| **[NintendoSwitchCFW](https://github.com/FaserF/ha-NintendoSwitchCFW)** | Homeassistant Integration to integrate a Nintento Switch with Custom Firmware into Homeassistant | 2026-03 | ✅ |
+| **[Aegisbot](https://github.com/FaserF/ha-aegisbot)** | Official AegisBot Homeassistant Integration | 2026-04 | ✅ |
+| **[Bahnvorhersage](https://github.com/FaserF/ha-bahnvorhersage)** | bahnvorhersage.de Homeassistant fetching | 2025-01 | ❌ |
+| **[Boulderwelt](https://github.com/FaserF/ha-boulderwelt)** | Fetch Boulderwelt full utilization for Homeassistant | 2024-08 | ✅ |
+| **[Chefkoch](https://github.com/FaserF/ha-chefkoch)** | Homeassistant Custom Integration for Chefkoch.de | 2023-08 | ✅ |
+| **[Cloudflare](https://github.com/FaserF/ha-cloudflare)** | Homeassistant Integration to interact with Cloudflare Cloud | 2026-04 | ✅ |
+| **[Ctgpdx](https://github.com/FaserF/ha-ctgpdx)** | Homeassistant Integration for fetching latest ctgpdx version | 2025-10 | ✅ |
+| **[Db_Infoscreen](https://github.com/FaserF/ha-db_infoscreen)** | db-infoscreen Homeassistant fetching (superior of ha-deutschebahn) | 2025-01 | ✅ |
+| **[Deutschebahn](https://github.com/FaserF/ha-deutschebahn)** | Unofficial HA DB Integration, due to removal as of Home Assistant 2022.11 | 2022-09 | ❌ |
+| **[Dieliga](https://github.com/FaserF/ha-dieliga)** | Homeassistant integration for "dieLiga" based ranking sites | 2024-10 | ✅ |
+| **[Eversports](https://github.com/FaserF/ha-eversports)** | Homeassistant Integration to get eversports sports data | 2025-10 | ✅ |
+| **[Foodsharing](https://github.com/FaserF/ha-foodsharing)** | Homeassistant Integration for foodsharing.de | 2022-06 | ✅ |
+| **[Github Release Tracker](https://github.com/FaserF/ha-github-release-tracker)** | Homeassistant Integration to track latest Repository releases | 2024-10 | ❌ |
+| **[Gsa](https://github.com/FaserF/ha-gsa)** | Homeassistant Integration for fetching latest Global Secure Access client version | 2025-10 | ❌ |
+| **[Kadermanager](https://github.com/FaserF/ha-kadermanager)** | HA Kadermanager integration, to view Kadermanager events | 2024-06 | ✅ |
+| **[Keyforsteam](https://github.com/FaserF/ha-keyforsteam)** | Homeassistant integration to track keyforsteam game prices | 2024-10 | ✅ |
+| **[Openwrt](https://github.com/FaserF/ha-openwrt)** | Home Assistant integration for OpenWrt devices | 2026-03 | ✅ |
+| **[Oraclecloud](https://github.com/FaserF/ha-oraclecloud)** | Homeassistant Integration to interact with Oracle Cloud and manage VMs | 2026-03 | ✅ |
+| **[Phoenixbad](https://github.com/FaserF/ha-phoenixbad)** | Homeassistant Integration for Phönix Bad Ottobrunn occupancy | 2024-10 | ✅ |
+| **[Rewe](https://github.com/FaserF/ha-rewe)** | Rewe Discounts Homeassistant Integration | 2022-08 | ❌ |
+| **[Shielddns](https://github.com/FaserF/ha-shielddns)** | ShieldDNS Homeassistant Integration to control your ShieldDNS instance | 2026-03 | ✅ |
+| **[Speedport](https://github.com/FaserF/ha-speedport)** | Home Assistant integration for Telekom Speedport Modem/Router | 2026-04 | ✅ |
+| **[Tasmota Fwupdate](https://github.com/FaserF/ha-tasmota-fwupdate)** | Clone of the official HA tasmota integration with extended firmware update functionality | 2024-09 | ✅ |
+| **[Tasmota Update](https://github.com/FaserF/ha-tasmota-update)** | Tasmota Firmware update custom Homeassistant Integration | 2026-04 | ✅ |
+| **[Whatsapp](https://github.com/FaserF/ha-whatsapp)** | Homeassistant Integration to interact with WhatsApp | 2025-12 | ✅ |
 
 > **Status Legend:**
->
 > - ✅ = Maintained (Active development or stable)
 > - ❌ = Archived (No longer maintained, read-only repository)
 
