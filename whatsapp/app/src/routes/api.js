@@ -539,8 +539,9 @@ export function registerAPIRoutes(app) {
       let groups = {};
       const now = Date.now();
       if (
-        (!session.groupCache || session.groupCache.size === 0 ||
-         now - (session.lastGroupFetch || 0) > GROUP_FETCH_INTERVAL) &&
+        (!session.groupCache ||
+          session.groupCache.size === 0 ||
+          now - (session.lastGroupFetch || 0) > GROUP_FETCH_INTERVAL) &&
         now > (session.groupFetchCooldownUntil || 0)
       ) {
         try {
