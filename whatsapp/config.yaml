@@ -29,6 +29,10 @@ options:
   admin_numbers: ""
   welcome_message_enabled: false
   admin_notifications_enabled: true
+  message_send_interval: 1000
+  group_fetch_interval: 300000
+  group_fetch_cooldown_on_error: 60000
+  group_fetch_cooldown_on_rate_limit: 900000
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -46,6 +50,10 @@ schema:
   admin_numbers: str?
   welcome_message_enabled: bool
   admin_notifications_enabled: bool
+  message_send_interval: int
+  group_fetch_interval: int
+  group_fetch_cooldown_on_error: int
+  group_fetch_cooldown_on_rate_limit: int
 
 ports:
   8066/tcp: 8066

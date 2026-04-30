@@ -47,9 +47,10 @@ export const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT ||
 export const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '60000', 10);
 export const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 export const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
-export const GROUP_FETCH_INTERVAL = 300000; // 5 minutes
-export const GROUP_FETCH_COOLDOWN_ON_ERROR = 60000; // 1 minute
-export const GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT = 900000; // 15 minutes
+export const GROUP_FETCH_INTERVAL = parseInt(process.env.GROUP_FETCH_INTERVAL || '300000', 10);
+export const GROUP_FETCH_COOLDOWN_ON_ERROR = parseInt(process.env.GROUP_FETCH_COOLDOWN_ON_ERROR || '60000', 10);
+export const GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT = parseInt(process.env.GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT || '900000', 10);
+export const MESSAGE_SEND_INTERVAL = parseInt(process.env.MESSAGE_SEND_INTERVAL || '1000', 10);
 
 export const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED === 'true';
 export const UI_AUTH_PASSWORD = process.env.UI_AUTH_PASSWORD || '';

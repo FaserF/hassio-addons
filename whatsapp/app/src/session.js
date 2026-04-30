@@ -62,6 +62,7 @@ export function getSession(rawSessionId) {
       unauthorizedWarned: new Set(), // sender IDs
       lastGroupFetch: 0,
       groupFetchCooldownUntil: 0,
+      sendQueue: Promise.resolve(),
       lastInterestTime: 0, // Track when someone last looked at this session
       stats: {
         sent: 0,

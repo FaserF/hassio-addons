@@ -101,6 +101,27 @@ if ! MEDIA_FOLDER=$(bashio::config 'media_folder') || [ -z "$MEDIA_FOLDER" ]; th
     MEDIA_FOLDER="null"
 fi
 
+# New Rate Limiting & Fetch Options
+if ! MESSAGE_SEND_INTERVAL=$(bashio::config 'message_send_interval') || [ -z "$MESSAGE_SEND_INTERVAL" ]; then
+    MESSAGE_SEND_INTERVAL=1000
+fi
+export MESSAGE_SEND_INTERVAL
+
+if ! GROUP_FETCH_INTERVAL=$(bashio::config 'group_fetch_interval') || [ -z "$GROUP_FETCH_INTERVAL" ]; then
+    GROUP_FETCH_INTERVAL=300000
+fi
+export GROUP_FETCH_INTERVAL
+
+if ! GROUP_FETCH_COOLDOWN_ON_ERROR=$(bashio::config 'group_fetch_cooldown_on_error') || [ -z "$GROUP_FETCH_COOLDOWN_ON_ERROR" ]; then
+    GROUP_FETCH_COOLDOWN_ON_ERROR=60000
+fi
+export GROUP_FETCH_COOLDOWN_ON_ERROR
+
+if ! GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT=$(bashio::config 'group_fetch_cooldown_on_rate_limit') || [ -z "$GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT" ]; then
+    GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT=900000
+fi
+export GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT
+
 if [ "$MEDIA_FOLDER" != "null" ]; then
     bashio::log.info "Validating media folder: ${MEDIA_FOLDER}..."
     if ! mkdir -p "$MEDIA_FOLDER"; then
