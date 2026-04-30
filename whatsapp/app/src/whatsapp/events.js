@@ -35,12 +35,13 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
 
   if (!originalPoll) {
     const allKeys = session.messageStore ? Array.from(session.messageStore.keys()) : [];
+    const pollCreationId = update.pollCreationMessageKey?.id;
     logger.warn(
       {
-        pollCreationId: update.pollCreationMessageKey?.id,
+        pollCreationId: pollCreationId,
         sessionId: session.id,
         storeSize: allKeys.length,
-        lastKeys: allKeys.slice(-20),
+        existsInStore: session.messageStore.has(pollCreationId),
       },
       'Poll vote received but original poll not found in store.'
     );
@@ -50,14 +51,19 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
   try {
     const votes = getAggregateVotesInPollMessage({
       message: originalPoll.message,
-      pollUpdates: [update], // 'update' is pollUpdate.message.pollUpdateMessage
+      pollUpdates: [update],
     });
 
     return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
   } catch (err) {
-    logger.warn(
-      { error: err.message, sessionId: session.id, stack: err.stack },
-      'Failed to resolve poll votes'
+    logger.error(
+      {
+        error: err.message,
+        sessionId: session.id,
+        pollCreationId: update.pollCreationMessageKey?.id,
+        originalPollPresent: !!originalPoll,
+      },
+      'Failed to resolve poll votes (Baileys error)'
     );
     return [];
   }
