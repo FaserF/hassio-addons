@@ -29,6 +29,9 @@ import {
   SHOULD_RESET,
   PORT,
   ADDON_SLUG,
+  GROUP_FETCH_INTERVAL,
+  GROUP_FETCH_COOLDOWN_ON_ERROR,
+  GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT,
 } from '../config.js';
 import {
   WEBHOOK_ENABLED,
@@ -497,7 +500,19 @@ export function registerAPIRoutes(app) {
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     try {
       if (!session.sock) throw new Error('Socket not initialized');
+
+      if (Date.now() < (session.groupFetchCooldownUntil || 0)) {
+        logger.debug({ sessionId: session.id }, 'Groups fetch requested during cooldown, skipping');
+        return res.status(429).json({
+          detail: 'Rate limit: Group fetch is currently in cooldown',
+          cooldown_remaining: Math.ceil((session.groupFetchCooldownUntil - Date.now()) / 1000),
+        });
+      }
+
       const groups = await session.sock.groupFetchAllParticipating();
+      session.lastGroupFetch = Date.now();
+      session.groupFetchCooldownUntil = 0;
+
       const result = Object.values(groups).map((g) => ({
         id: g.id,
         name: g.subject,
@@ -506,6 +521,11 @@ export function registerAPIRoutes(app) {
       res.json(result);
     } catch (e) {
       logger.error({ error: e.message }, 'Fetch groups failed');
+      if (e.message?.includes('rate-overlimit')) {
+        session.groupFetchCooldownUntil = Date.now() + GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT;
+      } else {
+        session.groupFetchCooldownUntil = Date.now() + GROUP_FETCH_COOLDOWN_ON_ERROR;
+      }
       res.status(500).json({ detail: 'Internal Server Error: Failed to fetch groups' });
     }
   });
@@ -517,16 +537,26 @@ export function registerAPIRoutes(app) {
       if (!session.sock) throw new Error('Socket not initialized');
 
       let groups = {};
+      const now = Date.now();
       if (
-        !session.groupCache ||
-        session.groupCache.size === 0 ||
-        Date.now() - (session.lastGroupFetch || 0) > 300000
+        (!session.groupCache || session.groupCache.size === 0 ||
+         now - (session.lastGroupFetch || 0) > GROUP_FETCH_INTERVAL) &&
+        now > (session.groupFetchCooldownUntil || 0)
       ) {
         try {
           groups = await session.sock.groupFetchAllParticipating();
-          session.lastGroupFetch = Date.now();
+          session.lastGroupFetch = now;
+          session.groupFetchCooldownUntil = 0;
         } catch (e) {
           logger.warn({ error: e.message }, 'Failed to fetch groups, using cache');
+          // Update last fetch attempt even on error to avoid hammering
+          session.lastGroupFetch = now;
+          if (e.message?.includes('rate-overlimit')) {
+            session.groupFetchCooldownUntil = now + GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT;
+            logger.info({ sessionId: session.id }, 'Rate limit detected, cooling down group fetch');
+          } else {
+            session.groupFetchCooldownUntil = now + GROUP_FETCH_COOLDOWN_ON_ERROR;
+          }
         }
       }
 

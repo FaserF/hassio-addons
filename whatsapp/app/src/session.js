@@ -60,6 +60,8 @@ export function getSession(rawSessionId) {
       groupCache: new Map(),
       statusRateLimit: new Map(), // sender -> lastStatusTime
       unauthorizedWarned: new Set(), // sender IDs
+      lastGroupFetch: 0,
+      groupFetchCooldownUntil: 0,
       lastInterestTime: 0, // Track when someone last looked at this session
       stats: {
         sent: 0,
