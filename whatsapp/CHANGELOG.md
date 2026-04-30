@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.3 (2026-04-30)
+
+### 📦 Dependencies
+- update cooldown on temp rate limit from whatsapp ([`4c8e16a3`](https://github.com/FaserF/hassio-addons/commit/4c8e16a366ad258d2c190470f7c3d3212be954c7))
+- ⬆️ Update dependency playwright to v1.59.0 [skip-tests] (#778) [skip-tests] ([`b82653dc`](https://github.com/FaserF/hassio-addons/commit/b82653dcad29247838d708dd07d905f5a1ddbde5))
+- ⬆️ Update dependency express-rate-limit to v8.4.1 [skip-tests] (#775) [skip-tests] ([`3c84a2d6`](https://github.com/FaserF/hassio-addons/commit/3c84a2d67e63de8db1d9ff095bba938d917c5d4e))
+
+### 🚀 Other
+- try to fix react to polls #678 ([`535833d2`](https://github.com/FaserF/hassio-addons/commit/535833d281c5013f948ef8b27543fd0dde77cd23))
+- handle many sent messages with send queue for rate limits ([`8f846433`](https://github.com/FaserF/hassio-addons/commit/8f84643335f1bbf091a315a4976ad5697c86fc13))
+
+
 ## 1.5.2 (2026-04-24)
 
 ### ✨ Features
