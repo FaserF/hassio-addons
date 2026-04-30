@@ -49,11 +49,15 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ```yaml
 admin_notifications_enabled: true
 admin_numbers: ''
+group_fetch_cooldown_on_error: 60000
+group_fetch_cooldown_on_rate_limit: 900000
+group_fetch_interval: 300000
 keep_alive_interval: 30000
 log_level: info
 mark_online: false
 mask_sensitive_data: false
 media_folder: ''
+message_send_interval: 1000
 reset_session: false
 send_message_timeout: 25000
 ui_auth_enabled: false

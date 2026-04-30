@@ -634,7 +634,9 @@ export function registerAPIRoutes(app) {
         }
         await enqueue(session, () => session.sock.readMessages([key]));
       } else {
-        await enqueue(session, () => session.sock.chatModify({ markRead: true, lastMessages: [] }, jid));
+        await enqueue(session, () =>
+          session.sock.chatModify({ markRead: true, lastMessages: [] }, jid)
+        );
       }
       res.json({ status: 'success' });
     } catch (e) {
