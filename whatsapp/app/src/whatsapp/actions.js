@@ -12,7 +12,10 @@ import { enqueue } from '../session.js';
  */
 export async function reply(session, jid, content) {
   if (!session.sock) {
-    logger.warn({ sessionId: session.id, jid: maskData(jid) }, 'Cannot send reply: Socket not initialized');
+    logger.warn(
+      { sessionId: session.id, jid: maskData(jid) },
+      'Cannot send reply: Socket not initialized'
+    );
     return null;
   }
   try {

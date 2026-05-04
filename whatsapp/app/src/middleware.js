@@ -43,10 +43,7 @@ export const authMiddleware = (req, res, next) => {
   const providedToken = req.header('X-Auth-Token');
 
   if (!providedToken) {
-    logger.warn(
-      { ip: req.ip, path: req.originalUrl },
-      '[AUTH] Missing X-Auth-Token in request'
-    );
+    logger.warn({ ip: req.ip, path: req.originalUrl }, '[AUTH] Missing X-Auth-Token in request');
     return res.status(401).json({ error: 'Unauthorized', detail: 'Missing X-Auth-Token' });
   }
 
