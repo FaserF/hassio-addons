@@ -3,18 +3,19 @@
 ## 1.5.4 (2026-05-04)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency express-rate-limit to v8.4.1 [skip-tests] (#783) [skip-tests] ([`5033eb99`](https://github.com/FaserF/hassio-addons/commit/5033eb993105c7229115989f8cb1c4304f34c62f))
 - ⬆️ Update dependency eslint to v10.3.0 [skip-tests] ([`5bd6ce1a`](https://github.com/FaserF/hassio-addons/commit/5bd6ce1a95ae4dfcfc2e609b03688599e55a88b6))
 - fix package dependency build error ([`705b0f65`](https://github.com/FaserF/hassio-addons/commit/705b0f6539db62e9864e0825290140834fe6606b))
 
 ### 🚀 Other
+
 - general stability improvements ([`e4dd1b91`](https://github.com/FaserF/hassio-addons/commit/e4dd1b91990c60281b9f792102a54be2f0df8440))
 - prepare for new release ([`3cd5c0c7`](https://github.com/FaserF/hassio-addons/commit/3cd5c0c7ebb55cee141465b019951405d0bd2949))
 - fix picture sending not working ([`44ad5962`](https://github.com/FaserF/hassio-addons/commit/44ad5962b3bc55e91ff568b193b79a4e7d4d7e6e))
 - improved poll reaction #678 ([`7ffaf88d`](https://github.com/FaserF/hassio-addons/commit/7ffaf88d87c5dd1a04a15611c490d6b146091e8d))
 - fix cache error flooding ([`4a772638`](https://github.com/FaserF/hassio-addons/commit/4a772638b7723408a1b6c4eaecaa53dfc4ad1aa7))
 - fix connection loose on many messages ([`59b4ce7f`](https://github.com/FaserF/hassio-addons/commit/59b4ce7fd13301185d54f30e5cffdab6fce98f52))
-
 
 ## 1.5.3 (2026-04-30)
 

@@ -99,7 +99,10 @@ export async function notifyAdmins(session, text) {
     for (const admin of targets) {
       const jid = getJid(admin);
       await reply(senderSession, jid, { text }).catch((e) =>
-        logger.error({ error: e.message, admin: maskData(jid) }, 'Failed to notify admin via WhatsApp')
+        logger.error(
+          { error: e.message, admin: maskData(jid) },
+          'Failed to notify admin via WhatsApp'
+        )
       );
     }
   } else {
