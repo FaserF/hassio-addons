@@ -24,7 +24,7 @@
 - ⬆️ Update dependency fastapi to v0.136.1 [skip-tests] (#773) [skip-tests] ([`7feb3041`](https://github.com/FaserF/hassio-addons/commit/7feb3041e4d66ae29305ee7e24cb7a0756013b30))
 - ⬆️ Update dependency uvicorn to v0.46.0 [skip-tests] (#770) [skip-tests] ([`97fcdefb`](https://github.com/FaserF/hassio-addons/commit/97fcdefbb3ba4f74a23f85cc91b18c04973d4f9d))
 - ⬆️ Update dependency express-rate-limit to v8.4.0 [skip-tests] (#769) [skip-tests] ([`8f864b21`](https://github.com/FaserF/hassio-addons/commit/8f864b21b2394988a22425f1d6eef8cb2cd6001c))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/app-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/app-base/releases/tag/v20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
 - ⬆️ Update dependency protobufjs to v8 [skip-tests] (#767) [skip-tests] ([`ab6ee70a`](https://github.com/FaserF/hassio-addons/commit/ab6ee70aa7b92061d249f3ab8081fd746133ea96))
 
 ### 🚀 Other
