@@ -11,7 +11,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # App metadata (injected by CI)
 ENV APP_VERSION="1.5.3"
-ENV APP_NAME="WhatsApp"
+ENV APP_NAME="WhatsApp Home Assistant App"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
 
