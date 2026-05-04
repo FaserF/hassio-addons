@@ -5,7 +5,8 @@ import { getJid } from '../utils/jid.js';
 import { maskData, isAdmin } from '../utils/security.js';
 import { formatHATime } from '../utils/format.js';
 import { markUserAsSeen } from '../state.js';
-import { enqueue } from '../session.js';
+import { sessions, enqueue } from '../session.js';
+import { sendHANotification } from '../ha.js';
 
 /**
  * Sends a relative-path reply and tracks it in stats.
@@ -75,6 +76,8 @@ export function trackFailure(session, target, message, reason) {
 
 /**
  * Notifies administrators with a text message.
+ * Will attempt to find ANY connected session if the provided one is down.
+ * Falls back to Home Assistant persistent notifications if no WhatsApp session is active.
  */
 export async function notifyAdmins(session, text) {
   if (!ADMIN_NOTIFICATIONS_ENABLED) return;
@@ -86,11 +89,23 @@ export async function notifyAdmins(session, text) {
 
   if (targets.length === 0) return;
 
-  for (const admin of targets) {
-    const jid = getJid(admin);
-    await reply(session, jid, { text }).catch((e) =>
-      logger.error({ error: e.message, admin: maskData(jid) }, 'Failed to notify admin')
-    );
+  // Find a sender session (prefer the current one if it's connected)
+  let senderSession = session;
+  if (!senderSession.isConnected || !senderSession.sock) {
+    senderSession = Array.from(sessions.values()).find((s) => s.isConnected && s.sock) || null;
+  }
+
+  if (senderSession) {
+    for (const admin of targets) {
+      const jid = getJid(admin);
+      await reply(senderSession, jid, { text }).catch((e) =>
+        logger.error({ error: e.message, admin: maskData(jid) }, 'Failed to notify admin via WhatsApp')
+      );
+    }
+  } else {
+    // Fallback: Home Assistant Persistent Notification
+    logger.info('No active WhatsApp sessions found for admin notification. Falling back to HA.');
+    await sendHANotification('WhatsApp Addon Alert', text, `whatsapp_alert_${Date.now()}`);
   }
 }
 

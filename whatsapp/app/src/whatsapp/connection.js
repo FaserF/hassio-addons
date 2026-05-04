@@ -175,10 +175,21 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
         logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
-        notifyAdmins(
-          session,
-          `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${disconnectReason}\n• *Detail:* ${errorMsg}\n• *Status:* Attempting to reconnect.`
-        );
+        // Clear any existing restore timer
+        if (session._restoreTimer) {
+          clearTimeout(session._restoreTimer);
+          session._restoreTimer = null;
+        }
+
+        // Delay the disconnect notification to avoid spam during quick reconnects
+        session._disconnectTimer = setTimeout(() => {
+          if (session.isConnected) return; // Already reconnected, suppress alarm
+
+          notifyAdmins(
+            session,
+            `🔴 *WhatsApp Disconnected*\n\n• *Session:* \`${sessionId}\`\n• *Reason:* ${disconnectReason}\n• *Detail:* ${errorMsg}\n• *Status:* Attempting to reconnect.`
+          );
+        }, NOTIFY_RESTORE_THRESHOLD);
       }
 
       if (isLoggedOut) {
@@ -232,6 +243,13 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         // Clear existing timer if it exists (prevents flapping notifications)
         if (session._restoreTimer) {
           clearTimeout(session._restoreTimer);
+          session._restoreTimer = null;
+        }
+
+        // Also clear any pending disconnect alarm
+        if (session._disconnectTimer) {
+          clearTimeout(session._disconnectTimer);
+          session._disconnectTimer = null;
         }
 
         if (downtime > NOTIFY_RESTORE_THRESHOLD) {
