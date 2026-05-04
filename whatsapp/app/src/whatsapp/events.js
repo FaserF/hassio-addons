@@ -31,21 +31,19 @@ const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
  */
 function resolvePollVotes(pollUpdate, originalPoll, session) {
   const update = pollUpdate.message?.pollUpdateMessage;
-  if (!update) return [];
+  if (!update) return { vote: [], error: 'Missing pollUpdateMessage' };
 
   if (!originalPoll) {
-    const allKeys = session.messageStore ? Array.from(session.messageStore.keys()) : [];
     const pollCreationId = update.pollCreationMessageKey?.id;
     logger.warn(
       {
         pollCreationId: pollCreationId,
         sessionId: session.id,
-        storeSize: allKeys.length,
-        existsInStore: session.messageStore.has(pollCreationId),
+        storeSize: session.messageStore?.size || 0,
       },
       'Poll vote received but original poll not found in store.'
     );
-    return [];
+    return { vote: [], error: 'Original poll not in store' };
   }
 
   try {
@@ -54,18 +52,20 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
       pollUpdates: [update],
     });
 
-    return votes.filter((v) => v.voters.length > 0).map((v) => v.name);
+    return { 
+      vote: votes.filter((v) => v.voters.length > 0).map((v) => v.name),
+      error: null 
+    };
   } catch (err) {
     logger.error(
       {
         error: err.message,
         sessionId: session.id,
         pollCreationId: update.pollCreationMessageKey?.id,
-        originalPollPresent: !!originalPoll,
       },
-      'Failed to resolve poll votes (Baileys error)'
+      'Failed to decrypt poll votes'
     );
-    return [];
+    return { vote: [], error: `Decryption failed: ${err.message}` };
   }
 }
 
@@ -73,7 +73,15 @@ export function bindStore(session, ev) {
   ev.on('messages.upsert', ({ messages }) => {
     for (const msg of messages) {
       if (msg.key.id) {
-        session.messageStore.set(msg.key.id, msg);
+        // Prevent overwriting a full message with a metadata-only update (e.g. delivery receipt)
+        // This is crucial for poll resolution which needs the original content.
+        const hasContent = !!(msg.message || msg.editedMessage);
+        const existing = session.messageStore.get(msg.key.id);
+        const existingHasContent = !!(existing?.message || existing?.editedMessage);
+
+        if (hasContent || !existingHasContent) {
+          session.messageStore.set(msg.key.id, msg);
+        }
       }
       if (msg.key.remoteJid) {
         session.chatCache?.set(msg.key.remoteJid, true);
@@ -257,11 +265,15 @@ export function handleIncomingMessages(session) {
           eventType = 'poll_update';
           const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
           const originalPoll = session.messageStore.get(pollCreationId);
-          vote = resolvePollVotes(msg, originalPoll, session);
-          text =
-            vote.length > 0
-              ? `[Poll Vote] ${vote.join(', ')}`
-              : `[Poll Vote] (Resolution failed - original poll not in store)`;
+          const pollResult = resolvePollVotes(msg, originalPoll, session);
+          vote = pollResult.vote;
+          if (pollResult.error) {
+            text = `[Poll Vote] (${pollResult.error})`;
+          } else if (vote.length > 0) {
+            text = `[Poll Vote] ${vote.join(', ')}`;
+          } else {
+            text = `[Poll Vote] (No options selected or vote retracted)`;
+          }
         }
 
         const supportedMediaTypes = [
