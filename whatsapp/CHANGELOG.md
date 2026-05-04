@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.4 (2026-05-04)
+
+### 📦 Dependencies
+- ⬆️ Update dependency globals to v17.6.0 [skip-tests] ([`d173de49`](https://github.com/FaserF/hassio-addons/commit/d173de494554b386e1ead9c528c9a2f83c26ab06))
+- ⬆️ Update dependency eslint to v10.3.0 [skip-tests] ([`ed099e69`](https://github.com/FaserF/hassio-addons/commit/ed099e6920ebab368b5b98b9724b7b36f1852d98))
+
+
 ## 1.5.3 (2026-04-30)
 
 ### 📦 Dependencies
