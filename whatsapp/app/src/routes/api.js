@@ -168,7 +168,6 @@ export function registerAPIRoutes(app) {
     });
   });
 
-
   // --- Messaging API ---
   app.post('/send_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);

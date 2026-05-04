@@ -52,9 +52,9 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
       pollUpdates: [update],
     });
 
-    return { 
+    return {
       vote: votes.filter((v) => v.voters.length > 0).map((v) => v.name),
-      error: null 
+      error: null,
     };
   } catch (err) {
     logger.error(
