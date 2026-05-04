@@ -33,11 +33,10 @@ body:
     attributes:
       label: What version of Home Assistant Core has the issue?
       placeholder: core-
-      description: |
+      description: | # yamllint disable-line rule:line-length
         Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
         [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-        # yamllint disable-line rule:line-length
   - type: input
     id: version_integration
     validations:
@@ -53,11 +52,10 @@ body:
       required: true
     attributes:
       label: What type of installation are you running?
-      description: |
+      description: | # yamllint disable-line rule:line-length
         Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
         [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-        # yamllint disable-line rule:line-length
       options:
         - Home Assistant OS
         - Home Assistant Container

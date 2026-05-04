@@ -570,19 +570,25 @@ export function registerAPIRoutes(app) {
         (!session.lastGroupFetch || now - session.lastGroupFetch > GROUP_FETCH_INTERVAL) &&
         now > (session.groupFetchCooldownUntil || 0)
       ) {
+        // Set a temporary cooldown to prevent parallel requests from triggering multiple fetches
+        session.groupFetchCooldownUntil = now + 30000;
+
         try {
-          groups = await enqueue(session, () => session.sock.groupFetchAllParticipating());
+          const result = await enqueue(session, () => session.sock.groupFetchAllParticipating());
+          groups = result;
           session.lastGroupFetch = now;
           session.groupFetchCooldownUntil = 0;
         } catch (e) {
-          logger.warn({ error: e.message }, 'Failed to fetch groups, using cache');
-          // Update last fetch attempt even on error to avoid hammering
-          session.lastGroupFetch = now;
-          if (e.message?.includes('rate-overlimit')) {
+          const isRateLimit = e.message?.includes('rate-overlimit');
+          if (isRateLimit) {
             session.groupFetchCooldownUntil = now + GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT;
-            logger.info({ sessionId: session.id }, 'Rate limit detected, cooling down group fetch');
+            logger.warn(
+              { sessionId: session.id },
+              'Rate limit hit during group fetch, cooling down for 15m'
+            );
           } else {
             session.groupFetchCooldownUntil = now + GROUP_FETCH_COOLDOWN_ON_ERROR;
+            logger.debug({ error: e.message }, 'Failed to fetch groups, using cache');
           }
         }
       }
