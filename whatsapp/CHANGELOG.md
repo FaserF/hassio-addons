@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## 1.5.3 (2026-04-30)
 
 ### 📦 Dependencies
