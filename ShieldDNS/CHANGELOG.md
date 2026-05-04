@@ -6,12 +6,12 @@
 
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.7.0 [skip-tests] (#771) [skip-tests] ([`e124a4d6`](https://github.com/FaserF/hassio-addons/commit/e124a4d6ef139eb59216dabe4b730578ace82b87))
 - ⬆️ Update dependency coredns/coredns to v1.14.3 [skip-tests] (#768) [skip-tests] ([`c5194348`](https://github.com/FaserF/hassio-addons/commit/c519434854888ac489e0101e24f55dd785925047))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/app-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.6.4 [skip-tests] (#765) [skip-tests] ([`001c7080`](https://github.com/FaserF/hassio-addons/commit/001c70805361d5b9f6d8fd139089b718a8e7cabd))
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.6.3 [skip-tests] (#759) [skip-tests] ([`cdbadab6`](https://github.com/FaserF/hassio-addons/commit/cdbadab6e9862cdb589d23933c23d2daa3c36989))
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.6.1 [skip-tests] (#758) [skip-tests] ([`91b5d366`](https://github.com/FaserF/hassio-addons/commit/91b5d3668c6b06ee8dc76882788e320a28248b1a))
 - fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/app-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
 
 ### 🚀 Other
 
