@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.4 (2026-05-04)
+
+### 📦 Dependencies
+- ⬆️ Update dependency globals to v17.6.0 [skip-tests] (#785) [skip-tests] ([`30dbea68`](https://github.com/FaserF/hassio-addons/commit/30dbea68157c36dd4aa7393f15766a127e8e2764))
+
+### 🚀 Other
+- fixed changelog base image links ([`297c9266`](https://github.com/FaserF/hassio-addons/commit/297c9266aff47d48ab8b78c12469436a86f2eefd))
+- fixed changelog base image links ([`c464f4b3`](https://github.com/FaserF/hassio-addons/commit/c464f4b309a0e569cce87a2b2086bf181596eef5))
+- prepare for 1.5.4 release ([`043a1069`](https://github.com/FaserF/hassio-addons/commit/043a1069c2f594ce535b340f8ea7f0a670273b1c))
+- general stability improvements ([`cb4e9ce8`](https://github.com/FaserF/hassio-addons/commit/cb4e9ce86902ab78611f85fb6858b95a3bd4b03d))
+
+
 ## 1.5.3 (2026-04-30)
 
 ### 📦 Dependencies
