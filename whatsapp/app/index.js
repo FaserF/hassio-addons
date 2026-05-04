@@ -52,9 +52,20 @@ app.listen(PORT, '0.0.0.0', () => {
 
   // Auto-start session for 'default'
   const defaultSession = getSession('default');
-  if (!defaultSession.isConnected) {
-    const defaultDir = getAuthDir('default');
-    if (fs.existsSync(path.join(defaultDir, 'creds.json'))) {
+  const defaultDir = getAuthDir('default');
+  const hasDefaultCreds = fs.existsSync(path.join(defaultDir, 'creds.json'));
+
+  // Check if any other session already has credentials
+  const sessionsDir = path.join(DATA_DIR, 'sessions');
+  let otherHasCreds = false;
+  if (fs.existsSync(sessionsDir)) {
+    otherHasCreds = fs.readdirSync(sessionsDir).some((sDir) => {
+      return fs.existsSync(path.join(sessionsDir, sDir, 'creds.json'));
+    });
+  }
+
+  if (!defaultSession.isConnected && (hasDefaultCreds || !otherHasCreds)) {
+    if (hasDefaultCreds) {
       logger.info('🚀 Auto-starting default session...');
     } else {
       logger.info('🚀 First run or no credentials - auto-starting default session for pairing...');
@@ -63,7 +74,6 @@ app.listen(PORT, '0.0.0.0', () => {
   }
 
   // Auto-start all other sessions
-  const sessionsDir = path.join(DATA_DIR, 'sessions');
   if (fs.existsSync(sessionsDir)) {
     const sessionDirs = fs.readdirSync(sessionsDir);
     for (const sDir of sessionDirs) {
