@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import { LRUCache } from 'lru-cache';
-import { BufferJSON } from '@whiskeysockets/baileys';
+import { BufferJSON, delay } from '@whiskeysockets/baileys';
 import { logger } from './logger.js';
-import { DATA_DIR, AUTH_DIR, BAILEYS_VERSION } from './config.js';
+import { DATA_DIR, AUTH_DIR, BAILEYS_VERSION, MESSAGE_SEND_INTERVAL } from './config.js';
 import { formatHATime } from './utils/format.js';
 
 export const sessions = new Map();
@@ -96,6 +96,35 @@ export function getSession(rawSessionId) {
     ); // Every 5 minutes
   }
   return sessions.get(sessionId);
+}
+
+/**
+ * Enqueues a task (like sending a message) to be executed sequentially with rate limiting.
+ * Ensures the queue continues even if a single task fails.
+ */
+export async function enqueue(session, task) {
+  const taskPromise = session.sendQueue.then(async () => {
+    try {
+      const res = await task();
+      return res;
+    } catch (e) {
+      if (e.message?.includes('rate-overlimit')) {
+        logger.warn(
+          { sessionId: session.id },
+          '🚀 Rate limit hit during enqueued task, waiting 5s before next attempt...'
+        );
+        await delay(5000);
+      }
+      throw e;
+    } finally {
+      if (MESSAGE_SEND_INTERVAL > 0) await delay(MESSAGE_SEND_INTERVAL);
+    }
+  });
+
+  // Ensure the next task always starts even if this one failed
+  session.sendQueue = taskPromise.catch(() => {});
+
+  return taskPromise;
 }
 
 /**

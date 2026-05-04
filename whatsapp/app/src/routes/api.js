@@ -10,6 +10,7 @@ import {
   signalInterest,
   getAuthDir,
   addLog,
+  enqueue,
 } from '../session.js';
 import { getJid } from '../utils/jid.js';
 import { maskData, generateMessageID } from '../utils/security.js';
@@ -85,6 +86,7 @@ export function registerAPIRoutes(app) {
       session.eventQueue = [];
       session.connectionLogs = [];
       session.messageStore.clear();
+      session.sendQueue = Promise.resolve();
       session.stats = {
         sent: 0,
         received: 0,
@@ -166,20 +168,6 @@ export function registerAPIRoutes(app) {
     });
   });
 
-  // --- Helper: Message Queue ---
-  async function enqueue(session, task) {
-    const result = await (session.sendQueue = session.sendQueue.then(async () => {
-      try {
-        const res = await task();
-        if (MESSAGE_SEND_INTERVAL > 0) await delay(MESSAGE_SEND_INTERVAL);
-        return res;
-      } catch (e) {
-        if (MESSAGE_SEND_INTERVAL > 0) await delay(MESSAGE_SEND_INTERVAL);
-        throw e;
-      }
-    }));
-    return result;
-  }
 
   // --- Messaging API ---
   app.post('/send_message', authMiddleware, async (req, res) => {
@@ -190,11 +178,15 @@ export function registerAPIRoutes(app) {
     try {
       const jid = getJid(number);
       if (!session.sock) throw new Error('Socket not initialized');
-      await session.sock.sendPresenceUpdate('composing', jid);
-      await delay(250);
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          await delay(250);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with message');
+        }
 
-      const sentMsg = await enqueue(session, () =>
-        Promise.race([
+        return await Promise.race([
           session.sock.sendMessage(
             jid,
             { text: message },
@@ -206,8 +198,8 @@ export function registerAPIRoutes(app) {
               reject(new Error('Send message timeout'));
             }, SEND_MESSAGE_TIMEOUT)
           ),
-        ])
-      );
+        ]);
+      });
 
       session.stats.sent += 1;
       session.stats.last_sent_message = maskData(message);
@@ -575,9 +567,7 @@ export function registerAPIRoutes(app) {
       let groups = {};
       const now = Date.now();
       if (
-        (!session.groupCache ||
-          session.groupCache.size === 0 ||
-          now - (session.lastGroupFetch || 0) > GROUP_FETCH_INTERVAL) &&
+        (!session.lastGroupFetch || now - session.lastGroupFetch > GROUP_FETCH_INTERVAL) &&
         now > (session.groupFetchCooldownUntil || 0)
       ) {
         try {

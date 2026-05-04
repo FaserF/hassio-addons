@@ -5,13 +5,14 @@ import { getJid } from '../utils/jid.js';
 import { maskData, isAdmin } from '../utils/security.js';
 import { formatHATime } from '../utils/format.js';
 import { markUserAsSeen } from '../state.js';
+import { enqueue } from '../session.js';
 
 /**
  * Sends a relative-path reply and tracks it in stats.
  */
 export async function reply(session, jid, content) {
   try {
-    const result = await session.sock.sendMessage(jid, content);
+    const result = await enqueue(session, () => session.sock.sendMessage(jid, content));
     const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
     const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
 

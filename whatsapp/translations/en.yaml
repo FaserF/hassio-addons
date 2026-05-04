@@ -44,5 +44,17 @@ configuration:
   welcome_message_enabled:
     name: "Welcome Message"
     description: "Whether to send a one-time welcome message to users who message the bot for the first time."
+  message_send_interval:
+    name: "Message Send Interval (ms)"
+    description: "Delay in milliseconds between sending consecutive messages to avoid rate limits (Default: 1000)."
+  group_fetch_interval:
+    name: "Group Fetch Interval (ms)"
+    description: "Interval in milliseconds between refreshing group metadata (Default: 300000 / 5 minutes)."
+  group_fetch_cooldown_on_error:
+    name: "Group Fetch Error Cooldown (ms)"
+    description: "Cooldown period in milliseconds after a generic group fetch error before retrying (Default: 60000)."
+  group_fetch_cooldown_on_rate_limit:
+    name: "Group Fetch Rate-Limit Cooldown (ms)"
+    description: "Cooldown period in milliseconds after hitting a WhatsApp rate limit for group fetches (Default: 900000 / 15 minutes)."
 network:
   8066/tcp: Internal API port the integration connects to.
