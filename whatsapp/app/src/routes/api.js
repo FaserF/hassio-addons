@@ -227,7 +227,7 @@ export function registerAPIRoutes(app) {
         session.sock.sendMessage(
           jid,
           { image: { url: url }, caption: caption },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -274,7 +274,7 @@ export function registerAPIRoutes(app) {
               selectableCount: normalizedSelectableCount,
             },
           },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.messageStore.set(sentMsg.key.id, sentMsg);
@@ -315,7 +315,7 @@ export function registerAPIRoutes(app) {
               address: description,
             },
           },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -411,7 +411,7 @@ export function registerAPIRoutes(app) {
             caption: caption,
             mimetype: 'application/octet-stream',
           },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -435,7 +435,7 @@ export function registerAPIRoutes(app) {
         session.sock.sendMessage(
           jid,
           { video: { url: url }, caption: caption },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -459,7 +459,7 @@ export function registerAPIRoutes(app) {
         session.sock.sendMessage(
           jid,
           { audio: { url: url }, ptt: !!ptt, mimetype: 'audio/mp4' },
-          { quoted, ephemeralExpiration: expiration }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
       session.stats.sent += 1;
