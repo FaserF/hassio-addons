@@ -263,8 +263,8 @@ export function handleIncomingMessages(session) {
 
         if (messageType === 'pollUpdateMessage') {
           eventType = 'poll_update';
-          const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey.id;
-          const originalPoll = session.messageStore.get(pollCreationId);
+          const pollCreationId = msg.message.pollUpdateMessage.pollCreationMessageKey?.id;
+          const originalPoll = pollCreationId ? session.messageStore.get(pollCreationId) : null;
           const pollResult = resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
           if (pollResult.error) {

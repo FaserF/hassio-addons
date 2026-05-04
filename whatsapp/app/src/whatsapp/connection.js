@@ -25,6 +25,19 @@ import { isHANetwork } from '../ha.js';
 
 export async function connectToWhatsApp(sessionId = 'default', sessions, getSession) {
   const session = getSession(sessionId);
+
+  if (session.isConnecting) {
+    logger.debug({ sessionId }, 'Already connecting, skipping redundant call');
+    return;
+  }
+
+  // If already connected and socket is active, don't restart unless explicitly requested
+  if (session.isConnected && session.sock && !session.sock.ws?.isClosed) {
+    logger.debug({ sessionId }, 'Already connected and active, skipping');
+    return;
+  }
+
+  session.isConnecting = true;
   const sessionAuthDir = getAuthDir(sessionId);
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
@@ -35,6 +48,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     logger.info({ sessionId }, '💤 No credentials and no active interest. Skipping connection.');
     addLog(session, 'Waiting for user to open Dashboard to start pairing...', 'info');
     session.currentQR = null;
+    session.isConnecting = false;
     return;
   }
 
@@ -69,7 +83,25 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         return undefined;
       },
     });
+
+    // Workaround for TypeError in fetchPrivacySettings (Baileys RC.9 bug)
+    // This prevents the connection from dropping if the privacy settings fetch fails
+    if (session.sock.fetchPrivacySettings) {
+      const oldFetchPrivacySettings = session.sock.fetchPrivacySettings;
+      session.sock.fetchPrivacySettings = async () => {
+        try {
+          return await oldFetchPrivacySettings.call(session.sock);
+        } catch (e) {
+          logger.debug(
+            { sessionId, error: e.message },
+            '🛡️ Suppressed Baileys privacy settings fetch error'
+          );
+          return {};
+        }
+      };
+    }
   } catch (err) {
+    session.isConnecting = false;
     logger.error({ sessionId, error: err.message }, '💥 Failed to initialize WASocket');
     addLog(session, `Failed to initialize WhatsApp: ${err.message}`, 'error');
     setHealthStatus('faulty', `Failed to initialize WASocket: ${err.message}`);
@@ -133,6 +165,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         'warning'
       );
 
+      session.isConnecting = false;
       session.isConnected = false;
       const sessionStats = session.stats;
 
@@ -184,6 +217,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       }
     } else if (connection === 'open') {
       addLog(session, 'WhatsApp Connection Established! 🟢', 'success');
+      session.isConnecting = false;
       session.isConnected = true;
       session.disconnectReason = null;
       session.reconnectAttempts = 0;

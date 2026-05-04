@@ -11,6 +11,10 @@ import { enqueue } from '../session.js';
  * Sends a relative-path reply and tracks it in stats.
  */
 export async function reply(session, jid, content) {
+  if (!session.sock) {
+    logger.warn({ sessionId: session.id, jid: maskData(jid) }, 'Cannot send reply: Socket not initialized');
+    return null;
+  }
   try {
     const result = await enqueue(session, () => session.sock.sendMessage(jid, content));
     const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
@@ -23,6 +27,8 @@ export async function reply(session, jid, content) {
     trackSent(session, target, text);
     return result;
   } catch (err) {
+    const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
+    trackFailure(session, jid, text, err.message);
     logger.error({ error: err.message, jid }, 'Failed to send reply');
     session.stats.failed += 1;
     logger.debug({ sessionId: session.id, jid: maskData(jid) }, '📉 Stat: Failed incremented');

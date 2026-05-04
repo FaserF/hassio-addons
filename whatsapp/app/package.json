@@ -21,7 +21,7 @@
     "qrcode": "^1.5.3"
   },
   "overrides": {
-    "link-preview-js": "^4.0.0",
+    "link-preview-js": "3.2.0",
     "protobufjs": "^8.0.0"
   },
   "devDependencies": {
