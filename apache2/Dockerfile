@@ -22,7 +22,7 @@ WORKDIR /tmp
 ARG PHP_VERSION="8.5"
 
 # renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
-ARG APACHE2_VERSION="2.4.66-r0"
+ARG APACHE2_VERSION="2.4.67-r0"
 
 # Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
 # hadolint ignore=DL3018,DL3047,DL4006,DL3003
