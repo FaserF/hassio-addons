@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.3.2 (2026-05-06)
+
+### 📦 Dependencies
+- ⬆️ Update dependency alpine_3_21/apache2 to v2.4.67-r0 [skip-tests] ([`69bbe225`](https://github.com/FaserF/hassio-addons/commit/69bbe2259decb5dae5c70aa9788c2d68b5aea5ca))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+
+
 ## 3.3.1 (2026-04-09)
 
 ### ✨ Features
