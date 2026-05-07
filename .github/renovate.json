@@ -565,7 +565,7 @@
       "automerge": true
     },
     {
-      "description": "Allow pre-releases for Antigravity-Server",
+      "description": "Ignore pre-releases for Antigravity-Server",
       "matchDepNames": [
         "Eidolf/Docker-AntiGravity"
       ],
@@ -583,6 +583,7 @@
       "matchDepNames": [
         "@whiskeysockets/baileys"
       ],
+      "versioning": "loose",
       "ignoreUnstable": false
     }
   ]
