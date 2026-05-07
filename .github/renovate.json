@@ -133,7 +133,7 @@
         "/(^|/)Dockerfile$/"
       ],
       "matchStrings": [
-        "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+        "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/AegisBot"
@@ -232,7 +232,7 @@
         "/ShieldDNS/Dockerfile$/"
       ],
       "matchStrings": [
-        "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+        "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/ShieldDNS"
@@ -314,7 +314,7 @@
         "/dbf/Dockerfile$/"
       ],
       "matchStrings": [
-        "ARG DBF_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+        "ARG DBF_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
       "datasourceTemplate": "github-tags",
       "depNameTemplate": "derf/db-fakedisplay"
@@ -326,7 +326,7 @@
         "/(^|/)Dockerfile$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\nARG PHP_VERSION=\"(?<currentValue>.*)\""
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)(?: versioning=(?<versioning>[^\\s]+))?\\nARG PHP_VERSION=\"(?<currentValue>.*)\""
       ],
       "extractVersionTemplate": "^(?<version>\\d+\\.\\d+)",
       "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)$"
@@ -428,7 +428,7 @@
       "matchDepNames": [
         "42wim/matterbridge",
         "netbootxyz/webapp",
-        "Requarks/wiki",
+        "requarks/wiki",
         "ghcr.io/requarks/wiki",
         "FaserF/AegisBot",
         "FaserF/Solumati",
@@ -501,7 +501,7 @@
     {
       "description": "Allow pre-releases for Wiki.js V3",
       "matchDepNames": [
-        "Requarks/wiki",
+        "requarks/wiki",
         "ghcr.io/requarks/wiki"
       ],
       "matchFileNames": [
