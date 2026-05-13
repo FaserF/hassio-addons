@@ -40,12 +40,49 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            # ... existing input handling ...
             self._addon_slug = user_input[CONF_ADDON_SLUG]
             self._port = user_input[CONF_PORT]
-            await self.async_set_unique_id(f"{self._addon_slug}_{self._port}")
-            self._abort_if_unique_id_configured()
-            return self.async_create_entry(title=f"Webserver ({self._addon_slug})", data=user_input)
+
+            token = get_supervisor_token(self.hass)
+            session = async_get_clientsession(self.hass)
+            headers = {"X-Supervisor-Token": token} if token else {}
+            target_slug = self._addon_slug
+
+            try:
+                url = f"http://supervisor/addons/{target_slug}/info"
+                async with async_timeout.timeout(10):
+                    resp = await session.get(url, headers=headers)
+                    if resp.status == 404:
+                        list_resp = await session.get("http://supervisor/addons", headers=headers)
+                        if list_resp.status == 200:
+                            list_res = await list_resp.json()
+                            addons = list_res.get("data", {}).get("addons", [])
+                            for addon in addons:
+                                s = addon.get("slug", "")
+                                if s.endswith(f"_{target_slug}") or s == target_slug:
+                                    target_slug = s
+                                    url = f"http://supervisor/addons/{target_slug}/info"
+                                    resp = await session.get(url, headers=headers)
+                                    break
+
+                    if resp.status == 200:
+                        info_res = await resp.json()
+                        state = info_res.get("data", {}).get("state")
+                        if state != "started":
+                            errors["base"] = "cannot_connect"
+                        else:
+                            user_input[CONF_ADDON_SLUG] = target_slug
+                            self._addon_slug = target_slug
+                    else:
+                        errors["base"] = "cannot_connect"
+            except Exception as err:
+                _LOGGER.debug("Error validating addon reachability: %s", err)
+                errors["base"] = "cannot_connect"
+
+            if not errors:
+                await self.async_set_unique_id(f"{self._addon_slug}_{self._port}")
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(title=f"Webserver ({self._addon_slug})", data=user_input)
 
         # Try to detect installed addons via Supervisor API
         detected_addons = []

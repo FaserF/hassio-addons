@@ -119,6 +119,11 @@ class WebserverAppSSLExpirySensor(WebserverAppSensor):
         """Return the expiry date."""
         return self.coordinator.data.get("ssl_expiry")
 
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self.coordinator.data.get("ssl_enabled", False)
+
 
 class WebserverAppSSLDaysSensor(WebserverAppSensor):
     """Sensor for SSL certificate days remaining."""
@@ -140,6 +145,11 @@ class WebserverAppSSLDaysSensor(WebserverAppSensor):
     def native_value(self) -> int | None:
         """Return the days remaining."""
         return self.coordinator.data.get("ssl_days_remaining")
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self.coordinator.data.get("ssl_enabled", False)
 
 
 class WebserverAppConnectionsSensor(WebserverAppSensor):

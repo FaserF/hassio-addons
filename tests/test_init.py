@@ -47,10 +47,15 @@ async def test_config_flow(hass: HomeAssistant) -> None:
     assert result["type"] == "form"
     assert result["step_id"] == "user"
 
-    with patch(
-        "custom_components.webserver_app.config_flow.async_get_addon_info",
-        return_value={"installed": True},
-    ):
+    with patch("custom_components.webserver_app.config_flow.async_get_clientsession") as mock_session_get:
+        mock_session = AsyncMock()
+        mock_session_get.return_value = mock_session
+
+        mock_resp = AsyncMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = {"data": {"state": "started"}}
+        mock_session.get.return_value = mock_resp
+
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
