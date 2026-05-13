@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import aiohttp
@@ -28,7 +28,7 @@ def get_cert_expiry(cert_path: str) -> datetime | None:
         with open(cert_path, "rb") as f:
             cert_data = f.read()
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
-            return cert.not_valid_after
+            return getattr(cert, "not_valid_after_utc", cert.not_valid_after)
     except Exception as err:
         _LOGGER.debug("Error reading certificate %s: %s", cert_path, err)
         return None
@@ -97,6 +97,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     "state": addon_info.get("state"),
                     "update_available": addon_info.get("update_available"),
                     "slug": self.addon_slug,
+                    "ip_address": addon_info.get("ip_address"),
                 }
             )
 
@@ -112,7 +113,8 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         expiry = await self.hass.async_add_executor_job(get_cert_expiry, cert_path)
                         if expiry:
                             data["ssl_expiry"] = expiry
-                            data["ssl_days_remaining"] = (expiry - datetime.now()).days
+                            now = datetime.now(timezone.utc) if expiry.tzinfo else datetime.now()
+                            data["ssl_days_remaining"] = (expiry - now).days
                     except Exception as err:
                         _LOGGER.debug("Could not read cert file: %s", err)
 
@@ -127,10 +129,8 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _fetch_webserver_stats(self, data: dict[str, Any]) -> None:
         """Fetch stats from the webserver's status endpoint."""
-        # For Apache/Nginx addons, we try to connect to localhost:80 (or 8080 for nginx stats)
-        # However, from HA core, we must use the addon's hostname or IP.
-        # Supervisor provides the IP in addon_info if needed, but 'slug' works as hostname usually.
-        hostname = self.addon_slug.replace("_", "-")
+        # We prioritize the ip_address provided by Supervisor over the generic slug hostname.
+        hostname = data.get("ip_address") or self.addon_slug.replace("_", "-")
 
         try:
             async with async_timeout.timeout(5):

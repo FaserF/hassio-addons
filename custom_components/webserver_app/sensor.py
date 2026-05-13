@@ -16,6 +16,7 @@ from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.network import get_url
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -43,6 +44,8 @@ async def async_setup_entry(
     )
 
 
+
+
 class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], SensorEntity):
     """Base class for Webserver App sensors."""
 
@@ -54,11 +57,20 @@ class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], S
         self.entity_description = description
         self.addon_slug = coordinator.addon_slug
         self._attr_unique_id = f"{self.addon_slug}_{description.key}"
+
+        try:
+            base_url = get_url(coordinator.hass, require_current_request=False)
+            config_url = f"{base_url}/api/hassio_ingress/{self.addon_slug}/"
+        except Exception:
+            config_url = f"homeassistant://hassio/addon/{self.addon_slug}"
+
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self.addon_slug)},
             name=self.addon_slug,
+            manufacturer="FaserF",
+            model="Apache2/Nginx Addon",
             sw_version=coordinator.data.get("version"),
-            configuration_url=f"/api/hassio_ingress/{self.addon_slug}/",
+            configuration_url=config_url,
         )
 
 

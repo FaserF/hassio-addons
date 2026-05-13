@@ -31,7 +31,9 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
         }
         mock_session.get.return_value = mock_resp
 
-        from custom_components.webserver_app import async_setup_entry as component_setup_entry
+        from custom_components.webserver_app import (
+            async_setup_entry as component_setup_entry,
+        )
 
         hass.config_entries = MagicMock(async_forward_entry_setups=AsyncMock())
         assert await component_setup_entry(hass, entry)
