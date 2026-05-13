@@ -28,7 +28,9 @@ def get_cert_expiry(cert_path: str) -> datetime | None:
         with open(cert_path, "rb") as f:
             cert_data = f.read()
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
-            return getattr(cert, "not_valid_after_utc", cert.not_valid_after)
+            if hasattr(cert, "not_valid_after_utc"):
+                return cert.not_valid_after_utc
+            return cert.not_valid_after
     except Exception as err:
         _LOGGER.debug("Error reading certificate %s: %s", cert_path, err)
         return None
