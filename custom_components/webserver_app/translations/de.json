@@ -22,6 +22,17 @@
       "not_supported": "Dieses Addon wird von Webserver App nicht unterstützt."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Webserver App Optionen",
+        "description": "Konfiguriere das Update-Intervall.",
+        "data": {
+          "update_interval": "Update-Intervall (Minuten)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "ssl_expiry": { "name": "SSL Ablaufdatum" },

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -32,7 +33,6 @@ async def async_setup_entry(
     async_add_entities(
         [
             WebserverAppStatusSensor(coordinator),
-            WebserverAppVersionSensor(coordinator),
             WebserverAppSSLExpirySensor(coordinator),
             WebserverAppSSLDaysSensor(coordinator),
             WebserverAppConnectionsSensor(coordinator),
@@ -56,6 +56,9 @@ class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], S
         self._attr_unique_id = f"{self.addon_slug}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self.addon_slug)},
+            name=self.addon_slug,
+            sw_version=coordinator.data.get("version"),
+            configuration_url=f"/api/hassio_ingress/{self.addon_slug}/",
         )
 
 
@@ -79,24 +82,7 @@ class WebserverAppStatusSensor(WebserverAppSensor):
         return self.coordinator.data.get("state")
 
 
-class WebserverAppVersionSensor(WebserverAppSensor):
-    """Version sensor for Webserver App."""
 
-    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
-        """Initialize."""
-        super().__init__(
-            coordinator,
-            SensorEntityDescription(
-                key="version",
-                name="Version",
-                icon="mdi:information-outline",
-            ),
-        )
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the version of the addon."""
-        return self.coordinator.data.get("version")
 
 
 class WebserverAppSSLExpirySensor(WebserverAppSensor):
@@ -215,6 +201,13 @@ class WebserverAppLogErrorsSensor(WebserverAppSensor):
         """Return the number of errors in logs."""
         return self.coordinator.data.get("log_errors")
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "recent_errors": self.coordinator.data.get("log_errors_list", [])
+        }
+
 
 class WebserverAppLogWarningsSensor(WebserverAppSensor):
     """Sensor for log warnings."""
@@ -236,3 +229,10 @@ class WebserverAppLogWarningsSensor(WebserverAppSensor):
     def native_value(self) -> int | None:
         """Return the number of warnings in logs."""
         return self.coordinator.data.get("log_warnings")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "recent_warnings": self.coordinator.data.get("log_warnings_list", [])
+        }

@@ -39,11 +39,12 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize."""
+        interval = entry.options.get("update_interval", 10)
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(minutes=10),
+            update_interval=timedelta(minutes=interval),
         )
         self.entry = entry
         self.addon_slug = entry.data[CONF_ADDON_SLUG]
@@ -188,10 +189,19 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 resp = await session.get(url, headers=headers)
                 if resp.status == 200:
                     logs = await resp.text()
-                    error_count = logs.lower().count("error")
-                    warn_count = logs.lower().count("warning") + logs.lower().count("warn")
-                    data["log_errors"] = error_count
-                    data["log_warnings"] = warn_count
+                    error_lines = []
+                    warning_lines = []
+                    for line in logs.splitlines():
+                        lower_line = line.lower()
+                        if "error" in lower_line:
+                            error_lines.append(line)
+                        elif "warning" in lower_line or "warn " in lower_line or "warn:" in lower_line:
+                            warning_lines.append(line)
+
+                    data["log_errors"] = len(error_lines)
+                    data["log_errors_list"] = error_lines[-10:]  # Keep last 10
+                    data["log_warnings"] = len(warning_lines)
+                    data["log_warnings_list"] = warning_lines[-10:]  # Keep last 10
 
             # 4. PHP Version (Optional)
             if data["state"] == "started":

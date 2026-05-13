@@ -7,7 +7,7 @@ from typing import Any
 
 import async_timeout
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.hassio import HassioServiceInfo
@@ -171,3 +171,28 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="hassio_confirm",
             description_placeholders={"addon": self._addon_slug or ""},
         )
+
+    @staticmethod
+    def async_get_options_flow(config_entry: ConfigEntry) -> WebserverAppOptionsFlowHandler:
+        """Get the options flow for this handler."""
+        return WebserverAppOptionsFlowHandler()
+
+
+class WebserverAppOptionsFlowHandler(OptionsFlow):
+    """Handle options flow for Webserver App integration."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        options_schema = vol.Schema(
+            {
+                vol.Required(
+                    "update_interval",
+                    default=self.config_entry.options.get("update_interval", 10),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=1440)),
+            }
+        )
+
+        return self.async_show_form(step_id="init", data_schema=options_schema)
