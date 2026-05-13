@@ -1,7 +1,7 @@
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.0
 FROM ghcr.io/plankanban/planka:2.1.1 AS planka
 
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.0
-FROM ${BUILD_FROM}
+FROM ${BUILD_FROM:-ghcr.io/hassio-addons/base:20.1.0}
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
