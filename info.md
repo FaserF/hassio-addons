@@ -8,7 +8,7 @@ A native, lightweight Home Assistant integration designed to seamlessly monitor 
 
 ## ✨ Features
 
-- **Automated Supervisor Discovery**: 
+- **Automated Supervisor Discovery**:
   - Dynamically detects supported local add-ons via the Home Assistant Supervisor internal API.
   - Zero manual YAML configuration needed.
 - **Comprehensive Telemetry Sensors**:
@@ -26,16 +26,17 @@ A native, lightweight Home Assistant integration designed to seamlessly monitor 
 
 ## 📦 Supported Add-ons
 
-| Add-on Variant | Supported Internal Slugs |
-| :--- | :--- |
-| **[Apache2](https://github.com/FaserF/hassio-addons/tree/master/apache2)** | `apache2`, `apache2-edge` |
-| **[Apache2 Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)** | `apache2-minimal`, `apache2-minimal-edge` |
+| Add-on Variant                                                                                                  | Supported Internal Slugs                                  |
+| :-------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| **[Apache2](https://github.com/FaserF/hassio-addons/tree/master/apache2)**                                      | `apache2`, `apache2-edge`                                 |
+| **[Apache2 Minimal](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal)**                      | `apache2-minimal`, `apache2-minimal-edge`                 |
 | **[Apache2 Minimal with MariaDB](https://github.com/FaserF/hassio-addons/tree/master/apache2-minimal-mariadb)** | `apache2-minimal-mariadb`, `apache2-minimal-mariadb-edge` |
-| **[Nginx](https://github.com/FaserF/hassio-addons/tree/master/nginx)** | `nginx`, `nginx-edge` |
+| **[Nginx](https://github.com/FaserF/hassio-addons/tree/master/nginx)**                                          | `nginx`, `nginx-edge`                                     |
 
 ## 🚀 Installation & Setup
 
 ### HACS Installation
+
 1. Open HACS inside Home Assistant.
 2. Click the three dots in the top right corner and select **Custom repositories**.
 3. Add `FaserF/hassio-addons` as an **Integration** repository.
@@ -43,6 +44,7 @@ A native, lightweight Home Assistant integration designed to seamlessly monitor 
 5. Restart Home Assistant.
 
 ### Quick Setup
+
 Click the button below to start configuring the integration instantly:
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=webserver_app)
