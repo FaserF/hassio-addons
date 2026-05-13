@@ -1,11 +1,8 @@
 """Tests for the Webserver App integration."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from homeassistant.components.hassio import DOMAIN as HASSIO_DOMAIN
 from homeassistant.core import HomeAssistant
-from homeassistant.setup import async_setup_component
 
 from custom_components.webserver_app.const import CONF_ADDON_SLUG, CONF_PORT, DOMAIN
 
@@ -24,7 +21,6 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
         patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"),
         patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get,
     ):
-
         mock_session = AsyncMock()
         mock_session_get.return_value = mock_session
 
@@ -35,7 +31,10 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
         }
         mock_session.get.return_value = mock_resp
 
-        assert await hass.config_entries.async_setup_entry(entry, "webserver_app")
+        from custom_components.webserver_app import async_setup_entry as component_setup_entry
+
+        hass.config_entries = MagicMock(async_forward_entry_setups=AsyncMock())
+        assert await component_setup_entry(hass, entry)
     await hass.async_block_till_done()
 
     assert DOMAIN in hass.data

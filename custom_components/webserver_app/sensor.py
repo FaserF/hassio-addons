@@ -17,7 +17,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_ADDON_SLUG, DOMAIN
+from .const import DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
 
 

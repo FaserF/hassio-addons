@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import logging
-import os
 from datetime import datetime, timedelta
 from typing import Any
 
 import aiohttp
 import async_timeout
-import homeassistant.util.dt as dt_util
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -162,8 +160,6 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # 4. PHP Version (Optional)
             if data["state"] == "started":
                 await self._fetch_php_version(data)
-
-            return data
         except Exception as err:
             _LOGGER.debug("Error fetching addon logs: %s", err)
 

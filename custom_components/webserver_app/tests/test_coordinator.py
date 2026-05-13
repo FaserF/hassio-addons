@@ -1,6 +1,7 @@
 """Tests for the Webserver App coordinator."""
 
 from datetime import datetime, timedelta
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -9,7 +10,6 @@ from custom_components.webserver_app.coordinator import (
     WebserverAppDataUpdateCoordinator,
     get_cert_expiry,
 )
-from custom_components.webserver_app.utils import get_supervisor_token
 
 
 @pytest.fixture
@@ -24,7 +24,6 @@ def coordinator(hass):
 async def test_cert_expiry_logic(coordinator):
     """Test the certificate expiry helper."""
     with patch("builtins.open", MagicMock()), patch("cryptography.x509.load_pem_x509_certificate") as mock_load:
-
         mock_cert = MagicMock()
         expiry_date = datetime.now() + timedelta(days=30)
         mock_cert.not_valid_after = expiry_date
@@ -36,7 +35,7 @@ async def test_cert_expiry_logic(coordinator):
 
 async def test_fetch_webserver_stats_apache(coordinator):
     """Test fetching Apache stats."""
-    data = {"state": "started"}
+    data: dict[str, Any] = {"state": "started"}
     apache_text = "Total Accesses: 100\nCPULoad: 0.5\nBusyWorkers: 5\n"
 
     with patch("aiohttp.ClientSession.get") as mock_get:
@@ -54,7 +53,7 @@ async def test_fetch_webserver_stats_apache(coordinator):
 
 async def test_fetch_webserver_stats_nginx(coordinator):
     """Test fetching Nginx stats."""
-    data = {"state": "started"}
+    data: dict[str, Any] = {"state": "started"}
     nginx_text = "Active connections: 10\nserver accepts handled requests\n 1 1 500\nReading: 0 Writing: 1 Waiting: 9"
 
     coordinator.addon_slug = "nginx"
@@ -73,14 +72,13 @@ async def test_fetch_webserver_stats_nginx(coordinator):
 
 async def test_fetch_addon_logs(coordinator, hass):
     """Test log error counting."""
-    data = {}
+    data: dict[str, Any] = {}
     logs = "info: starting\nerror: something failed\nwarn: slow\nERROR: fatal\n"
 
     with (
         patch("custom_components.webserver_app.coordinator.async_get_clientsession") as mock_session_get,
         patch("custom_components.webserver_app.coordinator.get_supervisor_token", return_value="fake_token"),
     ):
-
         mock_session = AsyncMock()
         mock_session_get.return_value = mock_session
 

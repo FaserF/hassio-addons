@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
 import async_timeout
 import voluptuous as vol
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.service_info.hassio import HassioServiceInfo
 
 from .const import (
     CONF_ADDON_SLUG,
@@ -26,7 +24,7 @@ from .utils import get_supervisor_token
 _LOGGER = logging.getLogger(__name__)
 
 
-class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Webserver App."""
 
     VERSION = 1
@@ -36,9 +34,9 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._addon_slug: str | None = None
         self._port: int = DEFAULT_PORT
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
-        _LOGGER.error("ConfigFlow: async_step_user called")
+        _LOGGER.debug("ConfigFlow: async_step_user called")
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -51,26 +49,26 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Try to detect installed addons via Supervisor API
         detected_addons = []
-        _LOGGER.error("ConfigFlow: Starting detection")
+        _LOGGER.debug("ConfigFlow: Starting detection")
 
         token = get_supervisor_token(self.hass)
         if not token:
-            _LOGGER.error("ConfigFlow: NO SUPERVISOR_TOKEN found")
+            _LOGGER.debug("ConfigFlow: NO SUPERVISOR_TOKEN found")
 
         try:
             session = async_get_clientsession(self.hass)
             headers = {"X-Supervisor-Token": token} if token else {}
 
             async with async_timeout.timeout(10):
-                _LOGGER.error("ConfigFlow: Calling Supervisor API http://supervisor/addons")
+                _LOGGER.debug("ConfigFlow: Calling Supervisor API http://supervisor/addons")
                 resp = await session.get("http://supervisor/addons", headers=headers)
-                _LOGGER.error("ConfigFlow: Supervisor API status: %s", resp.status)
+                _LOGGER.debug("ConfigFlow: Supervisor API status: %s", resp.status)
                 if resp.status == 200:
                     result = await resp.json()
                     data_node = result.get("data", result)
                     addons = data_node.get("addons", [])
 
-                    _LOGGER.error("ConfigFlow: Supervisor API returned %s addons", len(addons))
+                    _LOGGER.debug("ConfigFlow: Supervisor API returned %s addons", len(addons))
 
                     for addon in addons:
                         slug = addon.get("slug", "")
@@ -81,17 +79,17 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         # or if it is exactly the supported slug.
                         for supported in SUPPORTED_ADDON_SLUGS:
                             if (slug == supported or slug.endswith(f"_{supported}")) and is_installed:
-                                _LOGGER.error("ConfigFlow: Detected installed supported addon: %s", slug)
+                                _LOGGER.debug("ConfigFlow: Detected installed supported addon: %s", slug)
                                 detected_addons.append(slug)
                                 break
                 else:
-                    _LOGGER.error("ConfigFlow: Failed to fetch addons from Supervisor: %s", resp.status)
+                    _LOGGER.debug("ConfigFlow: Failed to fetch addons from Supervisor: %s", resp.status)
         except Exception as err:
-            _LOGGER.error("ConfigFlow: Exception in detection: %s", err)
+            _LOGGER.debug("ConfigFlow: Exception in detection: %s", err)
 
         # If we detected something, prioritize it. Otherwise use the full list.
         display_addons = detected_addons if detected_addons else SUPPORTED_ADDON_SLUGS
-        _LOGGER.error("ConfigFlow: Displaying addons: %s", display_addons)
+        _LOGGER.debug("ConfigFlow: Displaying addons: %s", display_addons)
 
         data_schema = vol.Schema(
             {
@@ -109,10 +107,10 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"detected": ", ".join(display_addons)},
         )
 
-    async def async_step_hassio(self, discovery_info: dict[str, Any]) -> FlowResult:
+    async def async_step_hassio(self, discovery_info: HassioServiceInfo) -> ConfigFlowResult:
         """Handle supervisor discovery."""
-        slug = discovery_info.get("slug")
-        if slug not in SUPPORTED_ADDON_SLUGS:
+        slug = getattr(discovery_info, "slug", None)
+        if not slug or slug not in SUPPORTED_ADDON_SLUGS:
             return self.async_abort(reason="not_supported")
 
         self._addon_slug = slug
@@ -121,7 +119,7 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_hassio_confirm()
 
-    async def async_step_hassio_confirm(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_hassio_confirm(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Confirm hassio discovery."""
         if user_input is not None:
             return self.async_create_entry(
@@ -134,5 +132,5 @@ class WebserverAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="hassio_confirm",
-            description_placeholders={"addon": self._addon_slug},
+            description_placeholders={"addon": self._addon_slug or ""},
         )
