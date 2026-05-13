@@ -44,8 +44,6 @@ async def async_setup_entry(
     )
 
 
-
-
 class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], SensorEntity):
     """Base class for Webserver App sensors."""
 
@@ -92,9 +90,6 @@ class WebserverAppStatusSensor(WebserverAppSensor):
     def native_value(self) -> str | None:
         """Return the status of the addon."""
         return self.coordinator.data.get("state")
-
-
-
 
 
 class WebserverAppSSLExpirySensor(WebserverAppSensor):
@@ -216,9 +211,7 @@ class WebserverAppLogErrorsSensor(WebserverAppSensor):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        return {
-            "recent_errors": self.coordinator.data.get("log_errors_list", [])
-        }
+        return {"recent_errors": self.coordinator.data.get("log_errors_list", [])}
 
 
 class WebserverAppLogWarningsSensor(WebserverAppSensor):
@@ -245,6 +238,4 @@ class WebserverAppLogWarningsSensor(WebserverAppSensor):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        return {
-            "recent_warnings": self.coordinator.data.get("log_warnings_list", [])
-        }
+        return {"recent_warnings": self.coordinator.data.get("log_warnings_list", [])}
