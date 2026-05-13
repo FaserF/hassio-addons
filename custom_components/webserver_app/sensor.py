@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -15,9 +16,10 @@ from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.network import get_url
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_ADDON_SLUG, DOMAIN
+from .const import DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
 
 
@@ -32,7 +34,6 @@ async def async_setup_entry(
     async_add_entities(
         [
             WebserverAppStatusSensor(coordinator),
-            WebserverAppVersionSensor(coordinator),
             WebserverAppSSLExpirySensor(coordinator),
             WebserverAppSSLDaysSensor(coordinator),
             WebserverAppConnectionsSensor(coordinator),
@@ -54,8 +55,20 @@ class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], S
         self.entity_description = description
         self.addon_slug = coordinator.addon_slug
         self._attr_unique_id = f"{self.addon_slug}_{description.key}"
+
+        try:
+            base_url = get_url(coordinator.hass, require_current_request=False)
+            config_url = f"{base_url}/api/hassio_ingress/{self.addon_slug}/"
+        except Exception:
+            config_url = f"homeassistant://hassio/addon/{self.addon_slug}"
+
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self.addon_slug)},
+            name=self.addon_slug,
+            manufacturer="FaserF",
+            model="Apache2/Nginx Addon",
+            sw_version=coordinator.data.get("version"),
+            configuration_url=config_url,
         )
 
 
@@ -79,26 +92,6 @@ class WebserverAppStatusSensor(WebserverAppSensor):
         return self.coordinator.data.get("state")
 
 
-class WebserverAppVersionSensor(WebserverAppSensor):
-    """Version sensor for Webserver App."""
-
-    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
-        """Initialize."""
-        super().__init__(
-            coordinator,
-            SensorEntityDescription(
-                key="version",
-                name="Version",
-                icon="mdi:information-outline",
-            ),
-        )
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the version of the addon."""
-        return self.coordinator.data.get("version")
-
-
 class WebserverAppSSLExpirySensor(WebserverAppSensor):
     """Sensor for SSL certificate expiry date."""
 
@@ -118,6 +111,11 @@ class WebserverAppSSLExpirySensor(WebserverAppSensor):
     def native_value(self) -> datetime | None:
         """Return the expiry date."""
         return self.coordinator.data.get("ssl_expiry")
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self.coordinator.data.get("ssl_enabled", False)
 
 
 class WebserverAppSSLDaysSensor(WebserverAppSensor):
@@ -140,6 +138,11 @@ class WebserverAppSSLDaysSensor(WebserverAppSensor):
     def native_value(self) -> int | None:
         """Return the days remaining."""
         return self.coordinator.data.get("ssl_days_remaining")
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self.coordinator.data.get("ssl_enabled", False)
 
 
 class WebserverAppConnectionsSensor(WebserverAppSensor):
@@ -205,6 +208,11 @@ class WebserverAppLogErrorsSensor(WebserverAppSensor):
         """Return the number of errors in logs."""
         return self.coordinator.data.get("log_errors")
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {"recent_errors": self.coordinator.data.get("log_errors_list", [])}
+
 
 class WebserverAppLogWarningsSensor(WebserverAppSensor):
     """Sensor for log warnings."""
@@ -226,3 +234,8 @@ class WebserverAppLogWarningsSensor(WebserverAppSensor):
     def native_value(self) -> int | None:
         """Return the number of warnings in logs."""
         return self.coordinator.data.get("log_warnings")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {"recent_warnings": self.coordinator.data.get("log_warnings_list", [])}

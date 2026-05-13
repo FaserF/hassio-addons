@@ -8,5 +8,6 @@
   "dependencies": ["hassio"],
   "codeowners": ["@FaserF"],
   "iot_class": "local_polling",
+  "integration_type": "hub",
   "discovery": ["hassio"]
 }

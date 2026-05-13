@@ -44,11 +44,9 @@ if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then
 	cat >>/etc/apache2/httpd.conf <<EOF
 <Location /server-status>
     SetHandler server-status
-    Order deny,allow
-    Deny from all
-    Allow from 127.0.0.1
-    Allow from ::1
-    Allow from 172.30.0.0/16
+    Require local
+    Require ip 172.30.0.0/16
+    Require ip 127.0.0.1
 </Location>
 ExtendedStatus On
 EOF

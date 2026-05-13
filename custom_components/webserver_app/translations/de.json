@@ -14,9 +14,23 @@
         "description": "Möchtest du die Webserver App Integration für das Addon {addon} hinzufügen?"
       }
     },
+    "error": {
+      "cannot_connect": "Verbindung zum Webserver Addon fehlgeschlagen. Bitte stelle sicher, dass das Addon installiert und gestartet ist."
+    },
     "abort": {
       "already_configured": "Gerät ist bereits konfiguriert",
       "not_supported": "Dieses Addon wird von Webserver App nicht unterstützt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Webserver App Optionen",
+        "description": "Konfiguriere das Update-Intervall.",
+        "data": {
+          "update_interval": "Update-Intervall (Minuten)"
+        }
+      }
     }
   },
   "entity": {

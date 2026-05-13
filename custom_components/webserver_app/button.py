@@ -1,5 +1,4 @@
 import logging
-import os
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
@@ -7,10 +6,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity, UpdateFailed
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_ADDON_SLUG, DOMAIN
+from .const import DOMAIN
 from .coordinator import WebserverAppDataUpdateCoordinator
+from .utils import get_supervisor_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class WebserverAppReloadButton(CoordinatorEntity[WebserverAppDataUpdateCoordinat
         """Handle the button press."""
         _LOGGER.info("Reload requested for addon %s", self.addon_slug)
 
-        token = os.environ.get("SUPERVISOR_TOKEN")
+        token = get_supervisor_token(self.coordinator.hass)
         session = async_get_clientsession(self.coordinator.hass)
         headers = {"X-Supervisor-Token": token} if token else {}
 

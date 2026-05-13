@@ -45,16 +45,14 @@ else
 fi
 
 # Enable mod_status for monitoring
-sed -i 's/^#\(LoadModule status_module modules\/mod_status.so\)/\1/' /etc/apache2/httpd.conf
+sed -i 's/^#*\(LoadModule status_module modules\/mod_status.so\)/\1/' /etc/apache2/httpd.conf
 if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then
 	cat >>/etc/apache2/httpd.conf <<EOF
 <Location /server-status>
     SetHandler server-status
-    Order deny,allow
-    Deny from all
-    Allow from 127.0.0.1
-    Allow from ::1
-    Allow from 172.30.0.0/16
+    Require local
+    Require ip 172.30.0.0/16
+    Require ip 127.0.0.1
 </Location>
 ExtendedStatus On
 EOF

@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import logging
-import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import aiohttp
 import async_timeout
-import homeassistant.util.dt as dt_util
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -30,6 +28,8 @@ def get_cert_expiry(cert_path: str) -> datetime | None:
         with open(cert_path, "rb") as f:
             cert_data = f.read()
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+            if hasattr(cert, "not_valid_after_utc"):
+                return cert.not_valid_after_utc
             return cert.not_valid_after
     except Exception as err:
         _LOGGER.debug("Error reading certificate %s: %s", cert_path, err)
@@ -41,11 +41,12 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize."""
+        interval = entry.options.get("update_interval", 10)
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=30),
+            update_interval=timedelta(minutes=interval),
         )
         self.entry = entry
         self.addon_slug = entry.data[CONF_ADDON_SLUG]
@@ -62,6 +63,26 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             url = f"http://supervisor/addons/{self.addon_slug}/info"
             async with async_timeout.timeout(10):
                 resp = await session.get(url, headers=headers)
+                if resp.status == 404:
+                    _LOGGER.debug(
+                        "Addon %s returned 404, attempting auto-discovery of local addon slug prefix",
+                        self.addon_slug,
+                    )
+                    list_resp = await session.get("http://supervisor/addons", headers=headers)
+                    if list_resp.status == 200:
+                        list_res = await list_resp.json()
+                        addons = list_res.get("data", {}).get("addons", [])
+                        for addon in addons:
+                            s = addon.get("slug", "")
+                            if s.endswith(f"_{self.addon_slug}") or s == self.addon_slug:
+                                _LOGGER.info(
+                                    "Auto-discovered installed slug '%s' matching target '%s'", s, self.addon_slug
+                                )
+                                self.addon_slug = s
+                                url = f"http://supervisor/addons/{self.addon_slug}/info"
+                                resp = await session.get(url, headers=headers)
+                                break
+
                 if resp.status != 200:
                     raise UpdateFailed(f"Failed to fetch addon info: {resp.status}")
 
@@ -78,18 +99,26 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     "state": addon_info.get("state"),
                     "update_available": addon_info.get("update_available"),
                     "slug": self.addon_slug,
+                    "ip_address": addon_info.get("ip_address"),
                 }
             )
 
             # 2. SSL Expiry Check
             options = addon_info.get("options", {})
-            certfile = options.get("certfile")
-            if certfile:
-                cert_path = f"/ssl/{certfile}"
-                expiry = await self.hass.async_add_executor_job(get_cert_expiry, cert_path)
-                if expiry:
-                    data["ssl_expiry"] = expiry
-                    data["ssl_days_remaining"] = (expiry - datetime.now()).days
+            ssl_enabled = options.get("ssl", False)
+            data["ssl_enabled"] = ssl_enabled
+            if ssl_enabled:
+                certfile = options.get("certfile")
+                if certfile:
+                    cert_path = f"/ssl/{certfile}"
+                    try:
+                        expiry = await self.hass.async_add_executor_job(get_cert_expiry, cert_path)
+                        if expiry:
+                            data["ssl_expiry"] = expiry
+                            now = datetime.now(timezone.utc) if expiry.tzinfo else datetime.now()
+                            data["ssl_days_remaining"] = (expiry - now).days
+                    except Exception as err:
+                        _LOGGER.debug("Could not read cert file: %s", err)
 
             # 3. Webserver Stats (if running)
             if data["state"] == "started":
@@ -102,43 +131,49 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _fetch_webserver_stats(self, data: dict[str, Any]) -> None:
         """Fetch stats from the webserver's status endpoint."""
-        # For Apache/Nginx addons, we try to connect to localhost:80 (or 8080 for nginx stats)
-        # However, from HA core, we must use the addon's hostname or IP.
-        # Supervisor provides the IP in addon_info if needed, but 'slug' works as hostname usually.
-        hostname = self.addon_slug.replace("_", "-")
+        # We prioritize the ip_address provided by Supervisor over the generic slug hostname.
+        hostname = data.get("ip_address") or self.addon_slug.replace("_", "-")
 
-        # Try Apache mod_status first (typically on port 80)
         try:
             async with async_timeout.timeout(5):
                 async with aiohttp.ClientSession() as session:
-                    # Apache
-                    async with session.get(f"http://{hostname}/server-status?auto") as resp:
-                        if resp.status == 200:
-                            text = await resp.text()
-                            for line in text.splitlines():
-                                if line.startswith("Total Accesses:"):
-                                    data["total_accesses"] = int(line.split(":")[1])
-                                elif line.startswith("CPULoad:"):
-                                    data["cpu_load"] = float(line.split(":")[1])
-                                elif line.startswith("BusyWorkers:"):
-                                    data["active_connections"] = int(line.split(":")[1])
-                            data["webserver_type"] = "apache"
-                            return
-
-                    # Nginx (port 8080 as configured in nginx.sh)
-                    async with session.get(f"http://{hostname}:8080/nginx_status") as resp:
-                        if resp.status == 200:
-                            text = await resp.text()
-                            # Active connections: 291
-                            # server accepts handled requests
-                            #  16630948 16630948 31070465
-                            # Reading: 6 Writing: 179 Waiting: 106
-                            lines = text.splitlines()
-                            data["active_connections"] = int(lines[0].split(":")[1].strip())
-                            req_line = lines[2].split()
-                            data["total_handled_requests"] = int(req_line[2])
-                            data["webserver_type"] = "nginx"
-                            return
+                    if "nginx" in self.addon_slug:
+                        # Nginx (port 8080 as configured in nginx.sh)
+                        async with session.get(f"http://{hostname}:8080/nginx_status", ssl=False) as resp:
+                            if resp.status == 200:
+                                text = await resp.text()
+                                # Active connections: 291
+                                # server accepts handled requests
+                                #  16630948 16630948 31070465
+                                # Reading: 6 Writing: 179 Waiting: 106
+                                lines = text.splitlines()
+                                data["active_connections"] = int(lines[0].split(":")[1].strip())
+                                req_line = lines[2].split()
+                                data["total_handled_requests"] = int(req_line[2])
+                                data["webserver_type"] = "nginx"
+                    else:
+                        # Apache
+                        urls_to_try = [
+                            f"http://{hostname}/server-status?auto",
+                            f"http://{hostname}:8099/server-status?auto",
+                        ]
+                        for url in urls_to_try:
+                            try:
+                                async with session.get(url, ssl=False, allow_redirects=True) as resp:
+                                    if resp.status == 200:
+                                        text = await resp.text()
+                                        for line in text.splitlines():
+                                            if line.startswith("Total Accesses:"):
+                                                data["total_accesses"] = int(line.split(":")[1])
+                                            elif line.startswith("CPULoad:"):
+                                                data["cpu_load"] = float(line.split(":")[1])
+                                            elif line.startswith("BusyWorkers:"):
+                                                data["active_connections"] = int(line.split(":")[1])
+                                        data["webserver_type"] = "apache"
+                                        break
+                            except Exception as e:
+                                _LOGGER.debug("Stats fetch failed for %s: %s", url, e)
+                                continue
         except Exception as err:
             _LOGGER.debug("Could not fetch webserver stats for %s: %s", self.addon_slug, err)
 
@@ -156,16 +191,23 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 resp = await session.get(url, headers=headers)
                 if resp.status == 200:
                     logs = await resp.text()
-                    error_count = logs.lower().count("error")
-                    warn_count = logs.lower().count("warning") + logs.lower().count("warn")
-                    data["log_errors"] = error_count
-                    data["log_warnings"] = warn_count
+                    error_lines = []
+                    warning_lines = []
+                    for line in logs.splitlines():
+                        lower_line = line.lower()
+                        if "error" in lower_line:
+                            error_lines.append(line)
+                        elif "warning" in lower_line or "warn " in lower_line or "warn:" in lower_line:
+                            warning_lines.append(line)
+
+                    data["log_errors"] = len(error_lines)
+                    data["log_errors_list"] = error_lines[-10:]  # Keep last 10
+                    data["log_warnings"] = len(warning_lines)
+                    data["log_warnings_list"] = warning_lines[-10:]  # Keep last 10
 
             # 4. PHP Version (Optional)
             if data["state"] == "started":
                 await self._fetch_php_version(data)
-
-            return data
         except Exception as err:
             _LOGGER.debug("Error fetching addon logs: %s", err)
 
