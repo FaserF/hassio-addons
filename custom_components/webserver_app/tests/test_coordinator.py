@@ -57,19 +57,13 @@ async def test_fetch_webserver_stats_nginx(coordinator):
     data = {"state": "started"}
     nginx_text = "Active connections: 10\nserver accepts handled requests\n 1 1 500\nReading: 0 Writing: 1 Waiting: 9"
 
-    with patch("aiohttp.ClientSession.get") as mock_get:
-        # First call fails (Apache), second call succeeds (Nginx)
-        mock_resp_fail = MagicMock()
-        mock_resp_fail.status = 404
+    coordinator.addon_slug = "nginx"
 
+    with patch("aiohttp.ClientSession.get") as mock_get:
         mock_resp_success = AsyncMock()
         mock_resp_success.status = 200
         mock_resp_success.text.return_value = nginx_text
-
-        mock_get.side_effect = [
-            AsyncMock(__aenter__=AsyncMock(return_value=mock_resp_fail)),
-            AsyncMock(__aenter__=AsyncMock(return_value=mock_resp_success)),
-        ]
+        mock_get.return_value.__aenter__.return_value = mock_resp_success
 
         await coordinator._fetch_webserver_stats(data)
         assert data["active_connections"] == 10

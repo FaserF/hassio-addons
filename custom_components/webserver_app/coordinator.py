@@ -107,38 +107,36 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Supervisor provides the IP in addon_info if needed, but 'slug' works as hostname usually.
         hostname = self.addon_slug.replace("_", "-")
 
-        # Try Apache mod_status first (typically on port 80)
         try:
             async with async_timeout.timeout(5):
                 async with aiohttp.ClientSession() as session:
-                    # Apache
-                    async with session.get(f"http://{hostname}/server-status?auto") as resp:
-                        if resp.status == 200:
-                            text = await resp.text()
-                            for line in text.splitlines():
-                                if line.startswith("Total Accesses:"):
-                                    data["total_accesses"] = int(line.split(":")[1])
-                                elif line.startswith("CPULoad:"):
-                                    data["cpu_load"] = float(line.split(":")[1])
-                                elif line.startswith("BusyWorkers:"):
-                                    data["active_connections"] = int(line.split(":")[1])
-                            data["webserver_type"] = "apache"
-                            return
-
-                    # Nginx (port 8080 as configured in nginx.sh)
-                    async with session.get(f"http://{hostname}:8080/nginx_status") as resp:
-                        if resp.status == 200:
-                            text = await resp.text()
-                            # Active connections: 291
-                            # server accepts handled requests
-                            #  16630948 16630948 31070465
-                            # Reading: 6 Writing: 179 Waiting: 106
-                            lines = text.splitlines()
-                            data["active_connections"] = int(lines[0].split(":")[1].strip())
-                            req_line = lines[2].split()
-                            data["total_handled_requests"] = int(req_line[2])
-                            data["webserver_type"] = "nginx"
-                            return
+                    if self.addon_slug.startswith("nginx"):
+                        # Nginx (port 8080 as configured in nginx.sh)
+                        async with session.get(f"http://{hostname}:8080/nginx_status", ssl=False) as resp:
+                            if resp.status == 200:
+                                text = await resp.text()
+                                # Active connections: 291
+                                # server accepts handled requests
+                                #  16630948 16630948 31070465
+                                # Reading: 6 Writing: 179 Waiting: 106
+                                lines = text.splitlines()
+                                data["active_connections"] = int(lines[0].split(":")[1].strip())
+                                req_line = lines[2].split()
+                                data["total_handled_requests"] = int(req_line[2])
+                                data["webserver_type"] = "nginx"
+                    else:
+                        # Apache
+                        async with session.get(f"http://{hostname}/server-status?auto", ssl=False) as resp:
+                            if resp.status == 200:
+                                text = await resp.text()
+                                for line in text.splitlines():
+                                    if line.startswith("Total Accesses:"):
+                                        data["total_accesses"] = int(line.split(":")[1])
+                                    elif line.startswith("CPULoad:"):
+                                        data["cpu_load"] = float(line.split(":")[1])
+                                    elif line.startswith("BusyWorkers:"):
+                                        data["active_connections"] = int(line.split(":")[1])
+                                data["webserver_type"] = "apache"
         except Exception as err:
             _LOGGER.debug("Could not fetch webserver stats for %s: %s", self.addon_slug, err)
 
