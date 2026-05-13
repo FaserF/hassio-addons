@@ -27,13 +27,11 @@ website_name: null
 - `/data`: Used internally by the app for persistent storage.
 
 <!-- PHP_INFO_START -->
-
 ## 🐘 PHP Information
 
 **PHP Version**: 8.5
 
 **Available PHP Modules**:
-
 - curl
 - mbstring
 - mysqli
