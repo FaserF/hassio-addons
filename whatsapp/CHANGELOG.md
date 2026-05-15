@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.5.5-dev-2e5bd5c (2026-05-15)
+
+### 📦 Dependencies
+- ⬆️ Update dependency uvicorn to v0.47.0 [skip-tests] (#805) [skip-tests] ([`d3067835`](https://github.com/FaserF/hassio-addons/commit/d3067835ce0d1b07f46d0a023464646de61fbc31))
+- ⬆️ Update dependency express-rate-limit to v8.5.2 [skip-tests] ([`a445fdcb`](https://github.com/FaserF/hassio-addons/commit/a445fdcbf40b5e164e05974b856d9308693ae86d))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc11 [skip-tests] (#802) [skip-tests] ([`7ac5ecbb`](https://github.com/FaserF/hassio-addons/commit/7ac5ecbb8469d3275faede246a02b6738552b34e))
+- build(deps): bump protobufjs from 8.0.1 to 8.2.0 in /whatsapp/app in the npm_and_yarn group across 1 directory (#801) [skip-tests] ([`2cd89d5e`](https://github.com/FaserF/hassio-addons/commit/2cd89d5ea812485b24cc6cb85049c20489922f1e))
+- ⬆️ Update dependency link-preview-js to v4.0.3 [skip-tests] (#800) [skip-tests] ([`82c90a86`](https://github.com/FaserF/hassio-addons/commit/82c90a86f93dc0db798013886d182cb3fbb3ec15))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc10 [skip-tests] (#795) [skip-tests] ([`64556fd8`](https://github.com/FaserF/hassio-addons/commit/64556fd8b39ccd8653293b0480c8b8fef2fcd878))
+- ⬆️ Update dependency express-rate-limit to v8.5.1 [skip-tests] (#792) [skip-tests] ([`19379367`](https://github.com/FaserF/hassio-addons/commit/19379367a20011858a815ef9f3a9ffcb67ad1cc4))
+- build(deps): bump link-preview-js from 3.2.0 to 4.0.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#789) [skip-tests] ([`2ec5f305`](https://github.com/FaserF/hassio-addons/commit/2ec5f305dd1753782dce6353e67b846666e177fe))
+- ⬆️ Update dependency express-rate-limit to v8.5.0 [skip-tests] (#787) [skip-tests] ([`b9c5aabb`](https://github.com/FaserF/hassio-addons/commit/b9c5aabbd6c745f242a17788cf6f10df63c24ccf))
+- ⬆️ Update dependency lru-cache to v11.3.6 [skip-tests] (#786) [skip-tests] ([`b16af1bf`](https://github.com/FaserF/hassio-addons/commit/b16af1bfd2d1be6620d94bd57641acd3d0add220))
+
+
 ## 1.5.4 (2026-05-04)
 
 ### 📦 Dependencies

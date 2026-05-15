@@ -1,7 +1,7 @@
 # Webserver App Integration
 
 [![hacs](https://img.shields.io/badge/HACS-custom-orange.svg?style=flat-square)](https://hacs.xyz)
-[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration)
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge)
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=webserver_app)
 
 A native, lightweight Home Assistant integration designed to seamlessly monitor and manage Apache2 and Nginx webserver add-ons from the FaserF repository. Automatically traces operational metrics, monitors SSL certificate expiration, parses error logs, and facilitates live add-on reloads directly from your dashboard.
