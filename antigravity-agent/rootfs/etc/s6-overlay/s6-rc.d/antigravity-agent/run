@@ -1,0 +1,60 @@
+#!/usr/bin/with-contenv bashio
+
+bashio::log.info "Starting Antigravity Agent Home Assistant App..."
+
+# Load configurations using Bashio
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    LOG_LEVEL="info"
+fi
+export LOG_LEVEL
+
+if ! ANTIGRAVITY_TOKEN=$(bashio::config 'antigravity_token') || [ "$ANTIGRAVITY_TOKEN" = "null" ]; then
+    ANTIGRAVITY_TOKEN=""
+fi
+export ANTIGRAVITY_TOKEN
+
+if ! GEMINI_TOKEN=$(bashio::config 'gemini_token') || [ "$GEMINI_TOKEN" = "null" ]; then
+    GEMINI_TOKEN=""
+fi
+export GEMINI_TOKEN
+export GEMINI_API_KEY="$GEMINI_TOKEN"
+
+if ! GITHUB_TOKEN=$(bashio::config 'github_token') || [ "$GITHUB_TOKEN" = "null" ]; then
+    GITHUB_TOKEN=""
+fi
+export GITHUB_TOKEN
+
+if ! DEFAULT_INSTRUCTION=$(bashio::config 'default_instruction') || [ "$DEFAULT_INSTRUCTION" = "null" ]; then
+    DEFAULT_INSTRUCTION="Write changes to a new branch, verify them, and submit a pull request when done."
+fi
+export DEFAULT_INSTRUCTION
+
+if bashio::config.true 'whatsapp_enabled'; then
+    WHATSAPP_ENABLED="true"
+else
+    WHATSAPP_ENABLED="false"
+fi
+export WHATSAPP_ENABLED
+
+if ! WHATSAPP_URL=$(bashio::config 'whatsapp_url') || [ "$WHATSAPP_URL" = "null" ]; then
+    WHATSAPP_URL="http://localhost:8066"
+fi
+export WHATSAPP_URL
+
+if ! WHATSAPP_TOKEN=$(bashio::config 'whatsapp_token') || [ "$WHATSAPP_TOKEN" = "null" ]; then
+    WHATSAPP_TOKEN=""
+fi
+export WHATSAPP_TOKEN
+
+bashio::log.info "Configured Log Level: $LOG_LEVEL"
+bashio::log.info "Configured Antigravity Token: ${ANTIGRAVITY_TOKEN:+[SET]}"
+bashio::log.info "Configured Gemini Token: ${GEMINI_TOKEN:+[SET]}"
+bashio::log.info "Configured GitHub Token: ${GITHUB_TOKEN:+[SET]}"
+bashio::log.info "Configured WhatsApp Enabled: $WHATSAPP_ENABLED"
+bashio::log.info "Configured WhatsApp URL: $WHATSAPP_URL"
+
+# Navigate to application workspace
+cd /opt/antigravity-agent
+
+# Execute uvicorn running FastAPI
+exec uvicorn app.main:app --host 0.0.0.0 --port 8077

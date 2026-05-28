@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbindung zum Antigravity Agent konfigurieren",
+        "description": "Geben Sie die Basis-REST-API-URL des Antigravity Agent-Addons und das optionale API-Token ein.",
+        "data": {
+          "url": "Addon-API-URL",
+          "api_key": "API-Schlüssel / Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Die eingegebene URL ist ungültig. Sie muss mit http:// oder https:// beginnen.",
+      "cannot_connect": "Verbindung zur Antigravity-Agent-API fehlgeschlagen. Überprüfen Sie die URL und ob das Addon läuft."
+    }
+  }
+}

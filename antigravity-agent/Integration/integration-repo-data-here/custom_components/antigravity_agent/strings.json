@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Antigravity Agent connection",
+        "description": "Enter the base REST API URL of the Antigravity Agent addon and optional API key.",
+        "data": {
+          "url": "Addon API URL",
+          "api_key": "API Key / Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "The URL entered is invalid. It must start with http:// or https://",
+      "cannot_connect": "Failed to connect to the Antigravity Agent API. Verify the URL and that the addon is running."
+    }
+  }
+}

@@ -38,6 +38,7 @@ body:
         - ShieldDNS
         - ShieldFile
         - antigravity-server
+        - antigravity-agent
         - apache2
         - apache2-minimal
         - apache2-minimal-mariadb

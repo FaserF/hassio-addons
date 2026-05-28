@@ -58,6 +58,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | Name                                                            | Description                               | Status | Added   |
 | :-------------------------------------------------------------- | :---------------------------------------- | :----- | :------ |
 | **[AegisBot](AegisBot)**                                        | Telegram Bot Management Server            | ✅     | 2026-01 |
+| **[Antigravity Agent](antigravity-agent)**                      | Autonomous AI Coding Agent                | ⚠️     | 2026-05 |
 | **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC              | ⚠️     | 2026-01 |
 | **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB            | ✅     | 2023-03 |
 | **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     | 2023-03 |

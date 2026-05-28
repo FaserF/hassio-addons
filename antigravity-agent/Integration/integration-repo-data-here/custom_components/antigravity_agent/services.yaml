@@ -1,0 +1,40 @@
+run_task:
+  name: Trigger Coding Task
+  description: Clones the repository, creates a branch, runs Gemini CLI and Antigravity Agent to implement the changes, and submits a Pull Request.
+  fields:
+    repository:
+      name: Repository URL
+      description: The URL of the GitHub repository (HTTPS) where changes should be applied.
+      required: true
+      example: "https://github.com/FaserF/hassio-addons"
+      selector:
+        text:
+    instruction:
+      name: Task Instruction
+      description: What features to build or bugs to fix in the repository.
+      required: true
+      example: "Fix the typos in README.md and update dates"
+      selector:
+        text:
+          multiline: true
+    branch:
+      name: Target Branch
+      description: The target branch to create. If omitted, one is generated automatically.
+      required: false
+      example: "antigravity/fix-typos"
+      selector:
+        text:
+    github_token:
+      name: GitHub Token
+      description: A GitHub Personal Access Token (PAT) with repository access. If omitted, the default token configured in the addon is used.
+      required: false
+      selector:
+        text:
+          type: password
+    custom_instruction:
+      name: Custom Agent Instruction
+      description: Custom prompt suffix instructions for the Antigravity Agent (e.g. style rules, testing instructions).
+      required: false
+      selector:
+        text:
+          multiline: true

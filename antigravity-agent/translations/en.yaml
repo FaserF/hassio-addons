@@ -1,0 +1,27 @@
+configuration:
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of the logs."
+  antigravity_token:
+    name: "Antigravity Token"
+    description: "API token for the Google Antigravity backend service."
+  gemini_token:
+    name: "Gemini Token"
+    description: "API token for Google Gemini AI. (Also maps to GEMINI_API_KEY)"
+  github_token:
+    name: "GitHub Personal Access Token"
+    description: "GitHub Token with repo permissions to checkout code, push changes, and submit PRs."
+  default_instruction:
+    name: "Default Action Prompt"
+    description: "Custom default behavior prompt instructions for the Antigravity Coding Agent."
+  whatsapp_enabled:
+    name: "WhatsApp Integration Enabled"
+    description: "Enable receiving triggers and sending status notifications via the WhatsApp App."
+  whatsapp_url:
+    name: "WhatsApp API URL"
+    description: "The base REST API URL of your Home Assistant WhatsApp App."
+  whatsapp_token:
+    name: "WhatsApp Token"
+    description: "The token (X-Auth-Token) required by the WhatsApp App API."
+network:
+  8077/tcp: "REST API Endpoint Port"
