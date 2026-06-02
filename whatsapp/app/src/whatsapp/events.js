@@ -28,6 +28,34 @@ import { addLog } from '../session.js';
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 
 /**
+ * Normalizes JID to remove device suffix and ensure it has a domain.
+ */
+function normalizeJid(jid) {
+  if (!jid) return '';
+  const clean = jid.split(':')[0]; // Remove device suffix (e.g. :1)
+  if (clean.includes('@')) {
+    return clean;
+  }
+  return clean + '@s.whatsapp.net';
+}
+
+/**
+ * Builds candidate JIDs from primary and secondary sources.
+ */
+function getJidCandidates(jid, altJid) {
+  const candidates = new Set();
+  if (jid) {
+    const norm = normalizeJid(jid);
+    if (norm) candidates.add(norm);
+  }
+  if (altJid) {
+    const norm = normalizeJid(altJid);
+    if (norm) candidates.add(norm);
+  }
+  return Array.from(candidates);
+}
+
+/**
  * Resolves encrypted poll votes to human-readable option names.
  */
 function resolvePollVotes(pollUpdate, originalPoll, session) {
@@ -48,7 +76,7 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
   }
 
   try {
-    const meJid = session.sock.user.id.split(':')[0] + '@s.whatsapp.net';
+    const meJid = normalizeJid(session.sock?.user?.id);
     const pollCreatorJid = originalPoll.key.fromMe
       ? meJid
       : originalPoll.key.participant || originalPoll.key.remoteJid;
@@ -56,9 +84,8 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
       ? meJid
       : pollUpdate.key.participant || pollUpdate.key.remoteJid;
 
-    // Normalize JIDs to avoid device suffixes and LID issues
-    const cleanPollCreatorJid = pollCreatorJid.split(':')[0].split('@')[0] + '@s.whatsapp.net';
-    const cleanVoterJid = voterJid.split(':')[0].split('@')[0] + '@s.whatsapp.net';
+    const creatorCandidates = getJidCandidates(pollCreatorJid, originalPoll.key.remoteJidAlt);
+    const voterCandidates = getJidCandidates(voterJid, pollUpdate.key.remoteJidAlt);
 
     const pollEncKey =
       originalPoll.messageContextInfo?.messageSecret ||
@@ -67,12 +94,38 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
       throw new Error('Missing messageSecret for decryption');
     }
 
-    const decryptedVote = decryptPollVote(update.vote, {
-      pollEncKey,
-      pollCreatorJid: cleanPollCreatorJid,
-      pollMsgId: originalPoll.key.id,
-      voterJid: cleanVoterJid,
-    });
+    let decryptedVote = null;
+    let decryptionError = null;
+
+    for (const creator of creatorCandidates) {
+      for (const voter of voterCandidates) {
+        try {
+          decryptedVote = decryptPollVote(
+            update.vote,
+            {
+              pollEncKey,
+              pollCreatorJid: creator,
+              pollMsgId: originalPoll.key.id,
+              voterJid: voter,
+            }
+          );
+          if (decryptedVote) {
+            logger.debug(
+              { creator, voter, sessionId: session.id },
+              'Successfully decrypted poll vote with candidate combination.'
+            );
+            break;
+          }
+        } catch (err) {
+          decryptionError = err;
+        }
+      }
+      if (decryptedVote) break;
+    }
+
+    if (!decryptedVote) {
+      throw decryptionError || new Error('Decryption returned no result');
+    }
 
     const decryptedUpdate = {
       pollUpdateMessageKey: pollUpdate.key,
