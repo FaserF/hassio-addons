@@ -234,6 +234,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
       setHealthStatus('connected', 'WhatsApp connected');
+      // Set a 1-minute cooldown for group fetching after establishing connection
+      // to prevent triggering WhatsApp's rate-overlimit on immediate queries.
+      session.groupFetchCooldownUntil = Date.now() + 60000;
 
       const sessionStats = session.stats;
 

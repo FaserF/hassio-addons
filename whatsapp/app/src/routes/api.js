@@ -211,7 +211,10 @@ export function registerAPIRoutes(app) {
       session.stats.last_failed_time = Date.now();
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number, message: maskData(message) }, 'Send message failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send message' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send message'
+      });
     }
   });
 
@@ -239,7 +242,10 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send image failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send image' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send image'
+      });
     }
   });
 
@@ -311,7 +317,10 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send poll failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send poll' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send poll'
+      });
     }
   });
 
@@ -347,7 +356,10 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send location failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send location' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send location'
+      });
     }
   });
 
@@ -410,7 +422,10 @@ export function registerAPIRoutes(app) {
     } catch (e) {
       session.stats.failed += 1;
       logger.error({ error: e.message, number }, 'Send buttons failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send buttons' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send buttons'
+      });
     }
   });
 
@@ -439,7 +454,10 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Send document failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send document' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send document'
+      });
     }
   });
 
@@ -463,7 +481,10 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Send video failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send video' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send video'
+      });
     }
   });
 
@@ -486,7 +507,10 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent' });
     } catch (e) {
       session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      const isRateLimit = e.toString().includes('rate-overlimit') || e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : e.toString()
+      });
     }
   });
 
