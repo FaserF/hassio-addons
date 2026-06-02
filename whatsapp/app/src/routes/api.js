@@ -213,7 +213,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number, message: maskData(message) }, 'Send message failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send message'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send message',
       });
     }
   });
@@ -244,7 +246,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send image failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send image'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send image',
       });
     }
   });
@@ -257,21 +261,24 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      
+
       let cleanOptions = [];
       if (options) {
         if (Array.isArray(options)) {
-          cleanOptions = options.map(o => String(o));
+          cleanOptions = options.map((o) => String(o));
         } else if (typeof options === 'string') {
           try {
             const parsed = JSON.parse(options);
             if (Array.isArray(parsed)) {
-              cleanOptions = parsed.map(o => String(o));
+              cleanOptions = parsed.map((o) => String(o));
             } else {
               cleanOptions = [String(parsed)];
             }
           } catch (e) {
-            cleanOptions = options.split(',').map(o => o.trim()).filter(Boolean);
+            cleanOptions = options
+              .split(',')
+              .map((o) => o.trim())
+              .filter(Boolean);
           }
         }
       }
@@ -319,7 +326,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send poll failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send poll'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send poll',
       });
     }
   });
@@ -358,7 +367,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send location failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send location'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send location',
       });
     }
   });
@@ -424,7 +435,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send buttons failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send buttons'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send buttons',
       });
     }
   });
@@ -456,7 +469,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send document failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send document'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send document',
       });
     }
   });
@@ -483,7 +498,9 @@ export function registerAPIRoutes(app) {
       logger.error({ error: e.message, number }, 'Send video failed');
       const isRateLimit = e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : 'Internal Server Error: Failed to send video'
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send video',
       });
     }
   });
@@ -507,9 +524,10 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent' });
     } catch (e) {
       session.stats.failed += 1;
-      const isRateLimit = e.toString().includes('rate-overlimit') || e.message?.includes('rate-overlimit');
+      const isRateLimit =
+        e.toString().includes('rate-overlimit') || e.message?.includes('rate-overlimit');
       res.status(isRateLimit ? 429 : 500).json({
-        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : e.toString()
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : e.toString(),
       });
     }
   });

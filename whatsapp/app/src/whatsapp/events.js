@@ -51,29 +51,28 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
     const meJid = session.sock.user.id.split(':')[0] + '@s.whatsapp.net';
     const pollCreatorJid = originalPoll.key.fromMe
       ? meJid
-      : (originalPoll.key.participant || originalPoll.key.remoteJid);
+      : originalPoll.key.participant || originalPoll.key.remoteJid;
     const voterJid = pollUpdate.key.fromMe
       ? meJid
-      : (pollUpdate.key.participant || pollUpdate.key.remoteJid);
+      : pollUpdate.key.participant || pollUpdate.key.remoteJid;
 
     // Normalize JIDs to avoid device suffixes and LID issues
     const cleanPollCreatorJid = pollCreatorJid.split(':')[0].split('@')[0] + '@s.whatsapp.net';
     const cleanVoterJid = voterJid.split(':')[0].split('@')[0] + '@s.whatsapp.net';
 
-    const pollEncKey = originalPoll.messageContextInfo?.messageSecret || originalPoll.message?.messageContextInfo?.messageSecret;
+    const pollEncKey =
+      originalPoll.messageContextInfo?.messageSecret ||
+      originalPoll.message?.messageContextInfo?.messageSecret;
     if (!pollEncKey) {
       throw new Error('Missing messageSecret for decryption');
     }
 
-    const decryptedVote = decryptPollVote(
-      update.vote,
-      {
-        pollEncKey,
-        pollCreatorJid: cleanPollCreatorJid,
-        pollMsgId: originalPoll.key.id,
-        voterJid: cleanVoterJid,
-      }
-    );
+    const decryptedVote = decryptPollVote(update.vote, {
+      pollEncKey,
+      pollCreatorJid: cleanPollCreatorJid,
+      pollMsgId: originalPoll.key.id,
+      voterJid: cleanVoterJid,
+    });
 
     const decryptedUpdate = {
       pollUpdateMessageKey: pollUpdate.key,

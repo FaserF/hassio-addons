@@ -3,6 +3,7 @@
 ## 1.5.5 (2026-05-15)
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency uvicorn to v0.47.0 [skip-tests] (#805) [skip-tests] ([`d3067835`](https://github.com/FaserF/hassio-addons/commit/d3067835ce0d1b07f46d0a023464646de61fbc31))
 - ⬆️ Update dependency express-rate-limit to v8.5.2 [skip-tests] ([`a445fdcb`](https://github.com/FaserF/hassio-addons/commit/a445fdcbf40b5e164e05974b856d9308693ae86d))
 - ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc11 [skip-tests] (#802) [skip-tests] ([`7ac5ecbb`](https://github.com/FaserF/hassio-addons/commit/7ac5ecbb8469d3275faede246a02b6738552b34e))
@@ -14,7 +15,6 @@
 - build(deps): bump link-preview-js from 3.2.0 to 4.0.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#789) [skip-tests] ([`2ec5f305`](https://github.com/FaserF/hassio-addons/commit/2ec5f305dd1753782dce6353e67b846666e177fe))
 - ⬆️ Update dependency express-rate-limit to v8.5.0 [skip-tests] (#787) [skip-tests] ([`b9c5aabb`](https://github.com/FaserF/hassio-addons/commit/b9c5aabbd6c745f242a17788cf6f10df63c24ccf))
 - ⬆️ Update dependency lru-cache to v11.3.6 [skip-tests] (#786) [skip-tests] ([`b16af1bf`](https://github.com/FaserF/hassio-addons/commit/b16af1bfd2d1be6620d94bd57641acd3d0add220))
-
 
 ## 1.5.4 (2026-05-04)
 
