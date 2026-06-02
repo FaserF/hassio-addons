@@ -100,15 +100,12 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
     for (const creator of creatorCandidates) {
       for (const voter of voterCandidates) {
         try {
-          decryptedVote = decryptPollVote(
-            update.vote,
-            {
-              pollEncKey,
-              pollCreatorJid: creator,
-              pollMsgId: originalPoll.key.id,
-              voterJid: voter,
-            }
-          );
+          decryptedVote = decryptPollVote(update.vote, {
+            pollEncKey,
+            pollCreatorJid: creator,
+            pollMsgId: originalPoll.key.id,
+            voterJid: voter,
+          });
           if (decryptedVote) {
             logger.debug(
               { creator, voter, sessionId: session.id },
