@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.5.6 (2026-06-02)
+
+### 📦 Dependencies
+- improved poll_update encryption FaserF/ha-whatsapp#46 ([`08413421`](https://github.com/FaserF/hassio-addons/commit/084134217a3d93d39b04e770394a89e05ef686b0))
+- ⬆️ Update dependency eslint to v10.4.1 [skip-tests] (#823) [skip-tests] ([`5e07d445`](https://github.com/FaserF/hassio-addons/commit/5e07d445a6723d1de09ecae26e4b995f2f45d0af))
+- ⬆️ Update dependency uvicorn to v0.48.0 [skip-tests] (#822) [skip-tests] ([`7a74ac15`](https://github.com/FaserF/hassio-addons/commit/7a74ac15b8e408e442283aeb07a2f1296e681646))
+- ⬆️ Update dependency lru-cache to v11.5.1 [skip-tests] (#820) [skip-tests] ([`55aee81c`](https://github.com/FaserF/hassio-addons/commit/55aee81c4c5f34278b2a69c860481d70d62bcddc))
+- ⬆️ Update dependency fastapi to v0.136.3 [skip-tests] (#818) [skip-tests] ([`4f1f9868`](https://github.com/FaserF/hassio-addons/commit/4f1f98682d72bedfe309be613d19b49452cd6b4a))
+- ⬆️ Update dependency bonjour-service to v1.4.0 [skip-tests] (#817) [skip-tests] ([`b1ead44b`](https://github.com/FaserF/hassio-addons/commit/b1ead44bd85fbae288501ae0bdf95a88b7d27a23))
+- build(deps): bump qs from 6.15.0 to 6.15.2 in /whatsapp/app in the npm_and_yarn group across 1 directory (#815) [skip-tests] ([`5e51291a`](https://github.com/FaserF/hassio-addons/commit/5e51291a3018bf86fb050ebdb2b24bf5dc498b2d))
+- ⬆️ Update dependency lru-cache to v11.5.0 [skip-tests] (#813) [skip-tests] ([`600df2b9`](https://github.com/FaserF/hassio-addons/commit/600df2b9dcfe2e840d742d3e5d0f18c1d00f1878))
+- ⬆️ Update dependency playwright to v1.60.0 [skip-tests] (#814) [skip-tests] ([`6b106d6d`](https://github.com/FaserF/hassio-addons/commit/6b106d6d540e97784d733b73e39aeb99fdafde99))
+- build(deps): bump ws from 8.18.3 to 8.20.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#811) [skip-tests] ([`be3c388a`](https://github.com/FaserF/hassio-addons/commit/be3c388a0825d8ea7cd1a90437561bbf3a44a188))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc13 [skip-tests] (#809) [skip-tests] ([`69d96942`](https://github.com/FaserF/hassio-addons/commit/69d9694232dace21003b81a5bb72389ff1a7baba))
+- ⬆️ Update dependency eslint to v10.4.0 [skip-tests] (#806) [skip-tests] ([`af45d99a`](https://github.com/FaserF/hassio-addons/commit/af45d99a0792647f5ded7212c4e444e99eb197cd))
+
+### 🚀 Other
+- improved poll reaction #678 ([`052d00ed`](https://github.com/FaserF/hassio-addons/commit/052d00ed9fcfb847568a6fccfb73d7bdc3ed1159))
+- fix rate-overlimit after reconnect FaserF/ha-whatsapp#47 ([`e8717485`](https://github.com/FaserF/hassio-addons/commit/e87174850c95c11732c61c31826aab1e6c328ce0))
+- fix send_poll service saved to store FaserF/ha-whatsapp#45 ([`591ff60f`](https://github.com/FaserF/hassio-addons/commit/591ff60fa77a58871fc0e8427babb64d3b0f7624))
+
+
 ## 1.5.5 (2026-05-15)
 
 ### 📦 Dependencies
