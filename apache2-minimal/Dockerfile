@@ -29,6 +29,8 @@ RUN mkdir /run/apache2 \
     && addgroup -S www-data || true \
     && adduser -S -G www-data www-data || true \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+    && sed -i 's/User apache/User www-data/' /etc/apache2/httpd.conf \
+    && sed -i 's/Group apache/Group www-data/' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf
 
 # Copy data for add-on
