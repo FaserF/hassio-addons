@@ -58,7 +58,7 @@ function getJidCandidates(jid, altJid) {
 /**
  * Resolves encrypted poll votes to human-readable option names.
  */
-function resolvePollVotes(pollUpdate, originalPoll, session) {
+async function resolvePollVotes(pollUpdate, originalPoll, session) {
   const update = pollUpdate.message?.pollUpdateMessage;
   if (!update) return { vote: [], error: 'Missing pollUpdateMessage' };
 
@@ -100,7 +100,7 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
     for (const creator of creatorCandidates) {
       for (const voter of voterCandidates) {
         try {
-          decryptedVote = decryptPollVote(update.vote, {
+          decryptedVote = await decryptPollVote(update.vote, {
             pollEncKey,
             pollCreatorJid: creator,
             pollMsgId: originalPoll.key.id,
@@ -349,7 +349,7 @@ export function handleIncomingMessages(session) {
           const pollUpdateMsg = msg.message.pollUpdateMessage;
           const pollCreationId = pollUpdateMsg?.pollCreationMessageKey?.id;
           const originalPoll = pollCreationId ? session.messageStore.get(pollCreationId) : null;
-          const pollResult = resolvePollVotes(msg, originalPoll, session);
+          const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
           if (pollResult.error) {
             text = `[Poll Vote] (${pollResult.error})`;

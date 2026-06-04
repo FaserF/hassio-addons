@@ -48,6 +48,34 @@ Once the App and integration are configured, check out the following resources t
 - [Rocket.Chat Integration](https://faserf.github.io/ha-whatsapp/rocketchat.html)
 - [API Reference](https://faserf.github.io/ha-whatsapp/SERVICES.html)
 
+### Reacting to Polls (Poll Updates)
+
+When a user votes on a poll, a `whatsapp_message_received` event of type `poll_update` is fired.
+
+Here is a working Home Assistant automation example to react to poll votes:
+
+```yaml
+alias: Pizza Poll Handler
+trigger:
+  - platform: event
+    event_type: whatsapp_message_received
+    event_data:
+      type: poll_update
+condition:
+  - condition: template
+    value_template: "{{ 'Pizza' in trigger.event.data.vote }}"
+action:
+  - action: whatsapp.send_message
+    data:
+      target: "{{ trigger.event.data.from }}"
+      message: "Great choice! 🍕"
+```
+
+> [!IMPORTANT]
+> - **Filter by type**: Use the `type: 'poll_update'` trigger filter to match poll votes.
+> - **Vote List**: `trigger.event.data.vote` is a **list** of selected option names.
+> - **Decryption requirement**: Poll vote decryption only works if the addon has the original poll in its store (either the bot sent the poll, or the poll was received while the bot was online).
+
 ## ⚙️ Configuration
 
 Configure the app via the **Configuration** tab in the Home Assistant app page.
