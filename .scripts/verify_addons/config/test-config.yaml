@@ -12,7 +12,7 @@ latestDebian: "9.1.0"
 latestPython: "3.13-alpine3.21"
 
 # renovate: datasource=node-version depName=node
-latestNode: "24.12.0"
+latestNode: "24.16.0"
 
 # renovate: datasource=docker depName=ghcr.io/home-assistant/amd64-builder
 builderImage: "ghcr.io/home-assistant/amd64-builder:2025.11.0"

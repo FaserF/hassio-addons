@@ -44,7 +44,7 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
 
 // --- Configuration ---
 export const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
-export const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '60000', 10);
+export const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
 export const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 export const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 export const GROUP_FETCH_INTERVAL = parseInt(process.env.GROUP_FETCH_INTERVAL || '300000', 10);
