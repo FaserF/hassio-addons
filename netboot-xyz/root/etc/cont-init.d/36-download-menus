@@ -7,8 +7,11 @@ mkdir -p \
   /config/menus/remote \
   /config/menus/local
 
-# Get latest menu version from GitHub
-if [[ -z ${MENU_VERSION+x} ]]; then
+# Get latest menu version from GitHub or configuration
+MENU_VERSION_CONFIG=$(bashio::config 'menu_version' || echo "")
+if [[ -n "$MENU_VERSION_CONFIG" && "$MENU_VERSION_CONFIG" != "latest" ]]; then
+  MENU_VERSION="$MENU_VERSION_CONFIG"
+elif [[ -z ${MENU_VERSION+x} ]]; then
   MENU_VERSION=$(curl -sL "https://api.github.com/repos/netbootxyz/netboot.xyz/releases/latest" | jq -r '.tag_name' || echo "")
 fi
 
