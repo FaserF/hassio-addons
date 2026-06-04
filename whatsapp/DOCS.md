@@ -67,11 +67,12 @@ condition:
 action:
   - action: whatsapp.send_message
     data:
-      target: "{{ trigger.event.data.from }}"
-      message: "Great choice! 🍕"
+      target: '{{ trigger.event.data.from }}'
+      message: 'Great choice! 🍕'
 ```
 
 > [!IMPORTANT]
+>
 > - **Filter by type**: Use the `type: 'poll_update'` trigger filter to match poll votes.
 > - **Vote List**: `trigger.event.data.vote` is a **list** of selected option names.
 > - **Decryption requirement**: Poll vote decryption only works if the addon has the original poll in its store (either the bot sent the poll, or the poll was received while the bot was online).
