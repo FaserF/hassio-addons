@@ -3,8 +3,8 @@
 ## 2.3.4 (2026-06-04)
 
 ### 📦 Dependencies
-- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.11 [skip-tests] ([`ef2d7854`](https://github.com/FaserF/hassio-addons/commit/ef2d785446b4906db28cac6d1441bbfc2afdbbc7))
 
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.11 [skip-tests] ([`ef2d7854`](https://github.com/FaserF/hassio-addons/commit/ef2d785446b4906db28cac6d1441bbfc2afdbbc7))
 
 ## 2.3.3 (2026-05-21)
 

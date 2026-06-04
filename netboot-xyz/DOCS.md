@@ -22,7 +22,6 @@ menu_version: latest
 - `path_config` (Required): The storage path for configurations/menus.
 - `menu_version` (Optional): The version tag of the netboot.xyz menus and bootloader to use (e.g. `2.0.84` or `latest`). Set this to an older version if you experience keyboard lockup bugs with the latest upstream iPXE release.
 
-
 ### Network Ports
 
 | Port | Protocol | Required | Description                                                                  |

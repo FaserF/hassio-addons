@@ -3,12 +3,13 @@
 ## 3.3.3 (2026-06-04)
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
 
 ### 🚀 Other
+
 - fixed permissions needed for wordpress #808 ([`8c8ac443`](https://github.com/FaserF/hassio-addons/commit/8c8ac4434e60140d5244fb665b19cc69138786f7))
 - fix addon integration webserver access ([`6b15dd81`](https://github.com/FaserF/hassio-addons/commit/6b15dd81d4ea1328e1bdbc3a6b8a0b99cd666948))
-
 
 ## 3.3.2 (2026-05-06)
 

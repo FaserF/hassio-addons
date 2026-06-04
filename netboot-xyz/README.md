@@ -31,16 +31,10 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ```yaml
 dhcp_range: 192.168.1.200
 log_level: info
+menu_version: latest
 path: /media/netboot/image
 path_config: /media/netboot/config
-menu_version: latest
 ```
-
-- `dhcp_range` (Required): The DHCP range/proxy IP settings.
-- `log_level` (Optional): The log level of the addon (e.g. `info`, `debug`, `trace`).
-- `path` (Required): The storage path for netboot local assets.
-- `path_config` (Required): The storage path for configurations/menus.
-- `menu_version` (Optional): The version tag of the netboot.xyz menus and bootloader to use (e.g. `2.0.84` or `latest`). Set this to an older version if you experience keyboard lockup bugs with the latest upstream iPXE release.
 
 ---
 
