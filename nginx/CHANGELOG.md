@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.2 (2026-06-04)
+
+### 📦 Dependencies
+- bump and fix nginx version ([`ee902bd6`](https://github.com/FaserF/hassio-addons/commit/ee902bd686bd22fcb150bf8d22ed9939439c6e0c))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- update dependencies ([`820d570f`](https://github.com/FaserF/hassio-addons/commit/820d570f49f651f19e4ba7b3fdf0e1d4030ed35e))
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+- fixed permissions needed for wordpress #808 ([`8c8ac443`](https://github.com/FaserF/hassio-addons/commit/8c8ac4434e60140d5244fb665b19cc69138786f7))
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`86bfc25f`](https://github.com/FaserF/hassio-addons/commit/86bfc25fa7528eba34bf57b1eb9a40fb62dba0a5))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+- fix docker build in newer alpine version ([`5b16a957`](https://github.com/FaserF/hassio-addons/commit/5b16a9578186b7e8db6093a2bb0d8732a84ee409))
+- fix docker build in newer alpine version ([`eda4f94b`](https://github.com/FaserF/hassio-addons/commit/eda4f94b008875be19eb4708ce0969f42f9a1050))
+
+
 ## 0.3.1 (2026-04-09)
 
 ### ✨ Features
