@@ -277,10 +277,10 @@
         "/nginx/Dockerfile$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
+        "# renovate: datasource=repology depName=alpine_edge/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
       ],
       "datasourceTemplate": "repology",
-      "depNameTemplate": "alpine_3_21/nginx",
+      "depNameTemplate": "alpine_edge/nginx",
       "versioningTemplate": "loose"
     },
     {
@@ -512,7 +512,7 @@
     {
       "description": "NGINX - auto-update Alpine package version and bump addon version",
       "matchDepNames": [
-        "alpine_3_21/nginx"
+        "alpine_edge/nginx"
       ],
       "matchFileNames": [
         "nginx/Dockerfile"
