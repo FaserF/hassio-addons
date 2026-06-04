@@ -21,12 +21,12 @@ RUN \
 
 # Download wings binary with multi-arch support
 # Pin to specific version for reproducible builds
-ARG WINGS_VERSION=v1.12.1
+ARG WINGS_VERSION=v1.12.3
 ENV WINGS_VERSION=${WINGS_VERSION}
 ARG TARGETARCH
-# SHA256 checksums for version v1.12.1 (from official release)
-ARG WINGS_SHA256_AMD64=1c572d4dd49b56749aca439d6d57034aed983bdda8cf222ebdb24d239c199dc9
-ARG WINGS_SHA256_ARM64=d4cb31482be751a5242f1107feab6c6c4b1fff9626945c574f481f0c37625d80
+# SHA256 checksums for version v1.12.3 (from official release)
+ARG WINGS_SHA256_AMD64=c0e98c755e5ea52657f851afef26061e75a5ea7ea67e4bb63e58d6fccde59f24
+ARG WINGS_SHA256_ARM64=08e18ecb8d0dc3e72c79b38d97bb846518699865df73ecd45b719061da491d6c
 # hadolint ignore=DL4006,SC3040,SC2039
 RUN set -o pipefail && \
     if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \
