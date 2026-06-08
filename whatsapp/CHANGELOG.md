@@ -3,14 +3,16 @@
 ## 1.5.7 (2026-06-04)
 
 ### 🐛 Bug Fixes
+
 - await decryptPollVote for correct poll vote decryption #678 ([`29323fe5`](https://github.com/FaserF/hassio-addons/commit/29323fe587de65fc8a16ad9431b98edbdf16de7b))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency uvicorn to v0.49.0 [skip-tests] ([`d7351179`](https://github.com/FaserF/hassio-addons/commit/d735117997d0bba66e96582a0b9ee93ddd2c44f4))
 
 ### 🚀 Other
-- Improved session stability #824 ([`6c9cc8a8`](https://github.com/FaserF/hassio-addons/commit/6c9cc8a8b372e91120fd1c083f29c0b0a623a54e))
 
+- Improved session stability #824 ([`6c9cc8a8`](https://github.com/FaserF/hassio-addons/commit/6c9cc8a8b372e91120fd1c083f29c0b0a623a54e))
 
 ## 1.5.6 (2026-06-02)
 
