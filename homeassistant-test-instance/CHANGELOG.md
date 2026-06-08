@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.9 (2026-06-08)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.6.1](https://github.com/home-assistant/core/releases/tag/2026.6.1) [skip-tests] ([`6f102316`](https://github.com/FaserF/hassio-addons/commit/6f102316be565cfefe15264f7b12ef4eb570e106))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.6.0](https://github.com/home-assistant/core/releases/tag/2026.6.0) [skip-tests] (#827) [skip-tests] ([`a427f92b`](https://github.com/FaserF/hassio-addons/commit/a427f92bb815da4fbb55a197297bc6212bfcbac3))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.5.4](https://github.com/home-assistant/core/releases/tag/2026.5.4) [skip-tests] ([`d9b088cc`](https://github.com/FaserF/hassio-addons/commit/d9b088cc02158ea95bf1e8ab681fcc2e0e33143f))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.5.2](https://github.com/home-assistant/core/releases/tag/2026.5.2) [skip-tests] (#807) [skip-tests] ([`a9147aca`](https://github.com/FaserF/hassio-addons/commit/a9147aca58c6318af0a6ab68fce5426de510e7de))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.5.1](https://github.com/home-assistant/core/releases/tag/2026.5.1) [skip-tests] (#799) [skip-tests] ([`177ce771`](https://github.com/FaserF/hassio-addons/commit/177ce7716f8e768fb3a552a616b8d21339ca3d12))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+
+
 ## 0.2.8 (2026-05-07)
 
 ### 📦 Dependencies
