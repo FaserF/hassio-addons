@@ -32,6 +32,9 @@ RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || 
     echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \
     rm -f /wiki/config.sample.yml
 
+# Copy rootfs
+COPY rootfs /
+
 COPY run.sh /
 RUN chmod a+x /run.sh \
     && dos2unix /run.sh
