@@ -3,7 +3,7 @@ ARG TARGETARCH
 # hadolint ignore=DL3006
 
 # --- STAGE 1: CORE DNS BINARY ---
-FROM --platform=$BUILDPLATFORM alpine:3.23 AS binary
+FROM --platform=$BUILDPLATFORM alpine:3.24 AS binary
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=coredns/coredns
 ARG COREDNS_VERSION="1.14.3"
