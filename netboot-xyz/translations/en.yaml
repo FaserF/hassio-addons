@@ -11,3 +11,6 @@ configuration:
   log_level:
     name: "Log Level"
     description: "Controls the verbosity of the app logs."
+  menu_version:
+    name: "Menu Version"
+    description: "Version of the netboot.xyz menus to use (e.g. latest or a specific tag)."

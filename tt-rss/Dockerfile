@@ -27,7 +27,6 @@ RUN \
         php85-gd \
         php85-iconv \
         php85-intl \
-        php85-json \
         php85-mbstring \
         php85-mysqlnd \
         php85-openssl \

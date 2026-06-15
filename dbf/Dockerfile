@@ -46,6 +46,7 @@ RUN \
         libxml2-dev \
         zlib-dev \
         db-dev \
+        brotli-dev \
     && apk add --no-cache \
         perl \
         perl-app-cpanminus \
@@ -62,6 +63,7 @@ RUN \
         perl-dbd-sqlite \
         perl-datetime \
         perl-libwww \
+        brotli-libs \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
