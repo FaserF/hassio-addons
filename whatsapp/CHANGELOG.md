@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.9 (2026-06-15)
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.137.1 [skip-tests] (#841) ([`637a8837`](https://github.com/FaserF/hassio-addons/commit/637a88370bcc9f4db38961b3befb2502d3fdda35))
+
+
 ## 1.5.8 (2026-06-15)
 
 ### 📦 Dependencies
