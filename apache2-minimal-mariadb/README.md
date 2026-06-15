@@ -28,7 +28,7 @@ This version of the Apache web server strikes a balance between performance and 
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant. 
+This addon supports the **Webserver App** integration for Home Assistant.
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).

@@ -3,11 +3,13 @@
 ## 3.4.3 (2026-06-08)
 
 ### 🐛 Bug Fixes
+
 - make addon_config directory writeable (rw) ([`d37a215e`](https://github.com/FaserF/hassio-addons/commit/d37a215e63101464263597a55a3ea73c52ac7ec9))
 - optimize and resize icon and logo images ([`57a6756a`](https://github.com/FaserF/hassio-addons/commit/57a6756a1e2b9481208a89388ee78ec99998247c))
 - Wiki.JS addon crash on startup #831 ([`bb72f4d2`](https://github.com/FaserF/hassio-addons/commit/bb72f4d2c9569f9a15fcc0edb700becc0223398f))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
 - ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[2.5.314](https://github.com/requarks/wiki/releases/tag/2.5.314) [skip-tests] (#779) [skip-tests] ([`b96bec24`](https://github.com/FaserF/hassio-addons/commit/b96bec24a9c10e757e8a724d20970b8f315bbf2b))
 - ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[2.5.313](https://github.com/requarks/wiki/releases/tag/2.5.313) [skip-tests] (#777) [skip-tests] ([`0c0f6bfe`](https://github.com/FaserF/hassio-addons/commit/0c0f6bfefb4a9128e8b31d9cd44c8ae790c21d36))
@@ -16,11 +18,11 @@
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
 
 ### 🚀 Other
+
 - fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
 - fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
 - fix docker build in newer alpine version ([`eda4f94b`](https://github.com/FaserF/hassio-addons/commit/eda4f94b008875be19eb4708ce0969f42f9a1050))
 - Remove aarch64 support due wiki.js limits ([`3975b99b`](https://github.com/FaserF/hassio-addons/commit/3975b99bc7e08d623847981c1e4c55fee13c2780))
-
 
 ## 3.4.2 (2026-04-09)
 
