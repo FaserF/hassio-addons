@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.8 (2026-06-15)
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.137.0 [skip-tests] (#839) [skip-tests] ([`62b9d2a8`](https://github.com/FaserF/hassio-addons/commit/62b9d2a8b805e0b03b70997644869f8c8e8025bb))
+- ⬆️ Update eslint monorepo to v10.5.0 [skip-tests] ([`1dbd9a76`](https://github.com/FaserF/hassio-addons/commit/1dbd9a7623c43fe9d6b8b986d01b733d0dbd7b9a))
+- ⬆️ Update dependency bonjour-service to v1.4.1 [skip-tests] (#833) [skip-tests] ([`3368976d`](https://github.com/FaserF/hassio-addons/commit/3368976ddfe127e5df94c236616afd1907d029fc))
+
+
 ## 1.5.7 (2026-06-04)
 
 ### 🐛 Bug Fixes
