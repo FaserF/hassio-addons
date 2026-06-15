@@ -77,15 +77,24 @@ async function resolvePollVotes(pollUpdate, originalPoll, session) {
 
   try {
     const meJid = normalizeJid(session.sock?.user?.id);
-    const pollCreatorJid = originalPoll.key.fromMe
-      ? meJid
-      : originalPoll.key.participant || originalPoll.key.remoteJid;
-    const voterJid = pollUpdate.key.fromMe
-      ? meJid
-      : pollUpdate.key.participant || pollUpdate.key.remoteJid;
+    const meLid = normalizeJid(session.sock?.user?.lid);
+    const meCandidates = new Set();
+    if (meJid) meCandidates.add(meJid);
+    if (meLid) meCandidates.add(meLid);
+    const meCandidatesArr = Array.from(meCandidates);
 
-    const creatorCandidates = getJidCandidates(pollCreatorJid, originalPoll.key.remoteJidAlt);
-    const voterCandidates = getJidCandidates(voterJid, pollUpdate.key.remoteJidAlt);
+    const creatorCandidates = originalPoll.key.fromMe
+      ? meCandidatesArr
+      : getJidCandidates(
+          originalPoll.key.participant || originalPoll.key.remoteJid,
+          originalPoll.key.remoteJidAlt
+        );
+    const voterCandidates = pollUpdate.key.fromMe
+      ? meCandidatesArr
+      : getJidCandidates(
+          pollUpdate.key.participant || pollUpdate.key.remoteJid,
+          pollUpdate.key.remoteJidAlt
+        );
 
     const pollEncKey =
       originalPoll.messageContextInfo?.messageSecret ||
