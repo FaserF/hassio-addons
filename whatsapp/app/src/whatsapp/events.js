@@ -32,11 +32,9 @@ const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
  */
 function normalizeJid(jid) {
   if (!jid) return '';
-  const clean = jid.split(':')[0]; // Remove device suffix (e.g. :1)
-  if (clean.includes('@')) {
-    return clean;
-  }
-  return clean + '@s.whatsapp.net';
+  const [userAndDevice, server] = jid.split('@');
+  const user = userAndDevice.split(':')[0];
+  return server ? `${user}@${server}` : `${user}@s.whatsapp.net`;
 }
 
 /**
