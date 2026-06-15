@@ -478,7 +478,7 @@ export function registerAPIRoutes(app) {
 
   app.post('/send_video', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
-    const { number, url, caption, quotedMessageId, expiration } = req.body;
+    const { number, url, caption, quotedMessageId, expiration, seconds } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
@@ -486,7 +486,13 @@ export function registerAPIRoutes(app) {
       const sentMsg = await enqueue(session, () =>
         session.sock.sendMessage(
           jid,
-          { video: { url: url }, caption: caption },
+          {
+            video: {
+              url: url,
+              ...(seconds ? { seconds: Number(seconds) } : {}),
+            },
+            caption: caption,
+          },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
@@ -507,7 +513,7 @@ export function registerAPIRoutes(app) {
 
   app.post('/send_audio', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
-    const { number, url, ptt, quotedMessageId, expiration } = req.body;
+    const { number, url, ptt, quotedMessageId, expiration, seconds } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
@@ -515,7 +521,14 @@ export function registerAPIRoutes(app) {
       await enqueue(session, () =>
         session.sock.sendMessage(
           jid,
-          { audio: { url: url }, ptt: !!ptt, mimetype: 'audio/mp4' },
+          {
+            audio: {
+              url: url,
+              ...(seconds ? { seconds: Number(seconds) } : {}),
+            },
+            ptt: !!ptt,
+            mimetype: 'audio/mp4',
+          },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
