@@ -728,6 +728,8 @@ jobs:
           context: ./${{ matrix.App }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           version: test
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -1157,6 +1159,7 @@ jobs:
           version: ${{ env.VERSION }}
           build-args: |
              BUILD_FROM=${{ env.BUILD_FROM_AMD64 }}
+             GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
 
       - name: 🏗️ Build aarch64
         if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
@@ -1176,6 +1179,7 @@ jobs:
           version: ${{ env.VERSION }}
           build-args: |
              BUILD_FROM=${{ env.BUILD_FROM_AARCH64 }}
+             GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
 
       - name: 📢 Release Summary
         run: |

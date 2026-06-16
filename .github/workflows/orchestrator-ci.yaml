@@ -445,6 +445,7 @@ jobs:
           version: ${{ steps.prep.outputs.version }}
           build-args: |
             BUILD_FROM=${{ steps.prep.outputs.build_from }}
+            GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
 
       - name: ✅ Build Success
         run: echo "✅ amd64 build successful"

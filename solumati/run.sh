@@ -170,6 +170,19 @@ set -e
 
 # Get App Version
 
+# Check if Solumati build was skipped because the repo is private
+if [ -f /solumati_skipped ]; then
+    bashio::log.warning "=================================================="
+    bashio::log.warning "   ⚠️  SOLUMATI BUILD SKIPPED  ⚠️"
+    bashio::log.warning "=================================================="
+    bashio::log.warning "This addon is a placeholder because the repository"
+    bashio::log.warning "is private and was built without GITHUB_TOKEN."
+    bashio::log.warning "Please rebuild with a valid GITHUB_TOKEN."
+    bashio::log.warning "=================================================="
+    bashio::log.info "Exiting peacefully..."
+    exit 0
+fi
+
 # --- CONFIGURATION ---
 DATA_DIR="/data/postgresql"
 IMAGES_DIR="/data/images"
