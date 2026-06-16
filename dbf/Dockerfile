@@ -66,6 +66,7 @@ RUN \
         perl-libwww \
         brotli-libs \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
+    && cpanm -n IO::Compress::Brotli@0.017 \
     && cpanm -n --no-man-pages --installdeps . \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \

@@ -1215,6 +1215,24 @@ jobs:
           MAX_WAIT_TIME=3600  # Maximum wait time: 1 hour
           ELAPSED=0
 
+          # Wait for jobs to populate first
+          echo "Waiting for release jobs to be registered by GitHub Actions..."
+          while true; do
+            JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "")
+            TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || true)
+            if [ "$TOTAL_COUNT" -gt 0 ]; then
+              echo "✅ Found $TOTAL_COUNT release jobs. Starting monitor loop."
+              break
+            fi
+            if [ $ELAPSED -ge 300 ]; then
+              echo "⚠️ Timeout waiting for release jobs to populate. Exiting monitor."
+              exit 0
+            fi
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          ELAPSED=0
           while [ $ELAPSED -lt $MAX_WAIT_TIME ]; do
             # Get all release jobs for this workflow run
             JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "[]")
