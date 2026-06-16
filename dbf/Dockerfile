@@ -67,6 +67,9 @@ RUN \
         perl-libwww \
         brotli-libs \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
+    && cpanm -n Alien::cmake3 \
+    && mkdir -p /usr/local/lib/perl5/site_perl/auto/share/dist/Alien-cmake3/bin \
+    && ln -sf /usr/bin/cmake /usr/local/lib/perl5/site_perl/auto/share/dist/Alien-cmake3/bin/cmake \
     && (cpanm -n IO::Compress::Brotli@0.017 || (cat /root/.cpanm/work/*/build.log && exit 1)) \
     && (cpanm -n --no-man-pages --installdeps . || (cat /root/.cpanm/work/*/build.log && exit 1)) \
     && rm -rf ~/.cpanm \
