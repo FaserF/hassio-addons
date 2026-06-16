@@ -476,11 +476,20 @@
       }
     },
     {
-      "description": "Pterodactyl Wings - automerge enabled",
+      "description": "Pterodactyl Wings - automerge enabled and update checksums",
       "matchDepNames": [
         "pterodactyl/wings"
       ],
-      "automerge": true
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "pterodactyl-wings/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
