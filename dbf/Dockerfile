@@ -38,8 +38,7 @@ RUN \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache --virtual .build-dependencies \
-        gcc \
-        make \
+        build-base \
         musl-dev \
         perl-dev \
         openssl-dev \

@@ -740,6 +740,7 @@ jobs:
       needs.detect.outputs.should_release == 'true' &&
       (needs.verify.result == 'success' || needs.verify.result == 'skipped' || github.event.inputs.skip_verification == 'true')
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.App == 'solumati' }}
     strategy:
       fail-fast: false
       # Use max-parallel: 5 to allow concurrent releases
@@ -1219,17 +1220,17 @@ jobs:
             JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --paginate --jq '.jobs[] | select(.name | startswith("🚀 Release"))' || echo "[]")
 
             # Count failed jobs
-            FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || echo "0")
+            FAILED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | .name' | grep -c . || true)
             FAILED_COUNT=$((FAILED_COUNT + 0)) # Ensure integer
 
             # Count successful skipped jobs
-            SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || echo "0")
+            SKIPPED_COUNT=$(echo "$JOBS" | jq -r 'select(.conclusion == "success" and (.name | contains("skipped") or contains("Skipped"))) | .name' | grep -c . || true)
             SKIPPED_COUNT=$((SKIPPED_COUNT + 0)) # Ensure integer
 
-            TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || echo "0")
+            TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || true)
             TOTAL_COUNT=$((TOTAL_COUNT + 0)) # Ensure integer
 
-            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || echo "0")
+            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || true)
             RUNNING_COUNT=$((RUNNING_COUNT + 0)) # Ensure integer
 
             echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful), $RUNNING_COUNT running, $TOTAL_COUNT total"
