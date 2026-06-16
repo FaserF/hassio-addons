@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 (2026-06-16)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.2.0 [skip-tests] (#798) [skip-tests] ([`929bdf0f`](https://github.com/FaserF/hassio-addons/commit/929bdf0f771e1039ea4bd29aa6ff08e45e4711a7))
+- ⬆️ Update dependency moghtech/komodo to v2.2.0 [skip-tests] (#797) [skip-tests] ([`1d88e3dc`](https://github.com/FaserF/hassio-addons/commit/1d88e3dc1ce116fcdf46c818f3e7a29ff14035d1))
+
+### 🚀 Other
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+
+
 ## 0.1.2 (2026-04-09)
 
 ### 🚀 Other
