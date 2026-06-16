@@ -47,6 +47,8 @@ RUN \
         zlib-dev \
         db-dev \
         brotli-dev \
+        cmake \
+        pkgconf \
     && apk add --no-cache \
         perl \
         perl-app-cpanminus \

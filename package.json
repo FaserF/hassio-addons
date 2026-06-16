@@ -1,5 +1,9 @@
 {
   "devDependencies": {
     "markdownlint-cli": "^0.48.0"
+  },
+  "overrides": {
+    "markdown-it": "^14.2.0",
+    "js-yaml": "^4.2.0"
   }
 }
