@@ -1248,7 +1248,7 @@ jobs:
             TOTAL_COUNT=$(echo "$JOBS" | jq -r '.name' | grep -c . || true)
             TOTAL_COUNT=$((TOTAL_COUNT + 0)) # Ensure integer
 
-            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .name' | grep -c . || true)
+            RUNNING_COUNT=$(echo "$JOBS" | jq -r 'select(.status != "completed") | .name' | grep -c . || true)
             RUNNING_COUNT=$((RUNNING_COUNT + 0)) # Ensure integer
 
             echo "[$(date +'%H:%M:%S')] Status: $FAILED_COUNT failed, $SKIPPED_COUNT skipped (successful), $RUNNING_COUNT running, $TOTAL_COUNT total"
@@ -1269,8 +1269,8 @@ jobs:
               echo "❌ Threshold reached: $FAILED_COUNT failures (threshold: $MAX_FAILURES)"
               echo "⚠️  WARNING: Too many Apps have failed. Cancelling remaining release jobs..."
 
-              # Get all release jobs that are still queued or in_progress
-              RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status == "queued" or .status == "in_progress") | .id')
+              # Get all release jobs that are not completed
+              RUNNING_JOBS=$(echo "$JOBS" | jq -r 'select(.status != "completed") | .id')
 
               if [ -z "$RUNNING_JOBS" ] || [ "$RUNNING_JOBS" = "" ]; then
                 echo "ℹ️  No remaining jobs to cancel"

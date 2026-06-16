@@ -52,6 +52,7 @@ RUN \
         perl \
         perl-app-cpanminus \
         perl-io-socket-ssl \
+        perl-lwp-protocol-https \
         perl-json-xs \
         perl-xml-libxml \
         libxml2 \
