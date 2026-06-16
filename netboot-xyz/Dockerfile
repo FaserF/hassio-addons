@@ -14,7 +14,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.3"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="Netboot.xyz"
 ENV APP_SLUG="netboot-xyz"
 ENV APP_UNSUPPORTED="false"
