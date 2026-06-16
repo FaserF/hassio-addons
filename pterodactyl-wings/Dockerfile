@@ -21,7 +21,7 @@ RUN \
 
 # Download wings binary with multi-arch support
 # Pin to specific version for reproducible builds
-ARG WINGS_VERSION=v1.12.3
+ARG WINGS_VERSION=v1.13.0
 ENV WINGS_VERSION=${WINGS_VERSION}
 ARG TARGETARCH
 # SHA256 checksums for version v1.12.3 (from official release)
