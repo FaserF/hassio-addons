@@ -73,16 +73,30 @@ def get_packages_via_graphql():
     """Alternative: Use GraphQL API to list packages (workaround for REST API 400 error)."""
 
     query = """
-    query($org: String!, $packageType: PackageType!, $first: Int!, $after: String) {
-      organization(login: $org) {
-        packages(first: $first, after: $after, packageType: $packageType) {
-          pageInfo {
-            hasNextPage
-            endCursor
+    query($owner: String!, $packageType: PackageType!, $first: Int!, $after: String) {
+      repositoryOwner(login: $owner) {
+        ... on Organization {
+          packages(first: $first, after: $after, packageType: $packageType) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              name
+              id
+            }
           }
-          nodes {
-            name
-            id
+        }
+        ... on User {
+          packages(first: $first, after: $after, packageType: $packageType) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              name
+              id
+            }
           }
         }
       }
@@ -97,7 +111,7 @@ def get_packages_via_graphql():
 
     while has_next_page:
         variables = {
-            "org": ORG_NAME,
+            "owner": ORG_NAME,
             "packageType": "DOCKER",
             "first": 100,
             "after": cursor,
@@ -121,16 +135,16 @@ def get_packages_via_graphql():
                 print(f"❌ GraphQL errors: {data['errors']}")
                 break
 
-            if "data" not in data or "organization" not in data["data"]:
+            if "data" not in data or "repositoryOwner" not in data["data"]:
                 print("❌ Unexpected GraphQL response structure")
                 break
 
-            org_data = data["data"]["organization"]
-            if org_data is None:
-                print(f"⚠️ Organization '{ORG_NAME}' not found or not accessible")
+            owner_data = data["data"]["repositoryOwner"]
+            if owner_data is None:
+                print(f"⚠️ Owner '{ORG_NAME}' not found or not accessible")
                 break
 
-            packages = org_data.get("packages", {})
+            packages = owner_data.get("packages", {})
             nodes = packages.get("nodes", [])
             page_info = packages.get("pageInfo", {})
 
@@ -250,7 +264,16 @@ def get_package_versions(package_name, package_type="container"):
         return []
 
     if res.status_code != 200:
-        # Try user
+        # Try users endpoint
+        url = f"https://api.github.com/users/{ORG_NAME}/packages/{package_type}/{package_name}/versions"
+        try:
+            res = requests.get(url, headers=HEADERS)
+        except requests.RequestException as e:
+            print(f"❌ API Request Failed: {e}")
+            return []
+
+    if res.status_code != 200:
+        # Try authenticated user
         url = f"https://api.github.com/user/packages/{package_type}/{package_name}/versions"
         try:
             res = requests.get(url, headers=HEADERS)
@@ -273,15 +296,21 @@ def delete_version(package_name, version_id, package_type="container"):
     res = requests.delete(url, headers=HEADERS, timeout=10)
     if res.status_code == 204:
         return True
-    else:
-        # Try user
-        url = f"https://api.github.com/user/packages/{package_type}/{package_name}/versions/{version_id}"
-        res = requests.delete(url, headers=HEADERS, timeout=10)
-        if res.status_code == 204:
-            return True
-        else:
-            print(f"❌ Failed to delete version {version_id} for {package_name}: {res.status_code} {res.text}")
-            return False
+
+    # Try specific user
+    url = f"https://api.github.com/users/{ORG_NAME}/packages/{package_type}/{package_name}/versions/{version_id}"
+    res = requests.delete(url, headers=HEADERS, timeout=10)
+    if res.status_code == 204:
+        return True
+
+    # Try authenticated user
+    url = f"https://api.github.com/user/packages/{package_type}/{package_name}/versions/{version_id}"
+    res = requests.delete(url, headers=HEADERS, timeout=10)
+    if res.status_code == 204:
+        return True
+
+    print(f"❌ Failed to delete version {version_id} for {package_name}: {res.status_code} {res.text}")
+    return False
 
 
 def is_invalid_package(name):

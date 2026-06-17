@@ -75,4 +75,81 @@ else
     # Ensure permissions are correct even if it exists
     chown -R postgres:postgres /data/er_dashboard/database
     chmod 700 /data/er_dashboard/database
+
+    # Version check & upgrade logic
+    if [ -f "/data/er_dashboard/database/PG_VERSION" ]; then
+        DB_VERSION=$(cat "/data/er_dashboard/database/PG_VERSION")
+        NEW_VERSION=$(postgres -V | awk '{print $NF}' | cut -d. -f1)
+
+        if [ "$DB_VERSION" -lt "$NEW_VERSION" ]; then
+            bashio::log.warning "Database version mismatch detected!"
+            bashio::log.warning "Current database version: $DB_VERSION"
+            bashio::log.warning "Target PostgreSQL version: $NEW_VERSION"
+            bashio::log.info "Attempting automatic database upgrade using pg_upgrade..."
+
+            OLD_BINDIR="/usr/libexec/postgresql${DB_VERSION}"
+            NEW_BINDIR="/usr/libexec/postgresql${NEW_VERSION}"
+
+            if [ ! -d "$NEW_BINDIR" ]; then
+                if [ -f "/usr/libexec/postgresql/pg_upgrade" ]; then
+                    NEW_BINDIR="/usr/libexec/postgresql"
+                else
+                    NEW_BINDIR="/usr/bin"
+                fi
+            fi
+
+            if [ ! -d "$OLD_BINDIR" ]; then
+                bashio::log.error "Old PostgreSQL binary directory $OLD_BINDIR not found! Cannot perform upgrade."
+                exit 1
+            fi
+
+            bashio::log.info "Using old bindir: $OLD_BINDIR"
+            bashio::log.info "Using new bindir: $NEW_BINDIR"
+
+            BACKUP_DIR="/data/er_dashboard/backups"
+            mkdir -p "$BACKUP_DIR"
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            bashio::log.info "Creating safety backup before upgrade..."
+            if tar -czf "$BACKUP_DIR/database_pre_upgrade_${TIMESTAMP}.tar.gz" -C /data/er_dashboard database 2>/dev/null; then
+                bashio::log.info "Backup created successfully."
+            else
+                bashio::log.warning "Backup creation failed. Proceeding anyway..."
+            fi
+
+            rm -rf /data/er_dashboard/database_new
+            mkdir -p /data/er_dashboard/database_new
+            chown -R postgres:postgres /data/er_dashboard/database_new
+            chmod 700 /data/er_dashboard/database_new
+
+            echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
+            chown postgres:postgres /tmp/pgpass
+
+            if ! su-exec postgres initdb -D /data/er_dashboard/database_new --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
+                bashio::log.error "initdb for upgrade failed!"
+                rm -f /tmp/pgpass
+                exit 1
+            fi
+            rm -f /tmp/pgpass
+
+            bashio::log.info "Running pg_upgrade..."
+            if (cd /tmp && su-exec postgres pg_upgrade \
+                -b "$OLD_BINDIR" \
+                -B "$NEW_BINDIR" \
+                -d /data/er_dashboard/database \
+                -D /data/er_dashboard/database_new); then
+
+                bashio::log.info "pg_upgrade completed successfully!"
+                rm -rf /data/er_dashboard/database
+                mv /data/er_dashboard/database_new /data/er_dashboard/database
+                bashio::log.info "✅ Database successfully upgraded to version $NEW_VERSION"
+            else
+                bashio::log.error "pg_upgrade failed! Check logs or output above."
+                rm -rf /data/er_dashboard/database_new
+                exit 1
+            fi
+        elif [ "$DB_VERSION" -gt "$NEW_VERSION" ]; then
+            bashio::log.error "Database version ($DB_VERSION) is newer than PostgreSQL server ($NEW_VERSION)!"
+            exit 1
+        fi
+    fi
 fi

@@ -35,6 +35,8 @@ RUN \
         curl \
         nginx \
         openssl \
+        postgresql17 \
+        postgresql17-contrib \
         postgresql \
         postgresql-contrib \
         postgresql-jit \
