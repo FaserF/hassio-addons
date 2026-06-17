@@ -22,7 +22,9 @@ jobs:
   autofix:
     if: >-
       !contains((github.event.head_commit.message || ''), 'style: auto-fix') &&
+      !contains((github.event.head_commit.message || ''), 'chore: update project_manifest') &&
       !contains((github.event.head_commit.message || ''), '[skip-tests]') &&
+      !contains((github.event.head_commit.message || ''), '[skip ci]') &&
       github.actor != 'git-auto-commit-action' &&
       github.actor != 'github-actions[bot]' &&
       github.actor != 'coderabbitai[bot]'
@@ -195,6 +197,18 @@ jobs:
         continue-on-error: true
         run: python3 .scripts/bump_script_version.py
 
+      # 9. Project Manifest & Connection Map
+      - name: 📋 Update Project Manifest
+        id: manifest
+        continue-on-error: true
+        run: |
+          python .scripts/generate_manifest.py
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # Build dynamic commit message
       - name: 📝 Build Commit Message
         id: commit_msg
@@ -208,10 +222,19 @@ jobs:
 
           tools=$(echo "$tools" | xargs | tr ' ' ', ')
 
-          if [[ -z "$tools" ]]; then
+          manifest_suffix=""
+          if [[ "${{ steps.manifest.outputs.changed }}" == "true" ]]; then
+            manifest_suffix="\nchore: update project_manifest.json and project_connections.json"
+          fi
+
+          if [[ -z "$tools" && -z "$manifest_suffix" ]]; then
             echo "message=style: auto-fix" >> "$GITHUB_OUTPUT"
+          elif [[ -z "$tools" ]]; then
+            echo "message=chore: update project_manifest.json and project_connections.json [skip ci]" >> "$GITHUB_OUTPUT"
+          elif [[ -z "$manifest_suffix" ]]; then
+            echo "message=style: auto-fix ($tools) [skip ci]" >> "$GITHUB_OUTPUT"
           else
-            echo "message=style: auto-fix ($tools)" >> "$GITHUB_OUTPUT"
+            echo "message=style: auto-fix ($tools) + update project manifests [skip ci]" >> "$GITHUB_OUTPUT"
           fi
 
       # Exclude workflow files from auto-commit (GitHub Apps require special permission to modify workflows)
