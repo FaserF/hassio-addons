@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-06-17T09:07:52.433886",
+  "timestamp": "2026-06-17T07:14:00.497606",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -43,7 +43,7 @@
       "has_rootfs": true,
       "has_translations": true,
       "has_www": true,
-      "has_admin": true,
+      "has_admin": false,
       "has_changelog": true
     },
     {
@@ -545,7 +545,6 @@
     ".": [
       "AGENTS.MD",
       "README.md",
-      "build_log.txt",
       "hacs.json",
       "info.md",
       "package.json",
@@ -562,86 +561,15 @@
       "nginx.conf",
       "run.sh"
     ],
-    "AegisBot/rootfs/usr/lib/bashio": [
-      "app.sh",
-      "banner.sh"
-    ],
     "AegisBot/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "apache2": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "index.html",
-      "run.sh"
-    ],
-    "apache2/rootfs/etc/cont-init.d": [
-      "apache2.sh"
-    ],
-    "apache2/rootfs/usr/bin": [
-      "webserver_app_integration.sh"
-    ],
-    "apache2/rootfs/usr/lib/bashio": [
+    "AegisBot/rootfs/usr/lib/bashio": [
+      "app.sh",
       "banner.sh"
     ],
-    "apache2/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "apache2-minimal": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "index.html"
-    ],
-    "apache2-minimal/rootfs": [
-      "run.sh"
-    ],
-    "apache2-minimal/rootfs/etc/cont-init.d": [
-      "apache2.sh"
-    ],
-    "apache2-minimal/rootfs/usr/bin": [
-      "webserver_app_integration.sh"
-    ],
-    "apache2-minimal/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "apache2-minimal/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "apache2-minimal-mariadb": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "index.html",
-      "run.sh"
-    ],
-    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": [
-      "apache2.sh"
-    ],
-    "apache2-minimal-mariadb/rootfs/usr/bin": [
-      "webserver_app_integration.sh"
-    ],
-    "apache2-minimal-mariadb/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "apache2-minimal-mariadb/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "bash_script_executer": [
+    "pterodactyl-wings": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -650,32 +578,47 @@
       "config.yaml",
       "run.sh"
     ],
-    "bash_script_executer/integration": [
-      "__init__.py",
-      "button.py",
-      "manifest.json"
-    ],
-    "bash_script_executer/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "bash_script_executer/translations": [
+    "pterodactyl-wings/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "bentopdf": [
+    "pterodactyl-wings/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "pterodactyl-wings/examples": [
+      "addon_config.yaml",
+      "wings_config.yml"
+    ],
+    "wordpress": [
       "CHANGELOG.md",
-      "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
       "config.yaml"
     ],
-    "bentopdf/rootfs/etc/nginx": [
-      "nginx.conf"
-    ],
-    "bentopdf/translations": [
+    "wordpress/translations": [
       "de.yaml",
       "en.yaml"
+    ],
+    "wordpress/rootfs/usr/lib/bashio": [
+      "app.sh"
+    ],
+    "wordpress/rootfs/etc/php84/php-fpm.d": [
+      "www.conf"
+    ],
+    "wordpress/rootfs/etc/nginx": [
+      "nginx.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/http.d": [
+      "ingress.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/includes": [
+      "php.conf",
+      "server_params.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/templates": [
+      "http.conf",
+      "https.conf"
     ],
     "custom_components/webserver_app": [
       "README.md",
@@ -694,7 +637,7 @@
       "de.json",
       "en.json"
     ],
-    "dbf": [
+    "netboot-xyz": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -702,9 +645,37 @@
       "build.yaml",
       "config.yaml"
     ],
-    "dbf/translations": [
+    "netboot-xyz/translations": [
       "de.yaml",
       "en.yaml"
+    ],
+    "netboot-xyz/root": [
+      "donate.txt"
+    ],
+    "netboot-xyz/root/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "netboot-xyz/root/etc/cont-init.d": [
+      "10-prerequisite.sh"
+    ],
+    "netboot-xyz/root/defaults": [
+      "dnsmasq.conf",
+      "nginx.conf"
+    ],
+    "ShieldFile": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "ShieldFile/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "ShieldFile/rootfs/usr/lib/bashio": [
+      "banner.sh"
     ],
     "docs": [
       "index.html",
@@ -714,37 +685,44 @@
     "docs/css": [
       "style.css"
     ],
-    "er-dashboard": [
+    "wiki.js": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
-      "config.yaml"
+      "config.yaml",
+      "run.sh"
     ],
-    "er-dashboard/rootfs/etc/nginx/http.d": [
-      "ingress.conf"
+    "wiki.js/translations": [
+      "de.yaml",
+      "en.yaml"
     ],
-    "er-dashboard/rootfs/usr/lib/bashio": [
+    "wiki.js/rootfs/usr/lib/bashio": [
       "app.sh",
       "banner.sh"
     ],
-    "er-dashboard/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "imapsync": [
+    "nginx": [
       "CHANGELOG.md",
       "DOCS.md",
-      "DOCS_OAUTH.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
-      "config.yaml"
+      "config.yaml",
+      "index.html"
     ],
-    "imapsync/translations": [
+    "nginx/translations": [
       "de.yaml",
       "en.yaml"
+    ],
+    "nginx/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "nginx/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "nginx/rootfs/etc/cont-init.d": [
+      "nginx.sh"
     ],
     "komodo": [
       "CHANGELOG.md",
@@ -757,7 +735,7 @@
       "de.yaml",
       "en.yaml"
     ],
-    "netboot-xyz": [
+    "switchcraft": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -765,24 +743,14 @@
       "build.yaml",
       "config.yaml"
     ],
-    "netboot-xyz/root": [
-      "donate.txt"
-    ],
-    "netboot-xyz/root/defaults": [
-      "dnsmasq.conf",
-      "nginx.conf"
-    ],
-    "netboot-xyz/root/etc/cont-init.d": [
-      "10-prerequisite.sh"
-    ],
-    "netboot-xyz/root/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "netboot-xyz/translations": [
+    "switchcraft/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "nginx": [
+    "switchcraft/rootfs/usr/local/bin": [
+      "patch_switchcraft.py"
+    ],
+    "apache2-minimal": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -791,34 +759,21 @@
       "config.yaml",
       "index.html"
     ],
-    "nginx/rootfs/etc/cont-init.d": [
-      "nginx.sh"
-    ],
-    "nginx/rootfs/usr/bin": [
-      "webserver_app_integration.sh"
-    ],
-    "nginx/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "nginx/translations": [
+    "apache2-minimal/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "openssl": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
+    "apache2-minimal/rootfs": [
       "run.sh"
     ],
-    "openssl/rootfs/usr/lib/bashio": [
+    "apache2-minimal/rootfs/usr/lib/bashio": [
       "banner.sh"
     ],
-    "openssl/translations": [
-      "de.yaml",
-      "en.yaml"
+    "apache2-minimal/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2-minimal/rootfs/etc/cont-init.d": [
+      "apache2.sh"
     ],
     "planka": [
       "CHANGELOG.md",
@@ -827,13 +782,198 @@
       "build.yaml",
       "config.yaml"
     ],
+    "planka/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
     "planka/rootfs/usr/lib/bashio": [
       "app.sh",
       "banner.sh"
     ],
-    "planka/translations": [
+    "bash_script_executer": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "bash_script_executer/translations": [
       "de.yaml",
       "en.yaml"
+    ],
+    "bash_script_executer/integration": [
+      "__init__.py",
+      "button.py",
+      "manifest.json"
+    ],
+    "bash_script_executer/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "ShieldDNS": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "ShieldDNS/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "ShieldDNS/www": [
+      "index.html"
+    ],
+    "ShieldDNS/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "solumati": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "nginx.conf",
+      "run.sh"
+    ],
+    "solumati/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "solumati/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "wiki.js3": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "wiki.js3/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "wiki.js3/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
+    "wiki.js3/rootfs/etc/cont-init.d": [
+      "00-banner.sh",
+      "01-config.sh",
+      "02-git.sh"
+    ],
+    "dbf": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "dbf/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "apache2-minimal-mariadb": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "index.html",
+      "run.sh"
+    ],
+    "apache2-minimal-mariadb/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "apache2-minimal-mariadb/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "apache2-minimal-mariadb/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": [
+      "apache2.sh"
+    ],
+    "tado_aa": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "LICENSE.txt",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "patch.py",
+      "run.sh"
+    ],
+    "tado_aa/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "tado_aa/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "whatsapp": [
+      "API.md",
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "whatsapp/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "whatsapp/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "whatsapp/app": [
+      "eslint.config.js",
+      "index.js",
+      "package.json",
+      "requirements.txt"
+    ],
+    "whatsapp/app/src": [
+      "config.js",
+      "ha.js",
+      "logger.js",
+      "middleware.js",
+      "session.js",
+      "state.js",
+      "webhook.js"
+    ],
+    "whatsapp/app/src/utils": [
+      "format.js",
+      "jid.js",
+      "security.js"
+    ],
+    "whatsapp/app/src/routes": [
+      "api.js",
+      "index.js",
+      "ui.js"
+    ],
+    "whatsapp/app/src/whatsapp": [
+      "actions.js",
+      "connection.js",
+      "events.js"
+    ],
+    "whatsapp/rocketchat-app": [
+      "app.json"
+    ],
+    "tests": [
+      "__init__.py",
+      "test_coordinator.py",
+      "test_init.py"
     ],
     "pterodactyl-panel": [
       "CHANGELOG.md",
@@ -843,6 +983,10 @@
       "build.yaml",
       "config.yaml",
       "run.sh"
+    ],
+    "pterodactyl-panel/translations": [
+      "de.yaml",
+      "en.yaml"
     ],
     "pterodactyl-panel/root/etc/nginx": [
       "nginx.conf"
@@ -861,11 +1005,20 @@
       "app.sh",
       "banner.sh"
     ],
-    "pterodactyl-panel/translations": [
+    "imapsync": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "DOCS_OAUTH.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "imapsync/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "pterodactyl-wings": [
+    "openssl": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -874,16 +1027,63 @@
       "config.yaml",
       "run.sh"
     ],
-    "pterodactyl-wings/examples": [
-      "addon_config.yaml",
-      "wings_config.yml"
-    ],
-    "pterodactyl-wings/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "pterodactyl-wings/translations": [
+    "openssl/translations": [
       "de.yaml",
       "en.yaml"
+    ],
+    "openssl/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "er-dashboard": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "er-dashboard/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "er-dashboard/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
+    "er-dashboard/rootfs/etc/nginx/http.d": [
+      "ingress.conf"
+    ],
+    "switch_lan_play": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "switch_lan_play/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "switch_lan_play/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "switch_lan_play_server": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "switch_lan_play_server/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "switch_lan_play_server/rootfs/usr/lib/bashio": [
+      "banner.sh"
     ],
     "sap-abap-cloud-dev": [
       "CHANGELOG.md",
@@ -897,26 +1097,30 @@
       "de.yaml",
       "en.yaml"
     ],
-    "ShieldDNS": [
+    "apache2": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
       "config.yaml",
+      "index.html",
       "run.sh"
     ],
-    "ShieldDNS/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "ShieldDNS/translations": [
+    "apache2/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "ShieldDNS/www": [
-      "index.html"
+    "apache2/rootfs/usr/lib/bashio": [
+      "banner.sh"
     ],
-    "ShieldFile": [
+    "apache2/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2/rootfs/etc/cont-init.d": [
+      "apache2.sh"
+    ],
+    "bentopdf": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -924,99 +1128,12 @@
       "build.yaml",
       "config.yaml"
     ],
-    "ShieldFile/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "ShieldFile/translations": [
+    "bentopdf/translations": [
       "de.yaml",
       "en.yaml"
     ],
-    "solumati": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "nginx.conf",
-      "run.sh"
-    ],
-    "solumati/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "solumati/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "switchcraft": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "switchcraft/rootfs/usr/local/bin": [
-      "patch_switchcraft.py"
-    ],
-    "switchcraft/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "switch_lan_play": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "run.sh"
-    ],
-    "switch_lan_play/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "switch_lan_play/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "switch_lan_play_server": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "run.sh"
-    ],
-    "switch_lan_play_server/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "switch_lan_play_server/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "tado_aa": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "LICENSE.txt",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "patch.py",
-      "run.sh"
-    ],
-    "tado_aa/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "tado_aa/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "tests": [
-      "__init__.py",
-      "test_coordinator.py",
-      "test_init.py"
+    "bentopdf/rootfs/etc/nginx": [
+      "nginx.conf"
     ],
     "tt-rss": [
       "CHANGELOG.md",
@@ -1024,6 +1141,13 @@
       "README.md",
       "build.yaml",
       "config.yaml"
+    ],
+    "tt-rss/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "tt-rss/rootfs/usr/lib/bashio": [
+      "app.sh"
     ],
     "tt-rss/rootfs/etc/nginx": [
       "nginx.conf"
@@ -1033,217 +1157,6 @@
     ],
     "tt-rss/rootfs/etc/php/php-fpm.d": [
       "www.conf"
-    ],
-    "tt-rss/rootfs/usr/lib/bashio": [
-      "app.sh"
-    ],
-    "tt-rss/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "whatsapp": [
-      "API.md",
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "whatsapp/app": [
-      "eslint.config.js",
-      "index.js",
-      "package.json",
-      "requirements.txt"
-    ],
-    "whatsapp/app/src": [
-      "config.js",
-      "ha.js",
-      "logger.js",
-      "middleware.js",
-      "session.js",
-      "state.js",
-      "webhook.js"
-    ],
-    "whatsapp/app/src/routes": [
-      "api.js",
-      "index.js",
-      "ui.js"
-    ],
-    "whatsapp/app/src/utils": [
-      "format.js",
-      "jid.js",
-      "security.js"
-    ],
-    "whatsapp/app/src/whatsapp": [
-      "actions.js",
-      "connection.js",
-      "events.js"
-    ],
-    "whatsapp/integration/ha-whatsapp": [
-      "EXAMPLES.md",
-      "README.md",
-      "hacs.json",
-      "pyproject.toml",
-      "renovate.json",
-      "test_out_v3.txt"
-    ],
-    "whatsapp/integration/ha-whatsapp/custom_components": [
-      "__init__.py"
-    ],
-    "whatsapp/integration/ha-whatsapp/custom_components/whatsapp": [
-      "__init__.py",
-      "api.py",
-      "binary_sensor.py",
-      "button.py",
-      "config_flow.py",
-      "const.py",
-      "coordinator.py",
-      "diagnostics.py",
-      "info.md",
-      "manifest.json",
-      "notify.py",
-      "repairs.py",
-      "sensor.py",
-      "services.yaml",
-      "strings.json",
-      "types.py"
-    ],
-    "whatsapp/integration/ha-whatsapp/custom_components/whatsapp/translations": [
-      "de.json",
-      "en.json",
-      "ru.json"
-    ],
-    "whatsapp/integration/ha-whatsapp/docs": [
-      "DEVELOPMENT.md",
-      "EVENTS.md",
-      "SERVICES.md",
-      "SETUP.md",
-      "_config.yml",
-      "api.md",
-      "architecture.md",
-      "automations.md",
-      "beta.md",
-      "buttons.md",
-      "configuration.md",
-      "features.md",
-      "index.md",
-      "installation.md",
-      "limitations.md",
-      "quoting.md",
-      "rocketchat.md",
-      "support.md",
-      "tips.md",
-      "troubleshooting.md",
-      "webhooks.md"
-    ],
-    "whatsapp/integration/ha-whatsapp/docs/_includes": [
-      "head_custom.html"
-    ],
-    "whatsapp/integration/ha-whatsapp/tests": [
-      "conftest.py",
-      "ha_stubs.py",
-      "test_binary_sensor.py",
-      "test_config_flow.py",
-      "test_connection.py",
-      "test_diagnostics.py",
-      "test_docs.py",
-      "test_expiration.py",
-      "test_init.py",
-      "test_interaction.py",
-      "test_interactive_backend.py",
-      "test_jid_normalization.py",
-      "test_mark_as_read.py",
-      "test_multi_instance.py",
-      "test_notifications.py",
-      "test_quoting.py",
-      "test_rate_limit.py",
-      "test_repairs.py",
-      "test_sanity.py",
-      "test_sensor.py",
-      "test_services.py",
-      "test_services_extended.py",
-      "test_translations.py",
-      "test_verify_document.py"
-    ],
-    "whatsapp/rocketchat-app": [
-      "app.json"
-    ],
-    "whatsapp/rootfs/usr/lib/bashio": [
-      "banner.sh"
-    ],
-    "whatsapp/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "wiki.js": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "run.sh"
-    ],
-    "wiki.js/rootfs/usr/lib/bashio": [
-      "app.sh",
-      "banner.sh"
-    ],
-    "wiki.js/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "wiki.js3": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "wiki.js3/rootfs/etc/cont-init.d": [
-      "00-banner.sh",
-      "01-config.sh",
-      "02-git.sh"
-    ],
-    "wiki.js3/rootfs/usr/lib/bashio": [
-      "app.sh",
-      "banner.sh"
-    ],
-    "wiki.js3/translations": [
-      "de.yaml",
-      "en.yaml"
-    ],
-    "wordpress": [
-      "CHANGELOG.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "wordpress/rootfs/etc/nginx": [
-      "nginx.conf"
-    ],
-    "wordpress/rootfs/etc/nginx/http.d": [
-      "ingress.conf"
-    ],
-    "wordpress/rootfs/etc/nginx/includes": [
-      "php.conf",
-      "server_params.conf"
-    ],
-    "wordpress/rootfs/etc/nginx/templates": [
-      "http.conf",
-      "https.conf"
-    ],
-    "wordpress/rootfs/etc/php84/php-fpm.d": [
-      "www.conf"
-    ],
-    "wordpress/rootfs/usr/lib/bashio": [
-      "app.sh"
-    ],
-    "wordpress/translations": [
-      "de.yaml",
-      "en.yaml"
     ]
   }
 }
