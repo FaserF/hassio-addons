@@ -87,7 +87,7 @@ def _parse_yaml_field(content: str, field: str) -> str:
     for line in content.splitlines():
         stripped = line.strip()
         if stripped.startswith(f"{field}:"):
-            value = stripped[len(f"{field}:"):].strip().strip('"').strip("'")
+            value = stripped[len(f"{field}:") :].strip().strip('"').strip("'")
             return value
     return ""
 
@@ -101,7 +101,7 @@ def _parse_yaml_list_field(content: str, field: str) -> list:
         if stripped.startswith(f"{field}:"):
             in_block = True
             # Inline list: arch: [amd64, aarch64]
-            inline = stripped[len(f"{field}:"):].strip()
+            inline = stripped[len(f"{field}:") :].strip()
             if inline.startswith("["):
                 results = [v.strip().strip('"') for v in inline.strip("[]").split(",")]
                 break
@@ -162,10 +162,7 @@ def generate_file_tree() -> dict:
     tree: dict[str, list[str]] = {}
     for root, dirs, files in os.walk(PROJECT_ROOT):
         # Prune ignored directories in-place
-        dirs[:] = [
-            d for d in dirs
-            if d not in IGNORE_DIRS and not d.startswith(".")
-        ]
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS and not d.startswith(".")]
         rel_root = os.path.relpath(root, PROJECT_ROOT).replace(os.sep, "/")
 
         valid_files = []
@@ -193,9 +190,7 @@ def generate_manifest(addons: list[dict]) -> None:
     manifest = {
         "project": "hassio-addons",
         "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
-        "connections_map_reference": (
-            "project_connections.json (per-addon file mapping for AI agents)"
-        ),
+        "connections_map_reference": ("project_connections.json (per-addon file mapping for AI agents)"),
         "timestamp": datetime.datetime.now().isoformat(),
         "stack": {
             "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
@@ -270,17 +265,14 @@ def generate_connections(addons: list[dict]) -> None:
                 for f in flist:
                     ext = os.path.splitext(f)[1].lower()
                     if ext in ALLOWED_EXTENSIONS or f in {"Dockerfile", "Makefile"}:
-                        rel = os.path.relpath(
-                            os.path.join(root, f), PROJECT_ROOT
-                        ).replace(os.sep, "/")
+                        rel = os.path.relpath(os.path.join(root, f), PROJECT_ROOT).replace(os.sep, "/")
                         found.append(rel)
             if found:
                 files[key] = sorted(found)
 
         # Top-level files
         toplevel = []
-        for fname in ["config.yaml", "Dockerfile", "run.sh", "build.yaml",
-                      "CHANGELOG.md", "README.md", "DOCS.md"]:
+        for fname in ["config.yaml", "Dockerfile", "run.sh", "build.yaml", "CHANGELOG.md", "README.md", "DOCS.md"]:
             fpath = os.path.join(addon_dir, fname)
             if os.path.isfile(fpath):
                 toplevel.append(f"{slug}/{fname}")
