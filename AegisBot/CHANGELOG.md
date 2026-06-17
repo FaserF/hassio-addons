@@ -3,8 +3,8 @@
 ## 0.6.0 (2026-06-16)
 
 ### 🚀 Other
-- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
 
+- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
 
 ## 0.5.3 (2026-04-09)
 

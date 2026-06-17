@@ -3,9 +3,9 @@
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies
+
 - prepare for alpine 3.24 update ([`05eaab3e`](https://github.com/FaserF/hassio-addons/commit/05eaab3ed98be58349eb469f86ec41f1c4eecd45))
 - ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
-
 
 ## 2.3.3 (2026-06-04)
 

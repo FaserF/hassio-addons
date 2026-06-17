@@ -3,11 +3,11 @@
 ## 2.5.0 (2026-06-16)
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
 - ⬆️ Update alpine Docker tag to v3.24 [skip-tests] (#838) [skip-tests] ([`ad976832`](https://github.com/FaserF/hassio-addons/commit/ad976832201babefa6016e8444ad6adbbcab8c8a))
 - ⬆️ Update Add-on Softwares [skip-tests] ([`eae5adb3`](https://github.com/FaserF/hassio-addons/commit/eae5adb36fc127508d6ebc681cb87e3106b8343e))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
-
 
 ## 2.4.6 (2026-05-07)
 

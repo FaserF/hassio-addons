@@ -3,10 +3,12 @@
 ## 0.7.0 (2026-06-16)
 
 ### 🐛 Bug Fixes
+
 - make addon_config directory writeable (rw) ([`d37a215e`](https://github.com/FaserF/hassio-addons/commit/d37a215e63101464263597a55a3ea73c52ac7ec9))
 - optimize and resize icon and logo images ([`57a6756a`](https://github.com/FaserF/hassio-addons/commit/57a6756a1e2b9481208a89388ee78ec99998247c))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
@@ -14,12 +16,12 @@
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
 
 ### 🚀 Other
+
 - fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
 - fix docker build in newer alpine version ([`5b16a957`](https://github.com/FaserF/hassio-addons/commit/5b16a9578186b7e8db6093a2bb0d8732a84ee409))
 - fix docker build in newer alpine version ([`a588c8a3`](https://github.com/FaserF/hassio-addons/commit/a588c8a3d7aa03377be1e1cd4ba2f6456d60595e))
 - fix docker build in newer alpine version ([`2fcb0e33`](https://github.com/FaserF/hassio-addons/commit/2fcb0e33989a51b0ce36a32544b0281b8d82279f))
 - fix docker build in newer alpine version ([`eda4f94b`](https://github.com/FaserF/hassio-addons/commit/eda4f94b008875be19eb4708ce0969f42f9a1050))
-
 
 ## 0.6.1 (2026-04-09)
 
