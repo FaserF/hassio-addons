@@ -913,12 +913,25 @@ jobs:
 
       - name: 📝 Sync Integration Version
         if: |
-          contains(fromJSON('["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]'), matrix.App) ||
-          contains(fromJSON('["apache2-edge", "apache2-minimal-edge", "apache2-minimal-mariadb-edge", "nginx-edge"]'), matrix.App)
+          (contains(fromJSON('["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]'), matrix.App) ||
+           contains(fromJSON('["apache2-edge", "apache2-minimal-edge", "apache2-minimal-mariadb-edge", "nginx-edge"]'), matrix.App)) &&
+          github.event.inputs.changelog_only != 'true'
         run: |
-          APACHE_VERSION=$(grep "^version:" "apache2/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-          echo "🔄 Syncing Webserver App integration version to $APACHE_VERSION (from apache2)"
-          sed -i "s/\"version\": \".*\"/\"version\": \"$APACHE_VERSION\"/" custom_components/webserver_app/manifest.json
+          python3 -c '
+          import json
+          path = "custom_components/webserver_app/manifest.json"
+          with open(path, "r") as f:
+              data = json.load(f)
+          version = data.get("version", "1.0.0")
+          parts = version.split(".")
+          if len(parts) >= 3:
+              parts[2] = str(int(parts[2]) + 1)
+              new_version = ".".join(parts)
+              data["version"] = new_version
+              with open(path, "w") as f:
+                  json.dump(data, f, indent=2)
+              print(f"🚀 Bumped Webserver App integration version to {new_version}")
+          '
           # No git add here, we handle it in the commit step to avoid confusion with rebase/pull
 
       - name: 🚀 Commit & Push (with Retry)

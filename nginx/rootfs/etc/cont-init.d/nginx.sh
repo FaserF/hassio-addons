@@ -21,6 +21,9 @@ fi
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php85/php.ini
 
+# Remove Alpine's default server configurations to prevent conflicts
+rm -f /etc/nginx/http.d/default.conf /etc/nginx/conf.d/default.conf
+
 # Map Bashio log_level to Nginx log_level
 # Bashio: trace, debug, info, notice, warning, error, fatal
 # Nginx: debug, info, notice, warn, error, crit, alert, emerg
