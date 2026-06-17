@@ -1,7 +1,11 @@
 {
   "domain": "webserver_app",
   "name": "Webserver App",
+<<<<<<< HEAD
   "version": "3.4.1",
+=======
+  "version": "3.4.3",
+>>>>>>> 544be6a0d4501b23e17007555eac18226f0fc5e3
   "config_flow": true,
   "documentation": "https://github.com/FaserF/hassio-addons/tree/master/custom_components/webserver_app",
   "issue_tracker": "https://github.com/FaserF/hassio-addons/issues",
