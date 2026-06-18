@@ -238,6 +238,12 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       // to prevent triggering WhatsApp's rate-overlimit on immediate queries.
       session.groupFetchCooldownUntil = Date.now() + 60000;
 
+      if (!MARK_ONLINE) {
+        sock.sendPresenceUpdate('unavailable').catch((e) => {
+          logger.warn({ error: e.message }, '⚠️ Failed to send presence update to unavailable');
+        });
+      }
+
       const sessionStats = session.stats;
 
       if (ADMIN_NOTIFICATIONS_ENABLED && sessionStats.last_disconnect_time) {
