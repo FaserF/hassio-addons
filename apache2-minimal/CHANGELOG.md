@@ -3,8 +3,8 @@
 ## 3.4.1 (2026-06-17)
 
 ### 🚀 Other
-- fix ssl cert usage in webserver addons #845 ([`052678eb`](https://github.com/FaserF/hassio-addons/commit/052678eb49bd814b8cfcdd9f88f4a5c3446cfa5c))
 
+- fix ssl cert usage in webserver addons #845 ([`052678eb`](https://github.com/FaserF/hassio-addons/commit/052678eb49bd814b8cfcdd9f88f4a5c3446cfa5c))
 
 ## 3.4.0 (2026-06-16)
 
