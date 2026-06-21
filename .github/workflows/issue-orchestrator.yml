@@ -1,0 +1,48 @@
+name: Issue Orchestrator
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on new issue
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+            let body = "Hi @" + issue.user.login + ", thanks for opening this issue! 👋\n\n";
+
+            const issueBody = issue.body || "";
+            const maintainerNote = "\n\n---\n*Please note: I maintain this integration in my free time as a hobby project. I'll do my best to look into this soon, but feedback speed may vary depending on my availability.*";
+
+            if (labels.includes('bug')) {
+              body += "⚠️ **Bug Report Received**\n\n";
+              body += "To help solve this faster, please check the following:\n";
+              body += "- [ ] Is your Home Assistant version up to date?\n";
+              body += "- [ ] Are you using the latest version of this integration?\n";
+              body += "- [ ] Have you checked the [documentation](https://faserf.github.io/hassio-addons/) for similar issues or configuration tips?\n";
+              body += "- [ ] If applicable: Did you enable debug logging (`custom_components.webserver_app: debug`) and provide relevant logs?\n\n";
+              body += "I will investigate this as soon as possible!";
+              body += maintainerNote;
+            } else if (labels.includes('enhancement') || labels.includes('feature request')) {
+              body += "🚀 **Feature Request**\n\n";
+              body += "Thanks for the idea! Feature requests help shape the future of this integration. I'll review it and see how it fits into the roadmap.\n";
+              body += maintainerNote;
+            } else {
+              body += "I've received your issue and will look into it as soon as I can.";
+              body += maintainerNote;
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

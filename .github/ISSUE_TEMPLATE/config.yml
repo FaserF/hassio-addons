@@ -1,12 +1,1 @@
----
 blank_issues_enabled: false
-contact_links:
-  - name: 🐛 Create new WhatsApp issue/feature request
-    url: https://github.com/FaserF/ha-whatsapp/issues
-    about: WhatsApp HA App/Integration issue or feature request
-  - name: 🆕 New App Request
-    url: https://faserf.github.io/hassio-addons/requests.html
-    about: Want a new app? Read why I don't accept app requests (but feature requests are welcome!)
-  - name: 📖 Documentation
-    url: https://faserf.github.io/hassio-addons
-    about: Read the official documentation for these apps.
