@@ -11,7 +11,6 @@ Run from the repository root:
 import datetime
 import json
 import os
-import re
 
 # ---------------------------------------------------------------------------
 # Configuration
