@@ -34,7 +34,7 @@ jobs:
       pull-requests: write
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 🔍 Detect New Apps
         id: new-Apps
         run: |

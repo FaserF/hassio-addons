@@ -32,7 +32,7 @@ jobs:
       filters: ${{ steps.generator.outputs.filters }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 🐍 Generate Dynamic Filters
         id: generator
         run: |
@@ -117,7 +117,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         if: steps.check-stale.outputs.is_stale != 'true'
         with:
           fetch-depth: 0
@@ -231,7 +231,7 @@ jobs:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       # 1. ShellCheck
       - name: 🐚 ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
@@ -387,7 +387,7 @@ jobs:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
     steps:
       - name: ⤵️ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
