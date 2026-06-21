@@ -52,8 +52,19 @@ The software allows you to provide an **Imprint** and a **Privacy Policy** page.
 
 The app periodically fetches `zugbildungsplan.json` to show scheduled ICE/IC types and wagon orders. This data is updated automatically once a day.
 
+## 🙋‍♂️ Support & Issues
+
+For bugs, issues, feature requests, or questions, please use the integration's issue tracker:
+
+👉 **[DB Infoscreen Issue Tracker](https://github.com/FaserF/ha-db_infoscreen/issues)**
+
+For detailed documentation, configuration guides, and troubleshooting, visit the:
+
+📖 **[DB Infoscreen Documentation Site](https://faserf.github.io/ha-db_infoscreen/)**
+
 ## 👨‍💻 Credits
 
 This app is based on the [db-infoscreen](https://github.com/derf/db-fakedisplay) project by **Birte Friesel**.
 Add-on maintained by **FaserF**.
 Licensed under the MIT License.
+
