@@ -60,7 +60,7 @@ jobs:
 
       - name: Checkout repository
         if: steps.check_ghas.outputs.enabled == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Initialize CodeQL
         if: steps.check_ghas.outputs.enabled == 'true'
