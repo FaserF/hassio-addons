@@ -67,4 +67,3 @@ For detailed documentation, configuration guides, and troubleshooting, visit the
 This app is based on the [db-infoscreen](https://github.com/derf/db-fakedisplay) project by **Birte Friesel**.
 Add-on maintained by **FaserF**.
 Licensed under the MIT License.
-
