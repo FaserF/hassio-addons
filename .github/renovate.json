@@ -380,15 +380,17 @@
         "php/php-src"
       ],
       "extractVersion": "^php-(?<version>\\d+\\.\\d+)",
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/update_php_info.py"
-        ],
-        "fileFilters": [
-          "**/DOCS.md"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "python3 .scripts/update_php_info.py"
+          ],
+          "fileFilters": [
+            "**/DOCS.md"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "matchManagers": [
@@ -451,15 +453,17 @@
       "matchDepNames": [
         "FaserF/Solumati"
       ],
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh solumati {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "solumati/Dockerfile"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "bash .github/scripts/update-checksums.sh solumati {{{newVersion}}}"
+          ],
+          "fileFilters": [
+            "solumati/Dockerfile"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Netboot.xyz - auto-update checksums",
@@ -467,15 +471,17 @@
         "netbootxyz/webapp"
       ],
       "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "netboot-xyz/Dockerfile"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
+          ],
+          "fileFilters": [
+            "netboot-xyz/Dockerfile"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Pterodactyl Wings - automerge enabled and update checksums",
@@ -483,15 +489,17 @@
         "pterodactyl/wings"
       ],
       "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "pterodactyl-wings/Dockerfile"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
+          ],
+          "fileFilters": [
+            "pterodactyl-wings/Dockerfile"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
@@ -499,15 +507,17 @@
         "42wim/matterbridge"
       ],
       "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "matterbridge/Dockerfile"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
+          ],
+          "fileFilters": [
+            "matterbridge/Dockerfile"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Allow pre-releases for Wiki.js V3",
@@ -530,16 +540,18 @@
       ],
       "automerge": true,
       "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py nginx patch --message \"Automatic release after NGINX update to {{{newVersion}}}\""
-        ],
-        "fileFilters": [
-          "nginx/config.yaml",
-          "nginx/CHANGELOG.md"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "python3 .scripts/bump_version.py nginx patch --message \"Automatic release after NGINX update to {{{newVersion}}}\""
+          ],
+          "fileFilters": [
+            "nginx/config.yaml",
+            "nginx/CHANGELOG.md"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Apache2 - auto-update Alpine package version and bump addon version",
@@ -548,22 +560,24 @@
       ],
       "automerge": true,
       "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py apache2 patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
-          "python3 .scripts/bump_version.py apache2-minimal patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
-          "python3 .scripts/bump_version.py apache2-minimal-mariadb patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\""
-        ],
-        "fileFilters": [
-          "apache2/config.yaml",
-          "apache2/CHANGELOG.md",
-          "apache2-minimal/config.yaml",
-          "apache2-minimal/CHANGELOG.md",
-          "apache2-minimal-mariadb/config.yaml",
-          "apache2-minimal-mariadb/CHANGELOG.md"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "python3 .scripts/bump_version.py apache2 patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
+            "python3 .scripts/bump_version.py apache2-minimal patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
+            "python3 .scripts/bump_version.py apache2-minimal-mariadb patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\""
+          ],
+          "fileFilters": [
+            "apache2/config.yaml",
+            "apache2/CHANGELOG.md",
+            "apache2-minimal/config.yaml",
+            "apache2-minimal/CHANGELOG.md",
+            "apache2-minimal-mariadb/config.yaml",
+            "apache2-minimal-mariadb/CHANGELOG.md"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "description": "Home Assistant - auto-update Home Assistant version and bump addon version",
@@ -576,16 +590,18 @@
       ],
       "automerge": true,
       "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py homeassistant-test-instance patch --message \"Automatic release after Home Assistant update to {{{newVersion}}}\""
-        ],
-        "fileFilters": [
-          "homeassistant-test-instance/config.yaml",
-          "homeassistant-test-instance/CHANGELOG.md"
-        ],
-        "executionMode": "branch"
-      }
+      "postUpgradeTasks": [
+        {
+          "commands": [
+            "python3 .scripts/bump_version.py homeassistant-test-instance patch --message \"Automatic release after Home Assistant update to {{{newVersion}}}\""
+          ],
+          "fileFilters": [
+            "homeassistant-test-instance/config.yaml",
+            "homeassistant-test-instance/CHANGELOG.md"
+          ],
+          "executionMode": "branch"
+        }
+      ]
     },
     {
       "matchManagers": [
