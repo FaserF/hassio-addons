@@ -184,10 +184,6 @@ log() {
 	fi
 }
 
-log INFO "-----------------------------------------------------------"
-log INFO " Home Assistant Test Instance"
-log INFO " A standalone Home Assistant Core for testing purposes."
-log INFO "-----------------------------------------------------------"
 log INFO " Starting Home Assistant Core..."
 log INFO " Config directory: $CONFIG_DIR"
 
