@@ -4,6 +4,6 @@
   },
   "overrides": {
     "markdown-it": "^14.2.0",
-    "js-yaml": "^4.2.0"
+    "js-yaml": "^5.0.0"
   }
 }
