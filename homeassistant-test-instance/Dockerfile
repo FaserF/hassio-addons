@@ -62,7 +62,7 @@ CMD [ "/run.sh" ]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD curl --fail --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 || exit 1
+    CMD curl --write-out '%{http_code}' --silent --output /dev/null --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 | grep -E "^(200|401)$" || exit 1
 
 # Labels
 LABEL \
