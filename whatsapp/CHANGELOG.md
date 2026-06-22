@@ -3,12 +3,13 @@
 ## 1.6.1 (2026-06-22)
 
 ### 🐛 Bug Fixes
+
 - pass seconds parameter to video and audio messages ([`e8437a05`](https://github.com/FaserF/hassio-addons/commit/e8437a05a7cf4d5207c1533be2b9999cd621d791))
 - presence always online #848 ([`eada3db3`](https://github.com/FaserF/hassio-addons/commit/eada3db3cdc312e839ab91154225e380033198dc))
 
 ### 📦 Dependencies
-- ⬆️ Update dependency fastapi to v0.138.0 [skip-tests] (#850) ([`4ad3e487`](https://github.com/FaserF/hassio-addons/commit/4ad3e4879bc95b153712aff8e170664b3341475f))
 
+- ⬆️ Update dependency fastapi to v0.138.0 [skip-tests] (#850) ([`4ad3e487`](https://github.com/FaserF/hassio-addons/commit/4ad3e4879bc95b153712aff8e170664b3341475f))
 
 ## 1.6.0 (2026-06-16)
 
