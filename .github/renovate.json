@@ -11,7 +11,6 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
-  "commitMessageSuffix": " [skip-tests]",
   "customManagers": [
     {
       "customType": "regex",
@@ -619,6 +618,13 @@
       ],
       "versioning": "loose",
       "ignoreUnstable": false
+    },
+    {
+      "description": "Skip tests for patch updates only",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "commitMessageSuffix": " [skip-tests]"
     }
   ]
 }
