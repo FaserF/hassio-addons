@@ -89,7 +89,7 @@ _show_app_banner() {{
         VERSION="unknown"
     fi
     local NAME="{name_escaped}"
-    local SLUG="{slug}"
+    local GITHUB_PATH="{github_path}"
     local UNSUPPORTED="{"true" if unsupported else "false"}"
     local MAINTAINER="{MAINTAINER}"
     local REPO="$MAINTAINER/hassio-addons"
@@ -157,7 +157,7 @@ _show_app_banner() {{
         local LATEST_STABLE=""
 
         # Get latest stable version from config.yaml
-        if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/{github_path}/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//'); then
+        if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$GITHUB_PATH/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*[\"'"'"']\\?\\([^\"'"'"'+]*\\).*/\\1/' | sed 's/-dev.*//'); then
             : # Success
         else
             LATEST_STABLE=""
@@ -169,7 +169,7 @@ _show_app_banner() {{
                 if [ -n "$DEV_COMMIT" ]; then
                     # Get latest commit for this App from GitHub
                     local LATEST_COMMIT=""
-                    if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path={github_path}&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
+                    if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$GITHUB_PATH&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
                          :
                     fi
 
