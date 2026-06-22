@@ -13,6 +13,7 @@ map:
   - homeassistant_config:rw
 ingress: true
 ingress_port: 8123
+hassio_api: true
 init: false
 options:
   log_level: "info"

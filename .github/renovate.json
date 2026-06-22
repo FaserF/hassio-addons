@@ -561,6 +561,26 @@
           "apache2-minimal-mariadb/CHANGELOG.md"
         ],
         "executionMode": "branch"
+    },
+    {
+      "description": "Home Assistant - auto-update Home Assistant version and bump addon version",
+      "matchDepNames": [
+        "ghcr.io/home-assistant/home-assistant"
+      ],
+      "matchFileNames": [
+        "homeassistant-test-instance/Dockerfile"
+      ],
+      "automerge": true,
+      "ignoreTests": false,
+      "postUpgradeTasks": {
+        "commands": [
+          "python3 .scripts/bump_version.py homeassistant-test-instance patch --message \"Automatic release after Home Assistant update to {{{newVersion}}}\""
+        ],
+        "fileFilters": [
+          "homeassistant-test-instance/config.yaml",
+          "homeassistant-test-instance/CHANGELOG.md"
+        ],
+        "executionMode": "branch"
       }
     },
     {

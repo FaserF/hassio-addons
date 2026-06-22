@@ -190,19 +190,40 @@ log INFO " A standalone Home Assistant Core for testing purposes."
 log INFO "-----------------------------------------------------------"
 log INFO " Starting Home Assistant Core..."
 log INFO " Config directory: $CONFIG_DIR"
-log INFO " Web interface will be available on the configured port."
+
+# Get the configured port
+port=$(bashio::addon.port "8123/tcp" 2>/dev/null || echo "8124")
+if [ -z "${port}" ]; then
+	port="8124"
+fi
+
+# Get the host primary IP address
+host_ip=""
+if [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+	host_ip=$(bashio::api.supervisor GET /network/info 2>/dev/null | jq -r '.data.interfaces[] | select(.primary == true) | .ipv4.address[0]' 2>/dev/null | cut -d'/' -f1)
+fi
+
+# Fallback to local hostname if IP couldn't be fetched
+if [ -z "${host_ip}" ]; then
+	host_ip="homeassistant.local"
+fi
+
+log INFO " Web interface is available at: http://${host_ip}:${port}"
 log INFO " Note: First startup may take several minutes while"
 log INFO "       Home Assistant initializes the database."
 log INFO "-----------------------------------------------------------"
 # Runtime diagnostics
-hass --version 2>&1 | log INFO || true
-python3 --version 2>&1 | log INFO || true
+hass_version=$(hass --version 2>/dev/null || echo "unknown")
+python_version=$(python3 --version 2>/dev/null || echo "unknown")
+log INFO "Versions: Home Assistant ${hass_version} | ${python_version}"
 
 # Ensure config directory exists
 mkdir -p "$CONFIG_DIR"
 
 # Ensure log file exists so tail doesn't fail
 touch "$CONFIG_DIR/home-assistant.log"
+
+log INFO "----------------- Home Assistant Core Logs -----------------"
 
 # Stream logs to stdout in background
 # Using -F to follow filename (handles rotation)
