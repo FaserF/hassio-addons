@@ -564,6 +564,7 @@
           "apache2-minimal-mariadb/CHANGELOG.md"
         ],
         "executionMode": "branch"
+      }
     },
     {
       "description": "Home Assistant - auto-update Home Assistant version and bump addon version",

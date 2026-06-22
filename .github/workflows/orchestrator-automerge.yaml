@@ -173,6 +173,13 @@ jobs:
           # Get all jobs from the workflow run
           JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs" --paginate --jq '.jobs[] | {name: .name, conclusion: .conclusion}' | jq -c .)
 
+          # Determine if tests were intentionally skipped
+          SKIP_TESTS_PRESENT=false
+          if gh pr view "$PR_NUMBER" --json title,body,commits --jq '.title + " " + .body + " " + (.commits[].message // "")' 2>/dev/null | grep -qiE "\[skip-tests\]|\[skip ci\]"; then
+            SKIP_TESTS_PRESENT=true
+            echo "ℹ️  [skip-tests] or [skip ci] detected in PR metadata."
+          fi
+
           # Count jobs by status
           SUCCESS_COUNT=0
           FAILED_COUNT=0
@@ -248,16 +255,25 @@ jobs:
             exit 0
 
           elif [ "$SUCCESS_COUNT" -eq 0 ]; then
-            echo "⚠️ All verification jobs were skipped - auto-merge blocked"
-            {
-              echo "ci_ran=false"
-              echo "reason=all_skipped"
-            } >> "$GITHUB_OUTPUT"
+            if [ "$SKIP_TESTS_PRESENT" = "true" ]; then
+              echo "✅ Verification jobs were intentionally skipped via skip tag - auto-merge allowed"
+              {
+                echo "ci_ran=true"
+                echo "reason=skipped_by_request"
+              } >> "$GITHUB_OUTPUT"
+              exit 0
+            else
+              echo "⚠️ All verification jobs were skipped - auto-merge blocked"
+              {
+                echo "ci_ran=false"
+                echo "reason=all_skipped"
+              } >> "$GITHUB_OUTPUT"
 
-             # Post comment and fail
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
-            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** All verification jobs were skipped."
-            exit 1
+              # Post comment and fail
+              bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
+              gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** All verification jobs were skipped."
+              exit 1
+            fi
           else
             echo "✅ All CI verification jobs completed successfully"
             {
