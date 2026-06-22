@@ -489,8 +489,8 @@ export function registerAPIRoutes(app) {
           {
             video: {
               url: url,
-              ...(seconds ? { seconds: Number(seconds) } : {}),
             },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
             caption: caption,
           },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
@@ -524,8 +524,8 @@ export function registerAPIRoutes(app) {
           {
             audio: {
               url: url,
-              ...(seconds ? { seconds: Number(seconds) } : {}),
             },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
             ptt: !!ptt,
             mimetype: 'audio/mp4',
           },
