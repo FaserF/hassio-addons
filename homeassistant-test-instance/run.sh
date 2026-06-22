@@ -192,7 +192,7 @@ log INFO " Starting Home Assistant Core..."
 log INFO " Config directory: $CONFIG_DIR"
 
 # Get the configured port
-port=$(bashio::addon.port "8123/tcp" 2>/dev/null || echo "8124")
+port=$(bashio::app.port "8123/tcp" 2>/dev/null || echo "8124")
 if [ -z "${port}" ]; then
 	port="8124"
 fi

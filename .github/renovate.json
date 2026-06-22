@@ -218,10 +218,13 @@
       "customType": "regex",
       "description": "Track Home Assistant version for test instance",
       "managerFilePatterns": [
-        "/homeassistant-test-instance/Dockerfile$/"
+        "/homeassistant-test-instance/Dockerfile$/",
+        "/homeassistant-test-instance/build.yaml$/"
       ],
+      "matchStringsStrategy": "any",
       "matchStrings": [
-        "ARG HA_VERSION=(?<currentValue>[\\d.]+)"
+        "ARG HA_VERSION=(?<currentValue>[\\d.]+)",
+        "(aarch64|amd64):\\s*[\"']?ghcr.io/home-assistant/home-assistant:(?<currentValue>[\\d.]+)[\"']?"
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/home-assistant/home-assistant"
@@ -568,7 +571,8 @@
         "ghcr.io/home-assistant/home-assistant"
       ],
       "matchFileNames": [
-        "homeassistant-test-instance/Dockerfile"
+        "homeassistant-test-instance/Dockerfile",
+        "homeassistant-test-instance/build.yaml"
       ],
       "automerge": true,
       "ignoreTests": false,
