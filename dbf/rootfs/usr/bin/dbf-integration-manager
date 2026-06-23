@@ -33,20 +33,33 @@ install_integration() {
 
     bashio::log.info "Installing integration version: ${TAG_NAME:-Default Branch}..."
 
-    if [ -n "$TAG_NAME" ]; then
-        CLONE_ARGS=("--branch" "$TAG_NAME")
-    else
-        CLONE_ARGS=()
-    fi
-
     rm -rf "/tmp/ha-db_infoscreen_install"
+    mkdir -p "/tmp/ha-db_infoscreen_install"
 
-    # Disable interactive git prompts and bound clone duration
-    export GIT_TERMINAL_PROMPT=0
-    if ! timeout 60 git clone --depth 1 "${CLONE_ARGS[@]}" "${REPO_URL}" "/tmp/ha-db_infoscreen_install" > /dev/null 2>&1; then
-        bashio::log.error "❌ Failed to clone repository (timed out or network error)."
-        rm -rf "/tmp/ha-db_infoscreen_install"
-        return 1
+    if [ -n "$TAG_NAME" ]; then
+        local ZIP_URL="https://github.com/FaserF/ha-db_infoscreen/releases/download/${TAG_NAME}/db_infoscreen.zip"
+        bashio::log.info "Downloading ${ZIP_URL}..."
+        if ! curl -L -s -f -o "/tmp/db_infoscreen.zip" "${ZIP_URL}"; then
+            bashio::log.error "❌ Failed to download release zip."
+            rm -rf "/tmp/ha-db_infoscreen_install"
+            return 1
+        fi
+        mkdir -p "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}"
+        if ! unzip -q "/tmp/db_infoscreen.zip" -d "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}"; then
+            bashio::log.error "❌ Failed to unzip release package."
+            rm -f "/tmp/db_infoscreen.zip"
+            rm -rf "/tmp/ha-db_infoscreen_install"
+            return 1
+        fi
+        rm -f "/tmp/db_infoscreen.zip"
+    else
+        # Disable interactive git prompts and bound clone duration
+        export GIT_TERMINAL_PROMPT=0
+        if ! timeout 60 git clone --depth 1 "${REPO_URL}" "/tmp/ha-db_infoscreen_install" > /dev/null 2>&1; then
+            bashio::log.error "❌ Failed to clone repository (timed out or network error)."
+            rm -rf "/tmp/ha-db_infoscreen_install"
+            return 1
+        fi
     fi
 
     if [ -d "/tmp/ha-db_infoscreen_install/custom_components/${INTEGRATION_SLUG}" ]; then
