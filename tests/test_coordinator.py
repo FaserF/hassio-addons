@@ -5,7 +5,6 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.webserver_app.coordinator import (
     WebserverAppDataUpdateCoordinator,
     get_cert_expiry,

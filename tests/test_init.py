@@ -2,9 +2,8 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from homeassistant.core import HomeAssistant
-
 from custom_components.webserver_app.const import CONF_ADDON_SLUG, CONF_PORT, DOMAIN
+from homeassistant.core import HomeAssistant
 
 
 async def test_setup_entry(hass: HomeAssistant) -> None:
