@@ -21,3 +21,9 @@ https://github.com/FaserF/hassio-addons/issues/new.*
 
 # GitHub Packages (GHCR) links that might 404 until first publish
 https://github.com/FaserF/hassio-addons/pkgs/container/.*
+
+# Home Assistant base images or private repositories that are unavailable / return 404 in CI
+https://github.com/hassio-addons/addon-base/releases/tag/.*
+https://github.com/FaserF/ha-webserver
+https://github.com/pterodactyl/wings/releases/tag/.*
+https://github.com/requarks/wiki/releases/tag/.*

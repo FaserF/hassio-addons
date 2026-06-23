@@ -59,11 +59,11 @@ fi
 
 # Compare
 UPDATE_NEEDED="false"
-if [ ! -d "$INTEGRATION_PATH/manifest.json" ]; then
+if [ ! -f "$INTEGRATION_PATH/manifest.json" ]; then
 	UPDATE_NEEDED="true"
 elif [ -n "$TARGET_TAG" ]; then
-	curr=$(echo "$LOCAL_VERSION" | sed 's/^v//')
-	targ=$(echo "$TARGET_TAG" | sed 's/^v//')
+	curr="${LOCAL_VERSION#v}"
+	targ="${TARGET_TAG#v}"
 	if [ "$curr" != "$targ" ]; then
 		# Check if target is greater than current
 		if test "$(printf '%s\n' "$curr" "$targ" | sort -V | head -n 1)" != "$targ"; then
