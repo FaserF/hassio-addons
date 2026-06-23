@@ -36,7 +36,7 @@ WEBSERVER_INTEGRATION_NOTICE = """
 This addon supports the **Webserver App** integration for Home Assistant. 
 The integration is automatically installed/updated when the addon starts.
 
-For more information and configuration details, please refer to the [Integration README](../custom_components/webserver_app/README.md).
+For more information and configuration details, please refer to the [Integration README](https://github.com/FaserF/ha-webserver).
 """
 
 WEBSERVER_ADDONS = ["apache2", "apache2-minimal", "apache2-minimal-mariadb", "nginx"]
