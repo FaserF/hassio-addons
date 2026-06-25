@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.2 (2026-06-25)
+
+### 🐛 Bug Fixes
+
+- prevent TimeoutError exceptions on HA when calling mark_as_read and set_presence (#832)
+
 ## 1.6.1 (2026-06-22)
 
 ### 🐛 Bug Fixes

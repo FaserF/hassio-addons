@@ -589,7 +589,9 @@ export function registerAPIRoutes(app) {
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     try {
       const jid = getJid(number);
-      await enqueue(session, () => session.sock.sendPresenceUpdate(presence, jid));
+      enqueue(session, () => session.sock.sendPresenceUpdate(presence, jid)).catch((e) => {
+        logger.error({ error: e.message, number }, 'Set presence task failed');
+      });
       res.json({ status: 'sent' });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Set presence failed');
@@ -702,11 +704,15 @@ export function registerAPIRoutes(app) {
         if (msg && msg.key) {
           key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
         }
-        await enqueue(session, () => session.sock.readMessages([key]));
+        enqueue(session, () => session.sock.readMessages([key])).catch((e) => {
+          logger.error({ error: e.message, number }, 'Mark as read task failed');
+        });
       } else {
-        await enqueue(session, () =>
+        enqueue(session, () =>
           session.sock.chatModify({ markRead: true, lastMessages: [] }, jid)
-        );
+        ).catch((e) => {
+          logger.error({ error: e.message, number }, 'Mark as read task failed');
+        });
       }
       res.json({ status: 'success' });
     } catch (e) {
