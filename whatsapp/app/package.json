@@ -13,7 +13,7 @@
     "bonjour-service": "^1.4.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "link-preview-js": "4.0.3",
+    "link-preview-js": "4.0.4",
     "jimp": "^1.6.1",
     "lru-cache": "^11.5.1",
     "mime-types": "^3.0.2",
@@ -21,7 +21,7 @@
     "qrcode": "^1.5.4"
   },
   "overrides": {
-    "link-preview-js": "4.0.3",
+    "link-preview-js": "4.0.4",
     "protobufjs": "^8.6.0"
   },
   "devDependencies": {
