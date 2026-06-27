@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-06-27T17:58:47.478502",
+  "timestamp": "2026-06-27T18:42:41.703224",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -442,7 +442,7 @@
     {
       "slug": "whatsapp",
       "name": "WhatsApp Home Assistant App",
-      "version": "1.6.2",
+      "version": "1.6.3",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": [
         "aarch64",
