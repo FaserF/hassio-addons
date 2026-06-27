@@ -63,7 +63,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)               | ✅     | 2023-03 |
 | **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP            | ✅     | 2023-03 |
 | **[BentoPDF](bentopdf)**                                        | Self-hosted PDF toolkit (Privacy-First)   | ⚠️     | 2026-01 |
-| **[DBF (DB-Infoscreen)](dbf)**                                  | Railway departure display board           | ⚠️     | 2026-04 |
+| **[DBF (DB-Infoscreen)](dbf)**                                  | Railway departure display board           | ✅     | 2026-04 |
 | **[ER-Startseite (Dashboard)](er-dashboard)**                   | Modern Dashboard with Neon Aesthetic      | ⚠️     | 2026-01 |
 | **[NGINX](nginx)**                                              | NGINX Webserver with PHP and MariaDB      | ⚠️     | 2026-01 |
 | **[Bash Script Executer](bash_script_executer)**                | Execute bash scripts in HA OS             | ✅     | 2023-05 |
@@ -88,7 +88,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence     | ✅     | 2023-05 |
 | **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                       | ⚠️     | 2026-01 |
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta) | ❌     | 2023-05 |
-| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend (Beta)    | ⚠️     | 2026-01 |
+| **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend    | ✅     | 2026-01 |
 | **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                          | ✅     | 2023-05 |
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                         | ⚠️     | 2026-01 |
 | **[Wordpress](wordpress)**                                      | The most popular publication platform     | ⚠️     | 2026-01 |
