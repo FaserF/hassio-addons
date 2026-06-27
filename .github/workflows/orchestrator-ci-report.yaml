@@ -49,6 +49,12 @@ jobs:
               return;
             }
 
+            const { data: fullPr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
             const issue_number = pr.number;
             const workflowRunUrl = run.html_url;
             console.log(`Reporting for PR #${issue_number} based on run ${run.id} (${run.conclusion})`);
@@ -121,7 +127,7 @@ jobs:
                 const allSkipped = buildSkipped && lintSkipped;
                 const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
 
-                const author = pr.user.login;
+                const author = fullPr.user.login;
                 const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
 
                 let autoMergeNote = "";
