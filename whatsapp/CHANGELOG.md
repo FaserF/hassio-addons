@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.3 (2026-06-27)
+
+### 🐛 Bug Fixes
+- bypass SSL checks for media fetching (fixes FaserF/ha-whatsapp#54) ([`6e4319fa`](https://github.com/FaserF/hassio-addons/commit/6e4319fa964aa3ee4c617f7080be4affcb15b587))
+- prevent TimeoutError exceptions on mark_as_read and set_presence #832 ([`3cf27795`](https://github.com/FaserF/hassio-addons/commit/3cf2779515ed90e307f089e938c4d46a8dedddfb))
+
+### 📦 Dependencies
+- ⬆️ Update dependency link-preview-js to v4.0.4 [skip-tests] (#858) [skip-tests] ([`b403ac17`](https://github.com/FaserF/hassio-addons/commit/b403ac17233f3770cd5c5d14ed827f6e51581853))
+- ⬆️ Update dependency bonjour-service to v1.4.2 [skip-tests] ([`cca7d505`](https://github.com/FaserF/hassio-addons/commit/cca7d505257d999488fc5d874cd36f1c4b22859d))
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+- ⬆️ Update dependency globals to v17.7.0 (#855) [skip-tests] ([`b7f0c7ee`](https://github.com/FaserF/hassio-addons/commit/b7f0c7eef4d1fd0f8aeb54f95efaa11cc3d9ebd4))
+
+
 ## 1.6.2 (2026-06-25)
 
 ### 🐛 Bug Fixes
