@@ -56,5 +56,8 @@ configuration:
   group_fetch_cooldown_on_rate_limit:
     name: "Gruppen-Ratenlimit-Abkühlzeit (ms)"
     description: "Abkühlzeit in Millisekunden nach Erreichen eines WhatsApp-Ratenlimits für Gruppenabrufe (Standard: 900000 / 15 Minuten)."
+  reject_unauthorized:
+    name: "Nicht autorisierte Zertifikate abweisen"
+    description: "Gibt an, ob selbstsignierte oder nicht autorisierte Zertifikate beim Abrufen von Medien-URLs oder Aufrufen von APIs abgewiesen werden sollen (Deaktivieren, um selbstsignierte Zertifikate zu erlauben)."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.

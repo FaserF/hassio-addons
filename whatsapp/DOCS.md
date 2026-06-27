@@ -94,6 +94,7 @@ media_folder: null
 admin_numbers: ''
 welcome_message_enabled: true
 admin_notifications_enabled: true
+reject_unauthorized: true
 ```
 
 ### Configuration Options
@@ -109,6 +110,7 @@ admin_notifications_enabled: true
 - `admin_notifications_enabled`: (Default: `true`) Automatically notifies admins about system health (WhatsApp loss/restore, HA Core/Integration updates, HA restarts).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 - `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
+- `reject_unauthorized`: (Default: `true`) Set to `false` to disable SSL/TLS certificate validation (useful if fetching media from local integrations using self-signed certificates, such as Frigate).
 
 > [!CAUTION]
 > **Privacy Consideration for `media_folder`**

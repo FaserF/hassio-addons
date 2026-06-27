@@ -33,6 +33,7 @@ options:
   group_fetch_interval: 300000
   group_fetch_cooldown_on_error: 60000
   group_fetch_cooldown_on_rate_limit: 900000
+  reject_unauthorized: true
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -54,6 +55,7 @@ schema:
   group_fetch_interval: int
   group_fetch_cooldown_on_error: int
   group_fetch_cooldown_on_rate_limit: int
+  reject_unauthorized: bool
 
 ports:
   8066/tcp: 8066

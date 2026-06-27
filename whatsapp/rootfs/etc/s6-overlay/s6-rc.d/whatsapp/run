@@ -122,6 +122,13 @@ if ! GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT=$(bashio::config 'group_fetch_cooldown_o
 fi
 export GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT
 
+# Reject Unauthorized Certificates (Default true)
+if bashio::config.false 'reject_unauthorized'; then
+    export NODE_TLS_REJECT_UNAUTHORIZED="0"
+else
+    export NODE_TLS_REJECT_UNAUTHORIZED="1"
+fi
+
 if [ "$MEDIA_FOLDER" != "null" ]; then
     bashio::log.info "Validating media folder: ${MEDIA_FOLDER}..."
     if ! mkdir -p "$MEDIA_FOLDER"; then

@@ -56,5 +56,8 @@ configuration:
   group_fetch_cooldown_on_rate_limit:
     name: "Group Fetch Rate-Limit Cooldown (ms)"
     description: "Cooldown period in milliseconds after hitting a WhatsApp rate limit for group fetches (Default: 900000 / 15 minutes)."
+  reject_unauthorized:
+    name: "Reject Unauthorized Certificates"
+    description: "Whether to reject self-signed or unauthorized certificates when fetching media URLs or calling APIs (Disable to allow self-signed certificates)."
 network:
   8066/tcp: Internal API port the integration connects to.
