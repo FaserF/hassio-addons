@@ -6,57 +6,64 @@ ARG BUILD_DATE="unknown"
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# 1. Install Node.js & Git
-# hadolint ignore=DL3018
-
 # App metadata (injected by CI)
 ENV APP_VERSION="1.6.2"
 ENV APP_NAME="WhatsApp Home Assistant App"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
 
+# 1. Install dependencies
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
-    && apk add --no-cache libssl3 libcrypto3 git curl && \
+    && apk add --no-cache libssl3 libcrypto3 git curl tar && \
     apk add --no-cache nodejs npm
 
 # 2. Set workdir
 WORKDIR /opt/whatsapp
 
-# 3. Copy EVERYTHING from the context
+# 3. Copy local addon context (rootfs, translations, metadata, config files)
 COPY . .
 
-# 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
-# hadolint ignore=DL3018
-    RUN \
-        apk add --no-cache "dos2unix~=7.5" && \
-        if [ -d "rootfs" ]; then \
-            cp -rv rootfs/* /; \
-            # Fix potential Windows CRLF in s6 scripts
-            find /etc/s6-overlay -type f -exec dos2unix {} \;; \
-            find /etc/s6-overlay -name run -exec chmod +x {} \;; \
-            find /etc/s6-overlay -name finish -exec chmod +x {} \;; \
-            if [ -d "/etc/services.d" ]; then \
-                find /etc/services.d -type f -exec dos2unix {} \; || true; \
-                find /etc/services.d -name run -exec chmod +x {} \; || true; \
-            fi; \
-        fi
-
-# 5. Setup App
+# 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Endings
 RUN \
-    if [ -d "app" ]; then \
-        mv app/* ./; \
-        rm -rf app; \
-        # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts
-        rm -rf package-lock.json node_modules; \
-        npm install --no-audit --no-fund --legacy-peer-deps; \
-        # Extract Baileys version for runtime banner
-        BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown"); \
-        echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment; \
-    fi
+    apk add --no-cache "dos2unix~=7.5" && \
+    if [ -d "rootfs" ]; then \
+        cp -rv rootfs/* /; \
+        # Fix potential Windows CRLF in s6 scripts \
+        find /etc/s6-overlay -type f -exec dos2unix {} \;; \
+        find /etc/s6-overlay -name run -exec chmod +x {} \;; \
+        find /etc/s6-overlay -name finish -exec chmod +x {} \;; \
+        if [ -d "/etc/services.d" ]; then \
+            find /etc/services.d -type f -exec dos2unix {} \; || true; \
+            find /etc/services.d -name run -exec chmod +x {} \; || true; \
+        fi; \
+    fi && \
+    # Clean up local addon directories we copied that are no longer needed inside /opt/whatsapp \
+    rm -rf rootfs translations app config.yaml Dockerfile build.yaml README.md CHANGELOG.md DOCS.md logo.png icon.png
+
+# 5. Setup App from external WhatsappGateway repository
+ARG BUILD_VERSION="unknown"
+RUN \
+    echo "Downloading WhatsApp Gateway source code..." && \
+    if [[ "${BUILD_VERSION}" == *"dev"* ]] || [[ "${BUILD_VERSION}" == "unknown" ]] || [[ -z "${BUILD_VERSION}" ]]; then \
+        DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/heads/main.tar.gz"; \
+    else \
+        DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/tags/v${BUILD_VERSION}.tar.gz"; \
+    fi && \
+    echo "Fetching from: ${DOWNLOAD_URL}" && \
+    curl -L -s -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}" && \
+    mkdir -p /opt/whatsapp && \
+    tar -xzf /tmp/gateway.tar.gz -C /opt/whatsapp --strip-components=1 && \
+    rm -rf /tmp/gateway.tar.gz && \
+    # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts \
+    rm -rf package-lock.json node_modules && \
+    npm install --no-audit --no-fund --legacy-peer-deps && \
+    # Extract Baileys version for runtime banner \
+    BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown") && \
+    echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment
 
 # Build arguments
 ARG BUILD_ARCH
@@ -64,7 +71,6 @@ ARG BUILD_DESCRIPTION
 ARG BUILD_NAME
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
-ARG BUILD_VERSION
 
 # Labels
 LABEL \
