@@ -38,6 +38,7 @@ website_name: null
 - mbstring
 - mysqli
 - zip
+
 <!-- PHP_INFO_END -->
 
 ## Support

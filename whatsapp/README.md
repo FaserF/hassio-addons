@@ -58,6 +58,7 @@ mark_online: false
 mask_sensitive_data: false
 media_folder: ''
 message_send_interval: 1000
+reject_unauthorized: true
 reset_session: false
 send_message_timeout: 25000
 ui_auth_enabled: false
@@ -66,7 +67,6 @@ webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
 welcome_message_enabled: false
-reject_unauthorized: true
 ```
 
 ---
