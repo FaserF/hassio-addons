@@ -71,6 +71,18 @@ welcome_message_enabled: false
 
 ---
 
+## ⚠️ Anti-Ban & Safety Guidelines
+
+Since this addon uses an unofficial WhatsApp API library (Baileys), WhatsApp's automated anti-spam systems may flag and temporarily/permanently suspend accounts that show spam-like behavior. Follow these rules to keep your account safe:
+
+- **Warm Up New Numbers**: Do not use brand new SIM cards or freshly registered numbers for the bot. Use a number that has an existing manually-established chat history with real users.
+- **Save Contacts**: Ensure the accounts receiving messages have the bot's phone number saved in their contact lists. Sending messages to unsaved contacts significantly increases the risk of being flagged.
+- **Avoid Bulk Messaging**: Do not send messages to a large number of recipients or groups simultaneously.
+- **Use Delays**: When sending consecutive messages via Home Assistant automations, always insert delay actions (e.g. 5–10 seconds) between messages.
+- **Simulate Typing**: The addon automatically simulates typing presence (`composing...`) for 1–2.5s before every message to emulate human behavior.
+
+---
+
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.

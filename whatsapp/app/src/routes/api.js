@@ -180,7 +180,9 @@ export function registerAPIRoutes(app) {
       const sentMsg = await enqueue(session, async () => {
         try {
           await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
-          await delay(250);
+          // Generate a random delay between 1000ms and 2500ms to simulate natural typing
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
         } catch (e) {
           logger.debug('Presence update failed, continuing with message');
         }
@@ -227,13 +229,20 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_image');
+        }
+        return await session.sock.sendMessage(
           jid,
           { image: { url: url }, caption: caption },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.stats.sent += 1;
       session.stats.last_sent_message = 'Image';
       session.stats.last_sent_target = maskData(jid);
@@ -296,8 +305,15 @@ export function registerAPIRoutes(app) {
       if (!optionsValid) {
         normalizedSelectableCount = 0;
       }
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_poll');
+        }
+        return await session.sock.sendMessage(
           jid,
           {
             poll: {
@@ -307,8 +323,8 @@ export function registerAPIRoutes(app) {
             },
           },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.messageStore.set(sentMsg.key.id, sentMsg);
       logger.info(
         { pollId: sentMsg.key.id, sessionId: session.id },
@@ -341,8 +357,15 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_location');
+        }
+        return await session.sock.sendMessage(
           jid,
           {
             location: {
@@ -353,8 +376,8 @@ export function registerAPIRoutes(app) {
             },
           },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.stats.sent += 1;
       session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
       session.stats.last_sent_target = maskData(jid);

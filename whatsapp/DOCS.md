@@ -8,7 +8,7 @@
 Home Assistant WhatsApp Backend (Baileys/Node.js)
 
 > [!WARNING]
-> **Legal Disclaimer / Haftungsausschluss**
+> **Legal Disclaimer**
 >
 > This project is **not** affiliated with WhatsApp or Meta. Using automated messaging on a WhatsApp account may lead to its permanent ban. The developers assume no responsibility for any such damage.
 >
