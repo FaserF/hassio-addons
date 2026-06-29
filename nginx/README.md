@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_nginx)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.4.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-nginx)
+[![Docker Image](https://img.shields.io/badge/docker-0.4.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-nginx)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Open Source Webserver with PHP and MariaDB.
@@ -52,6 +52,9 @@ php_ini: default
 ssl: false
 website_name: web.local
 ```
+
+> [!NOTE]
+> **SSL/TLS & Local IP Warnings**: If `ssl` is `true`, accessing the site using a local IP address (e.g., `https://192.168.1.50:8324`) will trigger certificate warnings since SSL certs are issued to domain names. If you only want to access your sites locally without warnings, keep `ssl: false` and access via HTTP on port `80`.
 
 ---
 

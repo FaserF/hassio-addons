@@ -59,6 +59,9 @@ ExtendedStatus On
 EOF
 fi
 
+# Enable mod_rewrite for URL rewriting (.htaccess support)
+sed -i 's/^#\(LoadModule rewrite_module modules\/mod_rewrite.so\)/\1/' /etc/apache2/httpd.conf
+
 phppath=/etc/php85/php.ini
 
 if [ "$phpini" = "get_file" ]; then
@@ -146,7 +149,6 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		exit 1
 	fi
 	mkdir /etc/apache2/sites-enabled
-	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
 	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf
 	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default.conf
