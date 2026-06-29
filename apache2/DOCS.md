@@ -37,16 +37,18 @@ If you access your website locally using its IP address (e.g., `https://192.168.
 This is expected behavior. SSL/TLS certificates (like those from Let's Encrypt or DuckDNS) are issued to validate specific domain names, not local IP addresses.
 
 To avoid this issue:
+
 - **For local testing/development**: Set `ssl: false` in the addon configuration and access the site via HTTP on port `80`.
 - **For production/remote access**: Access the website using the domain name for which the certificate was issued (e.g., `https://your-domain.duckdns.org:8324`).
 
-
 <!-- PHP_INFO_START -->
+
 ## 🐘 PHP Information
 
 **PHP Version**: 8.5
 
 **Available PHP Modules**:
+
 - bcmath
 - bz2
 - calendar
@@ -90,6 +92,7 @@ To avoid this issue:
 - xmlreader
 - xmlwriter
 - zip
+
 <!-- PHP_INFO_END -->
 
 ## Support
