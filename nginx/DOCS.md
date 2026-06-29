@@ -57,13 +57,11 @@ website_name: null
 - `/data`: Used for persistent storage of the MariaDB database and internal configurations.
 
 <!-- PHP_INFO_START -->
-
 ## 🐘 PHP Information
 
 **PHP Version**: 8.5
 
 **Available PHP Modules**:
-
 - bcmath
 - bz2
 - calendar
@@ -106,7 +104,6 @@ website_name: null
 - xmlreader
 - xmlwriter
 - zip
-
 <!-- PHP_INFO_END -->
 
 ## Support
