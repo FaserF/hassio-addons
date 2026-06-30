@@ -165,6 +165,8 @@ export function registerAPIRoutes(app) {
       connected: session.isConnected,
       disconnect_reason: session.isConnected ? null : session.disconnectReason,
       uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
+      chat_count: session.chatCache ? session.chatCache.size : 0,
+      group_count: session.groupCache ? session.groupCache.size : 0,
     });
   });
 
