@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_apache2-minimal)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-3.4.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-apache2-minimal)
+[![Docker Image](https://img.shields.io/badge/docker-3.4.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-apache2-minimal)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Open Source Webserver without PHP and minimal extra modules.
@@ -28,7 +28,7 @@ A lightweight, security-focused version of the Apache HTTP Server. This addon pr
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant. 
+This addon supports the **Webserver App** integration for Home Assistant.
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](https://github.com/FaserF/ha-webserver).

@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.4.2 (2026-06-29)
+
+### 🐛 Bug Fixes
+
+- fix shellcheck SC2001 & directory check for manifest.json ([`23b985f6`](https://github.com/FaserF/hassio-addons/commit/23b985f617fac95390f6d3ff04130459fee5de1a))
+
+### 📦 Dependencies
+
+- update integration links in standardization script and regenerate readmes ([`3645d7f9`](https://github.com/FaserF/hassio-addons/commit/3645d7f96b6d6890e311acce4b5983da25e0e9c3))
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+
 ## 3.4.1 (2026-06-17)
 
 ### 🚀 Other

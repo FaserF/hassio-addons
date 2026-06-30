@@ -30,11 +30,20 @@ By default, HTTPS is mapped to external port **8324** instead of the standard po
 
 3. **Restart the app** to apply the changes.
 
-**Important Notes:**
-
 - the app will **fail to start** if `ssl: true` is set but the certificate files are missing.
 - Ensure certificates are in place **before** enabling SSL.
 - The `certfile` and `keyfile` options are only used when `ssl: true`.
+
+#### 🔒 SSL & Local Access Troubleshooting
+
+If you access your website locally using its IP address (e.g., `https://192.168.1.50:8324`), your browser will display an SSL/TLS warning (such as `NET::ERR_CERT_COMMON_NAME_INVALID` or "Your connection is not private").
+
+This is expected behavior. SSL/TLS certificates (like those from Let's Encrypt or DuckDNS) are issued to validate specific domain names, not local IP addresses.
+
+To avoid this issue:
+
+- **For local testing/development**: Set `ssl: false` in the addon configuration and access the site via HTTP on port `80`.
+- **For production/remote access**: Access the website using the domain name for which the certificate was issued (e.g., `https://your-domain.duckdns.org:8324`).
 
 ### Options
 
@@ -57,11 +66,13 @@ website_name: null
 - `/data`: Used for persistent storage of the MariaDB database and internal configurations.
 
 <!-- PHP_INFO_START -->
+
 ## 🐘 PHP Information
 
 **PHP Version**: 8.5
 
 **Available PHP Modules**:
+
 - bcmath
 - bz2
 - calendar
@@ -104,6 +115,7 @@ website_name: null
 - xmlreader
 - xmlwriter
 - zip
+
 <!-- PHP_INFO_END -->
 
 ## Support

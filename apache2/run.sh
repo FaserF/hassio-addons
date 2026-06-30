@@ -19,7 +19,7 @@ _show_app_banner() {
 		VERSION="unknown"
 	fi
 	local NAME="Apache2"
-	local SLUG="apache2"
+	local GITHUB_PATH="apache2"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
 	local REPO="$MAINTAINER/hassio-addons"
@@ -87,7 +87,7 @@ _show_app_banner() {
 		local LATEST_STABLE=""
 
 		# Get latest stable version from config.yaml
-		if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//'); then
+		if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$GITHUB_PATH/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//'); then
 			: # Success
 		else
 			LATEST_STABLE=""
@@ -99,7 +99,7 @@ _show_app_banner() {
 				if [ -n "$DEV_COMMIT" ]; then
 					# Get latest commit for this App from GitHub
 					local LATEST_COMMIT=""
-					if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
+					if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$GITHUB_PATH&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
 						:
 					fi
 
@@ -248,7 +248,6 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		exit 1
 	fi
 	mkdir /etc/apache2/sites-enabled
-	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
 	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf
 	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default.conf
@@ -283,6 +282,9 @@ fi
 if [ "$ssl" = "true" ] || [ "$default_conf" != "default" ]; then
 	echo "Include /etc/apache2/sites-enabled/*.conf" >>/etc/apache2/httpd.conf
 fi
+
+# Enable mod_rewrite for URL rewriting (.htaccess support)
+sed -i 's/^#\(LoadModule rewrite_module modules\/mod_rewrite.so\)/\1/' /etc/apache2/httpd.conf
 
 sed -i -e '/AllowOverride/s/None/All/' /etc/apache2/httpd.conf
 
