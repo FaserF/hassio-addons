@@ -74,7 +74,7 @@ jobs:
 
       - name: 📝 Commit updated checksums
         if: steps.detect.outputs.addon != '' && steps.detect.outputs.version != ''
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: update checksums for ${{ steps.detect.outputs.addon }} ${{ steps.detect.outputs.version }} [skip-tests]"
           commit_user_name: "github-actions[bot]"
