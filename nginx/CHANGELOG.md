@@ -3,14 +3,15 @@
 ## 0.4.2 (2026-06-29)
 
 ### 🐛 Bug Fixes
+
 - mod_rewrite & .htaccess usage ([`4bcae452`](https://github.com/FaserF/hassio-addons/commit/4bcae4529e7823d4c0fcc43c66f3d3ab648bd15d))
 - fix shellcheck SC2001 & directory check for manifest.json ([`23b985f6`](https://github.com/FaserF/hassio-addons/commit/23b985f617fac95390f6d3ff04130459fee5de1a))
 
 ### 📦 Dependencies
+
 - update integration links in standardization script and regenerate readmes ([`3645d7f9`](https://github.com/FaserF/hassio-addons/commit/3645d7f96b6d6890e311acce4b5983da25e0e9c3))
 - download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
 - ⬆️ Update dependency alpine_edge/nginx to v1.30.3-r0 [skip-tests] (#854) [skip-tests] ([`e45c2004`](https://github.com/FaserF/hassio-addons/commit/e45c2004d266e2ba2b66073c87c5cbba1ba2195e))
-
 
 ## 0.4.1 (2026-06-17)
 
