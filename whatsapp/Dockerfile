@@ -53,11 +53,17 @@ RUN \
     echo "Downloading WhatsApp Gateway source code..." && \
     if [[ "${BUILD_VERSION}" == *"dev"* ]] || [[ "${BUILD_VERSION}" == "unknown" ]] || [[ "${BUILD_VERSION}" == "test" ]] || [[ -z "${BUILD_VERSION}" ]]; then \
         DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/heads/main.tar.gz"; \
+        echo "Fetching from: ${DOWNLOAD_URL}" && \
+        curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; \
     else \
         DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/tags/v${BUILD_VERSION}.tar.gz"; \
+        echo "Fetching from: ${DOWNLOAD_URL}" && \
+        if ! curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; then \
+            echo "⚠️ Tag v${BUILD_VERSION} not found. Falling back to main branch..." && \
+            DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/heads/main.tar.gz"; \
+            curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; \
+        fi \
     fi && \
-    echo "Fetching from: ${DOWNLOAD_URL}" && \
-    curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}" && \
     mkdir -p /opt/whatsapp && \
     tar -xzf /tmp/gateway.tar.gz -C /opt/whatsapp --strip-components=1 && \
     rm -rf /tmp/gateway.tar.gz && \
