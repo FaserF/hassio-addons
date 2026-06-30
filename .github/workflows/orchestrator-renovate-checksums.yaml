@@ -1,0 +1,82 @@
+name: Orchestrator Renovate Checksums
+
+permissions:
+  contents: write
+  pull-requests: read
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "pterodactyl-wings/Dockerfile"
+      - "matterbridge/Dockerfile"
+      - "netboot-xyz/Dockerfile"
+      - "solumati/Dockerfile"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-checksums:
+    name: 🔒 Update Binary Checksums
+    runs-on: ubuntu-latest
+    # Only run on Renovate PRs
+    if: github.actor == 'renovate[bot]'
+    steps:
+      - name: ⤵️ Check out PR branch
+        # zizmor: ignore[artipacked]
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: 🔍 Detect changed addon and version
+        id: detect
+        run: |
+          set -euo pipefail
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only origin/master...HEAD)
+          echo "Changed files: $CHANGED_FILES"
+
+          ADDON=""
+          VERSION=""
+
+          if echo "$CHANGED_FILES" | grep -q "pterodactyl-wings/Dockerfile"; then
+            ADDON="pterodactyl-wings"
+            VERSION=$(grep -oP 'ARG WINGS_VERSION=\K(v[\d.]+)' pterodactyl-wings/Dockerfile || true)
+          elif echo "$CHANGED_FILES" | grep -q "matterbridge/Dockerfile"; then
+            ADDON="matterbridge"
+            VERSION=$(grep -oP 'ARG MATTERBRIDGE_VERSION=\K(.+?)(?=\s|$)' matterbridge/Dockerfile || true)
+          elif echo "$CHANGED_FILES" | grep -q "netboot-xyz/Dockerfile"; then
+            ADDON="netboot-xyz"
+            VERSION=$(grep -oP 'ARG NETBOOTXYZ_VERSION=\K(.+?)(?=\s|$)' netboot-xyz/Dockerfile || true)
+          elif echo "$CHANGED_FILES" | grep -q "solumati/Dockerfile"; then
+            ADDON="solumati"
+            VERSION=$(grep -oP 'ARG SOLUMATI_VERSION=\K(.+?)(?=\s|$)' solumati/Dockerfile || true)
+          fi
+
+          echo "addon=$ADDON" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected addon=$ADDON version=$VERSION"
+
+      - name: 🔄 Update checksums
+        if: steps.detect.outputs.addon != '' && steps.detect.outputs.version != ''
+        run: |
+          bash .github/scripts/update-checksums.sh \
+            "${{ steps.detect.outputs.addon }}" \
+            "${{ steps.detect.outputs.version }}"
+
+      - name: 📝 Commit updated checksums
+        if: steps.detect.outputs.addon != '' && steps.detect.outputs.version != ''
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update checksums for ${{ steps.detect.outputs.addon }} ${{ steps.detect.outputs.version }} [skip-tests]"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          file_pattern: "*/Dockerfile"
