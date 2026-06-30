@@ -712,6 +712,7 @@ jobs:
           IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Inject Version Warning
         run: |
@@ -734,6 +735,7 @@ jobs:
           version: test
           build-args: |
             GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
+            BUILD_VERSION=${{ steps.info.outputs.version }}
 
   # ================================================================================
   # RELEASE: Build & Push
