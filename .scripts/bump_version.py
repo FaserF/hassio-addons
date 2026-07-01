@@ -378,7 +378,7 @@ def parse_version(version_str):
 
     # Check for dev suffix
     is_dev = "-dev" in version_base
-    clean_version = version_base.replace("-dev", "")
+    clean_version = version_base.split("-dev")[0]
 
     parts = clean_version.split(".")
     if len(parts) != 3:
@@ -478,8 +478,8 @@ def bump_version(
     with open(config_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Regex to find version (supports -dev and -dev+commit suffix)
-    version_pattern = r"""^(version: ["']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev)?(?:\+[a-f0-9]+)?)(["']?)"""
+    # Regex to find version (supports -dev and -dev-timestamp-commit suffix)
+    version_pattern = r"""^(version: ["']?)([0-9]+\.[0-9]+\.[0-9]+(?:-dev(?:-[^"'\s]+)?)?)(["']?)"""
     match = re.search(version_pattern, content, re.MULTILINE)
 
     if not match:
@@ -528,11 +528,12 @@ def bump_version(
                 except Exception:
                     commit_sha = ""
 
+                timestamp = datetime.now().strftime("%Y%m%d-%H%M")
                 if commit_sha:
                     # Docker tags cannot contain '+', so use '-' instead
-                    new_version = f"{major}.{minor}.{patch}-dev-{commit_sha}"
+                    new_version = f"{major}.{minor}.{patch}-dev-{timestamp}-{commit_sha}"
                 else:
-                    new_version = f"{major}.{minor}.{patch}-dev"
+                    new_version = f"{major}.{minor}.{patch}-dev-{timestamp}"
             else:
                 new_version = f"{major}.{minor}.{patch}"
 

@@ -16,6 +16,7 @@ import json
 import os
 import re
 import subprocess
+from datetime import datetime
 
 import yaml
 
@@ -317,7 +318,8 @@ def update_integration_for_edge() -> bool:
         except Exception:
             commit_sha = "unknown"
 
-        manifest["version"] = f"{base_version}-dev-{commit_sha}"
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M")
+        manifest["version"] = f"{base_version}-dev-{timestamp}-{commit_sha}"
 
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
