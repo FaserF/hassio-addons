@@ -82,6 +82,7 @@ export function registerAPIRoutes(app) {
       }
       fs.mkdirSync(authDir, { recursive: true });
       session.isConnected = false;
+      session.isConnecting = false;
       session.currentQR = null;
       session.eventQueue = [];
       session.connectionLogs = [];
