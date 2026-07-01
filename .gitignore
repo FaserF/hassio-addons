@@ -83,5 +83,6 @@ validate_json.py
 *black*.txt
 *lint*.txt
 *markdown*.txt
-*error*.txt
 /scratch
+/whatsapp/app/data/
+/whatsapp/app/sessions/

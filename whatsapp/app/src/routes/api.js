@@ -898,6 +898,98 @@ export function registerAPIRoutes(app) {
     });
   });
 
+  app.get('/api/chats', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    if (!session.messageStore) return res.json([]);
+
+    const messages = Array.from(session.messageStore.values());
+    const JidMap = {};
+
+    messages.forEach(msg => {
+      if (!msg.key || !msg.key.remoteJid) return;
+      const jid = msg.key.remoteJid;
+      if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
+
+      const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
+      let previewText = '';
+      if (msg.message) {
+        const m = msg.message;
+        previewText = m.conversation || 
+                      m.extendedTextMessage?.text || 
+                      m.imageMessage?.caption || 
+                      m.videoMessage?.caption || 
+                      (m.audioMessage ? '🎵 Audio' : '') ||
+                      (m.imageMessage ? '🖼️ Image' : '') ||
+                      (m.videoMessage ? '📹 Video' : '') ||
+                      (m.documentMessage ? '📄 Document' : '') ||
+                      (m.pollCreationMessage ? '📊 Poll' : '') ||
+                      '';
+      }
+
+      if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
+        let name = jid.split('@')[0];
+        if (jid.endsWith('@g.us') && session.groupCache && session.groupCache.has(jid)) {
+          name = session.groupCache.get(jid);
+        } else if (msg.pushName) {
+          name = msg.pushName;
+        }
+
+        JidMap[jid] = {
+          jid,
+          name,
+          preview: previewText,
+          timestamp: msgTime,
+          fromMe: msg.key.fromMe || false
+        };
+      } else if (msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
+        JidMap[jid].name = msg.pushName;
+      }
+    });
+
+    const chats = Object.values(JidMap).sort((a, b) => b.timestamp - a.timestamp);
+    res.json(chats);
+  });
+
+  app.get('/api/messages', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const targetJid = req.query.jid;
+
+    if (!targetJid) return res.status(400).json({ detail: 'Missing jid parameter' });
+    if (!session.messageStore) return res.json([]);
+
+    const messages = Array.from(session.messageStore.values())
+      .filter(msg => msg.key && msg.key.remoteJid === targetJid)
+      .map(msg => {
+        const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
+        let text = '';
+        if (msg.message) {
+          const m = msg.message;
+          text = m.conversation || 
+                 m.extendedTextMessage?.text || 
+                 m.imageMessage?.caption || 
+                 m.videoMessage?.caption || 
+                 (m.imageMessage ? '[Image]' : '') ||
+                 (m.videoMessage ? '[Video]' : '') ||
+                 (m.audioMessage ? '[Audio]' : '') ||
+                 (m.documentMessage ? '[Document]' : '') ||
+                 (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+                 '';
+        }
+        return {
+          id: msg.key.id,
+          fromMe: msg.key.fromMe || false,
+          senderName: msg.key.fromMe ? 'You' : (msg.pushName || targetJid.split('@')[0]),
+          text,
+          timestamp
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    res.json(messages);
+  });
+
   app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
     const sessionId = sanitizeSessionId(req.body.session_id || 'default');
     const session = getSession(sessionId);

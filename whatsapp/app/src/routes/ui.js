@@ -29,440 +29,1497 @@ export function registerUIRoutes(app) {
 function renderDashboard(sessionId) {
   return `
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="en" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>WhatsApp Homeassistant App</title>
+        <title>WhatsApp Gateway - Home Assistant</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+        <!-- Google Font Plus Jakarta Sans -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <!-- FontAwesome Premium Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             :root {
                 --primary: #00a884;
                 --primary-dark: #008f6f;
-                --bg: #f0f2f5;
-                --card-bg: #ffffff;
-                --text: #111b21;
-                --text-secondary: #667781;
+                --bg-app: #0b141a;
+                --bg-sidebar: #111b21;
+                --bg-card: #202c33;
+                --bg-input: #2a3942;
+                --text-main: #e9edef;
+                --text-muted: #8696a0;
+                --border-color: #222d34;
                 --danger: #ea0038;
+                --danger-hover: #c2002f;
                 --warning: #ffbc00;
                 --success: #d9fdd3;
-                --border: #e9edef;
-                --sidebar-bg: #111b21;
-                --sidebar-text: #ffffff;
-                --transition: all 0.2s ease;
-                --qr-bg: #ffffff;
-                --code-bg: #e9ecef;
-                --token-bg: #fff8c5;
-                --token-text: #9a6700;
-                --token-border: #d4a017;
-                --banner-bg: #fff8c5;
-                --banner-border: #d4a017;
-                --banner-text: #856404;
-                --passkey-bg: #fff3cd;
-                --passkey-border: #e07b00;
-                --passkey-text: #5a3e00;
-                --btn-secondary-bg: #e9edef;
-                --btn-secondary-hover: #d1d7db;
-                --btn-secondary-text: #111b21;
-                --btn-danger-bg: #fee;
-                --btn-danger-text: #ea0038;
-                --log-time-color: #8696a0;
+                --info: #3498db;
+                
+                --sidebar-width: 280px;
+                --header-height: 70px;
+                --border-radius: 16px;
+                --border-radius-sm: 8px;
+                --transition-speed: 0.2s;
+                --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+                --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             }
 
-            [data-theme="dark"] {
-                --bg: #0b141a;
-                --card-bg: #111b21;
-                --text: #e9edef;
-                --text-secondary: #8696a0;
-                --border: #222d34;
-                --sidebar-bg: #202c33;
-                --success: #0b3d22;
-                --primary: #00a884;
-                --primary-dark: #00cc99;
-                --warning: #ffbc00;
-                --passkey-bg: #3a2a00;
-                --passkey-border: #e07b00;
-                --passkey-text: #ffe0a0;
-                --qr-bg: #ffffff;
-                --code-bg: #202c33;
-                --token-bg: #202c33;
-                --token-text: #00a884;
-                --token-border: #00a884;
-                --banner-bg: #2a2106;
-                --banner-border: #45370a;
-                --banner-text: #ffbc00;
-                --btn-secondary-bg: #222d34;
-                --btn-secondary-hover: #313d45;
-                --btn-secondary-text: #e9edef;
-                --btn-danger-bg: #2a0a11;
-                --btn-danger-text: #ea0038;
-                --log-time-color: #8696a0;
+            [data-theme="light"] {
+                --bg-app: #f0f2f5;
+                --bg-sidebar: #ffffff;
+                --bg-card: #ffffff;
+                --bg-input: #f0f2f5;
+                --text-main: #111b21;
+                --text-muted: #667781;
+                --border-color: #e9edef;
+                --success: #d9fdd3;
+                --shadow-premium: 0 4px 16px rgba(0,0,0,0.06);
             }
-            * { box-sizing: border-box; }
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; font-size: 14px; }
 
-            .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; transition: all 0.3s; position: sticky; top: 0; height: 100vh; }
-            .sidebar h1 { font-size: 1.8rem; line-height: 1.2; margin: 0; color: var(--primary); flex-shrink: 0; }
-            .sidebar-links { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; flex-grow: 1; overflow-y: auto; }
-            .sidebar-link { color: #8696a0; text-decoration: none; padding: 10px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; font-size: 0.95rem; flex-shrink: 0; }
-            .sidebar-link:hover { background: #202c33; color: #fff; border-color: #313d45; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+                font-family: var(--font-family);
+                background-color: var(--bg-app);
+                color: var(--text-main);
+                overflow: hidden;
+                height: 100vh;
+                width: 100vw;
+                -webkit-font-smoothing: antialiased;
+                display: flex;
+            }
 
-            .main-content { flex: 1; padding: 2rem; overflow-y: auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+            .app-layout {
+                display: flex;
+                width: 100%;
+                height: 100vh;
+            }
 
-            .warning-banner {
-                background: var(--banner-bg);
-                border: 1px solid var(--banner-border);
-                color: var(--banner-text);
-                padding: 12px 20px;
-                border-radius: 8px;
-                margin-bottom: 5px;
-                display: none;
+            /* Sidebar */
+            .sidebar {
+                width: var(--sidebar-width);
+                background-color: var(--bg-sidebar);
+                border-right: 1px solid var(--border-color);
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+                height: 100vh;
+                transition: var(--transition-speed) ease;
+            }
+
+            .sidebar-header {
+                height: var(--header-height);
+                padding: 0 24px;
+                display: flex;
                 align-items: center;
-                gap: 15px;
-                font-weight: 500;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                border-bottom: 1px solid var(--border-color);
             }
-            .warning-banner b { color: var(--banner-text); }
-            .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-            .header-actions { display: flex; align-items: center; gap: 1rem; }
-            .theme-toggle {
-                background: var(--card-bg);
-                border: 1px solid var(--border);
-                color: var(--text);
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .logo-icon {
+                font-size: 28px;
+                color: var(--primary);
+                filter: drop-shadow(0 0 6px rgba(0, 168, 132, 0.4));
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-title {
+                font-weight: 700;
+                font-size: 16px;
+                color: var(--text-main);
+                letter-spacing: 0.5px;
+            }
+
+            .logo-subtitle {
+                font-size: 11px;
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+
+            .nav-menu {
+                padding: 24px 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                flex-grow: 1;
+                overflow-y: auto;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                background: none;
+                border: none;
+                padding: 12px 16px;
+                color: var(--text-muted);
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                border-radius: var(--border-radius-sm);
                 cursor: pointer;
-                width: 40px;
-                height: 40px;
+                text-align: left;
+                transition: all var(--transition-speed) ease;
+                width: 100%;
+                text-decoration: none;
+            }
+
+            .nav-item:hover {
+                color: var(--text-main);
+                background-color: rgba(0, 168, 132, 0.05);
+            }
+
+            .nav-item.active {
+                color: var(--text-main);
+                background-color: rgba(0, 168, 132, 0.15);
+                font-weight: 600;
+            }
+
+            .nav-item.active .nav-icon {
+                color: var(--primary);
+            }
+
+            .nav-icon {
+                font-size: 16px;
+                width: 20px;
+                text-align: center;
+                transition: color var(--transition-speed);
+            }
+
+            .sidebar-footer {
+                padding: 20px 24px;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .sys-info-title {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--text-muted);
+                margin-bottom: 8px;
+            }
+
+            .sys-info-text {
+                font-size: 12px;
+                color: var(--text-muted);
+                line-height: 1.6;
+            }
+
+            .sys-info-val {
+                color: var(--text-main);
+                font-weight: 500;
+            }
+
+            /* Main Content Area */
+            .main-content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: var(--bg-app);
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .top-header {
+                height: var(--header-height);
+                padding: 0 32px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid var(--border-color);
+                background-color: var(--bg-sidebar);
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .header-title {
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            .session-switcher {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background-color: var(--bg-input);
+                border: 1px solid var(--border-color);
+                padding: 6px 14px;
+                border-radius: 20px;
+            }
+
+            .session-switcher span {
+                font-size: 12px;
+                color: var(--text-muted);
+            }
+
+            .session-switcher select {
+                background: none;
+                border: none;
+                color: var(--text-main);
+                font-family: inherit;
+                font-weight: 600;
+                font-size: 13px;
+                outline: none;
+                cursor: pointer;
+            }
+
+            .theme-toggle {
+                background: none;
+                border: 1px solid var(--border-color);
+                color: var(--text-main);
+                cursor: pointer;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.2rem;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                transition: var(--transition);
+                transition: var(--transition-speed);
+                background-color: var(--bg-sidebar);
+            }
+
+            .theme-toggle:hover {
+                background-color: var(--bg-input);
+            }
+
+            /* Scrollable Content Body */
+            .content-body {
+                padding: 32px;
+                overflow-y: auto;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            /* Banner System */
+            .banner {
+                padding: 16px 20px;
+                border-radius: var(--border-radius-sm);
+                display: flex;
+                align-items: flex-start;
+                gap: 14px;
+                font-size: 13px;
+                line-height: 1.5;
+                box-shadow: var(--shadow-premium);
+            }
+
+            .banner-warning {
+                background-color: rgba(255, 188, 0, 0.1);
+                border: 1px solid rgba(255, 188, 0, 0.3);
+                color: #ffe699;
+            }
+
+            .banner-warning-icon {
+                color: var(--warning);
+                font-size: 20px;
+            }
+
+            .banner-info {
+                background-color: rgba(0, 168, 132, 0.1);
+                border: 1px solid rgba(0, 168, 132, 0.3);
+                color: #d4f8e3;
+            }
+
+            .banner-info-icon {
+                color: var(--primary);
+                font-size: 20px;
+            }
+
+            /* Tab Panels */
+            .tab-panel {
+                display: none;
+                flex-direction: column;
+                gap: 24px;
+                animation: fadeIn var(--transition-speed) ease-in-out forwards;
+            }
+
+            .tab-panel.active {
+                display: flex;
+            }
+
+            /* Grid Layouts */
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+                gap: 24px;
+            }
+
+            .card {
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--border-radius);
+                padding: 24px;
+                box-shadow: var(--shadow-premium);
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .card-title {
+                font-size: 15px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: var(--text-muted);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .card-title i {
+                color: var(--primary);
+                font-size: 16px;
+            }
+
+            /* Status visual styles */
+            .status-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 16px 0;
+            }
+
+            .status-badge {
+                padding: 8px 18px;
+                border-radius: 20px;
+                font-weight: 700;
+                font-size: 14px;
+                margin-bottom: 8px;
+                letter-spacing: 0.5px;
+            }
+
+            .status-badge.connected {
+                background-color: rgba(0, 168, 132, 0.15);
+                color: var(--primary);
+            }
+
+            .status-badge.disconnected {
+                background-color: rgba(234, 0, 56, 0.15);
+                color: var(--danger);
+            }
+
+            .status-badge.waiting {
+                background-color: rgba(255, 188, 0, 0.15);
+                color: var(--warning);
+            }
+
+            .disconnect-reason {
+                font-size: 12px;
+                color: var(--danger);
+                font-weight: 500;
+            }
+
+            /* Stats Columns */
+            .stats-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 12px;
+                margin-top: 10px;
+            }
+
+            .stat-box {
+                background-color: var(--bg-app);
+                border: 1px solid var(--border-color);
+                border-radius: var(--border-radius-sm);
+                padding: 12px 8px;
+                text-align: center;
+            }
+
+            .stat-val {
+                font-size: 20px;
+                font-weight: 800;
+                color: var(--primary);
+            }
+
+            .stat-label {
+                font-size: 10px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                margin-top: 4px;
+                font-weight: 600;
+            }
+
+            /* QR Container styling */
+            .qr-container {
+                background-color: #ffffff;
+                border: 2px dashed var(--border-color);
+                border-radius: var(--border-radius-sm);
+                padding: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 180px;
+            }
+
+            .qr-code {
+                max-width: 160px;
+                height: auto;
+                image-rendering: pixelated;
+            }
+
+            /* History Lists */
+            .history-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                max-height: 320px;
+                overflow-y: auto;
+                padding-right: 4px;
+            }
+
+            .history-item {
+                background-color: var(--bg-app);
+                border: 1px solid var(--border-color);
+                border-radius: var(--border-radius-sm);
+                padding: 12px;
+                position: relative;
+            }
+
+            .history-item.failure {
+                border-left: 4px solid var(--danger);
+            }
+
+            .history-time {
+                font-size: 11px;
+                color: var(--text-muted);
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .history-target, .history-sender {
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-bottom: 4px;
+                display: block;
+            }
+
+            .history-msg {
+                font-size: 13px;
+                color: var(--text-main);
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+
+            .history-reason {
+                color: var(--danger);
+                font-size: 11px;
+                margin-top: 6px;
+                font-style: italic;
+                font-weight: 500;
+            }
+
+            .empty-state {
+                color: var(--text-muted);
+                font-style: italic;
+                text-align: center;
+                padding: 24px;
+                font-size: 13px;
+            }
+
+            /* Structured Details / Diagnostic Lists */
+            .details-box {
+                background-color: var(--bg-app);
+                border: 1px solid var(--border-color);
+                border-radius: var(--border-radius-sm);
+                padding: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .details-item {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .details-label {
+                font-size: 11px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+
+            code {
+                background-color: var(--bg-input);
+                color: var(--text-main);
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-family: 'JetBrains Mono', 'Courier New', monospace;
+                font-size: 12px;
+                word-break: break-all;
+                border: 1px solid var(--border-color);
+            }
+
+            .highlight-token {
+                background-color: rgba(0, 168, 132, 0.08);
+                border: 1px solid rgba(0, 168, 132, 0.3);
+                color: var(--primary);
+                font-weight: 600;
+                cursor: pointer;
+                user-select: all;
+            }
+
+            /* Log Viewer */
+            .logs-view {
+                background-color: #090e11;
+                color: #aebbc4;
+                padding: 16px;
+                border-radius: var(--border-radius-sm);
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 12px;
+                line-height: 1.5;
+                max-height: 400px;
+                overflow-y: auto;
+                border: 1px solid var(--border-color);
+            }
+
+            .log-entry {
+                margin-bottom: 6px;
+                padding-bottom: 4px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            }
+
+            .log-time {
+                color: var(--text-muted);
+                margin-right: 10px;
+            }
+
+            .log-type-error {
+                color: var(--danger);
+            }
+
+            .log-type-warning {
+                color: var(--warning);
+            }
+
+            /* Buttons */
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 10px 18px;
+                border-radius: var(--border-radius-sm);
+                font-family: inherit;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                transition: all var(--transition-speed) ease;
+                min-height: 40px;
+                text-decoration: none;
+            }
+
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .btn-primary {
+                background-color: var(--primary);
+                color: #000;
+            }
+
+            .btn-primary:hover {
+                background-color: #34e073;
+            }
+
+            .btn-secondary {
+                background-color: rgba(255, 255, 255, 0.05);
+                color: var(--text-main);
+                border: 1px solid var(--border-color);
+            }
+
+            .btn-secondary:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .btn-danger {
+                background-color: rgba(234, 0, 56, 0.1);
+                color: var(--danger);
+                border: 1px solid rgba(234, 0, 56, 0.2);
+            }
+
+            .btn-danger:hover {
+                background-color: rgba(234, 0, 56, 0.2);
+            }
+
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 11px;
+                min-height: 30px;
+            }
+
+            .btn-ghost {
+                background: none;
+                color: var(--text-muted);
+                padding: 8px;
+                border-radius: 50%;
+                min-height: auto;
+            }
+
+            .btn-ghost:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+                color: var(--text-main);
+            }
+
+            /* Info grid */
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .info-item {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .info-label {
+                font-size: 11px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+
+            .info-value {
+                font-weight: 700;
+                font-size: 13px;
+                margin-top: 4px;
+            }
+
+            /* Modal overlay */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.6);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(4px);
+                opacity: 0;
+                transition: opacity var(--transition-speed) ease;
+            }
+
+            .modal-overlay.show {
+                display: flex;
+                opacity: 1;
+            }
+
+            .modal-card {
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--border-radius);
+                width: 90%;
+                max-width: 440px;
+                padding: 24px;
+                box-shadow: var(--shadow-premium);
+                transform: scale(0.95);
+                transition: transform var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .modal-overlay.show .modal-card {
+                transform: scale(1);
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+
+            .modal-header h3 {
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            .modal-close-btn {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                font-size: 16px;
+                cursor: pointer;
+            }
+
+            .modal-close-btn:hover {
+                color: var(--text-main);
+            }
+
+            .modal-body {
+                margin-bottom: 24px;
+                font-size: 13px;
+                color: var(--text-muted);
+                line-height: 1.5;
+            }
+
+            .modal-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+            }
+
+            /* Toast container */
+            .toast-container {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                z-index: 9999;
+            }
+
+            .toast {
+                background-color: var(--bg-card);
+                border-left: 4px solid var(--info);
+                color: var(--text-main);
+                padding: 14px 20px;
+                border-radius: var(--border-radius-sm);
+                box-shadow: var(--shadow-premium);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 280px;
+                max-width: 400px;
+                animation: slideIn var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                transition: opacity var(--transition-speed);
+            }
+
+            .toast.success { border-left-color: var(--success); }
+            .toast.danger { border-left-color: var(--danger); }
+            .toast.warning { border-left-color: var(--warning); }
+
+            .toast-icon { font-size: 16px; }
+            .toast.success .toast-icon { color: var(--primary); }
+            .toast.danger .toast-icon { color: var(--danger); }
+            .toast.warning .toast-icon { color: var(--warning); }
+
+            .footer-info {
+                margin-top: auto;
+                color: var(--text-muted);
+                font-size: 11px;
+                text-align: center;
+                border-top: 1px solid var(--border-color);
+                padding: 16px;
+            }
+
+            /* Steps guide list */
+            .steps-list {
+                padding-left: 20px;
+                font-size: 12px;
+                color: var(--text-muted);
+                line-height: 1.6;
+            }
+
+            .steps-list li {
+                margin-bottom: 6px;
+            }
+
+            .steps-list strong {
+                color: var(--text-main);
+            }
+
+            .spinner {
+                width: 28px;
+                height: 28px;
+                border: 3px solid rgba(0, 0, 0, 0.1);
+                border-top-color: var(--primary);
+                border-radius: 50%;
+                animation: spin 1s infinite linear;
+            }
+
+            /* Animations */
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            @keyframes pulse {
+                0% { opacity: 0.6; }
+                100% { opacity: 1; }
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(4px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+
+            /* Chats tab layout classes */
+            .chat-container-layout {
+                display: flex;
+                height: calc(100vh - 180px);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                overflow: hidden;
+                background-color: var(--card-bg);
+            }
+            .chat-list-panel {
+                width: 320px;
+                border-right: 1px solid var(--border-color);
+                display: flex;
+                flex-direction: column;
+                background-color: var(--bg-main);
+            }
+            .chat-list-header {
+                padding: 16px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .search-box-wrapper {
+                display: flex;
+                align-items: center;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            .search-icon {
+                color: var(--text-muted);
+                font-size: 14px;
+            }
+            .chat-search-input {
+                border: none;
+                background: transparent;
+                outline: none;
+                width: 100%;
+                font-size: 14px;
+                color: var(--text-main);
+            }
+            .chat-list-items {
+                flex: 1;
+                overflow-y: auto;
+            }
+            .chat-item {
+                display: flex;
+                padding: 12px 16px;
+                align-items: center;
+                border-bottom: 1px solid var(--border-color);
+                cursor: pointer;
+                transition: background-color var(--transition-speed);
+                gap: 12px;
+            }
+            .chat-item:hover, .chat-item.active {
+                background-color: var(--card-bg-hover);
+            }
+            .chat-avatar {
+                font-size: 32px;
+                color: var(--primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .chat-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .chat-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                margin-bottom: 4px;
+            }
+            .chat-name {
+                font-weight: 600;
+                color: var(--text-main);
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-time {
+                font-size: 11px;
+                color: var(--text-muted);
+            }
+            .chat-last-msg {
+                font-size: 13px;
+                color: var(--text-muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-thread-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: var(--card-bg);
+            }
+            .chat-thread-empty {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 32px;
+                color: var(--text-muted);
+            }
+            .chat-thread-empty-icon {
+                font-size: 64px;
+                color: var(--primary);
+                opacity: 0.8;
+                margin-bottom: 16px;
+            }
+            .chat-thread-active {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            .chat-thread-header {
+                display: flex;
+                align-items: center;
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--border-color);
+                background-color: var(--bg-main);
+                gap: 12px;
+            }
+            .chat-header-avatar {
+                font-size: 36px;
+                color: var(--primary);
+            }
+            .chat-header-info h4 {
+                margin: 0;
+                font-size: 15px;
+                color: var(--text-main);
+            }
+            .chat-header-info p {
+                margin: 2px 0 0;
+                font-size: 12px;
+                color: var(--text-muted);
+            }
+            .chat-thread-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                background-image: radial-gradient(var(--border-color) 1px, transparent 0);
+                background-size: 16px 16px;
+            }
+            .msg-bubble-row {
+                display: flex;
+                width: 100%;
+            }
+            .msg-bubble-row.outbound {
+                justify-content: flex-end;
+            }
+            .msg-bubble-row.inbound {
+                justify-content: flex-start;
+            }
+            .msg-bubble {
+                max-width: 65%;
+                padding: 10px 14px;
+                border-radius: 12px;
+                position: relative;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+            .msg-bubble-row.outbound .msg-bubble {
+                background-color: var(--primary);
+                color: #ffffff;
+                border-top-right-radius: 0;
+            }
+            .msg-bubble-row.inbound .msg-bubble {
+                background-color: var(--bg-main);
+                color: var(--text-main);
+                border-top-left-radius: 0;
+                border: 1px solid var(--border-color);
+            }
+            .msg-bubble-text {
+                font-size: 14px;
+                line-height: 1.4;
+                word-break: break-word;
+            }
+            .msg-bubble-time {
+                font-size: 10px;
+                margin-top: 4px;
+                text-align: right;
+                opacity: 0.7;
+            }
+            .chat-thread-footer {
+                padding: 16px 24px;
+                border-top: 1px solid var(--border-color);
+                background-color: var(--bg-main);
+            }
+            .chat-message-form {
+                display: flex;
+                gap: 12px;
+            }
+            .chat-message-input {
+                flex: 1;
+                border: 1px solid var(--border-color);
+                background: var(--card-bg);
+                border-radius: 8px;
+                padding: 10px 16px;
+                font-size: 14px;
+                color: var(--text-main);
                 outline: none;
             }
-            .theme-toggle:hover {
-                background: var(--border);
+            .chat-message-input:focus {
+                border-color: var(--primary);
             }
-            .session-switcher { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-            select { border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; outline: none; font-size: 0.9rem; }
-
-            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-            .card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1rem; }
-            .card-title { font-weight: 700; font-size: 1.1rem; color: var(--text); display: flex; align-items: center; gap: 10px; }
-
-            .status-section { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
-            .status-badge { padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin: 10px 0; letter-spacing: 0.5px; width: fit-content; }
-            .status-badge.connected { background: var(--success); color: var(--primary); }
-            .status-badge.disconnected { background: rgba(234, 0, 56, 0.1); color: var(--danger); }
-            .status-badge.waiting { background: rgba(255, 188, 0, 0.1); color: var(--warning); }
-
-            .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px; }
-            .stat-box { background: var(--bg); padding: 10px; border-radius: 12px; }
-            .stat-val { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-            .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
-
-            .qr-container { background: var(--qr-bg); border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-            .qr-code { max-width: 100%; height: auto; border-radius: 8px; }
-
-            .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
-            .history-item { background: var(--bg); padding: 10px; border-radius: 10px; position: relative; word-wrap: break-word; }
-            .history-item.failure { border-left: 4px solid var(--danger); }
-            .history-time { font-size: 0.7rem; color: var(--text-secondary); display: block; }
-            .history-target, .history-sender { font-weight: 700; font-size: 0.85rem; margin: 4px 0; display: block; }
-            .history-msg { font-size: 0.9rem; color: var(--text); white-space: pre-wrap; word-break: break-all; }
-            .history-reason { color: var(--danger); font-size: 0.75rem; margin-top: 5px; font-style: italic; }
-            .empty-state { color: var(--text-secondary); font-style: italic; text-align: center; padding: 20px; }
-
-            .details-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; }
-            code { background: var(--code-bg); color: var(--text); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; word-break: break-all; text-decoration: none; }
-
-            .logs-view { background: #111b21; color: #00ff41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 250px; overflow-y: auto; }
-            .log-entry { margin-bottom: 4px; border-bottom: 1px solid #202c33; padding-bottom: 2px; }
-
-            .footer-info { margin-top: 2rem; color: var(--text-secondary); font-size: 0.75rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; width: 100%; }
-            .log-time { color: var(--log-time-color); }
-            .highlight-token { background: var(--token-bg); color: var(--token-text); padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid var(--token-border); user-select: all; text-decoration: none; }
-            .btn { cursor: pointer; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; transition: transform 0.1s, background 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; min-height: 44px; }
-            .btn:active { transform: scale(0.98); }
-            .btn-primary { background: var(--primary); color: white; }
-            .btn-primary:hover { background: var(--primary-dark); }
-            .btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
-            .btn-secondary:hover { background: var(--btn-secondary-hover); }
-            .btn-danger { background: var(--btn-danger-bg); color: var(--btn-danger-text); }
-            .btn-danger:hover { background: rgba(234, 0, 56, 0.2); }
-
-            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-            .info-item { display: flex; flex-direction: column; }
-            .info-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
-            .info-value { font-weight: 600; font-size: 0.9rem; }
+            .chat-send-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 42px;
+                height: 42px;
+                padding: 0;
+                border-radius: 8px;
+            }
 
             @media (max-width: 768px) {
                 body { flex-direction: column; }
-                .sidebar { width: 100%; padding: 1rem; border-bottom: 1px solid #202c33; height: auto; }
-                .main-content { padding: 1.5rem; }
-                .grid { grid-template-columns: 1fr; }
-                .dashboard-header { flex-direction: column; align-items: flex-start; }
-            }
-
-            @media (max-width: 480px) {
-                .main-content { padding: 1rem; }
-                .card { padding: 1rem; }
-                .stats-row { grid-template-columns: 1fr 1fr; }
-                .info-grid { grid-template-columns: 1fr; }
+                .sidebar { width: 100%; height: auto; border-bottom: 1px solid var(--border-color); }
+                .main-content { height: auto; overflow: visible; }
+                .content-body { padding: 16px; }
             }
         </style>
     </head>
     <body>
-        <div class="sidebar">
-            <h1 id="ui-title">WhatsApp<br><span style="color: var(--sidebar-text); opacity: 0.8; font-size: 1.4rem;">HA-App</span></h1>
-            <div class="sidebar-links">
-                <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="sidebar-link">📖 Documentation</a>
-                <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sidebar-link">🧩 Integration Repo</a>
-                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="sidebar-link">📦 HA App Repo</a>
-                <a href="logs" target="_blank" class="sidebar-link">📄 Connection Logs</a>
-                <a id="full-logs-link" href="#" target="_top" class="sidebar-link">📋 Full System Logs</a>
-            </div>
-
-            <div style="margin-top: auto; padding-top: 1rem; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.05);">
-                <div class="stat-label">System Info</div>
-                <div style="font-size: 0.8rem; color: #8696a0;">
-                    Node: <span id="node-version">...</span><br>
-                    HA App: <span id="addon-version-sidebar" style="color: var(--primary);">...</span><br>
-                    Integration: <span id="int-version-sidebar" style="color: var(--primary);">...</span><br>
-                    Baileys: <span id="baileys-version">...</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div id="dev-banner" class="warning-banner">
-                <span style="font-size: 1.5rem;">⚠️</span>
-                <div>
-                    <b>Experimental Version Active</b><br>
-                    <span style="font-size: 0.85rem; opacity: 0.9;">You are running a development, edge, or beta version. Features may be unstable.</span>
-                </div>
-            </div>
-
-            <div id="passkey-banner" style="display:none; margin-bottom:1rem; padding:1.1rem 1.3rem; border-radius:10px; border:2px solid var(--passkey-border); background:var(--passkey-bg); color:var(--passkey-text); display:none; align-items:flex-start; gap:1rem;">
-                <span style="font-size:2rem; flex-shrink:0;">🔑</span>
-                <div style="flex:1;">
-                    <b style="font-size:1rem;">WhatsApp Passkey Required</b><br>
-                    <span style="font-size:0.875rem; line-height:1.6;">
-                        WhatsApp is requesting a passkey verification after QR scan. This is a <b>known limitation</b> of the underlying Baileys library
-                        (<a href="https://github.com/WhiskeySockets/Baileys/issues/2672" target="_blank" style="color:inherit;">Baileys #2672</a>).
-                        The session cannot complete pairing until the passkey is removed from your phone.
-                    </span>
-                    <div style="margin-top:0.75rem; font-size:0.875rem;">
-                        <b>✅ Fix (Option 1 — Recommended):</b><br>
-                        Open <b>WhatsApp</b> on your phone &rarr; <b>Settings</b> &rarr; <b>Account</b> &rarr; <b>Passkeys</b> &rarr; <b>Remove all passkeys</b>.<br>
-                        Then click <b>Restart</b> below to retry the connection.
-                    </div>
-                    <div style="margin-top:0.6rem; font-size:0.82rem; opacity:0.85; border-top:1px solid var(--passkey-border); padding-top:0.6rem;">
-                        <b>🧪 Option 2 — Experimental Baileys fork:</b> A community fork
-                        (<a href="https://github.com/Qiua/Baileys/commit/210740666c5e24a88e53dab7f19329bb336e1525" target="_blank" style="color:inherit;">Qiua/Baileys</a>
-                        / <a href="https://github.com/WhiskeySockets/Baileys/pull/2676" target="_blank" style="color:inherit;">PR #2676</a>)
-                        is working on native passkey support for Baileys. This is <b>not yet stable</b> and not merged into the official Baileys release.
-                        Once merged, a future app update will include it automatically.
+      <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fab fa-whatsapp logo-icon"></i>
+                    <div class="logo-text">
+                        <span class="logo-title">WhatsApp Gateway</span>
+                        <span class="logo-subtitle">Home Assistant</span>
                     </div>
                 </div>
             </div>
-            <div class="dashboard-header">
-                <h2 style="margin:0;">Dashboard Overview</h2>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-chart-pie nav-icon"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="logs">
+                    <i class="fas fa-terminal nav-icon"></i>
+                    <span>Daemon Logs</span>
+                </button>
+                <button class="nav-item" data-tab="chats">
+                    <i class="fas fa-comments nav-icon"></i>
+                    <span>Chats</span>
+                </button>
+                <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item">
+                    <i class="fas fa-book nav-icon"></i>
+                    <span>Documentation</span>
+                </a>
+                <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="nav-item">
+                    <i class="fas fa-puzzle-piece nav-icon"></i>
+                    <span>Integration Repo</span>
+                </a>
+                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item">
+                    <i class="fas fa-cubes nav-icon"></i>
+                    <span>HA App Repo</span>
+                </a>
+                <a id="raw-logs-link" href="#" target="_blank" class="nav-item">
+                    <i class="fas fa-file-alt nav-icon"></i>
+                    <span>Raw Connection Logs</span>
+                </a>
+                <a id="full-logs-link" href="#" target="_top" class="nav-item" style="display:none;">
+                    <i class="fas fa-file-invoice nav-icon"></i>
+                    <span>Full System Logs</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sys-info-title">System Properties</div>
+                <div class="sys-info-text">
+                    Node: <span id="node-version" class="sys-info-val">...</span><br>
+                    Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span><br>
+                    Integration: <span id="int-version-sidebar" class="sys-info-val">...</span><br>
+                    Baileys: <span id="baileys-version" class="sys-info-val">...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="header-title" id="page-title">Dashboard</h1>
+                </div>
                 <div class="header-actions">
-                    <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
-                        🌓
-                    </button>
                     <div class="session-switcher">
                         <span>Session:</span>
                         <select id="session-select" onchange="switchSession(this.value)">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
+                    <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
+                        🌓
+                    </button>
                 </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Warnings & Notices -->
+                <div id="dev-banner" class="banner banner-warning" style="display:none;">
+                    <i class="fas fa-exclamation-triangle banner-warning-icon"></i>
+                    <div>
+                        <strong>Development / Beta Release Active</strong><br>
+                        You are running a beta or edge version of the gateway. Some settings may behave experimentally.
+                    </div>
+                </div>
+
+                <div id="passkey-banner" class="banner banner-warning" style="display:none;">
+                    <i class="fas fa-key banner-warning-icon"></i>
+                    <div>
+                        <strong>WhatsApp Passkey Requirement Detected</strong><br>
+                        Your account has passkeys active which restricts Baileys pairing. Open WhatsApp Settings &rarr; Account &rarr; Passkeys and remove them to pair this daemon. Click restart afterward.
+                    </div>
+                </div>
+
+                <!-- Tab: Dashboard -->
+                <section id="tab-dashboard" class="tab-panel active">
+                    <div class="grid">
+                        
+                        <!-- Connection & QR -->
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-plug"></i> Connection Status</div>
+                            <div class="status-container">
+                                <div id="status-badge" class="status-badge disconnected">Initializing...</div>
+                                <div id="disconnect-reason" class="disconnect-reason"></div>
+                            </div>
+
+                            <div id="qr-container" class="qr-container" style="display:none;">
+                                <img id="qr-code" class="qr-code" src="" alt="Pairing QR Code" />
+                            </div>
+
+                            <div id="init-placeholder" class="qr-container">
+                                <div class="spinner"></div>
+                            </div>
+
+                            <div class="stats-row">
+                                <div class="stat-box"><div id="stat-sent" class="stat-val">0</div><div class="stat-label">Sent</div></div>
+                                <div class="stat-box"><div id="stat-received" class="stat-val">0</div><div class="stat-label">Received</div></div>
+                                <div class="stat-box"><div id="stat-failed" class="stat-val">0</div><div class="stat-label">Failed</div></div>
+                            </div>
+                            <div style="font-size:11px; text-align:center; color: var(--text-muted); font-weight:600;">
+                                Uptime: <span id="val-uptime" style="color:var(--text-main);">00:00:00</span> &bull; 
+                                Reconnections: <span id="val-reconnects" style="color:var(--text-main);">0</span>
+                            </div>
+                        </div>
+
+                        <!-- HA Credentials -->
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-home"></i> Home Assistant Setup</div>
+                            <div class="details-box">
+                                <div class="details-item">
+                                    <span class="details-label">Addon Host URI</span>
+                                    <code>http://${os.hostname()}:${PORT}</code>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">API Bearer Token</span>
+                                    <code class="highlight-token" title="Click to Select All">${API_TOKEN}</code>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Static Local Address</span>
+                                    <code>http://${os.networkInterfaces().eth0?.[0]?.address || '127.0.0.1'}:${PORT}</code>
+                                </div>
+                            </div>
+                            <p style="font-size:11px; color: var(--text-muted); line-height:1.4;">
+                                Input either the Host URI or Static IP with the Bearer Token inside your Home Assistant integration setup window.
+                            </p>
+                        </div>
+
+                        <!-- Webhook Configurations -->
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-link"></i> Webhook Preferences</div>
+                            <div class="details-box">
+                                <div class="details-item">
+                                    <span class="details-label">Active Status</span>
+                                    <span id="webhook-status" class="sys-info-val">...</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Destination URL</span>
+                                    <span id="webhook-url" class="sys-info-val" style="word-break:break-all;">...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Properties -->
+                        <div class="card" id="device-card">
+                            <div class="card-title"><i class="fas fa-mobile-alt"></i> Device Specification</div>
+                            <div id="device-info-grid" class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Manufacturer / Model</span>
+                                    <span id="device-model" class="info-value">...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">OS Platform</span>
+                                    <span id="device-platform" class="info-value">...</span>
+                                </div>
+                            </div>
+                            <div id="no-device-msg" class="empty-state" style="display:none;">
+                                Pair your device to sync details here.
+                            </div>
+                        </div>
+
+                        <!-- Actions Console -->
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-sliders-h"></i> System Maintenance</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <button class="btn btn-secondary" onclick="restartSession()">
+                                    <i class="fas fa-sync-alt"></i> Restart Daemon
+                                </button>
+                                <button class="btn btn-danger" onclick="logoutSession()">
+                                    <i class="fas fa-sign-out-alt"></i> Hard Reset / Logout
+                                </button>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin:0;">
+                                Restarting will attempt a fresh connection without deleting credentials.
+                            </p>
+                        </div>
+
+                        <!-- Bug Report Widget -->
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-bug"></i> Integration Bug Report</div>
+                            <p style="font-size:12px; color:var(--text-muted); line-height:1.4; margin:0;">
+                                Encountered an issue? Download an anonymized debug bundle and report it on GitHub.
+                            </p>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
+                                <button class="btn btn-primary" onclick="downloadDebugInfo()">
+                                    <i class="fas fa-download"></i> Anonymized Logs
+                                </button>
+                                <a href="https://github.com/FaserF/ha-whatsapp/issues/new?template=bug_report.yml" target="_blank" class="btn btn-secondary">
+                                    <i class="fas fa-external-link-alt"></i> Open GitHub Issue
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- System Diagnostics -->
+                        <div class="card" id="card-diagnostics" style="display:none; border: 2px solid var(--warning); grid-column: 1 / -1;">
+                            <div class="card-title"><i class="fas fa-search-plus"></i> System Diagnostics</div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Base Path</span>
+                                    <span id="diag-basepath" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Actual URL</span>
+                                    <span id="diag-pathname" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
+                                </div>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin:0;">
+                                If you see API errors, these values help diagnose Home Assistant Ingress URL translation failures.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- Outbound / Inbound Streams -->
+                    <div class="grid">
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-paper-plane"></i> Outbound Queue</div>
+                            <div id="list-sent" class="history-list">
+                                <div class="empty-state">No messages sent...</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-inbox"></i> Inbound Queue</div>
+                            <div id="list-received" class="history-list">
+                                <div class="empty-state">No incoming messages...</div>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: 1 / -1;">
+                            <div class="card-title"><i class="fas fa-exclamation-circle"></i> Pipeline Failures</div>
+                            <div id="list-failures" class="history-list">
+                                <div class="empty-state">No failed messages...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Logs -->
+                <section id="tab-logs" class="tab-panel">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title" style="color:var(--text-main);"><i class="fas fa-terminal"></i> Connection Events</h2>
+                                <p class="card-subtitle">Real-time socket events from the underlying WhatsApp daemon service.</p>
+                            </div>
+                            <div class="logs-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="clearLogs()">
+                                    <i class="fas fa-trash-alt"></i> Clear Logs
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="loadLogs()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div id="list-logs" class="logs-view">
+                            <div class="log-entry">Loading events...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Chats (WhatsApp Web style) -->
+                <section id="tab-chats" class="tab-panel">
+                    <div class="chat-container-layout">
+                        <!-- Left Panel: Chat List -->
+                        <div class="chat-list-panel">
+                            <div class="chat-list-header">
+                                <div class="search-box-wrapper">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="chat-search" class="chat-search-input" placeholder="Search or start new chat..." oninput="filterChatList()">
+                                </div>
+                            </div>
+                            <div class="chat-list-items" id="chat-list-items">
+                                <div class="empty-state">No conversations active yet</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Message Thread -->
+                        <div class="chat-thread-panel" id="chat-thread-panel">
+                            <!-- No chat selected state -->
+                            <div class="chat-thread-empty" id="chat-thread-empty">
+                                <div class="chat-thread-empty-icon">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <h3>Select a chat to view messages</h3>
+                                <p>Select a contact or group from the left sidebar to start chatting.</p>
+                            </div>
+
+                            <!-- Active chat state -->
+                            <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
+                                <div class="chat-thread-header">
+                                    <div class="chat-header-avatar">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <div class="chat-header-info">
+                                        <h4 id="active-chat-name">Contact JID</h4>
+                                        <p id="active-chat-jid">JID details</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-thread-messages" id="chat-thread-messages">
+                                    <!-- Messages populate dynamically -->
+                                </div>
+
+                                <div class="chat-thread-footer">
+                                    <form id="chat-message-form" class="chat-message-form" onsubmit="sendChatMessage(event)">
+                                        <input type="text" id="chat-message-input" class="chat-message-input" placeholder="Type a message..." autocomplete="off">
+                                        <button type="submit" class="btn btn-primary chat-send-btn">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="footer-info">
+                    WhatsApp Gateway &bull; Session: <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)
+                </footer>
             </div>
+        </main>
+      </div>
 
-            <div class="grid">
-                <!-- Status Card -->
-                <div class="card">
-                    <div class="card-title">🔌 Connection Status</div>
-                    <div class="status-section">
-                        <div id="status-badge" class="status-badge disconnected">Initializing...</div>
-                        <div id="disconnect-reason" style="color:var(--danger); font-size:0.8rem; margin-bottom: 10px;"></div>
-                    </div>
+      <!-- Toast Alerts Container -->
+      <div id="toast-container" class="toast-container"></div>
 
-                    <div id="qr-container" class="qr-container" style="display:none;">
-                        <span class="stat-label">Scan to Connect</span><br>
-                        <img id="qr-code" class="qr-code" src="" alt="QR" />
-                    </div>
-
-                    <div id="init-placeholder" class="qr-container">
-                        <i style="font-size:2rem; color:var(--text-secondary);">⌛</i><br>
-                        <span class="stat-label">Initializing WhatsApp...</span>
-                    </div>
-
-                    <div class="stats-row">
-                        <div class="stat-box"><div id="stat-sent" class="stat-val">0</div><div class="stat-label">Sent</div></div>
-                        <div class="stat-box"><div id="stat-received" class="stat-val">0</div><div class="stat-label">Received</div></div>
-                        <div class="stat-box"><div id="stat-failed" class="stat-val">0</div><div class="stat-label">Failed</div></div>
-                    </div>
-                    <div style="margin-top:10px; text-align:center;">
-                        <span class="stat-label">Uptime:</span> <strong id="val-uptime">00:00:00</strong> •
-                        <span class="stat-label">Reconnections:</span> <strong id="val-reconnects">0</strong>
-                    </div>
-                </div>
-
-                <!-- Integration Card -->
-                <div class="card">
-                    <div class="card-title">🏠 Home Assistant Setup</div>
-                    <div class="details-box">
-                        <span class="stat-label">Addon Host (Auto-detected)</span><br>
-                        <code>http://${os.hostname()}:${PORT}</code><br><br>
-
-                        <span class="stat-label">API Token</span><br>
-                        <code class="highlight-token" title="Click to select all">${API_TOKEN}</code><br><br>
-
-                        <span class="stat-label">Static / Internal IP</span><br>
-                        <code>http://${os.networkInterfaces().eth0?.[0]?.address || 'localhost'}:${PORT}</code>
-                    </div>
-                    <p style="font-size:0.75rem; color:var(--text-secondary);">
-                        Enter one of the Host URLs in the Home Assistant integration config flow.
-                    </p>
-                </div>
-
-                <!-- Webhook Status Card -->
-                <div class="card">
-                    <div class="card-title">🔗 Webhook Configuration</div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Status</span>
-                            <span id="webhook-status" class="info-value">...</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Host</span>
-                            <span id="webhook-url" class="info-value">...</span>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                        Webhook token is active and hidden for security.
-                    </div>
-                </div>
-
-                <!-- Device Information Card -->
-                <div class="card" id="device-card">
-                    <div class="card-title">📱 Connected Device</div>
-                    <div id="device-info-grid" class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Model</span>
-                            <span id="device-model" class="info-value">...</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Platform</span>
-                            <span id="device-platform" class="info-value">...</span>
-                        </div>
-                    </div>
-                    <div id="no-device-msg" class="empty-state" style="display:none;">
-                        Connect a device to see details.
-                    </div>
-                </div>
-
-                <!-- Quick Actions Card -->
-                <div class="card">
-                    <div class="card-title">⚡ Quick Actions</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button class="btn btn-secondary" onclick="restartSession()">
-                            🔄 Restart
-                        </button>
-                        <button class="btn btn-danger" onclick="clearLogs()">
-                            🧹 Clear Logs
-                        </button>
-                        <button class="btn btn-danger" onclick="logoutSession()" style="grid-column: 1 / -1; background: var(--danger); color: white;">
-                            🚫 Logout & Hard Reset
-                        </button>
-                    </div>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                        Restarting will attempt a fresh connection without deleting credentials.
-                    </p>
-                </div>
-
-                <!-- Bug Report Widget -->
-                <div class="card">
-                    <div class="card-title">🐛 Integration Bug Report</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary);">
-                        Encountered an issue? Download an anonymized debug bundle and report it on GitHub.
-                    </p>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <button class="btn btn-primary" onclick="downloadDebugInfo()">
-                            📥 Download Issue Debug Info
-                        </button>
-                        <a href="https://github.com/FaserF/ha-whatsapp/issues/new?template=bug_report.yml" target="_blank" class="btn btn-secondary">
-                            🔗 Open GitHub Issue
-                        </a>
-                    </div>
-                </div>
-
-                <!-- System Diagnostics -->
-                <div class="card" id="card-diagnostics" style="display:none; border: 2px solid var(--warning); background: #fffcf0; grid-column: 1 / -1; order: 999;">
-                    <div class="card-title">🔍 System Diagnostics</div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Base Path</span>
-                            <span id="diag-basepath" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Actual URL</span>
-                            <span id="diag-pathname" class="info-value" style="word-break: break-all; font-family: monospace;">...</span>
-                        </div>
-                    </div>
-                    <p style="font-size:0.75rem; color:var(--text-secondary); margin:0;">
-                      If you see 404 errors, please report these paths on GitHub.
-                    </p>
-                </div>
-
-                <!-- Recent Sent -->
-                <div class="card">
-                    <div class="card-title">📤 Recent Outbound</div>
-                    <div id="list-sent" class="history-list">
-                        <div class="empty-state">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Recent Received -->
-                <div class="card">
-                    <div class="card-title">📥 Recent Inbound</div>
-                    <div id="list-received" class="history-list">
-                        <div class="empty-state">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Recent Failures -->
-                <div class="card">
-                    <div class="card-title">⚠️ Failed Actions</div>
-                    <div id="list-failures" class="history-list">
-                        <div class="empty-state">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Live Logs -->
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div class="card-title">📜 Connection Events</div>
-                    <div id="list-logs" class="logs-view">
-                        <div class="log-entry">Loading events...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-info">
-                 WhatsApp Homeassistant App Dashboard • Session: <b id="footer-session-id">...</b> (<span id="footer-session-status">...</span>) • HA App: <span id="footer-addon-version">...</span> • Integration: <span id="footer-int-version">...</span>
-            </div>
+      <!-- Custom Confirmation Modal Dialog -->
+      <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="modal-title">Confirm Action</h3>
+            <button class="modal-close-btn" id="modal-close"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="modal-body">
+            <p id="modal-message">Are you sure you want to proceed?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
+            <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Confirm</button>
+          </div>
         </div>
+      </div>
 
-        <script>
-            let currentSession = ${JSON.stringify(sessionId)};
+      <script>
+        let currentSession = ${JSON.stringify(sessionId)};
+        let isConnected = false;
+        let lastLogText = '';
+        let activeChatJid = null;
+        let allChats = [];
+        let isChatTabActive = false;
 
-            // Robust base path detection for Home Assistant Ingress
+        // Tab Switching
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        const pageTitle = document.getElementById('page-title');
+
+            navItems.forEach(item => {
+                if (item.getAttribute('data-tab')) {
+                    item.addEventListener('click', () => {
+                        const tab = item.getAttribute('data-tab');
+                        switchTab(tab);
+                    });
+                }
+            });
+
+            function switchTab(tabId) {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                tabPanels.forEach(panel => panel.classList.remove('active'));
+
+                const activeNav = document.querySelector(\`.nav-item[data-tab="\${tabId}"]\`);
+                const activePanel = document.getElementById(\`tab-\${tabId}\`);
+                
+                if (activeNav && activePanel) {
+                    activeNav.classList.add('active');
+                    activePanel.classList.add('active');
+                    pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+                    
+                    isChatTabActive = (tabId === 'chats');
+                    if (isChatTabActive) {
+                        loadChats();
+                    }
+                }
+            }
+
+            // Host Utilities
             const getBasePath = () => {
                 try {
-                    // This is the cleanest way to get the folder path
                     const path = window.location.pathname;
                     const folder = path.substring(0, path.lastIndexOf('/') + 1);
                     return folder || '/';
@@ -471,10 +1528,12 @@ function renderDashboard(sessionId) {
                 }
             };
             const basePath = getBasePath().replace(/[/]+/g, '/');
-            console.log('Detected Base Path:', basePath);
 
             document.getElementById('diag-basepath').textContent = basePath;
             document.getElementById('diag-pathname').textContent = window.location.pathname;
+
+            // Update raw log link href dynamically
+            document.getElementById('raw-logs-link').href = basePath + 'logs';
 
             function switchSession(id) {
                 currentSession = id;
@@ -484,12 +1543,62 @@ function renderDashboard(sessionId) {
                 updateDashboard();
             }
 
+            // Toasts
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = \`toast \${type}\`;
+                let icon = 'fa-info-circle';
+                if (type === 'success') icon = 'fa-check-circle';
+                if (type === 'danger') icon = 'fa-exclamation-circle';
+                if (type === 'warning') icon = 'fa-exclamation-triangle';
+
+                toast.innerHTML = \`<i class="fas \${icon} toast-icon"></i><span>\${message}</span>\`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 200);
+                }, 3500);
+            }
+
+            // Confirmation Modal
+            const confirmModal = document.getElementById('confirm-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const modalClose = document.getElementById('modal-close');
+            let modalResolver = null;
+
+            function showConfirm(title, msg) {
+                modalTitle.innerText = title;
+                modalMessage.innerText = msg;
+                confirmModal.classList.add('show');
+                return new Promise((resolve) => {
+                    modalResolver = resolve;
+                });
+            }
+
+            function closeConfirm(result) {
+                confirmModal.classList.remove('show');
+                if (modalResolver) {
+                    modalResolver(result);
+                    modalResolver = null;
+                }
+            }
+
+            modalConfirmBtn.addEventListener('click', () => closeConfirm(true));
+            modalCancelBtn.addEventListener('click', () => closeConfirm(false));
+            modalClose.addEventListener('click', () => closeConfirm(false));
+
+            // API interactions
             async function downloadDebugInfo() {
                 try {
                     const response = await fetch(basePath + 'api/debug/download?session_id=' + currentSession, {
                         headers: { 'Accept': 'application/json' }
                     });
-                    if (!response.ok) throw new Error('Download failed');
+                    if (!response.ok) throw new Error();
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -499,59 +1608,253 @@ function renderDashboard(sessionId) {
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
+                    showToast('Debug info downloaded successfully', 'success');
                 } catch (e) {
-                    alert('Failed to download debug info: ' + e.message);
+                    showToast('Failed to download debug bundle', 'danger');
                 }
             }
 
             async function restartSession() {
-                if (!confirm('Are you sure you want to restart this session?')) return;
+                const ok = await showConfirm('Restart WhatsApp Daemon?', 'Are you sure you want to trigger a soft restart on this session daemon?');
+                if (!ok) return;
+
+                showToast('Restarting session...', 'warning');
                 try {
                     const response = await fetch(basePath + 'api/session/restart', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({ session_id: currentSession })
                     });
                     if (response.ok) {
-                        alert('Restart command sent successfully.');
-                        updateDashboard();
+                        showToast('Restart command acknowledged', 'success');
+                        setTimeout(updateDashboard, 1500);
                     }
                 } catch (e) {
-                    alert('Failed to restart session: ' + e.message);
+                    showToast('Restart request failed', 'danger');
                 }
             }
 
             async function logoutSession() {
-                if (!confirm('WARNING: This will log you out and DELETE ALL authentication data for this session. You will need to scan the QR code again. Continue?')) return;
+                const ok = await showConfirm(
+                    'WARNING: Hard Reset Session?',
+                    'This will logout WhatsApp from your mobile client and delete all credentials. You will need to scan the QR code to pair again.'
+                );
+                if (!ok) return;
+
+                showToast('Deleting credentials...', 'warning');
                 try {
                     const response = await fetch(basePath + 'session', {
                         method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({ session_id: currentSession })
                     });
                     if (response.ok) {
-                        alert('Session logged out and cleared.');
+                        showToast('Session logged out and reset completed', 'success');
                         updateDashboard();
                     }
                 } catch (e) {
-                    alert('Logout failed: ' + e.message);
+                    showToast('Reset request failed', 'danger');
                 }
             }
 
             async function clearLogs() {
-                if (!confirm('Clear all connection logs for this session?')) return;
+                const ok = await showConfirm('Clear Connection Logs?', 'Do you want to purge connection logs?');
+                if (!ok) return;
+
                 try {
                     const response = await fetch(basePath + 'api/logs/clear', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({ session_id: currentSession })
                     });
                     if (response.ok) {
+                        showToast('Logs database cleared', 'success');
                         updateDashboard();
                     }
                 } catch (e) {
-                    alert('Failed to clear logs: ' + e.message);
+                    showToast('Failed to clear logs', 'danger');
                 }
+            }
+
+            // Live Log Polling
+            async function loadLogs() {
+                try {
+                    const response = await fetch(basePath + 'logs');
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    document.getElementById('list-logs').innerHTML = data.logs || '<div class="log-entry">No logs yet.</div>';
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            // Chat Client Functions
+            async function loadChats() {
+                if (!isChatTabActive) return;
+                try {
+                    const response = await fetch(basePath + 'api/chats?session_id=' + currentSession);
+                    if (!response.ok) return;
+                    allChats = await response.json();
+                    renderChatList(allChats);
+                } catch (e) {
+                    console.error("Failed to load chats:", e);
+                }
+            }
+
+            function renderChatList(chats) {
+                const container = document.getElementById('chat-list-items');
+                if (!chats || chats.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No conversations active yet</div>';
+                    return;
+                }
+
+                const searchVal = document.getElementById('chat-search').value.toLowerCase();
+                const filtered = chats.filter(c => 
+                    c.name.toLowerCase().includes(searchVal) || 
+                    c.jid.toLowerCase().includes(searchVal)
+                );
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No matching chats found</div>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(c => {
+                    const isActive = c.jid === activeChatJid ? 'active' : '';
+                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                    const avatarIcon = c.jid.endsWith('@g.us') ? 'fa-users' : 'fa-user';
+                    
+                    return \`
+                        <div class="chat-item \${isActive}" onclick="selectChat('\${c.jid}', '\${escapeHtml(c.name)}')">
+                            <div class="chat-avatar">
+                                <i class="fas \${avatarIcon}"></i>
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-meta">
+                                    <span class="chat-name">\${escapeHtml(c.name)}</span>
+                                    <span class="chat-time">\${timeStr}</span>
+                                </div>
+                                <div class="chat-last-msg">\${escapeHtml(c.preview || 'No messages')}</div>
+                            </div>
+                        </div>
+                    \`;
+                }).join('');
+            }
+
+            function filterChatList() {
+                renderChatList(allChats);
+            }
+
+            function selectChat(jid, name) {
+                activeChatJid = jid;
+                
+                document.getElementById('chat-thread-empty').style.display = 'none';
+                document.getElementById('chat-thread-active').style.display = 'flex';
+                
+                document.getElementById('active-chat-name').textContent = name;
+                document.getElementById('active-chat-jid').textContent = jid;
+                
+                document.getElementById('chat-thread-messages').innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>';
+                
+                const items = document.querySelectorAll('.chat-item');
+                items.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                loadChatMessages(jid);
+            }
+
+            async function loadChatMessages(jid) {
+                if (!isChatTabActive || activeChatJid !== jid) return;
+                try {
+                    const response = await fetch(basePath + 'api/messages?session_id=' + currentSession + '&jid=' + encodeURIComponent(jid));
+                    if (!response.ok) return;
+                    const messages = await response.json();
+                    
+                    const container = document.getElementById('chat-thread-messages');
+                    const wasScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+
+                    if (messages.length === 0) {
+                        container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
+                        return;
+                    }
+
+                    container.innerHTML = messages.map(m => {
+                        const direction = m.fromMe ? 'outbound' : 'inbound';
+                        const timeStr = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        return \`
+                            <div class="msg-bubble-row \${direction}">
+                                <div class="msg-bubble">
+                                    <div class="msg-bubble-text">\${escapeHtml(m.text)}</div>
+                                    <div class="msg-bubble-time">\${timeStr}</div>
+                                </div>
+                            </div>
+                        \`;
+                    }).join('');
+
+                    if (wasScrolledToBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error("Failed to load chat messages:", e);
+                }
+            }
+
+            async function sendChatMessage(event) {
+                event.preventDefault();
+                if (!activeChatJid) return;
+
+                const input = document.getElementById('chat-message-input');
+                const message = input.value.trim();
+                if (!message) return;
+
+                input.value = '';
+                showToast('Sending message...', 'info');
+
+                try {
+                    const rawNumber = activeChatJid.split('@')[0];
+                    const response = await fetch(basePath + 'send_message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            number: rawNumber,
+                            message: message
+                        })
+                    });
+
+                    if (response.ok) {
+                        showToast('Message sent', 'success');
+                        loadChatMessages(activeChatJid);
+                        loadChats();
+                    } else {
+                        const errData = await response.json();
+                        showToast(errData.detail || 'Failed to send message', 'danger');
+                    }
+                } catch (e) {
+                    showToast('Failed to send message', 'danger');
+                }
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
 
             async function updateDashboard() {
@@ -560,33 +1863,29 @@ function renderDashboard(sessionId) {
                         headers: { 'Accept': 'application/json' }
                     });
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Update failed:', response.status, errorText);
                         document.getElementById('card-diagnostics').style.display = 'block';
-                        // If we are getting 403 or 401, maybe show something helpful?
+                        document.getElementById('status-badge').className = 'status-badge disconnected';
                         if (response.status === 403) {
                             document.getElementById('status-badge').textContent = 'Access Blocked (403) ⛔';
                         } else {
                             document.getElementById('status-badge').textContent = 'API Error (' + response.status + ') ⚠️';
                         }
-                        throw new Error('API request failed with status: ' + response.status);
+                        return;
                     }
-                    // Hide diagnostics if it was open from a previous error but now works
+                    
                     document.getElementById('card-diagnostics').style.display = 'none';
                     const data = await response.json();
+                    isConnected = data.isConnected;
 
-                    // Update Version Info
-                    const addonVer = data.addonVersion || 'Unknown';
-                    const intVer = data.integrationVersion || 'Unknown';
+                    // Version elements
+                    document.getElementById('node-version').textContent = data.nodeVersion || 'N/A';
+                    document.getElementById('addon-version-sidebar').textContent = data.addonVersion || 'N/A';
+                    document.getElementById('int-version-sidebar').textContent = data.integrationVersion || 'N/A';
+                    document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
 
-                    document.getElementById('node-version').textContent = data.nodeVersion;
-                    document.getElementById('addon-version-sidebar').textContent = addonVer;
-                    document.getElementById('int-version-sidebar').textContent = intVer;
-                    document.getElementById('baileys-version').textContent = data.baileysVersion;
-                    document.getElementById('footer-addon-version').textContent = addonVer;
-                    document.getElementById('footer-int-version').textContent = intVer;
-
-                    // Show Banner if Dev/Beta
+                    // Dev/Beta releases banner
+                    const addonVer = data.addonVersion || '';
+                    const intVer = data.integrationVersion || '';
                     const isDev = addonVer.toLowerCase().includes('edge') ||
                                   addonVer.toLowerCase().includes('dev') ||
                                   intVer.toLowerCase().includes('dev') ||
@@ -594,87 +1893,76 @@ function renderDashboard(sessionId) {
                                   intVer.toLowerCase().includes('pre');
                     document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
 
-                    // Update dynamic links
+                    // Ingress config logs link
                     const slug = data.addonSlug || 'unknown';
                     const fullLogsLink = document.getElementById('full-logs-link');
                     if (fullLogsLink) {
                         const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
                         if (isIngress) {
                             fullLogsLink.style.display = 'flex';
-                            // Point to the native HA Addon logs page (only works via Ingress)
                             fullLogsLink.href = '/config/app/' + slug + '/logs';
-                            fullLogsLink.target = '_top';
                         } else {
-                            // Hide if accessed directly via IP:PORT as the relative path would be wrong
                             fullLogsLink.style.display = 'none';
                         }
                     }
 
-                    // Update Session Switcher
+                    // Session drop-down list
                     const select = document.getElementById('session-select');
                     let options = '';
                     data.sessionList.forEach(s => {
                         const isSelected = s.id === currentSession ? 'selected' : '';
-                        const statusIcon = s.connected ? '\u2705' : '\u274C';
-                        options += '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + statusIcon + ')</option>';
+                        const icon = s.connected ? '\u2705' : '\u274C';
+                        options += '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + icon + ')</option>';
                     });
                     select.innerHTML = options;
 
-                    // Update Status Badge
-                    // Passkey banner
+                    // Passkey notifications
                     const pkBanner = document.getElementById('passkey-banner');
-                    if (pkBanner) {
-                        pkBanner.style.display = data.passkeyDetected ? 'flex' : 'none';
-                    }
+                    if (pkBanner) pkBanner.style.display = data.passkeyDetected ? 'flex' : 'none';
 
+                    // Connection status details
                     const badge = document.getElementById('status-badge');
                     badge.className = 'status-badge ' + (data.isConnected ? 'connected' : (data.currentQR ? 'waiting' : 'disconnected'));
                     badge.textContent = data.isConnected ? 'Connected \u2705' : (data.currentQR ? 'Scan QR Code \uD83D\uDCF1' : (data.disconnectReason === 'logged_out' ? 'Logged Out \uD83D\uDEAB' : 'Disconnected \u274C'));
-
                     document.getElementById('disconnect-reason').textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
 
-                    // QR Code logic
+                    // QR setup or visual spinner loader
                     const qrContainer = document.getElementById('qr-container');
                     const initPlaceholder = document.getElementById('init-placeholder');
                     if (!data.isConnected && data.currentQR) {
-                        qrContainer.style.display = 'block';
+                        qrContainer.style.display = 'flex';
                         initPlaceholder.style.display = 'none';
                         document.getElementById('qr-code').src = data.currentQR;
                     } else if (!data.isConnected && !data.currentQR) {
                         qrContainer.style.display = 'none';
-                        initPlaceholder.style.display = 'block';
+                        initPlaceholder.style.display = 'flex';
                     } else {
                         qrContainer.style.display = 'none';
                         initPlaceholder.style.display = 'none';
                     }
 
-                    // Debug info
-                    document.getElementById('footer-session-id').textContent = data.sessionId;
-                    document.getElementById('footer-session-status').textContent = data.isConnected ? 'Connected' : 'Disconnected';
-                    document.getElementById('footer-session-status').style.color = data.isConnected ? 'var(--primary)' : 'var(--danger)';
-
-                    // Webhook Status
+                    // Metadata details
                     document.getElementById('webhook-status').textContent = data.webhookEnabled ? 'Enabled ✅' : 'Disabled ❌';
-                    document.getElementById('webhook-status').style.color = data.webhookEnabled ? 'var(--primary-dark)' : 'var(--danger)';
-                    document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not configured';
+                    document.getElementById('webhook-status').style.color = data.webhookEnabled ? 'var(--primary)' : 'var(--danger)';
+                    document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not Configured';
 
-                    // Device Info
+                    // Connected device fields
                     const hasDevice = data.deviceInfo && (data.deviceInfo.manufacturer || data.deviceInfo.model);
                     document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
                     document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
                     if (hasDevice) {
-                        document.getElementById('device-model').textContent = data.deviceInfo.model || 'N/A';
+                        document.getElementById('device-model').textContent = (data.deviceInfo.manufacturer || '') + ' ' + (data.deviceInfo.model || '');
                         document.getElementById('device-platform').textContent = data.deviceInfo.platform || 'N/A';
                     }
 
-                    // Update Stats
+                    // Stats properties
                     document.getElementById('stat-sent').textContent = data.stats.sent;
                     document.getElementById('stat-received').textContent = data.stats.received;
                     document.getElementById('stat-failed').textContent = data.stats.failed;
-                    document.getElementById('val-uptime').textContent = data.uptime;
+                    document.getElementById('val-uptime').textContent = data.uptime || '00:00:00';
                     document.getElementById('val-reconnects').textContent = data.stats?.totalReconnects ?? data.reconnectAttempts ?? 0;
 
-                    // Update Lists
+                    // Render streams lists
                     document.getElementById('list-sent').innerHTML = data.recentSent.length ?
                         data.recentSent.map(m =>
                             '<div class="history-item">' +
@@ -703,47 +1991,51 @@ function renderDashboard(sessionId) {
                             '</div>'
                         ).join('') : '<div class="empty-state">No failures recorded</div>';
 
+                    // Socket Event Stream Logs
                     document.getElementById('list-logs').innerHTML = data.recentLogs.length ?
                         data.recentLogs.map(l =>
-                            '<div class="log-entry"><span class="log-time" style="color: #8696a0; margin-right: 8px;">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
+                            '<div class="log-entry"><span class="log-time">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
                         ).join('') : '<div class="log-entry">No logs yet</div>';
 
                 } catch (e) {
-                    console.error('Fetch error:', e);
+                    console.error(e);
                 }
             }
 
-            // Theme Management
-            const getInitialTheme = () => {
-                const saved = localStorage.getItem('ha-whatsapp-theme');
-                if (saved) return saved;
-                
-                // Check HA theme (if possible) or system preference
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    return 'dark';
+        // Theme management
+        const getInitialTheme = () => {
+            const saved = localStorage.getItem('ha-whatsapp-theme');
+            if (saved) return saved;
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+            return 'light';
+        };
+
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('ha-whatsapp-theme', theme);
+            document.getElementById('theme-toggle').innerHTML = theme === 'dark' ? '☀️' : '🌙';
+        };
+
+        const toggleTheme = () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        };
+
+        setTheme(getInitialTheme());
+
+        // Polling loop
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+        setInterval(loadLogs, 3000);
+        setInterval(() => {
+            if (isChatTabActive) {
+                loadChats();
+                if (activeChatJid) {
+                    loadChatMessages(activeChatJid);
                 }
-                return 'light';
-            };
-
-            const setTheme = (theme) => {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('ha-whatsapp-theme', theme);
-                document.getElementById('theme-toggle').innerHTML = theme === 'dark' ? '☀️' : '🌙';
-            };
-
-            const toggleTheme = () => {
-                const current = document.documentElement.getAttribute('data-theme');
-                setTheme(current === 'dark' ? 'light' : 'dark');
-            };
-
-            // Initialize theme
-            setTheme(getInitialTheme());
-
-            // Initial load
-            updateDashboard();
-            // refresh loop
-            setInterval(updateDashboard, 5000);
-        </script>
+            }
+        }, 4000);
+      </script>
     </body>
     </html>
   `;
