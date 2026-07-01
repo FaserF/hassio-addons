@@ -159,17 +159,21 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       typeof update.passkeyChallenge !== 'undefined' ||
       typeof update.shortcakePasskey !== 'undefined';
 
-    if (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected)) {
+    if (
+      hasPasskeyField ||
+      (isPasskeyRequest && session.currentQR === null && !session.isConnected)
+    ) {
       if (!session.passkeyDetected) {
         session.passkeyDetected = true;
         session.passkeyWaiting = true;
         // Store the raw challenge data so the API can expose it
-        session.passkeyChallenge = update.shortcakePasskey || update.passkeyChallenge || update.passkey || null;
+        session.passkeyChallenge =
+          update.shortcakePasskey || update.passkeyChallenge || update.passkey || null;
         logger.warn(
           { sessionId },
           '🔑 Passkey ceremony detected! WhatsApp is requesting passkey verification. ' +
-          'This is a known Baileys limitation (issue #2672). ' +
-          'User must either disable passkey in WhatsApp app settings, or approve the prompt on their phone.'
+            'This is a known Baileys limitation (issue #2672). ' +
+            'User must either disable passkey in WhatsApp app settings, or approve the prompt on their phone.'
         );
         addLog(
           session,
@@ -279,7 +283,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.firstFailureTime = null;
       // If a passkey ceremony was in progress, it just completed successfully
       if (session.passkeyDetected || session.passkeyWaiting) {
-        logger.info({ sessionId }, '🔑✅ Passkey ceremony completed successfully — connection established.');
+        logger.info(
+          { sessionId },
+          '🔑✅ Passkey ceremony completed successfully — connection established.'
+        );
         addLog(session, '🔑✅ Passkey approved on phone — connection established!', 'success');
         session.passkeyDetected = false;
         session.passkeyWaiting = false;
