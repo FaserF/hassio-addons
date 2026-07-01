@@ -119,13 +119,20 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
   try {
     addLogFn(session, `Starting diagnostic test for ${maskData(senderJid)}`, 'info');
 
-    // 1. Text Message
+    // 1. Presence Update (Typing...)
+    if (session.sock && typeof session.sock.sendPresenceUpdate === 'function') {
+      await session.sock.sendPresenceUpdate('composing', senderJid);
+      await delay(500);
+      await session.sock.sendPresenceUpdate('paused', senderJid);
+    }
+
+    // 2. Text Message
     const textMsg = await reply(session, senderJid, {
-      text: '🧪 *Diagnostic Test [1/6]*: Text message works!',
+      text: '🧪 *Diagnostic Test [1/9]*: Text message works!',
     });
     await delay(1000);
 
-    // 2. Reaction
+    // 3. Reaction
     if (textMsg) {
       await reply(session, senderJid, {
         react: { text: '✅', key: textMsg.key },
@@ -133,9 +140,22 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await delay(1000);
     }
 
-    // 3. Buttons
+    // 4. Edit Message
+    const editMsg = await reply(session, senderJid, {
+      text: 'This text will be edited',
+    });
+    await delay(1000);
+    if (editMsg) {
+      await reply(session, senderJid, {
+        text: '🧪 *Diagnostic Test [2/9]*: Edit message works! ✅',
+        edit: editMsg.key,
+      });
+      await delay(1000);
+    }
+
+    // 5. Buttons
     await reply(session, senderJid, {
-      text: '🧪 *Diagnostic Test [2/6]*: Checking Buttons...',
+      text: '🧪 *Diagnostic Test [3/9]*: Checking Buttons...',
       footer: 'HA App Test',
       buttons: [
         { buttonId: 'diag_1', displayText: 'Button 1' },
@@ -144,9 +164,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 4. List
+    // 6. List
     await reply(session, senderJid, {
-      title: '🧪 Diagnostic Test [3/6]',
+      title: '🧪 Diagnostic Test [4/9]',
       text: 'Checking List Message...',
       buttonText: 'View Options',
       sections: [
@@ -161,25 +181,39 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 5. Location
+    // 7. Location
     await reply(session, senderJid, {
       location: { degreesLatitude: 52.52, degreesLongitude: 13.405 },
-      title: '🧪 Diagnostic Test [4/6]',
+      title: '🧪 Diagnostic Test [5/9]',
       address: 'Berlin, Germany',
     });
     await delay(1000);
 
-    // 6. Final Text & Help Tip
+    // 8. Contact (VCard)
+    const vcard = 'BEGIN:VCARD\n' +
+                  'VERSION:3.0\n' +
+                  'FN:Home Assistant Bot\n' +
+                  'ORG:Home Assistant;\n' +
+                  'TEL;type=CELL;type=VOICE;waid=123456789:+123456789\n' +
+                  'END:VCARD';
     await reply(session, senderJid, {
-      text: '🧪 *Diagnostic Test [5/6]*: Overall bridge check complete.',
+      contacts: {
+        displayName: 'Home Assistant Bot',
+        contacts: [{ vcard }]
+      }
     });
     await delay(1000);
 
-    // 7. Cleanup (Delete first message)
-    if (textMsg) {
-      await reply(session, senderJid, { delete: textMsg.key });
+    // 9. Send "Message to be deleted" and delete it
+    const toDeleteMsg = await reply(session, senderJid, {
+      text: 'Message to be deleted',
+    });
+    await delay(1000);
+    if (toDeleteMsg) {
+      await reply(session, senderJid, { delete: toDeleteMsg.key });
+      await delay(1000);
       await reply(session, senderJid, {
-        text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All tests finished!',
+        text: '🧪 *Diagnostic Test [6/9]*: Cleanup (Delete) verified. All tests finished!',
       });
     }
 
