@@ -64,6 +64,7 @@ export function getSession(rawSessionId) {
       groupFetchCooldownUntil: 0,
       sendQueue: Promise.resolve(),
       lastInterestTime: 0, // Track when someone last looked at this session
+      passkeyDetected: false, // True when WhatsApp enforces a passkey during device linking
       stats: {
         sent: 0,
         received: 0,

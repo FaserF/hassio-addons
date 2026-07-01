@@ -58,6 +58,9 @@ function renderDashboard(sessionId) {
                 --banner-bg: #fff8c5;
                 --banner-border: #d4a017;
                 --banner-text: #856404;
+                --passkey-bg: #fff3cd;
+                --passkey-border: #e07b00;
+                --passkey-text: #5a3e00;
                 --btn-secondary-bg: #e9edef;
                 --btn-secondary-hover: #d1d7db;
                 --btn-secondary-text: #111b21;
@@ -77,6 +80,9 @@ function renderDashboard(sessionId) {
                 --primary: #00a884;
                 --primary-dark: #00cc99;
                 --warning: #ffbc00;
+                --passkey-bg: #3a2a00;
+                --passkey-border: #e07b00;
+                --passkey-text: #ffe0a0;
                 --qr-bg: #ffffff;
                 --code-bg: #202c33;
                 --token-bg: #202c33;
@@ -235,6 +241,30 @@ function renderDashboard(sessionId) {
                 <div>
                     <b>Experimental Version Active</b><br>
                     <span style="font-size: 0.85rem; opacity: 0.9;">You are running a development, edge, or beta version. Features may be unstable.</span>
+                </div>
+            </div>
+
+            <div id="passkey-banner" style="display:none; margin-bottom:1rem; padding:1.1rem 1.3rem; border-radius:10px; border:2px solid var(--passkey-border); background:var(--passkey-bg); color:var(--passkey-text); display:none; align-items:flex-start; gap:1rem;">
+                <span style="font-size:2rem; flex-shrink:0;">🔑</span>
+                <div style="flex:1;">
+                    <b style="font-size:1rem;">WhatsApp Passkey Required</b><br>
+                    <span style="font-size:0.875rem; line-height:1.6;">
+                        WhatsApp is requesting a passkey verification after QR scan. This is a <b>known limitation</b> of the underlying Baileys library
+                        (<a href="https://github.com/WhiskeySockets/Baileys/issues/2672" target="_blank" style="color:inherit;">Baileys #2672</a>).
+                        The session cannot complete pairing until the passkey is removed from your phone.
+                    </span>
+                    <div style="margin-top:0.75rem; font-size:0.875rem;">
+                        <b>✅ Fix (Option 1 — Recommended):</b><br>
+                        Open <b>WhatsApp</b> on your phone &rarr; <b>Settings</b> &rarr; <b>Account</b> &rarr; <b>Passkeys</b> &rarr; <b>Remove all passkeys</b>.<br>
+                        Then click <b>Restart</b> below to retry the connection.
+                    </div>
+                    <div style="margin-top:0.6rem; font-size:0.82rem; opacity:0.85; border-top:1px solid var(--passkey-border); padding-top:0.6rem;">
+                        <b>🧪 Option 2 — Experimental Baileys fork:</b> A community fork
+                        (<a href="https://github.com/Qiua/Baileys/commit/210740666c5e24a88e53dab7f19329bb336e1525" target="_blank" style="color:inherit;">Qiua/Baileys</a>
+                        / <a href="https://github.com/WhiskeySockets/Baileys/pull/2676" target="_blank" style="color:inherit;">PR #2676</a>)
+                        is working on native passkey support for Baileys. This is <b>not yet stable</b> and not merged into the official Baileys release.
+                        Once merged, a future app update will include it automatically.
+                    </div>
                 </div>
             </div>
             <div class="dashboard-header">
@@ -591,6 +621,12 @@ function renderDashboard(sessionId) {
                     select.innerHTML = options;
 
                     // Update Status Badge
+                    // Passkey banner
+                    const pkBanner = document.getElementById('passkey-banner');
+                    if (pkBanner) {
+                        pkBanner.style.display = data.passkeyDetected ? 'flex' : 'none';
+                    }
+
                     const badge = document.getElementById('status-badge');
                     badge.className = 'status-badge ' + (data.isConnected ? 'connected' : (data.currentQR ? 'waiting' : 'disconnected'));
                     badge.textContent = data.isConnected ? 'Connected \u2705' : (data.currentQR ? 'Scan QR Code \uD83D\uDCF1' : (data.disconnectReason === 'logged_out' ? 'Logged Out \uD83D\uDEAB' : 'Disconnected \u274C'));

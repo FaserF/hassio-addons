@@ -130,10 +130,47 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         logger.info({ sessionId }, '✅ QR Code DataURL generated');
         addLog(session, 'QR Code generated. Please scan to connect.', 'success');
         setHealthStatus('running', 'Waiting for QR scan');
+        // Reset passkey flag on fresh QR so banner clears when user retries
+        session.passkeyDetected = false;
       } catch (err) {
         logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
         addLog(session, 'Failed to process QR Code. Check logs.', 'error');
         setHealthStatus('faulty', 'Failed to generate QR Code');
+      }
+    }
+
+    // Detect WhatsApp passkey / "Continue on WhatsApp Web" ceremony (Baileys issue #2672).
+    // WhatsApp >= ~2025 may require a passkey verification after QR scan. Baileys does not
+    // implement the full FIDO2/passkey handshake yet, so the pairing stalls silently.
+    // We detect this state so the dashboard can show clear guidance to the user.
+    const isPasskeyRequest =
+      update.isOnlineOnAnotherDevice === false ||
+      update.isNewLogin === false ||
+      (update.receivedPendingNotifications === false && !update.isOnlineOnAnotherDevice);
+
+    // Alternative heuristic: WhatsApp sends a specific IQ type during passkey ceremony.
+    // We also check if the update contains a passkey-related field that may be added
+    // by community forks (Qiua/Baileys PR #2676).
+    const hasPasskeyField =
+      typeof update.passkey !== 'undefined' ||
+      typeof update.passkeyChallenge !== 'undefined' ||
+      typeof update.shortcakePasskey !== 'undefined';
+
+    if (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected)) {
+      if (!session.passkeyDetected) {
+        session.passkeyDetected = true;
+        logger.warn(
+          { sessionId },
+          '🔑 Passkey ceremony detected! WhatsApp is requesting passkey verification. ' +
+          'This is a known Baileys limitation (issue #2672). ' +
+          'User must disable passkey in WhatsApp app settings to connect.'
+        );
+        addLog(
+          session,
+          '🔑 Passkey required by WhatsApp. To fix: open WhatsApp on your phone → Settings → Account → Passkeys → Remove all passkeys. Then restart the session.',
+          'error'
+        );
+        setHealthStatus('faulty', 'Passkey required — see dashboard for instructions');
       }
     }
 

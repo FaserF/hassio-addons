@@ -879,6 +879,7 @@ export function registerAPIRoutes(app) {
       webhookEnabled: WEBHOOK_ENABLED,
       webhookUrl: WEBHOOK_URL,
       deviceInfo: session.deviceInfo || {},
+      passkeyDetected: session.passkeyDetected || false,
     });
   });
 
