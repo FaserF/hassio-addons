@@ -64,15 +64,16 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     addLog(session, 'Received Logout/Reset request', 'warning');
     try {
-      if (session.sock) {
+      const sock = session.sock;
+      if (sock) {
+        session.sock = undefined;
         await Promise.race([
-          session.sock.logout(),
+          sock.logout(),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000)),
         ]).catch((e) =>
           logger.warn({ error: e.message, sessionId: session.id }, 'Logout failed or timed out')
         );
-        session.sock.end(undefined);
-        session.sock = undefined;
+        sock.end(undefined);
       }
       const authDir = getAuthDir(session.id);
       try {
