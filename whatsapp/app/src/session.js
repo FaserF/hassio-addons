@@ -65,7 +65,7 @@ export function getSession(rawSessionId) {
       sendQueue: Promise.resolve(),
       lastInterestTime: 0, // Track when someone last looked at this session
       passkeyDetected: false, // True when WhatsApp enforces a passkey during device linking
-      passkeyWaiting: false,  // True while waiting for phone approval during passkey ceremony
+      passkeyWaiting: false, // True while waiting for phone approval during passkey ceremony
       passkeyChallenge: null, // Raw challenge data from WhatsApp (if available)
       stats: {
         sent: 0,
