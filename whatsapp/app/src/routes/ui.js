@@ -880,6 +880,230 @@ function renderDashboard(sessionId) {
                 to { transform: translateX(0); opacity: 1; }
             }
 
+            /* Chats tab layout classes */
+            .chat-container-layout {
+                display: flex;
+                height: calc(100vh - 180px);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                overflow: hidden;
+                background-color: var(--card-bg);
+            }
+            .chat-list-panel {
+                width: 320px;
+                border-right: 1px solid var(--border-color);
+                display: flex;
+                flex-direction: column;
+                background-color: var(--bg-main);
+            }
+            .chat-list-header {
+                padding: 16px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .search-box-wrapper {
+                display: flex;
+                align-items: center;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            .search-icon {
+                color: var(--text-muted);
+                font-size: 14px;
+            }
+            .chat-search-input {
+                border: none;
+                background: transparent;
+                outline: none;
+                width: 100%;
+                font-size: 14px;
+                color: var(--text-main);
+            }
+            .chat-list-items {
+                flex: 1;
+                overflow-y: auto;
+            }
+            .chat-item {
+                display: flex;
+                padding: 12px 16px;
+                align-items: center;
+                border-bottom: 1px solid var(--border-color);
+                cursor: pointer;
+                transition: background-color var(--transition-speed);
+                gap: 12px;
+            }
+            .chat-item:hover, .chat-item.active {
+                background-color: var(--card-bg-hover);
+            }
+            .chat-avatar {
+                font-size: 32px;
+                color: var(--primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .chat-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .chat-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                margin-bottom: 4px;
+            }
+            .chat-name {
+                font-weight: 600;
+                color: var(--text-main);
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-time {
+                font-size: 11px;
+                color: var(--text-muted);
+            }
+            .chat-last-msg {
+                font-size: 13px;
+                color: var(--text-muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-thread-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: var(--card-bg);
+            }
+            .chat-thread-empty {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 32px;
+                color: var(--text-muted);
+            }
+            .chat-thread-empty-icon {
+                font-size: 64px;
+                color: var(--primary);
+                opacity: 0.8;
+                margin-bottom: 16px;
+            }
+            .chat-thread-active {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            .chat-thread-header {
+                display: flex;
+                align-items: center;
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--border-color);
+                background-color: var(--bg-main);
+                gap: 12px;
+            }
+            .chat-header-avatar {
+                font-size: 36px;
+                color: var(--primary);
+            }
+            .chat-header-info h4 {
+                margin: 0;
+                font-size: 15px;
+                color: var(--text-main);
+            }
+            .chat-header-info p {
+                margin: 2px 0 0;
+                font-size: 12px;
+                color: var(--text-muted);
+            }
+            .chat-thread-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                background-image: radial-gradient(var(--border-color) 1px, transparent 0);
+                background-size: 16px 16px;
+            }
+            .msg-bubble-row {
+                display: flex;
+                width: 100%;
+            }
+            .msg-bubble-row.outbound {
+                justify-content: flex-end;
+            }
+            .msg-bubble-row.inbound {
+                justify-content: flex-start;
+            }
+            .msg-bubble {
+                max-width: 65%;
+                padding: 10px 14px;
+                border-radius: 12px;
+                position: relative;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+            .msg-bubble-row.outbound .msg-bubble {
+                background-color: var(--primary);
+                color: #ffffff;
+                border-top-right-radius: 0;
+            }
+            .msg-bubble-row.inbound .msg-bubble {
+                background-color: var(--bg-main);
+                color: var(--text-main);
+                border-top-left-radius: 0;
+                border: 1px solid var(--border-color);
+            }
+            .msg-bubble-text {
+                font-size: 14px;
+                line-height: 1.4;
+                word-break: break-word;
+            }
+            .msg-bubble-time {
+                font-size: 10px;
+                margin-top: 4px;
+                text-align: right;
+                opacity: 0.7;
+            }
+            .chat-thread-footer {
+                padding: 16px 24px;
+                border-top: 1px solid var(--border-color);
+                background-color: var(--bg-main);
+            }
+            .chat-message-form {
+                display: flex;
+                gap: 12px;
+            }
+            .chat-message-input {
+                flex: 1;
+                border: 1px solid var(--border-color);
+                background: var(--card-bg);
+                border-radius: 8px;
+                padding: 10px 16px;
+                font-size: 14px;
+                color: var(--text-main);
+                outline: none;
+            }
+            .chat-message-input:focus {
+                border-color: var(--primary);
+            }
+            .chat-send-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 42px;
+                height: 42px;
+                padding: 0;
+                border-radius: 8px;
+            }
+
             @media (max-width: 768px) {
                 body { flex-direction: column; }
                 .sidebar { width: 100%; height: auto; border-bottom: 1px solid var(--border-color); }
@@ -910,6 +1134,10 @@ function renderDashboard(sessionId) {
                 <button class="nav-item" data-tab="logs">
                     <i class="fas fa-terminal nav-icon"></i>
                     <span>Daemon Logs</span>
+                </button>
+                <button class="nav-item" data-tab="chats">
+                    <i class="fas fa-comments nav-icon"></i>
+                    <span>Chats</span>
                 </button>
                 <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item">
                     <i class="fas fa-book nav-icon"></i>
@@ -1165,6 +1393,62 @@ function renderDashboard(sessionId) {
                     </div>
                 </section>
 
+                <!-- Tab: Chats (WhatsApp Web style) -->
+                <section id="tab-chats" class="tab-panel">
+                    <div class="chat-container-layout">
+                        <!-- Left Panel: Chat List -->
+                        <div class="chat-list-panel">
+                            <div class="chat-list-header">
+                                <div class="search-box-wrapper">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="chat-search" class="chat-search-input" placeholder="Search or start new chat..." oninput="filterChatList()">
+                                </div>
+                            </div>
+                            <div class="chat-list-items" id="chat-list-items">
+                                <div class="empty-state">No conversations active yet</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Message Thread -->
+                        <div class="chat-thread-panel" id="chat-thread-panel">
+                            <!-- No chat selected state -->
+                            <div class="chat-thread-empty" id="chat-thread-empty">
+                                <div class="chat-thread-empty-icon">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <h3>Select a chat to view messages</h3>
+                                <p>Select a contact or group from the left sidebar to start chatting.</p>
+                            </div>
+
+                            <!-- Active chat state -->
+                            <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
+                                <div class="chat-thread-header">
+                                    <div class="chat-header-avatar">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <div class="chat-header-info">
+                                        <h4 id="active-chat-name">Contact JID</h4>
+                                        <p id="active-chat-jid">JID details</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-thread-messages" id="chat-thread-messages">
+                                    <!-- Messages populate dynamically -->
+                                </div>
+
+                                <div class="chat-thread-footer">
+                                    <form id="chat-message-form" class="chat-message-form" onsubmit="sendChatMessage(event)">
+                                        <input type="text" id="chat-message-input" class="chat-message-input" placeholder="Type a message..." autocomplete="off">
+                                        <button type="submit" class="btn btn-primary chat-send-btn">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <footer class="footer-info">
                     WhatsApp Gateway &bull; Session: <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)
                 </footer>
@@ -1196,6 +1480,9 @@ function renderDashboard(sessionId) {
         let currentSession = ${JSON.stringify(sessionId)};
         let isConnected = false;
         let lastLogText = '';
+        let activeChatJid = null;
+        let allChats = [];
+        let isChatTabActive = false;
 
         // Tab Switching
         const navItems = document.querySelectorAll('.nav-item');
@@ -1222,6 +1509,11 @@ function renderDashboard(sessionId) {
                     activeNav.classList.add('active');
                     activePanel.classList.add('active');
                     pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+                    
+                    isChatTabActive = (tabId === 'chats');
+                    if (isChatTabActive) {
+                        loadChats();
+                    }
                 }
             }
 
@@ -1405,6 +1697,166 @@ function renderDashboard(sessionId) {
                 }
             }
 
+            // Chat Client Functions
+            async function loadChats() {
+                if (!isChatTabActive) return;
+                try {
+                    const response = await fetch(basePath + 'api/chats?session_id=' + currentSession);
+                    if (!response.ok) return;
+                    allChats = await response.json();
+                    renderChatList(allChats);
+                } catch (e) {
+                    console.error("Failed to load chats:", e);
+                }
+            }
+
+            function renderChatList(chats) {
+                const container = document.getElementById('chat-list-items');
+                if (!chats || chats.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No conversations active yet</div>';
+                    return;
+                }
+
+                const searchVal = document.getElementById('chat-search').value.toLowerCase();
+                const filtered = chats.filter(c => 
+                    c.name.toLowerCase().includes(searchVal) || 
+                    c.jid.toLowerCase().includes(searchVal)
+                );
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No matching chats found</div>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(c => {
+                    const isActive = c.jid === activeChatJid ? 'active' : '';
+                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                    const avatarIcon = c.jid.endsWith('@g.us') ? 'fa-users' : 'fa-user';
+                    
+                    return \`
+                        <div class="chat-item \${isActive}" onclick="selectChat('\${c.jid}', '\${escapeHtml(c.name)}')">
+                            <div class="chat-avatar">
+                                <i class="fas \${avatarIcon}"></i>
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-meta">
+                                    <span class="chat-name">\${escapeHtml(c.name)}</span>
+                                    <span class="chat-time">\${timeStr}</span>
+                                </div>
+                                <div class="chat-last-msg">\${escapeHtml(c.preview || 'No messages')}</div>
+                            </div>
+                        </div>
+                    \`;
+                }).join('');
+            }
+
+            function filterChatList() {
+                renderChatList(allChats);
+            }
+
+            function selectChat(jid, name) {
+                activeChatJid = jid;
+                
+                document.getElementById('chat-thread-empty').style.display = 'none';
+                document.getElementById('chat-thread-active').style.display = 'flex';
+                
+                document.getElementById('active-chat-name').textContent = name;
+                document.getElementById('active-chat-jid').textContent = jid;
+                
+                document.getElementById('chat-thread-messages').innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>';
+                
+                const items = document.querySelectorAll('.chat-item');
+                items.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                loadChatMessages(jid);
+            }
+
+            async function loadChatMessages(jid) {
+                if (!isChatTabActive || activeChatJid !== jid) return;
+                try {
+                    const response = await fetch(basePath + 'api/messages?session_id=' + currentSession + '&jid=' + encodeURIComponent(jid));
+                    if (!response.ok) return;
+                    const messages = await response.json();
+                    
+                    const container = document.getElementById('chat-thread-messages');
+                    const wasScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+
+                    if (messages.length === 0) {
+                        container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
+                        return;
+                    }
+
+                    container.innerHTML = messages.map(m => {
+                        const direction = m.fromMe ? 'outbound' : 'inbound';
+                        const timeStr = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        return \`
+                            <div class="msg-bubble-row \${direction}">
+                                <div class="msg-bubble">
+                                    <div class="msg-bubble-text">\${escapeHtml(m.text)}</div>
+                                    <div class="msg-bubble-time">\${timeStr}</div>
+                                </div>
+                            </div>
+                        \`;
+                    }).join('');
+
+                    if (wasScrolledToBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error("Failed to load chat messages:", e);
+                }
+            }
+
+            async function sendChatMessage(event) {
+                event.preventDefault();
+                if (!activeChatJid) return;
+
+                const input = document.getElementById('chat-message-input');
+                const message = input.value.trim();
+                if (!message) return;
+
+                input.value = '';
+                showToast('Sending message...', 'info');
+
+                try {
+                    const rawNumber = activeChatJid.split('@')[0];
+                    const response = await fetch(basePath + 'send_message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            number: rawNumber,
+                            message: message
+                        })
+                    });
+
+                    if (response.ok) {
+                        showToast('Message sent', 'success');
+                        loadChatMessages(activeChatJid);
+                        loadChats();
+                    } else {
+                        const errData = await response.json();
+                        showToast(errData.detail || 'Failed to send message', 'danger');
+                    }
+                } catch (e) {
+                    showToast('Failed to send message', 'danger');
+                }
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
             async function updateDashboard() {
                 try {
                     const response = await fetch(basePath + 'api/dashboard?session_id=' + currentSession, {
@@ -1575,6 +2027,14 @@ function renderDashboard(sessionId) {
         updateDashboard();
         setInterval(updateDashboard, 5000);
         setInterval(loadLogs, 3000);
+        setInterval(() => {
+            if (isChatTabActive) {
+                loadChats();
+                if (activeChatJid) {
+                    loadChatMessages(activeChatJid);
+                }
+            }
+        }, 4000);
       </script>
     </body>
     </html>
