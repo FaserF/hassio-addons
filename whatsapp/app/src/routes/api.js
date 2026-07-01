@@ -907,18 +907,20 @@ export function registerAPIRoutes(app) {
     if (m.documentWithCaptionMessage) m = m.documentWithCaptionMessage.message;
     if (!m) return '';
 
-    return m.conversation || 
-           m.extendedTextMessage?.text || 
-           m.imageMessage?.caption || 
-           m.videoMessage?.caption || 
-           m.buttonsResponseMessage?.selectedDisplayText ||
-           m.templateButtonReplyMessage?.selectedId ||
-           (m.imageMessage ? '🖼️ Image' : '') ||
-           (m.videoMessage ? '📹 Video' : '') ||
-           (m.audioMessage ? '🎵 Audio' : '') ||
-           (m.documentMessage ? '📄 Document' : '') ||
-           (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
-           '';
+    return (
+      m.conversation ||
+      m.extendedTextMessage?.text ||
+      m.imageMessage?.caption ||
+      m.videoMessage?.caption ||
+      m.buttonsResponseMessage?.selectedDisplayText ||
+      m.templateButtonReplyMessage?.selectedId ||
+      (m.imageMessage ? '🖼️ Image' : '') ||
+      (m.videoMessage ? '📹 Video' : '') ||
+      (m.audioMessage ? '🎵 Audio' : '') ||
+      (m.documentMessage ? '📄 Document' : '') ||
+      (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+      ''
+    );
   }
 
   app.get('/api/chats', uiAuthMiddleware, (req, res) => {
@@ -958,7 +960,7 @@ export function registerAPIRoutes(app) {
     });
 
     const chats = Object.values(JidMap)
-      .filter(c => c.preview && c.preview.trim().length > 0)
+      .filter((c) => c.preview && c.preview.trim().length > 0)
       .sort((a, b) => b.timestamp - a.timestamp);
     res.json(chats);
   });
@@ -984,7 +986,7 @@ export function registerAPIRoutes(app) {
           timestamp,
         };
       })
-      .filter(m => m.text && m.text.trim().length > 0)
+      .filter((m) => m.text && m.text.trim().length > 0)
       .sort((a, b) => a.timestamp - b.timestamp);
 
     res.json(messages);
