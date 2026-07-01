@@ -4,6 +4,25 @@ source /usr/lib/bashio/banner.sh
 bashio::log.info "Starting WhatsApp Home Assistant App (Baileys)..."
 
 export PORT=8066
+
+# Get or generate API Key
+API_KEY=""
+if [ -f "/data/.api_token" ]; then
+    API_KEY=$(cat /data/.api_token)
+elif [ -f "/data/api_token.txt" ]; then
+    API_KEY=$(cat /data/api_token.txt)
+    if [ -n "$API_KEY" ]; then
+        echo -n "$API_KEY" > /data/.api_token
+        rm -f /data/api_token.txt
+        bashio::log.info "Migrated API key from /data/api_token.txt to /data/.api_token"
+    fi
+fi
+
+if [ -z "$API_KEY" ]; then
+    API_KEY=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32)
+    echo -n "$API_KEY" > /data/.api_token
+fi
+export API_TOKEN="$API_KEY"
 # Map Bashio log level to Pino log level (used by Baileys/WhatsApp)
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
     bashio::log.warning "Failed to fetch log_level configuration. Using default: info"

@@ -10,7 +10,7 @@ export const IS_WIN = process.platform === 'win32';
 export const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
 export const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
 export const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
-export const TOKEN_FILE = path.join(DATA_DIR, 'api_token.txt');
+export const TOKEN_FILE = path.join(DATA_DIR, '.api_token');
 
 // --- API Token: load from env, file, or auto-generate ---
 function loadOrGenerateToken() {
