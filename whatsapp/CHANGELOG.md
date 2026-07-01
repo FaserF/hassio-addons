@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.7.0 (2026-07-01)
+
+### ✨ Features
+- expand ha-app-diag test steps and delete target message instead of initial message ([`5b0465e5`](https://github.com/FaserF/hassio-addons/commit/5b0465e5eab9f92caa3ebf71a2831cb3a7a7b35a))
+- add passkey/status endpoint and login #875 ([`005ea175`](https://github.com/FaserF/hassio-addons/commit/005ea175804b64d56c8c06bdaad3707bd7165435))
+- expose chat_count and group_count in /stats endpoint ([`a1e9f8ff`](https://github.com/FaserF/hassio-addons/commit/a1e9f8ffee5e4542e46567fb6969aca601b0a808))
+
+### 🐛 Bug Fixes
+- false positive passkey detection ([`9313e11a`](https://github.com/FaserF/hassio-addons/commit/9313e11a324c4730308048b1c23daa976b9f5f90))
+- small bugs introduced in new UI ([`ad470213`](https://github.com/FaserF/hassio-addons/commit/ad470213480b2465c3f58818b11eb651cd771154))
+- connected device info in app frontend ([`25a2ff02`](https://github.com/FaserF/hassio-addons/commit/25a2ff020a6a5d9dcae78ccc7fd02463138c9176))
+- new account detection ([`3b1c2c37`](https://github.com/FaserF/hassio-addons/commit/3b1c2c376bd4a2a4a3934ab0258545d190a7f77d))
+- clear session.sock immediately before logout to prevent close event race condition deleting custom sessions ([`e870274a`](https://github.com/FaserF/hassio-addons/commit/e870274aa59cdd19f14e34a1b5c7fec2b872971f))
+- reset isConnecting flag to false when deleting session to allow fresh QR code generation ([`d0abca6b`](https://github.com/FaserF/hassio-addons/commit/d0abca6bf49679e99aa41b9ed18aebe36bc0c028))
+
+### 📦 Dependencies
+- ⬆️ Update dependency playwright to v1.61.0 (#873) [skip-tests] ([`388f7b47`](https://github.com/FaserF/hassio-addons/commit/388f7b47a22d3f06229646692584e3aeb8d6f05c))
+- ⬆️ Update dependency fastapi to v0.138.2 [skip-tests] (#871) [skip-tests] ([`4438d6ce`](https://github.com/FaserF/hassio-addons/commit/4438d6ce954d138efb3c7ad8042b3527acd8e68f))
+- ⬆️ Update dependency eslint to v10.6.0 ([`a3b58b8a`](https://github.com/FaserF/hassio-addons/commit/a3b58b8a868d5edd40d97aa9e480ae9907e0ba72))
+- ⬆️ Update dependency fastapi to v0.138.1 [skip-tests] (#864) [skip-tests] ([`63508388`](https://github.com/FaserF/hassio-addons/commit/6350838893aff499b548163096483d7300096a70))
+
+### 🚀 Other
+- Improve whatsapp frontend UI (#876) [skip-tests] ([`dc0c38de`](https://github.com/FaserF/hassio-addons/commit/dc0c38de3e49623dd26ec802cbe7f0229f706aa7))
+- improved dev versioning with timestamps ([`e66f2182`](https://github.com/FaserF/hassio-addons/commit/e66f21825a3d9839df818bef66f025269d948a18))
+- whatsapp: reset passkey flags on connect start to avoid stale approval logs (FaserF/hassio-addons#62) ([`8a661b2e`](https://github.com/FaserF/hassio-addons/commit/8a661b2e42e0fdfa82fd31e7a43d5e92034b6bce))
+- improved api token storage from ha app ([`39946dc9`](https://github.com/FaserF/hassio-addons/commit/39946dc901a6f9c826e7f362cb550c508555be49))
+- detect passkey ceremony and show user guidance #875 ([`90932b73`](https://github.com/FaserF/hassio-addons/commit/90932b73e37adace93da1ad27c630e1485c7d67a))
+- add random delays to optimize anti account ban strategy ([`06926cce`](https://github.com/FaserF/hassio-addons/commit/06926cce481345376a15722f3da79d4c601fcec3))
+- move Rocket.Chat bridge zip to rocketchat-app folder ([`d33a0035`](https://github.com/FaserF/hassio-addons/commit/d33a00353251817814dd95d53b6a8c4b2aaabb43))
+
+
 ## 1.6.3 (2026-06-27)
 
 ### 🐛 Bug Fixes
