@@ -722,6 +722,7 @@ export function registerAPIRoutes(app) {
 
       res.json({
         total_chats: session.chatCache ? session.chatCache.size : groupList.length,
+        initial_chats_received: session.initialChatsReceived || false,
         groups: groupList,
       });
     } catch (e) {

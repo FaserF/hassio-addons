@@ -58,6 +58,7 @@ export function getSession(rawSessionId) {
       messageStore: new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 * 24 * 7 }), // 5000 messages or 7 days
       chatCache: new Map(),
       groupCache: new Map(),
+      initialChatsReceived: false,
       statusRateLimit: new Map(), // sender -> lastStatusTime
       unauthorizedWarned: new Set(), // sender IDs
       lastGroupFetch: 0,

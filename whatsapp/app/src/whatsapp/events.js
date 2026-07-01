@@ -180,6 +180,7 @@ export function bindStore(session, ev) {
   });
 
   ev.on('chats.set', ({ chats }) => {
+    session.initialChatsReceived = true;
     for (const chat of chats) {
       session.chatCache?.set(chat.id, true);
     }
