@@ -159,18 +159,22 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     if (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected)) {
       if (!session.passkeyDetected) {
         session.passkeyDetected = true;
+        session.passkeyWaiting = true;
+        // Store the raw challenge data so the API can expose it
+        session.passkeyChallenge = update.shortcakePasskey || update.passkeyChallenge || update.passkey || null;
         logger.warn(
           { sessionId },
           '🔑 Passkey ceremony detected! WhatsApp is requesting passkey verification. ' +
           'This is a known Baileys limitation (issue #2672). ' +
-          'User must disable passkey in WhatsApp app settings to connect.'
+          'User must either disable passkey in WhatsApp app settings, or approve the prompt on their phone.'
         );
         addLog(
           session,
-          '🔑 Passkey required by WhatsApp. To fix: open WhatsApp on your phone → Settings → Account → Passkeys → Remove all passkeys. Then restart the session.',
+          '🔑 Passkey required by WhatsApp. Option 1: Open WhatsApp → Settings → Account → Passkeys → Remove all passkeys, then restart. Option 2: Approve the passkey prompt on your phone — the connection will complete automatically.',
           'error'
         );
-        setHealthStatus('faulty', 'Passkey required — see dashboard for instructions');
+        // Do NOT set health to faulty — the socket must remain alive so WhatsApp
+        // can deliver the passkey confirmation from the phone.
       }
     }
 
@@ -270,6 +274,14 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.disconnectReason = null;
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
+      // If a passkey ceremony was in progress, it just completed successfully
+      if (session.passkeyDetected || session.passkeyWaiting) {
+        logger.info({ sessionId }, '🔑✅ Passkey ceremony completed successfully — connection established.');
+        addLog(session, '🔑✅ Passkey approved on phone — connection established!', 'success');
+        session.passkeyDetected = false;
+        session.passkeyWaiting = false;
+        session.passkeyChallenge = null;
+      }
       setHealthStatus('connected', 'WhatsApp connected');
       // Set a 1-minute cooldown for group fetching after establishing connection
       // to prevent triggering WhatsApp's rate-overlimit on immediate queries.

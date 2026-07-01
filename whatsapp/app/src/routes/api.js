@@ -121,6 +121,17 @@ export function registerAPIRoutes(app) {
     return res.json({ status: 'waiting', detail: 'QR generation in progress' });
   });
 
+  // Passkey ceremony status — polled by the integration config flow during
+  // the "approve on phone" waiting step (experimental Option 2).
+  app.get('/passkey/status', authMiddleware, (req, res) => {
+    const session = getReqSession(req);
+    res.json({
+      passkeyDetected: session.passkeyDetected || false,
+      passkeyWaiting: session.passkeyWaiting || false,
+      isConnected: session.isConnected || false,
+    });
+  });
+
   app.post('/session/pair', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { phone_number } = req.body;
@@ -880,6 +891,7 @@ export function registerAPIRoutes(app) {
       webhookUrl: WEBHOOK_URL,
       deviceInfo: session.deviceInfo || {},
       passkeyDetected: session.passkeyDetected || false,
+      passkeyWaiting: session.passkeyWaiting || false,
     });
   });
 
