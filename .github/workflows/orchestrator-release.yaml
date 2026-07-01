@@ -710,6 +710,13 @@ jobs:
           fi
           # Docker/GHCR requires lowercase repository names
           IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
+          VERSION=$(grep "^version:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          if [ -f "${{ matrix.App }}/Dockerfile" ] && [ -n "$VERSION" ]; then
+            if grep -q "ENV APP_VERSION=" "${{ matrix.App }}/Dockerfile"; then
+               echo "🔄 Syncing Dockerfile APP_VERSION to $VERSION"
+               sed -i "s/ENV APP_VERSION=.*/ENV APP_VERSION=\"$VERSION\"/g" "${{ matrix.App }}/Dockerfile"
+            fi
+          fi
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -1091,6 +1098,15 @@ jobs:
 
           # Extraction and normalization
           VERSION=$(grep "^version:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
+          
+          # Sync version to Dockerfile if APP_VERSION environment variable exists
+          if [ -f "${{ matrix.App }}/Dockerfile" ]; then
+            if grep -q "ENV APP_VERSION=" "${{ matrix.App }}/Dockerfile"; then
+               echo "🔄 Syncing Dockerfile APP_VERSION to $VERSION"
+               sed -i "s/ENV APP_VERSION=.*/ENV APP_VERSION=\"$VERSION\"/g" "${{ matrix.App }}/Dockerfile"
+            fi
+          fi
+
           IMAGE_FROM_CONFIG=$(grep "^image:" "${{ matrix.App }}/config.yaml" | head -n 1 | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
 
           if [ -z "$IMAGE_FROM_CONFIG" ]; then

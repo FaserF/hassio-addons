@@ -29,34 +29,50 @@ WORKDIR /opt/whatsapp
 # 3. Copy EVERYTHING from the context
 COPY . .
 
-# 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Enddings
+# 4. Move rootfs to root (Standard HA Addon structure) & Fix Windows Line Endings
 # hadolint ignore=DL3018
-    RUN \
-        apk add --no-cache "dos2unix~=7.5" && \
-        if [ -d "rootfs" ]; then \
-            cp -rv rootfs/* /; \
-            # Fix potential Windows CRLF in s6 scripts
-            find /etc/s6-overlay -type f -exec dos2unix {} \;; \
-            find /etc/s6-overlay -name run -exec chmod +x {} \;; \
-            find /etc/s6-overlay -name finish -exec chmod +x {} \;; \
-            if [ -d "/etc/services.d" ]; then \
-                find /etc/services.d -type f -exec dos2unix {} \; || true; \
-                find /etc/services.d -name run -exec chmod +x {} \; || true; \
-            fi; \
-        fi
+RUN \
+    apk add --no-cache "dos2unix~=7.5" && \
+    if [ -d "rootfs" ]; then \
+        cp -rv rootfs/* /; \
+        # Fix potential Windows CRLF in s6 scripts \
+        find /etc/s6-overlay -type f -exec dos2unix {} \;; \
+        find /etc/s6-overlay -name run -exec chmod +x {} \;; \
+        find /etc/s6-overlay -name finish -exec chmod +x {} \;; \
+        if [ -d "/etc/services.d" ]; then \
+            find /etc/services.d -type f -exec dos2unix {} \; || true; \
+            find /etc/services.d -name run -exec chmod +x {} \; || true; \
+        fi; \
+    fi && \
+    # Clean up local addon directories we copied that are no longer needed inside /opt/whatsapp \
+    rm -rf rootfs translations app config.yaml Dockerfile build.yaml README.md CHANGELOG.md DOCS.md logo.png icon.png
 
 # 5. Setup App
+ARG BUILD_VERSION="unknown"
 RUN \
-    if [ -d "app" ]; then \
-        mv app/* ./; \
-        rm -rf app; \
-        # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts
-        rm -rf package-lock.json node_modules; \
-        npm install --no-audit --no-fund --legacy-peer-deps; \
-        # Extract Baileys version for runtime banner
-        BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown"); \
-        echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment; \
-    fi
+    echo "Downloading WhatsApp Gateway source code..." && \
+    if [[ "${BUILD_VERSION}" == *"dev"* ]] || [[ "${BUILD_VERSION}" == "unknown" ]] || [[ "${BUILD_VERSION}" == "test" ]] || [[ -z "${BUILD_VERSION}" ]]; then \
+        DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/heads/main.tar.gz"; \
+        echo "Fetching from: ${DOWNLOAD_URL}" && \
+        curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; \
+    else \
+        DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/tags/v${BUILD_VERSION}.tar.gz"; \
+        echo "Fetching from: ${DOWNLOAD_URL}" && \
+        if ! curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; then \
+            echo "⚠️ Tag v${BUILD_VERSION} not found. Falling back to main branch..." && \
+            DOWNLOAD_URL="https://github.com/FaserF/WhatsappGateway/archive/refs/heads/main.tar.gz"; \
+            curl -L -s -f -S -o /tmp/gateway.tar.gz "${DOWNLOAD_URL}"; \
+        fi \
+    fi && \
+    mkdir -p /opt/whatsapp && \
+    tar -xzf /tmp/gateway.tar.gz -C /opt/whatsapp --strip-components=1 && \
+    rm -rf /tmp/gateway.tar.gz && \
+    # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts \
+    rm -rf package-lock.json node_modules && \
+    npm install --no-audit --no-fund --legacy-peer-deps && \
+    # Extract Baileys version for runtime banner \
+    BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown") && \
+    echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment
 
 # Build arguments
 ARG BUILD_ARCH

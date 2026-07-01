@@ -13,6 +13,11 @@
 
 ## 📖 About
 
+This Home Assistant App runs the WhatsApp Gateway backend (using Baileys/Node.js).
+
+> [!NOTE]
+> **Standalone Deployments**: If you run Home Assistant without Supervisor (e.g. Home Assistant Container in Docker), you can deploy this backend standalone. See the [WhatsappGateway repository](https://github.com/FaserF/WhatsappGateway) for Docker Compose and standalone usage details.
+
 ### 🗝️ Native Control Commands
 
 Control your addon via WhatsApp!
