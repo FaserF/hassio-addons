@@ -1947,12 +1947,14 @@ function renderDashboard(sessionId) {
                     document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not Configured';
 
                     // Connected device fields
-                    const hasDevice = data.deviceInfo && (data.deviceInfo.manufacturer || data.deviceInfo.model);
+                    const hasDevice = data.isConnected || (data.deviceInfo && (data.deviceInfo.number || data.deviceInfo.name));
                     document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
                     document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
                     if (hasDevice) {
-                        document.getElementById('device-model').textContent = (data.deviceInfo.manufacturer || '') + ' ' + (data.deviceInfo.model || '');
-                        document.getElementById('device-platform').textContent = data.deviceInfo.platform || 'N/A';
+                        const num = (data.deviceInfo && data.deviceInfo.number) || data.stats?.my_number || 'N/A';
+                        const name = (data.deviceInfo && data.deviceInfo.name) || null;
+                        document.getElementById('device-model').textContent = name ? name + ' (' + num + ')' : num;
+                        document.getElementById('device-platform').textContent = (data.deviceInfo && data.deviceInfo.platform) || 'WhatsApp';
                     }
 
                     // Stats properties

@@ -348,6 +348,13 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       }
       if (session.sock?.user) {
         session.stats.my_number = session.sock.user.id.split(':')[0];
+        session.deviceInfo = {
+          manufacturer: 'WhatsApp',
+          model: session.sock.user.id.split(':')[0].replace(/\D/g, '') + '@s.whatsapp.net',
+          platform: session.sock.user.name || session.sock.user.id.split('@')[0],
+          number: session.sock.user.id.split(':')[0],
+          name: session.sock.user.name || null,
+        };
       }
     }
   });
