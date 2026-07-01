@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.1-dev-20260701-1451-8f44ee8 (2026-07-01)
+
+### 📦 Dependencies
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.17 [skip-tests] (#865) [skip-tests] ([`8f44ee83`](https://github.com/FaserF/hassio-addons/commit/8f44ee83db26f21a425c705144ae18b323fbc92c))
+
+
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1-dev-20260701-1451-38963dc (2026-07-01)
+
+### 🔧 Configuration
+- fix ruff linting errors ([`38963dca`](https://github.com/FaserF/hassio-addons/commit/38963dcaf44e5d8918507ed18e200d5d8eee1ba2))
+
+
 ## 0.3.0 (2026-06-16)
 
 ### 🚀 Other

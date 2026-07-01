@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1-dev-20260701-1451-c9eaf2b (2026-07-01)
+
+### 📦 Dependencies
+- ⬆️ Update dependency Eidolf/Docker-AntiGravity to v2026.6.3 [skip-tests] ([`c9eaf2b5`](https://github.com/FaserF/hassio-addons/commit/c9eaf2b507279bc39d2c8e96bb5ba2f4aa0f37b8))
+
+
 ## 1.3.0 (2026-06-16)
 
 ### 📦 Dependencies

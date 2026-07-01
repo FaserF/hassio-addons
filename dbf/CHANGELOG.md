@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1-dev-20260701-1451-d1b640b (2026-07-01)
+
+### 📦 Dependencies
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+
+### 🚀 Other
+- redirect addon support/issues to integration repository ([`5917aec1`](https://github.com/FaserF/hassio-addons/commit/5917aec1f9717207dfbf012404c39c8cb9b86e14))
+
+
 ## 1.1.0 (2026-06-16)
 
 ### 📦 Dependencies

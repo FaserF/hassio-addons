@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1-dev-20260701-1451-20f634b (2026-07-01)
+
+### 📦 Dependencies
+- small fixes after alpine 3.24 update ([`26f71655`](https://github.com/FaserF/hassio-addons/commit/26f71655a41e1302e9de47e51c2d488c497b0a09))
+
+
 ## 1.4.0 (2026-06-16)
 
 ### 📦 Dependencies
