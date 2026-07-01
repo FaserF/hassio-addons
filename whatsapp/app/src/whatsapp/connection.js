@@ -38,6 +38,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   session.isConnecting = true;
+  session.passkeyDetected = false;
+  session.passkeyWaiting = false;
+  session.passkeyChallenge = null;
   const sessionAuthDir = getAuthDir(sessionId);
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
