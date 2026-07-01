@@ -162,8 +162,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     const hasCreds = fs.existsSync(path.join(getAuthDir(sessionId), 'creds.json'));
     if (
       !hasCreds &&
-      (hasPasskeyField ||
-       (isPasskeyRequest && session.currentQR === null && !session.isConnected))
+      (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected))
     ) {
       if (!session.passkeyDetected) {
         session.passkeyDetected = true;
