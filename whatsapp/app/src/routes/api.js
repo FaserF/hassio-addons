@@ -906,7 +906,7 @@ export function registerAPIRoutes(app) {
     const messages = Array.from(session.messageStore.values());
     const JidMap = {};
 
-    messages.forEach(msg => {
+    messages.forEach((msg) => {
       if (!msg.key || !msg.key.remoteJid) return;
       const jid = msg.key.remoteJid;
       if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
@@ -915,16 +915,17 @@ export function registerAPIRoutes(app) {
       let previewText = '';
       if (msg.message) {
         const m = msg.message;
-        previewText = m.conversation || 
-                      m.extendedTextMessage?.text || 
-                      m.imageMessage?.caption || 
-                      m.videoMessage?.caption || 
-                      (m.audioMessage ? '🎵 Audio' : '') ||
-                      (m.imageMessage ? '🖼️ Image' : '') ||
-                      (m.videoMessage ? '📹 Video' : '') ||
-                      (m.documentMessage ? '📄 Document' : '') ||
-                      (m.pollCreationMessage ? '📊 Poll' : '') ||
-                      '';
+        previewText =
+          m.conversation ||
+          m.extendedTextMessage?.text ||
+          m.imageMessage?.caption ||
+          m.videoMessage?.caption ||
+          (m.audioMessage ? '🎵 Audio' : '') ||
+          (m.imageMessage ? '🖼️ Image' : '') ||
+          (m.videoMessage ? '📹 Video' : '') ||
+          (m.documentMessage ? '📄 Document' : '') ||
+          (m.pollCreationMessage ? '📊 Poll' : '') ||
+          '';
       }
 
       if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
@@ -940,7 +941,7 @@ export function registerAPIRoutes(app) {
           name,
           preview: previewText,
           timestamp: msgTime,
-          fromMe: msg.key.fromMe || false
+          fromMe: msg.key.fromMe || false,
         };
       } else if (msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
         JidMap[jid].name = msg.pushName;
@@ -960,29 +961,30 @@ export function registerAPIRoutes(app) {
     if (!session.messageStore) return res.json([]);
 
     const messages = Array.from(session.messageStore.values())
-      .filter(msg => msg.key && msg.key.remoteJid === targetJid)
-      .map(msg => {
+      .filter((msg) => msg.key && msg.key.remoteJid === targetJid)
+      .map((msg) => {
         const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
         let text = '';
         if (msg.message) {
           const m = msg.message;
-          text = m.conversation || 
-                 m.extendedTextMessage?.text || 
-                 m.imageMessage?.caption || 
-                 m.videoMessage?.caption || 
-                 (m.imageMessage ? '[Image]' : '') ||
-                 (m.videoMessage ? '[Video]' : '') ||
-                 (m.audioMessage ? '[Audio]' : '') ||
-                 (m.documentMessage ? '[Document]' : '') ||
-                 (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
-                 '';
+          text =
+            m.conversation ||
+            m.extendedTextMessage?.text ||
+            m.imageMessage?.caption ||
+            m.videoMessage?.caption ||
+            (m.imageMessage ? '[Image]' : '') ||
+            (m.videoMessage ? '[Video]' : '') ||
+            (m.audioMessage ? '[Audio]' : '') ||
+            (m.documentMessage ? '[Document]' : '') ||
+            (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+            '';
         }
         return {
           id: msg.key.id,
           fromMe: msg.key.fromMe || false,
-          senderName: msg.key.fromMe ? 'You' : (msg.pushName || targetJid.split('@')[0]),
+          senderName: msg.key.fromMe ? 'You' : msg.pushName || targetJid.split('@')[0],
           text,
-          timestamp
+          timestamp,
         };
       })
       .sort((a, b) => a.timestamp - b.timestamp);
