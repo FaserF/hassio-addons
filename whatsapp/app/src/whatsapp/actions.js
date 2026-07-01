@@ -190,17 +190,18 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     await delay(1000);
 
     // 8. Contact (VCard)
-    const vcard = 'BEGIN:VCARD\n' +
-                  'VERSION:3.0\n' +
-                  'FN:Home Assistant Bot\n' +
-                  'ORG:Home Assistant;\n' +
-                  'TEL;type=CELL;type=VOICE;waid=123456789:+123456789\n' +
-                  'END:VCARD';
+    const vcard =
+      'BEGIN:VCARD\n' +
+      'VERSION:3.0\n' +
+      'FN:Home Assistant Bot\n' +
+      'ORG:Home Assistant;\n' +
+      'TEL;type=CELL;type=VOICE;waid=123456789:+123456789\n' +
+      'END:VCARD';
     await reply(session, senderJid, {
       contacts: {
         displayName: 'Home Assistant Bot',
-        contacts: [{ vcard }]
-      }
+        contacts: [{ vcard }],
+      },
     });
     await delay(1000);
 
