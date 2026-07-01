@@ -2,7 +2,6 @@ import os from 'os';
 import { uiAuthMiddleware } from '../middleware.js';
 import { sanitizeSessionId, sessions } from '../session.js';
 import { API_TOKEN, PORT } from '../config.js';
-import { logger } from '../logger.js';
 
 export function registerUIRoutes(app) {
   // --- Dashboard ---
@@ -1279,19 +1278,23 @@ function renderDashboard(sessionId) {
 
                         <!-- Device Properties -->
                         <div class="card" id="device-card">
-                            <div class="card-title"><i class="fas fa-mobile-alt"></i> Device Specification</div>
-                            <div id="device-info-grid" class="info-grid">
+                            <div class="card-title"><i class="fas fa-mobile-alt"></i> Connected Account</div>
+                            <div id="device-info-grid" class="info-grid" style="display:none;">
                                 <div class="info-item">
-                                    <span class="info-label">Manufacturer / Model</span>
-                                    <span id="device-model" class="info-value">...</span>
+                                    <span class="info-label">Account Name</span>
+                                    <span id="device-name" class="info-value">...</span>
                                 </div>
                                 <div class="info-item">
-                                    <span class="info-label">OS Platform</span>
-                                    <span id="device-platform" class="info-value">...</span>
+                                    <span class="info-label">Phone Number</span>
+                                    <span id="device-number" class="info-value">...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Session ID</span>
+                                    <span id="device-session" class="info-value">...</span>
                                 </div>
                             </div>
-                            <div id="no-device-msg" class="empty-state" style="display:none;">
-                                Pair your device to sync details here.
+                            <div id="no-device-msg" class="empty-state">
+                                Connect a device to see details.
                             </div>
                         </div>
 
@@ -1688,10 +1691,14 @@ function renderDashboard(sessionId) {
             // Live Log Polling
             async function loadLogs() {
                 try {
-                    const response = await fetch(basePath + 'logs');
+                    const response = await fetch(basePath + 'logs?session_id=' + currentSession);
                     if (!response.ok) return;
-                    const data = await response.json();
-                    document.getElementById('list-logs').innerHTML = data.logs || '<div class="log-entry">No logs yet.</div>';
+                    const logs = await response.json();
+                    
+                    document.getElementById('list-logs').innerHTML = logs.length ?
+                        logs.map(l =>
+                            '<div class="log-entry"><span class="log-time">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
+                        ).join('') : '<div class="log-entry">No logs yet</div>';
                 } catch (err) {
                     console.error(err);
                 }
@@ -1946,15 +1953,14 @@ function renderDashboard(sessionId) {
                     document.getElementById('webhook-status').style.color = data.webhookEnabled ? 'var(--primary)' : 'var(--danger)';
                     document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not Configured';
 
-                    // Connected device fields
-                    const hasDevice = data.isConnected || (data.deviceInfo && (data.deviceInfo.number || data.deviceInfo.name));
+                    // Connected account fields
+                    const hasDevice = data.isConnected && data.deviceInfo && data.deviceInfo.number;
                     document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
                     document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
                     if (hasDevice) {
-                        const num = (data.deviceInfo && data.deviceInfo.number) || data.stats?.my_number || 'N/A';
-                        const name = (data.deviceInfo && data.deviceInfo.name) || null;
-                        document.getElementById('device-model').textContent = name ? name + ' (' + num + ')' : num;
-                        document.getElementById('device-platform').textContent = (data.deviceInfo && data.deviceInfo.platform) || 'WhatsApp';
+                        document.getElementById('device-name').textContent = data.deviceInfo.name || '—';
+                        document.getElementById('device-number').textContent = '+' + data.deviceInfo.number;
+                        document.getElementById('device-session').textContent = data.sessionId || 'default';
                     }
 
                     // Stats properties
@@ -1993,11 +1999,7 @@ function renderDashboard(sessionId) {
                             '</div>'
                         ).join('') : '<div class="empty-state">No failures recorded</div>';
 
-                    // Socket Event Stream Logs
-                    document.getElementById('list-logs').innerHTML = data.recentLogs.length ?
-                        data.recentLogs.map(l =>
-                            '<div class="log-entry"><span class="log-time">' + l.timestamp + '</span><span class="log-type-' + l.type + '">' + l.msg + '</span></div>'
-                        ).join('') : '<div class="log-entry">No logs yet</div>';
+
 
                 } catch (e) {
                     console.error(e);
@@ -2037,6 +2039,18 @@ function renderDashboard(sessionId) {
                 }
             }
         }, 4000);
+
+        // Global full data refresh every 60 seconds
+        setInterval(() => {
+            updateDashboard();
+            loadLogs();
+            if (isChatTabActive) {
+                loadChats();
+                if (activeChatJid) {
+                    loadChatMessages(activeChatJid);
+                }
+            }
+        }, 60000);
       </script>
     </body>
     </html>

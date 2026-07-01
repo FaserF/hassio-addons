@@ -898,6 +898,29 @@ export function registerAPIRoutes(app) {
     });
   });
 
+  function getMessageText(msg) {
+    if (!msg || !msg.message) return '';
+    let m = msg.message;
+    if (m.ephemeralMessage) m = m.ephemeralMessage.message;
+    if (m.viewOnceMessage) m = m.viewOnceMessage.message;
+    if (m.viewOnceMessageV2) m = m.viewOnceMessageV2.message;
+    if (m.documentWithCaptionMessage) m = m.documentWithCaptionMessage.message;
+    if (!m) return '';
+
+    return m.conversation || 
+           m.extendedTextMessage?.text || 
+           m.imageMessage?.caption || 
+           m.videoMessage?.caption || 
+           m.buttonsResponseMessage?.selectedDisplayText ||
+           m.templateButtonReplyMessage?.selectedId ||
+           (m.imageMessage ? '🖼️ Image' : '') ||
+           (m.videoMessage ? '📹 Video' : '') ||
+           (m.audioMessage ? '🎵 Audio' : '') ||
+           (m.documentMessage ? '📄 Document' : '') ||
+           (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+           '';
+  }
+
   app.get('/api/chats', uiAuthMiddleware, (req, res) => {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
@@ -912,21 +935,7 @@ export function registerAPIRoutes(app) {
       if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
 
       const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
-      let previewText = '';
-      if (msg.message) {
-        const m = msg.message;
-        previewText =
-          m.conversation ||
-          m.extendedTextMessage?.text ||
-          m.imageMessage?.caption ||
-          m.videoMessage?.caption ||
-          (m.audioMessage ? '🎵 Audio' : '') ||
-          (m.imageMessage ? '🖼️ Image' : '') ||
-          (m.videoMessage ? '📹 Video' : '') ||
-          (m.documentMessage ? '📄 Document' : '') ||
-          (m.pollCreationMessage ? '📊 Poll' : '') ||
-          '';
-      }
+      const previewText = getMessageText(msg);
 
       if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
         let name = jid.split('@')[0];
@@ -948,7 +957,9 @@ export function registerAPIRoutes(app) {
       }
     });
 
-    const chats = Object.values(JidMap).sort((a, b) => b.timestamp - a.timestamp);
+    const chats = Object.values(JidMap)
+      .filter(c => c.preview && c.preview.trim().length > 0)
+      .sort((a, b) => b.timestamp - a.timestamp);
     res.json(chats);
   });
 
@@ -964,21 +975,7 @@ export function registerAPIRoutes(app) {
       .filter((msg) => msg.key && msg.key.remoteJid === targetJid)
       .map((msg) => {
         const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
-        let text = '';
-        if (msg.message) {
-          const m = msg.message;
-          text =
-            m.conversation ||
-            m.extendedTextMessage?.text ||
-            m.imageMessage?.caption ||
-            m.videoMessage?.caption ||
-            (m.imageMessage ? '[Image]' : '') ||
-            (m.videoMessage ? '[Video]' : '') ||
-            (m.audioMessage ? '[Audio]' : '') ||
-            (m.documentMessage ? '[Document]' : '') ||
-            (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
-            '';
-        }
+        const text = getMessageText(msg);
         return {
           id: msg.key.id,
           fromMe: msg.key.fromMe || false,
@@ -987,6 +984,7 @@ export function registerAPIRoutes(app) {
           timestamp,
         };
       })
+      .filter(m => m.text && m.text.trim().length > 0)
       .sort((a, b) => a.timestamp - b.timestamp);
 
     res.json(messages);
