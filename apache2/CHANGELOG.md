@@ -1,5 +1,40 @@
 # Changelog
 
+## 3.4.2 (2026-06-29)
+
+### 🐛 Bug Fixes
+
+- mod_rewrite & .htaccess usage ([`4bcae452`](https://github.com/FaserF/hassio-addons/commit/4bcae4529e7823d4c0fcc43c66f3d3ab648bd15d))
+- fix shellcheck SC2001 & directory check for manifest.json ([`23b985f6`](https://github.com/FaserF/hassio-addons/commit/23b985f617fac95390f6d3ff04130459fee5de1a))
+
+### 📦 Dependencies
+
+- update integration links in standardization script and regenerate readmes ([`3645d7f9`](https://github.com/FaserF/hassio-addons/commit/3645d7f96b6d6890e311acce4b5983da25e0e9c3))
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+
+## 3.4.1 (2026-06-17)
+
+### 🚀 Other
+
+- fix ssl cert usage in webserver addons #845 ([`052678eb`](https://github.com/FaserF/hassio-addons/commit/052678eb49bd814b8cfcdd9f88f4a5c3446cfa5c))
+
+## 3.4.0 (2026-06-16)
+
+### 📦 Dependencies
+
+- ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
+
+## 3.3.3 (2026-06-04)
+
+### 📦 Dependencies
+
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+
+### 🚀 Other
+
+- fixed permissions needed for wordpress #808 ([`8c8ac443`](https://github.com/FaserF/hassio-addons/commit/8c8ac4434e60140d5244fb665b19cc69138786f7))
+- fix addon integration webserver access ([`6b15dd81`](https://github.com/FaserF/hassio-addons/commit/6b15dd81d4ea1328e1bdbc3a6b8a0b99cd666948))
+
 ## 3.3.2 (2026-05-06)
 
 ### 📦 Dependencies

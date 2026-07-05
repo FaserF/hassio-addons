@@ -11,3 +11,6 @@ configuration:
   log_level:
     name: "Log-Ebene"
     description: "Steuert die Detailgenauigkeit der Protokolle."
+  menu_version:
+    name: "Menü-Version"
+    description: "Version der zu verwendenden netboot.xyz-Menüs (z. B. latest oder ein bestimmtes Tag)."

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -6,7 +6,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.1"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="pterodactyl Wings Gameserver"
 ENV APP_SLUG="pterodactyl_wings"
 ENV APP_UNSUPPORTED="false"
@@ -21,12 +21,12 @@ RUN \
 
 # Download wings binary with multi-arch support
 # Pin to specific version for reproducible builds
-ARG WINGS_VERSION=v1.12.1
+ARG WINGS_VERSION=v1.13.1
 ENV WINGS_VERSION=${WINGS_VERSION}
 ARG TARGETARCH
-# SHA256 checksums for version v1.12.1 (from official release)
-ARG WINGS_SHA256_AMD64=1c572d4dd49b56749aca439d6d57034aed983bdda8cf222ebdb24d239c199dc9
-ARG WINGS_SHA256_ARM64=d4cb31482be751a5242f1107feab6c6c4b1fff9626945c574f481f0c37625d80
+# SHA256 checksums for version v1.13.1 (from official release)
+ARG WINGS_SHA256_AMD64=b8f215abb887aa00ee6cdabe0ebb7c611aed9b2cd348c305fa2ba6691d1dc86f
+ARG WINGS_SHA256_ARM64=35f9cdd2304560350f4f0ba5443d051eb0d62561163489702584405d8fed4969
 # hadolint ignore=DL4006,SC3040,SC2039
 RUN set -o pipefail && \
     if [ "${TARGETARCH}" = "arm64" ]; then ARCH="arm64"; CHECKSUM="${WINGS_SHA256_ARM64}"; else ARCH="amd64"; CHECKSUM="${WINGS_SHA256_AMD64}"; fi && \

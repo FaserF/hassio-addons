@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.4.0 (2026-06-16)
+
+### 📦 Dependencies
+
+- ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
+
+## 2.3.5 (2026-06-15)
+
+### 📦 Dependencies
+
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.15 [skip-tests] ([`d8b1dac7`](https://github.com/FaserF/hassio-addons/commit/d8b1dac7934f89b4e8e94142585606489e49179a))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.14 [skip-tests] (#830) [skip-tests] ([`f6818553`](https://github.com/FaserF/hassio-addons/commit/f6818553c83a9d28a9e4e35040f4b1c9b5db360d))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.13 [skip-tests] (#828) [skip-tests] ([`382e1d93`](https://github.com/FaserF/hassio-addons/commit/382e1d9359bdaedd3631f6d8ed0bfd2976a9e15c))
+
+## 2.3.4 (2026-06-04)
+
+### 📦 Dependencies
+
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.11 [skip-tests] ([`ef2d7854`](https://github.com/FaserF/hassio-addons/commit/ef2d785446b4906db28cac6d1441bbfc2afdbbc7))
+
+## 2.3.3 (2026-05-21)
+
+### 📦 Dependencies
+
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.5 [skip-tests] ([`f57d0ffa`](https://github.com/FaserF/hassio-addons/commit/f57d0ffa6c723821195666d6779d4523dfb667fd))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.3 [skip-tests] (#788) [skip-tests] ([`fd429afa`](https://github.com/FaserF/hassio-addons/commit/fd429afadc4018b6a8d7a5fe53213c0b2445310a))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+
+- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+
 ## 2.3.2 (2026-04-11)
 
 ### 📦 Dependencies

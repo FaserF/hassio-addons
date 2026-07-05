@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} as base
 
@@ -9,7 +9,7 @@ ENV PTERODACTYL_VERSION="v1.12.0"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.1"
+ENV APP_VERSION="1.3.0"
 ENV APP_NAME="pterodactyl Panel Gameserver"
 ENV APP_SLUG="pterodactyl_panel"
 ENV APP_UNSUPPORTED="false"

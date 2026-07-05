@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: apk add --no-cache zip git openssh-client
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -30,14 +30,14 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cd whatsapp/rocketchat-app
           # Remove any old zip if exists locally before zipping
-          rm -f ../../whatsapp-rocketchat-bridge.zip
-          zip -r ../../whatsapp-rocketchat-bridge.zip .
+          rm -f whatsapp-rocketchat-bridge.zip
+          zip -r whatsapp-rocketchat-bridge.zip . -x whatsapp-rocketchat-bridge.zip
 
       - name: Commit and Push Zip
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add whatsapp-rocketchat-bridge.zip
+          git add whatsapp/rocketchat-app/whatsapp-rocketchat-bridge.zip
           # Only commit if changed
           git diff --staged --quiet || git commit -m "chore(whatsapp): update Rocket.Chat bridge zip [skip ci]"
           git push

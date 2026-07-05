@@ -58,12 +58,16 @@ export function getSession(rawSessionId) {
       messageStore: new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 * 24 * 7 }), // 5000 messages or 7 days
       chatCache: new Map(),
       groupCache: new Map(),
+      initialChatsReceived: false,
       statusRateLimit: new Map(), // sender -> lastStatusTime
       unauthorizedWarned: new Set(), // sender IDs
       lastGroupFetch: 0,
       groupFetchCooldownUntil: 0,
       sendQueue: Promise.resolve(),
       lastInterestTime: 0, // Track when someone last looked at this session
+      passkeyDetected: false, // True when WhatsApp enforces a passkey during device linking
+      passkeyWaiting: false, // True while waiting for phone approval during passkey ceremony
+      passkeyChallenge: null, // Raw challenge data from WhatsApp (if available)
       stats: {
         sent: 0,
         received: 0,

@@ -14,7 +14,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.1"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="Solumati"
 ENV APP_SLUG="solumati"
 ENV APP_UNSUPPORTED="false"
@@ -45,48 +45,88 @@ ARG SOLUMATI_VERSION="v2026.3.0a3"
 ENV SOLUMATI_VERSION=${SOLUMATI_VERSION}
 # renovate: datasource=github-releases depName=FaserF/Solumati
 ARG SOLUMATI_SHA256="1B9DE6C05599863A29B0D18F802CDDEC37E217AD1805D577C1FEE27299FC44C3"
+ARG GITHUB_TOKEN=""
 WORKDIR /tmp
 RUN mkdir src && \
-    curl -L "https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" -o solumati.tar.gz && \
-    tar xzf solumati.tar.gz -C src --strip-components=1 && \
-    rm solumati.tar.gz
+    DOWNLOAD_URL="https://github.com/FaserF/Solumati/archive/refs/tags/${SOLUMATI_VERSION}.tar.gz" && \
+    SUCCESS=0 && \
+    if curl -f -s -L "$DOWNLOAD_URL" -o solumati.tar.gz; then \
+        SUCCESS=1; \
+    elif [ -n "$GITHUB_TOKEN" ]; then \
+        echo "Public download failed, attempting authenticated download with GITHUB_TOKEN..." && \
+        if curl -f -s -L -H "Authorization: token $GITHUB_TOKEN" "$DOWNLOAD_URL" -o solumati.tar.gz; then \
+            SUCCESS=1; \
+        fi; \
+    fi && \
+    if [ "$SUCCESS" -eq 1 ]; then \
+        tar xzf solumati.tar.gz -C src --strip-components=1 && \
+        rm solumati.tar.gz; \
+    else \
+        echo "Repository is private and no valid token is provided. Skipping download." && \
+        touch /tmp/skip_build && \
+        touch /solumati_skipped; \
+    fi
 
 # Copy patch
 COPY patches/auth_bypass.patch /tmp/auth_bypass.patch
 
 # Apply patch
 WORKDIR /tmp/src
-RUN patch -p0 < /tmp/auth_bypass.patch
+RUN if [ -f /tmp/skip_build ]; then \
+        echo "Skipping patch application"; \
+    else \
+        patch -p0 < /tmp/auth_bypass.patch; \
+    fi
 WORKDIR /tmp
 
 # --- FRONTEND BUILD STAGE ---
 WORKDIR /tmp/frontend_build
 # Copy package files from the cloned source
-RUN cp /tmp/src/frontend/package.json . && \
-    (cp /tmp/src/frontend/package-lock.json* . || true) && \
-    npm install --legacy-peer-deps && \
-    cp -r /tmp/src/frontend/. . && \
-    if [ -f "vite.config.ts" ]; then \
-        sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts; \
+RUN if [ -f /tmp/skip_build ]; then \
+        echo "Skipping frontend build"; \
+        mkdir -p dist; \
     else \
-        sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.js; \
-    fi && \
-    sed -i "s|export const API_URL = .*|export const API_URL = './api';|g" src/config.js && \
-    sed -i "s|const API_URL = .*|const API_URL = './api';|g" src/config.js && \
-    npm run build
+        cp /tmp/src/frontend/package.json . && \
+        (cp /tmp/src/frontend/package-lock.json* . || true) && \
+        npm install --legacy-peer-deps && \
+        cp -r /tmp/src/frontend/. . && \
+        if [ -f "vite.config.ts" ]; then \
+            sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts; \
+        else \
+            sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.js; \
+        fi && \
+        sed -i "s|export const API_URL = .*|export const API_URL = './api';|g" src/config.js && \
+        sed -i "s|const API_URL = .*|const API_URL = './api';|g" src/config.js && \
+        npm run build; \
+    fi
 
 # --- BACKEND SETUP ---
 WORKDIR /app/backend
 # Copy backend requirements from cloned source
-RUN cp /tmp/src/backend/requirements.txt . && \
-    pip install --no-cache-dir -r requirements.txt
+RUN if [ -f /tmp/skip_build ]; then \
+        echo "Skipping backend setup"; \
+        touch requirements.txt; \
+    else \
+        cp /tmp/src/backend/requirements.txt . && \
+        pip install --no-cache-dir -r requirements.txt; \
+    fi
 
 # Copy backend code from cloned source
-RUN cp -r /tmp/src/backend/. .
+RUN if [ -f /tmp/skip_build ]; then \
+        echo "Skipping backend code copy"; \
+    else \
+        cp -r /tmp/src/backend/. .; \
+    fi
 
 # Move built frontend to a location Nginx can serve
-RUN mkdir -p /app/frontend && \
-    cp -r /tmp/frontend_build/dist/* /app/frontend/
+RUN if [ -f /tmp/skip_build ]; then \
+        echo "Skipping frontend copy"; \
+        mkdir -p /app/frontend; \
+        echo "Repository is private. Solumati skipped." > /app/frontend/index.html; \
+    else \
+        mkdir -p /app/frontend && \
+        cp -r /tmp/frontend_build/dist/* /app/frontend/; \
+    fi
 
 # Setup Nginx
 COPY nginx.conf /etc/nginx/http.d/default.conf

@@ -44,6 +44,13 @@ else
 	echo "LogLevel ${apache_log_level}" >>/etc/apache2/httpd.conf
 fi
 
+# Remove default VirtualHost from Alpine's default ssl.conf to prevent localhost cert override
+if [ "$ssl" = "true" ]; then
+	if [ -f "/etc/apache2/conf.d/ssl.conf" ]; then
+		sed -i '/<VirtualHost _default_:443>/,/<\/VirtualHost>/d' /etc/apache2/conf.d/ssl.conf
+	fi
+fi
+
 # Enable mod_status for monitoring
 sed -i 's/^#*\(LoadModule status_module modules\/mod_status.so\)/\1/' /etc/apache2/httpd.conf
 if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then

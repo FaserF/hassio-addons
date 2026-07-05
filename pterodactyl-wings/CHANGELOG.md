@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.4.0 (2026-06-16)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency pterodactyl/wings to v[1.13.0](https://github.com/pterodactyl/wings/releases/tag/1.13.0) [skip-tests] ([`697f5266`](https://github.com/FaserF/hassio-addons/commit/697f52666b6c6daa8e12c0ec6bbb873014d2d67e))
+- ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
+
+## 2.3.2 (2026-06-04)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency pterodactyl/wings to v[1.12.3](https://github.com/pterodactyl/wings/releases/tag/1.12.3) [skip-tests] ([`2b397b54`](https://github.com/FaserF/hassio-addons/commit/2b397b5443acb9ac85a62f879df2b65342b58d6a))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.0](https://github.com/hassio-addons/addon-base/releases/tag/20.1.0) [skip-tests] ([`709f7882`](https://github.com/FaserF/hassio-addons/commit/709f7882b67adc67ab6f64370f1d900e9a71b2e1))
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.0.3](https://github.com/hassio-addons/addon-base/releases/tag/20.0.3) [skip-tests] ([`d765bff1`](https://github.com/FaserF/hassio-addons/commit/d765bff148faae0ef9dfe1a7a4634b4fdc598592))
+
+### 🚀 Other
+
+- fix docker build ([`e7d502af`](https://github.com/FaserF/hassio-addons/commit/e7d502afadb55fb480537b8cada800e760207492))
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+
 ## 2.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

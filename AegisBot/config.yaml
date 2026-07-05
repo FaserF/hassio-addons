@@ -1,6 +1,6 @@
 ---
 name: AegisBot
-version: "0.5.3"
+version: "0.6.0"
 slug: aegisbot
 image: ghcr.io/faserf/hassio-addons-aegisbot-{arch}
 description: Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.

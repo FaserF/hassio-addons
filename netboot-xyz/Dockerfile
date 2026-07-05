@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -14,7 +14,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.2"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="Netboot.xyz"
 ENV APP_SLUG="netboot-xyz"
 ENV APP_UNSUPPORTED="false"

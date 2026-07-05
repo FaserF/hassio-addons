@@ -10,7 +10,7 @@ export const IS_WIN = process.platform === 'win32';
 export const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
 export const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
 export const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
-export const TOKEN_FILE = path.join(DATA_DIR, 'api_token.txt');
+export const TOKEN_FILE = path.join(DATA_DIR, '.api_token');
 
 // --- API Token: load from env, file, or auto-generate ---
 function loadOrGenerateToken() {
@@ -44,7 +44,7 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
 
 // --- Configuration ---
 export const SEND_MESSAGE_TIMEOUT = parseInt(process.env.SEND_MESSAGE_TIMEOUT || '25000', 10);
-export const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '60000', 10);
+export const KEEP_ALIVE_INTERVAL = parseInt(process.env.KEEP_ALIVE_INTERVAL || '30000', 10);
 export const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 export const MASK_SENSITIVE_DATA = process.env.MASK_SENSITIVE_DATA === 'true';
 export const GROUP_FETCH_INTERVAL = parseInt(process.env.GROUP_FETCH_INTERVAL || '300000', 10);
@@ -78,6 +78,7 @@ logger.info(
     MARK_ONLINE,
     SHOULD_RESET,
     LOG_LEVEL: process.env.LOG_LEVEL,
+    NODE_TLS_REJECT_UNAUTHORIZED: process.env.NODE_TLS_REJECT_UNAUTHORIZED,
     ADDON_VERSION,
     INTEGRATION_VERSION,
   },

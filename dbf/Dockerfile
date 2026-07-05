@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 FROM ${BUILD_FROM}
 
 # Build arguments
@@ -23,7 +23,7 @@ ENV \
 ARG DBF_VERSION="4.37.28"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.0.0"
+ENV APP_VERSION="1.1.0"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"
@@ -38,18 +38,21 @@ RUN \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache --virtual .build-dependencies \
-        gcc \
-        make \
+        build-base \
         musl-dev \
         perl-dev \
         openssl-dev \
         libxml2-dev \
         zlib-dev \
         db-dev \
+        brotli-dev \
+        cmake \
+        pkgconf \
     && apk add --no-cache \
         perl \
         perl-app-cpanminus \
         perl-io-socket-ssl \
+        perl-lwp-protocol-https \
         perl-json-xs \
         perl-xml-libxml \
         libxml2 \
@@ -62,8 +65,13 @@ RUN \
         perl-dbd-sqlite \
         perl-datetime \
         perl-libwww \
+        brotli-libs \
     && git clone --depth 1 --branch "${DBF_VERSION}" https://github.com/derf/db-fakedisplay.git . \
-    && cpanm -n --no-man-pages --installdeps . \
+    && cpanm -n Alien::cmake3 \
+    && mkdir -p /usr/local/lib/perl5/site_perl/auto/share/dist/Alien-cmake3/bin \
+    && ln -sf /usr/bin/cmake /usr/local/lib/perl5/site_perl/auto/share/dist/Alien-cmake3/bin/cmake \
+    && (cpanm -n IO::Compress::Brotli@0.017 || (cat /root/.cpanm/work/*/build.log && exit 1)) \
+    && (cpanm -n --no-man-pages --installdeps . || (cat /root/.cpanm/work/*/build.log && exit 1)) \
     && rm -rf ~/.cpanm \
     && mkdir -p /app/ext-templates \
     && ln -sf ../ext-templates/imprint.html.ep templates/imprint.html.ep \

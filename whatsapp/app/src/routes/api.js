@@ -64,15 +64,16 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     addLog(session, 'Received Logout/Reset request', 'warning');
     try {
-      if (session.sock) {
+      const sock = session.sock;
+      if (sock) {
+        session.sock = undefined;
         await Promise.race([
-          session.sock.logout(),
+          sock.logout(),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 5000)),
         ]).catch((e) =>
           logger.warn({ error: e.message, sessionId: session.id }, 'Logout failed or timed out')
         );
-        session.sock.end(undefined);
-        session.sock = undefined;
+        sock.end(undefined);
       }
       const authDir = getAuthDir(session.id);
       try {
@@ -82,6 +83,7 @@ export function registerAPIRoutes(app) {
       }
       fs.mkdirSync(authDir, { recursive: true });
       session.isConnected = false;
+      session.isConnecting = false;
       session.currentQR = null;
       session.eventQueue = [];
       session.connectionLogs = [];
@@ -119,6 +121,17 @@ export function registerAPIRoutes(app) {
     if (session.isConnected) return res.json({ status: 'connected', qr: null });
     if (session.currentQR) return res.json({ status: 'scanning', qr: session.currentQR });
     return res.json({ status: 'waiting', detail: 'QR generation in progress' });
+  });
+
+  // Passkey ceremony status — polled by the integration config flow during
+  // the "approve on phone" waiting step (experimental Option 2).
+  app.get('/passkey/status', authMiddleware, (req, res) => {
+    const session = getReqSession(req);
+    res.json({
+      passkeyDetected: session.passkeyDetected || false,
+      passkeyWaiting: session.passkeyWaiting || false,
+      isConnected: session.isConnected || false,
+    });
   });
 
   app.post('/session/pair', authMiddleware, async (req, res) => {
@@ -165,6 +178,8 @@ export function registerAPIRoutes(app) {
       connected: session.isConnected,
       disconnect_reason: session.isConnected ? null : session.disconnectReason,
       uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
+      chat_count: session.chatCache ? session.chatCache.size : 0,
+      group_count: session.groupCache ? session.groupCache.size : 0,
     });
   });
 
@@ -180,7 +195,9 @@ export function registerAPIRoutes(app) {
       const sentMsg = await enqueue(session, async () => {
         try {
           await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
-          await delay(250);
+          // Generate a random delay between 1000ms and 2500ms to simulate natural typing
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
         } catch (e) {
           logger.debug('Presence update failed, continuing with message');
         }
@@ -211,7 +228,12 @@ export function registerAPIRoutes(app) {
       session.stats.last_failed_time = Date.now();
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number, message: maskData(message) }, 'Send message failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send message' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send message',
+      });
     }
   });
 
@@ -222,13 +244,20 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_image');
+        }
+        return await session.sock.sendMessage(
           jid,
           { image: { url: url }, caption: caption },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.stats.sent += 1;
       session.stats.last_sent_message = 'Image';
       session.stats.last_sent_target = maskData(jid);
@@ -239,19 +268,47 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send image failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send image' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send image',
+      });
     }
   });
 
   app.post('/send_poll', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, question, options, quotedMessageId, expiration, selectableCount } = req.body;
+    logger.info({ body: req.body, sessionId: session.id }, '📥 Received send_poll request');
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      const optionsValid = Array.isArray(options) && options.length > 0;
-      const optionsLength = optionsValid ? options.length : 0;
+
+      let cleanOptions = [];
+      if (options) {
+        if (Array.isArray(options)) {
+          cleanOptions = options.map((o) => String(o));
+        } else if (typeof options === 'string') {
+          try {
+            const parsed = JSON.parse(options);
+            if (Array.isArray(parsed)) {
+              cleanOptions = parsed.map((o) => String(o));
+            } else {
+              cleanOptions = [String(parsed)];
+            }
+          } catch (e) {
+            cleanOptions = options
+              .split(',')
+              .map((o) => o.trim())
+              .filter(Boolean);
+          }
+        }
+      }
+
+      const optionsValid = cleanOptions.length > 0;
+      const optionsLength = cleanOptions.length;
 
       let normalizedSelectableCount = Number(selectableCount ?? 1);
       if (isNaN(normalizedSelectableCount)) normalizedSelectableCount = 1;
@@ -263,19 +320,26 @@ export function registerAPIRoutes(app) {
       if (!optionsValid) {
         normalizedSelectableCount = 0;
       }
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_poll');
+        }
+        return await session.sock.sendMessage(
           jid,
           {
             poll: {
               name: question,
-              values: options,
+              values: cleanOptions,
               selectableCount: normalizedSelectableCount,
             },
           },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.messageStore.set(sentMsg.key.id, sentMsg);
       logger.info(
         { pollId: sentMsg.key.id, sessionId: session.id },
@@ -291,7 +355,12 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send poll failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send poll' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send poll',
+      });
     }
   });
 
@@ -303,8 +372,15 @@ export function registerAPIRoutes(app) {
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
-      const sentMsg = await enqueue(session, () =>
-        session.sock.sendMessage(
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_location');
+        }
+        return await session.sock.sendMessage(
           jid,
           {
             location: {
@@ -315,8 +391,8 @@ export function registerAPIRoutes(app) {
             },
           },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
-        )
-      );
+        );
+      });
       session.stats.sent += 1;
       session.stats.last_sent_message = `Location: ${title || 'Pinned'}`;
       session.stats.last_sent_target = maskData(jid);
@@ -327,7 +403,12 @@ export function registerAPIRoutes(app) {
       session.stats.failed += 1;
       session.stats.last_error_reason = e.message;
       logger.error({ error: e.message, number }, 'Send location failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send location' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send location',
+      });
     }
   });
 
@@ -390,7 +471,12 @@ export function registerAPIRoutes(app) {
     } catch (e) {
       session.stats.failed += 1;
       logger.error({ error: e.message, number }, 'Send buttons failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send buttons' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send buttons',
+      });
     }
   });
 
@@ -419,13 +505,18 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Send document failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send document' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send document',
+      });
     }
   });
 
   app.post('/send_video', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
-    const { number, url, caption, quotedMessageId, expiration } = req.body;
+    const { number, url, caption, quotedMessageId, expiration, seconds } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
@@ -433,7 +524,13 @@ export function registerAPIRoutes(app) {
       const sentMsg = await enqueue(session, () =>
         session.sock.sendMessage(
           jid,
-          { video: { url: url }, caption: caption },
+          {
+            video: {
+              url: url,
+            },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
+            caption: caption,
+          },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
@@ -443,13 +540,18 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent', id: sentMsg.key.id });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Send video failed');
-      res.status(500).json({ detail: 'Internal Server Error: Failed to send video' });
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send video',
+      });
     }
   });
 
   app.post('/send_audio', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
-    const { number, url, ptt, quotedMessageId, expiration } = req.body;
+    const { number, url, ptt, quotedMessageId, expiration, seconds } = req.body;
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
@@ -457,7 +559,14 @@ export function registerAPIRoutes(app) {
       await enqueue(session, () =>
         session.sock.sendMessage(
           jid,
-          { audio: { url: url }, ptt: !!ptt, mimetype: 'audio/mp4' },
+          {
+            audio: {
+              url: url,
+            },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
+            ptt: !!ptt,
+            mimetype: 'audio/mp4',
+          },
           { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
         )
       );
@@ -466,7 +575,11 @@ export function registerAPIRoutes(app) {
       res.json({ status: 'sent' });
     } catch (e) {
       session.stats.failed += 1;
-      res.status(500).json({ detail: e.toString() });
+      const isRateLimit =
+        e.toString().includes('rate-overlimit') || e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit ? 'Rate limit exceeded: rate-overlimit' : e.toString(),
+      });
     }
   });
 
@@ -514,7 +627,9 @@ export function registerAPIRoutes(app) {
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
     try {
       const jid = getJid(number);
-      await enqueue(session, () => session.sock.sendPresenceUpdate(presence, jid));
+      enqueue(session, () => session.sock.sendPresenceUpdate(presence, jid)).catch((e) => {
+        logger.error({ error: e.message, number }, 'Set presence task failed');
+      });
       res.json({ status: 'sent' });
     } catch (e) {
       logger.error({ error: e.message, number }, 'Set presence failed');
@@ -607,6 +722,7 @@ export function registerAPIRoutes(app) {
 
       res.json({
         total_chats: session.chatCache ? session.chatCache.size : groupList.length,
+        initial_chats_received: session.initialChatsReceived || false,
         groups: groupList,
       });
     } catch (e) {
@@ -627,11 +743,15 @@ export function registerAPIRoutes(app) {
         if (msg && msg.key) {
           key = { ...msg.key, remoteJid: jid }; // ensure remoteJid matches request
         }
-        await enqueue(session, () => session.sock.readMessages([key]));
+        enqueue(session, () => session.sock.readMessages([key])).catch((e) => {
+          logger.error({ error: e.message, number }, 'Mark as read task failed');
+        });
       } else {
-        await enqueue(session, () =>
+        enqueue(session, () =>
           session.sock.chatModify({ markRead: true, lastMessages: [] }, jid)
-        );
+        ).catch((e) => {
+          logger.error({ error: e.message, number }, 'Mark as read task failed');
+        });
       }
       res.json({ status: 'success' });
     } catch (e) {
@@ -773,7 +893,103 @@ export function registerAPIRoutes(app) {
       webhookEnabled: WEBHOOK_ENABLED,
       webhookUrl: WEBHOOK_URL,
       deviceInfo: session.deviceInfo || {},
+      passkeyDetected: session.passkeyDetected || false,
+      passkeyWaiting: session.passkeyWaiting || false,
     });
+  });
+
+  function getMessageText(msg) {
+    if (!msg || !msg.message) return '';
+    let m = msg.message;
+    if (m.ephemeralMessage) m = m.ephemeralMessage.message;
+    if (m.viewOnceMessage) m = m.viewOnceMessage.message;
+    if (m.viewOnceMessageV2) m = m.viewOnceMessageV2.message;
+    if (m.documentWithCaptionMessage) m = m.documentWithCaptionMessage.message;
+    if (!m) return '';
+
+    return (
+      m.conversation ||
+      m.extendedTextMessage?.text ||
+      m.imageMessage?.caption ||
+      m.videoMessage?.caption ||
+      m.buttonsResponseMessage?.selectedDisplayText ||
+      m.templateButtonReplyMessage?.selectedId ||
+      (m.imageMessage ? '🖼️ Image' : '') ||
+      (m.videoMessage ? '📹 Video' : '') ||
+      (m.audioMessage ? '🎵 Audio' : '') ||
+      (m.documentMessage ? '📄 Document' : '') ||
+      (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+      ''
+    );
+  }
+
+  app.get('/api/chats', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    if (!session.messageStore) return res.json([]);
+
+    const messages = Array.from(session.messageStore.values());
+    const JidMap = {};
+
+    messages.forEach((msg) => {
+      if (!msg.key || !msg.key.remoteJid) return;
+      const jid = msg.key.remoteJid;
+      if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
+
+      const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
+      const previewText = getMessageText(msg);
+
+      if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
+        let name = jid.split('@')[0];
+        if (jid.endsWith('@g.us') && session.groupCache && session.groupCache.has(jid)) {
+          name = session.groupCache.get(jid);
+        } else if (msg.pushName) {
+          name = msg.pushName;
+        }
+
+        JidMap[jid] = {
+          jid,
+          name,
+          preview: previewText,
+          timestamp: msgTime,
+          fromMe: msg.key.fromMe || false,
+        };
+      } else if (msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
+        JidMap[jid].name = msg.pushName;
+      }
+    });
+
+    const chats = Object.values(JidMap)
+      .filter((c) => c.preview && c.preview.trim().length > 0)
+      .sort((a, b) => b.timestamp - a.timestamp);
+    res.json(chats);
+  });
+
+  app.get('/api/messages', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const targetJid = req.query.jid;
+
+    if (!targetJid) return res.status(400).json({ detail: 'Missing jid parameter' });
+    if (!session.messageStore) return res.json([]);
+
+    const messages = Array.from(session.messageStore.values())
+      .filter((msg) => msg.key && msg.key.remoteJid === targetJid)
+      .map((msg) => {
+        const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
+        const text = getMessageText(msg);
+        return {
+          id: msg.key.id,
+          fromMe: msg.key.fromMe || false,
+          senderName: msg.key.fromMe ? 'You' : msg.pushName || targetJid.split('@')[0],
+          text,
+          timestamp,
+        };
+      })
+      .filter((m) => m.text && m.text.trim().length > 0)
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    res.json(messages);
   });
 
   app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {

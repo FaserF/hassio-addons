@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="unknown"
@@ -6,7 +6,7 @@ ARG BUILD_DATE="unknown"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.4.1"
+ENV APP_VERSION="2.5.0"
 ENV APP_NAME="Bash Script Executer"
 ENV APP_SLUG="bashscriptexecuter"
 ENV APP_UNSUPPORTED="false"

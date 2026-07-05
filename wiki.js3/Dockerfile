@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # Use official image pinned to digest to ensure integrity (CodeRabbit: reproducible builds)
 # Note: This uses Wiki.js V3 Beta/Alpha - Renovate tracks ARG WIKIJS_VERSION
 ARG WIKIJS_VERSION=3.0.0-alpha.413
@@ -14,7 +14,7 @@ ARG BUILD_DATE="unknown"
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.6.1"
+ENV APP_VERSION="0.7.0"
 ENV APP_NAME="Wiki.JS (Version 3 - Alpha)"
 ENV APP_SLUG="wiki.js3"
 ENV APP_UNSUPPORTED="false"

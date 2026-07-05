@@ -2,6 +2,7 @@ import {
   downloadMediaMessage,
   getAggregateVotesInPollMessage,
   getContentType,
+  decryptPollVote,
 } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
@@ -27,9 +28,35 @@ import { addLog } from '../session.js';
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 
 /**
+ * Normalizes JID to remove device suffix and ensure it has a domain.
+ */
+function normalizeJid(jid) {
+  if (!jid) return '';
+  const [userAndDevice, server] = jid.split('@');
+  const user = userAndDevice.split(':')[0];
+  return server ? `${user}@${server}` : `${user}@s.whatsapp.net`;
+}
+
+/**
+ * Builds candidate JIDs from primary and secondary sources.
+ */
+function getJidCandidates(jid, altJid) {
+  const candidates = new Set();
+  if (jid) {
+    const norm = normalizeJid(jid);
+    if (norm) candidates.add(norm);
+  }
+  if (altJid) {
+    const norm = normalizeJid(altJid);
+    if (norm) candidates.add(norm);
+  }
+  return Array.from(candidates);
+}
+
+/**
  * Resolves encrypted poll votes to human-readable option names.
  */
-function resolvePollVotes(pollUpdate, originalPoll, session) {
+async function resolvePollVotes(pollUpdate, originalPoll, session) {
   const update = pollUpdate.message?.pollUpdateMessage;
   if (!update) return { vote: [], error: 'Missing pollUpdateMessage' };
 
@@ -47,9 +74,72 @@ function resolvePollVotes(pollUpdate, originalPoll, session) {
   }
 
   try {
+    const meJid = normalizeJid(session.sock?.user?.id);
+    const meLid = normalizeJid(session.sock?.user?.lid);
+    const meCandidates = new Set();
+    if (meJid) meCandidates.add(meJid);
+    if (meLid) meCandidates.add(meLid);
+    const meCandidatesArr = Array.from(meCandidates);
+
+    const creatorCandidates = originalPoll.key.fromMe
+      ? meCandidatesArr
+      : getJidCandidates(
+          originalPoll.key.participant || originalPoll.key.remoteJid,
+          originalPoll.key.remoteJidAlt
+        );
+    const voterCandidates = pollUpdate.key.fromMe
+      ? meCandidatesArr
+      : getJidCandidates(
+          pollUpdate.key.participant || pollUpdate.key.remoteJid,
+          pollUpdate.key.remoteJidAlt
+        );
+
+    const pollEncKey =
+      originalPoll.messageContextInfo?.messageSecret ||
+      originalPoll.message?.messageContextInfo?.messageSecret;
+    if (!pollEncKey) {
+      throw new Error('Missing messageSecret for decryption');
+    }
+
+    let decryptedVote = null;
+    let decryptionError = null;
+
+    for (const creator of creatorCandidates) {
+      for (const voter of voterCandidates) {
+        try {
+          decryptedVote = await decryptPollVote(update.vote, {
+            pollEncKey,
+            pollCreatorJid: creator,
+            pollMsgId: originalPoll.key.id,
+            voterJid: voter,
+          });
+          if (decryptedVote) {
+            logger.debug(
+              { creator, voter, sessionId: session.id },
+              'Successfully decrypted poll vote with candidate combination.'
+            );
+            break;
+          }
+        } catch (err) {
+          decryptionError = err;
+        }
+      }
+      if (decryptedVote) break;
+    }
+
+    if (!decryptedVote) {
+      throw decryptionError || new Error('Decryption returned no result');
+    }
+
+    const decryptedUpdate = {
+      pollUpdateMessageKey: pollUpdate.key,
+      vote: decryptedVote,
+      senderTimestampMs: update.senderTimestampMs,
+    };
+
     const votes = getAggregateVotesInPollMessage({
       message: originalPoll.message,
-      pollUpdates: [update],
+      pollUpdates: [decryptedUpdate],
     });
 
     return {
@@ -90,6 +180,7 @@ export function bindStore(session, ev) {
   });
 
   ev.on('chats.set', ({ chats }) => {
+    session.initialChatsReceived = true;
     for (const chat of chats) {
       session.chatCache?.set(chat.id, true);
     }
@@ -266,7 +357,7 @@ export function handleIncomingMessages(session) {
           const pollUpdateMsg = msg.message.pollUpdateMessage;
           const pollCreationId = pollUpdateMsg?.pollCreationMessageKey?.id;
           const originalPoll = pollCreationId ? session.messageStore.get(pollCreationId) : null;
-          const pollResult = resolvePollVotes(msg, originalPoll, session);
+          const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
           if (pollResult.error) {
             text = `[Poll Vote] (${pollResult.error})`;

@@ -4,6 +4,25 @@ source /usr/lib/bashio/banner.sh
 bashio::log.info "Starting WhatsApp Home Assistant App (Baileys)..."
 
 export PORT=8066
+
+# Get or generate API Key
+API_KEY=""
+if [ -f "/data/.api_token" ]; then
+    API_KEY=$(cat /data/.api_token)
+elif [ -f "/data/api_token.txt" ]; then
+    API_KEY=$(cat /data/api_token.txt)
+    if [ -n "$API_KEY" ]; then
+        echo -n "$API_KEY" > /data/.api_token
+        rm -f /data/api_token.txt
+        bashio::log.info "Migrated API key from /data/api_token.txt to /data/.api_token"
+    fi
+fi
+
+if [ -z "$API_KEY" ]; then
+    API_KEY=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32)
+    echo -n "$API_KEY" > /data/.api_token
+fi
+export API_TOKEN="$API_KEY"
 # Map Bashio log level to Pino log level (used by Baileys/WhatsApp)
 if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
     bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
@@ -122,6 +141,13 @@ if ! GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT=$(bashio::config 'group_fetch_cooldown_o
 fi
 export GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT
 
+# Reject Unauthorized Certificates (Default true)
+if bashio::config.false 'reject_unauthorized'; then
+    export NODE_TLS_REJECT_UNAUTHORIZED="0"
+else
+    export NODE_TLS_REJECT_UNAUTHORIZED="1"
+fi
+
 if [ "$MEDIA_FOLDER" != "null" ]; then
     bashio::log.info "Validating media folder: ${MEDIA_FOLDER}..."
     if ! mkdir -p "$MEDIA_FOLDER"; then
@@ -169,47 +195,68 @@ install_integration() {
 
     mkdir -p "/tmp/ha-whatsapp_install"
     rm -rf "/tmp/ha-whatsapp_install" # Ensure clean state
+    mkdir -p "/tmp/ha-whatsapp_install"
 
-    if git clone --depth 1 "${CLONE_ARGS[@]}" https://github.com/FaserF/ha-whatsapp.git "/tmp/ha-whatsapp_install" > /dev/null 2>&1; then
-        if [ -d "/tmp/ha-whatsapp_install/custom_components/whatsapp" ]; then
-            # Check if we are updating, if so remove old
-            if [ -d "$INTEGRATION_DIR" ]; then
-                 bashio::log.info "Removing old integration version..."
-                 rm -rf "$INTEGRATION_DIR"
-            fi
-
-            mkdir -p "${HA_CONFIG_ROOT}/custom_components"
-            # Use cp -rf for forceful copy
-            cp -rf "/tmp/ha-whatsapp_install/custom_components/whatsapp" "${HA_CONFIG_ROOT}/custom_components/"
-
-            # Double check installation
-            if [ -d "$INTEGRATION_DIR" ]; then
-                bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
-
-                if [ "$IS_UPDATE" = "true" ]; then
-                    MSG="The WhatsApp integration has been updated to $TAG_NAME. Please restart Home Assistant."
-                    TITLE="WhatsApp Integration Updated"
-                else
-                    MSG="The WhatsApp integration has been installed. Please restart Home Assistant."
-                    TITLE="WhatsApp Integration Installed"
-                fi
-
-                bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
-                bashio::log.info "Publishing notification to Home Assistant..."
-
-                curl -s -X POST \
-                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                    -H "Content-Type: application/json" \
-                    -d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"whatsapp_restart_required\"}" \
-                    http://supervisor/core/api/services/persistent_notification/create > /dev/null
+    local SUCCESS="false"
+    if [ -n "$TAG_NAME" ]; then
+        local ZIP_URL="https://github.com/FaserF/ha-whatsapp/releases/download/${TAG_NAME}/whatsapp.zip"
+        bashio::log.info "Downloading ${ZIP_URL}..."
+        if curl -L -s -f -o "/tmp/whatsapp.zip" "${ZIP_URL}"; then
+            mkdir -p "/tmp/ha-whatsapp_install/custom_components/whatsapp"
+            if unzip -q "/tmp/whatsapp.zip" -d "/tmp/ha-whatsapp_install/custom_components/whatsapp"; then
+                SUCCESS="true"
             else
-                bashio::log.error "❌ Copy failed: $INTEGRATION_DIR still does not exist."
+                bashio::log.error "❌ Failed to unzip release package."
             fi
+            rm -f "/tmp/whatsapp.zip"
         else
-            bashio::log.error "❌ Could not find 'custom_components/whatsapp' in the repository."
+            bashio::log.error "❌ Failed to download release zip."
         fi
     else
-        bashio::log.error "❌ Failed to clone repository."
+        # Fallback to cloning main branch
+        if git clone --depth 1 https://github.com/FaserF/ha-whatsapp.git "/tmp/ha-whatsapp_install" > /dev/null 2>&1; then
+            SUCCESS="true"
+        else
+            bashio::log.error "❌ Failed to clone repository."
+        fi
+    fi
+
+    if [ "$SUCCESS" = "true" ] && [ -d "/tmp/ha-whatsapp_install/custom_components/whatsapp" ]; then
+        # Check if we are updating, if so remove old
+        if [ -d "$INTEGRATION_DIR" ]; then
+             bashio::log.info "Removing old integration version..."
+             rm -rf "$INTEGRATION_DIR"
+        fi
+
+        mkdir -p "${HA_CONFIG_ROOT}/custom_components"
+        # Use cp -rf for forceful copy
+        cp -rf "/tmp/ha-whatsapp_install/custom_components/whatsapp" "${HA_CONFIG_ROOT}/custom_components/"
+
+        # Double check installation
+        if [ -d "$INTEGRATION_DIR" ]; then
+            bashio::log.info "✅ Integration successfully installed/updated to $INTEGRATION_DIR"
+
+            if [ "$IS_UPDATE" = "true" ]; then
+                MSG="The WhatsApp integration has been updated to $TAG_NAME. Please restart Home Assistant."
+                TITLE="WhatsApp Integration Updated"
+            else
+                MSG="The WhatsApp integration has been installed. Please restart Home Assistant."
+                TITLE="WhatsApp Integration Installed"
+            fi
+
+            bashio::log.warning "RESTART HOME ASSISTANT to load the changes!"
+            bashio::log.info "Publishing notification to Home Assistant..."
+
+            curl -s -X POST \
+                -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"whatsapp_restart_required\"}" \
+                http://supervisor/core/api/services/persistent_notification/create > /dev/null
+        else
+            bashio::log.error "❌ Copy failed: $INTEGRATION_DIR still does not exist."
+        fi
+    else
+        bashio::log.error "❌ Could not complete installation: Source component missing or download failed."
     fi
     rm -rf "/tmp/ha-whatsapp_install"
 }

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 FROM ghcr.io/plankanban/planka:2.1.1 AS planka
 
 FROM ${BUILD_FROM}
@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3013
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.3.1"
+ENV APP_VERSION="1.4.0"
 ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"

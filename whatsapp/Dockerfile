@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.5.3"
+ENV APP_VERSION="1.6.3"
 ENV APP_NAME="WhatsApp Home Assistant App"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"

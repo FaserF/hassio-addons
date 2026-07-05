@@ -4,7 +4,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.3.0
 FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=Eidolf/Docker-AntiGravity versioning=loose
-ARG ANTIGRAVITY_VERSION="2026.4.1"
+ARG ANTIGRAVITY_VERSION="2026.6.3"
 ENV ANTIGRAVITY_VERSION=${ANTIGRAVITY_VERSION}
 ARG LAZYGIT_VERSION=0.40.2
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Layer 1: Core System Tools & VNC Setup
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.2"
+ENV APP_VERSION="1.3.0"
 ENV APP_NAME="Antigravity-Server"
 ENV APP_SLUG="antigravity-server"
 ENV APP_UNSUPPORTED="false"

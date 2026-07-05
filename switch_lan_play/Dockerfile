@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # Build stage
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS builder
@@ -7,7 +7,7 @@ FROM ${BUILD_FROM} AS builder
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.3.1"
+ENV APP_VERSION="2.4.0"
 ENV APP_NAME="Switch LAN Play Client"
 ENV APP_SLUG="switch-lan-play"
 ENV APP_UNSUPPORTED="false"

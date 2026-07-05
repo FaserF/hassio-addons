@@ -8,10 +8,8 @@ UNSUPPORTED_ADDONS = [
     "HyperionNG",
     "silverstrike",
     "tuya-convert",
-    "wiki.js",
-    "Wiki.js",
     "freenom-dns-updater",  # Adding based on user context or typical patterns, but will stick strictly to README list if possible.
-    # From README: `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`, `Wiki.js`.
+    # From README: `bt-mqtt-gateway`, `HyperionNG`, `Silverstrike`, `Tuya-Convert`.
 ]
 # Normalize list
 UNSUPPORTED_ADDONS = [x.lower() for x in UNSUPPORTED_ADDONS]

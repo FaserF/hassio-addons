@@ -23,7 +23,7 @@ def update_repository_json():
         with open(repo_path, "r") as f:
             data = json.load(f)
 
-        data["name"] = "FaserF's Unsupported Add-ons"
+        data["name"] = "FaserF's Home Assistant Apps (Unsupported)"
         data["maintainer"] = "FaserF (Archive)"
         data["url"] = "https://github.com/FaserF/hassio-addons/tree/unsupported"
 

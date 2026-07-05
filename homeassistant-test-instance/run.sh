@@ -20,7 +20,7 @@ _show_app_banner() {
 		VERSION="unknown"
 	fi
 	local NAME="Home Assistant Test Instance"
-	local SLUG="ha_test_instance"
+	local GITHUB_PATH="homeassistant-test-instance"
 	local UNSUPPORTED="false"
 	local MAINTAINER="FaserF"
 	local REPO="$MAINTAINER/hassio-addons"
@@ -88,7 +88,7 @@ _show_app_banner() {
 		local LATEST_STABLE=""
 
 		# Get latest stable version from config.yaml
-		if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$SLUG/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//'); then
+		if LATEST_STABLE=$(curl -s --max-time 10 "https://raw.githubusercontent.com/$REPO/master/$GITHUB_PATH/config.yaml" 2>/dev/null | grep -E "^version:" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"'+]*\).*/\1/' | sed 's/-dev.*//'); then
 			: # Success
 		else
 			LATEST_STABLE=""
@@ -100,7 +100,7 @@ _show_app_banner() {
 				if [ -n "$DEV_COMMIT" ]; then
 					# Get latest commit for this App from GitHub
 					local LATEST_COMMIT=""
-					if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$SLUG&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
+					if LATEST_COMMIT=$(curl -s --max-time 10 "https://api.github.com/repos/$REPO/commits?path=$GITHUB_PATH&per_page=1" 2>/dev/null | grep -o '"sha": "[^"]*"' | head -1 | cut -d'"' -f4 | head -c7); then
 						:
 					fi
 
@@ -167,35 +167,63 @@ fi
 
 # </App_BANNER_INJECTION>
 
-source /usr/lib/bashio/bashio.sh || true
+set -euo pipefail
 
+source /usr/lib/bashio/bashio.sh || true
 CONFIG_DIR="/data/homeassistant"
 
 # Simple logging function to match HA log format
 log() {
-	echo "$(date '+%Y-%m-%d %H:%M:%S') $1 $2"
+	local level="$1"
+	if [ "$#" -gt 1 ]; then
+		echo "$(date '+%Y-%m-%d %H:%M:%S') $level ${2:-}"
+	else
+		while read -r line; do
+			echo "$(date '+%Y-%m-%d %H:%M:%S') $level $line"
+		done
+	fi
 }
 
-log INFO "-----------------------------------------------------------"
-log INFO " Home Assistant Test Instance"
-log INFO " A standalone Home Assistant Core for testing purposes."
-log INFO "-----------------------------------------------------------"
 log INFO " Starting Home Assistant Core..."
 log INFO " Config directory: $CONFIG_DIR"
-log INFO " Web interface will be available on the configured port."
+
+# Get the configured port
+if ! port=$(bashio::app.port "8123/tcp" 2>/dev/null); then
+	port="8124"
+fi
+if [ -z "${port}" ]; then
+	port="8124"
+fi
+
+# Get the host primary IP address
+host_ip=""
+if [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+	if ! host_ip=$(bashio::api.supervisor GET /network/info 2>/dev/null | jq -r '.data.interfaces[] | select(.primary == true) | .ipv4.address[0]' 2>/dev/null | cut -d'/' -f1); then
+		host_ip=""
+	fi
+fi
+
+# Fallback to local hostname if IP couldn't be fetched
+if [ -z "${host_ip}" ]; then
+	host_ip="homeassistant.local"
+fi
+
+log INFO " Web interface is available at: http://${host_ip}:${port}"
 log INFO " Note: First startup may take several minutes while"
 log INFO "       Home Assistant initializes the database."
 log INFO "-----------------------------------------------------------"
 # Runtime diagnostics
-hass --version 2>&1 | log INFO
-python3 --version 2>&1 | log INFO
-ldd /usr/local/bin/hass 2>&1 | log DEBUG
+hass_version=$(hass --version 2>/dev/null || echo "unknown")
+python_version=$(python3 --version 2>/dev/null || echo "unknown")
+log INFO "Versions: Home Assistant ${hass_version} | ${python_version}"
 
 # Ensure config directory exists
 mkdir -p "$CONFIG_DIR"
 
 # Ensure log file exists so tail doesn't fail
 touch "$CONFIG_DIR/home-assistant.log"
+
+log INFO "----------------- Home Assistant Core Logs -----------------"
 
 # Stream logs to stdout in background
 # Using -F to follow filename (handles rotation)

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -19,7 +19,7 @@ ARG PHP_VERSION="8.5"
 ARG APACHE2_VERSION="2.4.67-r0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.3.1"
+ENV APP_VERSION="3.4.1"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
 ENV APP_UNSUPPORTED="false"
@@ -46,6 +46,8 @@ RUN mkdir /run/apache2 \
     "php${PHP_V}-zip" \
     mariadb-client \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
+    && sed -i 's/User apache/User www-data/' /etc/apache2/httpd.conf \
+    && sed -i 's/Group apache/Group www-data/' /etc/apache2/httpd.conf \
     && echo "Transferlog /dev/stdout" >> /etc/apache2/httpd.conf \
     && (addgroup -S www-data || true) \
     && (adduser -S -G www-data www-data || true)

@@ -20,7 +20,7 @@ jobs:
       github.event.workflow_run.event == 'pull_request'
     steps:
       - name: ⤵️ Check out master code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # We check out master to get the shared scripts (compliance check scripts, success message generator)
           ref: master
@@ -48,6 +48,12 @@ jobs:
               console.log("No pull request found for this workflow run.");
               return;
             }
+
+            const { data: fullPr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
 
             const issue_number = pr.number;
             const workflowRunUrl = run.html_url;
@@ -121,7 +127,7 @@ jobs:
                 const allSkipped = buildSkipped && lintSkipped;
                 const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
 
-                const author = pr.user.login;
+                const author = fullPr.user.login;
                 const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
 
                 let autoMergeNote = "";

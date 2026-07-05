@@ -38,6 +38,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   session.isConnecting = true;
+  session.passkeyDetected = false;
+  session.passkeyWaiting = false;
+  session.passkeyChallenge = null;
   const sessionAuthDir = getAuthDir(sessionId);
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
@@ -130,10 +133,56 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         logger.info({ sessionId }, '✅ QR Code DataURL generated');
         addLog(session, 'QR Code generated. Please scan to connect.', 'success');
         setHealthStatus('running', 'Waiting for QR scan');
+        // Reset passkey flag on fresh QR so banner clears when user retries
+        session.passkeyDetected = false;
       } catch (err) {
         logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
         addLog(session, 'Failed to process QR Code. Check logs.', 'error');
         setHealthStatus('faulty', 'Failed to generate QR Code');
+      }
+    }
+
+    // Detect WhatsApp passkey / "Continue on WhatsApp Web" ceremony (Baileys issue #2672).
+    // WhatsApp >= ~2025 may require a passkey verification after QR scan. Baileys does not
+    // implement the full FIDO2/passkey handshake yet, so the pairing stalls silently.
+    // We detect this state so the dashboard can show clear guidance to the user.
+    const isPasskeyRequest =
+      update.isOnlineOnAnotherDevice === false ||
+      update.isNewLogin === false ||
+      (update.receivedPendingNotifications === false && !update.isOnlineOnAnotherDevice);
+
+    // Alternative heuristic: WhatsApp sends a specific IQ type during passkey ceremony.
+    // We also check if the update contains a passkey-related field that may be added
+    // by community forks (Qiua/Baileys PR #2676).
+    const hasPasskeyField =
+      typeof update.passkey !== 'undefined' ||
+      typeof update.passkeyChallenge !== 'undefined' ||
+      typeof update.shortcakePasskey !== 'undefined';
+
+    const hasCreds = fs.existsSync(path.join(getAuthDir(sessionId), 'creds.json'));
+    if (
+      !hasCreds &&
+      (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected))
+    ) {
+      if (!session.passkeyDetected) {
+        session.passkeyDetected = true;
+        session.passkeyWaiting = true;
+        // Store the raw challenge data so the API can expose it
+        session.passkeyChallenge =
+          update.shortcakePasskey || update.passkeyChallenge || update.passkey || null;
+        logger.warn(
+          { sessionId },
+          '🔑 Passkey ceremony detected! WhatsApp is requesting passkey verification. ' +
+            'This is a known Baileys limitation (issue #2672). ' +
+            'User must either disable passkey in WhatsApp app settings, or approve the prompt on their phone.'
+        );
+        addLog(
+          session,
+          '🔑 Passkey required by WhatsApp. Option 1: Open WhatsApp → Settings → Account → Passkeys → Remove all passkeys, then restart. Option 2: Approve the passkey prompt on your phone — the connection will complete automatically.',
+          'error'
+        );
+        // Do NOT set health to faulty — the socket must remain alive so WhatsApp
+        // can deliver the passkey confirmation from the phone.
       }
     }
 
@@ -233,7 +282,27 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.disconnectReason = null;
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
+      // If a passkey ceremony was in progress, it just completed successfully
+      if (session.passkeyDetected || session.passkeyWaiting) {
+        logger.info(
+          { sessionId },
+          '🔑✅ Passkey ceremony completed successfully — connection established.'
+        );
+        addLog(session, '🔑✅ Passkey approved on phone — connection established!', 'success');
+        session.passkeyDetected = false;
+        session.passkeyWaiting = false;
+        session.passkeyChallenge = null;
+      }
       setHealthStatus('connected', 'WhatsApp connected');
+      // Set a 1-minute cooldown for group fetching after establishing connection
+      // to prevent triggering WhatsApp's rate-overlimit on immediate queries.
+      session.groupFetchCooldownUntil = Date.now() + 60000;
+
+      if (!MARK_ONLINE) {
+        sock.sendPresenceUpdate('unavailable').catch((e) => {
+          logger.warn({ error: e.message }, '⚠️ Failed to send presence update to unavailable');
+        });
+      }
 
       const sessionStats = session.stats;
 
@@ -280,6 +349,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       }
       if (session.sock?.user) {
         session.stats.my_number = session.sock.user.id.split(':')[0];
+        session.deviceInfo = {
+          number: session.sock.user.id.split(':')[0],
+          name: session.sock.user.name || null,
+        };
       }
     }
   });

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=bentopdf/bentopdf
 FROM bentopdf/bentopdf:v1.15.3 AS builder
@@ -13,7 +13,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.1"
+ENV APP_VERSION="1.3.0"
 ENV APP_NAME="BentoPDF"
 ENV APP_SLUG="bentopdf"
 ENV APP_UNSUPPORTED="false"

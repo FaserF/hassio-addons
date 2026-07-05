@@ -1,6 +1,5 @@
 /**
- * WhatsApp Homeassistant Addon - Main Entry Point
- * Modularized Refactor
+ * WhatsApp Homeassistant App - Main Entry Point
  */
 
 import express from 'express';

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.4.0 (2026-06-16)
+
+### 📦 Dependencies
+
+- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+
+### 🚀 Other
+
+- docker build fixes ([`8f318832`](https://github.com/FaserF/hassio-addons/commit/8f3188323de16d4d1b3c625c01b4eba4eaca53d4))
+- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
+- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
+- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+
 ## 2.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

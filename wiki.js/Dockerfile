@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 ARG WIKIJS_VERSION=2.5.314
 FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
@@ -12,7 +12,7 @@ ARG BUILD_DATE="unknown"
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.4.2"
+ENV APP_VERSION="3.5.0"
 ENV APP_NAME="Wiki.JS"
 ENV APP_SLUG="wiki.js"
 ENV APP_UNSUPPORTED="false"
@@ -31,6 +31,9 @@ COPY --from=wiki_release /wiki .
 RUN WIKIJS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown") && \
     echo "WIKIJS_VERSION=${WIKIJS_VERSION}" >> /etc/environment && \
     rm -f /wiki/config.sample.yml
+
+# Copy rootfs
+COPY rootfs /
 
 COPY run.sh /
 RUN chmod a+x /run.sh \

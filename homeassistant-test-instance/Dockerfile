@@ -1,7 +1,7 @@
-ARG HA_VERSION=2026.5.1
+ARG HA_VERSION=2026.6.4
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
-FROM ghcr.io/hassio-addons/base:20.1.1 AS addon-base
+FROM ghcr.io/hassio-addons/base:21.0.0 AS addon-base
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -16,7 +16,7 @@ ENV TERM="xterm-256color"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.2.7"
+ENV APP_VERSION="0.2.9"
 ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"
@@ -62,7 +62,7 @@ CMD [ "/run.sh" ]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD curl --fail --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 || exit 1
+    CMD curl --write-out '%{http_code}' --silent --output /dev/null --connect-timeout 5 --max-time 10 http://127.0.0.1:8123 | grep -E "^(200|401)$" || exit 1
 
 # Labels
 LABEL \

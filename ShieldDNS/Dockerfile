@@ -1,15 +1,15 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 ARG TARGETARCH
 # hadolint ignore=DL3006
 
 # --- STAGE 1: CORE DNS BINARY ---
-FROM --platform=$BUILDPLATFORM alpine:3.23 AS binary
+FROM --platform=$BUILDPLATFORM alpine:3.24 AS binary
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=coredns/coredns
-ARG COREDNS_VERSION="1.14.3"
+ARG COREDNS_VERSION="1.14.4"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.4.5"
+ENV APP_VERSION="2.5.0"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"

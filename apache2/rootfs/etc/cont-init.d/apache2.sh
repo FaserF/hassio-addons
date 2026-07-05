@@ -38,6 +38,13 @@ else
 	echo "LogLevel ${apache_log_level}" >>/etc/apache2/httpd.conf
 fi
 
+# Remove default VirtualHost from Alpine's default ssl.conf to prevent localhost cert override
+if [ "$ssl" = "true" ]; then
+	if [ -f "/etc/apache2/conf.d/ssl.conf" ]; then
+		sed -i '/<VirtualHost _default_:443>/,/<\/VirtualHost>/d' /etc/apache2/conf.d/ssl.conf
+	fi
+fi
+
 # Enable mod_status for monitoring
 sed -i 's/^#\(LoadModule status_module modules\/mod_status.so\)/\1/' /etc/apache2/httpd.conf
 if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then
@@ -51,6 +58,9 @@ if ! grep -q "<Location /server-status>" /etc/apache2/httpd.conf; then
 ExtendedStatus On
 EOF
 fi
+
+# Enable mod_rewrite for URL rewriting (.htaccess support)
+sed -i 's/^#\(LoadModule rewrite_module modules\/mod_rewrite.so\)/\1/' /etc/apache2/httpd.conf
 
 phppath=/etc/php85/php.ini
 
@@ -139,7 +149,6 @@ if [ "$ssl" = "true" ] && [ "$default_conf" = "default" ]; then
 		exit 1
 	fi
 	mkdir /etc/apache2/sites-enabled
-	sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
 	echo "Listen 8099" >>/etc/apache2/httpd.conf
 	echo "<VirtualHost *:80>" >/etc/apache2/sites-enabled/000-default.conf
 	echo "ServerName $website_name" >>/etc/apache2/sites-enabled/000-default.conf

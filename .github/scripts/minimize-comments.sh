@@ -13,7 +13,7 @@ fi
 echo "Minimizing comments on PR #$PR_NUMBER matching '$MATCH_STRING'..."
 
 # Get the current user/bot login
-CURRENT_USER=$(gh api user --jq .login)
+CURRENT_USER=$(gh api user --jq .login 2>/dev/null || echo "${GITHUB_ACTOR:-github-actions[bot]}")
 echo "Current user: $CURRENT_USER"
 
 # Function to generate GraphQL query with cursor
@@ -28,7 +28,7 @@ generate_query() {
 query {
   repository(owner: "${GITHUB_REPOSITORY%/*}", name: "${GITHUB_REPOSITORY#*/}") {
     pullRequest(number: $PR_NUMBER) {
-      comments(first: 50, $after_clause orderBy: {field: CREATED_AT, direction: DESC}) {
+      comments(first: 50, $after_clause orderBy: {field: UPDATED_AT, direction: DESC}) {
         pageInfo {
           hasNextPage
           endCursor

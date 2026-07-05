@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 (2026-06-16)
+
+### 📦 Dependencies
+
+- update dependencies ([`820d570f`](https://github.com/FaserF/hassio-addons/commit/820d570f49f651f19e4ba7b3fdf0e1d4030ed35e))
+
+### 🚀 Other
+
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+
 ## 0.2.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

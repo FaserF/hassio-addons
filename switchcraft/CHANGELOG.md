@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 (2026-06-16)
+
+### 🚀 Other
+
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+- link fixes ([`cf26f7ef`](https://github.com/FaserF/hassio-addons/commit/cf26f7efead0d32df2ce6d7594a0ba7a7fcc5a93))
+- fix my ha links ([`e0387870`](https://github.com/FaserF/hassio-addons/commit/e0387870696279537f82d97a1593931c3367e1ca))
+- Switch to HA unified docker base image ([`18674601`](https://github.com/FaserF/hassio-addons/commit/186746015e5d7921b65fa205f9a669383e2a5a61))
+
 ## 0.2.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

@@ -1,11 +1,11 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.0
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 # Base image includes s6-overlay; services use /usr/bin/with-contenv
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # renovate: datasource=repology depName=alpine_edge/nginx versioning=loose
-ARG NGINX_VERSION="1.30.0-r0"
+ARG NGINX_VERSION="1.30.3-r0"
 
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
@@ -14,7 +14,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG PHP_VERSION="8.5"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.3.1"
+ENV APP_VERSION="0.4.1"
 ENV APP_NAME="NGINX"
 ENV APP_SLUG="nginx"
 ENV APP_UNSUPPORTED="false"
@@ -89,6 +89,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
 # shellcheck disable=SC2015
 RUN sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|g' /etc/nginx/nginx.conf \
  && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|g' /etc/nginx/nginx.conf \
+ && sed -i 's|user nginx;|user www-data;|g' /etc/nginx/nginx.conf \
  && (addgroup -S www-data || true) \
  && (adduser -S -G www-data www-data || true)
 

@@ -1,5 +1,147 @@
 # Changelog
 
+## 1.7.0 (2026-07-01)
+
+### ✨ Features
+- expand ha-app-diag test steps and delete target message instead of initial message ([`5b0465e5`](https://github.com/FaserF/hassio-addons/commit/5b0465e5eab9f92caa3ebf71a2831cb3a7a7b35a))
+- add passkey/status endpoint and login #875 ([`005ea175`](https://github.com/FaserF/hassio-addons/commit/005ea175804b64d56c8c06bdaad3707bd7165435))
+- expose chat_count and group_count in /stats endpoint ([`a1e9f8ff`](https://github.com/FaserF/hassio-addons/commit/a1e9f8ffee5e4542e46567fb6969aca601b0a808))
+
+### 🐛 Bug Fixes
+- false positive passkey detection ([`9313e11a`](https://github.com/FaserF/hassio-addons/commit/9313e11a324c4730308048b1c23daa976b9f5f90))
+- small bugs introduced in new UI ([`ad470213`](https://github.com/FaserF/hassio-addons/commit/ad470213480b2465c3f58818b11eb651cd771154))
+- connected device info in app frontend ([`25a2ff02`](https://github.com/FaserF/hassio-addons/commit/25a2ff020a6a5d9dcae78ccc7fd02463138c9176))
+- new account detection ([`3b1c2c37`](https://github.com/FaserF/hassio-addons/commit/3b1c2c376bd4a2a4a3934ab0258545d190a7f77d))
+- clear session.sock immediately before logout to prevent close event race condition deleting custom sessions ([`e870274a`](https://github.com/FaserF/hassio-addons/commit/e870274aa59cdd19f14e34a1b5c7fec2b872971f))
+- reset isConnecting flag to false when deleting session to allow fresh QR code generation ([`d0abca6b`](https://github.com/FaserF/hassio-addons/commit/d0abca6bf49679e99aa41b9ed18aebe36bc0c028))
+
+### 📦 Dependencies
+- ⬆️ Update dependency playwright to v1.61.0 (#873) [skip-tests] ([`388f7b47`](https://github.com/FaserF/hassio-addons/commit/388f7b47a22d3f06229646692584e3aeb8d6f05c))
+- ⬆️ Update dependency fastapi to v0.138.2 [skip-tests] (#871) [skip-tests] ([`4438d6ce`](https://github.com/FaserF/hassio-addons/commit/4438d6ce954d138efb3c7ad8042b3527acd8e68f))
+- ⬆️ Update dependency eslint to v10.6.0 ([`a3b58b8a`](https://github.com/FaserF/hassio-addons/commit/a3b58b8a868d5edd40d97aa9e480ae9907e0ba72))
+- ⬆️ Update dependency fastapi to v0.138.1 [skip-tests] (#864) [skip-tests] ([`63508388`](https://github.com/FaserF/hassio-addons/commit/6350838893aff499b548163096483d7300096a70))
+
+### 🚀 Other
+- Improve whatsapp frontend UI (#876) [skip-tests] ([`dc0c38de`](https://github.com/FaserF/hassio-addons/commit/dc0c38de3e49623dd26ec802cbe7f0229f706aa7))
+- improved dev versioning with timestamps ([`e66f2182`](https://github.com/FaserF/hassio-addons/commit/e66f21825a3d9839df818bef66f025269d948a18))
+- whatsapp: reset passkey flags on connect start to avoid stale approval logs (FaserF/hassio-addons#62) ([`8a661b2e`](https://github.com/FaserF/hassio-addons/commit/8a661b2e42e0fdfa82fd31e7a43d5e92034b6bce))
+- improved api token storage from ha app ([`39946dc9`](https://github.com/FaserF/hassio-addons/commit/39946dc901a6f9c826e7f362cb550c508555be49))
+- detect passkey ceremony and show user guidance #875 ([`90932b73`](https://github.com/FaserF/hassio-addons/commit/90932b73e37adace93da1ad27c630e1485c7d67a))
+- add random delays to optimize anti account ban strategy ([`06926cce`](https://github.com/FaserF/hassio-addons/commit/06926cce481345376a15722f3da79d4c601fcec3))
+- move Rocket.Chat bridge zip to rocketchat-app folder ([`d33a0035`](https://github.com/FaserF/hassio-addons/commit/d33a00353251817814dd95d53b6a8c4b2aaabb43))
+
+
+## 1.6.3 (2026-06-27)
+
+### 🐛 Bug Fixes
+
+- bypass SSL checks for media fetching (fixes FaserF/ha-whatsapp#54) ([`6e4319fa`](https://github.com/FaserF/hassio-addons/commit/6e4319fa964aa3ee4c617f7080be4affcb15b587))
+- prevent TimeoutError exceptions on mark_as_read and set_presence #832 ([`3cf27795`](https://github.com/FaserF/hassio-addons/commit/3cf2779515ed90e307f089e938c4d46a8dedddfb))
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency link-preview-js to v4.0.4 [skip-tests] (#858) [skip-tests] ([`b403ac17`](https://github.com/FaserF/hassio-addons/commit/b403ac17233f3770cd5c5d14ed827f6e51581853))
+- ⬆️ Update dependency bonjour-service to v1.4.2 [skip-tests] ([`cca7d505`](https://github.com/FaserF/hassio-addons/commit/cca7d505257d999488fc5d874cd36f1c4b22859d))
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+- ⬆️ Update dependency globals to v17.7.0 (#855) [skip-tests] ([`b7f0c7ee`](https://github.com/FaserF/hassio-addons/commit/b7f0c7eef4d1fd0f8aeb54f95efaa11cc3d9ebd4))
+
+## 1.6.2 (2026-06-25)
+
+### 🐛 Bug Fixes
+
+- prevent TimeoutError exceptions on HA when calling mark_as_read and set_presence (#832)
+
+## 1.6.1 (2026-06-22)
+
+### 🐛 Bug Fixes
+
+- pass seconds parameter to video and audio messages ([`e8437a05`](https://github.com/FaserF/hassio-addons/commit/e8437a05a7cf4d5207c1533be2b9999cd621d791))
+- presence always online #848 ([`eada3db3`](https://github.com/FaserF/hassio-addons/commit/eada3db3cdc312e839ab91154225e380033198dc))
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency fastapi to v0.138.0 [skip-tests] (#850) ([`4ad3e487`](https://github.com/FaserF/hassio-addons/commit/4ad3e4879bc95b153712aff8e170664b3341475f))
+
+## 1.6.0 (2026-06-16)
+
+### 🐛 Bug Fixes
+
+- correctly preserve @lid domains in JID normalization #678 ([`8611a874`](https://github.com/FaserF/hassio-addons/commit/8611a8744d304ddc018c5e96fe7eaaf762e4d43f))
+- resolve JID mismatch in poll vote decryption #46 ([`79f7bf39`](https://github.com/FaserF/hassio-addons/commit/79f7bf3909f0c945dba473c0f799279abbdc9c37))
+- pass seconds parameter to video and audio messages ([`eb64a83e`](https://github.com/FaserF/hassio-addons/commit/eb64a83ef32e38398d5afb310b62456060fb5daa))
+
+### 📦 Dependencies
+
+- updated dependencys for security fixes reported by dependabot ([`c5cd6570`](https://github.com/FaserF/hassio-addons/commit/c5cd6570c7f7217d19f091a4352bdfd39d7c03d9))
+- ⬆️ Update Add-on base images to v21 [skip-tests] ([`2efc4ca0`](https://github.com/FaserF/hassio-addons/commit/2efc4ca058bca977cf5667d3778a6232d45b3ab2))
+
+## 1.5.9 (2026-06-15)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency fastapi to v0.137.1 [skip-tests] (#841) ([`637a8837`](https://github.com/FaserF/hassio-addons/commit/637a88370bcc9f4db38961b3befb2502d3fdda35))
+
+## 1.5.8 (2026-06-15)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency fastapi to v0.137.0 [skip-tests] (#839) [skip-tests] ([`62b9d2a8`](https://github.com/FaserF/hassio-addons/commit/62b9d2a8b805e0b03b70997644869f8c8e8025bb))
+- ⬆️ Update eslint monorepo to v10.5.0 [skip-tests] ([`1dbd9a76`](https://github.com/FaserF/hassio-addons/commit/1dbd9a7623c43fe9d6b8b986d01b733d0dbd7b9a))
+- ⬆️ Update dependency bonjour-service to v1.4.1 [skip-tests] (#833) [skip-tests] ([`3368976d`](https://github.com/FaserF/hassio-addons/commit/3368976ddfe127e5df94c236616afd1907d029fc))
+
+## 1.5.7 (2026-06-04)
+
+### 🐛 Bug Fixes
+
+- await decryptPollVote for correct poll vote decryption #678 ([`29323fe5`](https://github.com/FaserF/hassio-addons/commit/29323fe587de65fc8a16ad9431b98edbdf16de7b))
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency uvicorn to v0.49.0 [skip-tests] ([`d7351179`](https://github.com/FaserF/hassio-addons/commit/d735117997d0bba66e96582a0b9ee93ddd2c44f4))
+
+### 🚀 Other
+
+- Improved session stability #824 ([`6c9cc8a8`](https://github.com/FaserF/hassio-addons/commit/6c9cc8a8b372e91120fd1c083f29c0b0a623a54e))
+
+## 1.5.6 (2026-06-02)
+
+### 📦 Dependencies
+
+- improved poll_update encryption FaserF/ha-whatsapp#46 ([`08413421`](https://github.com/FaserF/hassio-addons/commit/084134217a3d93d39b04e770394a89e05ef686b0))
+- ⬆️ Update dependency eslint to v10.4.1 [skip-tests] (#823) [skip-tests] ([`5e07d445`](https://github.com/FaserF/hassio-addons/commit/5e07d445a6723d1de09ecae26e4b995f2f45d0af))
+- ⬆️ Update dependency uvicorn to v0.48.0 [skip-tests] (#822) [skip-tests] ([`7a74ac15`](https://github.com/FaserF/hassio-addons/commit/7a74ac15b8e408e442283aeb07a2f1296e681646))
+- ⬆️ Update dependency lru-cache to v11.5.1 [skip-tests] (#820) [skip-tests] ([`55aee81c`](https://github.com/FaserF/hassio-addons/commit/55aee81c4c5f34278b2a69c860481d70d62bcddc))
+- ⬆️ Update dependency fastapi to v0.136.3 [skip-tests] (#818) [skip-tests] ([`4f1f9868`](https://github.com/FaserF/hassio-addons/commit/4f1f98682d72bedfe309be613d19b49452cd6b4a))
+- ⬆️ Update dependency bonjour-service to v1.4.0 [skip-tests] (#817) [skip-tests] ([`b1ead44b`](https://github.com/FaserF/hassio-addons/commit/b1ead44bd85fbae288501ae0bdf95a88b7d27a23))
+- build(deps): bump qs from 6.15.0 to 6.15.2 in /whatsapp/app in the npm_and_yarn group across 1 directory (#815) [skip-tests] ([`5e51291a`](https://github.com/FaserF/hassio-addons/commit/5e51291a3018bf86fb050ebdb2b24bf5dc498b2d))
+- ⬆️ Update dependency lru-cache to v11.5.0 [skip-tests] (#813) [skip-tests] ([`600df2b9`](https://github.com/FaserF/hassio-addons/commit/600df2b9dcfe2e840d742d3e5d0f18c1d00f1878))
+- ⬆️ Update dependency playwright to v1.60.0 [skip-tests] (#814) [skip-tests] ([`6b106d6d`](https://github.com/FaserF/hassio-addons/commit/6b106d6d540e97784d733b73e39aeb99fdafde99))
+- build(deps): bump ws from 8.18.3 to 8.20.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#811) [skip-tests] ([`be3c388a`](https://github.com/FaserF/hassio-addons/commit/be3c388a0825d8ea7cd1a90437561bbf3a44a188))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc13 [skip-tests] (#809) [skip-tests] ([`69d96942`](https://github.com/FaserF/hassio-addons/commit/69d9694232dace21003b81a5bb72389ff1a7baba))
+- ⬆️ Update dependency eslint to v10.4.0 [skip-tests] (#806) [skip-tests] ([`af45d99a`](https://github.com/FaserF/hassio-addons/commit/af45d99a0792647f5ded7212c4e444e99eb197cd))
+
+### 🚀 Other
+
+- improved poll reaction #678 ([`052d00ed`](https://github.com/FaserF/hassio-addons/commit/052d00ed9fcfb847568a6fccfb73d7bdc3ed1159))
+- fix rate-overlimit after reconnect FaserF/ha-whatsapp#47 ([`e8717485`](https://github.com/FaserF/hassio-addons/commit/e87174850c95c11732c61c31826aab1e6c328ce0))
+- fix send_poll service saved to store FaserF/ha-whatsapp#45 ([`591ff60f`](https://github.com/FaserF/hassio-addons/commit/591ff60fa77a58871fc0e8427babb64d3b0f7624))
+
+## 1.5.5 (2026-05-15)
+
+### 📦 Dependencies
+
+- ⬆️ Update dependency uvicorn to v0.47.0 [skip-tests] (#805) [skip-tests] ([`d3067835`](https://github.com/FaserF/hassio-addons/commit/d3067835ce0d1b07f46d0a023464646de61fbc31))
+- ⬆️ Update dependency express-rate-limit to v8.5.2 [skip-tests] ([`a445fdcb`](https://github.com/FaserF/hassio-addons/commit/a445fdcbf40b5e164e05974b856d9308693ae86d))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc11 [skip-tests] (#802) [skip-tests] ([`7ac5ecbb`](https://github.com/FaserF/hassio-addons/commit/7ac5ecbb8469d3275faede246a02b6738552b34e))
+- build(deps): bump protobufjs from 8.0.1 to 8.2.0 in /whatsapp/app in the npm_and_yarn group across 1 directory (#801) [skip-tests] ([`2cd89d5e`](https://github.com/FaserF/hassio-addons/commit/2cd89d5ea812485b24cc6cb85049c20489922f1e))
+- ⬆️ Update dependency link-preview-js to v4.0.3 [skip-tests] (#800) [skip-tests] ([`82c90a86`](https://github.com/FaserF/hassio-addons/commit/82c90a86f93dc0db798013886d182cb3fbb3ec15))
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[20.1.1](https://github.com/hassio-addons/addon-base/releases/tag/20.1.1) [skip-tests] ([`c798075a`](https://github.com/FaserF/hassio-addons/commit/c798075ac062595a2e1a91754ab9768b47f20c46))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc10 [skip-tests] (#795) [skip-tests] ([`64556fd8`](https://github.com/FaserF/hassio-addons/commit/64556fd8b39ccd8653293b0480c8b8fef2fcd878))
+- ⬆️ Update dependency express-rate-limit to v8.5.1 [skip-tests] (#792) [skip-tests] ([`19379367`](https://github.com/FaserF/hassio-addons/commit/19379367a20011858a815ef9f3a9ffcb67ad1cc4))
+- build(deps): bump link-preview-js from 3.2.0 to 4.0.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#789) [skip-tests] ([`2ec5f305`](https://github.com/FaserF/hassio-addons/commit/2ec5f305dd1753782dce6353e67b846666e177fe))
+- ⬆️ Update dependency express-rate-limit to v8.5.0 [skip-tests] (#787) [skip-tests] ([`b9c5aabb`](https://github.com/FaserF/hassio-addons/commit/b9c5aabbd6c745f242a17788cf6f10df63c24ccf))
+- ⬆️ Update dependency lru-cache to v11.3.6 [skip-tests] (#786) [skip-tests] ([`b16af1bf`](https://github.com/FaserF/hassio-addons/commit/b16af1bfd2d1be6620d94bd57641acd3d0add220))
+
 ## 1.5.4 (2026-05-04)
 
 ### 📦 Dependencies

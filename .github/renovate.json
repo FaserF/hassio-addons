@@ -11,7 +11,6 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
-  "commitMessageSuffix": " [skip-tests]",
   "customManagers": [
     {
       "customType": "regex",
@@ -218,10 +217,13 @@
       "customType": "regex",
       "description": "Track Home Assistant version for test instance",
       "managerFilePatterns": [
-        "/homeassistant-test-instance/Dockerfile$/"
+        "/homeassistant-test-instance/Dockerfile$/",
+        "/homeassistant-test-instance/build.yaml$/"
       ],
+      "matchStringsStrategy": "any",
       "matchStrings": [
-        "ARG HA_VERSION=(?<currentValue>[\\d.]+)"
+        "ARG HA_VERSION=(?<currentValue>[\\d.]+)",
+        "(aarch64|amd64):\\s*[\"']?ghcr.io/home-assistant/home-assistant:(?<currentValue>[\\d.]+)[\"']?"
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/home-assistant/home-assistant"
@@ -277,10 +279,10 @@
         "/nginx/Dockerfile$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=repology depName=alpine_3_21/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
+        "# renovate: datasource=repology depName=alpine_edge/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
       ],
       "datasourceTemplate": "repology",
-      "depNameTemplate": "alpine_3_21/nginx",
+      "depNameTemplate": "alpine_edge/nginx",
       "versioningTemplate": "loose"
     },
     {
@@ -476,11 +478,20 @@
       }
     },
     {
-      "description": "Pterodactyl Wings - automerge enabled",
+      "description": "Pterodactyl Wings - automerge enabled and update checksums",
       "matchDepNames": [
         "pterodactyl/wings"
       ],
-      "automerge": true
+      "automerge": true,
+      "postUpgradeTasks": {
+        "commands": [
+          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "pterodactyl-wings/Dockerfile"
+        ],
+        "executionMode": "branch"
+      }
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
@@ -512,7 +523,7 @@
     {
       "description": "NGINX - auto-update Alpine package version and bump addon version",
       "matchDepNames": [
-        "alpine_3_21/nginx"
+        "alpine_edge/nginx"
       ],
       "matchFileNames": [
         "nginx/Dockerfile"
@@ -555,6 +566,28 @@
       }
     },
     {
+      "description": "Home Assistant - auto-update Home Assistant version and bump addon version",
+      "matchDepNames": [
+        "ghcr.io/home-assistant/home-assistant"
+      ],
+      "matchFileNames": [
+        "homeassistant-test-instance/Dockerfile",
+        "homeassistant-test-instance/build.yaml"
+      ],
+      "automerge": true,
+      "ignoreTests": false,
+      "postUpgradeTasks": {
+        "commands": [
+          "python3 .scripts/bump_version.py homeassistant-test-instance patch --message \"Automatic release after Home Assistant update to {{{newVersion}}}\""
+        ],
+        "fileFilters": [
+          "homeassistant-test-instance/config.yaml",
+          "homeassistant-test-instance/CHANGELOG.md"
+        ],
+        "executionMode": "branch"
+      }
+    },
+    {
       "matchManagers": [
         "pip_requirements"
       ],
@@ -585,6 +618,13 @@
       ],
       "versioning": "loose",
       "ignoreUnstable": false
+    },
+    {
+      "description": "Skip tests for patch updates only",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "commitMessageSuffix": " [skip-tests]"
     }
   ]
 }
