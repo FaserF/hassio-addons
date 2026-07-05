@@ -24,7 +24,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./whatsapp
-          file: ./whatsapp/Dockerfile
+          file: ./whatsapp/Dockerfile-standalone
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/ha-whatsapp-gw:latest
           platforms: linux/amd64
