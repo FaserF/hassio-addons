@@ -1,13 +1,16 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-07-01T14:16:29.178841",
+  "timestamp": "2026-07-06T08:08:43.750262",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
       "version": "0.6.0",
       "description": "Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-aegisbot-{arch}",
       "files": {
         "core": [
@@ -23,14 +26,20 @@
           "AegisBot/rootfs/usr/lib/bashio/app.sh",
           "AegisBot/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["AegisBot/translations/de.yaml", "AegisBot/translations/en.yaml"]
+        "translations": [
+          "AegisBot/translations/de.yaml",
+          "AegisBot/translations/en.yaml"
+        ]
       }
     },
     "ShieldDNS": {
       "name": "ShieldDNS",
       "version": "2.5.0",
       "description": "High-performance DoT proxy for AdGuard Home",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-shielddns-{arch}",
       "files": {
         "core": [
@@ -42,16 +51,26 @@
           "ShieldDNS/README.md",
           "ShieldDNS/DOCS.md"
         ],
-        "rootfs": ["ShieldDNS/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["ShieldDNS/translations/de.yaml", "ShieldDNS/translations/en.yaml"],
-        "web_assets": ["ShieldDNS/www/index.html"]
+        "rootfs": [
+          "ShieldDNS/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "ShieldDNS/translations/de.yaml",
+          "ShieldDNS/translations/en.yaml"
+        ],
+        "web_assets": [
+          "ShieldDNS/www/index.html"
+        ]
       }
     },
     "ShieldFile": {
       "name": "ShieldFile",
       "version": "2.4.0",
       "description": "Secure, Web-based File Manager (SFTP over HTTPS)",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-shieldfile-{arch}",
       "files": {
         "core": [
@@ -62,15 +81,23 @@
           "ShieldFile/README.md",
           "ShieldFile/DOCS.md"
         ],
-        "rootfs": ["ShieldFile/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["ShieldFile/translations/de.yaml", "ShieldFile/translations/en.yaml"]
+        "rootfs": [
+          "ShieldFile/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "ShieldFile/translations/de.yaml",
+          "ShieldFile/translations/en.yaml"
+        ]
       }
     },
     "apache2": {
       "name": "Apache2",
       "version": "3.4.2",
       "description": "Open Source Webserver with PHP and MariaDB.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-{arch}",
       "files": {
         "core": [
@@ -87,14 +114,20 @@
           "apache2/rootfs/usr/bin/webserver_app_integration.sh",
           "apache2/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["apache2/translations/de.yaml", "apache2/translations/en.yaml"]
+        "translations": [
+          "apache2/translations/de.yaml",
+          "apache2/translations/en.yaml"
+        ]
       }
     },
     "apache2-minimal": {
       "name": "Apache2 Minimal",
       "version": "3.4.2",
       "description": "Open Source Webserver without PHP and minimal extra modules.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-minimal-{arch}",
       "files": {
         "core": [
@@ -121,7 +154,10 @@
       "name": "Apache2 Minimal with MariaDB Client",
       "version": "3.4.2",
       "description": "Open Source Webserver with MariaDB Client and some PHP Modules.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}",
       "files": {
         "core": [
@@ -148,7 +184,10 @@
       "name": "Bash Script Executer",
       "version": "2.5.0",
       "description": ">-",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}",
       "files": {
         "core": [
@@ -160,7 +199,9 @@
           "bash_script_executer/README.md",
           "bash_script_executer/DOCS.md"
         ],
-        "rootfs": ["bash_script_executer/rootfs/usr/lib/bashio/banner.sh"],
+        "rootfs": [
+          "bash_script_executer/rootfs/usr/lib/bashio/banner.sh"
+        ],
         "translations": [
           "bash_script_executer/translations/de.yaml",
           "bash_script_executer/translations/en.yaml"
@@ -171,7 +212,10 @@
       "name": "BentoPDF",
       "version": "1.3.0",
       "description": "Self-hosted, privacy-first PDF toolkit",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-bentopdf-{arch}",
       "files": {
         "core": [
@@ -182,15 +226,23 @@
           "bentopdf/README.md",
           "bentopdf/DOCS.md"
         ],
-        "rootfs": ["bentopdf/rootfs/etc/nginx/nginx.conf"],
-        "translations": ["bentopdf/translations/de.yaml", "bentopdf/translations/en.yaml"]
+        "rootfs": [
+          "bentopdf/rootfs/etc/nginx/nginx.conf"
+        ],
+        "translations": [
+          "bentopdf/translations/de.yaml",
+          "bentopdf/translations/en.yaml"
+        ]
       }
     },
     "dbf": {
       "name": "DBF (DB-Infoscreen)",
       "version": "1.1.0",
       "description": "Railway departure display (formerly db-fakescreen) as a Home Assistant App.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-dbf-{arch}",
       "files": {
         "core": [
@@ -201,14 +253,20 @@
           "dbf/README.md",
           "dbf/DOCS.md"
         ],
-        "translations": ["dbf/translations/de.yaml", "dbf/translations/en.yaml"]
+        "translations": [
+          "dbf/translations/de.yaml",
+          "dbf/translations/en.yaml"
+        ]
       }
     },
     "er-dashboard": {
       "name": "ER-Startseite (Dashboard)",
       "version": "1.4.0",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-er-dashboard-{arch}",
       "files": {
         "core": [
@@ -224,14 +282,20 @@
           "er-dashboard/rootfs/usr/lib/bashio/app.sh",
           "er-dashboard/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["er-dashboard/translations/de.yaml", "er-dashboard/translations/en.yaml"]
+        "translations": [
+          "er-dashboard/translations/de.yaml",
+          "er-dashboard/translations/en.yaml"
+        ]
       }
     },
     "imapsync": {
       "name": "Imapsync",
       "version": "0.4.0",
       "description": "Sync IMAP accounts easily and reliably.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-imapsync-{arch}",
       "files": {
         "core": [
@@ -242,14 +306,19 @@
           "imapsync/README.md",
           "imapsync/DOCS.md"
         ],
-        "translations": ["imapsync/translations/de.yaml", "imapsync/translations/en.yaml"]
+        "translations": [
+          "imapsync/translations/de.yaml",
+          "imapsync/translations/en.yaml"
+        ]
       }
     },
     "komodo": {
       "name": "Komodo",
       "version": "0.2.0",
       "description": "A tool to build and deploy software on many servers",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-komodo-{arch}",
       "files": {
         "core": [
@@ -259,14 +328,20 @@
           "komodo/CHANGELOG.md",
           "komodo/README.md"
         ],
-        "translations": ["komodo/translations/de.yaml", "komodo/translations/en.yaml"]
+        "translations": [
+          "komodo/translations/de.yaml",
+          "komodo/translations/en.yaml"
+        ]
       }
     },
     "netboot-xyz": {
       "name": "Netboot.xyz",
       "version": "2.4.0",
       "description": "PXE-Server to deploy a OS inside your local network",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-netboot-xyz-{arch}",
       "files": {
         "core": [
@@ -277,14 +352,20 @@
           "netboot-xyz/README.md",
           "netboot-xyz/DOCS.md"
         ],
-        "translations": ["netboot-xyz/translations/de.yaml", "netboot-xyz/translations/en.yaml"]
+        "translations": [
+          "netboot-xyz/translations/de.yaml",
+          "netboot-xyz/translations/en.yaml"
+        ]
       }
     },
     "nginx": {
       "name": "NGINX",
       "version": "0.4.2",
       "description": "Open Source Webserver with PHP and MariaDB.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-nginx-{arch}",
       "files": {
         "core": [
@@ -300,14 +381,20 @@
           "nginx/rootfs/usr/bin/webserver_app_integration.sh",
           "nginx/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["nginx/translations/de.yaml", "nginx/translations/en.yaml"]
+        "translations": [
+          "nginx/translations/de.yaml",
+          "nginx/translations/en.yaml"
+        ]
       }
     },
     "openssl": {
       "name": "OpenSSL",
       "version": "2.4.0",
       "description": "Generate self-signed certificates",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-openssl-{arch}",
       "files": {
         "core": [
@@ -319,15 +406,23 @@
           "openssl/README.md",
           "openssl/DOCS.md"
         ],
-        "rootfs": ["openssl/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["openssl/translations/de.yaml", "openssl/translations/en.yaml"]
+        "rootfs": [
+          "openssl/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "openssl/translations/de.yaml",
+          "openssl/translations/en.yaml"
+        ]
       }
     },
     "planka": {
       "name": "Planka",
       "version": "1.4.0",
       "description": "The elegant open source project tracking tool",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-planka-{arch}",
       "files": {
         "core": [
@@ -337,15 +432,24 @@
           "planka/CHANGELOG.md",
           "planka/README.md"
         ],
-        "rootfs": ["planka/rootfs/usr/lib/bashio/app.sh", "planka/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["planka/translations/de.yaml", "planka/translations/en.yaml"]
+        "rootfs": [
+          "planka/rootfs/usr/lib/bashio/app.sh",
+          "planka/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "planka/translations/de.yaml",
+          "planka/translations/en.yaml"
+        ]
       }
     },
     "pterodactyl-panel": {
       "name": "pterodactyl Panel Gameserver",
       "version": "1.3.0",
       "description": "Open-Source Gameserver Management Panel",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-pterodactyl_panel-{arch}",
       "files": {
         "core": [
@@ -371,7 +475,10 @@
       "name": "pterodactyl Wings Gameserver",
       "version": "2.4.0",
       "description": "Open Source Gameserver",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-pterodactyl_wings-{arch}",
       "files": {
         "core": [
@@ -383,7 +490,9 @@
           "pterodactyl-wings/README.md",
           "pterodactyl-wings/DOCS.md"
         ],
-        "rootfs": ["pterodactyl-wings/rootfs/usr/lib/bashio/banner.sh"],
+        "rootfs": [
+          "pterodactyl-wings/rootfs/usr/lib/bashio/banner.sh"
+        ],
         "translations": [
           "pterodactyl-wings/translations/de.yaml",
           "pterodactyl-wings/translations/en.yaml"
@@ -394,7 +503,10 @@
       "name": "Solumati",
       "version": "2.4.0",
       "description": "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-solumati-{arch}",
       "files": {
         "core": [
@@ -406,15 +518,22 @@
           "solumati/README.md",
           "solumati/DOCS.md"
         ],
-        "rootfs": ["solumati/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["solumati/translations/de.yaml", "solumati/translations/en.yaml"]
+        "rootfs": [
+          "solumati/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "solumati/translations/de.yaml",
+          "solumati/translations/en.yaml"
+        ]
       }
     },
     "switch_lan_play": {
       "name": "Switch LAN Play Client",
       "version": "2.4.0",
       "description": "Nintendo Switch Lan Play -Client",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switch-lan-play-{arch}",
       "files": {
         "core": [
@@ -426,7 +545,9 @@
           "switch_lan_play/README.md",
           "switch_lan_play/DOCS.md"
         ],
-        "rootfs": ["switch_lan_play/rootfs/usr/lib/bashio/banner.sh"],
+        "rootfs": [
+          "switch_lan_play/rootfs/usr/lib/bashio/banner.sh"
+        ],
         "translations": [
           "switch_lan_play/translations/de.yaml",
           "switch_lan_play/translations/en.yaml"
@@ -437,7 +558,9 @@
       "name": "Switch LAN Play Server",
       "version": "2.4.0",
       "description": "Nintendo Switch Lan Play -Server",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switch-lan-play-server-{arch}",
       "files": {
         "core": [
@@ -449,7 +572,9 @@
           "switch_lan_play_server/README.md",
           "switch_lan_play_server/DOCS.md"
         ],
-        "rootfs": ["switch_lan_play_server/rootfs/usr/lib/bashio/banner.sh"],
+        "rootfs": [
+          "switch_lan_play_server/rootfs/usr/lib/bashio/banner.sh"
+        ],
         "translations": [
           "switch_lan_play_server/translations/de.yaml",
           "switch_lan_play_server/translations/en.yaml"
@@ -460,7 +585,10 @@
       "name": "SwitchCraft",
       "version": "0.3.0",
       "description": "SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switchcraft-{arch}",
       "files": {
         "core": [
@@ -471,15 +599,23 @@
           "switchcraft/README.md",
           "switchcraft/DOCS.md"
         ],
-        "rootfs": ["switchcraft/rootfs/usr/local/bin/patch_switchcraft.py"],
-        "translations": ["switchcraft/translations/de.yaml", "switchcraft/translations/en.yaml"]
+        "rootfs": [
+          "switchcraft/rootfs/usr/local/bin/patch_switchcraft.py"
+        ],
+        "translations": [
+          "switchcraft/translations/de.yaml",
+          "switchcraft/translations/en.yaml"
+        ]
       }
     },
     "tado_aa": {
       "name": "Tado Auto Assist",
       "version": "2.4.0",
       "description": "Tado Auto-Assist for Geofencing and open Window detection",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-tado_aa-{arch}",
       "files": {
         "core": [
@@ -491,15 +627,23 @@
           "tado_aa/README.md",
           "tado_aa/DOCS.md"
         ],
-        "rootfs": ["tado_aa/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["tado_aa/translations/de.yaml", "tado_aa/translations/en.yaml"]
+        "rootfs": [
+          "tado_aa/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "tado_aa/translations/de.yaml",
+          "tado_aa/translations/en.yaml"
+        ]
       }
     },
     "tt-rss": {
       "name": "Tiny Tiny RSS",
       "version": "1.3.0",
       "description": "A web-based news feed (RSS/Atom) reader and aggregator",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-tt-rss-{arch}",
       "files": {
         "core": [
@@ -515,14 +659,20 @@
           "tt-rss/rootfs/etc/php/php-fpm.d/www.conf",
           "tt-rss/rootfs/usr/lib/bashio/app.sh"
         ],
-        "translations": ["tt-rss/translations/de.yaml", "tt-rss/translations/en.yaml"]
+        "translations": [
+          "tt-rss/translations/de.yaml",
+          "tt-rss/translations/en.yaml"
+        ]
       }
     },
     "whatsapp": {
       "name": "WhatsApp Home Assistant App",
-      "version": "1.6.3",
+      "version": "1.7.0",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-whatsapp-{arch}",
       "files": {
         "core": [
@@ -533,15 +683,22 @@
           "whatsapp/README.md",
           "whatsapp/DOCS.md"
         ],
-        "rootfs": ["whatsapp/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["whatsapp/translations/de.yaml", "whatsapp/translations/en.yaml"]
+        "rootfs": [
+          "whatsapp/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          "whatsapp/translations/de.yaml",
+          "whatsapp/translations/en.yaml"
+        ]
       }
     },
     "wiki.js": {
       "name": "Wiki.JS",
       "version": "3.5.0",
       "description": "The most powerful and extensible open source Wiki software",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
       "files": {
         "core": [
@@ -557,7 +714,10 @@
           "wiki.js/rootfs/usr/lib/bashio/app.sh",
           "wiki.js/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["wiki.js/translations/de.yaml", "wiki.js/translations/en.yaml"]
+        "translations": [
+          "wiki.js/translations/de.yaml",
+          "wiki.js/translations/en.yaml"
+        ]
       }
     },
     "wiki.js3": {
@@ -582,14 +742,20 @@
           "wiki.js3/rootfs/usr/lib/bashio/app.sh",
           "wiki.js3/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["wiki.js3/translations/de.yaml", "wiki.js3/translations/en.yaml"]
+        "translations": [
+          "wiki.js3/translations/de.yaml",
+          "wiki.js3/translations/en.yaml"
+        ]
       }
     },
     "wordpress": {
       "name": "Wordpress",
       "version": "0.4.0",
       "description": "The most popular publication platform on the Web.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-wordpress-{arch}",
       "files": {
         "core": [
@@ -609,7 +775,10 @@
           "wordpress/rootfs/etc/php84/php-fpm.d/www.conf",
           "wordpress/rootfs/usr/lib/bashio/app.sh"
         ],
-        "translations": ["wordpress/translations/de.yaml", "wordpress/translations/en.yaml"]
+        "translations": [
+          "wordpress/translations/de.yaml",
+          "wordpress/translations/en.yaml"
+        ]
       }
     }
   }
