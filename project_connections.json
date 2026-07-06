@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-07-01T14:16:29.178841",
+  "timestamp": "2026-07-06T08:08:43.750262",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -520,7 +520,7 @@
     },
     "whatsapp": {
       "name": "WhatsApp Home Assistant App",
-      "version": "1.6.3",
+      "version": "1.7.0",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-whatsapp-{arch}",
