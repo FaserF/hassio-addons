@@ -1215,7 +1215,7 @@ function renderDashboard(sessionId) {
                     <i class="fab fa-whatsapp logo-icon"></i>
                     <div class="logo-text">
                         <span class="logo-title">WhatsApp Gateway</span>
-                        <span class="logo-subtitle">Home Assistant</span>
+                        <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
                     </div>
                 </div>
             </div>
@@ -1241,7 +1241,7 @@ function renderDashboard(sessionId) {
                     <i class="fas fa-puzzle-piece nav-icon"></i>
                     <span>Integration Repo</span>
                 </a>
-                <a href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item">
+                <a id="ha-repo-link" href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item">
                     <i class="fas fa-cubes nav-icon"></i>
                     <span>HA App Repo</span>
                 </a>
@@ -2009,12 +2009,24 @@ function renderDashboard(sessionId) {
                                   intVer.toLowerCase().includes('pre');
                     document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
 
+                    // Standalone mode adjustments
+                    if (data.isStandalone) {
+                        document.title = 'WhatsApp Gateway';
+                        const subtitle = document.getElementById('logo-subtitle');
+                        if (subtitle) subtitle.textContent = 'Standalone';
+                        const haRepoLink = document.getElementById('ha-repo-link');
+                        if (haRepoLink) {
+                            const span = haRepoLink.querySelector('span');
+                            if (span) span.textContent = 'Project Repository';
+                        }
+                    }
+
                     // Ingress config logs link
                     const slug = data.addonSlug || 'unknown';
                     const fullLogsLink = document.getElementById('full-logs-link');
                     if (fullLogsLink) {
                         const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
-                        if (isIngress) {
+                        if (isIngress && !data.isStandalone) {
                             fullLogsLink.style.display = 'flex';
                             fullLogsLink.href = '/config/app/' + slug + '/logs';
                         } else {

@@ -16,18 +16,13 @@ RUN mkdir -p /data /opt/whatsapp && \
 
 WORKDIR /opt/whatsapp
 
-# Copy files and ensure ownership
-COPY --chown=node:node . .
-
-# Move WhatsApp application code to workdir root (matching HA addon layout)
-RUN if [ -d "app" ]; then mv app/* ./ && rm -rf app; fi
+# Copy ONLY the node application code and readme (bypasses rootfs/bashio completely)
+COPY --chown=node:node app/ ./
+COPY --chown=node:node README.md ./
 
 # Install npm dependencies (including @whiskeysockets/baileys from package.json)
 RUN rm -rf package-lock.json node_modules && \
     npm install --no-audit --no-fund --legacy-peer-deps
-
-# Clean up s6-overlay / home-assistant specific directories
-RUN rm -rf /etc/s6-overlay /etc/services.d rootfs
 
 EXPOSE 8066
 
@@ -41,8 +36,8 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Labels
 ARG BUILD_DATE
-LABEL org.opencontainers.image.title="WhatsApp Home Assistant App" \
-      org.opencontainers.image.description="Home Assistant WhatsApp App (Baileys/Node.js)." \
+LABEL org.opencontainers.image.title="WhatsApp Gateway" \
+      org.opencontainers.image.description="Home Assistant WhatsApp App (Baileys/Node.js) - Standalone Container." \
       org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
       org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
       org.opencontainers.image.licenses="MIT" \

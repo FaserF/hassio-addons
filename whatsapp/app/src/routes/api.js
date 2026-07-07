@@ -895,6 +895,7 @@ export function registerAPIRoutes(app) {
       deviceInfo: session.deviceInfo || {},
       passkeyDetected: session.passkeyDetected || false,
       passkeyWaiting: session.passkeyWaiting || false,
+      isStandalone: !process.env.SUPERVISOR_TOKEN,
     });
   });
 
