@@ -200,6 +200,108 @@ function renderDashboard(sessionId) {
                 padding: 20px 24px;
                 border-top: 1px solid var(--border-color);
             }
+            .chat-back-btn {
+                display: none;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .app-layout {
+                    flex-direction: column;
+                }
+
+                .sidebar {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    min-width: 0 !important;
+                    height: auto !important;
+                    border-right: none;
+                    border-bottom: 1px solid var(--border-color);
+                    padding: 0 !important;
+                }
+
+                .sidebar-header {
+                    padding: 10px 16px !important;
+                }
+
+                .nav-menu {
+                    flex-direction: row !important;
+                    padding: 0 8px 8px 8px !important;
+                    gap: 4px !important;
+                    width: 100% !important;
+                }
+
+                .nav-item {
+                    flex: 1;
+                    justify-content: center;
+                    padding: 8px 4px !important;
+                    font-size: 0.85rem !important;
+                    gap: 6px !important;
+                }
+
+                .nav-item span {
+                    display: none;
+                }
+
+                .nav-divider {
+                    display: none !important;
+                }
+
+                .nav-menu a.nav-item {
+                    display: none !important;
+                }
+
+                .main-content {
+                    height: calc(100vh - 105px) !important;
+                }
+
+                /* Chats Tab Layout on Mobile */
+                .chat-container {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                .chat-sidebar {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    min-width: 0 !important;
+                    border-right: none !important;
+                }
+
+                .chat-thread {
+                    width: 100% !important;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 100%;
+                    background: var(--bg-chat);
+                    z-index: 10;
+                    display: none;
+                }
+
+                /* Toggle between Sidebar and Chat Thread based on chat-open class on body */
+                body.chat-open .chat-sidebar {
+                    display: none !important;
+                }
+
+                body.chat-open .chat-thread {
+                    display: flex !important;
+                }
+
+                .chat-back-btn {
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    background: none;
+                    border: none;
+                    color: var(--text-primary);
+                    font-size: 1.2rem;
+                    margin-right: 12px;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                }
+            }
 
             .sys-info-title {
                 font-size: 11px;
@@ -1102,13 +1204,6 @@ function renderDashboard(sessionId) {
                 padding: 0;
                 border-radius: 8px;
             }
-
-            @media (max-width: 768px) {
-                body { flex-direction: column; }
-                .sidebar { width: 100%; height: auto; border-bottom: 1px solid var(--border-color); }
-                .main-content { height: auto; overflow: visible; }
-                .content-body { padding: 16px; }
-            }
         </style>
     </head>
     <body>
@@ -1423,15 +1518,16 @@ function renderDashboard(sessionId) {
                                 <p>Select a contact or group from the left sidebar to start chatting.</p>
                             </div>
 
-                            <!-- Active chat state -->
+                            <!-- Active Chat State -->
                             <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
                                 <div class="chat-thread-header">
-                                    <div class="chat-header-avatar">
-                                        <i class="fas fa-user-circle"></i>
-                                    </div>
-                                    <div class="chat-header-info">
-                                        <h4 id="active-chat-name">Contact JID</h4>
-                                        <p id="active-chat-jid">JID details</p>
+                                    <div class="chat-thread-info">
+                                        <button class="chat-back-btn" onclick="goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
+                                        <div class="chat-thread-avatar" id="active-chat-avatar"></div>
+                                        <div>
+                                            <h4 id="active-chat-name">Contact JID</h4>
+                                            <p id="active-chat-jid">JID details</p>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1501,24 +1597,27 @@ function renderDashboard(sessionId) {
                 }
             });
 
-            function switchTab(tabId) {
-                navItems.forEach(nav => nav.classList.remove('active'));
-                tabPanels.forEach(panel => panel.classList.remove('active'));
-
-                const activeNav = document.querySelector(\`.nav-item[data-tab="\${tabId}"]\`);
-                const activePanel = document.getElementById(\`tab-\${tabId}\`);
-                
-                if (activeNav && activePanel) {
-                    activeNav.classList.add('active');
-                    activePanel.classList.add('active');
-                    pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
-                    
-                    isChatTabActive = (tabId === 'chats');
-                    if (isChatTabActive) {
-                        loadChats();
-                    }
-                }
+        function switchTab(tabId) {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            const activeNav = document.querySelector(\`.nav-item[data-tab="\${tabId}"]\`);
+            const activePanel = document.getElementById(\`tab-\${tabId}\`);
+            
+            if (activeNav && activePanel) {
+                activeNav.classList.add('active');
+                activePanel.classList.add('active');
+                pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
             }
+
+            // Custom trigger for chats tab
+            isChatTabActive = (tabId === 'chats');
+            if (isChatTabActive) {
+                loadChats();
+            } else {
+                document.body.classList.remove('chat-open');
+            }
+        }
 
             // Host Utilities
             const getBasePath = () => {
@@ -1761,11 +1860,21 @@ function renderDashboard(sessionId) {
                 renderChatList(allChats);
             }
 
-            function selectChat(jid, name) {
-                activeChatJid = jid;
-                
-                document.getElementById('chat-thread-empty').style.display = 'none';
-                document.getElementById('chat-thread-active').style.display = 'flex';
+            function goBackToChatList(event) {
+            if (event) event.preventDefault();
+            activeChatJid = null;
+            document.getElementById('chat-thread-active').style.display = 'none';
+            document.getElementById('chat-thread-empty').style.display = 'flex';
+            document.body.classList.remove('chat-open');
+            loadChats();
+        }
+
+        function selectChat(jid, name) {
+            activeChatJid = jid;
+            document.body.classList.add('chat-open');
+            
+            document.getElementById('chat-thread-empty').style.display = 'none';
+            document.getElementById('chat-thread-active').style.display = 'flex';
                 
                 document.getElementById('active-chat-name').textContent = name;
                 document.getElementById('active-chat-jid').textContent = jid;
