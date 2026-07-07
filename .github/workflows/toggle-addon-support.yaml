@@ -1,0 +1,53 @@
+name: Toggle Addon Support
+
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: 'Add-on slug (e.g. sap-abap-cloud-dev)'
+        required: true
+        type: string
+      action:
+        description: 'Target state'
+        required: true
+        type: choice
+        options:
+          - unsupported
+          - supported
+      reason:
+        description: 'Reason for unsupporting'
+        required: false
+        type: string
+        default: 'deprecated by vendor'
+
+jobs:
+  toggle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Run Toggle Support Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: |
+          python .scripts/toggle_support.py "${{ github.event.inputs.addon }}" "${{ github.event.inputs.action }}" --reason "${{ github.event.inputs.reason }}"
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "chore(support): toggle support for ${{ github.event.inputs.addon }} to ${{ github.event.inputs.action }} [skip ci]"
+          git push

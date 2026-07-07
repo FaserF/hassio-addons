@@ -43,9 +43,7 @@ jobs:
           filters = {}
           # Apps excluded from CI builds/tests (only built during release)
           # These Apps are too large or resource-intensive for CI
-          # apps excluded from CI builds/tests (only built during release)
-          # These apps are too large or resource-intensive for CI
-          CI_EXCLUDED_APPS = {"sap-abap-cloud-dev"}
+          CI_EXCLUDED_APPS = set()
 
           # Scan for config.yaml to identify Apps
           for root, dirs, files in os.walk("."):

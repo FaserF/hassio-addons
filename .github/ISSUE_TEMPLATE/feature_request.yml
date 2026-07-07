@@ -56,7 +56,6 @@ body:
         - paperless-ngx
         - pterodactyl-panel
         - pterodactyl-wings
-        - sap-abap-cloud-dev
         - solumati
         - switchcraft
         - switch_lan_play
