@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.2 (2026-07-07)
+
+### 🐛 Bug Fixes
+- initial DB setup ([`23e94ff0`](https://github.com/FaserF/hassio-addons/commit/23e94ff0b776fabd55b1356b6b2d80450db22ecf))
+
+
 ## 1.7.1 (2026-07-07)
 
 ### ✨ Features
