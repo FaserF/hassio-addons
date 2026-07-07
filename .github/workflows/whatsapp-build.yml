@@ -1,0 +1,30 @@
+name: Build My WhatsApp Image
+
+on:
+  push:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./whatsapp
+          file: ./whatsapp/Dockerfile-standalone
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/ha-whatsapp-gw:latest
+          platforms: linux/amd64

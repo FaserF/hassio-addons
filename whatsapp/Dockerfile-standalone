@@ -1,0 +1,39 @@
+# Only for Docker (cannot be used as HA addon)
+FROM node:20-alpine
+
+RUN apk add --no-cache \
+    git \
+    curl \
+    dos2unix \
+    ffmpeg \
+    build-base \
+    python3
+
+WORKDIR /opt/whatsapp
+
+COPY . .
+
+RUN if [ -d "app" ]; then mv app/* ./ && rm -rf app; fi
+
+RUN rm -rf package-lock.json node_modules && \
+    npm install --no-audit --no-fund --legacy-peer-deps
+
+RUN rm -rf /etc/s6-overlay /etc/services.d rootfs
+
+EXPOSE 8066
+
+CMD ["node", "index.js"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail -s http://127.0.0.1:8066/health || exit 1
+
+# Labels
+LABEL org.opencontainers.image.title="WhatsApp Home Assistant App"
+LABEL org.opencontainers.image.description="Home Assistant WhatsApp App (Baileys/Node.js)."
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/ha-whatsapp"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/ha-whatsapp"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/ha-whatsapp/blob/master/whatsapp/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
