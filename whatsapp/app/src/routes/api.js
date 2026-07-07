@@ -890,6 +890,7 @@ export function registerAPIRoutes(app) {
       addonSlug: ADDON_SLUG,
       integrationVersion: INTEGRATION_VERSION,
       baileysVersion: BAILEYS_VERSION,
+      fastapiVersion: process.env.FASTAPI_VERSION || '0.139.0',
       webhookEnabled: WEBHOOK_ENABLED,
       webhookUrl: WEBHOOK_URL,
       deviceInfo: session.deviceInfo || {},

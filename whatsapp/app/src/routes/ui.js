@@ -303,6 +303,74 @@ function renderDashboard(sessionId) {
                 }
             }
 
+            /* Modernized Styles & Animations */
+            .tab-panel {
+                animation: panelFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+            @keyframes panelFadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .sidebar-header, .top-header {
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                background: rgba(255, 255, 255, 0.85) !important;
+            }
+            html[data-theme="dark"] .sidebar-header, 
+            html[data-theme="dark"] .top-header {
+                background: rgba(17, 27, 33, 0.85) !important;
+            }
+
+            .btn {
+                transition: all var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+            .btn:active {
+                transform: scale(0.96);
+            }
+
+            .form-group input, .form-group textarea, .form-group select {
+                transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+            }
+            .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+                border-color: var(--primary) !important;
+                box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.15);
+            }
+
+            .nav-item {
+                transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease !important;
+            }
+            @media (min-width: 769px) {
+                .nav-item:hover {
+                    transform: translateX(4px);
+                }
+            }
+            @media (max-width: 768px) {
+                .nav-item:active {
+                    transform: scale(0.95);
+                }
+            }
+
+            .chat-message, .message-wrapper {
+                animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+            @keyframes messageSlideIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.96) translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+
             .sys-info-title {
                 font-size: 11px;
                 font-weight: 700;
@@ -428,14 +496,24 @@ function renderDashboard(sessionId) {
             }
 
             .banner-warning {
-                background-color: rgba(255, 188, 0, 0.1);
-                border: 1px solid rgba(255, 188, 0, 0.3);
+                background-color: rgba(255, 188, 0, 0.08);
+                border: 1px solid rgba(138, 109, 28, 0.25);
+                color: #7a5f15;
+            }
+
+            html[data-theme="dark"] .banner-warning {
+                background-color: rgba(255, 188, 0, 0.08);
+                border: 1px solid rgba(255, 188, 0, 0.2);
                 color: #ffe699;
             }
 
             .banner-warning-icon {
-                color: var(--warning);
+                color: #8f6a00;
                 font-size: 20px;
+            }
+
+            html[data-theme="dark"] .banner-warning-icon {
+                color: var(--warning);
             }
 
             .banner-info {
@@ -1055,6 +1133,27 @@ function renderDashboard(sessionId) {
                 align-items: baseline;
                 margin-bottom: 4px;
             }
+            .sys-info-val {
+                font-weight: 600;
+                color: var(--text-main);
+                transition: color 0.2s ease;
+            }
+
+            .sys-info-link {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                transition: color 0.2s ease, padding-left 0.2s ease;
+            }
+
+            .sys-info-link:hover {
+                color: var(--primary);
+                padding-left: 2px;
+            }
+
+            .sys-info-link:hover .sys-info-val {
+                color: var(--primary);
+            }
             .chat-name {
                 font-weight: 600;
                 color: var(--text-main);
@@ -1258,10 +1357,11 @@ function renderDashboard(sessionId) {
             <div class="sidebar-footer">
                 <div class="sys-info-title">System Properties</div>
                 <div class="sys-info-text">
-                    Node: <span id="node-version" class="sys-info-val">...</span><br>
-                    Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span><br>
-                    Integration: <span id="int-version-sidebar" class="sys-info-val">...</span><br>
-                    Baileys: <span id="baileys-version" class="sys-info-val">...</span>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/main/whatsapp" target="_blank" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/WhiskeySockets/Baileys" target="_blank" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/nodejs/node" target="_blank" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/fastapi/fastapi" target="_blank" class="sys-info-link">Fastapi: <span id="fastapi-version" class="sys-info-val">...</span></a>
                 </div>
             </div>
         </aside>
@@ -1993,11 +2093,18 @@ function renderDashboard(sessionId) {
                     const data = await response.json();
                     isConnected = data.isConnected;
 
+                    // Update footer session info
+                    const footerSessionId = document.getElementById('footer-session-id');
+                    const footerSessionStatus = document.getElementById('footer-session-status');
+                    if (footerSessionId) footerSessionId.textContent = data.sessionId || currentSession;
+                    if (footerSessionStatus) footerSessionStatus.textContent = data.isConnected ? 'Connected' : 'Disconnected';
+
                     // Version elements
                     document.getElementById('node-version').textContent = data.nodeVersion || 'N/A';
                     document.getElementById('addon-version-sidebar').textContent = data.addonVersion || 'N/A';
                     document.getElementById('int-version-sidebar').textContent = data.integrationVersion || 'N/A';
                     document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
+                    document.getElementById('fastapi-version').textContent = data.fastapiVersion || 'N/A';
 
                     // Dev/Beta releases banner
                     const addonVer = data.addonVersion || '';
