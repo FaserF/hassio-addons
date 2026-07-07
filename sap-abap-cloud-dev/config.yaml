@@ -1,6 +1,6 @@
 ---
 name: SAP ABAP Cloud Developer Trial (Unsupported)
-version: 0.3.0
+version: 0.3.1-dev-20260707-0746-54d5ee6
 slug: sap-abap-cloud-dev
 description: SAP ABAP Platform Trial for local ABAP development
 url: https://github.com/FaserF/hassio-addons/tree/master/.unsupported/sap-abap-cloud-dev
