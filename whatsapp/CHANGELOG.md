@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.7.1 (2026-07-07)
+
+### ✨ Features
+- standalone docker image #880 ([`25e815a0`](https://github.com/FaserF/hassio-addons/commit/25e815a05816bc725c49dec3db793c0d3eb464d7))
+- Optimize frontend for mobile UI ([`abc718b1`](https://github.com/FaserF/hassio-addons/commit/abc718b12b1d766b9f8a6abcd59887399400cf84))
+
+### 🐛 Bug Fixes
+- handle curl errors safely in startup script to prevent infinite restart loop ([`bf7c2ddf`](https://github.com/FaserF/hassio-addons/commit/bf7c2ddf33c4a155d569a9cbf41b2ee54e01713b))
+
+### 📦 Dependencies
+- ⬆️ Update dependency uvicorn to v0.50.2 (#881) [skip-tests] ([`f0a6339f`](https://github.com/FaserF/hassio-addons/commit/f0a6339f2f7c9d10b4aac9565e31b50711a78f09))
+- ⬆️ Update dependency fastapi to v0.139.0 (#879) ([`ba1fe18d`](https://github.com/FaserF/hassio-addons/commit/ba1fe18d6b2dd50f1a7f9fc2248e4cb98ee72c76))
+
+### 🚀 Other
+- UI & UX improvements in web frontend ([`a6e40e64`](https://github.com/FaserF/hassio-addons/commit/a6e40e642289c531b1319119ad04160ed6b768f4))
+- improved standalone whatsapp docker ([`b1909eef`](https://github.com/FaserF/hassio-addons/commit/b1909eef01a0d86edd797b334161519dccd4e10a))
+- GitHub Actions to build WhatsApp solution into standalone docker container ([`a772cdab`](https://github.com/FaserF/hassio-addons/commit/a772cdabbd030d89496ecdc7adb1759d76b7ec7e))
+
+
 ## 1.7.0 (2026-07-01)
 
 ### ✨ Features
