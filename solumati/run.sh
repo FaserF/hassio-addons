@@ -415,10 +415,14 @@ else
 fi
 
 # Generate random password for database
+bashio::log.debug "Generating random database password..."
 DB_PASS=$(
+	set +o pipefail
 	tr -dc A-Za-z0-9 </dev/urandom | head -c 32
+	set -o pipefail
 	echo ''
 )
+bashio::log.debug "Database password generated successfully."
 
 # --- POSTGRESQL SETUP ---
 if [ ! -d "$DATA_DIR" ]; then

@@ -26,13 +26,15 @@ else
         bashio::log.info "Using persisted FLET_SECRET from /data/flet_secret"
         FLET_SECRET=$(cat /data/flet_secret)
     else
-        bashio::log.info "Generating new FLET_SECRET..."
-        # Safer generation using openssl which is usually faster and cleaner than urandom pipe
+        bashio::log.debug "FLET_SECRET generation starting..."
+        set +o pipefail
         if command -v openssl >/dev/null 2>&1; then
              FLET_SECRET=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
         else
              FLET_SECRET=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32)
         fi
+        set -o pipefail
+        bashio::log.debug "FLET_SECRET generation complete."
 
         bashio::log.info "Saving FLET_SECRET..."
         echo "${FLET_SECRET}" > /data/flet_secret
