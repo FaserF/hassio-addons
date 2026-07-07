@@ -1,7 +1,7 @@
 import argparse
 import os
-import shutil
 import re
+import shutil
 import subprocess
 
 ROOT_DIR = "."
@@ -54,7 +54,7 @@ def update_readme_status(addon, to_unsupported, reason="deprecated by vendor"):
                                             status = "⚠️"
                                         break
                         parts[3] = status
-                    
+
                     line = f"| {parts[1]} | {parts[2]} | {parts[3]} | {parts[4]} |\n"
                     updated = True
         new_lines.append(line)
@@ -82,7 +82,7 @@ def update_config_yaml(addon, to_unsupported):
         content = re.sub(
             r"url:\s*https://github\.com/FaserF/hassio-addons/tree/master/(" + re.escape(addon) + r")",
             f"url: https://github.com/FaserF/hassio-addons/tree/master/{UNSUPPORTED_DIR}/{addon}",
-            content
+            content,
         )
         # Update stage to deprecated
         if "stage:" in content:
@@ -96,9 +96,13 @@ def update_config_yaml(addon, to_unsupported):
                 content += "stage: deprecated\n"
     else:
         content = re.sub(
-            r"url:\s*https://github\.com/FaserF/hassio-addons/tree/master/" + re.escape(UNSUPPORTED_DIR) + r"/(" + re.escape(addon) + r")",
+            r"url:\s*https://github\.com/FaserF/hassio-addons/tree/master/"
+            + re.escape(UNSUPPORTED_DIR)
+            + r"/("
+            + re.escape(addon)
+            + r")",
             f"url: https://github.com/FaserF/hassio-addons/tree/master/{addon}",
-            content
+            content,
         )
         # Reset stage depending on version
         version = "0.1.0"
@@ -106,7 +110,7 @@ def update_config_yaml(addon, to_unsupported):
             if line.strip().startswith("version:"):
                 version = line.split(":", 1)[1].strip().strip("'\"")
                 break
-        
+
         is_experimental = version.startswith("0.")
         if is_experimental:
             if "stage:" in content:
