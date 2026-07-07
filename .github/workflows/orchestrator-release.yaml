@@ -1183,6 +1183,25 @@ jobs:
              BUILD_FROM=${{ env.BUILD_FROM_AARCH64 }}
              GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
 
+      - name: 📅 Get BUILD_DATE for Standalone WhatsApp
+        if: matrix.App == 'whatsapp'
+        id: date
+        run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: 🏗️ Build and Push Standalone WhatsApp Image (Docker Only)
+        if: matrix.App == 'whatsapp'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./whatsapp
+          file: ./whatsapp/Dockerfile-standalone
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/whatsapp-gw:latest
+            ghcr.io/${{ env.OWNER }}/whatsapp-gw:${{ env.VERSION }}
+          platforms: linux/amd64
+          build-args: |
+            BUILD_DATE=${{ steps.date.outputs.date }}
+
       - name: 📢 Release Summary
         run: |
           {

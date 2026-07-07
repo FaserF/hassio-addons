@@ -1,6 +1,7 @@
 # Only for Docker (cannot be used as HA addon)
-FROM node:20-alpine
+FROM node:24-alpine
 
+# Install build dependencies, git, and media tools
 RUN apk add --no-cache \
     git \
     curl \
@@ -9,18 +10,29 @@ RUN apk add --no-cache \
     build-base \
     python3
 
+# Create persistent data directory and application directory
+RUN mkdir -p /data /opt/whatsapp && \
+    chown -R node:node /data /opt/whatsapp
+
 WORKDIR /opt/whatsapp
 
-COPY . .
+# Copy files and ensure ownership
+COPY --chown=node:node . .
 
+# Move WhatsApp application code to workdir root (matching HA addon layout)
 RUN if [ -d "app" ]; then mv app/* ./ && rm -rf app; fi
 
+# Install npm dependencies (including @whiskeysockets/baileys from package.json)
 RUN rm -rf package-lock.json node_modules && \
     npm install --no-audit --no-fund --legacy-peer-deps
 
+# Clean up s6-overlay / home-assistant specific directories
 RUN rm -rf /etc/s6-overlay /etc/services.d rootfs
 
 EXPOSE 8066
+
+# Run as non-root user
+USER node
 
 CMD ["node", "index.js"]
 
@@ -28,12 +40,13 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl --fail -s http://127.0.0.1:8066/health || exit 1
 
 # Labels
-LABEL org.opencontainers.image.title="WhatsApp Home Assistant App"
-LABEL org.opencontainers.image.description="Home Assistant WhatsApp App (Baileys/Node.js)."
-LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
-LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/FaserF/ha-whatsapp"
-LABEL org.opencontainers.image.source="https://github.com/FaserF/ha-whatsapp"
-LABEL org.opencontainers.image.documentation="https://github.com/FaserF/ha-whatsapp/blob/master/whatsapp/README.md"
-LABEL org.opencontainers.image.created="${BUILD_DATE}"
+ARG BUILD_DATE
+LABEL org.opencontainers.image.title="WhatsApp Home Assistant App" \
+      org.opencontainers.image.description="Home Assistant WhatsApp App (Baileys/Node.js)." \
+      org.opencontainers.image.vendor="FaserF's Home Assistant Apps" \
+      org.opencontainers.image.authors="FaserF <https://github.com/FaserF>" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.url="https://github.com/FaserF/ha-whatsapp" \
+      org.opencontainers.image.source="https://github.com/FaserF/ha-whatsapp" \
+      org.opencontainers.image.documentation="https://github.com/FaserF/ha-whatsapp/blob/master/whatsapp/README.md" \
+      org.opencontainers.image.created="${BUILD_DATE}"
