@@ -1190,7 +1190,7 @@ jobs:
 
       - name: 🏗️ Build and Push Standalone WhatsApp Image (Docker Only)
         if: matrix.App == 'whatsapp'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./whatsapp
           file: ./whatsapp/Dockerfile-standalone
