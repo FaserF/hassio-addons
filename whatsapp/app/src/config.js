@@ -82,7 +82,9 @@ logger.info(
     ADDON_VERSION,
     INTEGRATION_VERSION,
   },
-  process.env.SUPERVISOR_TOKEN ? '🛠️ HA APP Configuration Loaded' : '🛠️ Gateway Configuration Loaded'
+  process.env.SUPERVISOR_TOKEN
+    ? '🛠️ HA APP Configuration Loaded'
+    : '🛠️ Gateway Configuration Loaded'
 );
 
 // --- Baileys Version Check ---

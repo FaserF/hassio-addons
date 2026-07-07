@@ -48,6 +48,30 @@ Since this addon uses an unofficial WhatsApp API library (Baileys), WhatsApp's a
 - **Use Delays**: When sending consecutive messages via Home Assistant automations, always insert delay actions (e.g. 5–10 seconds) between messages.
 - **Simulate Typing**: The addon automatically simulates typing presence (`composing...`) for 1–2.5s before every message to emulate human behavior.
 
+## 🐳 Standalone Docker Support (Docker Only)
+
+If you are running Home Assistant in a container (without Supervisor/HAOS), you can run the WhatsApp Gateway as a standalone Docker container.
+
+### Docker Compose Example
+
+```yaml
+services:
+  whatsapp-gateway:
+    image: ghcr.io/faserf/hassio-addons/whatsapp-gw:latest
+    container_name: whatsapp-gateway
+    restart: unless-stopped
+    ports:
+      - '8066:8066'
+    volumes:
+      - ./data:/data
+      - ./media:/media
+    environment:
+      - PORT=8066
+      - DATA_DIR=/data
+      - MEDIA_FOLDER=/media
+      - LOG_LEVEL=info
+```
+
 ---
 
 ## ⚙️ Configuration
@@ -77,32 +101,6 @@ webhook_enabled: false
 webhook_token: ''
 webhook_url: ''
 welcome_message_enabled: false
-```
-
----
-
-## 🐳 Standalone Docker Support (Docker Only)
-
-If you are running Home Assistant in a container (without Supervisor/HAOS), you can run the WhatsApp Gateway as a standalone Docker container.
-
-### Docker Compose Example
-```yaml
-services:
-  whatsapp-gateway:
-    image: ghcr.io/faserf/hassio-addons/whatsapp-gw:latest
-    container_name: whatsapp-gateway
-    restart: unless-stopped
-    ports:
-      - "8066:8066"
-    volumes:
-      - ./data:/data
-      - ./media:/media
-    environment:
-      - PORT=8066
-      - DATA_DIR=/data
-      - MEDIA_FOLDER=/media
-      - LOG_LEVEL=info
-      # - API_TOKEN=your_secure_token_here
 ```
 
 ---
