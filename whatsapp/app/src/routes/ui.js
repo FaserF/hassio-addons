@@ -1677,6 +1677,7 @@ function renderDashboard(sessionId) {
 
       <script>
         let currentSession = ${JSON.stringify(sessionId)};
+        const apiToken = ${JSON.stringify(API_TOKEN)};
         let isConnected = false;
         let lastLogText = '';
         let activeChatJid = null;
@@ -2042,7 +2043,8 @@ function renderDashboard(sessionId) {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Accept': 'application/json'
+                            'Accept': 'application/json',
+                            'X-Auth-Token': apiToken
                         },
                         body: JSON.stringify({
                             number: rawNumber,

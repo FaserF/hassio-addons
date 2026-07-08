@@ -57,7 +57,7 @@ If you are running Home Assistant in a container (without Supervisor/HAOS), you 
 ```yaml
 services:
   whatsapp-gateway:
-    image: ghcr.io/faserf/hassio-addons/whatsapp-gw:latest
+    image: ghcr.io/faserf/whatsapp-gw:latest
     container_name: whatsapp-gateway
     restart: unless-stopped
     ports:
