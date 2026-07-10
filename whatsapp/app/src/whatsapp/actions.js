@@ -116,37 +116,45 @@ export async function notifyAdmins(session, text) {
  * Runs a set of diagnostic WhatsApp features.
  */
 export async function runDiagnostic(session, senderJid, addLogFn) {
+  // Send diagnostic messages to admin number if configured, otherwise to own number
+  const targetJid = ADMIN_NUMBERS.length > 0 ? getJid(ADMIN_NUMBERS[0]) : senderJid;
+
   try {
     addLogFn(session, `Starting diagnostic test for ${maskData(senderJid)}`, 'info');
+    addLogFn(
+      session,
+      `Diagnostic target: ${ADMIN_NUMBERS.length > 0 ? 'admin number' : 'own number'} (${maskData(targetJid)})`,
+      'info'
+    );
 
     // 1. Presence Update (Typing...)
     if (session.sock && typeof session.sock.sendPresenceUpdate === 'function') {
-      await session.sock.sendPresenceUpdate('composing', senderJid);
+      await session.sock.sendPresenceUpdate('composing', targetJid);
       await delay(500);
-      await session.sock.sendPresenceUpdate('paused', senderJid);
+      await session.sock.sendPresenceUpdate('paused', targetJid);
     }
 
     // 2. Text Message
-    const textMsg = await reply(session, senderJid, {
+    const textMsg = await reply(session, targetJid, {
       text: '🧪 *Diagnostic Test [1/9]*: Text message works!',
     });
     await delay(1000);
 
     // 3. Reaction
     if (textMsg) {
-      await reply(session, senderJid, {
+      await reply(session, targetJid, {
         react: { text: '✅', key: textMsg.key },
       });
       await delay(1000);
     }
 
     // 4. Edit Message
-    const editMsg = await reply(session, senderJid, {
+    const editMsg = await reply(session, targetJid, {
       text: 'This text will be edited',
     });
     await delay(1000);
     if (editMsg) {
-      await reply(session, senderJid, {
+      await reply(session, targetJid, {
         text: '🧪 *Diagnostic Test [2/9]*: Edit message works! ✅',
         edit: editMsg.key,
       });
@@ -154,7 +162,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     }
 
     // 5. Buttons
-    await reply(session, senderJid, {
+    await reply(session, targetJid, {
       text: '🧪 *Diagnostic Test [3/9]*: Checking Buttons...',
       footer: 'HA App Test',
       buttons: [
@@ -165,7 +173,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     await delay(1000);
 
     // 6. List
-    await reply(session, senderJid, {
+    await reply(session, targetJid, {
       title: '🧪 Diagnostic Test [4/9]',
       text: 'Checking List Message...',
       buttonText: 'View Options',
@@ -181,11 +189,11 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 7. Location
-    await reply(session, senderJid, {
-      location: { degreesLatitude: 52.52, degreesLongitude: 13.405 },
+    // 7. Location (München)
+    await reply(session, targetJid, {
+      location: { degreesLatitude: 48.1351, degreesLongitude: 11.582 },
       title: '🧪 Diagnostic Test [5/9]',
-      address: 'Berlin, Germany',
+      address: 'Munich, Germany',
     });
     await delay(1000);
 
@@ -197,7 +205,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       'ORG:Home Assistant;\n' +
       'TEL;type=CELL;type=VOICE;waid=123456789:+123456789\n' +
       'END:VCARD';
-    await reply(session, senderJid, {
+    await reply(session, targetJid, {
       contacts: {
         displayName: 'Home Assistant Bot',
         contacts: [{ vcard }],
@@ -206,22 +214,22 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     await delay(1000);
 
     // 9. Send "Message to be deleted" and delete it
-    const toDeleteMsg = await reply(session, senderJid, {
+    const toDeleteMsg = await reply(session, targetJid, {
       text: 'Message to be deleted',
     });
     await delay(1000);
     if (toDeleteMsg) {
-      await reply(session, senderJid, { delete: toDeleteMsg.key });
+      await reply(session, targetJid, { delete: toDeleteMsg.key });
       await delay(1000);
-      await reply(session, senderJid, {
+      await reply(session, targetJid, {
         text: '🧪 *Diagnostic Test [6/9]*: Cleanup (Delete) verified. All tests finished!',
       });
     }
 
-    addLogFn(session, `Diagnostic test for ${maskData(senderJid)} finished`, 'success');
+    addLogFn(session, `Diagnostic test for ${maskData(senderJid)} finished (sent to ${maskData(targetJid)})`, 'success');
   } catch (err) {
     logger.error({ error: err.message }, 'Diagnostic test failed');
-    await reply(session, senderJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
+    await reply(session, targetJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
   }
 }
 
