@@ -68,6 +68,7 @@ export function getSession(rawSessionId) {
       passkeyDetected: false, // True when WhatsApp enforces a passkey during device linking
       passkeyWaiting: false, // True while waiting for phone approval during passkey ceremony
       passkeyChallenge: null, // Raw challenge data from WhatsApp (if available)
+      qrGenerated: false,
       stats: {
         sent: 0,
         received: 0,

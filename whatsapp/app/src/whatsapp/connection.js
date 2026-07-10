@@ -41,6 +41,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   session.passkeyDetected = false;
   session.passkeyWaiting = false;
   session.passkeyChallenge = null;
+  session.qrGenerated = false;
   const sessionAuthDir = getAuthDir(sessionId);
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
@@ -135,11 +136,23 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         setHealthStatus('running', 'Waiting for QR scan');
         // Reset passkey flag on fresh QR so banner clears when user retries
         session.passkeyDetected = false;
+        session.qrGenerated = true;
       } catch (err) {
         logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
         addLog(session, 'Failed to process QR Code. Check logs.', 'error');
         setHealthStatus('faulty', 'Failed to generate QR Code');
       }
+    }
+
+    // If we receive any pairing/login updates, it means the QR code has been scanned.
+    // We clear currentQR so the UI stops showing the scanned QR code.
+    const isPairingUpdate =
+      typeof update.isNewLogin !== 'undefined' ||
+      typeof update.isOnlineOnAnotherDevice !== 'undefined' ||
+      typeof update.receivedPendingNotifications !== 'undefined';
+
+    if (isPairingUpdate && session.qrGenerated) {
+      session.currentQR = null;
     }
 
     // Detect WhatsApp passkey / "Continue on WhatsApp Web" ceremony (Baileys issue #2672).
@@ -162,6 +175,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     const hasCreds = fs.existsSync(path.join(getAuthDir(sessionId), 'creds.json'));
     if (
       !hasCreds &&
+      session.qrGenerated &&
       (hasPasskeyField || (isPasskeyRequest && session.currentQR === null && !session.isConnected))
     ) {
       if (!session.passkeyDetected) {
@@ -282,6 +296,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.disconnectReason = null;
       session.reconnectAttempts = 0;
       session.firstFailureTime = null;
+      session.qrGenerated = false;
+      session.currentQR = null;
       // If a passkey ceremony was in progress, it just completed successfully
       if (session.passkeyDetected || session.passkeyWaiting) {
         logger.info(
