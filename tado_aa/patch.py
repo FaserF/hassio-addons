@@ -27,9 +27,7 @@ def replace_in_file(filepath, mapping):
         else:
             if occurrences > 1:
                 warnings.append((original, occurrences))
-                print(
-                    f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', " "replacing only first match"
-                )
+                print(f"WARNING: Found {occurrences} occurrences of '{original[:50]}...', replacing only first match")
             # Replace first occurrence only
             # Handle multiline replacements by normalizing line endings
             normalized_original = original.replace("\r\n", "\n").replace("\r", "\n")

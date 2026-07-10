@@ -267,7 +267,6 @@ def update_repository_json() -> bool:
         return False
 
     try:
-
         with open(repo_json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 

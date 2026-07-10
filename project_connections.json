@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-07-08T09:28:43.668309",
+  "timestamp": "2026-07-10T17:44:05.429905",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",

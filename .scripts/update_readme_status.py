@@ -61,6 +61,7 @@ def is_prerelease_version(version_str):
 
 def update_addon_stage(addon_path, stage):
     """Update the 'stage' field in config.yaml using regex to preserve comments."""
+    stage_pattern = r"^stage:\s*(\w+)"
     config_path = os.path.join(addon_path, "config.yaml")
     if not os.path.exists(config_path):
         return False

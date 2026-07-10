@@ -102,7 +102,7 @@ def main():
             with open(github_output, "a", encoding="utf-8") as f:
                 if modified_addons:
                     f.write("modified=true\n")
-                    f.write(f'addons={",".join(sorted(modified_addons))}\n')
+                    f.write(f"addons={','.join(sorted(modified_addons))}\n")
                 else:
                     f.write("modified=false\n")
 

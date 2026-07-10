@@ -321,8 +321,22 @@ def _write_json(path: str, data: dict, key_exclude: str = "") -> None:
         except Exception:
             pass
 
-    with open(path, "w", encoding="utf-8") as fh:
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(data, fh, indent=2, ensure_ascii=False)
+        fh.write("\n")
+
+    try:
+        import subprocess
+
+        subprocess.run(
+            ["npx", "prettier", "--write", path],
+            check=False,
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -335,4 +349,18 @@ if __name__ == "__main__":
     print(f"Found {len(discovered)} addon(s): {[a['slug'] for a in discovered]}")
     generate_manifest(discovered)
     generate_connections(discovered)
+
+    try:
+        import subprocess
+        import sys
+
+        # Check if ruff is available
+        res = subprocess.run([sys.executable, "-m", "ruff", "--version"], capture_output=True, text=True, check=False)
+        if res.returncode == 0:
+            print("Running ruff linting & formatting...")
+            subprocess.run([sys.executable, "-m", "ruff", "check", "--fix", "."], check=False)
+            subprocess.run([sys.executable, "-m", "ruff", "format", "."], check=False)
+    except Exception as e:
+        print(f"Warning: Could not run ruff autofixes: {e}")
+
     print("Done.")

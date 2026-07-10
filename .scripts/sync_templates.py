@@ -86,7 +86,7 @@ def sync_template():
         if end_index == -1:
             end_index = len(lines)
 
-        print(f"✅ Updating add-on list options between lines {start_index+1} and {end_index}")
+        print(f"✅ Updating add-on list options between lines {start_index + 1} and {end_index}")
 
         # Construct new lines
         new_lines_list = []
