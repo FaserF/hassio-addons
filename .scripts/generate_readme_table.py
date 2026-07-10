@@ -19,7 +19,7 @@ def parse_version(version_str: str) -> tuple:
     try:
         parts = version_str.lstrip("v").split(".")
         return tuple(int(p) for p in parts[:3])
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return (0, 0, 0)
 
 

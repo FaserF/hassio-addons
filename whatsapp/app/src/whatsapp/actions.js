@@ -226,7 +226,11 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       });
     }
 
-    addLogFn(session, `Diagnostic test for ${maskData(senderJid)} finished (sent to ${maskData(targetJid)})`, 'success');
+    addLogFn(
+      session,
+      `Diagnostic test for ${maskData(senderJid)} finished (sent to ${maskData(targetJid)})`,
+      'success'
+    );
   } catch (err) {
     logger.error({ error: err.message }, 'Diagnostic test failed');
     await reply(session, targetJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
