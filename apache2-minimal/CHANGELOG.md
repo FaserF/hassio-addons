@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.3 (2026-07-10)
+
+### 📦 Dependencies
+- ⬆️ Update dependency alpine_3_21/apache2 to v2.4.68-r0 [skip-tests] ([`dfa17d68`](https://github.com/FaserF/hassio-addons/commit/dfa17d6866a28877cf39cd611554b22371e957d6))
+
+
 ## 3.4.2 (2026-06-29)
 
 ### 🐛 Bug Fixes
