@@ -18,6 +18,7 @@ import { triggerWebhook } from '../webhook.js';
 import {
   notifyAdmins,
   trackReceived,
+  trackSent,
   trackFailure,
   handleFirstContact,
   reply,
@@ -330,6 +331,10 @@ export function handleIncomingMessages(session) {
           msg.message?.extendedTextMessage?.text ||
           msg.message?.buttonsResponseMessage?.selectedDisplayText ||
           msg.message?.templateButtonReplyMessage?.selectedId ||
+          msg.message?.imageMessage?.caption ||
+          msg.message?.videoMessage?.caption ||
+          msg.message?.documentMessage?.caption ||
+          msg.message?.audioMessage?.caption ||
           '';
         const remoteJidAlt = msg.key.remoteJidAlt;
         let senderJid = msg.key.remoteJid;
@@ -407,10 +412,16 @@ export function handleIncomingMessages(session) {
         }
 
         const senderDisplay = senderJid.includes('@g.us') ? senderJid : senderJid.split('@')[0];
-        trackReceived(session, senderDisplay, text);
-        session.stats.last_received_message = maskData(text);
-        session.stats.last_received_sender = maskData(senderDisplay);
-        session.stats.last_received_time = Date.now();
+        const displayText = text || `[${messageType || 'Unknown'}]`;
+        if (msg.key.fromMe) {
+          // Self-sent message (e.g. admin sending to themselves): track only as sent
+          trackSent(session, senderDisplay, displayText);
+        } else {
+          trackReceived(session, senderDisplay, displayText);
+          session.stats.last_received_message = maskData(displayText);
+          session.stats.last_received_sender = maskData(senderDisplay);
+          session.stats.last_received_time = Date.now();
+        }
 
         const participant = msg.key.participant || msg.participant;
         let effectiveSenderJid = senderJid;
