@@ -220,6 +220,67 @@ log INFO "Versions: Home Assistant ${hass_version} | ${python_version}"
 # Ensure config directory exists
 mkdir -p "$CONFIG_DIR"
 
+if bashio::config.true 'copy_host_data'; then
+	if [ -d "/config" ]; then
+		log INFO "Copying host configuration from /config to $CONFIG_DIR..."
+		find /config -mindepth 1 -maxdepth 1 ! -name "*.db*" ! -name "backups" -exec cp -r -p {} "$CONFIG_DIR/" \; || log WARNING "Some files could not be copied."
+	else
+		log WARNING "Host configuration /config directory not found or not mapped."
+	fi
+fi
+
+if ! bashio::config.true 'enable_automations'; then
+	log INFO "Ensuring automations are disabled (enable_automations=false)..."
+	python3 -c "
+import os
+import json
+import yaml
+
+# 1. Disable in automations.yaml
+path_yaml = '${CONFIG_DIR}/automations.yaml'
+if os.path.exists(path_yaml):
+    try:
+        with open(path_yaml, 'r', encoding='utf-8') as f:
+            content = yaml.safe_load(f) or []
+        if isinstance(content, list):
+            modified = False
+            for auto in content:
+                if isinstance(auto, dict):
+                    if auto.get('initial_state') is not False:
+                        auto['initial_state'] = False
+                        modified = True
+            if modified:
+                with open(path_yaml, 'w', encoding='utf-8') as f:
+                    yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+                print('Successfully set initial_state to false in automations.yaml')
+    except Exception as e:
+        print(f'Error updating automations.yaml: {e}')
+
+# 2. Disable in core.restore_state
+path_restore = '${CONFIG_DIR}/.storage/core.restore_state'
+if os.path.exists(path_restore):
+    try:
+        with open(path_restore, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        modified = False
+        if isinstance(data, dict) and 'data' in data:
+            for item in data['data']:
+                state_obj = item.get('state')
+                if isinstance(state_obj, dict):
+                    entity_id = state_obj.get('entity_id', '')
+                    if entity_id.startswith('automation.'):
+                        if state_obj.get('state') != 'off':
+                            state_obj['state'] = 'off'
+                            modified = True
+        if modified:
+            with open(path_restore, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+            print('Successfully set restored state of all automations to off in core.restore_state')
+    except Exception as e:
+        print(f'Error updating core.restore_state: {e}')
+" 2>&1 | log INFO
+fi
+
 # Ensure log file exists so tail doesn't fail
 touch "$CONFIG_DIR/home-assistant.log"
 

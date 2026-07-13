@@ -17,5 +17,9 @@ hassio_api: true
 init: false
 options:
   log_level: "info"
+  copy_host_data: false
+  enable_automations: false
 schema:
   log_level: list(trace|debug|info|warning|error|fatal)
+  copy_host_data: bool?
+  enable_automations: bool?
