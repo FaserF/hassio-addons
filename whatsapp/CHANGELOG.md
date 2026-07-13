@@ -3,17 +3,18 @@
 ## 1.7.3 (2026-07-13)
 
 ### 🐛 Bug Fixes
+
 - diagnostic sends to admin number if set, else own number; location Munich #875 ([`6a4995fc`](https://github.com/FaserF/hassio-addons/commit/6a4995fc3b0deaa510eeebc2e1b02f231edb6922))
 - self-sent messages only in outbound queue, empty message fallback labels ([`ca4a09b5`](https://github.com/FaserF/hassio-addons/commit/ca4a09b57de410807ad8b536214004cc54787773))
 - avoid false-positive passkey ceremony detection on startup/reconnect #875 ([`825ab600`](https://github.com/FaserF/hassio-addons/commit/825ab6001b3833107fff5bb655f08d8496630644))
 - missing X-Auth-Token while sending messages ([`0e51e94a`](https://github.com/FaserF/hassio-addons/commit/0e51e94ab0fca8b4b2b14858420df07cdc4a1f47))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency eslint to v10.7.0 (#892) [skip-tests] ([`b019e185`](https://github.com/FaserF/hassio-addons/commit/b019e185a2b2900128fc167e72ba9f4b0cccd294))
 - ⬆️ Update dependency uvicorn to v0.51.0 (#890) [skip-tests] ([`294323d9`](https://github.com/FaserF/hassio-addons/commit/294323d90be9c2ee2c472d51e2787ca855b83318))
 - ⬆️ Update dependency bonjour-service to v1.4.3 [skip-tests] (#888) [skip-tests] ([`5b864987`](https://github.com/FaserF/hassio-addons/commit/5b8649870c594b72a19b61de07f6aed1f3637a49))
 - ⬆️ Update dependency lru-cache to v11.5.2 [skip-tests] (#886) [skip-tests] ([`10b883e9`](https://github.com/FaserF/hassio-addons/commit/10b883e989254d1ea12a1fad6e1b3ac54efffc92))
-
 
 ## 1.7.2 (2026-07-07)
 

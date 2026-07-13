@@ -24,6 +24,8 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ### Options
 
 ```yaml
+copy_host_data: false
+enable_automations: false
 log_level: info
 ```
 
