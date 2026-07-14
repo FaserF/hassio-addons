@@ -147,7 +147,7 @@ jobs:
 
       # 3. Node.js Tools (Prettier, Markdownlint)
       - name: 📦 Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
