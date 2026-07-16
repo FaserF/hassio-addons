@@ -412,6 +412,104 @@ export function registerAPIRoutes(app) {
     }
   });
 
+  app.post('/send_event', authMiddleware, async (req, res) => {
+    const session = getReqSession(req);
+    const {
+      number,
+      target,
+      name,
+      description,
+      date,
+      startTime,
+      location,
+      joinLink,
+      isCanceled,
+      expiration,
+    } = req.body;
+
+    const targetNumber = target || number;
+    if (!targetNumber) {
+      return res.status(400).json({ detail: 'Target number or JID is required' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ detail: 'Event name is required' });
+    }
+
+    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+
+    let parsedStartTime = String(Math.floor(Date.now() / 1000));
+    const timeVal = startTime || date;
+    if (timeVal) {
+      const parsedTime = Math.floor(new Date(timeVal).getTime() / 1000);
+      if (!isNaN(parsedTime)) {
+        parsedStartTime = String(parsedTime);
+      }
+    }
+
+    let locationObj = undefined;
+    if (location) {
+      if (typeof location === 'string') {
+        locationObj = {
+          degreesLatitude: 0,
+          degreesLongitude: 0,
+          name: location,
+        };
+      } else if (typeof location === 'object') {
+        locationObj = {
+          degreesLatitude: location.degreesLatitude || 0,
+          degreesLongitude: location.degreesLongitude || 0,
+          name: location.name || '',
+        };
+      }
+    }
+
+    try {
+      const jid = getJid(targetNumber);
+      const sentMsg = await enqueue(session, async () => {
+        try {
+          await session.sock.sendPresenceUpdate('composing', jid).catch(() => {});
+          const randomTypingDelay = Math.floor(Math.random() * 1500) + 1000;
+          await delay(randomTypingDelay);
+        } catch (e) {
+          logger.debug('Presence update failed, continuing with send_event');
+        }
+
+        return await session.sock.sendMessage(
+          jid,
+          {
+            eventMessage: {
+              isCanceled: !!isCanceled,
+              name: name,
+              description: description || '',
+              location: locationObj,
+              joinLink: joinLink || '',
+              startTime: parsedStartTime,
+            },
+          },
+          { ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+        );
+      });
+
+      session.stats.sent += 1;
+      session.stats.last_sent_message = `Event: ${name}`;
+      session.stats.last_sent_target = maskData(jid);
+      session.stats.last_sent_time = Date.now();
+      trackSent(session, jid, `Event: ${name}`);
+      res.json({ status: 'sent', id: sentMsg.key.id });
+    } catch (e) {
+      session.stats.failed += 1;
+      session.stats.last_error_reason = e.message;
+      logger.error({ error: e.message, targetNumber }, 'Send event failed');
+      const isRateLimit = e.message?.includes('rate-overlimit');
+      res.status(isRateLimit ? 429 : 500).json({
+        detail: isRateLimit
+          ? 'Rate limit exceeded: rate-overlimit'
+          : 'Internal Server Error: Failed to send event',
+      });
+    }
+  });
+
   app.post('/send_reaction', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, reaction, messageId } = req.body;
