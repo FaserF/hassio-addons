@@ -1357,7 +1357,7 @@ function renderDashboard(sessionId) {
             <div class="sidebar-footer">
                 <div class="sys-info-title">System Properties</div>
                 <div class="sys-info-text">
-                    <a href="https://github.com/FaserF/hassio-addons/tree/main/whatsapp" target="_blank" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/FaserF/hassio-addons/tree/master/whatsapp" target="_blank" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span></a>
                     <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span></a>
                     <a href="https://github.com/WhiskeySockets/Baileys" target="_blank" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span></a>
                     <a href="https://github.com/nodejs/node" target="_blank" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span></a>
