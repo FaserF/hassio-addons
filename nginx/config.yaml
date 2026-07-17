@@ -18,6 +18,8 @@ ingress_port: 80
 hassio_api: true
 init: false
 panel_icon: mdi:web-box
+discovery:
+  - webserver_app
 options:
   document_root: /share/htdocs
   php_ini: default
