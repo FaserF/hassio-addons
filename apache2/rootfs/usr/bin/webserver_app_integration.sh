@@ -120,6 +120,10 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 		bashio::log.error "❌ Download failed."
 	fi
 	rm -rf "/tmp/webserver_install"
+else
+	bashio::log.info "Webserver App integration is up to date ($LOCAL_VERSION)."
+fi
+
 # Register discovery info in Supervisor
 bashio::log.info "Registering discovery info in Supervisor for slug: $SLUG..."
 DISCOVERY_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
