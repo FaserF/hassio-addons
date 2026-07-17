@@ -290,6 +290,9 @@ export INGRESS_PORT=8099
 export DNS_PORT
 export DOT_PORT
 
+# Run integration manager (install/update integration)
+/usr/bin/shielddns_integration.sh || true
+
 # Start the unified ShieldDNS Admin backend
 # It will listen on:
 # - :$ADMIN_PORT (TLS) for DoH and Admin UI

@@ -12,6 +12,8 @@ init: false
 ingress: true
 ingress_stream: true
 panel_icon: mdi:robot
+discovery:
+  - aegisbot
 ports:
   8077/tcp: 8077
 ports_description:

@@ -36,6 +36,7 @@ RUN \
     xz \
     nodejs \
     npm \
+    unzip \
     jq && \
     # Verify Node.js version
     node --version && \
@@ -117,7 +118,7 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 # Copy Run Script
 COPY rootfs /
 COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+RUN chmod a+x /run.sh /usr/bin/aegisbot_integration.sh
 
 # Health check - faster detection with startup grace period
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \

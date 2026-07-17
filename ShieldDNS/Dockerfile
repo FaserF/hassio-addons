@@ -68,8 +68,13 @@ RUN \
     net-tools \
     dos2unix \
     curl \
+    unzip \
     jq \
     ca-certificates
+
+# Copy rootfs
+COPY rootfs /
+RUN chmod a+x /usr/bin/shielddns_integration.sh
 
 # Copy Addon run script to S6 services directory
 COPY run.sh /etc/services.d/shielddns/run
