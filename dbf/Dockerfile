@@ -61,6 +61,7 @@ RUN \
         db \
         curl \
         git \
+        unzip \
         perl-dbd-mysql \
         perl-dbd-sqlite \
         perl-datetime \
