@@ -138,7 +138,7 @@ In addition to my apps, I also maintain several other Home Assistant integration
 | :--- | :--- | :--- | :--- |
 | **[NintendoSwitchCFW](https://github.com/FaserF/ha-NintendoSwitchCFW)** | Homeassistant Integration to integrate a Nintento Switch with Custom Firmware into Homeassistant | 2026-03 | ✅ |
 | **[Aegisbot](https://github.com/FaserF/ha-aegisbot)** | Official AegisBot Homeassistant Integration | 2026-04 | ✅ |
-| **[Aldi](https://github.com/FaserF/ha-aldi)** | Home Assistant custom component to track weekly offers, upcoming deals, and preview flyers from ALDI SÜD & ALDI NORD without web scraping. | 2026-07 | ✅ |
+| **[Aldi](https://github.com/FaserF/ha-aldi)** | Home Assistant custom component to track weekly offers, upcoming deals, and preview flyers from Hofer, ALDI SÜD & ALDI NORD without web scraping. | 2026-07 | ✅ |
 | **[Bahnvorhersage](https://github.com/FaserF/ha-bahnvorhersage)** | bahnvorhersage.de Homeassistant fetching | 2025-01 | ❌ |
 | **[Boulderwelt](https://github.com/FaserF/ha-boulderwelt)** | Fetch Boulderwelt full utilization for Homeassistant | 2024-08 | ✅ |
 | **[Chefkoch](https://github.com/FaserF/ha-chefkoch)** | Homeassistant Integration for Chefkoch.de reciepes fetching | 2023-08 | ✅ |
@@ -149,6 +149,7 @@ In addition to my apps, I also maintain several other Home Assistant integration
 | **[Dieliga](https://github.com/FaserF/ha-dieliga)** | Homeassistant integration for "dieLiga" based ranking sites | 2024-10 | ✅ |
 | **[Edeka](https://github.com/FaserF/ha-edeka)** | Home Assistant integration for EDEKA weekly offers & Bonus deals. Connects to the official EDEKA Mobile API with auto-discovery, location-based market detection, and anti-ban protection. | 2026-07 | ✅ |
 | **[Eversports](https://github.com/FaserF/ha-eversports)** | Homeassistant Integration to get eversports sports data | 2025-10 | ✅ |
+| **[Finanzfluss](https://github.com/FaserF/ha-finanzfluss)** | A Home Assistant custom integration for Finanzfluss (Copilot), allowing you to track your financial accounts, net worth, investments, budget buckets, cashflow, and inflation data. | 2026-07 | ✅ |
 | **[Foodsharing](https://github.com/FaserF/ha-foodsharing)** | Homeassistant Integration for foodsharing.de | 2022-06 | ✅ |
 | **[Github Release Tracker](https://github.com/FaserF/ha-github-release-tracker)** | Homeassistant Integration to track latest Repository releases | 2024-10 | ❌ |
 | **[Gsa](https://github.com/FaserF/ha-gsa)** | Homeassistant Integration for fetching latest Global Secure Access client version | 2025-10 | ❌ |
@@ -164,6 +165,7 @@ In addition to my apps, I also maintain several other Home Assistant integration
 | **[Speedport](https://github.com/FaserF/ha-speedport)** | Home Assistant integration for Telekom Speedport Modem/Router | 2026-04 | ✅ |
 | **[Tasmota Fwupdate](https://github.com/FaserF/ha-tasmota-fwupdate)** | Clone of the official HA tasmota integration with extended firmware update functionality | 2024-09 | ✅ |
 | **[Tasmota Update](https://github.com/FaserF/ha-tasmota-update)** | Tasmota Firmware update custom Homeassistant Integration | 2026-04 | ✅ |
+| **[Traderepublic](https://github.com/FaserF/ha-traderepublic)** | A strictly read-only Home Assistant custom integration for Trade Republic. Monitor your portfolio net value, cash balance, total return, and active savings plans directly in your dashboard. | 2026-07 | ✅ |
 | **[Webserver](https://github.com/FaserF/ha-webserver)** | HA integration to interact with webserver HA Apps (Apache2,nginx) for FaserF/hassio-addons | 2026-06 | ✅ |
 | **[Whatsapp](https://github.com/FaserF/ha-whatsapp)** | Homeassistant Integration to interact with WhatsApp | 2025-12 | ✅ |
 
