@@ -235,6 +235,27 @@ export function bindStore(session, ev) {
   });
 }
 
+export function getChangelogUrl(repo, version, defaultBranch = 'main') {
+  if (!version || version === 'Unknown') {
+    return `https://github.com/${repo}/commits/${defaultBranch}`;
+  }
+
+  const cleanVer = version.trim();
+  const shaMatch = cleanVer.match(/\b([0-9a-f]{7,40})\b/i);
+  const isDevOrEdge = /dev|edge|git|alpha/i.test(cleanVer) || shaMatch !== null;
+
+  if (shaMatch) {
+    return `https://github.com/${repo}/commit/${shaMatch[1]}`;
+  }
+
+  if (isDevOrEdge) {
+    return `https://github.com/${repo}/commits/${defaultBranch}`;
+  }
+
+  const tagVersion = cleanVer.startsWith('v') ? cleanVer : `v${cleanVer}`;
+  return `https://github.com/${repo}/releases/tag/${tagVersion}`;
+}
+
 export async function checkSystemUpdates(session) {
   const currentAddonVersion = ADDON_VERSION;
   const currentIntegrationVersion = INTEGRATION_VERSION;
@@ -248,8 +269,9 @@ export async function checkSystemUpdates(session) {
     SYSTEM_STATE.last_addon_version !== 'Unknown' &&
     SYSTEM_STATE.last_addon_version !== currentAddonVersion
   ) {
+    const changelogUrl = getChangelogUrl('FaserF/hassio-addons', currentAddonVersion, 'master');
     updateMessages.push(
-      `📦 *WhatsApp App Updated*\n• *Version:* ${SYSTEM_STATE.last_addon_version} ➔ ${currentAddonVersion}`
+      `📦 *WhatsApp App Updated*\n• *Version:* ${SYSTEM_STATE.last_addon_version} ➔ ${currentAddonVersion}\n• *Changelog:* ${changelogUrl}`
     );
   }
 
@@ -257,8 +279,9 @@ export async function checkSystemUpdates(session) {
     SYSTEM_STATE.last_integration_version !== 'Unknown' &&
     SYSTEM_STATE.last_integration_version !== currentIntegrationVersion
   ) {
+    const changelogUrl = getChangelogUrl('FaserF/ha-whatsapp', currentIntegrationVersion, 'main');
     updateMessages.push(
-      `🧩 *Integration Updated*\n• *Version:* ${SYSTEM_STATE.last_integration_version} ➔ ${currentIntegrationVersion}`
+      `🧩 *Integration Updated*\n• *Version:* ${SYSTEM_STATE.last_integration_version} ➔ ${currentIntegrationVersion}\n• *Changelog:* ${changelogUrl}`
     );
   }
 
