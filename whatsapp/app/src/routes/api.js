@@ -243,7 +243,11 @@ export function registerAPIRoutes(app) {
           const normInput = cleanNumber;
           for (const [cId, c] of session.contactCache.entries()) {
             const cDigits = cId.replace(/\D/g, '');
-            if (cDigits && normInput && (cDigits.endsWith(normInput) || normInput.endsWith(cDigits))) {
+            if (
+              cDigits &&
+              normInput &&
+              (cDigits.endsWith(normInput) || normInput.endsWith(cDigits))
+            ) {
               contactObj = c;
               break;
             }

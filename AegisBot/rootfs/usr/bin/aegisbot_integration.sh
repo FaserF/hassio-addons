@@ -127,10 +127,10 @@ fi
 # Register discovery info in Supervisor
 bashio::log.info "Registering discovery info in Supervisor for slug: $SLUG..."
 DISCOVERY_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "{\"service\":\"aegisbot\",\"config\":{\"addon\":\"$SLUG\"}}" \
-  http://supervisor/discovery)
+	-H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+	-H "Content-Type: application/json" \
+	-d "{\"service\":\"aegisbot\",\"config\":{\"addon\":\"$SLUG\"}}" \
+	http://supervisor/discovery)
 bashio::log.info "Supervisor discovery response: $DISCOVERY_RESPONSE"
 
 exit 0

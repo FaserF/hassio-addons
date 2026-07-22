@@ -770,7 +770,7 @@ bashio::log.info "Creating .env file for backend..."
 	echo "ENVIRONMENT=${ENVIRONMENT:-production}"
 	echo "API_V1_STR=${API_V1_STR:-/api/v1}"
 	echo "DEFAULT_LOCALE=${DEFAULT_LOCALE:-}"
-} > /app/backend/.env
+} >/app/backend/.env
 
 # Run integration manager (install/update integration)
 /usr/bin/aegisbot_integration.sh || true
