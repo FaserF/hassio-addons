@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1-dev-20260722-1742-d82b0d7 (2026-07-22)
+
+### ✨ Features
+- add contacts cache and check_number API (#902) ([`a44ab335`](https://github.com/FaserF/hassio-addons/commit/a44ab335378d65594085055d68c90994e1e9c998))
+- add supervisor discovery and auto-install/update ([`da8d4b48`](https://github.com/FaserF/hassio-addons/commit/da8d4b4828cbc22bd6a1bc65fd87e47bb0368a22))
+
+
 ## 0.6.0 (2026-06-16)
 
 ### 🚀 Other

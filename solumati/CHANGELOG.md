@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.1-dev-20260722-1742-5d4e8ea (2026-07-22)
+
+### 🚀 Other
+- improved debug logging ([`5d4e8eac`](https://github.com/FaserF/hassio-addons/commit/5d4e8eaca22e75584a761193f49096de486d0995))
+
+
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies

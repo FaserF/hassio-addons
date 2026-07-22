@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.4.4-dev-20260722-1742-d82b0d7 (2026-07-22)
+
+### ✨ Features
+- trigger supervisor discovery for webserver_app during addon startup ([`bc5834be`](https://github.com/FaserF/hassio-addons/commit/bc5834be812484c75b0aae2deef4bc9e391b6f63))
+- add discovery key for webserver_app to webserver config.yaml files ([`0e554dc1`](https://github.com/FaserF/hassio-addons/commit/0e554dc1df72a9c693ff197cf25dcf784adaccff))
+
+### 🔧 Configuration
+- add detailed logging for supervisor discovery registration ([`23938877`](https://github.com/FaserF/hassio-addons/commit/23938877df652a091cf26d4f7f5e3d37f4e533e3))
+
+### 🚀 Other
+- small fix for integration management ([`dc589881`](https://github.com/FaserF/hassio-addons/commit/dc589881ae3bfc7b0234759f816d2e42963559aa))
+
+
 ## 3.4.3 (2026-07-10)
 
 ### 📦 Dependencies

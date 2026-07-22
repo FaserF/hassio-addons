@@ -1,14 +1,13 @@
-name: "Home Assistant Test Instance"
-version: "1.0.0"
+name: "Home Assistant Test Instance (Edge)"
+version: "1.0.1-dev-20260722-1742-0d526e2"
 slug: "ha_test_instance"
-image: ghcr.io/faserf/hassio-addons-homeassistant-test-instance-{arch}
 description: "A standalone Home Assistant Core instance for testing purposes."
 url: "https://github.com/home-assistant/home-assistant"
 arch:
   - aarch64
   - amd64
 ports:
-  8123/tcp: 8124
+  8123/tcp: 18124
 map:
   - homeassistant_config:rw
 ingress: true
@@ -23,3 +22,4 @@ schema:
   log_level: list(trace|debug|info|warning|error|fatal)
   copy_host_data: bool?
   enable_automations: bool?
+stage: experimental

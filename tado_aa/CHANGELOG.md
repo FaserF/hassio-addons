@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.1-dev-20260722-1742-5498c4d (2026-07-22)
+
+### 🚀 Other
+- CI workflow improvements & linter fixes ([`5498c4d1`](https://github.com/FaserF/hassio-addons/commit/5498c4d1eced756473db6d63f5f38b7931bcca7f))
+
+
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies

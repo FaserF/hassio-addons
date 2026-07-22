@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1-dev-20260722-1742-0d526e2 (2026-07-22)
+
+### ✨ Features
+- add host config transfer and option to disable automations in yaml and storage ([`8fe9eb9b`](https://github.com/FaserF/hassio-addons/commit/8fe9eb9bc1099fca79852ab3393f4aa2b2e5e1fe))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.3](https://github.com/home-assistant/core/releases/tag/2026.7.3) [skip-tests] ([`0d526e2e`](https://github.com/FaserF/hassio-addons/commit/0d526e2e5298d8093bbc1339a5033883bb994a5b))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.2](https://github.com/home-assistant/core/releases/tag/2026.7.2) [skip-tests] ([`05c56a50`](https://github.com/FaserF/hassio-addons/commit/05c56a50102fa485849a10150e2d11903a91f117))
+- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.1](https://github.com/home-assistant/core/releases/tag/2026.7.1) (#882) [skip-tests] ([`7e80dd20`](https://github.com/FaserF/hassio-addons/commit/7e80dd20db08dd9ed038981659033c937dd79e68))
+
+
 ## 1.0.0 (2026-06-22)
 
 ### 🐛 Bug Fixes

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.3-dev-20260722-1742-d82b0d7 (2026-07-22)
+
+### ✨ Features
+- trigger supervisor discovery for webserver_app during addon startup ([`bc5834be`](https://github.com/FaserF/hassio-addons/commit/bc5834be812484c75b0aae2deef4bc9e391b6f63))
+- add discovery key for webserver_app to webserver config.yaml files ([`0e554dc1`](https://github.com/FaserF/hassio-addons/commit/0e554dc1df72a9c693ff197cf25dcf784adaccff))
+
+### 📦 Dependencies
+- ⬆️ Update dependency alpine_edge/nginx to v1.30.4-r1 [skip-tests] (#900) [skip-tests] ([`d44f50d0`](https://github.com/FaserF/hassio-addons/commit/d44f50d0ee4618fe24e1d4b823e8fbbd29b54405))
+- ⬆️ Update dependency alpine_edge/nginx to v1.30.4-r0 [skip-tests] (#898) [skip-tests] ([`44144794`](https://github.com/FaserF/hassio-addons/commit/4414479461dde120ef932fd513e9b1bcd026937e))
+
+### 🔧 Configuration
+- add detailed logging for supervisor discovery registration ([`23938877`](https://github.com/FaserF/hassio-addons/commit/23938877df652a091cf26d4f7f5e3d37f4e533e3))
+
+### 🚀 Other
+- small fix for integration management ([`dc589881`](https://github.com/FaserF/hassio-addons/commit/dc589881ae3bfc7b0234759f816d2e42963559aa))
+
+
 ## 0.4.2 (2026-06-29)
 
 ### 🐛 Bug Fixes

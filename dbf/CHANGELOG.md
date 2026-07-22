@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.1-dev-20260722-1742-2393887 (2026-07-22)
+
+### ✨ Features
+- enable auto-discovery for dbf addon (db_infoscreen) ([`abdbc335`](https://github.com/FaserF/hassio-addons/commit/abdbc3351d43f1f8e908aa29dbb5b9104bd37ea1))
+
+### 📦 Dependencies
+- download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
+
+### 🔧 Configuration
+- add detailed logging for supervisor discovery registration ([`23938877`](https://github.com/FaserF/hassio-addons/commit/23938877df652a091cf26d4f7f5e3d37f4e533e3))
+
+### 🚀 Other
+- redirect addon support/issues to integration repository ([`5917aec1`](https://github.com/FaserF/hassio-addons/commit/5917aec1f9717207dfbf012404c39c8cb9b86e14))
+
+
 ## 1.1.0 (2026-06-16)
 
 ### 📦 Dependencies

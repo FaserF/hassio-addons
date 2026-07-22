@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.1-dev-20260722-1742-5cb7661 (2026-07-22)
+
+### 📦 Dependencies
+- ⬆️ Update dependency pterodactyl/wings to v[1.13.1](https://github.com/pterodactyl/wings/releases/tag/1.13.1) ([`5cb76611`](https://github.com/FaserF/hassio-addons/commit/5cb7661112273dbf80612eda0feeb5c32fc439d5))
+
+
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies

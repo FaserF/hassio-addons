@@ -1,8 +1,7 @@
 ---
-name: AegisBot
-version: "0.6.0"
+name: AegisBot (Edge)
+version: "0.6.1-dev-20260722-1742-d82b0d7"
 slug: aegisbot
-image: ghcr.io/faserf/hassio-addons-aegisbot-{arch}
 description: Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.
 url: https://github.com/FaserF/AegisBot
 arch:
@@ -15,7 +14,7 @@ panel_icon: mdi:robot
 discovery:
   - aegisbot
 ports:
-  8077/tcp: 8077
+  8077/tcp: 18077
 ports_description:
   8077/tcp: Web Interface (HTTP)
 map:

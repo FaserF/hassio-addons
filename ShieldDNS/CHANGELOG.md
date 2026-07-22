@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.1-dev-20260722-1742-d82b0d7 (2026-07-22)
+
+### ✨ Features
+- add supervisor discovery and auto-install/update ([`da8d4b48`](https://github.com/FaserF/hassio-addons/commit/da8d4b4828cbc22bd6a1bc65fd87e47bb0368a22))
+
+### 📦 Dependencies
+- ⬆️ Update dependency coredns/coredns to v1.14.6 [skip-tests] (#889) [skip-tests] ([`0e090884`](https://github.com/FaserF/hassio-addons/commit/0e09088447b17a59f3ed1ee48510f4e65e4d1277))
+
+
 ## 2.5.0 (2026-06-16)
 
 ### 📦 Dependencies
