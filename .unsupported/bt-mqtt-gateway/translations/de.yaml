@@ -1,7 +1,0 @@
-configuration:
-  config_path:
-    name: "Konfigurationspfad"
-    description: "Pfad zur Konfigurationsdatei."
-  debug:
-    name: "Debug-Modus"
-    description: "Aktiviert detaillierte Protokollierung zur Fehlerbehebung."
