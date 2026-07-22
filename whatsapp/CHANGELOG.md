@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.7.4 (2026-07-22)
+
+### ✨ Features
+- enrich contactCache with pushName from incoming messages #902 ([`8eb5cef1`](https://github.com/FaserF/hassio-addons/commit/8eb5cef11871fb1294d9e35b9ec1b799c5632d16))
+- add changelog URL to update notifications ([`f06773eb`](https://github.com/FaserF/hassio-addons/commit/f06773eb4f017377c015b0ad32c8f9e11edb97ac))
+- add contacts cache and check_number API (#902) ([`a44ab335`](https://github.com/FaserF/hassio-addons/commit/a44ab335378d65594085055d68c90994e1e9c998))
+- add send_event API endpoint for WhatsApp Group Events ([`cd588b7c`](https://github.com/FaserF/hassio-addons/commit/cd588b7c82b888750b21fe094135811aca66e9f5))
+
+### 🐛 Bug Fixes
+- whatsapp contacts API endpoint ([`d26f79a2`](https://github.com/FaserF/hassio-addons/commit/d26f79a2da17793c4b2879e995a58e0e39d5a359))
+- correct repository link in Web UI sidebar ([`3772c1e0`](https://github.com/FaserF/hassio-addons/commit/3772c1e090426f1341c180a98b0881c6cf499cfe))
+
+### 📦 Dependencies
+- small dependency security fix ([`02375626`](https://github.com/FaserF/hassio-addons/commit/0237562602d9253d77d5f475dba95ec57d54f444))
+- ⬆️ Update dependency express-rate-limit to v8.6.0 (#897) [skip-tests] ([`7342c83d`](https://github.com/FaserF/hassio-addons/commit/7342c83d9b5ed33a5199efcbbf4558dd20a51857))
+- ⬆️ Update dependency fastapi to v0.139.2 [skip-tests] (#896) [skip-tests] ([`d199f592`](https://github.com/FaserF/hassio-addons/commit/d199f5920f976ea45ad9f9143be739eec6865a80))
+- ⬆️ Update dependency fastapi to v0.139.1 [skip-tests] (#895) [skip-tests] ([`c8f00a88`](https://github.com/FaserF/hassio-addons/commit/c8f00a88d9ab8596bd06daf513e36156cf32a689))
+
+
 ## 1.7.3 (2026-07-13)
 
 ### 🐛 Bug Fixes
