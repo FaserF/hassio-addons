@@ -176,6 +176,13 @@ export function bindStore(session, ev) {
       }
       if (msg.key.remoteJid) {
         session.chatCache?.set(msg.key.remoteJid, true);
+        if (msg.pushName && session.contactCache) {
+          const existingContact = session.contactCache.get(msg.key.remoteJid) || { id: msg.key.remoteJid };
+          session.contactCache.set(msg.key.remoteJid, {
+            ...existingContact,
+            notify: msg.pushName || existingContact.notify,
+          });
+        }
       }
     }
   });
@@ -241,13 +248,26 @@ export function getChangelogUrl(repo, version, defaultBranch = 'main') {
   }
 
   const cleanVer = version.trim();
-  const shaMatch = cleanVer.match(/\b([0-9a-f]{7,40})\b/i);
-  const isDevOrEdge = /dev|edge|git|alpha/i.test(cleanVer) || shaMatch !== null;
 
-  if (shaMatch) {
-    return `https://github.com/${repo}/commit/${shaMatch[1]}`;
+  // Try extracting explicit git commit SHA
+  let commitSha = null;
+  const gitPrefixMatch = cleanVer.match(/(?:-g|git-|\/commit\/)([0-9a-f]{7,40})/i);
+  const fullShaMatch = cleanVer.match(/\b([0-9a-f]{40})\b/i);
+
+  if (gitPrefixMatch) {
+    commitSha = gitPrefixMatch[1];
+  } else if (fullShaMatch) {
+    commitSha = fullShaMatch[1];
+  } else if (/^[0-9a-f]{7,40}$/i.test(cleanVer) && /[a-f]/i.test(cleanVer)) {
+    // Only treat as short SHA if it contains hex letters (a-f) to prevent matching date strings like 20260722
+    commitSha = cleanVer;
   }
 
+  if (commitSha) {
+    return `https://github.com/${repo}/commit/${commitSha}`;
+  }
+
+  const isDevOrEdge = /dev|edge|git|alpha/i.test(cleanVer) || /^\d{8}/.test(cleanVer);
   if (isDevOrEdge) {
     return `https://github.com/${repo}/commits/${defaultBranch}`;
   }
