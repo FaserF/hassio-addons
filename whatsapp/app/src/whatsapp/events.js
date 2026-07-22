@@ -206,6 +206,33 @@ export function bindStore(session, ev) {
       }
     }
   });
+
+  ev.on('contacts.set', ({ contacts }) => {
+    for (const contact of contacts) {
+      if (contact.id) {
+        const existing = session.contactCache?.get(contact.id) || {};
+        session.contactCache?.set(contact.id, { ...existing, ...contact });
+      }
+    }
+  });
+
+  ev.on('contacts.upsert', (contacts) => {
+    for (const contact of contacts) {
+      if (contact.id) {
+        const existing = session.contactCache?.get(contact.id) || {};
+        session.contactCache?.set(contact.id, { ...existing, ...contact });
+      }
+    }
+  });
+
+  ev.on('contacts.update', (updates) => {
+    for (const update of updates) {
+      if (update.id) {
+        const existing = session.contactCache?.get(update.id) || {};
+        session.contactCache?.set(update.id, { ...existing, ...update });
+      }
+    }
+  });
 }
 
 export async function checkSystemUpdates(session) {

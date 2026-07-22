@@ -88,6 +88,9 @@ export function registerAPIRoutes(app) {
       session.eventQueue = [];
       session.connectionLogs = [];
       session.messageStore.clear();
+      session.chatCache?.clear();
+      session.groupCache?.clear();
+      session.contactCache?.clear();
       session.sendQueue = Promise.resolve();
       session.stats = {
         sent: 0,
@@ -180,7 +183,92 @@ export function registerAPIRoutes(app) {
       uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
       chat_count: session.chatCache ? session.chatCache.size : 0,
       group_count: session.groupCache ? session.groupCache.size : 0,
+      contact_count: session.contactCache ? session.contactCache.size : 0,
     });
+  });
+
+  // --- Contacts API ---
+  app.get('/contacts', authMiddleware, (req, res) => {
+    const session = getReqSession(req);
+    if (!session.contactCache) {
+      return res.json([]);
+    }
+    const contactsList = [];
+    for (const [id, c] of session.contactCache.entries()) {
+      contactsList.push({
+        id: c.id || id,
+        name: c.name || c.notify || c.verifiedName || null,
+        notify: c.notify || null,
+        verified_name: c.verifiedName || null,
+        img_url: c.imgUrl || null,
+      });
+    }
+    res.json(contactsList);
+  });
+
+  app.all('/contacts/check', authMiddleware, async (req, res) => {
+    const session = getReqSession(req);
+    const number = req.body?.number || req.query?.number || req.body?.phone || req.query?.phone;
+    if (!number) {
+      return res.status(400).json({ error: 'Missing number or phone parameter' });
+    }
+    if (!session.isConnected || !session.sock) {
+      return res.status(503).json({ error: 'Not connected to WhatsApp' });
+    }
+
+    try {
+      const cleanNumber = String(number).replace(/\D/g, '');
+      const inputJid = getJid(number);
+
+      let onWaResult = null;
+      try {
+        const results = await session.sock.onWhatsApp(cleanNumber || inputJid);
+        if (results && results.length > 0) {
+          onWaResult = results[0];
+        }
+      } catch (err) {
+        logger.warn({ error: err.message, number }, 'Error checking onWhatsApp');
+      }
+
+      const exists = onWaResult ? !!onWaResult.exists : false;
+      const jid = onWaResult?.jid || inputJid;
+
+      let contactObj = null;
+      if (session.contactCache) {
+        if (session.contactCache.has(jid)) {
+          contactObj = session.contactCache.get(jid);
+        } else if (session.contactCache.has(inputJid)) {
+          contactObj = session.contactCache.get(inputJid);
+        } else {
+          const normInput = cleanNumber;
+          for (const [cId, c] of session.contactCache.entries()) {
+            const cDigits = cId.replace(/\D/g, '');
+            if (cDigits && normInput && (cDigits.endsWith(normInput) || normInput.endsWith(cDigits))) {
+              contactObj = c;
+              break;
+            }
+          }
+        }
+      }
+
+      const inContacts = !!contactObj;
+      const name = contactObj?.name || contactObj?.notify || contactObj?.verifiedName || null;
+      const notify = contactObj?.notify || null;
+      const verifiedName = contactObj?.verifiedName || null;
+
+      res.json({
+        number,
+        jid,
+        exists,
+        in_contacts: inContacts,
+        name,
+        notify,
+        verified_name: verifiedName,
+      });
+    } catch (e) {
+      logger.error({ error: e.message, number }, 'Error checking contact');
+      res.status(500).json({ error: e.message });
+    }
   });
 
   // --- Messaging API ---
