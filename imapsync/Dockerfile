@@ -8,7 +8,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # Install Perl and imapsync dependencies natively
 # hadolint ignore=DL3018
-ARG IMAPSYNC_VERSION=2.229
+ARG IMAPSYNC_VERSION=2.314
 
 # App metadata (injected by CI)
 ENV APP_VERSION="0.4.0"
