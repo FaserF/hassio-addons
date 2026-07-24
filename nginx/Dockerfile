@@ -5,7 +5,7 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # renovate: datasource=repology depName=alpine_edge/nginx versioning=loose
-ARG NGINX_VERSION="1.30.4-r1"
+ARG NGINX_VERSION="1.30.4-r2"
 
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
