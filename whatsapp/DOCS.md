@@ -106,11 +106,14 @@ reject_unauthorized: true
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
 - `admin_numbers`: Comma-separated list of phone numbers (e.g. `49176123456, 49176987654`) that are allowed to use `ha-app-*` admin commands.
-- `welcome_message_enabled`: (Default: `true`) If true, the bot sends a role-aware welcome message on first-contact from a new user.
+- `welcome_message_enabled`: (Default: `true`) If true, the bot sends a role-aware welcome message on first-contact from a new user. Set to `false` (or set env `WELCOME_MESSAGE_ENABLED=false`) to disable.
 - `admin_notifications_enabled`: (Default: `true`) Automatically notifies admins about system health (WhatsApp loss/restore, HA Core/Integration updates, HA restarts).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 - `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
 - `reject_unauthorized`: (Default: `true`) Set to `false` to disable SSL/TLS certificate validation (useful if fetching media from local integrations using self-signed certificates, such as Frigate).
+
+> [!NOTE]
+> **Standalone Docker Environment Variables**: In Standalone Docker mode, all configuration options can be passed via environment variables (case-insensitive, e.g. `WELCOME_MESSAGE_ENABLED=false` or `welcome_message_enabled=false`). Full variable reference available in the **[Configuration Docs](https://faserf.github.io/ha-whatsapp/configuration.html)**.
 
 > [!CAUTION]
 > **Privacy Consideration for `media_folder`**

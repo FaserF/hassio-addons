@@ -70,7 +70,12 @@ services:
       - DATA_DIR=/data
       - MEDIA_FOLDER=/media
       - LOG_LEVEL=info
+      - WELCOME_MESSAGE_ENABLED=false
 ```
+
+> [!NOTE]
+> All configuration options can be passed via environment variables in standalone Docker mode (case-insensitive, e.g. `WELCOME_MESSAGE_ENABLED=false` or `welcome_message_enabled=false`).
+> See the **[Configuration Documentation](https://faserf.github.io/ha-whatsapp/configuration.html#-standalone-docker-environment-variables)** for the full environment variable reference table.
 
 ---
 
