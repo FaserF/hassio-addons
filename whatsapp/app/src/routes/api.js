@@ -240,16 +240,26 @@ export function registerAPIRoutes(app) {
         } else if (session.contactCache.has(inputJid)) {
           contactObj = session.contactCache.get(inputJid);
         } else {
-          const normInput = cleanNumber;
+          let normInput = cleanNumber;
+          if (normInput.startsWith('00')) normInput = normInput.substring(2);
+          if (normInput.startsWith('0')) normInput = normInput.substring(1);
+
           for (const [cId, c] of session.contactCache.entries()) {
-            const cDigits = cId.replace(/\D/g, '');
-            if (
-              cDigits &&
-              normInput &&
-              (cDigits.endsWith(normInput) || normInput.endsWith(cDigits))
-            ) {
-              contactObj = c;
-              break;
+            let cDigits = cId.replace(/\D/g, '');
+            if (cDigits.startsWith('00')) cDigits = cDigits.substring(2);
+            if (cDigits.startsWith('0')) cDigits = cDigits.substring(1);
+
+            if (cDigits && normInput) {
+              if (cDigits === normInput) {
+                contactObj = c;
+                break;
+              }
+              if (cDigits.length >= 7 && normInput.length >= 7) {
+                if (cDigits.endsWith(normInput) || normInput.endsWith(cDigits)) {
+                  contactObj = c;
+                  break;
+                }
+              }
             }
           }
         }
@@ -579,7 +589,7 @@ export function registerAPIRoutes(app) {
               startTime: parsedStartTime,
             },
           },
-          { ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { ephemeralExpiration: expiration }
         );
       });
 
@@ -597,7 +607,7 @@ export function registerAPIRoutes(app) {
       res.status(isRateLimit ? 429 : 500).json({
         detail: isRateLimit
           ? 'Rate limit exceeded: rate-overlimit'
-          : 'Internal Server Error: Failed to send event',
+          : `Failed to send event: ${e.message}`,
       });
     }
   });
