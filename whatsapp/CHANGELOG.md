@@ -319,7 +319,7 @@
 - update home-assistant.io/addons/ to /apps/ and remove ignore ([`35318ec8`](https://github.com/FaserF/hassio-addons/commit/35318ec8f6d1c5be470aace8f13a1ac617fd9b85))
 - build(deps-dev): bump flatted from 3.3.3 to 3.4.2 in /whatsapp/app in the npm_and_yarn group across 1 directory (#693) [skip-tests] ([`6d1bee1d`](https://github.com/FaserF/hassio-addons/commit/6d1bee1db6bec19c865b169c0f8b7141953de9eb))
 
-### 🚀 Other
+### 🛠️ Other Improvements
 
 - remove n8n ([`5527a8ef`](https://github.com/FaserF/hassio-addons/commit/5527a8efd422443dbe3ea0bd2583a5a08605ae94))
 - app version injection improvements ([`63580a20`](https://github.com/FaserF/hassio-addons/commit/63580a201a16724ac7712b1ed52c4f195ab05fe4))

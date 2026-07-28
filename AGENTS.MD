@@ -73,7 +73,7 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 
 ### Addon Directory Layout
 
-```
+```text
 <addon-slug>/
 ├── config.yaml          # HA addon schema: name, version, arch, options, schema, image
 ├── Dockerfile           # Multi-arch container build (FROM ghcr.io/hassio-addons/base)

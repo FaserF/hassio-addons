@@ -443,6 +443,10 @@ export function handleIncomingMessages(session) {
           } else {
             text = `[Poll Vote] (No options selected or vote retracted)`;
           }
+        } else if (messageType === 'eventMessage') {
+          eventType = 'event';
+          const evData = msg.message.eventMessage;
+          text = `[Event] ${evData?.name || 'Untitled'}${evData?.description ? `: ${evData.description}` : ''}`;
         }
 
         const supportedMediaTypes = [
