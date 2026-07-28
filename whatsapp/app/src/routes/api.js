@@ -540,12 +540,12 @@ export function registerAPIRoutes(app) {
 
     if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
 
-    let parsedStartTime = String(Math.floor(Date.now() / 1000));
+    let parsedStartTime = Math.floor(Date.now() / 1000);
     const timeVal = startTime || date;
     if (timeVal) {
-      const parsedTime = Math.floor(new Date(timeVal).getTime() / 1000);
+      const parsedTime = typeof timeVal === 'number' ? timeVal : Math.floor(new Date(timeVal).getTime() / 1000);
       if (!isNaN(parsedTime)) {
-        parsedStartTime = String(parsedTime);
+        parsedStartTime = parsedTime;
       }
     }
 
