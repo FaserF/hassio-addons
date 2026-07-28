@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.1 (2026-07-28)
+
+### 📦 Dependencies
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.23 [skip-tests] (#924) [skip-tests] ([`893993ef`](https://github.com/FaserF/hassio-addons/commit/893993ef0f8f47167e9d9189fc31806ab91009d1))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.22 [skip-tests] (#923) [skip-tests] ([`c9297b3f`](https://github.com/FaserF/hassio-addons/commit/c9297b3fb79f4a223915ce0723cad5b4e10253ea))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.21 [skip-tests] (#917) [skip-tests] ([`7f9655fe`](https://github.com/FaserF/hassio-addons/commit/7f9655fed0702d05d230ddfe41e68d30bddd89e8))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.20 [skip-tests] (#915) [skip-tests] ([`eaeb33f3`](https://github.com/FaserF/hassio-addons/commit/eaeb33f39a90707398b40c70a32f72e3810630d8))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.19 [skip-tests] (#912) [skip-tests] ([`d49b2b47`](https://github.com/FaserF/hassio-addons/commit/d49b2b47ae38dbd4b719f31d65232f3afde1dfc1))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.18 [skip-tests] (#878) [skip-tests] ([`e666e091`](https://github.com/FaserF/hassio-addons/commit/e666e091ec3973cddde9a1392a9274b52d07fb3e))
+- ⬆️ Update filebrowser/filebrowser Docker tag to v2.63.17 [skip-tests] (#865) [skip-tests] ([`8f44ee83`](https://github.com/FaserF/hassio-addons/commit/8f44ee83db26f21a425c705144ae18b323fbc92c))
+
+
 ## 2.4.0 (2026-06-16)
 
 ### 📦 Dependencies
