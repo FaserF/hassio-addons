@@ -695,6 +695,12 @@ jobs:
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: 🕵️ App Linter
         uses: frenck/action-addon-linter@v2
         with:
