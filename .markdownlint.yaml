@@ -28,4 +28,3 @@ MD028: false # Allow blank lines between blockquotes (needed for GH alerts)
 MD036: false # Allow emphasis as heading
 MD046: false # Code block style (indent vs fence)
 MD060: false # Table column pipe alignment
-

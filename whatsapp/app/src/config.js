@@ -45,7 +45,8 @@ export const PORT = parseEnvInt('PORT', 8066);
 export const IS_WIN = process.platform === 'win32';
 export const DATA_DIR = IS_WIN ? path.resolve('data') : '/data';
 export const AUTH_DIR = path.join(DATA_DIR, 'auth_info_baileys');
-export const MEDIA_DIR = getEnv('MEDIA_FOLDER') || getEnv('MEDIA_DIR') || path.join(process.cwd(), 'media');
+export const MEDIA_DIR =
+  getEnv('MEDIA_FOLDER') || getEnv('MEDIA_DIR') || path.join(process.cwd(), 'media');
 export const TOKEN_FILE = path.join(DATA_DIR, '.api_token');
 
 // --- API Token: load from env, file, or auto-generate ---
@@ -83,7 +84,10 @@ export const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 export const MASK_SENSITIVE_DATA = parseEnvBool('MASK_SENSITIVE_DATA', false);
 export const GROUP_FETCH_INTERVAL = parseEnvInt('GROUP_FETCH_INTERVAL', 300000);
 export const GROUP_FETCH_COOLDOWN_ON_ERROR = parseEnvInt('GROUP_FETCH_COOLDOWN_ON_ERROR', 60000);
-export const GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT = parseEnvInt('GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT', 900000);
+export const GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT = parseEnvInt(
+  'GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT',
+  900000
+);
 export const MESSAGE_SEND_INTERVAL = parseEnvInt('MESSAGE_SEND_INTERVAL', 1000);
 
 export const UI_AUTH_ENABLED = parseEnvBool('UI_AUTH_ENABLED', false);
