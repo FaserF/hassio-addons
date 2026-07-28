@@ -3,13 +3,16 @@
 ## 1.7.5 (2026-07-28)
 
 ### ✨ Features
+
 - parse incoming eventMessages as event eventType (FaserF/ha-whatsapp#68) ([`5377f951`](https://github.com/FaserF/hassio-addons/commit/5377f9512005c5dc38f39629fca8cda00256bb63))
 - case-insensitive env vars & document standalone docker options (#904) ([`d008638f`](https://github.com/FaserF/hassio-addons/commit/d008638fa3d6049fa1eee1587f05b85b60675037))
 
 ### 🐛 Bug Fixes
+
 - improve contact matching in check_number and fix event sending (FaserF/ha-whatsapp#76, #902, #903) ([`0632583b`](https://github.com/FaserF/hassio-addons/commit/0632583bdc354c65bc3342a28fee00d0213a3de0))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency fastapi to v0.140.7 [skip-tests] (#922) [skip-tests] ([`b3b870ef`](https://github.com/FaserF/hassio-addons/commit/b3b870efe20a0a2a25979d5007533182b44173ab))
 - ⬆️ Update dependency fastapi to v0.140.2 [skip-tests] (#921) [skip-tests] ([`27dd1aa0`](https://github.com/FaserF/hassio-addons/commit/27dd1aa0d49954c27855f1cbac465e4dee067a74))
 - ⬆️ Update dependency express-rate-limit to v8.6.1 [skip-tests] (#919) [skip-tests] ([`2f592901`](https://github.com/FaserF/hassio-addons/commit/2f59290185e1ea2350681fd4a16d5713cb2b5b79))
@@ -17,7 +20,6 @@
 - ⬆️ Update dependency fastapi to v0.140.0 (#910) [skip-tests] ([`52b4be23`](https://github.com/FaserF/hassio-addons/commit/52b4be23210849045cbf69ff59f84c1b63178de5))
 - ⬆️ Update dependency eslint to v10.8.0 ([`e4e62c23`](https://github.com/FaserF/hassio-addons/commit/e4e62c235536208df3a9c360dc06aab0480eb34c))
 - ⬆️ Update dependency brace-expansion to v5.0.8 [skip-tests] (#905) [skip-tests] ([`551dcdfd`](https://github.com/FaserF/hassio-addons/commit/551dcdfd0c9d03c9a50a5408fc57eeccffbd531a))
-
 
 ## 1.7.4 (2026-07-22)
 

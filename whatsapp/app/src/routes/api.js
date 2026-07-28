@@ -543,7 +543,8 @@ export function registerAPIRoutes(app) {
     let parsedStartTime = Math.floor(Date.now() / 1000);
     const timeVal = startTime || date;
     if (timeVal) {
-      const parsedTime = typeof timeVal === 'number' ? timeVal : Math.floor(new Date(timeVal).getTime() / 1000);
+      const parsedTime =
+        typeof timeVal === 'number' ? timeVal : Math.floor(new Date(timeVal).getTime() / 1000);
       if (!isNaN(parsedTime)) {
         parsedStartTime = parsedTime;
       }

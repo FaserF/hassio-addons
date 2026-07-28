@@ -3,12 +3,12 @@
 ## 1.4.1 (2026-07-28)
 
 ### 📦 Dependencies
+
 - ⬆️ Update ER-Startseite to v2026.7.6 [skip-tests] (#920) ([`fd92416c`](https://github.com/FaserF/hassio-addons/commit/fd92416cdb99663c6293ae8f968025face95cae8))
 - ⬆️ Update ER-Startseite to v2026.7.5 [skip-tests] (#916) ([`95f9d9d9`](https://github.com/FaserF/hassio-addons/commit/95f9d9d94deda9e7e9e76d8797a1aed899ec2aa6))
 - ⬆️ Update ER-Startseite to v2026.7.3 [skip-tests] (#914) ([`1309e168`](https://github.com/FaserF/hassio-addons/commit/1309e168f5a6660819d5de82f2cdd062c4840134))
 - ⬆️ Update ER-Startseite to v2026.7.1 (#913) [skip-tests] ([`ebfd7c4e`](https://github.com/FaserF/hassio-addons/commit/ebfd7c4e79ba0c50aba5a040ba7461500e2121b3))
 - small fixes after alpine 3.24 update ([`26f71655`](https://github.com/FaserF/hassio-addons/commit/26f71655a41e1302e9de47e51c2d488c497b0a09))
-
 
 ## 1.4.0 (2026-06-16)
 
