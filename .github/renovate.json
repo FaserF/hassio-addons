@@ -11,6 +11,10 @@
     "no-stale"
   ],
   "commitMessagePrefix": "⬆️",
+  "allowedCommands": [
+    "^python3 \\.scripts/bump_version\\.py .*",
+    "^bash \\.github/scripts/update-checksums\\.sh .*"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -413,7 +417,12 @@
       "groupName": "Development Tools",
       "matchDepNames": [
         "nodejs/node",
-        "yarnpkg/yarn"
+        "yarnpkg/yarn",
+        "eslint"
+      ],
+      "matchPackagePatterns": [
+        "^@eslint/",
+        "^eslint"
       ],
       "automerge": true
     },

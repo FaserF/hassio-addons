@@ -169,6 +169,20 @@ jobs:
                     labels: filteredLabels
                 });
 
+                // Enable GitHub native auto-merge if PR has 'automerge' label or is from Renovate/Dependabot/Maintainer
+                if (isMaintainer || currentLabels.some(l => l.name === 'automerge')) {
+                    try {
+                        await github.rest.pulls.enableAutoMerge({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            pull_number: issue_number,
+                            merge_method: 'SQUASH'
+                        });
+                        console.log(`Auto-merge successfully enabled for PR #${issue_number}`);
+                    } catch (err) {
+                        console.log(`Could not enable auto-merge: ${err.message}`);
+                    }
+                }
             } else {
                 // --- FAILURE FLOW ---
                 console.log("Processing Failure Report...");

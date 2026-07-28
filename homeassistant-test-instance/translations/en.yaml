@@ -1,7 +1,13 @@
 configuration:
   version:
     name: "Version"
-    description: "The version of Home Assistant to run (e.g. 2024.1.0)"
+    description: "The version of Home Assistant to run (e.g. 2026.6.0)"
+  copy_host_data:
+    name: "Copy Host Data"
+    description: "Copy configuration data from the host Home Assistant instance."
+  enable_automations:
+    name: "Enable Automations"
+    description: "Enable automations in the test Home Assistant instance."
   log_level:
     name: "Log Level"
     description: "The log level for the addon."
