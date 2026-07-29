@@ -661,7 +661,9 @@ function renderDashboard(sessionId) {
 
     updateDashboard();
     setInterval(updateDashboard, 10000);
-    setInterval(loadLogs, 5000);
+    setInterval(() => {
+        if (typeof loadLogs === 'function') loadLogs();
+    }, 5000);
     setInterval(() => {
         if (isChatTabActive) {
             loadChats();
