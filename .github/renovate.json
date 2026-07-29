@@ -1,15 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "rebaseWhen": "conflicted",
   "prConcurrentLimit": 5,
   "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "no-stale"
-  ],
+  "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "allowedCommands": [
     "^python3 \\.scripts/bump_version\\.py .*",
@@ -18,9 +13,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)_config\\.yml$"
-      ],
+      "managerFilePatterns": ["/(^|/)_config\\.yml$"],
       "matchStrings": [
         "mermaid:\\s*\\n\\s*latest_version:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
@@ -30,9 +23,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)_config\\.yml$"
-      ],
+      "managerFilePatterns": ["/(^|/)_config\\.yml$"],
       "matchStrings": [
         "remote_theme:\\s*(?<depName>pmarsceill/just-the-docs)@(?<currentValue>.*)"
       ],
@@ -41,10 +32,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/",
-        "/(^|/)build.yaml$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/", "/(^|/)build.yaml$/"],
       "matchStringsStrategy": "any",
       "matchStrings": [
         "ARG BUILD_FROM=(?<depName>.*?):(?<currentValue>.*?)\\s+",
@@ -54,9 +42,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG NODE_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+",
         "ENV NODE_VERSION v?(?<currentValue>.+?)\\s+"
@@ -66,20 +52,14 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
-      "matchStrings": [
-        "ENV YARN_VERSION (?<currentValue>.+?)\\s+"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ENV YARN_VERSION (?<currentValue>.+?)\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "yarnpkg/yarn"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/matterbridge/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/matterbridge/Dockerfile$/"],
       "matchStrings": [
         "ARG MATTERBRIDGE_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -88,20 +68,14 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/pterodactyl-wings/Dockerfile$/"
-      ],
-      "matchStrings": [
-        "ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"
-      ],
+      "managerFilePatterns": ["/pterodactyl-wings/Dockerfile$/"],
+      "matchStrings": ["ARG WINGS_VERSION=(?<currentValue>v[\\d.]+)\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "pterodactyl/wings"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG NETBOOTXYZ_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -110,9 +84,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG SOLUMATI_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -121,9 +93,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG WIKIJS_VERSION=[\"']?v?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -132,9 +102,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG AEGISBOT_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
@@ -143,9 +111,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -155,9 +121,7 @@
     {
       "customType": "regex",
       "description": "Track imapsync version in Dockerfile",
-      "managerFilePatterns": [
-        "/imapsync/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/imapsync/Dockerfile$/"],
       "matchStrings": [
         "ARG IMAPSYNC_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -168,9 +132,7 @@
     {
       "customType": "regex",
       "description": "Track xqrepack git commit for script pinning",
-      "managerFilePatterns": [
-        "/.unsupported/xqrepack/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/.unsupported/xqrepack/Dockerfile$/"],
       "matchStrings": [
         "ARG XQREPACK_COMMIT=[\"']?(?<currentDigest>[a-f0-9]+)[\"']?"
       ],
@@ -181,12 +143,8 @@
     {
       "customType": "regex",
       "description": "Track bt-mqtt-gateway version (commit hash)",
-      "managerFilePatterns": [
-        "/.unsupported/bt-mqtt-gateway/Dockerfile$/"
-      ],
-      "matchStrings": [
-        "ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"
-      ],
+      "managerFilePatterns": ["/.unsupported/bt-mqtt-gateway/Dockerfile$/"],
+      "matchStrings": ["ARG BT_MQTT_VERSION=(?<currentDigest>[a-f0-9]+)"],
       "datasourceTemplate": "git-refs",
       "depNameTemplate": "https://github.com/zewelor/bt-mqtt-gateway",
       "currentValueTemplate": "master"
@@ -194,12 +152,8 @@
     {
       "customType": "regex",
       "description": "Track Pterodactyl Panel release branch",
-      "managerFilePatterns": [
-        "/pterodactyl-panel/Dockerfile$/"
-      ],
-      "matchStrings": [
-        "--branch release/v(?<currentValue>[\\d.]+)"
-      ],
+      "managerFilePatterns": ["/pterodactyl-panel/Dockerfile$/"],
+      "matchStrings": ["--branch release/v(?<currentValue>[\\d.]+)"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "pterodactyl/panel",
       "extractVersionTemplate": "^v(?<version>.*)$"
@@ -207,12 +161,8 @@
     {
       "customType": "regex",
       "description": "Track tuya-convert git commit",
-      "managerFilePatterns": [
-        "/.unsupported/tuya-convert/Dockerfile$/"
-      ],
-      "matchStrings": [
-        "git checkout (?<currentDigest>[a-f0-9]+)"
-      ],
+      "managerFilePatterns": ["/.unsupported/tuya-convert/Dockerfile$/"],
+      "matchStrings": ["git checkout (?<currentDigest>[a-f0-9]+)"],
       "datasourceTemplate": "git-refs",
       "depNameTemplate": "https://github.com/ct-Open-Source/tuya-convert",
       "currentValueTemplate": "master"
@@ -234,9 +184,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/ShieldDNS/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/ShieldDNS/Dockerfile$/"],
       "matchStrings": [
         "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
       ],
@@ -245,9 +193,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/ShieldDNS/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/ShieldDNS/Dockerfile$/"],
       "matchStrings": [
         "ARG COREDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -256,9 +202,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/antigravity-server/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/antigravity-server/Dockerfile$/"],
       "matchStrings": [
         "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -267,21 +211,15 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)build.yaml$/"
-      ],
-      "matchStrings": [
-        "KOMODO_VERSION: (?<currentValue>.+?)\\s+"
-      ],
+      "managerFilePatterns": ["/(^|/)build.yaml$/"],
+      "matchStrings": ["KOMODO_VERSION: (?<currentValue>.+?)\\s+"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "moghtech/komodo"
     },
     {
       "customType": "regex",
       "description": "Track NGINX Alpine package version",
-      "managerFilePatterns": [
-        "/nginx/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/nginx/Dockerfile$/"],
       "matchStrings": [
         "# renovate: datasource=repology depName=alpine_edge/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
       ],
@@ -292,9 +230,7 @@
     {
       "customType": "regex",
       "description": "Track Wordpress version in Dockerfile",
-      "managerFilePatterns": [
-        "/wordpress/Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/wordpress/Dockerfile$/"],
       "matchStrings": [
         "ARG WORDPRESS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
@@ -304,9 +240,7 @@
     {
       "customType": "regex",
       "description": "Track n8n version in Dockerfile (ARG N8N_VERSION=X.X.X)",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG N8N_VERSION=[\"']?(?<currentValue>\\d+\\.\\d+\\.\\d+)[\"']?"
       ],
@@ -316,21 +250,15 @@
     {
       "customType": "regex",
       "description": "Track DBF version in Dockerfile",
-      "managerFilePatterns": [
-        "/dbf/Dockerfile$/"
-      ],
-      "matchStrings": [
-        "ARG DBF_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
-      ],
+      "managerFilePatterns": ["/dbf/Dockerfile$/"],
+      "matchStrings": ["ARG DBF_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"],
       "datasourceTemplate": "github-tags",
       "depNameTemplate": "derf/db-fakedisplay"
     },
     {
       "customType": "regex",
       "description": "Track PHP version in Dockerfiles",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)(?: versioning=(?<versioning>[^\\s]+))?\\nARG PHP_VERSION=\"(?<currentValue>.*)\""
       ],
@@ -340,10 +268,7 @@
     {
       "customType": "regex",
       "description": "Track Paperless-ngx version in Dockerfile and build.yaml",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/",
-        "/(^|/)build.yaml$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/", "/(^|/)build.yaml$/"],
       "matchStrings": [
         "ARG PAPERLESS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+",
         "PAPERLESS_VERSION: [\"']?(?<currentValue>.+?)[\"']?\\s+"
@@ -354,9 +279,7 @@
     {
       "customType": "regex",
       "description": "Track Home Assistant builder image in workflows",
-      "managerFilePatterns": [
-        "^\\.github/workflows/.*\\.yaml$"
-      ],
+      "managerFilePatterns": ["^\\.github/workflows/.*\\.yaml$"],
       "matchStrings": [
         "ghcr\\.io/home-assistant/amd64-builder:(?<currentValue>.*)"
       ],
@@ -366,9 +289,7 @@
     {
       "customType": "regex",
       "description": "Track Apache2 Alpine package version",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "# renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose\\nARG APACHE2_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
       ],
@@ -380,32 +301,22 @@
   "packageRules": [
     {
       "description": "PHP Version Update - update docs",
-      "matchDepNames": [
-        "php/php-src"
-      ],
+      "matchDepNames": ["php/php-src"],
       "extractVersion": "^php-(?<version>\\d+\\.\\d+)",
       "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/update_php_info.py"
-        ],
-        "fileFilters": [
-          "**/DOCS.md"
-        ],
+        "commands": ["python3 .scripts/update_php_info.py"],
+        "fileFilters": ["**/DOCS.md"],
         "executionMode": "branch"
       }
     },
     {
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "automerge": true,
       "ignoreTests": true
     },
     {
       "groupName": "Add-on base images",
-      "matchDatasources": [
-        "docker"
-      ],
+      "matchDatasources": ["docker"],
       "matchDepNames": [
         "ghcr.io/hassio-addons/base",
         "ghcr.io/hassio-addons/debian-base",
@@ -415,16 +326,9 @@
     },
     {
       "groupName": "Development Tools",
-      "matchDepNames": [
-        "nodejs/node",
-        "yarnpkg/yarn",
-        "eslint"
-      ],
-      "matchPackagePatterns": [
-        "^@eslint/",
-        "^eslint"
-      ],
-      "automerge": true
+      "matchDepNames": ["nodejs/node", "yarnpkg/yarn", "eslint"],
+      "automerge": true,
+      "matchPackageNames": ["/^@eslint//", "/^eslint/"]
     },
     {
       "groupName": "ER-Startseite",
@@ -457,104 +361,74 @@
     },
     {
       "description": "Solumati - auto-update checksums via postUpgradeTasks",
-      "matchDepNames": [
-        "FaserF/Solumati"
-      ],
+      "matchDepNames": ["FaserF/Solumati"],
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh solumati {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "solumati/Dockerfile"
-        ],
+        "fileFilters": ["solumati/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Netboot.xyz - auto-update checksums",
-      "matchDepNames": [
-        "netbootxyz/webapp"
-      ],
+      "matchDepNames": ["netbootxyz/webapp"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "netboot-xyz/Dockerfile"
-        ],
+        "fileFilters": ["netboot-xyz/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Pterodactyl Wings - automerge enabled and update checksums",
-      "matchDepNames": [
-        "pterodactyl/wings"
-      ],
+      "matchDepNames": ["pterodactyl/wings"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "pterodactyl-wings/Dockerfile"
-        ],
+        "fileFilters": ["pterodactyl-wings/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
-      "matchDepNames": [
-        "42wim/matterbridge"
-      ],
+      "matchDepNames": ["42wim/matterbridge"],
       "automerge": true,
       "postUpgradeTasks": {
         "commands": [
           "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
         ],
-        "fileFilters": [
-          "matterbridge/Dockerfile"
-        ],
+        "fileFilters": ["matterbridge/Dockerfile"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Allow pre-releases for Wiki.js V3",
-      "matchDepNames": [
-        "requarks/wiki",
-        "ghcr.io/requarks/wiki"
-      ],
-      "matchFileNames": [
-        "wiki.js3/Dockerfile"
-      ],
+      "matchDepNames": ["requarks/wiki", "ghcr.io/requarks/wiki"],
+      "matchFileNames": ["wiki.js3/Dockerfile"],
       "ignoreUnstable": false
     },
     {
       "description": "NGINX - auto-update Alpine package version and bump addon version",
-      "matchDepNames": [
-        "alpine_edge/nginx"
-      ],
-      "matchFileNames": [
-        "nginx/Dockerfile"
-      ],
+      "matchDepNames": ["alpine_edge/nginx"],
+      "matchFileNames": ["nginx/Dockerfile"],
       "automerge": true,
       "ignoreTests": false,
       "postUpgradeTasks": {
         "commands": [
           "python3 .scripts/bump_version.py nginx patch --message \"Automatic release after NGINX update to {{{newVersion}}}\""
         ],
-        "fileFilters": [
-          "nginx/config.yaml",
-          "nginx/CHANGELOG.md"
-        ],
+        "fileFilters": ["nginx/config.yaml", "nginx/CHANGELOG.md"],
         "executionMode": "branch"
       }
     },
     {
       "description": "Apache2 - auto-update Alpine package version and bump addon version",
-      "matchDepNames": [
-        "alpine_3_21/apache2"
-      ],
+      "matchDepNames": ["alpine_3_21/apache2"],
       "automerge": true,
       "ignoreTests": false,
       "postUpgradeTasks": {
@@ -576,9 +450,7 @@
     },
     {
       "description": "Home Assistant - auto-update Home Assistant version and bump addon version",
-      "matchDepNames": [
-        "ghcr.io/home-assistant/home-assistant"
-      ],
+      "matchDepNames": ["ghcr.io/home-assistant/home-assistant"],
       "matchFileNames": [
         "homeassistant-test-instance/Dockerfile",
         "homeassistant-test-instance/build.yaml"
@@ -597,42 +469,30 @@
       }
     },
     {
-      "matchManagers": [
-        "pip_requirements"
-      ],
-      "addLabels": [
-        "python"
-      ],
+      "matchManagers": ["pip_requirements"],
+      "addLabels": ["python"],
       "rangeStrategy": "pin",
       "automerge": true
     },
     {
       "description": "Ignore pre-releases for Antigravity-Server",
-      "matchDepNames": [
-        "Eidolf/Docker-AntiGravity"
-      ],
+      "matchDepNames": ["Eidolf/Docker-AntiGravity"],
       "ignoreUnstable": true
     },
     {
       "description": "Allow pre-releases for SwitchCraft",
-      "matchDepNames": [
-        "FaserF/SwitchCraft"
-      ],
+      "matchDepNames": ["FaserF/SwitchCraft"],
       "ignoreUnstable": false
     },
     {
       "description": "Allow pre-releases for Baileys (WhatsApp Addon)",
-      "matchDepNames": [
-        "@whiskeysockets/baileys"
-      ],
+      "matchDepNames": ["@whiskeysockets/baileys"],
       "versioning": "loose",
       "ignoreUnstable": false
     },
     {
       "description": "Skip tests for patch updates only",
-      "matchUpdateTypes": [
-        "patch"
-      ],
+      "matchUpdateTypes": ["patch"],
       "commitMessageSuffix": " [skip-tests]"
     }
   ]
