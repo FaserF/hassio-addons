@@ -44,42 +44,34 @@ export function registerUiApiRoutes(app) {
       }
     });
 
-    // Resolve final display names (async for missing group names)
+    // Resolve final display names synchronously (with async background cache enrichment)
     const chats = Object.values(JidMap)
-      .filter((c) => c.preview && c.preview.trim().length > 0)
+      .map((c) => {
+        if (!c.preview || !c.preview.trim()) {
+          c.preview = '[Message]';
+        }
+        if (c.jid.endsWith('@g.us')) {
+          if (session.groupCache && session.groupCache.has(c.jid)) {
+            c.name = session.groupCache.get(c.jid);
+          } else {
+            c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
+            // Background fetch metadata without blocking response
+            if (session.sock) {
+              session.sock.groupMetadata(c.jid).then((meta) => {
+                if (meta && meta.subject) {
+                  session.groupCache?.set(c.jid, meta.subject);
+                }
+              }).catch(() => {});
+            }
+          }
+        } else if (contactNames.has(c.jid)) {
+          c.name = contactNames.get(c.jid);
+        }
+        return c;
+      })
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    // Resolve group names and contact names
-    const resolveNamesPromises = chats.map(async (c) => {
-      if (c.jid.endsWith('@g.us')) {
-        if (session.groupCache && session.groupCache.has(c.jid)) {
-          c.name = session.groupCache.get(c.jid);
-        } else if (session.sock) {
-          try {
-            const meta = await session.sock.groupMetadata(c.jid);
-            if (meta && meta.subject) {
-              c.name = meta.subject;
-              session.groupCache?.set(c.jid, meta.subject);
-            }
-          } catch (e) {
-            c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
-          }
-        } else {
-          c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
-        }
-      } else if (contactNames.has(c.jid)) {
-        c.name = contactNames.get(c.jid);
-      }
-      return c;
-    });
-
-    Promise.all(resolveNamesPromises)
-      .then((resolvedChats) => {
-        res.json(resolvedChats);
-      })
-      .catch(() => {
-        res.json(chats);
-      });
+    res.json(chats);
   });
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
