@@ -290,12 +290,12 @@ function renderDashboard(sessionId) {
             <section id="tab-chats" class="tab-panel">
                 <div class="chat-container-layout">
                     <div class="chat-list-panel">
-                        <div class="chat-list-header">
+                        <div class="chat-list-header" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border-color);">
                             <div class="search-box-wrapper" style="flex:1;">
                                 <i class="fas fa-search search-icon"></i>
                                 <input type="text" id="chat-search" class="chat-search-input" placeholder="Search chats..." oninput="filterChatList()">
                             </div>
-                            <button class="btn btn-primary btn-sm" style="border-radius:50%;width:36px;height:36px;padding:0;flex-shrink:0;" title="Start New Chat" onclick="openNewChatModal()">
+                            <button class="btn btn-primary btn-sm" style="border-radius:50%;width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;" title="Start New Chat" onclick="openNewChatModal()">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -312,13 +312,13 @@ function renderDashboard(sessionId) {
                         </div>
 
                         <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
-                            <div class="chat-thread-header">
-                                <div class="chat-thread-info" onclick="openChatInfoDrawer()" style="cursor:pointer;" title="Click to view Contact / Group Details">
+                            <div class="chat-thread-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;min-height:62px;width:100%;border-bottom:1px solid var(--border-color);background-color:var(--bg-card);gap:16px;">
+                                <div class="chat-thread-info" onclick="openChatInfoDrawer()" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer;" title="Click to view Contact / Group Details">
                                     <button class="chat-back-btn" onclick="event.stopPropagation();goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
-                                    <div class="chat-thread-avatar" id="active-chat-avatar"></div>
+                                    <div class="chat-thread-avatar" id="active-chat-avatar" style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
                                     <div style="flex:1;min-width:0;">
-                                        <h4 id="active-chat-name">Contact JID</h4>
-                                        <p id="active-chat-jid" style="display:flex;align-items:center;gap:6px;">
+                                        <h4 id="active-chat-name" style="margin:0;font-size:16px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Contact JID</h4>
+                                        <p id="active-chat-jid" style="margin:2px 0 0;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                             <span id="typing-indicator" style="display:none;color:var(--primary);font-style:italic;">typing…</span>
                                             <span id="active-chat-jid-text">JID details</span>
                                         </p>
