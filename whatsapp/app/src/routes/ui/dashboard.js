@@ -143,7 +143,12 @@ async function updateDashboard() {
     }
     const discReason = document.getElementById('disconnect-reason');
     if (discReason) {
-      discReason.textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
+      discReason.textContent =
+        data.currentQR
+          ? ''
+          : data.disconnectReason
+            ? 'Reason: ' + data.disconnectReason
+            : '';
     }
 
     // QR setup or visual spinner loader

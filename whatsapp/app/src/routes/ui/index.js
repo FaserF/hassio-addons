@@ -617,14 +617,22 @@ function renderDashboard(sessionId) {
     function toggleSidebar(e) {
         if (e) {
             try {
-                e.preventDefault();
-                e.stopPropagation();
+                if (typeof e.preventDefault === 'function') e.preventDefault();
+                if (typeof e.stopPropagation === 'function') e.stopPropagation();
             } catch (err) {}
         }
         var sb = document.querySelector('.sidebar');
         if (!sb) return;
         var isCollapsed = sb.classList.toggle('collapsed');
-        sb.style.width = isCollapsed ? '72px' : '280px';
+        if (isCollapsed) {
+            sb.style.setProperty('width', '72px', 'important');
+            sb.style.setProperty('min-width', '72px', 'important');
+            sb.style.setProperty('max-width', '72px', 'important');
+        } else {
+            sb.style.removeProperty('width');
+            sb.style.removeProperty('min-width');
+            sb.style.removeProperty('max-width');
+        }
         try {
             localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
         } catch (err) {}
