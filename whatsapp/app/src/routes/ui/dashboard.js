@@ -6,13 +6,16 @@ async function updateDashboard() {
       headers: { Accept: 'application/json' },
     });
     if (!response.ok) {
-      document.getElementById('card-diagnostics').style.display = 'block';
-      document.getElementById('status-badge').className = 'status-badge disconnected';
-      if (response.status === 403) {
-        document.getElementById('status-badge').textContent = 'Access Blocked (403) ⛔';
-      } else {
-        document.getElementById('status-badge').textContent =
-          'API Error (' + response.status + ') ⚠️';
+      const diagCard = document.getElementById('card-diagnostics');
+      if (diagCard) diagCard.style.display = 'block';
+      const badge = document.getElementById('status-badge');
+      if (badge) {
+        badge.className = 'status-badge disconnected';
+        if (response.status === 403) {
+          badge.textContent = 'Access Blocked (403) ⛔';
+        } else {
+          badge.textContent = 'API Error (' + response.status + ') ⚠️';
+        }
       }
       return;
     }

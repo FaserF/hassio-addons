@@ -238,7 +238,11 @@ export function signalInterest(sessionId, connectFn) {
   const session = getSession(sessionId);
   session.lastInterestTime = Date.now(); // Needed by connectToWhatsApp to know the user is watching
 
-  const socketMissing = !session.sock || (!session.isConnected && !session.isConnecting);
+  // Socket is considered missing/dead if:
+  // - there is no sock object at all, OR
+  // - there is a sock, but session has no active QR code and is neither connected nor connecting
+  const socketMissing =
+    !session.sock || (!session.isConnected && !session.isConnecting && !session.currentQR);
   logger.debug(
     {
       sessionId,

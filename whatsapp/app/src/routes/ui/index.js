@@ -81,6 +81,10 @@ export function registerUIRoutes(app) {
       const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
       if (connectedSession) {
         sessionId = connectedSession.id;
+      } else if (sessions.has('default')) {
+        sessionId = 'default';
+      } else if (sessions.size > 0) {
+        sessionId = Array.from(sessions.keys())[0];
       } else {
         sessionId = 'default';
       }
