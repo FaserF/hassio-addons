@@ -503,8 +503,8 @@ function renderDashboard(sessionId) {
     document.getElementById('raw-logs-link').href = basePath + 'logs';
 
     updateDashboard();
-    setInterval(updateDashboard, 5000);
-    setInterval(loadLogs, 3000);
+    setInterval(updateDashboard, 10000);
+    setInterval(loadLogs, 5000);
     setInterval(() => {
         if (isChatTabActive) {
             loadChats();
@@ -512,18 +512,7 @@ function renderDashboard(sessionId) {
                 loadChatMessages(activeChatJid);
             }
         }
-    }, 4000);
-
-    setInterval(() => {
-        updateDashboard();
-        loadLogs();
-        if (isChatTabActive) {
-            loadChats();
-            if (activeChatJid) {
-                loadChatMessages(activeChatJid);
-            }
-        }
-    }, 60000);
+    }, 8000);
   </script>
 </body>
 </html>`;

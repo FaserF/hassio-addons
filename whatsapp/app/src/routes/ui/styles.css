@@ -1483,7 +1483,7 @@ code {
     flex: 1;
     min-width: 0;
 }
-.chat-header-avatar {
+.chat-thread-avatar, .chat-header-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -1494,6 +1494,7 @@ code {
     color: #fff;
     font-size: 18px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 .chat-thread-info h4 {
     margin: 0;

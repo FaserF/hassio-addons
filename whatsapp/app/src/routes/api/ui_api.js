@@ -44,21 +44,40 @@ export function registerUiApiRoutes(app) {
       }
     });
 
-    // Resolve final display names
+    // Resolve final display names (async for missing group names)
     const chats = Object.values(JidMap)
       .filter((c) => c.preview && c.preview.trim().length > 0)
-      .map((c) => {
-        if (c.jid.endsWith('@g.us')) {
-          if (session.groupCache && session.groupCache.has(c.jid)) {
-            c.name = session.groupCache.get(c.jid);
-          }
-        } else if (contactNames.has(c.jid)) {
-          c.name = contactNames.get(c.jid);
-        }
-        return c;
-      })
       .sort((a, b) => b.timestamp - a.timestamp);
-    res.json(chats);
+
+    // Resolve group names and contact names
+    const resolveNamesPromises = chats.map(async (c) => {
+      if (c.jid.endsWith('@g.us')) {
+        if (session.groupCache && session.groupCache.has(c.jid)) {
+          c.name = session.groupCache.get(c.jid);
+        } else if (session.sock) {
+          try {
+            const meta = await session.sock.groupMetadata(c.jid);
+            if (meta && meta.subject) {
+              c.name = meta.subject;
+              session.groupCache?.set(c.jid, meta.subject);
+            }
+          } catch (e) {
+            c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
+          }
+        } else {
+          c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
+        }
+      } else if (contactNames.has(c.jid)) {
+        c.name = contactNames.get(c.jid);
+      }
+      return c;
+    });
+
+    Promise.all(resolveNamesPromises).then((resolvedChats) => {
+      res.json(resolvedChats);
+    }).catch(() => {
+      res.json(chats);
+    });
   });
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
@@ -172,7 +191,12 @@ export function registerUiApiRoutes(app) {
     if (!jid || !session.sock) return res.status(404).json({ error: 'No session or JID' });
 
     try {
-      const url = await session.sock.profilePictureUrl(jid, 'preview');
+      let url = null;
+      try {
+        url = await session.sock.profilePictureUrl(jid, 'preview');
+      } catch (e) {
+        url = await session.sock.profilePictureUrl(jid, 'image');
+      }
       if (url) {
         return res.json({ url });
       }

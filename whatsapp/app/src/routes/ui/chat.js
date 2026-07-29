@@ -152,7 +152,7 @@ function updateAvatarElements(jid, url) {
   if (activeChatJid === jid) {
     const headerAvatar = document.getElementById('active-chat-avatar');
     if (headerAvatar) {
-      headerAvatar.innerHTML = `<div class="chat-header-avatar"><img src="${url}" class="avatar-img" alt="Avatar"></div>`;
+      headerAvatar.innerHTML = `<img src="${url}" class="avatar-img" alt="Avatar">`;
     }
   }
 }
@@ -170,16 +170,14 @@ function selectChat(jid, name) {
   document.getElementById('active-chat-name').textContent = name;
   const jidText = document.getElementById('active-chat-jid-text');
   if (jidText) jidText.textContent = jid;
-  const jidEl = document.getElementById('active-chat-jid');
-  if (jidEl && !jidText) jidEl.textContent = jid;
 
   const avatar = document.getElementById('active-chat-avatar');
   if (avatar) {
     const cachedUrl = avatarCache[jid];
     if (cachedUrl) {
-      avatar.innerHTML = `<div class="chat-header-avatar"><img src="${cachedUrl}" class="avatar-img" alt="Avatar"></div>`;
+      avatar.innerHTML = `<img src="${cachedUrl}" class="avatar-img" alt="Avatar">`;
     } else {
-      avatar.innerHTML = `<div class="chat-header-avatar"><i class="fas ${jid.endsWith('@g.us') ? 'fa-users' : 'fa-user'}"></i></div>`;
+      avatar.innerHTML = `<i class="fas ${jid.endsWith('@g.us') ? 'fa-users' : 'fa-user'}"></i>`;
       fetchAvatar(jid);
     }
   }
@@ -669,15 +667,21 @@ function renderHighlightedMessages(ids) {
   });
 }
 
-function closeAllOverlays() {
-  document.getElementById('msg-context-menu').style.display = 'none';
-  document.getElementById('reaction-picker').style.display = 'none';
-  document.getElementById('emoji-picker').style.display = 'none';
+function closeAllOverlays(e) {
+  if (e && (e.target.closest('#msg-context-menu') || e.target.closest('#reaction-picker') || e.target.closest('#emoji-picker'))) {
+    return;
+  }
+  const ctx = document.getElementById('msg-context-menu');
+  if (ctx) ctx.style.display = 'none';
+  const rx = document.getElementById('reaction-picker');
+  if (rx) rx.style.display = 'none';
+  const em = document.getElementById('emoji-picker');
+  if (em) em.style.display = 'none';
 }
 
-document.addEventListener('click', closeAllOverlays);
+document.addEventListener('click', (e) => closeAllOverlays(e));
 document.addEventListener('contextmenu', (e) => {
-  if (!e.target.closest('.msg-bubble-row')) closeAllOverlays();
+  if (!e.target.closest('.msg-bubble-row')) closeAllOverlays(e);
 });
 
 async function sendChatMessage(event) {
@@ -819,12 +823,7 @@ function closeChatInfoDrawer() {
   const drawer = document.getElementById('chat-info-drawer');
   if (drawer) drawer.style.display = 'none';
 }
-      loadChats();
-    } else {
-      const errData = await response.json();
-      showToast(errData.detail || 'Failed to send message', 'danger');
-    }
-  } catch (e) {
-    showToast('Failed to send message', 'danger');
-  }
+
+window.openChatInfoDrawer = openChatInfoDrawer;
+window.closeChatInfoDrawer = closeChatInfoDrawer;
 }
