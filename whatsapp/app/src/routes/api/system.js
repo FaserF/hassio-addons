@@ -69,7 +69,7 @@ export function registerSystemRoutes(app) {
     res.json({
       sessionId: session.id,
       isConnected: session.isConnected,
-      currentQR: session.qr,
+      currentQR: session.currentQR,
       disconnectReason: session.disconnectReason,
       passkeyDetected: session.passkeyDetected || false,
       stats: session.stats,
