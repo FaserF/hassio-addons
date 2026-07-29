@@ -181,4 +181,51 @@ export function registerUiApiRoutes(app) {
       res.status(404).json({ error: 'Not found' });
     }
   });
+
+  app.get('/api/chat_info', uiAuthMiddleware, async (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const jid = req.query.jid;
+    if (!jid) return res.status(400).json({ error: 'JID required' });
+
+    const isGroup = jid.endsWith('@g.us');
+    const info = { jid, isGroup };
+
+    if (isGroup && session.sock) {
+      try {
+        const metadata = await session.sock.groupMetadata(jid);
+        info.name = metadata.subject;
+        info.description = metadata.desc ? metadata.desc.toString() : '';
+        info.owner = metadata.owner;
+        info.creation = metadata.creation;
+        info.participantsCount = metadata.participants ? metadata.participants.length : 0;
+        info.participants = (metadata.participants || []).map((p) => {
+          let pName = p.id.split('@')[0];
+          if (session.contactCache && session.contactCache.has(p.id)) {
+            const c = session.contactCache.get(p.id);
+            pName = c.name || c.notify || pName;
+          }
+          return { id: p.id, name: pName, admin: p.admin };
+        });
+      } catch (err) {
+        if (session.groupCache && session.groupCache.has(jid)) {
+          info.name = session.groupCache.get(jid);
+        }
+      }
+    } else {
+      if (session.contactCache && session.contactCache.has(jid)) {
+        const c = session.contactCache.get(jid);
+        info.name = c.name || c.notify || jid.split('@')[0];
+        info.status = c.status || '';
+      } else {
+        info.name = jid.split('@')[0];
+      }
+    }
+
+    try {
+      info.avatarUrl = await session.sock?.profilePictureUrl(jid, 'preview');
+    } catch {}
+
+    res.json(info);
+  });
 }

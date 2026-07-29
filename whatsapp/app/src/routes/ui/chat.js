@@ -707,12 +707,118 @@ async function sendChatMessage(event) {
         Accept: 'application/json',
         'X-Auth-Token': apiToken,
       },
-      body: JSON.stringify(payload),
-    });
-
     if (response.ok) {
       showToast('Message sent', 'success');
       loadChatMessages(activeChatJid);
+      loadChats();
+    } else {
+      const errData = await response.json();
+      showToast(errData.error || 'Failed to send message', 'danger');
+    }
+  } catch (e) {
+    showToast('Network error sending message', 'danger');
+  }
+}
+
+async function openChatInfoDrawer() {
+  if (!activeChatJid) return;
+  const drawer = document.getElementById('chat-info-drawer');
+  const body = document.getElementById('drawer-body-content');
+  if (!drawer || !body) return;
+
+  drawer.style.display = 'flex';
+  body.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>';
+
+  try {
+    const res = await fetch(
+      basePath + 'api/chat_info?session_id=' + currentSession + '&jid=' + encodeURIComponent(activeChatJid)
+    );
+    if (!res.ok) throw new Error('Failed');
+    const info = await res.json();
+
+    const avatarSrc = info.avatarUrl || avatarCache[activeChatJid];
+    const avatarHtml = avatarSrc
+      ? `<img src="${avatarSrc}" class="drawer-avatar-img">`
+      : `<div class="drawer-avatar-fallback"><i class="fas ${info.isGroup ? 'fa-users' : 'fa-user'}"></i></div>`;
+
+    if (info.isGroup) {
+      const createdDate = info.creation
+        ? new Date(info.creation * 1000).toLocaleDateString()
+        : 'Unknown';
+      const participantsHtml = (info.participants || [])
+        .map(
+          (p) => `
+            <div class="participant-item">
+              <div class="participant-avatar"><i class="fas fa-user"></i></div>
+              <div class="participant-info">
+                <div class="participant-name">${escapeHtml(p.name)}</div>
+                <div class="participant-id">${escapeHtml(p.id)}</div>
+              </div>
+              ${p.admin ? '<span class="admin-badge">Group Admin</span>' : ''}
+            </div>`
+        )
+        .join('');
+
+      body.innerHTML = `
+        <div class="drawer-profile">
+          <div class="drawer-avatar-wrapper">${avatarHtml}</div>
+          <h3 class="drawer-title">${escapeHtml(info.name || 'Group')}</h3>
+          <p class="drawer-subtitle">Group · ${info.participantsCount || 0} participants</p>
+        </div>
+
+        ${
+          info.description
+            ? `
+        <div class="drawer-section">
+          <label class="drawer-label">Group Description</label>
+          <div class="drawer-desc">${escapeHtml(info.description)}</div>
+        </div>`
+            : ''
+        }
+
+        <div class="drawer-section">
+          <label class="drawer-label">Created</label>
+          <div class="drawer-value">${createdDate}</div>
+        </div>
+
+        <div class="drawer-section">
+          <label class="drawer-label">Participants (${info.participantsCount || 0})</label>
+          <div class="participants-list">${participantsHtml || '<div class="empty-state">No participants details</div>'}</div>
+        </div>
+      `;
+    } else {
+      body.innerHTML = `
+        <div class="drawer-profile">
+          <div class="drawer-avatar-wrapper">${avatarHtml}</div>
+          <h3 class="drawer-title">${escapeHtml(info.name)}</h3>
+          <p class="drawer-subtitle">${escapeHtml(info.jid)}</p>
+        </div>
+
+        ${
+          info.status
+            ? `
+        <div class="drawer-section">
+          <label class="drawer-label">About / Status</label>
+          <div class="drawer-desc">${escapeHtml(info.status)}</div>
+        </div>`
+            : ''
+        }
+
+        <div class="drawer-section">
+          <label class="drawer-label">Phone / JID</label>
+          <div class="drawer-value">${escapeHtml(info.jid)}</div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="empty-state">Could not load chat info</div>';
+  }
+}
+
+function closeChatInfoDrawer() {
+  const drawer = document.getElementById('chat-info-drawer');
+  if (drawer) drawer.style.display = 'none';
+}
       loadChats();
     } else {
       const errData = await response.json();

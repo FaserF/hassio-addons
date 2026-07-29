@@ -309,8 +309,8 @@ function renderDashboard(sessionId) {
 
                         <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
                             <div class="chat-thread-header">
-                                <div class="chat-thread-info">
-                                    <button class="chat-back-btn" onclick="goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
+                                <div class="chat-thread-info" onclick="openChatInfoDrawer()" style="cursor:pointer;" title="Click to view Contact / Group Details">
+                                    <button class="chat-back-btn" onclick="event.stopPropagation();goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
                                     <div class="chat-thread-avatar" id="active-chat-avatar"></div>
                                     <div style="flex:1;min-width:0;">
                                         <h4 id="active-chat-name">Contact JID</h4>
@@ -322,15 +322,15 @@ function renderDashboard(sessionId) {
                                 </div>
                                 <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
                                     <button class="btn btn-ghost chat-header-btn" id="chat-search-toggle" title="Search in chat" onclick="toggleChatSearch()"><i class="fas fa-search"></i></button>
+                                    <button class="btn btn-ghost chat-header-btn" title="Contact / Group Info" onclick="openChatInfoDrawer()"><i class="fas fa-info-circle"></i></button>
                                 </div>
                             </div>
 
                             <div id="chat-search-bar" style="display:none;padding:8px 16px;background:var(--bg-card);border-bottom:1px solid var(--border-color);">
-                                <div style="display:flex;align-items:center;gap:8px;background:var(--bg-input);border:1.5px solid var(--border-input);border-radius:99px;padding:6px 16px;">
-                                    <i class="fas fa-search" style="color:var(--text-muted);font-size:13px;"></i>
-                                    <input id="chat-search-input" type="text" placeholder="Search messages…" style="flex:1;background:transparent;border:none;outline:none;font-family:var(--font-family);font-size:14px;color:var(--text-main);" oninput="searchChatMessages(this.value)">
-                                    <span id="chat-search-count" style="font-size:11px;color:var(--text-muted);"></span>
-                                    <button onclick="toggleChatSearch()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;"><i class="fas fa-times"></i></button>
+                                <div class="search-box-wrapper" style="width:100%;">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="in-chat-search-input" class="chat-search-input" placeholder="Search in this conversation…" oninput="searchInActiveChat()">
+                                    <button onclick="closeChatSearch()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
 
@@ -357,6 +357,16 @@ function renderDashboard(sessionId) {
                                     <input type="text" id="chat-message-input" class="chat-message-input" placeholder="Type a message…" autocomplete="off">
                                     <button type="submit" class="chat-send-btn" title="Send"><i class="fas fa-paper-plane"></i></button>
                                 </form>
+                        </div>
+
+                        <!-- Right Sidebar: Contact & Group Info Drawer -->
+                        <div class="chat-info-drawer" id="chat-info-drawer" style="display:none;">
+                            <div class="drawer-header">
+                                <h4>Contact Info</h4>
+                                <button class="btn btn-ghost btn-sm" onclick="closeChatInfoDrawer()"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="drawer-body" id="drawer-body-content">
+                                <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>
                             </div>
                         </div>
                     </div>
