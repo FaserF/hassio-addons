@@ -104,10 +104,14 @@ function getAddonVersion() {
   const envVer = getEnv('ADDON_VERSION');
   if (envVer) return envVer;
   try {
-    const configYamlPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../../config.yaml');
+    const configYamlPath = path.resolve(
+      path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')),
+      '../../config.yaml'
+    );
     if (fs.existsSync(configYamlPath)) {
       const content = fs.readFileSync(configYamlPath, 'utf8');
-      const match = content.match(/^version:\s*"([^"]+)"/m) || content.match(/^version:\s*([^\s]+)/m);
+      const match =
+        content.match(/^version:\s*"([^"]+)"/m) || content.match(/^version:\s*([^\s]+)/m);
       if (match) return match[1];
     }
   } catch (e) {}
@@ -118,7 +122,10 @@ function getAddonSlug() {
   const envSlug = getEnv('ADDON_SLUG');
   if (envSlug) return envSlug;
   try {
-    const configYamlPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../../config.yaml');
+    const configYamlPath = path.resolve(
+      path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')),
+      '../../config.yaml'
+    );
     if (fs.existsSync(configYamlPath)) {
       const content = fs.readFileSync(configYamlPath, 'utf8');
       const match = content.match(/^slug:\s*"([^"]+)"/m) || content.match(/^slug:\s*([^\s]+)/m);
@@ -157,7 +164,12 @@ export const BAILEYS_VERSION = getBaileysVersion();
 
 function getPackageVersion(packageName) {
   try {
-    const pkgPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../node_modules', packageName, 'package.json');
+    const pkgPath = path.resolve(
+      path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')),
+      '../node_modules',
+      packageName,
+      'package.json'
+    );
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
       return pkg.version;
