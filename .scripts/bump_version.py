@@ -258,9 +258,9 @@ def categorize_commits(commits, repo_url, addon_slug=None):
         entry = f"{clean_msg} ({commit_link})"
 
         # Categorize
-        if any(x in msg_lower for x in ["feat:", "feat(", "add:", "new:", "added:", "new feat:"]):
+        if any(x in msg_lower for x in ["feat:", "feat(", "add:", "new:", "added:", "new feat:", "feature"]):
             categories["✨ Features"].append(entry)
-        elif any(x in msg_lower for x in ["fix:", "fix(", "bug:", "bugfix:", "fixed:", "bugfix("]):
+        elif any(x in msg_lower for x in ["fix:", "fix(", "fixes", "bug:", "bugfix:", "fixed:", "bugfix(", "repair", "patch"]):
             categories["🐛 Bug Fixes"].append(entry)
         elif any(
             x in msg_lower
@@ -276,16 +276,16 @@ def categorize_commits(commits, repo_url, addon_slug=None):
             ]
         ):
             categories["📦 Dependencies"].append(entry)
-        elif any(x in msg_lower for x in ["config:", "conf:", "chore:", "setup:"]):
-            categories["🔧 Configuration"].append(entry)
         elif any(x in msg_lower for x in ["docs:", "doc:", "readme", "documentation:"]):
             categories["📝 Documentation"].append(entry)
-        elif any(x in msg_lower for x in ["style:", "format:", "lint:", "prettier:"]):
+        elif any(x in msg_lower for x in ["style:", "format:", "lint:", "linter", "prettier:", "ui", "frontend", "responsive", "css", "layout"]):
             categories["🎨 Style"].append(entry)
-        elif any(x in msg_lower for x in ["refactor:", "refact:", "clean:", "improved:"]):
+        elif any(x in msg_lower for x in ["refactor:", "refact:", "clean:", "improved:", "improvements", "split", "modular"]):
             categories["♻️ Refactor"].append(entry)
         elif any(x in msg_lower for x in ["security:", "sec:", "vuln:", "cve:"]):
             categories["🔒 Security"].append(entry)
+        elif any(x in msg_lower for x in ["config:", "conf:", "chore:", "setup:", "ci", "workflow"]):
+            categories["🔧 Configuration"].append(entry)
         else:
             categories["🚀 Other"].append(entry)
 

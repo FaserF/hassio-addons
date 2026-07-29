@@ -252,7 +252,7 @@ jobs:
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         uses: actionshub/markdownlint@v3.1.4
         with:
-          args: "${{ matrix.App }}/*.md"
+          args: "-c .markdownlint.yaml ${{ matrix.App }}/*.md"
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking

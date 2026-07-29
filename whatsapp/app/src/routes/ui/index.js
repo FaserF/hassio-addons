@@ -135,7 +135,7 @@ function renderDashboard(sessionId) {
                 <a href="https://github.com/expressjs/express" target="_blank" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span></a>
                 <a href="https://alpinelinux.org" target="_blank" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span></a>
             </div>
-            <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading...">
+            <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading..." title="Click for System Properties" onclick="showSystemPropertiesModal()">
                 <i class="fas fa-info"></i>
             </div>
         </div>
@@ -545,6 +545,12 @@ function renderDashboard(sessionId) {
         } else {
             document.body.classList.remove('chat-open');
         }
+    }
+
+    function showSystemPropertiesModal() {
+        const badge = document.getElementById('sidebar-info-badge');
+        const infoText = badge ? badge.getAttribute('data-tooltip') : 'System Information';
+        alert('ℹ️ System Properties:\n\n' + infoText);
     }
 
     // ── Sidebar toggle ────────────────────────────────

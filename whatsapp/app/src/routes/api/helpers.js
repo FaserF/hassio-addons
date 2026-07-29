@@ -26,6 +26,14 @@ export function getMessageText(msg) {
     m.extendedTextMessage?.text ||
     m.imageMessage?.caption ||
     m.videoMessage?.caption ||
+    m.buttonsMessage?.contentText ||
+    m.buttonsMessage?.text ||
+    m.buttonsMessage?.headerType ||
+    m.templateMessage?.hydratedTemplate?.hydratedContentText ||
+    m.interactiveMessage?.body?.text ||
+    m.interactiveMessage?.header?.title ||
+    m.listMessage?.description ||
+    m.listMessage?.title ||
     m.buttonsResponseMessage?.selectedDisplayText ||
     m.templateButtonReplyMessage?.selectedId ||
     (m.imageMessage ? '🖼️ Image' : '') ||

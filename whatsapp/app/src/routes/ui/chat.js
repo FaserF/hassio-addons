@@ -170,6 +170,7 @@ function selectChat(jid, name) {
   document.body.classList.add('chat-open');
   cancelReply();
   closeAllOverlays();
+  closeChatInfoDrawer();
 
   document.getElementById('chat-thread-empty').style.display = 'none';
   document.getElementById('chat-thread-active').style.display = 'flex';
@@ -390,7 +391,10 @@ async function loadChatMessages(jid) {
 }
 
 function showContextMenu(e, msgId) {
-  e.preventDefault();
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
   closeAllOverlays();
   ctxTargetMsg = document.querySelector(`[data-msg-id="${msgId}"]`);
   reactionTargetMsgId = msgId;

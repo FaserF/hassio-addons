@@ -37,8 +37,12 @@ export function registerUiApiRoutes(app) {
       const previewText = getMessageText(msg);
 
       // Collect pushName for contact if present
-      if (!jid.endsWith('@g.us') && msg.pushName && !contactNames.has(jid)) {
+      if (!jid.endsWith('@g.us') && msg.pushName) {
         contactNames.set(jid, msg.pushName);
+      } else if (jid.endsWith('@g.us') && msg.key.participant && msg.pushName) {
+        if (!contactNames.has(msg.key.participant)) {
+          contactNames.set(msg.key.participant, msg.pushName);
+        }
       }
 
       if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
@@ -205,7 +209,7 @@ export function registerUiApiRoutes(app) {
           starred: msg.starred || false,
         };
       })
-      .filter((m) => m.text || m.mediaUrl)
+      .filter((m) => m.text || m.mediaUrl || (m.buttons && m.buttons.length > 0))
       .sort((a, b) => a.timestamp - b.timestamp);
 
     res.json(messages);
@@ -296,18 +300,28 @@ export function registerUiApiRoutes(app) {
         }
       }
     } else {
+      let displayName = jid.split('@')[0];
       if (session.contactCache && session.contactCache.has(jid)) {
         const c = session.contactCache.get(jid);
-        info.name = c.name || c.notify || jid.split('@')[0];
+        displayName = c.name || c.notify || displayName;
         info.status = c.status || '';
-      } else {
-        info.name = jid.split('@')[0];
       }
+      if (displayName === jid.split('@')[0] && session.messageStore) {
+        const lastWithPushName = Array.from(session.messageStore.values()).find(
+          (m) => m.key?.remoteJid === jid && m.pushName
+        );
+        if (lastWithPushName) displayName = lastWithPushName.pushName;
+      }
+      info.name = displayName;
       if (session.sock) {
         try {
           const st = await session.sock.fetchStatus(jid);
-          if (st && st.status) {
-            info.status = st.status;
+          // Baileys fetchStatus returns an array of [{ jid, status: { status, setAt } }] or simple object/string
+          const entry = Array.isArray(st) ? st[0] : st;
+          const statusVal =
+            entry?.status?.status ?? entry?.status ?? (typeof entry === 'string' ? entry : null);
+          if (statusVal && typeof statusVal === 'string') {
+            info.status = statusVal;
           }
         } catch (e) {}
       }

@@ -134,13 +134,13 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await session.sock.sendPresenceUpdate('paused', targetJid);
     }
 
-    // 2. Text Message
+    // 1. Text Message
     const textMsg = await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [1/9]*: Text message works!',
+      text: '🧪 *Diagnostic Test [1/7]*: Text message works!',
     });
     await delay(1000);
 
-    // 3. Reaction
+    // 2. Reaction
     if (textMsg) {
       await reply(session, targetJid, {
         react: { text: '✅', key: textMsg.key },
@@ -148,22 +148,22 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await delay(1000);
     }
 
-    // 4. Edit Message
+    // 3. Edit Message
     const editMsg = await reply(session, targetJid, {
       text: 'This text will be edited',
     });
     await delay(1000);
     if (editMsg) {
       await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [2/9]*: Edit message works! ✅',
+        text: '🧪 *Diagnostic Test [2/7]*: Edit message works! ✅',
         edit: editMsg.key,
       });
       await delay(1000);
     }
 
-    // 5. Buttons
+    // 4. Buttons
     await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [3/9]*: Checking Buttons...',
+      text: '🧪 *Diagnostic Test [3/7]*: Checking Buttons...',
       footer: 'HA App Test',
       buttons: [
         { buttonId: 'diag_1', displayText: 'Button 1' },
@@ -172,9 +172,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 6. List
+    // 5. List
     await reply(session, targetJid, {
-      title: '🧪 Diagnostic Test [4/9]',
+      title: '🧪 Diagnostic Test [4/7]',
       text: 'Checking List Message...',
       buttonText: 'View Options',
       sections: [
@@ -189,15 +189,15 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 7. Location (München)
+    // 6. Location (München)
     await reply(session, targetJid, {
       location: { degreesLatitude: 48.1351, degreesLongitude: 11.582 },
-      title: '🧪 Diagnostic Test [5/9]',
+      title: '🧪 Diagnostic Test [5/7]',
       address: 'Munich, Germany',
     });
     await delay(1000);
 
-    // 8. Contact (VCard)
+    // 7. Contact (VCard)
     const vcard =
       'BEGIN:VCARD\n' +
       'VERSION:3.0\n' +
@@ -213,7 +213,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 9. Send "Message to be deleted" and delete it
+    // 8. Send "Message to be deleted" and delete it
     const toDeleteMsg = await reply(session, targetJid, {
       text: 'Message to be deleted',
     });
@@ -222,7 +222,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await reply(session, targetJid, { delete: toDeleteMsg.key });
       await delay(1000);
       await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [6/9]*: Cleanup (Delete) verified. All tests finished!',
+        text: '🧪 *Diagnostic Test [7/7]*: Cleanup (Delete) verified. All tests finished!',
       });
     }
 
