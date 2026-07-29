@@ -48,6 +48,19 @@ import { SYSTEM_STATE, SEEN_USERS, HEALTH_STATE } from '../state.js';
 import { logger } from '../logger.js';
 import { connectToWhatsApp } from '../whatsapp/connection.js';
 
+async function ensureConnected(session, maxWaitMs = 3000) {
+  if (session.isConnected) return true;
+  // If socket is present and actively negotiating, wait briefly for reconnect to settle
+  if (session.sock && !session.sock.ws?.isClosed) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < maxWaitMs) {
+      await delay(250);
+      if (session.isConnected) return true;
+    }
+  }
+  return session.isConnected;
+}
+
 export function registerAPIRoutes(app) {
   // --- Session API ---
   app.post('/session/start', authMiddleware, (req, res) => {
@@ -289,7 +302,7 @@ export function registerAPIRoutes(app) {
   app.post('/send_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, message, quotedMessageId, expiration } = req.body;
-    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+    if (!(await ensureConnected(session))) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
@@ -342,7 +355,7 @@ export function registerAPIRoutes(app) {
   app.post('/send_image', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, url, caption, quotedMessageId, expiration } = req.body;
-    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+    if (!(await ensureConnected(session))) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
@@ -383,7 +396,7 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     const { number, question, options, quotedMessageId, expiration, selectableCount } = req.body;
     logger.info({ body: req.body, sessionId: session.id }, '📥 Received send_poll request');
-    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+    if (!(await ensureConnected(session))) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
@@ -470,7 +483,7 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     const { number, latitude, longitude, title, description, quotedMessageId, expiration } =
       req.body;
-    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+    if (!(await ensureConnected(session))) return res.status(503).json({ detail: 'Not connected' });
     const quoted = getQuotedMessage(session, quotedMessageId);
     try {
       const jid = getJid(number);
@@ -538,7 +551,7 @@ export function registerAPIRoutes(app) {
       return res.status(400).json({ detail: 'Event name is required' });
     }
 
-    if (!session.isConnected) return res.status(503).json({ detail: 'Not connected' });
+    if (!(await ensureConnected(session))) return res.status(503).json({ detail: 'Not connected' });
 
     let parsedStartTime = Math.floor(Date.now() / 1000);
     const timeVal = startTime || date;
