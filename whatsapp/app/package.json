@@ -9,7 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "7.0.0-rc13",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
     "bonjour-service": "^1.4.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
