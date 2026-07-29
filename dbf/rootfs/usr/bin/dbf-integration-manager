@@ -185,10 +185,14 @@ else
                      bashio::log.info "Update Available: $targ > $curr"
                      UPDATE_NEEDED="true"
                  else
-                     bashio::log.info "Current version ($curr) is equal or newer than target ($targ)."
+                     if version_gt "$curr" "$targ"; then
+                         bashio::log.info "Current version ($curr) is newer than target ($targ)."
+                     else
+                         bashio::log.info "Current version ($curr) is equal to target ($targ)."
+                     fi
                  fi
              else
-                 bashio::log.info "Versions match ($curr)."
+                 bashio::log.info "Current version ($curr) matches target ($targ)."
              fi
         elif [ "$RELEASES_JSON" != "[]" ]; then
              bashio::log.warning "Could not determine target tag from GitHub releases."

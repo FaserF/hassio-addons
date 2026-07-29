@@ -106,12 +106,21 @@ function renderDashboard(sessionId) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WhatsApp Gateway - Home Assistant</title>
+    <script>
+      (function() {
+        let p = window.location.pathname;
+        if (!p.endsWith('/')) p += '/';
+        let b = document.createElement('base');
+        b.href = p;
+        document.head.appendChild(b);
+      })();
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="ui-assets/styles.css?v=${Date.now()}">
+    <link rel="stylesheet" href="ui-assets/styles.css">
 </head>
 <body>
   <div class="app-layout">
@@ -224,7 +233,7 @@ function renderDashboard(sessionId) {
                         <div id="qr-container" class="qr-container" style="display:none;">
                             <img id="qr-code" class="qr-code" src="" alt="Pairing QR Code" />
                         </div>
-                        <div id="init-placeholder" class="qr-container" style="flex-direction:column;gap:12px;">
+                        <div id="init-placeholder" class="qr-container" style="flex-direction:column;gap:12px;background-color:var(--bg-app);border-color:var(--border-color);">
                             <div class="spinner"></div>
                             <span id="init-log-text" style="font-size:11px;color:var(--text-muted);text-align:center;max-width:200px;line-height:1.4;"></span>
                         </div>
@@ -543,8 +552,8 @@ function renderDashboard(sessionId) {
 
     const getBasePath = () => {
         try {
-            // Remove hash/fragment or double slashes at the end (e.g. Ingress URLs like /api/hassio_ingress/.../#)
-            let path = window.location.pathname;
+            // Remove hash/fragment or trailing slashes at the end for Ingress URLs
+            let path = window.location.pathname.replace(/#.*$/, '');
             if (!path.endsWith('/')) {
                 path += '/';
             }
@@ -625,15 +634,20 @@ function renderDashboard(sessionId) {
         sidebar.classList.add('collapsed');
     }
 
+    function updateRawLogsLink() {
+        const rawLogsLink = document.getElementById('raw-logs-link');
+        if (rawLogsLink) {
+            const cleanBase = basePath.endsWith('/') ? basePath : basePath + '/';
+            rawLogsLink.href = cleanBase + 'logs?session_id=' + encodeURIComponent(currentSession);
+        }
+    }
+    window.updateRawLogsLink = updateRawLogsLink;
+
     const diagBasepath = document.getElementById('diag-basepath');
     const diagPathname = document.getElementById('diag-pathname');
-    const rawLogsLink = document.getElementById('raw-logs-link');
     if (diagBasepath) diagBasepath.textContent = basePath;
     if (diagPathname) diagPathname.textContent = window.location.pathname;
-    if (rawLogsLink) {
-        const cleanBase = basePath.endsWith('/') ? basePath : basePath + '/';
-        rawLogsLink.href = cleanBase + 'logs?session_id=' + encodeURIComponent(currentSession);
-    }
+    updateRawLogsLink();
 
     updateDashboard();
     setInterval(updateDashboard, 10000);

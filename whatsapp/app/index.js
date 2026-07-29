@@ -5,7 +5,7 @@
 import express from 'express';
 import { logger } from './src/logger.js';
 import { PORT } from './src/config.js';
-import { ingressPrefixMiddleware } from './src/middleware.js';
+import { ingressPrefixMiddleware, httpLoggerMiddleware } from './src/middleware.js';
 import {
   startSessionCleanupTask,
   getSession,
@@ -39,6 +39,7 @@ if (SHOULD_RESET) {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(ingressPrefixMiddleware);
+app.use(httpLoggerMiddleware);
 
 // --- Register Routes ---
 registerRoutes(app);

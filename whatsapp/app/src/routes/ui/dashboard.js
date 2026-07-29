@@ -292,7 +292,12 @@ async function updateDashboard() {
         : '<div class="empty-state">No failures recorded</div>'
     );
   } catch (e) {
-    console.error(e);
+    console.error('❌ updateDashboard error:', e);
+    const badge = document.getElementById('status-badge');
+    if (badge) {
+      badge.className = 'status-badge disconnected';
+      badge.textContent = 'UI Render Error ⚠️';
+    }
   }
 }
 
@@ -424,6 +429,9 @@ function switchSession(id) {
   const url = new URL(window.location);
   url.searchParams.set('session_id', id);
   window.history.replaceState({}, '', url);
+  if (typeof window.updateRawLogsLink === 'function') {
+    window.updateRawLogsLink();
+  }
   updateDashboard();
 }
 window.switchSession = switchSession;

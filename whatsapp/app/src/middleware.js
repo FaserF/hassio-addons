@@ -107,6 +107,24 @@ export const ingressPrefixMiddleware = (req, res, next) => {
   next();
 };
 
+export const httpLoggerMiddleware = (req, res, next) => {
+  const start = Date.now();
+  const { method, url } = req;
+  const ip = req.ip || req.connection.remoteAddress;
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const statusCode = res.statusCode;
+    if (statusCode >= 400) {
+      logger.warn({ method, url, statusCode, duration, ip }, `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`);
+    } else {
+      logger.debug({ method, url, statusCode, duration, ip }, `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`);
+    }
+  });
+
+  next();
+};
+
 const isPrivateIP = (ip) => {
   if (!ip) return false;
   let cleanIp = ip;
