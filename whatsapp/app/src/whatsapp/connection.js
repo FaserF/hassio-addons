@@ -19,7 +19,13 @@ import { getAuthDir, addLog, deleteSession } from '../session.js';
 import { SYSTEM_STATE, setHealthStatus } from '../state.js';
 import { formatDuration } from '../utils/format.js';
 import { notifyAdmins } from './actions.js';
-import { bindStore, handleIncomingMessages, checkSystemUpdates, monitorHACore } from './events.js';
+import {
+  bindStore,
+  handleIncomingMessages,
+  registerAllListeners,
+  checkSystemUpdates,
+  monitorHACore,
+} from './events/index.js';
 import { PORT, API_TOKEN } from '../config.js';
 import { isHANetwork } from '../ha.js';
 
@@ -389,6 +395,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   });
 
   handleIncomingMessages(session);
+  registerAllListeners(session);
 }
 
 /**
