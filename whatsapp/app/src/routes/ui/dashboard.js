@@ -444,4 +444,10 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
+window.updateDashboard = updateDashboard;
+window.downloadDebugInfo = downloadDebugInfo;
+window.restartSession = restartSession;
+window.logoutSession = logoutSession;
+window.clearLogs = clearLogs;
 window.switchSession = switchSession;

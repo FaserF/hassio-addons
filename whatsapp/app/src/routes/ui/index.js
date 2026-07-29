@@ -546,17 +546,16 @@ function renderDashboard(sessionId) {
   </div>
 
   <script>
-    let currentSession = ${JSON.stringify(sessionId)};
-    const apiToken = ${JSON.stringify(API_TOKEN)};
-    let isConnected = false;
-    let lastLogText = '';
-    let activeChatJid = null;
-    let allChats = [];
-    let isChatTabActive = false;
+    var currentSession = ${JSON.stringify(sessionId)};
+    var apiToken = ${JSON.stringify(API_TOKEN)};
+    var isConnected = false;
+    var lastLogText = '';
+    var activeChatJid = null;
+    var allChats = [];
+    var isChatTabActive = false;
 
     const getBasePath = () => {
         try {
-            // Remove hash/fragment or trailing slashes at the end for Ingress URLs
             let path = window.location.pathname.replace(/#.*$/, '');
             if (!path.endsWith('/')) {
                 path += '/';
@@ -566,18 +565,12 @@ function renderDashboard(sessionId) {
             return '/';
         }
     };
-    const basePath = getBasePath().replace(/[/]+/g, '/');
-  </script>
-  <script>
+    var basePath = getBasePath();
+
     ${fs.readFileSync(path.join(uiDir, 'helpers.js'), 'utf8')}
-  </script>
-  <script>
     ${fs.readFileSync(path.join(uiDir, 'dashboard.js'), 'utf8')}
-  </script>
-  <script>
     ${fs.readFileSync(path.join(uiDir, 'chat.js'), 'utf8')}
-  </script>
-  <script>
+
     const navItems = document.querySelectorAll('.nav-item');
     const tabPanels = document.querySelectorAll('.tab-panel');
     const pageTitle = document.getElementById('page-title');
@@ -617,7 +610,7 @@ function renderDashboard(sessionId) {
     function showSystemPropertiesModal() {
         const badge = document.getElementById('sidebar-info-badge');
         const infoText = badge ? badge.getAttribute('data-tooltip') : 'System Information';
-        alert('ℹ️ System Properties:\n\n' + infoText);
+        alert('System Properties: ' + infoText);
     }
     window.showSystemPropertiesModal = showSystemPropertiesModal;
 
