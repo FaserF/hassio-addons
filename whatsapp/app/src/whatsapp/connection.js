@@ -280,7 +280,19 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
         setHealthStatus('running', `Disconnected: ${disconnectReason}`);
 
-        const baseDelay = statusCode === 405 ? 15000 : 3000;
+        let baseDelay = 3000;
+        if (statusCode === 405) {
+          // Exponential backoff for rate limits (405): 15s, 30s, 60s max
+          const consecutive405 = (session.consecutive405Count || 0) + 1;
+          session.consecutive405Count = consecutive405;
+          baseDelay = Math.min(15000 * Math.pow(2, consecutive405 - 1), 60000);
+          logger.warn(
+            { sessionId, statusCode, consecutive405, baseDelay },
+            `Rate limited by WhatsApp (405). Waiting ${baseDelay / 1000}s before reconnect...`
+          );
+        } else {
+          session.consecutive405Count = 0;
+        }
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
 
@@ -292,6 +304,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         }, reconnectDelay);
       }
     } else if (connection === 'open') {
+      session.consecutive405Count = 0;
       addLog(session, 'WhatsApp Connection Established! 🟢', 'success');
       session.isConnecting = false;
       session.isConnected = true;
