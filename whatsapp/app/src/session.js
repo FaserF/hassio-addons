@@ -238,13 +238,18 @@ export function signalInterest(sessionId, connectFn) {
   const session = getSession(sessionId);
   session.lastInterestTime = Date.now(); // Needed by connectToWhatsApp to know the user is watching
 
-  // Socket is considered missing/dead if:
-  // - there is no sock object at all, OR
-  // - there is a sock but the session is neither connected nor actively connecting
-  //   (isConnecting=true means Baileys is already in the process of connecting)
-  // Note: session.sock.ws?.isClosed is NOT a standard Baileys property and always
-  // returns undefined, so we don't rely on it.
   const socketMissing = !session.sock || (!session.isConnected && !session.isConnecting);
+  logger.debug(
+    {
+      sessionId,
+      isConnected: session.isConnected,
+      isConnecting: session.isConnecting,
+      hasSock: !!session.sock,
+      socketMissing,
+    },
+    '🎯 signalInterest evaluated'
+  );
+
   if (!session.isConnected && socketMissing) {
     logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
     addLog(session, 'Interest signaled - initiating connection...', 'info');

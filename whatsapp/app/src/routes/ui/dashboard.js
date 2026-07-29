@@ -106,16 +106,6 @@ async function updateDashboard() {
     // option when the API returns an empty list (e.g. transient error or first poll).
     if (options) select.innerHTML = options;
 
-    // Auto-switch to connected session if current session is disconnected but an active one exists
-    if (!data.isConnected && !hasMatchingActiveSession && data.sessionList) {
-      const activeSess = data.sessionList.find((s) => s.connected);
-      if (activeSess && activeSess.id !== currentSession) {
-        currentSession = activeSess.id;
-        updateDashboard();
-        return;
-      }
-    }
-
     // Passkey notifications
     const pkBanner = document.getElementById('passkey-banner');
     if (pkBanner) pkBanner.style.display = data.passkeyDetected ? 'flex' : 'none';

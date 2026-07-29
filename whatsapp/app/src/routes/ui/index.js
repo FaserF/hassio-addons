@@ -81,10 +81,6 @@ export function registerUIRoutes(app) {
       const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
       if (connectedSession) {
         sessionId = connectedSession.id;
-      } else if (sessions.has('default')) {
-        sessionId = 'default';
-      } else if (sessions.size > 0) {
-        sessionId = Array.from(sessions.keys())[0];
       } else {
         sessionId = 'default';
       }
@@ -128,18 +124,21 @@ function renderDashboard(sessionId) {
                     <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
                 </div>
             </div>
+            <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
         
         <nav class="nav-menu">
-            <button class="nav-item active" data-tab="dashboard" data-tooltip="Dashboard">
+            <button class="nav-item active" data-tab="dashboard" data-tooltip="Dashboard" onclick="switchTab('dashboard')">
                 <i class="fas fa-chart-pie nav-icon"></i>
                 <span>Dashboard</span>
             </button>
-            <button class="nav-item" data-tab="logs" data-tooltip="Daemon Logs">
+            <button class="nav-item" data-tab="logs" data-tooltip="Daemon Logs" onclick="switchTab('logs')">
                 <i class="fas fa-terminal nav-icon"></i>
                 <span>Daemon Logs</span>
             </button>
-            <button class="nav-item" data-tab="chats" data-tooltip="Chats">
+            <button class="nav-item" data-tab="chats" data-tooltip="Chats" onclick="switchTab('chats')">
                 <i class="fas fa-comments nav-icon"></i>
                 <span>Chats</span>
             </button>
@@ -184,9 +183,6 @@ function renderDashboard(sessionId) {
     <main class="main-content">
         <header class="top-header">
             <div class="header-left" style="display:flex;align-items:center;gap:12px;">
-                <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
                 <h1 class="header-title" id="page-title">Dashboard</h1>
             </div>
             <div class="header-actions">
@@ -547,9 +543,11 @@ function renderDashboard(sessionId) {
 
     const getBasePath = () => {
         try {
-            const path = window.location.pathname;
-            const folder = path.substring(0, path.lastIndexOf('/') + 1);
-            return folder || '/';
+            let path = window.location.pathname;
+            if (!path.endsWith('/')) {
+                path += '/';
+            }
+            return path;
         } catch (e) {
             return '/';
         }
@@ -583,7 +581,7 @@ function renderDashboard(sessionId) {
         if (activeNav && activePanel) {
             activeNav.classList.add('active');
             activePanel.classList.add('active');
-            pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+            if (pageTitle) pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
         }
 
         isChatTabActive = (tabId === 'chats');
@@ -593,6 +591,7 @@ function renderDashboard(sessionId) {
             document.body.classList.remove('chat-open');
         }
     }
+    window.switchTab = switchTab;
 
     function showSystemPropertiesModal() {
         const badge = document.getElementById('sidebar-info-badge');
@@ -606,13 +605,16 @@ function renderDashboard(sessionId) {
     const sidebar = document.querySelector('.sidebar');
 
     function toggleSidebar() {
+        if (!sidebar) return;
         const isCollapsed = sidebar.classList.toggle('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
     }
+    window.toggleSidebar = toggleSidebar;
 
-    // Use addEventListener (not onclick attribute) so the handler is reliably attached
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    }
 
     // Restore sidebar state from last visit (default: expanded)
     if (localStorage.getItem('sidebarCollapsed') === '1') {

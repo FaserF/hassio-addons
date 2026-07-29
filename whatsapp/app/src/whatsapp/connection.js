@@ -8,7 +8,7 @@ import {
 import QRCode from 'qrcode';
 import path from 'path';
 import fs from 'fs';
-import { logger } from '../logger.js';
+import { logger, LOG_LEVEL } from '../logger.js';
 import {
   KEEP_ALIVE_INTERVAL,
   MARK_ONLINE,
@@ -48,6 +48,16 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   session.passkeyWaiting = false;
   session.passkeyChallenge = null;
   session.qrGenerated = false;
+
+  // Set a safety timeout to unstick session.isConnecting if Baileys hangs during socket creation
+  if (session._connectingTimeout) clearTimeout(session._connectingTimeout);
+  session._connectingTimeout = setTimeout(() => {
+    if (session.isConnecting && !session.isConnected) {
+      logger.warn({ sessionId }, '⏰ Connection attempt timed out, resetting connecting flag.');
+      session.isConnecting = false;
+    }
+  }, 45000);
+
   const sessionAuthDir = getAuthDir(sessionId);
   const hasCreds = fs.existsSync(path.join(sessionAuthDir, 'creds.json'));
 
@@ -91,12 +101,16 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       return { version: [2, 3000, 1015901307], isLatest: false };
     });
 
-    logger.info({ version, isLatest, sessionId }, '📡 Initializing socket with WA version');
+    logger.info(
+      { version, isLatest, sessionId, sessionAuthDir, hasCreds },
+      '📡 Initializing Baileys WASocket...'
+    );
 
+    const baileysLogLevel = LOG_LEVEL === 'debug' || LOG_LEVEL === 'trace' ? LOG_LEVEL : 'info';
     session.sock = makeWASocket({
       auth: state,
       version,
-      logger: logger.child({ module: `baileys-${sessionId}` }, { level: 'warn' }),
+      logger: logger.child({ module: `baileys-${sessionId}` }, { level: baileysLogLevel }),
       browser: Browsers.ubuntu('Chrome'),
       syncFullHistory: false,
       markOnlineOnConnect: MARK_ONLINE,
@@ -142,7 +156,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   bindStore(session, session.sock.ev);
-  session.sock.ev.on('creds.update', saveCreds);
+  session.sock.ev.on('creds.update', async (creds) => {
+    logger.debug({ sessionId }, '🔑 Received creds.update from Baileys, saving updated credentials to disk.');
+    await saveCreds(creds);
+  });
 
   const sock = session.sock;
   logger.info({ sessionId }, '📡 Attaching connection listeners...');
@@ -166,6 +183,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         // Reset passkey flag on fresh QR so banner clears when user retries
         session.passkeyDetected = false;
         session.qrGenerated = true;
+        session.isConnecting = false;
+        if (session._connectingTimeout) clearTimeout(session._connectingTimeout);
       } catch (err) {
         logger.error({ sessionId, error: err.message }, '❌ Failed to generate QR Code DataURL');
         addLog(session, 'Failed to process QR Code. Check logs.', 'error');
@@ -235,23 +254,36 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       const errorMsg =
         lastDisconnect?.error?.message || lastDisconnect?.error?.toString() || 'Unknown';
 
-      // Determine disconnect reason
-      let disconnectReason = 'Connection to WhatsApp Lost';
+      // Detailed Baileys disconnect status code mapping for clear diagnostics
+      let disconnectReason = `Connection Closed (Code ${statusCode || 'N/A'})`;
       const errorCode = lastDisconnect?.error?.code || lastDisconnect?.error?.output?.payload?.code;
 
       if (isLoggedOut) {
-        disconnectReason = 'Session Expired / Logged Out';
+        disconnectReason = 'Session Expired / Logged Out (401)';
+      } else if (statusCode === DisconnectReason.connectionLost) {
+        disconnectReason = 'Connection Lost to WhatsApp Servers (408)';
+      } else if (statusCode === DisconnectReason.connectionReplaced) {
+        disconnectReason = 'Connection Replaced by another Session/Device (428)';
+      } else if (statusCode === DisconnectReason.restartRequired) {
+        disconnectReason = 'WhatsApp Server requested Session Restart (515)';
+      } else if (statusCode === DisconnectReason.multideviceMismatch) {
+        disconnectReason = 'Multi-Device Mismatch (411)';
       } else if (statusCode === 405) {
         disconnectReason = 'Rate Limited by WhatsApp (Code 405)';
       } else if (
         ['ENOTFOUND', 'EAI_AGAIN', 'EHOSTUNREACH', 'ETIMEDOUT', 'ECONNRESET'].includes(errorCode)
       ) {
-        disconnectReason = 'Server Host Internet Connection Lost';
+        disconnectReason = `Network Unreachable (${errorCode})`;
       } else if (SYSTEM_STATE.last_ha_disconnect_time) {
         disconnectReason = 'Home Assistant Integration Unreachable';
       } else if (errorMsg.includes('Handshake')) {
-        disconnectReason = 'Connection Error (WhatsApp Handshake)';
+        disconnectReason = 'WhatsApp TLS/WebSocket Handshake Error';
       }
+
+      logger.warn(
+        { sessionId, statusCode, errorCode, errorMsg, disconnectReason, isLoggedOut },
+        `🔻 Connection closed event received`
+      );
 
       addLog(
         session,
