@@ -1,7 +1,4 @@
-import {
-  downloadMediaMessage,
-  getContentType,
-} from '@whiskeysockets/baileys';
+import { downloadMediaMessage, getContentType } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';

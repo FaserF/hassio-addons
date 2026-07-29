@@ -79,15 +79,7 @@ async function updateDashboard() {
       const isSelected = s.id === currentSession ? 'selected' : '';
       const icon = s.connected ? '\u2705' : '\u274C';
       options +=
-        '<option value="' +
-        s.id +
-        '" ' +
-        isSelected +
-        '>' +
-        s.id +
-        ' (' +
-        icon +
-        ')</option>';
+        '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + icon + ')</option>';
     });
     select.innerHTML = options;
 
@@ -103,10 +95,10 @@ async function updateDashboard() {
     badge.textContent = data.isConnected
       ? 'Connected \u2705'
       : data.currentQR
-      ? 'Scan QR Code \uD83D\uDCF1'
-      : data.disconnectReason === 'logged_out'
-      ? 'Logged Out \uD83D\uDEAB'
-      : 'Disconnected \u274C';
+        ? 'Scan QR Code \uD83D\uDCF1'
+        : data.disconnectReason === 'logged_out'
+          ? 'Logged Out \uD83D\uDEAB'
+          : 'Disconnected \u274C';
     document.getElementById('disconnect-reason').textContent = data.disconnectReason
       ? 'Reason: ' + data.disconnectReason
       : '';

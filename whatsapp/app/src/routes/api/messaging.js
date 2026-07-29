@@ -128,7 +128,8 @@ export function registerMessagingRoutes(app) {
   app.post('/send_reaction', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, messageId, reaction } = req.body;
-    if (!number || !messageId) return res.status(400).json({ detail: 'Missing number or messageId' });
+    if (!number || !messageId)
+      return res.status(400).json({ detail: 'Missing number or messageId' });
 
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
@@ -240,7 +241,8 @@ export function registerMessagingRoutes(app) {
   app.post('/revoke_message', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, messageId } = req.body;
-    if (!number || !messageId) return res.status(400).json({ detail: 'Missing number or messageId' });
+    if (!number || !messageId)
+      return res.status(400).json({ detail: 'Missing number or messageId' });
 
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
@@ -281,7 +283,8 @@ export function registerMessagingRoutes(app) {
   app.post('/send_list', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, title, buttonText, sections } = req.body;
-    if (!number || !title || !sections) return res.status(400).json({ detail: 'Missing parameters' });
+    if (!number || !title || !sections)
+      return res.status(400).json({ detail: 'Missing parameters' });
 
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });

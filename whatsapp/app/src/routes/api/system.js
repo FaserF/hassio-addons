@@ -9,11 +9,7 @@ import {
   NODE_VERSION,
   ADDON_SLUG,
 } from '../../config.js';
-import {
-  WEBHOOK_ENABLED,
-  WEBHOOK_URL,
-  updateWebhookConfig,
-} from '../../webhook.js';
+import { WEBHOOK_ENABLED, WEBHOOK_URL, updateWebhookConfig } from '../../webhook.js';
 import { maskData } from '../../utils/security.js';
 import { HEALTH_STATE } from '../../state.js';
 import { logger } from '../../logger.js';

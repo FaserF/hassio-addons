@@ -200,8 +200,7 @@ async function loadChatMessages(jid) {
       container.scrollHeight - container.clientHeight <= container.scrollTop + 80;
 
     if (messages.length === 0) {
-      container.innerHTML =
-        '<div class="empty-state">No messages in this conversation yet</div>';
+      container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
       return;
     }
 

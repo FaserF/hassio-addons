@@ -59,34 +59,38 @@ export function registerUiApiRoutes(app) {
         const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
         const text = getMessageText(msg);
 
-        const mediaUrl  = msg._mediaUrl  || null;
+        const mediaUrl = msg._mediaUrl || null;
         const mediaType = msg._mediaType || null;
         const mediaMime = msg._mediaMime || null;
-        const caption   = msg._caption   || null;
+        const caption = msg._caption || null;
 
-        let quotedId = null, quotedText = null, quotedSender = null;
-        const ctx = msg.message?.extendedTextMessage?.contextInfo
-          || msg.message?.imageMessage?.contextInfo
-          || msg.message?.videoMessage?.contextInfo
-          || msg.message?.audioMessage?.contextInfo
-          || msg.message?.documentMessage?.contextInfo
-          || msg.message?.stickerMessage?.contextInfo;
+        let quotedId = null,
+          quotedText = null,
+          quotedSender = null;
+        const ctx =
+          msg.message?.extendedTextMessage?.contextInfo ||
+          msg.message?.imageMessage?.contextInfo ||
+          msg.message?.videoMessage?.contextInfo ||
+          msg.message?.audioMessage?.contextInfo ||
+          msg.message?.documentMessage?.contextInfo ||
+          msg.message?.stickerMessage?.contextInfo;
         if (ctx?.stanzaId) {
           quotedId = ctx.stanzaId;
           quotedSender = ctx.participant || ctx.remoteJid || null;
           const qMsg = session.messageStore.get(ctx.stanzaId);
-          quotedText = qMsg ? getMessageText(qMsg) : (
-            ctx.quotedMessage?.conversation ||
-            ctx.quotedMessage?.extendedTextMessage?.text ||
-            ctx.quotedMessage?.imageMessage?.caption ||
-            ctx.quotedMessage?.videoMessage?.caption || '...'
-          );
+          quotedText = qMsg
+            ? getMessageText(qMsg)
+            : ctx.quotedMessage?.conversation ||
+              ctx.quotedMessage?.extendedTextMessage?.text ||
+              ctx.quotedMessage?.imageMessage?.caption ||
+              ctx.quotedMessage?.videoMessage?.caption ||
+              '...';
         }
 
         const participant = msg.key.participant || msg.participant;
         const senderName = msg.key.fromMe
           ? 'You'
-          : (msg.pushName || (participant ? participant.split('@')[0] : targetJid.split('@')[0]));
+          : msg.pushName || (participant ? participant.split('@')[0] : targetJid.split('@')[0]);
 
         return {
           id: msg.key.id,
@@ -102,7 +106,7 @@ export function registerUiApiRoutes(app) {
           quotedId,
           quotedText,
           quotedSender,
-          ack: msg._ack != null ? msg._ack : (msg.status != null ? msg.status : null),
+          ack: msg._ack != null ? msg._ack : msg.status != null ? msg.status : null,
           reactions: msg._reactions || [],
           starred: msg.starred || false,
         };
