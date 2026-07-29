@@ -614,32 +614,34 @@ function renderDashboard(sessionId) {
     }
     window.showSystemPropertiesModal = showSystemPropertiesModal;
 
-    function toggleSidebar() {
+    function toggleSidebar(e) {
+        if (e) {
+            try {
+                e.preventDefault();
+                e.stopPropagation();
+            } catch (err) {}
+        }
         var sb = document.querySelector('.sidebar');
         if (!sb) return;
         var isCollapsed = sb.classList.toggle('collapsed');
         try {
             localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
-        } catch (e) {}
+        } catch (err) {}
     }
     window.toggleSidebar = toggleSidebar;
 
     var sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     if (sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener('click', function(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            toggleSidebar();
-        });
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
     }
 
     // Restore sidebar state from last visit (default: expanded)
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
-        sidebar.classList.add('collapsed');
-    }
+    var sidebar = document.querySelector('.sidebar');
+    try {
+        if (sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
+            sidebar.classList.add('collapsed');
+        }
+    } catch (e) {}
 
     function updateRawLogsLink() {
         const rawLogsLink = document.getElementById('raw-logs-link');
