@@ -33,6 +33,19 @@ export function registerSystemRoutes(app) {
       connected: s.isConnected,
     }));
 
+    let statusText = null;
+    if (session.sock?.user?.id) {
+      const myJid = session.sock.user.id.split(':')[0] + '@s.whatsapp.net';
+      if (session._myStatusText !== undefined) {
+        statusText = session._myStatusText;
+      } else {
+        session.sock.fetchStatus(myJid).then((st) => {
+          if (st && st.status) session._myStatusText = st.status;
+        }).catch(() => { session._myStatusText = null; });
+        statusText = session._myStatusText || null;
+      }
+    }
+
     res.json({
       sessionId: session.id,
       isConnected: session.isConnected,
@@ -49,6 +62,7 @@ export function registerSystemRoutes(app) {
         ? {
             name: session.sock.user.name || session.sock.user.notify,
             number: session.sock.user.id ? session.sock.user.id.split('@')[0].split(':')[0] : null,
+            status: statusText,
           }
         : null,
       sessionList,

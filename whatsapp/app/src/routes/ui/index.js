@@ -207,6 +207,10 @@ function renderDashboard(sessionId) {
                                 <span class="info-label">Phone Number</span>
                                 <span id="device-number" class="info-value">...</span>
                             </div>
+                            <div class="info-item" style="grid-column: span 2;">
+                                <span class="info-label">Profile Description (About)</span>
+                                <span id="device-status" class="info-value" style="font-style:italic;color:var(--text-main);">—</span>
+                            </div>
                             <div class="info-item">
                                 <span class="info-label">Session ID</span>
                                 <span id="device-session" class="info-value">...</span>
