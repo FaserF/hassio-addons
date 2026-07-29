@@ -73,11 +73,13 @@ export function registerUiApiRoutes(app) {
       return c;
     });
 
-    Promise.all(resolveNamesPromises).then((resolvedChats) => {
-      res.json(resolvedChats);
-    }).catch(() => {
-      res.json(chats);
-    });
+    Promise.all(resolveNamesPromises)
+      .then((resolvedChats) => {
+        res.json(resolvedChats);
+      })
+      .catch(() => {
+        res.json(chats);
+      });
   });
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
