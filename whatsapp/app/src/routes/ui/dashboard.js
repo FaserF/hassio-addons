@@ -57,7 +57,8 @@ async function updateDashboard() {
       intVer.toLowerCase().includes('dev') ||
       intVer.toLowerCase().includes('beta') ||
       intVer.toLowerCase().includes('pre');
-    document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
+    const devBanner = document.getElementById('dev-banner');
+    if (devBanner) devBanner.style.display = isDev ? 'flex' : 'none';
 
     // Standalone mode adjustments
     const hostUriLabel = document.getElementById('label-host-uri');
@@ -108,7 +109,7 @@ async function updateDashboard() {
     });
     // Only overwrite select if we got at least one option — prevents losing the current session
     // option when the API returns an empty list (e.g. transient error or first poll).
-    if (options) select.innerHTML = options;
+    if (select && options) select.innerHTML = options;
 
     // Passkey notifications
     const pkBanner = document.getElementById('passkey-banner');
@@ -116,46 +117,50 @@ async function updateDashboard() {
 
     // Connection status details
     const badge = document.getElementById('status-badge');
-    badge.className =
-      'status-badge ' +
-      (data.isConnected
-        ? 'connected'
-        : data.currentQR
-          ? 'waiting'
-          : data.isConnecting
+    if (badge) {
+      badge.className =
+        'status-badge ' +
+        (data.isConnected
+          ? 'connected'
+          : data.currentQR
             ? 'waiting'
-            : 'disconnected');
-    badge.textContent = data.isConnected
-      ? 'Connected \u2705'
-      : data.currentQR
-        ? 'Scan QR Code \uD83D\uDCF1'
-        : data.isConnecting
-          ? 'Connecting... \u23F3'
-          : data.disconnectReason === 'logged_out'
-            ? 'Logged Out \uD83D\uDEAB'
-            : 'Disconnected \u274C';
-    document.getElementById('disconnect-reason').textContent = data.disconnectReason
-      ? 'Reason: ' + data.disconnectReason
-      : '';
+            : data.isConnecting
+              ? 'waiting'
+              : 'disconnected');
+      badge.textContent = data.isConnected
+        ? 'Connected \u2705'
+        : data.currentQR
+          ? 'Scan QR Code \uD83D\uDCF1'
+          : data.isConnecting
+            ? 'Connecting... \u23F3'
+            : data.disconnectReason === 'logged_out'
+              ? 'Logged Out \uD83D\uDEAB'
+              : 'Disconnected \u274C';
+    }
+    const discReason = document.getElementById('disconnect-reason');
+    if (discReason) {
+      discReason.textContent = data.disconnectReason ? 'Reason: ' + data.disconnectReason : '';
+    }
 
     // QR setup or visual spinner loader
     const qrContainer = document.getElementById('qr-container');
     const initPlaceholder = document.getElementById('init-placeholder');
     if (!data.isConnected && data.currentQR) {
-      qrContainer.style.display = 'flex';
-      initPlaceholder.style.display = 'none';
-      document.getElementById('qr-code').src = data.currentQR;
+      if (qrContainer) qrContainer.style.display = 'flex';
+      if (initPlaceholder) initPlaceholder.style.display = 'none';
+      const qrImg = document.getElementById('qr-code');
+      if (qrImg) qrImg.src = data.currentQR;
     } else if (!data.isConnected && !data.currentQR) {
-      qrContainer.style.display = 'none';
-      initPlaceholder.style.display = 'flex';
+      if (qrContainer) qrContainer.style.display = 'none';
+      if (initPlaceholder) initPlaceholder.style.display = 'flex';
       // Show recent connection log in the placeholder so user can see what is happening
       const logEl = document.getElementById('init-log-text');
       if (logEl && data.connectionLogs && data.connectionLogs.length > 0) {
         logEl.textContent = data.connectionLogs[0].msg || '';
       }
     } else {
-      qrContainer.style.display = 'none';
-      initPlaceholder.style.display = 'none';
+      if (qrContainer) qrContainer.style.display = 'none';
+      if (initPlaceholder) initPlaceholder.style.display = 'none';
     }
 
     // Metadata details

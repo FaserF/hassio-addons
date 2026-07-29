@@ -564,9 +564,15 @@ function renderDashboard(sessionId) {
     };
     const basePath = getBasePath().replace(/[/]+/g, '/');
   </script>
-  <script src="ui-assets/helpers.js"></script>
-  <script src="ui-assets/dashboard.js"></script>
-  <script src="ui-assets/chat.js"></script>
+  <script>
+    ${fs.readFileSync(path.join(uiDir, 'helpers.js'), 'utf8')}
+  </script>
+  <script>
+    ${fs.readFileSync(path.join(uiDir, 'dashboard.js'), 'utf8')}
+  </script>
+  <script>
+    ${fs.readFileSync(path.join(uiDir, 'chat.js'), 'utf8')}
+  </script>
   <script>
     const navItems = document.querySelectorAll('.nav-item');
     const tabPanels = document.querySelectorAll('.tab-panel');
