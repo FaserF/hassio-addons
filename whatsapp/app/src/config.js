@@ -161,7 +161,6 @@ export const EXPRESS_VERSION = getPackageVersion('express');
 export const ALPINE_VERSION = getAlpineVersion();
 export const NODE_VERSION = process.version;
 
-
 /**
  * Loads admin numbers from environment or HA options.
  */
