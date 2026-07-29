@@ -7,17 +7,23 @@ function openNewChatModal() {
   const modal = document.getElementById('new-chat-modal');
   if (modal) {
     modal.classList.add('show');
+    modal.style.display = 'flex';
+    modal.style.opacity = '1';
+    modal.style.zIndex = '999999';
     const inp = document.getElementById('new-chat-number');
     if (inp) {
       inp.value = '';
-      inp.focus();
+      setTimeout(() => inp.focus(), 50);
     }
   }
 }
 
 function closeNewChatModal() {
   const modal = document.getElementById('new-chat-modal');
-  if (modal) modal.classList.remove('show');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
 }
 
 function startNewChatSubmit(e) {

@@ -1,4 +1,4 @@
-import { authMiddleware } from '../../middleware.js';
+import { authMiddleware, apiLimiter } from '../../middleware.js';
 import {
   getReqSession,
   getSession,
@@ -11,7 +11,7 @@ import { connectToWhatsApp } from '../../whatsapp/connection.js';
 import fs from 'fs';
 
 export function registerSessionRoutes(app) {
-  app.post('/session/start', authMiddleware, (req, res) => {
+  app.post('/session/start', apiLimiter, authMiddleware, (req, res) => {
     const sessionId = sanitizeSessionId(req.body?.session_id || req.query?.session_id || 'default');
     signalInterest(sessionId);
     let session = sessions.get(sessionId);
@@ -24,7 +24,7 @@ export function registerSessionRoutes(app) {
     res.json({ status: 'starting', session_id: sessionId, isConnected: session.isConnected });
   });
 
-  app.delete('/session', async (req, res) => {
+  app.delete('/session', apiLimiter, authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const authDir = getAuthDir(session.id);
     try {

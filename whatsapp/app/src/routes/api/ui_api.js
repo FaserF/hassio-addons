@@ -1,12 +1,20 @@
 import { uiAuthMiddleware } from '../../middleware.js';
-import { getSession, sanitizeSessionId } from '../../session.js';
+import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText } from './helpers.js';
 
 export function registerUiApiRoutes(app) {
   app.get('/api/chats', uiAuthMiddleware, (req, res) => {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
-    const session = getSession(sessionId);
-    if (!session.messageStore) return res.json([]);
+    let session = getSession(sessionId);
+    if (!session || !session.messageStore || session.messageStore.size === 0) {
+      const activeWithMessages = Array.from(sessions.values()).find(
+        (s) => s.messageStore && s.messageStore.size > 0
+      );
+      if (activeWithMessages) {
+        session = activeWithMessages;
+      }
+    }
+    if (!session || !session.messageStore) return res.json([]);
 
     const messages = Array.from(session.messageStore.values());
     const JidMap = {};
@@ -79,11 +87,19 @@ export function registerUiApiRoutes(app) {
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
-    const session = getSession(sessionId);
+    let session = getSession(sessionId);
+    if (!session || !session.messageStore || session.messageStore.size === 0) {
+      const activeWithMessages = Array.from(sessions.values()).find(
+        (s) => s.messageStore && s.messageStore.size > 0
+      );
+      if (activeWithMessages) {
+        session = activeWithMessages;
+      }
+    }
     const targetJid = req.query.jid;
 
     if (!targetJid) return res.status(400).json({ detail: 'Missing jid parameter' });
-    if (!session.messageStore) return res.json([]);
+    if (!session || !session.messageStore) return res.json([]);
 
     const messages = Array.from(session.messageStore.values())
       .filter((msg) => msg.key && msg.key.remoteJid === targetJid)

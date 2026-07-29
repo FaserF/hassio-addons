@@ -18,8 +18,17 @@ export default [
         'warn',
         {
           argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_|^e$',
         },
       ],
+    },
+  },
+  {
+    files: ['src/routes/ui/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
     },
   },
 ];

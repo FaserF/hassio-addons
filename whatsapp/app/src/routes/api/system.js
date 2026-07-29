@@ -33,23 +33,28 @@ export function registerSystemRoutes(app) {
       connected: s.isConnected,
     }));
 
-    let statusText = null;
+    let statusText = session._myStatusText || null;
     if (session.sock?.user) {
-      const rawUser = session.sock.user.id || session.sock.user.jid || '';
-      const myJid = rawUser.split(':')[0].split('@')[0] + '@s.whatsapp.net';
-      if (session._myStatusText) {
-        statusText = session._myStatusText;
-      } else {
-        session.sock
-          .fetchStatus(myJid)
-          .then((st) => {
-            if (st && (st.status || st.statusText)) {
-              session._myStatusText = st.status || st.statusText;
+      const fullJid = session.sock.user.id || session.sock.user.jid;
+      const cleanJid = fullJid ? fullJid.split(':')[0].split('@')[0] + '@s.whatsapp.net' : null;
+
+      if (!session._myStatusText && !session._fetchingStatus) {
+        session._fetchingStatus = true;
+        (async () => {
+          try {
+            let st = await session.sock.fetchStatus(fullJid);
+            if (!st && cleanJid) st = await session.sock.fetchStatus(cleanJid);
+            if (st) {
+              const resText = typeof st === 'string' ? st : (st.status || st.statusText || (Array.isArray(st) ? st[0]?.status : null));
+              if (resText) session._myStatusText = resText;
             }
-          })
-          .catch(() => {});
-        statusText = session._myStatusText || null;
+          } catch (e) {
+          } finally {
+            session._fetchingStatus = false;
+          }
+        })();
       }
+      statusText = session._myStatusText || null;
     }
 
     res.json({
