@@ -266,10 +266,10 @@ function renderButtons(m) {
 }
 
 function sendInteractiveReply(btnId, btnText) {
-  const input = document.getElementById('chat-input');
+  const input = document.getElementById('chat-message-input');
   if (input) {
     input.value = btnText || btnId;
-    sendMessage();
+    sendChatMessage(new Event('submit'));
   }
 }
 

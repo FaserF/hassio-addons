@@ -95,14 +95,16 @@ async function updateDashboard() {
     let options = '';
     let hasMatchingActiveSession = false;
 
-    data.sessionList.forEach((s) => {
+    (data.sessionList || []).forEach((s) => {
       if (s.id === currentSession && s.connected) hasMatchingActiveSession = true;
       const isSelected = s.id === currentSession ? 'selected' : '';
       const icon = s.connected ? '\u2705' : '\u274C';
       options +=
         '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + icon + ')</option>';
     });
-    select.innerHTML = options;
+    // Only overwrite select if we got at least one option — prevents losing the current session
+    // option when the API returns an empty list (e.g. transient error or first poll).
+    if (options) select.innerHTML = options;
 
     // Auto-switch to connected session if current session is disconnected but an active one exists
     if (!data.isConnected && !hasMatchingActiveSession && data.sessionList) {
@@ -122,14 +124,22 @@ async function updateDashboard() {
     const badge = document.getElementById('status-badge');
     badge.className =
       'status-badge ' +
-      (data.isConnected ? 'connected' : data.currentQR ? 'waiting' : 'disconnected');
+      (data.isConnected
+        ? 'connected'
+        : data.currentQR
+          ? 'waiting'
+          : data.isConnecting
+            ? 'waiting'
+            : 'disconnected');
     badge.textContent = data.isConnected
       ? 'Connected \u2705'
       : data.currentQR
         ? 'Scan QR Code \uD83D\uDCF1'
-        : data.disconnectReason === 'logged_out'
-          ? 'Logged Out \uD83D\uDEAB'
-          : 'Disconnected \u274C';
+        : data.isConnecting
+          ? 'Connecting... \u23F3'
+          : data.disconnectReason === 'logged_out'
+            ? 'Logged Out \uD83D\uDEAB'
+            : 'Disconnected \u274C';
     document.getElementById('disconnect-reason').textContent = data.disconnectReason
       ? 'Reason: ' + data.disconnectReason
       : '';
@@ -144,6 +154,11 @@ async function updateDashboard() {
     } else if (!data.isConnected && !data.currentQR) {
       qrContainer.style.display = 'none';
       initPlaceholder.style.display = 'flex';
+      // Show recent connection log in the placeholder so user can see what is happening
+      const logEl = document.getElementById('init-log-text');
+      if (logEl && data.connectionLogs && data.connectionLogs.length > 0) {
+        logEl.textContent = data.connectionLogs[0].msg || '';
+      }
     } else {
       qrContainer.style.display = 'none';
       initPlaceholder.style.display = 'none';
@@ -199,61 +214,65 @@ async function updateDashboard() {
     document.getElementById('val-reconnects').textContent =
       stats.totalReconnects ?? data.reconnectAttempts ?? 0;
 
-    // Render streams lists
-    document.getElementById('list-sent').innerHTML = data.recentSent.length
+    // Render streams lists (always escape content to prevent XSS)
+    const esc = (v) => String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+    document.getElementById('list-sent').innerHTML = (data.recentSent || []).length
       ? data.recentSent
           .map(
             (m) =>
               '<div class="history-item">' +
               '<span class="history-time">' +
-              m.timestamp +
+              esc(m.timestamp) +
               '</span>' +
               '<span class="history-target">To: ' +
-              m.target +
+              esc(m.target) +
               '</span>' +
               '<div class="history-msg">' +
-              m.message +
+              esc(m.message) +
               '</div>' +
               '</div>'
           )
           .join('')
       : '<div class="empty-state">No messages sent recently</div>';
 
-    document.getElementById('list-received').innerHTML = data.recentReceived.length
+    document.getElementById('list-received').innerHTML = (data.recentReceived || []).length
       ? data.recentReceived
           .map(
             (m) =>
               '<div class="history-item">' +
               '<span class="history-time">' +
-              m.timestamp +
+              esc(m.timestamp) +
               '</span>' +
               '<span class="history-sender">From: ' +
-              m.sender +
+              esc(m.sender) +
               '</span>' +
               '<div class="history-msg">' +
-              m.message +
+              esc(m.message) +
               '</div>' +
               '</div>'
           )
           .join('')
       : '<div class="empty-state">No messages received recently</div>';
 
-    document.getElementById('list-failures').innerHTML = data.recentFailures.length
+    document.getElementById('list-failures').innerHTML = (data.recentFailures || []).length
       ? data.recentFailures
           .map(
             (m) =>
               '<div class="history-item failure">' +
               '<span class="history-time">' +
-              m.timestamp +
+              esc(m.timestamp) +
               '</span>' +
               '<span class="history-target">Target: ' +
-              m.target +
+              esc(m.target) +
               '</span>' +
               '<div class="history-msg">' +
-              m.message +
+              esc(m.message) +
               '</div>' +
               '<div class="history-reason">Error: ' +
-              m.reason +
+              esc(m.reason) +
               '</div>' +
               '</div>'
           )

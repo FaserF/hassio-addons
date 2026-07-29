@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { authMiddleware, uiAuthMiddleware } from '../../middleware.js';
+import { authMiddleware, uiAuthMiddleware, uiLimiter } from '../../middleware.js';
 import { getSession, sessions, sanitizeSessionId, addLog, signalInterest } from '../../session.js';
 import {
   DATA_DIR,
@@ -19,7 +19,7 @@ import { logger } from '../../logger.js';
 import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
 export function registerSystemRoutes(app) {
-  app.get('/health', (req, res) => {
+  app.get('/health', uiLimiter, (req, res) => {
     res.json({
       status: HEALTH_STATE.status || 'ok',
       uptime: process.uptime(),
@@ -27,7 +27,7 @@ export function registerSystemRoutes(app) {
     });
   });
 
-  app.get('/api/dashboard', (req, res) => {
+  app.get('/api/dashboard', uiLimiter, (req, res) => {
     // Scan disk for all session folders so sessionList is complete
     const sessionsDir = path.join(DATA_DIR, 'sessions');
     if (fs.existsSync(sessionsDir)) {
@@ -47,7 +47,12 @@ export function registerSystemRoutes(app) {
 
     // Signal interest: if the session is disconnected and has no active socket,
     // trigger a reconnect attempt so the dashboard auto-heals without a page reload.
-    signalInterest(sessionId, connectToWhatsApp);
+    // Wrapped in try-catch so a signalInterest error never causes a 500 on the dashboard.
+    try {
+      signalInterest(sessionId, connectToWhatsApp);
+    } catch (e) {
+      logger.warn({ sessionId, error: e.message }, 'signalInterest threw during dashboard poll');
+    }
 
     const sessionList = Array.from(sessions.values()).map((s) => ({
       id: s.id,
@@ -91,6 +96,7 @@ export function registerSystemRoutes(app) {
     res.json({
       sessionId: session.id,
       isConnected: session.isConnected,
+      isConnecting: session.isConnecting || false,
       currentQR: session.currentQR,
       disconnectReason: session.disconnectReason,
       passkeyDetected: session.passkeyDetected || false,
@@ -98,6 +104,7 @@ export function registerSystemRoutes(app) {
       recentSent: session.recentSent || [],
       recentReceived: session.recentReceived || [],
       recentFailures: session.recentFailures || [],
+      connectionLogs: (session.connectionLogs || []).slice(0, 10),
       webhookEnabled: WEBHOOK_ENABLED,
       webhookUrl: WEBHOOK_URL,
       deviceInfo: session.sock?.user
@@ -144,7 +151,7 @@ export function registerSystemRoutes(app) {
     res.json({ status: 'cleared' });
   });
 
-  app.get('/api/debug/download', (req, res) => {
+  app.get('/api/debug/download', uiLimiter, (req, res) => {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
 

@@ -64,7 +64,19 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
   addLog(session, `Starting connection request for session: ${sessionId}...`, 'info');
   setHealthStatus('starting', `Connecting session: ${sessionId}`);
-  const { state, saveCreds } = await useMultiFileAuthState(sessionAuthDir);
+
+  let state, saveCreds;
+  try {
+    const authResult = await useMultiFileAuthState(sessionAuthDir);
+    state = authResult.state;
+    saveCreds = authResult.saveCreds;
+  } catch (err) {
+    session.isConnecting = false;
+    logger.error({ sessionId, error: err.message }, '💥 Failed to load auth state (corrupted creds?)');
+    addLog(session, `Failed to load auth state: ${err.message} — try resetting credentials.`, 'error');
+    setHealthStatus('faulty', `Failed to load auth state: ${err.message}`);
+    return;
+  }
 
   try {
     const { version, isLatest } = await fetchLatestBaileysVersion().catch((err) => {
@@ -211,14 +223,14 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     }
 
     if (connection === 'close') {
-      const statusCode = lastDisconnect.error?.output?.statusCode;
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
       const isLoggedOut = statusCode === DisconnectReason.loggedOut;
       const errorMsg =
-        lastDisconnect.error?.message || lastDisconnect.error?.toString() || 'Unknown';
+        lastDisconnect?.error?.message || lastDisconnect?.error?.toString() || 'Unknown';
 
       // Determine disconnect reason
       let disconnectReason = 'Connection to WhatsApp Lost';
-      const errorCode = lastDisconnect.error?.code || lastDisconnect.error?.output?.payload?.code;
+      const errorCode = lastDisconnect?.error?.code || lastDisconnect?.error?.output?.payload?.code;
 
       if (isLoggedOut) {
         disconnectReason = 'Session Expired / Logged Out';

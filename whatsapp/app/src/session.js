@@ -238,10 +238,13 @@ export function signalInterest(sessionId, connectFn) {
   const session = getSession(sessionId);
   session.lastInterestTime = Date.now(); // Needed by connectToWhatsApp to know the user is watching
 
-  // Trigger a connection attempt whenever the socket is missing or closed.
-  // connectToWhatsApp itself guards against duplicate/redundant connects via
-  // session.isConnecting and session.isConnected checks - no guard needed here.
-  const socketMissing = !session.sock || session.sock.ws?.isClosed;
+  // Socket is considered missing/dead if:
+  // - there is no sock object at all, OR
+  // - there is a sock but the session is neither connected nor actively connecting
+  //   (isConnecting=true means Baileys is already in the process of connecting)
+  // Note: session.sock.ws?.isClosed is NOT a standard Baileys property and always
+  // returns undefined, so we don't rely on it.
+  const socketMissing = !session.sock || (!session.isConnected && !session.isConnecting);
   if (!session.isConnected && socketMissing) {
     logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
     addLog(session, 'Interest signaled - initiating connection...', 'info');

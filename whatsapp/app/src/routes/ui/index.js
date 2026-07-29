@@ -92,8 +92,12 @@ export function registerUIRoutes(app) {
     sessionId = sanitizeSessionId(sessionId);
 
     // Signal interest so the WhatsApp connection starts (QR code generation, reconnect, etc.)
-    // This is the critical call that triggers connectToWhatsApp for the active session.
-    signalInterest(sessionId, connectToWhatsApp);
+    // Wrapped in try-catch so any error here never prevents the page from loading.
+    try {
+      signalInterest(sessionId, connectToWhatsApp);
+    } catch (e) {
+      // Non-fatal: page still renders, connection attempt is best-effort
+    }
 
     res.send(renderDashboard(sessionId));
   });
@@ -124,9 +128,6 @@ function renderDashboard(sessionId) {
                     <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
                 </div>
             </div>
-            <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
         </div>
         
         <nav class="nav-menu">
@@ -183,7 +184,7 @@ function renderDashboard(sessionId) {
     <main class="main-content">
         <header class="top-header">
             <div class="header-left" style="display:flex;align-items:center;gap:12px;">
-                <button class="sidebar-toggle-btn header-toggle-btn" id="header-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
+                <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar">
                     <i class="fas fa-bars"></i>
                 </button>
                 <h1 class="header-title" id="page-title">Dashboard</h1>
@@ -227,8 +228,9 @@ function renderDashboard(sessionId) {
                         <div id="qr-container" class="qr-container" style="display:none;">
                             <img id="qr-code" class="qr-code" src="" alt="Pairing QR Code" />
                         </div>
-                        <div id="init-placeholder" class="qr-container">
+                        <div id="init-placeholder" class="qr-container" style="flex-direction:column;gap:12px;">
                             <div class="spinner"></div>
+                            <span id="init-log-text" style="font-size:11px;color:var(--text-muted);text-align:center;max-width:200px;line-height:1.4;"></span>
                         </div>
                         <div class="stats-row">
                             <div class="stat-box"><div id="stat-sent" class="stat-val">0</div><div class="stat-label">Sent</div></div>
@@ -503,6 +505,7 @@ function renderDashboard(sessionId) {
           </div>
         </form>
       </div>
+    </div>
   </div>
 
   <!-- Context Menu & Reaction Picker -->
@@ -596,6 +599,8 @@ function renderDashboard(sessionId) {
         const infoText = badge ? badge.getAttribute('data-tooltip') : 'System Information';
         alert('ℹ️ System Properties:\n\n' + infoText);
     }
+    window.showSystemPropertiesModal = showSystemPropertiesModal;
+    // switchSession is already exported by dashboard.js — no need to duplicate here
 
     // ── Sidebar toggle ────────────────────────────────
     const sidebar = document.querySelector('.sidebar');
@@ -604,16 +609,22 @@ function renderDashboard(sessionId) {
         const isCollapsed = sidebar.classList.toggle('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
     }
-    window.toggleSidebar = toggleSidebar;
+
+    // Use addEventListener (not onclick attribute) so the handler is reliably attached
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
 
     // Restore sidebar state from last visit (default: expanded)
     if (localStorage.getItem('sidebarCollapsed') === '1') {
         sidebar.classList.add('collapsed');
     }
 
-    document.getElementById('diag-basepath').textContent = basePath;
-    document.getElementById('diag-pathname').textContent = window.location.pathname;
-    document.getElementById('raw-logs-link').href = basePath + 'logs?session_id=' + currentSession;
+    const diagBasepath = document.getElementById('diag-basepath');
+    const diagPathname = document.getElementById('diag-pathname');
+    const rawLogsLink = document.getElementById('raw-logs-link');
+    if (diagBasepath) diagBasepath.textContent = basePath;
+    if (diagPathname) diagPathname.textContent = window.location.pathname;
+    if (rawLogsLink) rawLogsLink.href = basePath + 'logs?session_id=' + currentSession;
 
     updateDashboard();
     setInterval(updateDashboard, 10000);
