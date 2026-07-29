@@ -19,7 +19,7 @@ export function registerSessionRoutes(app) {
       session = getSession(sessionId);
     }
     if (!session.sock) {
-      connectToWhatsApp(session);
+      connectToWhatsApp(sessionId, sessions, getSession);
     }
     res.json({ status: 'starting', session_id: sessionId, isConnected: session.isConnected });
   });
