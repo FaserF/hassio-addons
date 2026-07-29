@@ -498,7 +498,7 @@ export async function publishMDNS(name, sessions, attempt = 0) {
 
     // Re-evaluate every 30 seconds
     if (attempt === 0) {
-      setInterval(() => {
+      const intervalId = setInterval(() => {
         const current = getDiscoveryStatus(sessions);
         const needsUpdate =
           current.shouldBroadcast !== DISCOVERY_STATE.lastShouldBroadcast ||
@@ -509,6 +509,7 @@ export async function publishMDNS(name, sessions, attempt = 0) {
           publishMDNS(name, sessions, 0);
         }
       }, 30000);
+      if (intervalId.unref) intervalId.unref();
     }
   } catch (e) {
     logger.warn({ error: e.message }, 'mDNS advertisement failed to initialize');

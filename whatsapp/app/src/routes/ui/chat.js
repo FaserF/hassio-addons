@@ -150,7 +150,7 @@ async function fetchAvatar(jid) {
 
 function updateAvatarElements(jid, url) {
   if (!url) return;
-  const safeJid = jid.replace(/"/g, '\\"');
+  const safeJid = jid.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   const els = document.querySelectorAll(`[data-avatar-jid="${safeJid}"]`);
   els.forEach((el) => {
     el.innerHTML = `<img src="${url}" class="avatar-img" alt="Avatar">`;

@@ -31,7 +31,11 @@ export function getAuthDir(sessionId) {
   const dir =
     safeSessionId === 'default' ? AUTH_DIR : path.join(DATA_DIR, 'sessions', safeSessionId);
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      if (e.code !== 'EACCES') throw e;
+    }
   }
   return dir;
 }
@@ -260,7 +264,7 @@ export function startSessionCleanupTask(deleteSessionFn) {
   const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
   const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-  setInterval(async () => {
+  const timer = setInterval(async () => {
     logger.info('🧹 Running session cleanup task...');
     const now = Date.now();
 
@@ -325,4 +329,5 @@ export function startSessionCleanupTask(deleteSessionFn) {
       }
     }
   }, CLEANUP_INTERVAL);
+  if (timer.unref) timer.unref();
 }
