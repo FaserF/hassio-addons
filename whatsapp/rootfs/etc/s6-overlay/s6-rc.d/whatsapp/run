@@ -1,6 +1,15 @@
 #!/usr/bin/with-contenv bashio
 source /usr/lib/bashio/banner.sh
 
+# Load build-time env vars (BAILEYS_VERSION, FASTAPI_VERSION, etc.) into this shell
+# shellcheck disable=SC1091
+if [ -f /etc/environment ]; then
+    source /etc/environment 2>/dev/null || true
+    # Re-export so they are available as process env vars for Node.js
+    [ -n "${BAILEYS_VERSION:-}" ] && export BAILEYS_VERSION
+    [ -n "${FASTAPI_VERSION:-}" ] && export FASTAPI_VERSION
+fi
+
 bashio::log.info "Starting WhatsApp Home Assistant App (Baileys)..."
 
 export PORT=8066
