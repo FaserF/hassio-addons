@@ -29,12 +29,16 @@ async function updateDashboard() {
       footerSessionStatus.textContent = data.isConnected ? 'Connected' : 'Disconnected';
 
     // Version elements
-    document.getElementById('node-version').textContent = data.nodeVersion || 'N/A';
-    document.getElementById('alpine-version').textContent = data.alpineVersion || 'N/A';
-    document.getElementById('addon-version-sidebar').textContent = data.addonVersion || 'N/A';
-    document.getElementById('int-version-sidebar').textContent = data.integrationVersion || 'N/A';
-    document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
-    document.getElementById('express-version').textContent = data.expressVersion || 'N/A';
+    const setElText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+    setElText('node-version', data.nodeVersion || 'N/A');
+    setElText('alpine-version', data.alpineVersion || 'N/A');
+    setElText('addon-version-sidebar', data.addonVersion || 'N/A');
+    setElText('int-version-sidebar', data.integrationVersion || 'N/A');
+    setElText('baileys-version', data.baileysVersion || 'N/A');
+    setElText('express-version', data.expressVersion || 'N/A');
 
     const infoBadge = document.getElementById('sidebar-info-badge');
     if (infoBadge) {
@@ -155,22 +159,24 @@ async function updateDashboard() {
     }
 
     // Metadata details
-    document.getElementById('webhook-status').textContent = data.webhookEnabled
-      ? 'Enabled ✅'
-      : 'Disabled ❌';
-    document.getElementById('webhook-status').style.color = data.webhookEnabled
-      ? 'var(--primary)'
-      : 'var(--danger)';
-    document.getElementById('webhook-url').textContent = data.webhookUrl || 'Not Configured';
+    const whStatus = document.getElementById('webhook-status');
+    if (whStatus) {
+      whStatus.textContent = data.webhookEnabled ? 'Enabled ✅' : 'Disabled ❌';
+      whStatus.style.color = data.webhookEnabled ? 'var(--primary)' : 'var(--danger)';
+    }
+    setElText('webhook-url', data.webhookUrl || 'Not Configured');
 
     // Connected account fields
     const hasDevice = data.isConnected && data.deviceInfo && data.deviceInfo.number;
-    document.getElementById('device-info-grid').style.display = hasDevice ? 'grid' : 'none';
-    document.getElementById('no-device-msg').style.display = hasDevice ? 'none' : 'block';
+    const devGrid = document.getElementById('device-info-grid');
+    if (devGrid) devGrid.style.display = hasDevice ? 'grid' : 'none';
+    const noDevMsg = document.getElementById('no-device-msg');
+    if (noDevMsg) noDevMsg.style.display = hasDevice ? 'none' : 'block';
+
     if (hasDevice) {
-      document.getElementById('device-name').textContent = data.deviceInfo.name || '—';
-      document.getElementById('device-number').textContent = '+' + data.deviceInfo.number;
-      document.getElementById('device-session').textContent = data.sessionId || 'default';
+      setElText('device-name', data.deviceInfo.name || '—');
+      setElText('device-number', '+' + data.deviceInfo.number);
+      setElText('device-session', data.sessionId || 'default');
       const statusEl = document.getElementById('device-status');
       if (statusEl) {
         statusEl.textContent = data.deviceInfo.status
@@ -181,9 +187,9 @@ async function updateDashboard() {
 
     // Stats properties
     const stats = data.stats || {};
-    document.getElementById('stat-sent').textContent = stats.sent || 0;
-    document.getElementById('stat-received').textContent = stats.received || 0;
-    document.getElementById('stat-failed').textContent = stats.failed || 0;
+    setElText('stat-sent', stats.sent || 0);
+    setElText('stat-received', stats.received || 0);
+    setElText('stat-failed', stats.failed || 0);
 
     // Uptime: prefer start_time from stats (epoch ms), fall back to server process uptime
     let uptimeStr = '00:00:00';
@@ -200,9 +206,8 @@ async function updateDashboard() {
       const secs = String(diffSec % 60).padStart(2, '0');
       uptimeStr = `${hrs}:${mins}:${secs}`;
     }
-    document.getElementById('val-uptime').textContent = uptimeStr;
-    document.getElementById('val-reconnects').textContent =
-      stats.totalReconnects ?? data.reconnectAttempts ?? 0;
+    setElText('val-uptime', uptimeStr);
+    setElText('val-reconnects', stats.totalReconnects ?? data.reconnectAttempts ?? 0);
 
     // Render streams lists (always escape content to prevent XSS)
     const esc = (v) =>
@@ -213,65 +218,79 @@ async function updateDashboard() {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 
-    document.getElementById('list-sent').innerHTML = (data.recentSent || []).length
-      ? data.recentSent
-          .map(
-            (m) =>
-              '<div class="history-item">' +
-              '<span class="history-time">' +
-              esc(m.timestamp) +
-              '</span>' +
-              '<span class="history-target">To: ' +
-              esc(m.target) +
-              '</span>' +
-              '<div class="history-msg">' +
-              esc(m.message) +
-              '</div>' +
-              '</div>'
-          )
-          .join('')
-      : '<div class="empty-state">No messages sent recently</div>';
+    const setElHtml = (id, html) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    };
 
-    document.getElementById('list-received').innerHTML = (data.recentReceived || []).length
-      ? data.recentReceived
-          .map(
-            (m) =>
-              '<div class="history-item">' +
-              '<span class="history-time">' +
-              esc(m.timestamp) +
-              '</span>' +
-              '<span class="history-sender">From: ' +
-              esc(m.sender) +
-              '</span>' +
-              '<div class="history-msg">' +
-              esc(m.message) +
-              '</div>' +
-              '</div>'
-          )
-          .join('')
-      : '<div class="empty-state">No messages received recently</div>';
+    setElHtml(
+      'list-sent',
+      (data.recentSent || []).length
+        ? data.recentSent
+            .map(
+              (m) =>
+                '<div class="history-item">' +
+                '<span class="history-time">' +
+                esc(m.timestamp) +
+                '</span>' +
+                '<span class="history-target">To: ' +
+                esc(m.target) +
+                '</span>' +
+                '<div class="history-msg">' +
+                esc(m.message) +
+                '</div>' +
+                '</div>'
+            )
+            .join('')
+        : '<div class="empty-state">No messages sent recently</div>'
+    );
 
-    document.getElementById('list-failures').innerHTML = (data.recentFailures || []).length
-      ? data.recentFailures
-          .map(
-            (m) =>
-              '<div class="history-item failure">' +
-              '<span class="history-time">' +
-              esc(m.timestamp) +
-              '</span>' +
-              '<span class="history-target">Target: ' +
-              esc(m.target) +
-              '</span>' +
-              '<div class="history-msg">' +
-              esc(m.message) +
-              '</div>' +
-              '<div class="history-reason">Error: ' +
-              esc(m.reason) +
-              '</div>' +
-              '</div>'
-          )
-          .join('')
-      : '<div class="empty-state">No failures recorded</div>';
+    setElHtml(
+      'list-received',
+      (data.recentReceived || []).length
+        ? data.recentReceived
+            .map(
+              (m) =>
+                '<div class="history-item">' +
+                '<span class="history-time">' +
+                esc(m.timestamp) +
+                '</span>' +
+                '<span class="history-sender">From: ' +
+                esc(m.sender) +
+                '</span>' +
+                '<div class="history-msg">' +
+                esc(m.message) +
+                '</div>' +
+                '</div>'
+            )
+            .join('')
+        : '<div class="empty-state">No messages received recently</div>'
+    );
+
+    setElHtml(
+      'list-failures',
+      (data.recentFailures || []).length
+        ? data.recentFailures
+            .map(
+              (m) =>
+                '<div class="history-item failure">' +
+                '<span class="history-time">' +
+                esc(m.timestamp) +
+                '</span>' +
+                '<span class="history-target">Target: ' +
+                esc(m.target) +
+                '</span>' +
+                '<div class="history-msg">' +
+                esc(m.message) +
+                '</div>' +
+                '<div class="history-reason">Error: ' +
+                esc(m.reason) +
+                '</div>' +
+                '</div>'
+            )
+            .join('')
+        : '<div class="empty-state">No failures recorded</div>'
+    );
   } catch (e) {
     console.error(e);
   }
@@ -283,20 +302,23 @@ async function loadLogs() {
     if (!response.ok) return;
     const logs = await response.json();
 
-    document.getElementById('list-logs').innerHTML = logs.length
-      ? logs
-          .map(
-            (l) =>
-              '<div class="log-entry"><span class="log-time">' +
-              l.timestamp +
-              '</span><span class="log-type-' +
-              l.type +
-              '">' +
-              l.msg +
-              '</span></div>'
-          )
-          .join('')
-      : '<div class="log-entry">No logs yet</div>';
+    const logsEl = document.getElementById('list-logs');
+    if (logsEl) {
+      logsEl.innerHTML = logs.length
+        ? logs
+            .map(
+              (l) =>
+                '<div class="log-entry"><span class="log-time">' +
+                l.timestamp +
+                '</span><span class="log-type-' +
+                l.type +
+                '">' +
+                l.msg +
+                '</span></div>'
+            )
+            .join('')
+        : '<div class="log-entry">No logs yet</div>';
+    }
   } catch (err) {
     console.error(err);
   }

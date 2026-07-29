@@ -543,6 +543,7 @@ function renderDashboard(sessionId) {
 
     const getBasePath = () => {
         try {
+            // Remove hash/fragment or double slashes at the end (e.g. Ingress URLs like /api/hassio_ingress/.../#)
             let path = window.location.pathname;
             if (!path.endsWith('/')) {
                 path += '/';
@@ -554,9 +555,9 @@ function renderDashboard(sessionId) {
     };
     const basePath = getBasePath().replace(/[/]+/g, '/');
   </script>
-  <script src="ui-assets/helpers.js?v=${Date.now()}"></script>
-  <script src="ui-assets/dashboard.js?v=${Date.now()}"></script>
-  <script src="ui-assets/chat.js?v=${Date.now()}"></script>
+  <script src="ui-assets/helpers.js"></script>
+  <script src="ui-assets/dashboard.js"></script>
+  <script src="ui-assets/chat.js"></script>
   <script>
     const navItems = document.querySelectorAll('.nav-item');
     const tabPanels = document.querySelectorAll('.tab-panel');
@@ -564,7 +565,8 @@ function renderDashboard(sessionId) {
 
     navItems.forEach(item => {
         if (item.getAttribute('data-tab')) {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
                 const tab = item.getAttribute('data-tab');
                 switchTab(tab);
             });
@@ -599,12 +601,10 @@ function renderDashboard(sessionId) {
         alert('ℹ️ System Properties:\n\n' + infoText);
     }
     window.showSystemPropertiesModal = showSystemPropertiesModal;
-    // switchSession is already exported by dashboard.js — no need to duplicate here
 
     // ── Sidebar toggle ────────────────────────────────
-    const sidebar = document.querySelector('.sidebar');
-
     function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
         if (!sidebar) return;
         const isCollapsed = sidebar.classList.toggle('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
@@ -613,11 +613,15 @@ function renderDashboard(sessionId) {
 
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     if (sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener('click', toggleSidebar);
+        sidebarToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleSidebar();
+        });
     }
 
     // Restore sidebar state from last visit (default: expanded)
-    if (localStorage.getItem('sidebarCollapsed') === '1') {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
         sidebar.classList.add('collapsed');
     }
 
@@ -626,7 +630,10 @@ function renderDashboard(sessionId) {
     const rawLogsLink = document.getElementById('raw-logs-link');
     if (diagBasepath) diagBasepath.textContent = basePath;
     if (diagPathname) diagPathname.textContent = window.location.pathname;
-    if (rawLogsLink) rawLogsLink.href = basePath + 'logs?session_id=' + currentSession;
+    if (rawLogsLink) {
+        const cleanBase = basePath.endsWith('/') ? basePath : basePath + '/';
+        rawLogsLink.href = cleanBase + 'logs?session_id=' + encodeURIComponent(currentSession);
+    }
 
     updateDashboard();
     setInterval(updateDashboard, 10000);
