@@ -367,7 +367,7 @@ function renderDashboard(sessionId) {
                     <div class="card-header">
                         <div>
                             <h2 class="card-title" style="color:var(--text-main);"><i class="fas fa-terminal"></i> Connection Events</h2>
-                            <p class="card-subtitle">Real-time socket events from the underlying WhatsApp daemon service.</p>
+                            <p class="card-subtitle" style="margin-bottom:16px;">Real-time socket events from the underlying WhatsApp daemon service.</p>
                         </div>
                         <div class="logs-actions">
                             <button class="btn btn-secondary btn-sm" onclick="clearLogs()"><i class="fas fa-trash-alt"></i> Clear Logs</button>
@@ -624,6 +624,7 @@ function renderDashboard(sessionId) {
         var sb = document.querySelector('.sidebar');
         if (!sb) return;
         var isCollapsed = sb.classList.toggle('collapsed');
+        sb.style.width = isCollapsed ? '72px' : '280px';
         try {
             localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
         } catch (err) {}
@@ -640,6 +641,7 @@ function renderDashboard(sessionId) {
     try {
         if (sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
             sidebar.classList.add('collapsed');
+            sidebar.style.width = '72px';
         }
     } catch (e) {}
 
