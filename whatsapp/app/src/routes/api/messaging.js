@@ -1,5 +1,5 @@
 import { authMiddleware } from '../../middleware.js';
-import { getReqSession, getSession, sanitizeSessionId } from '../../session.js';
+import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { trackSent } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';

@@ -1,4 +1,3 @@
-import { logger } from '../../logger.js';
 
 export function bindStore(session, ev) {
   ev.on('messages.upsert', ({ messages }) => {

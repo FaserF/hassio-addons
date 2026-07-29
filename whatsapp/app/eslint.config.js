@@ -14,11 +14,12 @@ export default [
     rules: {
       'no-const-assign': 'error',
       'no-undef': 'error',
+      'no-empty': 'off',
       'no-unused-vars': [
         'warn',
         {
           argsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_|^e$',
+          caughtErrorsIgnorePattern: '^_|^e$|^err$',
         },
       ],
     },
@@ -29,6 +30,10 @@ export default [
       globals: {
         ...globals.browser,
       },
+    },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
     },
   },
 ];

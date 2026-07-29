@@ -1,5 +1,5 @@
 import { authMiddleware, uiAuthMiddleware } from '../../middleware.js';
-import { getReqSession, getSession, sessions, sanitizeSessionId, addLog } from '../../session.js';
+import { getSession, sessions, sanitizeSessionId, addLog } from '../../session.js';
 import {
   ADDON_VERSION,
   INTEGRATION_VERSION,
@@ -13,7 +13,6 @@ import { WEBHOOK_ENABLED, WEBHOOK_URL, updateWebhookConfig } from '../../webhook
 import { maskData } from '../../utils/security.js';
 import { HEALTH_STATE } from '../../state.js';
 import { logger } from '../../logger.js';
-import fs from 'fs';
 
 export function registerSystemRoutes(app) {
   app.get('/health', (req, res) => {
@@ -45,7 +44,10 @@ export function registerSystemRoutes(app) {
             let st = await session.sock.fetchStatus(fullJid);
             if (!st && cleanJid) st = await session.sock.fetchStatus(cleanJid);
             if (st) {
-              const resText = typeof st === 'string' ? st : (st.status || st.statusText || (Array.isArray(st) ? st[0]?.status : null));
+              const resText =
+                typeof st === 'string'
+                  ? st
+                  : st.status || st.statusText || (Array.isArray(st) ? st[0]?.status : null);
               if (resText) session._myStatusText = resText;
             }
           } catch (e) {

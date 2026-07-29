@@ -308,8 +308,7 @@ async function loadChatMessages(jid) {
       container.scrollHeight - container.clientHeight <= container.scrollTop + 80;
 
     if (messages.length === 0) {
-      container.innerHTML =
-        '<div class="empty-state">No messages in this conversation yet</div>';
+      container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
       return;
     }
 
@@ -631,7 +630,8 @@ async function sendFileMessage(input) {
 
 function toggleChatSearch() {
   const bar = document.getElementById('chat-search-bar');
-  const inp = document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
+  const inp =
+    document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
   if (!bar) return;
   const isVisible = bar.style.display !== 'none';
   bar.style.display = isVisible ? 'none' : 'block';
@@ -649,7 +649,8 @@ function closeChatSearch() {
 }
 
 async function searchInActiveChat() {
-  const inp = document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
+  const inp =
+    document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
   const q = inp ? inp.value.trim() : '';
   await searchChatMessages(q);
 }
@@ -694,7 +695,12 @@ function renderHighlightedMessages(ids) {
 }
 
 function closeAllOverlays(e) {
-  if (e && (e.target.closest('#msg-context-menu') || e.target.closest('#reaction-picker') || e.target.closest('#emoji-picker'))) {
+  if (
+    e &&
+    (e.target.closest('#msg-context-menu') ||
+      e.target.closest('#reaction-picker') ||
+      e.target.closest('#emoji-picker'))
+  ) {
     return;
   }
   const ctx = document.getElementById('msg-context-menu');
@@ -737,6 +743,8 @@ async function sendChatMessage(event) {
         Accept: 'application/json',
         'X-Auth-Token': apiToken,
       },
+      body: JSON.stringify(payload),
+    });
     if (response.ok) {
       showToast('Message sent', 'success');
       loadChatMessages(activeChatJid);
@@ -757,11 +765,16 @@ async function openChatInfoDrawer() {
   if (!drawer || !body) return;
 
   drawer.style.display = 'flex';
-  body.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>';
+  body.innerHTML =
+    '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>';
 
   try {
     const res = await fetch(
-      basePath + 'api/chat_info?session_id=' + currentSession + '&jid=' + encodeURIComponent(activeChatJid)
+      basePath +
+        'api/chat_info?session_id=' +
+        currentSession +
+        '&jid=' +
+        encodeURIComponent(activeChatJid)
     );
     if (!res.ok) throw new Error('Failed');
     const info = await res.json();
