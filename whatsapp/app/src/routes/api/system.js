@@ -41,14 +41,22 @@ export function registerSystemRoutes(app) {
         session._fetchingStatus = true;
         (async () => {
           try {
-            let st = await session.sock.fetchStatus(fullJid);
-            if (!st && cleanJid) st = await session.sock.fetchStatus(cleanJid);
-            if (st) {
+            // fetchStatus returns an array of { jid, status: { status, setAt } }
+            const list = await session.sock.fetchStatus(fullJid);
+            const fallbackList = (!list?.length && cleanJid)
+              ? await session.sock.fetchStatus(cleanJid)
+              : null;
+            const resultList = (list?.length ? list : fallbackList) || [];
+            const entry = resultList[0];
+            if (entry) {
+              // Baileys USyncStatusProtocol nests the text under entry.status.status
               const resText =
-                typeof st === 'string'
-                  ? st
-                  : st.status || st.statusText || (Array.isArray(st) ? st[0]?.status : null);
-              if (resText) session._myStatusText = resText;
+                entry?.status?.status ??
+                entry?.status ??
+                (typeof entry === 'string' ? entry : null);
+              if (resText && typeof resText === 'string' && resText.length > 0) {
+                session._myStatusText = resText;
+              }
             }
           } catch (e) {
           } finally {

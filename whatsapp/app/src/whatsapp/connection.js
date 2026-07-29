@@ -319,6 +319,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.firstFailureTime = null;
       session.qrGenerated = false;
       session.currentQR = null;
+      // Reset cached status so it's re-fetched with fresh data
+      session._myStatusText = null;
+      session._fetchingStatus = false;
       // If a passkey ceremony was in progress, it just completed successfully
       if (session.passkeyDetected || session.passkeyWaiting) {
         logger.info(
@@ -477,6 +480,9 @@ export async function publishMDNS(name, sessions, attempt = 0) {
       port: PORT,
       txt,
     });
+
+    if (currentMdnsService._server?.unref) currentMdnsService._server.unref();
+    if (mdnsInstance._server?.unref) mdnsInstance._server.unref();
 
     currentMdnsService.on('error', async (err) => {
       if (err.message.includes('already in use') && attempt < 10) {

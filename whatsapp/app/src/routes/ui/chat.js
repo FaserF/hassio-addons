@@ -340,7 +340,7 @@ async function loadChatMessages(jid) {
         const reactBlock = renderReactions(m);
 
         return `<div class="msg-bubble-row ${direction}" data-msg-id="${m.id}" data-msg-text="${escapeAttr(m.text || m.caption || '')}" data-sender="${escapeAttr(m.senderName || '')}"
-                         oncontextmenu="showContextMenu(event,'${m.id}')" onmouseenter="showReactionBtn(event,'${m.id}')">
+                         oncontextmenu="showContextMenu(event,'${m.id}')">
                         <div class="msg-bubble">
                             ${senderLabel}
                             ${quoteBlock}
@@ -370,24 +370,26 @@ function showContextMenu(e, msgId) {
   const menu = document.getElementById('msg-context-menu');
   menu.style.display = 'block';
 
-  const menuWidth = menu.offsetWidth || 200;
-  const menuHeight = menu.offsetHeight || 240;
+  requestAnimationFrame(() => {
+    const menuWidth = menu.getBoundingClientRect().width || 200;
+    const menuHeight = menu.getBoundingClientRect().height || 260;
 
-  let left = e.clientX;
-  let top = e.clientY;
+    let left = e.clientX;
+    let top = e.clientY;
 
-  if (left + menuWidth > window.innerWidth - 10) {
-    left = Math.max(10, window.innerWidth - menuWidth - 15);
-  }
-  if (left < 10) left = 10;
+    if (left + menuWidth > window.innerWidth - 10) {
+      left = Math.max(10, window.innerWidth - menuWidth - 15);
+    }
+    if (left < 10) left = 10;
 
-  if (top + menuHeight > window.innerHeight - 10) {
-    top = Math.max(10, window.innerHeight - menuHeight - 15);
-  }
-  if (top < 10) top = 10;
+    if (top + menuHeight > window.innerHeight - 10) {
+      top = Math.max(10, window.innerHeight - menuHeight - 15);
+    }
+    if (top < 10) top = 10;
 
-  menu.style.left = left + 'px';
-  menu.style.top = top + 'px';
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+  });
 }
 
 function ctxReply() {
@@ -477,9 +479,7 @@ function showReactionPicker(e, msgId) {
   picker.style.top = top + 'px';
 }
 
-function showReactionBtn(e, msgId) {
-  reactionTargetMsgId = msgId;
-}
+function showReactionBtn() {}
 
 async function sendReaction(emoji) {
   closeAllOverlays();

@@ -331,4 +331,37 @@ export function registerMessagingRoutes(app) {
       res.status(500).json({ detail: err.message });
     }
   });
+
+  app.post('/send_reaction', authMiddleware, async (req, res) => {
+    const session = getReqSession(req);
+    const { number, messageId, reaction } = req.body;
+    if (!number || !messageId) {
+      return res.status(400).json({ detail: 'Missing number or messageId' });
+    }
+
+    const connected = await ensureConnected(session);
+    if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+    try {
+      const jid = getJid(number);
+      const targetMsg = session.messageStore?.get(messageId);
+      const fromMe = targetMsg ? targetMsg.fromMe : false;
+
+      const reactionMessage = {
+        react: {
+          text: reaction || '',
+          key: {
+            remoteJid: jid,
+            fromMe: fromMe,
+            id: messageId,
+          },
+        },
+      };
+
+      await session.sock.sendMessage(jid, reactionMessage);
+      res.json({ status: 'reaction_sent' });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
 }
