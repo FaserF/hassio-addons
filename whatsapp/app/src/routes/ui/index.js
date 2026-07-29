@@ -137,8 +137,8 @@ function renderDashboard(sessionId) {
                     <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
                 </div>
             </div>
-            <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
+            <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar(event)">
+                <i class="fas fa-bars" style="pointer-events:none;"></i>
             </button>
         </div>
         
