@@ -116,9 +116,15 @@ export const httpLoggerMiddleware = (req, res, next) => {
     const duration = Date.now() - start;
     const statusCode = res.statusCode;
     if (statusCode >= 400) {
-      logger.warn({ method, url, statusCode, duration, ip }, `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`);
+      logger.warn(
+        { method, url, statusCode, duration, ip },
+        `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`
+      );
     } else {
-      logger.debug({ method, url, statusCode, duration, ip }, `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`);
+      logger.debug(
+        { method, url, statusCode, duration, ip },
+        `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`
+      );
     }
   });
 
