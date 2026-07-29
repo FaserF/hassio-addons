@@ -1272,6 +1272,13 @@ function renderDashboard(sessionId) {
                 text-align: right;
                 opacity: 0.7;
             }
+            .msg-sender-name {
+                font-size: 11px;
+                font-weight: 600;
+                margin-bottom: 3px;
+                opacity: 0.85;
+                color: var(--primary);
+            }
             .chat-thread-footer {
                 padding: 16px 24px;
                 border-top: 1px solid var(--border-color);
@@ -2009,14 +2016,19 @@ function renderDashboard(sessionId) {
                     container.innerHTML = messages.map(m => {
                         const direction = m.fromMe ? 'outbound' : 'inbound';
                         const timeStr = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        return \`
-                            <div class="msg-bubble-row \${direction}">
+                        const isGroup = jid.endsWith('@g.us');
+                        const senderLabel = (!m.fromMe && isGroup && m.senderName)
+                            ? `<div class="msg-sender-name">${escapeHtml(m.senderName)}</div>`
+                            : '';
+                        return `
+                            <div class="msg-bubble-row ${direction}">
                                 <div class="msg-bubble">
-                                    <div class="msg-bubble-text">\${escapeHtml(m.text)}</div>
-                                    <div class="msg-bubble-time">\${timeStr}</div>
+                                    ${senderLabel}
+                                    <div class="msg-bubble-text">${escapeHtml(m.text)}</div>
+                                    <div class="msg-bubble-time">${timeStr}</div>
                                 </div>
                             </div>
-                        \`;
+                        `;
                     }).join('');
 
                     if (wasScrolledToBottom) {
