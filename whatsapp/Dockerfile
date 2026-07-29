@@ -58,6 +58,13 @@ RUN \
         echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment; \
     fi
 
+# Detect installed FastAPI version at build time
+RUN \
+    FASTAPI_VERSION=$(python3 -c "import fastapi; print(fastapi.__version__)" 2>/dev/null \
+        || pip3 show fastapi 2>/dev/null | grep ^Version | awk '{print $2}' \
+        || echo "unknown"); \
+    echo "FASTAPI_VERSION=${FASTAPI_VERSION}" >> /etc/environment
+
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DESCRIPTION
