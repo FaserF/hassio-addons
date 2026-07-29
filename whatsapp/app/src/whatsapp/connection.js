@@ -157,7 +157,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
   bindStore(session, session.sock.ev);
   session.sock.ev.on('creds.update', async (creds) => {
-    logger.debug({ sessionId }, '🔑 Received creds.update from Baileys, saving updated credentials to disk.');
+    logger.debug(
+      { sessionId },
+      '🔑 Received creds.update from Baileys, saving updated credentials to disk.'
+    );
     await saveCreds(creds);
   });
 
