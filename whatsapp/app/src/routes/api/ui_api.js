@@ -21,8 +21,12 @@ export function registerUiApiRoutes(app) {
 
       if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
         let name = jid.split('@')[0];
-        if (jid.endsWith('@g.us') && session.groupCache && session.groupCache.has(jid)) {
-          name = session.groupCache.get(jid);
+        if (jid.endsWith('@g.us')) {
+          if (session.groupCache && session.groupCache.has(jid)) {
+            name = session.groupCache.get(jid);
+          } else {
+            name = `Group (${jid.split('@')[0]})`;
+          }
         } else if (msg.pushName) {
           name = msg.pushName;
         }
@@ -34,7 +38,7 @@ export function registerUiApiRoutes(app) {
           timestamp: msgTime,
           fromMe: msg.key.fromMe || false,
         };
-      } else if (msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
+      } else if (!jid.endsWith('@g.us') && msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
         JidMap[jid].name = msg.pushName;
       }
     });

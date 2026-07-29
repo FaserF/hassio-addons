@@ -1169,11 +1169,20 @@ code {
 .chat-thread-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 12px 20px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-card);
-    gap: 14px;
+    gap: 16px;
     min-height: 62px;
+    width: 100%;
+}
+.chat-thread-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
 }
 .chat-header-avatar {
     width: 40px;
@@ -1187,16 +1196,22 @@ code {
     font-size: 18px;
     flex-shrink: 0;
 }
-.chat-header-info h4 {
+.chat-thread-info h4 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.chat-header-info p {
-    margin: 1px 0 0;
+.chat-thread-info p {
+    margin: 2px 0 0;
     font-size: 12px;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .chat-thread-messages {
     flex: 1;

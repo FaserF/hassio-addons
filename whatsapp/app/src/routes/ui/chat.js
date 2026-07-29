@@ -1,12 +1,19 @@
 // Chat client UI logic
 
+let lastLoadedMessagesCache = {};
+let lastChatsCache = '';
+
 async function loadChats() {
   if (!isChatTabActive) return;
   try {
     const response = await fetch(basePath + 'api/chats?session_id=' + currentSession);
     if (!response.ok) return;
     allChats = await response.json();
-    renderChatList(allChats);
+    const chatsKey = JSON.stringify(allChats);
+    if (chatsKey !== lastChatsCache) {
+      lastChatsCache = chatsKey;
+      renderChatList(allChats);
+    }
   } catch (e) {
     console.error('Failed to load chats:', e);
   }
@@ -56,6 +63,7 @@ function renderChatList(chats) {
 }
 
 function filterChatList() {
+  lastChatsCache = '';
   renderChatList(allChats);
 }
 
@@ -70,6 +78,7 @@ function goBackToChatList(event) {
 
 function selectChat(jid, name) {
   activeChatJid = jid;
+  delete lastLoadedMessagesCache[jid];
   document.body.classList.add('chat-open');
   cancelReply();
   closeAllOverlays();
@@ -195,12 +204,20 @@ async function loadChatMessages(jid) {
     if (!response.ok) return;
     const messages = await response.json();
 
+    const cacheKey = JSON.stringify(messages);
+    if (lastLoadedMessagesCache[jid] === cacheKey) {
+      // Content has not changed -> Skip DOM update to avoid flicker
+      return;
+    }
+    lastLoadedMessagesCache[jid] = cacheKey;
+
     const container = document.getElementById('chat-thread-messages');
     const wasScrolledToBottom =
       container.scrollHeight - container.clientHeight <= container.scrollTop + 80;
 
     if (messages.length === 0) {
-      container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
+      container.innerHTML =
+        '<div class="empty-state">No messages in this conversation yet</div>';
       return;
     }
 
