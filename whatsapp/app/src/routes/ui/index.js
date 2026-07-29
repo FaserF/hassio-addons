@@ -152,7 +152,9 @@ function renderDashboard(sessionId) {
             <div class="header-actions">
                 <div class="session-switcher">
                     <span>Session:</span>
-                    <select id="session-select" onchange="switchSession(this.value)"></select>
+                    <select id="session-select" onchange="switchSession(this.value)">
+                        <option value="${escapeHtml(sessionId)}">${escapeHtml(sessionId)}</option>
+                    </select>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">🌓</button>
             </div>

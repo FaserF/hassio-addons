@@ -93,13 +93,26 @@ async function updateDashboard() {
     // Session drop-down list
     const select = document.getElementById('session-select');
     let options = '';
+    let hasMatchingActiveSession = false;
+
     data.sessionList.forEach((s) => {
+      if (s.id === currentSession && s.connected) hasMatchingActiveSession = true;
       const isSelected = s.id === currentSession ? 'selected' : '';
       const icon = s.connected ? '\u2705' : '\u274C';
       options +=
         '<option value="' + s.id + '" ' + isSelected + '>' + s.id + ' (' + icon + ')</option>';
     });
     select.innerHTML = options;
+
+    // Auto-switch to connected session if current session is disconnected but an active one exists
+    if (!data.isConnected && !hasMatchingActiveSession && data.sessionList) {
+      const activeSess = data.sessionList.find((s) => s.connected);
+      if (activeSess && activeSess.id !== currentSession) {
+        currentSession = activeSess.id;
+        updateDashboard();
+        return;
+      }
+    }
 
     // Passkey notifications
     const pkBanner = document.getElementById('passkey-banner');
@@ -361,3 +374,4 @@ function switchSession(id) {
   window.history.replaceState({}, '', url);
   updateDashboard();
 }
+window.switchSession = switchSession;

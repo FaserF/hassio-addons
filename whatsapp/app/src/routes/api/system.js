@@ -1,6 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import { authMiddleware, uiAuthMiddleware } from '../../middleware.js';
 import { getSession, sessions, sanitizeSessionId, addLog } from '../../session.js';
 import {
+  DATA_DIR,
   ADDON_VERSION,
   INTEGRATION_VERSION,
   BAILEYS_VERSION,
@@ -24,6 +27,20 @@ export function registerSystemRoutes(app) {
   });
 
   app.get('/api/dashboard', (req, res) => {
+    // Scan disk for all session folders so sessionList is complete
+    const sessionsDir = path.join(DATA_DIR, 'sessions');
+    if (fs.existsSync(sessionsDir)) {
+      try {
+        const sDirs = fs.readdirSync(sessionsDir);
+        for (const sDir of sDirs) {
+          const fullPath = path.join(sessionsDir, sDir);
+          if (fs.statSync(fullPath).isDirectory()) {
+            getSession(sDir);
+          }
+        }
+      } catch (e) {}
+    }
+
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
 
