@@ -34,19 +34,20 @@ export function registerSystemRoutes(app) {
     }));
 
     let statusText = null;
-    if (session.sock?.user?.id) {
-      const myJid = session.sock.user.id.split(':')[0] + '@s.whatsapp.net';
-      if (session._myStatusText !== undefined) {
+    if (session.sock?.user) {
+      const rawUser = session.sock.user.id || session.sock.user.jid || '';
+      const myJid = rawUser.split(':')[0].split('@')[0] + '@s.whatsapp.net';
+      if (session._myStatusText) {
         statusText = session._myStatusText;
       } else {
         session.sock
           .fetchStatus(myJid)
           .then((st) => {
-            if (st && st.status) session._myStatusText = st.status;
+            if (st && (st.status || st.statusText)) {
+              session._myStatusText = st.status || st.statusText;
+            }
           })
-          .catch(() => {
-            session._myStatusText = null;
-          });
+          .catch(() => {});
         statusText = session._myStatusText || null;
       }
     }
