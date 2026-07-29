@@ -480,6 +480,11 @@ export function handleIncomingMessages(session) {
               fs.writeFileSync(savePath, buffer);
               mediaPath = savePath;
               mediaUrl = `/media/${filename}`;
+              // Attach media metadata to the stored message so /api/messages can expose it
+              msg._mediaUrl = mediaUrl;
+              msg._mediaType = mediaType;
+              msg._mediaMime = mimeType;
+              msg._caption = caption;
             }
           } catch (err) {
             text = `${text} (Media Download Failed)`;
@@ -641,6 +646,40 @@ export function handleIncomingMessages(session) {
 
     const resolvedEvents = await Promise.all(events);
     session.eventQueue.push(...resolvedEvents);
+  });
+  // --- ACK / Message status updates ---
+  session.sock.ev.on('messages.update', (updates) => {
+    for (const update of updates) {
+      if (!update.key?.id) continue;
+      const stored = session.messageStore.get(update.key.id);
+      if (stored && update.update?.status != null) {
+        stored._ack = update.update.status;
+      }
+    }
+  });
+
+  // --- Incoming reactions → attach to parent message ---
+  session.sock.ev.on('messages.reaction', (reactions) => {
+    for (const { key, reaction } of reactions) {
+      const parentId = key.id;
+      const stored = session.messageStore.get(parentId);
+      if (!stored) continue;
+      if (!stored._reactions) stored._reactions = [];
+      const senderJid = key.participant || key.remoteJid || '';
+      // Remove previous reaction from same sender, then push new one (empty emoji = retract)
+      stored._reactions = stored._reactions.filter((r) => r.sender !== senderJid);
+      if (reaction?.text) {
+        stored._reactions.push({ emoji: reaction.text, sender: senderJid });
+      }
+    }
+  });
+
+  // --- Presence / typing indicator ---
+  session.sock.ev.on('presence.update', ({ id, presences }) => {
+    if (!session._presenceStore) session._presenceStore = new Map();
+    for (const [jid, presence] of Object.entries(presences)) {
+      session._presenceStore.set(id, { jid, status: presence.lastKnownPresence, lastSeen: Date.now() });
+    }
   });
 }
 

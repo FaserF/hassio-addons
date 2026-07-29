@@ -1197,18 +1197,102 @@ export function registerAPIRoutes(app) {
       .map((msg) => {
         const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
         const text = getMessageText(msg);
+
+        // --- Media ---
+        const mediaUrl  = msg._mediaUrl  || null;
+        const mediaType = msg._mediaType || null;
+        const mediaMime = msg._mediaMime || null;
+        const caption   = msg._caption   || null;
+
+        // --- Quoted / Reply ---
+        let quotedId = null, quotedText = null, quotedSender = null;
+        const ctx = msg.message?.extendedTextMessage?.contextInfo
+          || msg.message?.imageMessage?.contextInfo
+          || msg.message?.videoMessage?.contextInfo
+          || msg.message?.audioMessage?.contextInfo
+          || msg.message?.documentMessage?.contextInfo
+          || msg.message?.stickerMessage?.contextInfo;
+        if (ctx?.stanzaId) {
+          quotedId = ctx.stanzaId;
+          quotedSender = ctx.participant || ctx.remoteJid || null;
+          // Try to resolve text from store
+          const qMsg = session.messageStore.get(ctx.stanzaId);
+          quotedText = qMsg ? getMessageText(qMsg) : (
+            ctx.quotedMessage?.conversation ||
+            ctx.quotedMessage?.extendedTextMessage?.text ||
+            ctx.quotedMessage?.imageMessage?.caption ||
+            ctx.quotedMessage?.videoMessage?.caption || '...'
+          );
+        }
+
+        // --- Sender ---
+        const participant = msg.key.participant || msg.participant;
+        const senderName = msg.key.fromMe
+          ? 'You'
+          : (msg.pushName || (participant ? participant.split('@')[0] : targetJid.split('@')[0]));
+
         return {
           id: msg.key.id,
           fromMe: msg.key.fromMe || false,
-          senderName: msg.key.fromMe ? 'You' : msg.pushName || targetJid.split('@')[0],
-          text,
+          senderName,
+          senderJid: participant || (msg.key.fromMe ? null : targetJid),
+          text: text || caption || null,
+          caption,
           timestamp,
+          // Media
+          mediaUrl,
+          mediaType,
+          mediaMime,
+          // Quote
+          quotedId,
+          quotedText,
+          quotedSender,
+          // Status (ACK): 0=pending,1=server,2=delivered,3=read,4=played
+          ack: msg._ack != null ? msg._ack : (msg.status != null ? msg.status : null),
+          // Reactions
+          reactions: msg._reactions || [],
+          // Starred
+          starred: msg.starred || false,
         };
       })
-      .filter((m) => m.text && m.text.trim().length > 0)
+      .filter((m) => m.text || m.mediaUrl)
       .sort((a, b) => a.timestamp - b.timestamp);
 
     res.json(messages);
+  });
+
+  // Presence / typing indicator
+  app.get('/api/presence', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const jid = req.query.jid;
+    if (!jid) return res.json({ typing: false });
+    const p = session._presenceStore?.get(jid);
+    if (!p || Date.now() - p.lastSeen > 10000) return res.json({ typing: false });
+    res.json({ typing: p.status === 'composing', status: p.status });
+  });
+
+  // Message search within a chat
+  app.get('/api/messages/search', uiAuthMiddleware, (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const jid = req.query.jid;
+    const q = (req.query.q || '').toLowerCase().trim();
+    if (!jid || !q) return res.json([]);
+    const results = Array.from(session.messageStore.values())
+      .filter((msg) => msg.key?.remoteJid === jid)
+      .filter((msg) => {
+        const t = getMessageText(msg) || '';
+        return t.toLowerCase().includes(q);
+      })
+      .map((msg) => ({
+        id: msg.key.id,
+        fromMe: msg.key.fromMe || false,
+        text: getMessageText(msg),
+        timestamp: (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000,
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+    res.json(results);
   });
 
   app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
