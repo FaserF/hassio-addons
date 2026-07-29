@@ -8,6 +8,8 @@ import crypto from 'crypto';
 import mime from 'mime-types';
 import { logger } from '../../logger.js';
 import { ADDON_VERSION, INTEGRATION_VERSION, BAILEYS_VERSION } from '../../config.js';
+import { fetchHAVersions } from '../../ha.js';
+import { formatDuration } from '../../utils/format.js';
 import { maskData, isAdmin } from '../../utils/security.js';
 import { triggerWebhook } from '../../webhook.js';
 import {
@@ -19,31 +21,21 @@ import {
   runDiagnostic,
 } from '../actions.js';
 import { addLog } from '../../session.js';
-import { fetchHAVersions } from '../../ha.js';
-import { formatDuration } from '../../utils/format.js';
+
 import { resolvePollVotes } from './poll.js';
-import { bindStore } from './store.js';
 import { registerAckListener } from './ack.js';
 import { registerReactionListener } from './reactions.js';
 import { registerPresenceListener } from './presence.js';
-import { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
+
+export { bindStore } from './store.js';
+export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
 
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
-
-export { bindStore, getChangelogUrl, checkSystemUpdates, monitorHACore };
 
 export function registerAllListeners(session) {
   registerAckListener(session);
   registerReactionListener(session);
   registerPresenceListener(session);
-}
-
-export function getQuotedMessage(session, quotedMessageId) {
-  if (!quotedMessageId) return undefined;
-  const rawMsg = session.messageStore.get(quotedMessageId);
-  if (rawMsg) return rawMsg;
-  logger.warn({ quotedMessageId, sessionId: session.id }, 'Quoted message not found in store');
-  return undefined;
 }
 
 export function handleIncomingMessages(session) {
@@ -55,6 +47,7 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.key.fromMe) {
+          // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
           const isToAdminAlt = msg.key.remoteJidAlt
             ? isAdmin(msg.key.remoteJidAlt, session)
@@ -154,6 +147,7 @@ export function handleIncomingMessages(session) {
               fs.writeFileSync(savePath, buffer);
               mediaPath = savePath;
               mediaUrl = `/media/${filename}`;
+              // Attach media metadata to the stored message so /api/messages can expose it
               msg._mediaUrl = mediaUrl;
               msg._mediaType = mediaType;
               msg._mediaMime = mimeType;
@@ -168,6 +162,7 @@ export function handleIncomingMessages(session) {
         const senderDisplay = senderJid.includes('@g.us') ? senderJid : senderJid.split('@')[0];
         const displayText = text || `[${messageType || 'Unknown'}]`;
         if (msg.key.fromMe) {
+          // Self-sent message (e.g. admin sending to themselves): track only as sent
           trackSent(session, senderDisplay, displayText);
         } else {
           trackReceived(session, senderDisplay, displayText);
@@ -319,4 +314,12 @@ export function handleIncomingMessages(session) {
     const resolvedEvents = await Promise.all(events);
     session.eventQueue.push(...resolvedEvents);
   });
+}
+
+export function getQuotedMessage(session, quotedMessageId) {
+  if (!quotedMessageId) return undefined;
+  const rawMsg = session.messageStore.get(quotedMessageId);
+  if (rawMsg) return rawMsg;
+  logger.warn({ quotedMessageId, sessionId: session.id }, 'Quoted message not found in store');
+  return undefined;
 }

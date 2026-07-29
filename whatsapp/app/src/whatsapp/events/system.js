@@ -1,9 +1,9 @@
+import { logger } from '../../logger.js';
 import { ADDON_VERSION, INTEGRATION_VERSION } from '../../config.js';
 import { SYSTEM_STATE, saveSystemState } from '../../state.js';
 import { fetchHAVersions, fetchHALogs } from '../../ha.js';
 import { formatDuration, formatHATime } from '../../utils/format.js';
 import { notifyAdmins } from '../actions.js';
-import { logger } from '../../logger.js';
 
 export function getChangelogUrl(repo, version, defaultBranch = 'main') {
   if (!version || version === 'Unknown') {
@@ -12,6 +12,7 @@ export function getChangelogUrl(repo, version, defaultBranch = 'main') {
 
   const cleanVer = version.trim();
 
+  // Try extracting explicit git commit SHA
   let commitSha = null;
   const gitPrefixMatch = cleanVer.match(/(?:-g|git-|\/commit\/)([0-9a-f]{7,40})/i);
   const fullShaMatch = cleanVer.match(/\b([0-9a-f]{40})\b/i);
@@ -21,6 +22,7 @@ export function getChangelogUrl(repo, version, defaultBranch = 'main') {
   } else if (fullShaMatch) {
     commitSha = fullShaMatch[1];
   } else if (/^[0-9a-f]{7,40}$/i.test(cleanVer) && /[a-f]/i.test(cleanVer)) {
+    // Only treat as short SHA if it contains hex letters (a-f) to prevent matching date strings like 20260722
     commitSha = cleanVer;
   }
 
@@ -107,6 +109,8 @@ export async function monitorHACore(session) {
   }
 
   session.haMonitorInterval = setInterval(async () => {
+    // Only force refresh if HA is currently offline (to detect restoration quickly)
+    // Otherwise use cached versions (15m TTL) to minimize Supervisor API noise.
     const forceRefresh = !!SYSTEM_STATE.last_ha_disconnect_time;
     const haVersions = await fetchHAVersions(forceRefresh);
     const isOnline = haVersions.core !== 'Unknown';
@@ -125,5 +129,5 @@ export async function monitorHACore(session) {
         logger.debug('Silent fail on System Updates check:', e.message)
       );
     }
-  }, 120000);
+  }, 120000); // Poll every 2 minutes
 }
