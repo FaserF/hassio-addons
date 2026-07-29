@@ -72,8 +72,15 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     saveCreds = authResult.saveCreds;
   } catch (err) {
     session.isConnecting = false;
-    logger.error({ sessionId, error: err.message }, '💥 Failed to load auth state (corrupted creds?)');
-    addLog(session, `Failed to load auth state: ${err.message} — try resetting credentials.`, 'error');
+    logger.error(
+      { sessionId, error: err.message },
+      '💥 Failed to load auth state (corrupted creds?)'
+    );
+    addLog(
+      session,
+      `Failed to load auth state: ${err.message} — try resetting credentials.`,
+      'error'
+    );
     setHealthStatus('faulty', `Failed to load auth state: ${err.message}`);
     return;
   }

@@ -215,9 +215,13 @@ async function updateDashboard() {
       stats.totalReconnects ?? data.reconnectAttempts ?? 0;
 
     // Render streams lists (always escape content to prevent XSS)
-    const esc = (v) => String(v == null ? '' : v)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    const esc = (v) =>
+      String(v == null ? '' : v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
     document.getElementById('list-sent').innerHTML = (data.recentSent || []).length
       ? data.recentSent
