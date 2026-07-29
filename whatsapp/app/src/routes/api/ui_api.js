@@ -11,6 +11,15 @@ export function registerUiApiRoutes(app) {
     const messages = Array.from(session.messageStore.values());
     const JidMap = {};
 
+    // Build name lookup map from contactCache and pushNames in stored messages
+    const contactNames = new Map();
+    if (session.contactCache) {
+      for (const [cId, contact] of session.contactCache.entries()) {
+        const cName = contact.name || contact.notify || contact.verifiedName;
+        if (cName) contactNames.set(cId, cName);
+      }
+    }
+
     messages.forEach((msg) => {
       if (!msg.key || !msg.key.remoteJid) return;
       const jid = msg.key.remoteJid;
@@ -19,32 +28,35 @@ export function registerUiApiRoutes(app) {
       const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
       const previewText = getMessageText(msg);
 
-      if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
-        let name = jid.split('@')[0];
-        if (jid.endsWith('@g.us')) {
-          if (session.groupCache && session.groupCache.has(jid)) {
-            name = session.groupCache.get(jid);
-          } else {
-            name = `Group (${jid.split('@')[0]})`;
-          }
-        } else if (msg.pushName) {
-          name = msg.pushName;
-        }
+      // Collect pushName for contact if present
+      if (!jid.endsWith('@g.us') && msg.pushName && !contactNames.has(jid)) {
+        contactNames.set(jid, msg.pushName);
+      }
 
+      if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
         JidMap[jid] = {
           jid,
-          name,
+          name: jid.split('@')[0],
           preview: previewText,
           timestamp: msgTime,
           fromMe: msg.key.fromMe || false,
         };
-      } else if (!jid.endsWith('@g.us') && msg.pushName && JidMap[jid] && JidMap[jid].name === jid.split('@')[0]) {
-        JidMap[jid].name = msg.pushName;
       }
     });
 
+    // Resolve final display names
     const chats = Object.values(JidMap)
       .filter((c) => c.preview && c.preview.trim().length > 0)
+      .map((c) => {
+        if (c.jid.endsWith('@g.us')) {
+          if (session.groupCache && session.groupCache.has(c.jid)) {
+            c.name = session.groupCache.get(c.jid);
+          }
+        } else if (contactNames.has(c.jid)) {
+          c.name = contactNames.get(c.jid);
+        }
+        return c;
+      })
       .sort((a, b) => b.timestamp - a.timestamp);
     res.json(chats);
   });
