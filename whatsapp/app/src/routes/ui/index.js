@@ -643,6 +643,12 @@ function renderDashboard(sessionId) {
     if (sidebarToggleBtn) {
         sidebarToggleBtn.addEventListener('click', toggleSidebar);
     }
+    document.addEventListener('click', function (e) {
+        var target = e.target;
+        if (target && (target.id === 'sidebar-toggle-btn' || (target.closest && target.closest('#sidebar-toggle-btn')))) {
+            toggleSidebar(e);
+        }
+    });
 
     // Restore sidebar state from last visit (default: expanded)
     var sidebar = document.querySelector('.sidebar');
