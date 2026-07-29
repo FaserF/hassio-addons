@@ -15,17 +15,21 @@ export function getJid(number) {
   }
 
   // 3. Clean all non-numeric characters (e.g. + for phone numbers)
-  const cleanNumber = number.replace(/\D/g, '');
+  let cleanNumber = number.replace(/\D/g, '');
 
-  // 4. Heuristic for Group IDs vs Personal Numbers
+  // 4. Handle European/German national trunk zero in international numbers e.g. 490176... -> 49176...
+  // Matches country code (1-3 digits) followed by a 0 and 8+ digits
+  if (/^(49|43|41|33|44|31|32|34|39|48)0(\d{8,})$/.test(cleanNumber)) {
+    cleanNumber = cleanNumber.replace(/^(49|43|41|33|44|31|32|34|39|48)0/, '$1');
+  }
+
+  // 5. Heuristic for Group IDs vs Personal Numbers
   if (cleanNumber.length >= 16) {
     return `${cleanNumber}@g.us`;
   }
 
-  // 5. Default to the standard WhatsApp user domain
-  return number.endsWith('@s.whatsapp.net') || number.endsWith('@g.us')
-    ? number
-    : `${number}@s.whatsapp.net`;
+  // 6. Default to the standard WhatsApp user domain
+  return `${cleanNumber}@s.whatsapp.net`;
 }
 
 /**
