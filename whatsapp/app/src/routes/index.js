@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerAPIRoutes } from './api.js';
+import { registerAPIRoutes } from './api/index.js';
 import { registerUIRoutes } from './ui.js';
 import { apiLimiter, uiLimiter, ipFilterMiddleware } from '../middleware.js';
 import { MEDIA_DIR } from '../config.js';
