@@ -289,7 +289,11 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         session.currentQR = null;
         session.qrGenerated = false;
         logger.info({ sessionId }, '⌛ QR Code expired, auto-cleared QR state for fresh retry.');
-        addLog(session, 'QR Code expired. Click reconnect or refresh to generate a new QR Code.', 'warning');
+        addLog(
+          session,
+          'QR Code expired. Click reconnect or refresh to generate a new QR Code.',
+          'warning'
+        );
       }
 
       logger.warn(
