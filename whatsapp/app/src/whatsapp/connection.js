@@ -212,6 +212,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
       if (isLoggedOut) {
         disconnectReason = 'Session Expired / Logged Out';
+      } else if (statusCode === 405) {
+        disconnectReason = 'Rate Limited by WhatsApp (Code 405)';
       } else if (
         ['ENOTFOUND', 'EAI_AGAIN', 'EHOSTUNREACH', 'ETIMEDOUT', 'ECONNRESET'].includes(errorCode)
       ) {
@@ -278,7 +280,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
         setHealthStatus('running', `Disconnected: ${disconnectReason}`);
 
-        const baseDelay = 3000;
+        const baseDelay = statusCode === 405 ? 15000 : 3000;
         const failDuration = Date.now() - session.firstFailureTime;
         const reconnectDelay = failDuration > 15 * 60 * 1000 ? 120000 : baseDelay;
 
