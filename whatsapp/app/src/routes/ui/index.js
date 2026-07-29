@@ -135,6 +135,9 @@ function renderDashboard(sessionId) {
                 <a href="https://github.com/expressjs/express" target="_blank" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span></a>
                 <a href="https://alpinelinux.org" target="_blank" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span></a>
             </div>
+            <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading...">
+                <i class="fas fa-info"></i>
+            </div>
         </div>
     </aside>
 
@@ -408,32 +411,6 @@ function renderDashboard(sessionId) {
                             </div>
                         </div>
                     </div>
-
-                    <div id="msg-context-menu" class="msg-context-menu" style="display:none;">
-                        <div class="ctx-reactions-row" style="display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid var(--border-color);margin-bottom:4px;justify-content:space-between;">
-                            <span onclick="sendReaction('👍')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">👍</span>
-                            <span onclick="sendReaction('❤️')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">❤️</span>
-                            <span onclick="sendReaction('😂')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😂</span>
-                            <span onclick="sendReaction('😮')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😮</span>
-                            <span onclick="sendReaction('😢')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😢</span>
-                            <span onclick="sendReaction('🙏')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">🙏</span>
-                        </div>
-                        <button onclick="ctxReact(event)"><i class="far fa-smile"></i> More Reactions</button>
-                        <button onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</button>
-                        <button onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy</button>
-                        <button onclick="ctxForward()"><i class="fas fa-share"></i> Forward</button>
-                        <hr style="border-color:var(--border-color);margin:4px 0;">
-                        <button onclick="ctxDelete()" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete for me</button>
-                    </div>
-
-                    <div id="reaction-picker" class="reaction-picker" style="display:none;">
-                        <span onclick="sendReaction('👍')">👍</span>
-                        <span onclick="sendReaction('❤️')">❤️</span>
-                        <span onclick="sendReaction('😂')">😂</span>
-                        <span onclick="sendReaction('😮')">😮</span>
-                        <span onclick="sendReaction('😢')">😢</span>
-                        <span onclick="sendReaction('🙏')">🙏</span>
-                    </div>
                 </div>
             </section>
 
@@ -482,7 +459,33 @@ function renderDashboard(sessionId) {
           </div>
         </form>
       </div>
-    </div>
+  </div>
+
+  <!-- Context Menu & Reaction Picker -->
+  <div id="msg-context-menu" class="msg-context-menu" style="display:none;">
+      <div class="ctx-reactions-row" style="display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid var(--border-color);margin-bottom:4px;justify-content:space-between;">
+          <span onclick="sendReaction('👍')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">👍</span>
+          <span onclick="sendReaction('❤️')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">❤️</span>
+          <span onclick="sendReaction('😂')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😂</span>
+          <span onclick="sendReaction('😮')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😮</span>
+          <span onclick="sendReaction('😢')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😢</span>
+          <span onclick="sendReaction('🙏')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">🙏</span>
+      </div>
+      <button onclick="ctxReact(event)"><i class="far fa-smile"></i> More Reactions</button>
+      <button onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</button>
+      <button onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy</button>
+      <button onclick="ctxForward()"><i class="fas fa-share"></i> Forward</button>
+      <hr style="border-color:var(--border-color);margin:4px 0;">
+      <button onclick="ctxDelete()" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete for me</button>
+  </div>
+
+  <div id="reaction-picker" class="reaction-picker" style="display:none;">
+      <span onclick="sendReaction('👍')">👍</span>
+      <span onclick="sendReaction('❤️')">❤️</span>
+      <span onclick="sendReaction('😂')">😂</span>
+      <span onclick="sendReaction('😮')">😮</span>
+      <span onclick="sendReaction('😢')">😢</span>
+      <span onclick="sendReaction('🙏')">🙏</span>
   </div>
 
   <script>

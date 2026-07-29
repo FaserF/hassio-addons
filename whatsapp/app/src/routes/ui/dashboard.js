@@ -36,6 +36,14 @@ async function updateDashboard() {
     document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
     document.getElementById('express-version').textContent = data.expressVersion || 'N/A';
 
+    const infoBadge = document.getElementById('sidebar-info-badge');
+    if (infoBadge) {
+      infoBadge.setAttribute(
+        'data-tooltip',
+        `Addon: ${data.addonVersion || 'N/A'}\nIntegration: ${data.integrationVersion || 'N/A'}\nBaileys: ${data.baileysVersion || 'N/A'}\nNode: ${data.nodeVersion || 'N/A'}\nExpress: ${data.expressVersion || 'N/A'}\nAlpine: ${data.alpineVersion || 'N/A'}`
+      );
+    }
+
     // Dev/Beta releases banner
     const addonVer = data.addonVersion || '';
     const intVer = data.integrationVersion || '';

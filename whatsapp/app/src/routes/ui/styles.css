@@ -34,9 +34,9 @@
   --info: #3498db;
 
   /* Layout */
-  --sidebar-width: 280px;
-  --sidebar-collapsed-width: 68px;
-  --header-height: 70px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 64px;
   --border-radius: 16px;
   --border-radius-sm: 8px;
   --transition-speed: 0.2s;
@@ -109,39 +109,36 @@ body {
 .sidebar.collapsed .logo-text,
 .sidebar.collapsed .sidebar-footer .sys-info-text,
 .sidebar.collapsed .sidebar-footer .sys-info-title {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  pointer-events: none;
+  display: none !important;
 }
 
 .sidebar.collapsed .sidebar-header {
-  padding: 0;
-  justify-content: center;
+  padding: 0 12px;
+  justify-content: space-between;
 }
 
-.sidebar.collapsed .logo {
-  gap: 0;
+.sidebar.collapsed .logo-icon {
+  font-size: 24px;
 }
 
 .sidebar.collapsed .nav-menu {
-  padding: 16px 10px;
+  padding: 16px 8px;
+  align-items: center;
 }
 
 .sidebar.collapsed .nav-item {
   padding: 12px 0;
   justify-content: center;
+  width: 48px;
+  height: 48px;
   gap: 0;
   position: relative;
+  border-radius: 12px;
 }
 
 /* Hide label text in nav items when collapsed */
 .sidebar.collapsed .nav-item > span {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  pointer-events: none;
+  display: none !important;
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -149,31 +146,57 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+}
+
+.sidebar-info-badge {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-speed) ease;
+}
+
+.sidebar-info-badge:hover {
+  background-color: var(--primary-glow);
+  color: var(--primary);
+}
+
+.sidebar.collapsed .sidebar-info-badge {
+  display: flex;
 }
 
 /* Tooltip shown on hover when sidebar is collapsed */
-.sidebar.collapsed .nav-item::after {
+.sidebar.collapsed .nav-item::after,
+.sidebar.collapsed .sidebar-info-badge::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: calc(100% + 12px);
+  left: calc(100% + 14px);
   top: 50%;
   transform: translateY(-50%);
   background: var(--bg-card);
   color: var(--text-main);
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: var(--border-radius-sm);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: pre-wrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-premium);
   z-index: 1000;
 }
 
-.sidebar.collapsed .nav-item:hover::after {
+.sidebar.collapsed .nav-item:hover::after,
+.sidebar.collapsed .sidebar-info-badge:hover::after {
   opacity: 1;
 }
 
@@ -2000,27 +2023,54 @@ code {
   left: 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  padding: 10px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-premium);
+  padding: 12px 8px;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  max-height: 220px;
+  max-height: 230px;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 200;
-  width: 280px;
+  width: 320px;
+  box-sizing: border-box;
 }
+
+.emoji-picker::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emoji-picker::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.emoji-picker::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.emoji-picker::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 .emoji-picker span {
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
-  border-radius: 6px;
-  padding: 4px;
-  text-align: center;
-  transition: background 0.1s;
+  border-radius: 8px;
+  padding: 6px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+  user-select: none;
 }
+
 .emoji-picker span:hover {
   background: var(--bg-input);
+  transform: scale(1.2);
 }
 
 .msg-quote {
