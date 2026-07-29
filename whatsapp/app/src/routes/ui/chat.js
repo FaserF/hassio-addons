@@ -3,6 +3,45 @@
 let lastLoadedMessagesCache = {};
 let lastChatsCache = '';
 
+function openNewChatModal() {
+  const modal = document.getElementById('new-chat-modal');
+  if (modal) {
+    modal.classList.add('show');
+    const inp = document.getElementById('new-chat-number');
+    if (inp) {
+      inp.value = '';
+      inp.focus();
+    }
+  }
+}
+
+function closeNewChatModal() {
+  const modal = document.getElementById('new-chat-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function startNewChatSubmit(e) {
+  e.preventDefault();
+  const inp = document.getElementById('new-chat-number');
+  if (!inp || !inp.value.trim()) return;
+
+  let raw = inp.value.trim();
+  let jid = raw;
+  if (!jid.includes('@')) {
+    const cleanNum = jid.replace(/[^0-9]/g, '');
+    if (!cleanNum) {
+      showToast('Invalid phone number', 'danger');
+      return;
+    }
+    jid = `${cleanNum}@s.whatsapp.net`;
+  }
+
+  closeNewChatModal();
+  const displayName = jid.split('@')[0];
+  selectChat(jid, displayName);
+  showToast(`Chat initialized for ${displayName}`, 'success');
+}
+
 async function loadChats() {
   if (!isChatTabActive) return;
   try {

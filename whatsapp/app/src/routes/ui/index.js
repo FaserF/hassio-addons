@@ -287,10 +287,13 @@ function renderDashboard(sessionId) {
                 <div class="chat-container-layout">
                     <div class="chat-list-panel">
                         <div class="chat-list-header">
-                            <div class="search-box-wrapper">
+                            <div class="search-box-wrapper" style="flex:1;">
                                 <i class="fas fa-search search-icon"></i>
-                                <input type="text" id="chat-search" class="chat-search-input" placeholder="Search or start new chat..." oninput="filterChatList()">
+                                <input type="text" id="chat-search" class="chat-search-input" placeholder="Search chats..." oninput="filterChatList()">
                             </div>
+                            <button class="btn btn-primary btn-sm" style="border-radius:50%;width:36px;height:36px;padding:0;flex-shrink:0;" title="Start New Chat" onclick="openNewChatModal()">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                         <div class="chat-list-items" id="chat-list-items">
                             <div class="empty-state">No conversations active yet</div>
@@ -399,6 +402,26 @@ function renderDashboard(sessionId) {
       <div class="modal-footer">
         <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
         <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Confirm</button>
+      </div>
+  <!-- New Chat Modal Dialog -->
+  <div class="modal-overlay" id="new-chat-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-comment-medical" style="color:var(--primary);margin-right:8px;"></i> Start New Chat</h3>
+        <button class="modal-close-btn" onclick="closeNewChatModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="startNewChatSubmit(event)">
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Phone Number or Chat JID</label>
+            <input type="text" id="new-chat-number" class="chat-message-input" placeholder="e.g. 4917612345678 or 4917612345678@s.whatsapp.net" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);" required>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Include country code without + or spaces (e.g. 49... for Germany).</p>
+          </div>
+          <div class="modal-footer" style="margin-top:16px;padding:0;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Open Chat</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
