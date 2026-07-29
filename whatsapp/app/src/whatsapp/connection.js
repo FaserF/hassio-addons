@@ -86,6 +86,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       connectTimeoutMs: 90000,
       defaultQueryTimeoutMs: 90000,
       retryRequestDelayMs: 5000,
+      generateHighQualityLinkPreview: true,
+      linkPreviewImageOptions: {
+        resolveDNSHost: true,
+      },
       getMessage: async (key) => {
         if (session.messageStore.has(key.id)) {
           return session.messageStore.get(key.id).message;

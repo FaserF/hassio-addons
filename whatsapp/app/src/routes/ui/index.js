@@ -143,7 +143,10 @@ function renderDashboard(sessionId) {
 
     <main class="main-content">
         <header class="top-header">
-            <div class="header-left">
+            <div class="header-left" style="display:flex;align-items:center;gap:12px;">
+                <button class="sidebar-toggle-btn header-toggle-btn" id="header-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h1 class="header-title" id="page-title">Dashboard</h1>
             </div>
             <div class="header-actions">
@@ -560,6 +563,7 @@ function renderDashboard(sessionId) {
         const isCollapsed = sidebar.classList.toggle('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
     }
+    window.toggleSidebar = toggleSidebar;
 
     // Restore sidebar state from last visit (default: expanded)
     if (localStorage.getItem('sidebarCollapsed') === '1') {

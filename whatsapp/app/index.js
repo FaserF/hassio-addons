@@ -44,7 +44,7 @@ app.use(ingressPrefixMiddleware);
 registerRoutes(app);
 
 // --- Start Server ---
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info({ port: PORT }, 'WhatsApp API listening');
   logger.info('✅ Service ready - Health check available at /health');
   setHealthStatus('running', 'API server is listening');
@@ -89,7 +89,6 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   // Start background tasks
   startSessionCleanupTask(deleteSession);
 });
-if (server.unref) server.unref();
 
 async function handleShutdown(signal) {
   logger.info({ signal }, '👋 Shutdown signal received. Saving state and cleaning up...');
