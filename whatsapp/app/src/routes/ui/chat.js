@@ -277,8 +277,22 @@ function showContextMenu(e, msgId) {
   ctxTargetMsg = document.querySelector(`[data-msg-id="${msgId}"]`);
   const menu = document.getElementById('msg-context-menu');
   menu.style.display = 'block';
-  menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
-  menu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+
+  const menuWidth = menu.offsetWidth || 180;
+  const menuHeight = menu.offsetHeight || 220;
+
+  let left = e.clientX;
+  let top = e.clientY;
+
+  if (left + menuWidth > window.innerWidth - 10) {
+    left = Math.max(10, e.clientX - menuWidth);
+  }
+  if (top + menuHeight > window.innerHeight - 10) {
+    top = Math.max(10, e.clientY - menuHeight);
+  }
+
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
 }
 
 function ctxReply() {
@@ -313,8 +327,17 @@ function ctxReact(e) {
   const rect = ctxTargetMsg.getBoundingClientRect();
   const picker = document.getElementById('reaction-picker');
   picker.style.display = 'flex';
-  picker.style.left = Math.min(rect.left + 20, window.innerWidth - 250) + 'px';
-  picker.style.top = Math.max(10, rect.top - 45) + 'px';
+
+  const pickerWidth = picker.offsetWidth || 240;
+  let left = rect.left + 20;
+  if (left + pickerWidth > window.innerWidth - 10) {
+    left = Math.max(10, window.innerWidth - pickerWidth - 20);
+  }
+  let top = rect.top - 45;
+  if (top < 10) top = rect.bottom + 10;
+
+  picker.style.left = left + 'px';
+  picker.style.top = top + 'px';
 }
 
 function ctxDelete() {
@@ -339,13 +362,24 @@ function cancelReply() {
 
 let reactionTargetMsgId = null;
 function showReactionPicker(e, msgId) {
-  e.stopPropagation();
+  if (e) e.stopPropagation();
   closeAllOverlays();
   reactionTargetMsgId = msgId;
   const picker = document.getElementById('reaction-picker');
   picker.style.display = 'flex';
-  picker.style.left = Math.min(e.clientX, window.innerWidth - 250) + 'px';
-  picker.style.top = e.clientY - 60 + 'px';
+
+  const pickerWidth = picker.offsetWidth || 240;
+  let left = e.clientX ? e.clientX - 100 : window.innerWidth / 2;
+  if (left + pickerWidth > window.innerWidth - 10) {
+    left = Math.max(10, window.innerWidth - pickerWidth - 15);
+  }
+  if (left < 10) left = 10;
+
+  let top = e.clientY ? e.clientY - 60 : window.innerHeight / 2;
+  if (top < 10) top = (e.clientY || 100) + 20;
+
+  picker.style.left = left + 'px';
+  picker.style.top = top + 'px';
 }
 
 function showReactionBtn(e, msgId) {
