@@ -734,7 +734,10 @@ function closeAllOverlays(e) {
     return;
   }
   const ctx = document.getElementById('msg-context-menu');
-  if (ctx) { ctx.style.display = 'none'; ctx.style.visibility = ''; }
+  if (ctx) {
+    ctx.style.display = 'none';
+    ctx.style.visibility = '';
+  }
   const rx = document.getElementById('reaction-picker');
   if (rx) rx.style.display = 'none';
   const em = document.getElementById('emoji-picker');

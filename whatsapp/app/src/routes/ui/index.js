@@ -15,11 +15,7 @@ const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:
 function getLocalIP() {
   const nets = os.networkInterfaces();
   let fallback = null;
-  const privateRanges = [
-    /^192\.168\./,
-    /^10\./,
-    /^172\.(1[6-9]|2[0-9]|3[01])\./,
-  ];
+  const privateRanges = [/^192\.168\./, /^10\./, /^172\.(1[6-9]|2[0-9]|3[01])\./];
   for (const iface of Object.values(nets)) {
     for (const addr of iface || []) {
       if (addr.family !== 'IPv4' || addr.internal) continue;
