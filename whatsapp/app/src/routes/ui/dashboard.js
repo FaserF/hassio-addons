@@ -48,6 +48,16 @@ async function updateDashboard() {
     document.getElementById('dev-banner').style.display = isDev ? 'flex' : 'none';
 
     // Standalone mode adjustments
+    const hostUriLabel = document.getElementById('label-host-uri');
+    if (hostUriLabel) {
+      hostUriLabel.textContent = data.isStandalone ? 'Gateway Host / Domain URI' : 'Addon Host URI';
+    }
+    const setupCardTitle = document.getElementById('setup-card-title');
+    if (setupCardTitle) {
+      setupCardTitle.innerHTML = data.isStandalone
+        ? '<i class="fas fa-network-wired"></i> Connection Setup'
+        : '<i class="fas fa-home"></i> Home Assistant Setup';
+    }
     if (data.isStandalone) {
       document.title = 'WhatsApp Gateway';
       const subtitle = document.getElementById('logo-subtitle');

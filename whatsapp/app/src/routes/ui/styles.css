@@ -169,7 +169,7 @@ body {
   opacity: 0;
   transition: opacity 0.15s ease;
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }
 
@@ -209,7 +209,9 @@ body {
 .nav-item > span,
 .sidebar-footer .sys-info-text,
 .sidebar-footer .sys-info-title {
-  transition: opacity 0.2s ease, width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.2s ease,
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -384,13 +386,19 @@ body {
 
 /* Chat Info Drawer Styles */
 .chat-info-drawer {
-  width: 340px;
+  width: 360px;
+  max-width: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   border-left: 1px solid var(--border-color);
   background-color: var(--bg-card);
   display: flex;
   flex-direction: column;
   height: 100%;
-  z-index: 15;
+  z-index: 50;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
   animation: drawerSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -1523,6 +1531,7 @@ code {
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
   background-color: var(--card-bg);
 }
 .chat-list-panel {
@@ -1929,6 +1938,35 @@ code {
 }
 .msg-context-menu button:hover {
   background: var(--bg-input);
+}
+
+.msg-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.msg-button-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: var(--text-main);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.msg-button-item:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .reaction-picker {

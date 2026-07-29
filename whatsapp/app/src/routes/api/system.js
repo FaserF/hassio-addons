@@ -93,7 +93,7 @@ export function registerSystemRoutes(app) {
       baileysVersion: BAILEYS_VERSION,
       expressVersion: EXPRESS_VERSION,
       addonSlug: ADDON_SLUG,
-      isStandalone: false,
+      isStandalone: !process.env.SUPERVISOR_TOKEN,
     });
   });
 

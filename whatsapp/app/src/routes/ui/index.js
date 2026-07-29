@@ -195,10 +195,10 @@ function renderDashboard(sessionId) {
                     </div>
 
                     <div class="card">
-                        <div class="card-title"><i class="fas fa-home"></i> Home Assistant Setup</div>
+                        <div class="card-title" id="setup-card-title"><i class="fas fa-home"></i> Home Assistant Setup</div>
                         <div class="details-box">
                             <div class="details-item">
-                                <span class="details-label">Addon Host URI</span>
+                                <span class="details-label" id="label-host-uri">Addon Host URI</span>
                                 <code>http://${os.hostname()}:${PORT}</code>
                             </div>
                             <div class="details-item">

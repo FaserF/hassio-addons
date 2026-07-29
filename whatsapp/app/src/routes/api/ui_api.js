@@ -140,6 +140,51 @@ export function registerUiApiRoutes(app) {
           ? 'You'
           : msg.pushName || (participant ? participant.split('@')[0] : targetJid.split('@')[0]);
 
+        let buttons = [];
+        let rawMsg = msg.message;
+        if (rawMsg?.ephemeralMessage) rawMsg = rawMsg.ephemeralMessage.message;
+        if (rawMsg?.viewOnceMessage) rawMsg = rawMsg.viewOnceMessage.message;
+        if (rawMsg?.viewOnceMessageV2) rawMsg = rawMsg.viewOnceMessageV2.message;
+
+        if (rawMsg?.buttonsMessage?.buttons) {
+          buttons = rawMsg.buttonsMessage.buttons.map((b) => ({
+            id: b.buttonId || b.nativeFlowInfo?.name || '',
+            text: b.buttonText?.displayText || b.nativeFlowInfo?.name || 'Button',
+          }));
+        } else if (rawMsg?.templateMessage?.hydratedTemplate?.hydratedButtons) {
+          buttons = rawMsg.templateMessage.hydratedTemplate.hydratedButtons.map((b) => {
+            if (b.quickReplyButton) {
+              return { id: b.quickReplyButton.id, text: b.quickReplyButton.displayText };
+            }
+            if (b.urlButton) {
+              return {
+                id: b.urlButton.url,
+                text: `🔗 ${b.urlButton.displayText}`,
+                url: b.urlButton.url,
+              };
+            }
+            if (b.callButton) {
+              return { id: b.callButton.phoneNumber, text: `📞 ${b.callButton.displayText}` };
+            }
+            return { id: '', text: 'Button' };
+          });
+        } else if (rawMsg?.interactiveMessage?.nativeFlowMessage?.buttons) {
+          buttons = rawMsg.interactiveMessage.nativeFlowMessage.buttons.map((b) => ({
+            id: b.name || '',
+            text: b.buttonParamsJson
+              ? JSON.parse(b.buttonParamsJson)?.display_text || b.name
+              : b.name,
+          }));
+        } else if (rawMsg?.listMessage?.sections) {
+          rawMsg.listMessage.sections.forEach((sec) => {
+            if (sec.rows) {
+              sec.rows.forEach((r) => {
+                buttons.push({ id: r.rowId, text: r.title, description: r.description });
+              });
+            }
+          });
+        }
+
         return {
           id: msg.key.id,
           fromMe: msg.key.fromMe || false,
@@ -154,6 +199,7 @@ export function registerUiApiRoutes(app) {
           quotedId,
           quotedText,
           quotedSender,
+          buttons,
           ack: msg._ack != null ? msg._ack : msg.status != null ? msg.status : null,
           reactions: msg._reactions || [],
           starred: msg.starred || false,

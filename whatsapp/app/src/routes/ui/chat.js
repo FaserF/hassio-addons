@@ -251,6 +251,27 @@ function renderMediaBlock(m) {
             </a>`;
 }
 
+function renderButtons(m) {
+  if (!m.buttons || m.buttons.length === 0) return '';
+  const btnsHtml = m.buttons
+    .map(
+      (b) =>
+        `<button class="msg-button-item" onclick="sendInteractiveReply('${escapeAttr(b.id || b.text)}','${escapeAttr(b.text)}')">
+          <i class="fas fa-reply"></i> ${escapeHtml(b.text)}
+        </button>`
+    )
+    .join('');
+  return `<div class="msg-buttons-container">${btnsHtml}</div>`;
+}
+
+function sendInteractiveReply(btnId, btnText) {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.value = btnText || btnId;
+    sendMessage();
+  }
+}
+
 function renderAck(m) {
   if (!m.fromMe || m.ack == null) return '';
   const levels = {
@@ -338,6 +359,7 @@ async function loadChatMessages(jid) {
             : '';
         const ackBlock = renderAck(m);
         const reactBlock = renderReactions(m);
+        const buttonsBlock = renderButtons(m);
 
         return `<div class="msg-bubble-row ${direction}" data-msg-id="${m.id}" data-msg-text="${escapeAttr(m.text || m.caption || '')}" data-sender="${escapeAttr(m.senderName || '')}"
                          oncontextmenu="showContextMenu(event,'${m.id}')">
@@ -347,6 +369,7 @@ async function loadChatMessages(jid) {
                             ${mediaBlock}
                             ${textBlock}
                             ${captionBlock}
+                            ${buttonsBlock}
                             <div class="msg-bubble-time">${timeStr}${ackBlock}</div>
                         </div>
                         ${reactBlock}
@@ -444,18 +467,34 @@ function ctxReact(e) {
   reactionTargetMsgId = msgId;
   const rect = ctxTargetMsg.getBoundingClientRect();
   const picker = document.getElementById('reaction-picker');
+
+  picker.style.visibility = 'hidden';
+  picker.style.left = '0px';
+  picker.style.top = '0px';
   picker.style.display = 'flex';
 
-  const pickerWidth = picker.offsetWidth || 240;
-  let left = rect.left + 20;
-  if (left + pickerWidth > window.innerWidth - 10) {
-    left = Math.max(10, window.innerWidth - pickerWidth - 20);
-  }
-  let top = rect.top - 45;
-  if (top < 10) top = rect.bottom + 10;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const pickerWidth = picker.offsetWidth || 240;
+      const pickerHeight = picker.offsetHeight || 50;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 10;
 
-  picker.style.left = left + 'px';
-  picker.style.top = top + 'px';
+      let left = rect.left + 20;
+      if (left + pickerWidth > vw - margin) {
+        left = Math.max(margin, vw - pickerWidth - margin);
+      }
+      if (left < margin) left = margin;
+
+      let top = rect.top - 45;
+      if (top < margin) top = Math.min(vh - pickerHeight - margin, rect.bottom + 10);
+
+      picker.style.left = left + 'px';
+      picker.style.top = top + 'px';
+      picker.style.visibility = 'visible';
+    });
+  });
 }
 
 function ctxDelete() {
