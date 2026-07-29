@@ -180,15 +180,20 @@ async function updateDashboard() {
     document.getElementById('stat-received').textContent = stats.received || 0;
     document.getElementById('stat-failed').textContent = stats.failed || 0;
 
-    let uptimeStr = data.uptime || '00:00:00';
-    if (stats.start_time) {
-      const diffSec = Math.floor((Date.now() - stats.start_time) / 1000);
-      if (diffSec > 0) {
-        const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
-        const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
-        const secs = String(diffSec % 60).padStart(2, '0');
-        uptimeStr = `${hrs}:${mins}:${secs}`;
-      }
+    // Uptime: prefer start_time from stats (epoch ms), fall back to server process uptime
+    let uptimeStr = '00:00:00';
+    if (stats.start_time && stats.start_time > 0) {
+      const diffSec = Math.max(0, Math.floor((Date.now() - stats.start_time) / 1000));
+      const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+      const secs = String(diffSec % 60).padStart(2, '0');
+      uptimeStr = `${hrs}:${mins}:${secs}`;
+    } else if (data.uptimeSeconds > 0) {
+      const diffSec = data.uptimeSeconds;
+      const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+      const secs = String(diffSec % 60).padStart(2, '0');
+      uptimeStr = `${hrs}:${mins}:${secs}`;
     }
     document.getElementById('val-uptime').textContent = uptimeStr;
     document.getElementById('val-reconnects').textContent =

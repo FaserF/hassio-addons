@@ -236,26 +236,19 @@ export async function deleteSession(sessionId) {
  */
 export function signalInterest(sessionId, connectFn) {
   const session = getSession(sessionId);
-  const now = Date.now();
-  const alreadyInterested = now - session.lastInterestTime < 60000;
-  session.lastInterestTime = now;
+  session.lastInterestTime = Date.now(); // Needed by connectToWhatsApp to know the user is watching
 
-  if (
-    (!alreadyInterested || !session.sock || sessionId === 'default') &&
-    !session.isConnected &&
-    (!session.sock || session.sock.ws?.isClosed)
-  ) {
-    const authDir = getAuthDir(sessionId);
-    const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
-
-    if (!hasCreds || (sessionId === 'default' && !session.sock)) {
-      logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
-      addLog(session, 'Interest signaled - initiating connection...', 'info');
-      connectFn(sessionId, sessions, getSession).catch((err) => {
-        logger.error({ error: err.message, sessionId }, 'Failed to start WhatsApp connection');
-        addLog(session, `Failed to start connection: ${err.message}`, 'error');
-      });
-    }
+  // Trigger a connection attempt whenever the socket is missing or closed.
+  // connectToWhatsApp itself guards against duplicate/redundant connects via
+  // session.isConnecting and session.isConnected checks - no guard needed here.
+  const socketMissing = !session.sock || session.sock.ws?.isClosed;
+  if (!session.isConnected && socketMissing) {
+    logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
+    addLog(session, 'Interest signaled - initiating connection...', 'info');
+    connectFn(sessionId, sessions, getSession).catch((err) => {
+      logger.error({ error: err.message, sessionId }, 'Failed to start WhatsApp connection');
+      addLog(session, `Failed to start connection: ${err.message}`, 'error');
+    });
   }
 }
 

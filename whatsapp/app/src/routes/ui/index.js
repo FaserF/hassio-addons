@@ -3,8 +3,9 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { uiAuthMiddleware } from '../../middleware.js';
-import { getSession, sanitizeSessionId, sessions } from '../../session.js';
+import { getSession, sanitizeSessionId, sessions, signalInterest } from '../../session.js';
 import { API_TOKEN, PORT, DATA_DIR } from '../../config.js';
+import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
@@ -89,6 +90,11 @@ export function registerUIRoutes(app) {
       }
     }
     sessionId = sanitizeSessionId(sessionId);
+
+    // Signal interest so the WhatsApp connection starts (QR code generation, reconnect, etc.)
+    // This is the critical call that triggers connectToWhatsApp for the active session.
+    signalInterest(sessionId, connectToWhatsApp);
+
     res.send(renderDashboard(sessionId));
   });
 }

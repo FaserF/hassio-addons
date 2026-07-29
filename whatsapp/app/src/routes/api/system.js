@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { authMiddleware, uiAuthMiddleware } from '../../middleware.js';
-import { getSession, sessions, sanitizeSessionId, addLog } from '../../session.js';
+import { getSession, sessions, sanitizeSessionId, addLog, signalInterest } from '../../session.js';
 import {
   DATA_DIR,
   ADDON_VERSION,
@@ -16,6 +16,7 @@ import { WEBHOOK_ENABLED, WEBHOOK_URL, updateWebhookConfig } from '../../webhook
 import { maskData } from '../../utils/security.js';
 import { HEALTH_STATE } from '../../state.js';
 import { logger } from '../../logger.js';
+import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
 export function registerSystemRoutes(app) {
   app.get('/health', (req, res) => {
@@ -43,6 +44,10 @@ export function registerSystemRoutes(app) {
 
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
+
+    // Signal interest: if the session is disconnected and has no active socket,
+    // trigger a reconnect attempt so the dashboard auto-heals without a page reload.
+    signalInterest(sessionId, connectToWhatsApp);
 
     const sessionList = Array.from(sessions.values()).map((s) => ({
       id: s.id,
@@ -111,6 +116,7 @@ export function registerSystemRoutes(app) {
       expressVersion: EXPRESS_VERSION,
       addonSlug: ADDON_SLUG,
       isStandalone: !process.env.SUPERVISOR_TOKEN,
+      uptimeSeconds: Math.floor(process.uptime()),
     });
   });
 
