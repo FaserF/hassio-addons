@@ -82,11 +82,19 @@ function renderChatList(chats) {
         ? new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : '';
       const avatarIcon = c.jid.endsWith('@g.us') ? 'fa-users' : 'fa-user';
+      const cachedUrl = avatarCache[c.jid];
+      const avatarHtml = cachedUrl
+        ? `<img src="${cachedUrl}" class="avatar-img" alt="Avatar">`
+        : `<i class="fas ${avatarIcon}"></i>`;
+
+      if (!cachedUrl && avatarCache[c.jid] === undefined) {
+        fetchAvatar(c.jid);
+      }
 
       return `
             <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeHtml(c.name)}')">
-                <div class="chat-avatar">
-                    <i class="fas ${avatarIcon}"></i>
+                <div class="chat-avatar" data-avatar-jid="${c.jid}">
+                    ${avatarHtml}
                 </div>
                 <div class="chat-info">
                     <div class="chat-meta">
@@ -115,6 +123,40 @@ function goBackToChatList(event) {
   loadChats();
 }
 
+const avatarCache = {};
+
+async function fetchAvatar(jid) {
+  if (avatarCache[jid] !== undefined) return avatarCache[jid];
+  try {
+    const res = await fetch(
+      basePath + 'api/avatar?session_id=' + currentSession + '&jid=' + encodeURIComponent(jid)
+    );
+    if (res.ok) {
+      const data = await res.json();
+      avatarCache[jid] = data.url;
+      updateAvatarElements(jid, data.url);
+      return data.url;
+    }
+  } catch (e) {}
+  avatarCache[jid] = null;
+  return null;
+}
+
+function updateAvatarElements(jid, url) {
+  if (!url) return;
+  const els = document.querySelectorAll(`[data-avatar-jid="${CSS.escape(jid)}"]`);
+  els.forEach((el) => {
+    el.innerHTML = `<img src="${url}" class="avatar-img" alt="Avatar">`;
+  });
+
+  if (activeChatJid === jid) {
+    const headerAvatar = document.getElementById('active-chat-avatar');
+    if (headerAvatar) {
+      headerAvatar.innerHTML = `<div class="chat-header-avatar"><img src="${url}" class="avatar-img" alt="Avatar"></div>`;
+    }
+  }
+}
+
 function selectChat(jid, name) {
   activeChatJid = jid;
   delete lastLoadedMessagesCache[jid];
@@ -133,7 +175,13 @@ function selectChat(jid, name) {
 
   const avatar = document.getElementById('active-chat-avatar');
   if (avatar) {
-    avatar.innerHTML = `<div class="chat-header-avatar"><i class="fas ${jid.endsWith('@g.us') ? 'fa-users' : 'fa-user'}"></i></div>`;
+    const cachedUrl = avatarCache[jid];
+    if (cachedUrl) {
+      avatar.innerHTML = `<div class="chat-header-avatar"><img src="${cachedUrl}" class="avatar-img" alt="Avatar"></div>`;
+    } else {
+      avatar.innerHTML = `<div class="chat-header-avatar"><i class="fas ${jid.endsWith('@g.us') ? 'fa-users' : 'fa-user'}"></i></div>`;
+      fetchAvatar(jid);
+    }
   }
 
   document.getElementById('chat-thread-messages').innerHTML =

@@ -164,4 +164,21 @@ export function registerUiApiRoutes(app) {
       .sort((a, b) => a.timestamp - b.timestamp);
     res.json(results);
   });
+
+  app.get('/api/avatar', uiAuthMiddleware, async (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    const jid = req.query.jid;
+    if (!jid || !session.sock) return res.status(404).json({ error: 'No session or JID' });
+
+    try {
+      const url = await session.sock.profilePictureUrl(jid, 'preview');
+      if (url) {
+        return res.json({ url });
+      }
+      res.status(404).json({ error: 'No picture' });
+    } catch (err) {
+      res.status(404).json({ error: 'Not found' });
+    }
+  });
 }

@@ -1183,11 +1183,23 @@ code {
     background-color: var(--card-bg-hover);
 }
 .chat-avatar {
-    font-size: 32px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,168,132,0.15), rgba(0,168,132,0.05));
+    font-size: 20px;
     color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 .chat-info {
     flex: 1;
