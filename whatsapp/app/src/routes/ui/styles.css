@@ -226,9 +226,10 @@ body {
     .nav-item span {
         display: none;
     }
+}
 
-            /* Responsive Design & Mobile Optimizations */
-            .chat-info-drawer {
+/* Chat Info Drawer Styles */
+.chat-info-drawer {
     width: 340px;
     border-left: 1px solid var(--border-color);
     background-color: var(--bg-card);
@@ -406,6 +407,7 @@ body {
     border-radius: 4px;
 }
 
+/* Mobile Media Queries */
 @media (max-width: 768px) {
     .chat-info-drawer {
         width: 100% !important;
@@ -413,11 +415,10 @@ body {
         top: 0;
         left: 0;
     }
-}
-            @media (max-width: 768px) {
-                body {
-                    flex-direction: column;
-                }
+
+    body {
+        flex-direction: column;
+    }
 
                 .app-layout {
                     flex-direction: column;
@@ -1328,7 +1329,10 @@ code {
     background-color: var(--bg-main);
 }
 .chat-list-header {
-    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border-color);
 }
 .search-box-wrapper {
@@ -1587,6 +1591,7 @@ code {
 }
 
 .chat-thread-footer {
+    position: relative;
     padding: 12px 16px;
     background-color: var(--bg-card);
     border-top: 1px solid var(--border-color);
@@ -1716,7 +1721,7 @@ code {
 .emoji-picker {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
+    left: 16px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;

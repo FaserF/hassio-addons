@@ -624,41 +624,60 @@ async function sendFileMessage(input) {
 
 function toggleChatSearch() {
   const bar = document.getElementById('chat-search-bar');
-  const inp = document.getElementById('chat-search-input');
+  const inp = document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
+  if (!bar) return;
   const isVisible = bar.style.display !== 'none';
   bar.style.display = isVisible ? 'none' : 'block';
-  if (!isVisible) {
+  if (!isVisible && inp) {
     inp.value = '';
     inp.focus();
     renderHighlightedMessages(null);
   }
 }
 
+function closeChatSearch() {
+  const bar = document.getElementById('chat-search-bar');
+  if (bar) bar.style.display = 'none';
+  renderHighlightedMessages(null);
+}
+
+async function searchInActiveChat() {
+  const inp = document.getElementById('in-chat-search-input') || document.getElementById('chat-search-input');
+  const q = inp ? inp.value.trim() : '';
+  await searchChatMessages(q);
+}
+
 async function searchChatMessages(q) {
-  if (!q.trim() || !activeChatJid) {
+  if (!q || !q.trim() || !activeChatJid) {
     renderHighlightedMessages(null);
-    document.getElementById('chat-search-count').textContent = '';
+    const countEl = document.getElementById('chat-search-count');
+    if (countEl) countEl.textContent = '';
     return;
   }
-  const resp = await fetch(
-    basePath +
-      'api/messages/search?session_id=' +
-      currentSession +
-      '&jid=' +
-      encodeURIComponent(activeChatJid) +
-      '&q=' +
-      encodeURIComponent(q)
-  );
-  if (!resp.ok) return;
-  const results = await resp.json();
-  document.getElementById('chat-search-count').textContent = results.length
-    ? `${results.length} result${results.length === 1 ? '' : 's'}`
-    : 'No results';
-  renderHighlightedMessages(results.map((r) => r.id));
-  if (results.length) {
-    const el = document.querySelector(`[data-msg-id="${results[0].id}"]`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  try {
+    const resp = await fetch(
+      basePath +
+        'api/messages/search?session_id=' +
+        currentSession +
+        '&jid=' +
+        encodeURIComponent(activeChatJid) +
+        '&q=' +
+        encodeURIComponent(q)
+    );
+    if (!resp.ok) return;
+    const results = await resp.json();
+    const countEl = document.getElementById('chat-search-count');
+    if (countEl) {
+      countEl.textContent = results.length
+        ? `${results.length} result${results.length === 1 ? '' : 's'}`
+        : 'No results';
+    }
+    renderHighlightedMessages(results.map((r) => r.id));
+    if (results.length) {
+      const el = document.querySelector(`[data-msg-id="${results[0].id}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } catch (e) {}
 }
 
 function renderHighlightedMessages(ids) {
@@ -824,8 +843,30 @@ function closeChatInfoDrawer() {
   if (drawer) drawer.style.display = 'none';
 }
 
-window.openChatInfoDrawer = openChatInfoDrawer;
-window.closeChatInfoDrawer = closeChatInfoDrawer;
+window.loadChats = loadChats;
+window.filterChatList = filterChatList;
+window.goBackToChatList = goBackToChatList;
+window.selectChat = selectChat;
 window.openNewChatModal = openNewChatModal;
 window.closeNewChatModal = closeNewChatModal;
 window.startNewChatSubmit = startNewChatSubmit;
+window.showContextMenu = showContextMenu;
+window.showReactionBtn = showReactionBtn;
+window.showReactionPicker = showReactionPicker;
+window.sendReaction = sendReaction;
+window.ctxReply = ctxReply;
+window.ctxCopy = ctxCopy;
+window.ctxForward = ctxForward;
+window.ctxReact = ctxReact;
+window.ctxDelete = ctxDelete;
+window.startReply = startReply;
+window.cancelReply = cancelReply;
+window.toggleEmojiPicker = toggleEmojiPicker;
+window.insertEmoji = insertEmoji;
+window.sendFileMessage = sendFileMessage;
+window.toggleChatSearch = toggleChatSearch;
+window.searchChatMessages = searchChatMessages;
+window.searchInActiveChat = searchInActiveChat;
+window.closeChatSearch = closeChatSearch;
+window.openChatInfoDrawer = openChatInfoDrawer;
+window.closeChatInfoDrawer = closeChatInfoDrawer;
