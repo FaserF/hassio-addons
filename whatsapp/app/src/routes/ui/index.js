@@ -359,6 +359,7 @@ function renderDashboard(sessionId) {
                     </div>
 
                     <div id="msg-context-menu" class="msg-context-menu" style="display:none;">
+                        <button onclick="ctxReact(event)"><i class="far fa-smile"></i> React</button>
                         <button onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</button>
                         <button onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy</button>
                         <button onclick="ctxForward()"><i class="fas fa-share"></i> Forward</button>

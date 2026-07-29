@@ -302,6 +302,21 @@ function ctxForward() {
   showToast('Forward: select a chat (coming soon)', 'info');
 }
 
+function ctxReact(e) {
+  if (e) e.stopPropagation();
+  closeAllOverlays();
+  if (!ctxTargetMsg) return;
+  const msgId = ctxTargetMsg.dataset.msgId;
+  if (!msgId) return;
+
+  reactionTargetMsgId = msgId;
+  const rect = ctxTargetMsg.getBoundingClientRect();
+  const picker = document.getElementById('reaction-picker');
+  picker.style.display = 'flex';
+  picker.style.left = Math.min(rect.left + 20, window.innerWidth - 250) + 'px';
+  picker.style.top = Math.max(10, rect.top - 45) + 'px';
+}
+
 function ctxDelete() {
   closeAllOverlays();
   showToast('Deleted for you', 'info');
@@ -352,7 +367,8 @@ async function sendReaction(emoji) {
       }),
     });
     showToast('Reaction sent', 'success');
-    setTimeout(() => loadChatMessages(activeChatJid), 500);
+    delete lastLoadedMessagesCache[activeChatJid];
+    setTimeout(() => loadChatMessages(activeChatJid), 400);
   } catch {
     showToast('Failed to send reaction', 'danger');
   }
