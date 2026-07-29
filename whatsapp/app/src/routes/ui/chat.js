@@ -366,21 +366,25 @@ function showContextMenu(e, msgId) {
   e.preventDefault();
   closeAllOverlays();
   ctxTargetMsg = document.querySelector(`[data-msg-id="${msgId}"]`);
+  reactionTargetMsgId = msgId;
   const menu = document.getElementById('msg-context-menu');
   menu.style.display = 'block';
 
-  const menuWidth = menu.offsetWidth || 180;
-  const menuHeight = menu.offsetHeight || 220;
+  const menuWidth = menu.offsetWidth || 200;
+  const menuHeight = menu.offsetHeight || 240;
 
   let left = e.clientX;
   let top = e.clientY;
 
   if (left + menuWidth > window.innerWidth - 10) {
-    left = Math.max(10, e.clientX - menuWidth);
+    left = Math.max(10, window.innerWidth - menuWidth - 15);
   }
+  if (left < 10) left = 10;
+
   if (top + menuHeight > window.innerHeight - 10) {
-    top = Math.max(10, e.clientY - menuHeight);
+    top = Math.max(10, window.innerHeight - menuHeight - 15);
   }
+  if (top < 10) top = 10;
 
   menu.style.left = left + 'px';
   menu.style.top = top + 'px';
@@ -714,6 +718,14 @@ function closeAllOverlays(e) {
 document.addEventListener('click', (e) => closeAllOverlays(e));
 document.addEventListener('contextmenu', (e) => {
   if (!e.target.closest('.msg-bubble-row')) closeAllOverlays(e);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeAllOverlays();
+    closeChatInfoDrawer();
+    closeChatSearch();
+    closeNewChatModal();
+  }
 });
 
 async function sendChatMessage(event) {

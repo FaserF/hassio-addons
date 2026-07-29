@@ -371,6 +371,7 @@ function renderDashboard(sessionId) {
                                     <input type="text" id="chat-message-input" class="chat-message-input" placeholder="Type a message…" autocomplete="off">
                                     <button type="submit" class="chat-send-btn" title="Send"><i class="fas fa-paper-plane"></i></button>
                                 </form>
+                            </div>
                         </div>
 
                         <!-- Right Sidebar: Contact & Group Info Drawer -->
@@ -386,7 +387,15 @@ function renderDashboard(sessionId) {
                     </div>
 
                     <div id="msg-context-menu" class="msg-context-menu" style="display:none;">
-                        <button onclick="ctxReact(event)"><i class="far fa-smile"></i> React</button>
+                        <div class="ctx-reactions-row" style="display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid var(--border-color);margin-bottom:4px;justify-content:space-between;">
+                            <span onclick="sendReaction('👍')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">👍</span>
+                            <span onclick="sendReaction('❤️')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">❤️</span>
+                            <span onclick="sendReaction('😂')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😂</span>
+                            <span onclick="sendReaction('😮')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😮</span>
+                            <span onclick="sendReaction('😢')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😢</span>
+                            <span onclick="sendReaction('🙏')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">🙏</span>
+                        </div>
+                        <button onclick="ctxReact(event)"><i class="far fa-smile"></i> More Reactions</button>
                         <button onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</button>
                         <button onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy</button>
                         <button onclick="ctxForward()"><i class="fas fa-share"></i> Forward</button>

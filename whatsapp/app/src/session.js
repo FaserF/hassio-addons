@@ -98,12 +98,14 @@ export function getSession(rawSessionId) {
     });
     loadMessageStore(sessions.get(sessionId));
     // Start periodic save for this session
-    sessions.get(sessionId)._saveInterval = setInterval(
+    const saveInterval = setInterval(
       () => {
         saveMessageStore(sessions.get(sessionId));
       },
       5 * 60 * 1000
     ); // Every 5 minutes
+    if (saveInterval.unref) saveInterval.unref();
+    sessions.get(sessionId)._saveInterval = saveInterval;
   }
   return sessions.get(sessionId);
 }

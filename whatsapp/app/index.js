@@ -69,7 +69,9 @@ app.listen(PORT, '0.0.0.0', () => {
     } else {
       logger.info('🚀 First run or no credentials - auto-starting default session for pairing...');
     }
-    connectToWhatsApp('default', sessions, getSession);
+    connectToWhatsApp('default', sessions, getSession).catch((err) => {
+      logger.warn({ error: err?.message || err }, '⚠️ Default session auto-start failed');
+    });
   }
 
   // Auto-start all other sessions
