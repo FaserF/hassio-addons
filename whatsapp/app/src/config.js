@@ -137,6 +137,31 @@ function getBaileysVersion() {
 
 export const BAILEYS_VERSION = getBaileysVersion();
 
+function getPackageVersion(packageName) {
+  try {
+    const pkgPath = path.resolve('node_modules', packageName, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      return pkg.version;
+    }
+  } catch (e) {}
+  return 'Unknown';
+}
+
+function getAlpineVersion() {
+  try {
+    if (fs.existsSync('/etc/alpine-release')) {
+      return fs.readFileSync('/etc/alpine-release', 'utf8').trim();
+    }
+  } catch (e) {}
+  return getEnv('ALPINE_VERSION', 'Unknown');
+}
+
+export const EXPRESS_VERSION = getPackageVersion('express');
+export const ALPINE_VERSION = getAlpineVersion();
+export const NODE_VERSION = process.version;
+
+
 /**
  * Loads admin numbers from environment or HA options.
  */
