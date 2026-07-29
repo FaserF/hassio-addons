@@ -337,6 +337,7 @@ async function loadLogs() {
     console.error(err);
   }
 }
+window.loadLogs = loadLogs;
 
 async function downloadDebugInfo() {
   try {
