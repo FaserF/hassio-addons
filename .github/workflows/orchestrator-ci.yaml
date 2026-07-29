@@ -291,6 +291,46 @@ jobs:
             echo "⏭️ No package.json found, skipping ESLint."
           fi
 
+      # 3b. Node.js ES Module & Import Syntax Validation (Catches missing exports & syntax errors)
+      - name: ⚡ Node.js Module Verification
+        run: |
+          LINT_DIR=""
+          if [ -f "./${{ matrix.App }}/package.json" ]; then
+            LINT_DIR="./${{ matrix.App }}"
+          elif [ -f "./${{ matrix.App }}/app/package.json" ]; then
+            LINT_DIR="./${{ matrix.App }}/app"
+          fi
+
+          if [ -n "$LINT_DIR" ]; then
+            echo "🔍 Validating Node.js module imports and syntax in $LINT_DIR"
+            cd "$LINT_DIR"
+            if [ -d "node_modules" ] || npm install --no-audit --no-fund; then
+              # Test loading entrypoints / index.js syntax and ESM resolution
+              node --input-type=module -e "
+                import fs from 'fs';
+                import path from 'path';
+
+                async function checkFile(file) {
+                  try {
+                    await import(path.resolve(file));
+                    console.log('✅ Verified ESM import:', file);
+                  } catch (err) {
+                    // Ignore runtime server listen errors (since server actually tried to boot)
+                    if (err.code === 'EADDRINUSE' || err.message?.includes('listen') || err.message?.includes('address already in use')) {
+                      console.log('✅ Verified ESM import (Server attempted boot):', file);
+                      return;
+                    }
+                    console.error('❌ Failed to load/import module:', file, '\n', err);
+                    process.exit(1);
+                  }
+                }
+
+                if (fs.existsSync('./index.js')) await checkFile('./index.js');
+                if (fs.existsSync('./src/index.js')) await checkFile('./src/index.js');
+              "
+            fi
+          fi
+
       # 4. apps linter (Frenck's) - Validates config.yaml/json
       - name: 🕵️ app linter
         uses: frenck/action-addon-linter@v2
