@@ -175,12 +175,24 @@ async function updateDashboard() {
     }
 
     // Stats properties
-    document.getElementById('stat-sent').textContent = data.stats.sent;
-    document.getElementById('stat-received').textContent = data.stats.received;
-    document.getElementById('stat-failed').textContent = data.stats.failed;
-    document.getElementById('val-uptime').textContent = data.uptime || '00:00:00';
+    const stats = data.stats || {};
+    document.getElementById('stat-sent').textContent = stats.sent || 0;
+    document.getElementById('stat-received').textContent = stats.received || 0;
+    document.getElementById('stat-failed').textContent = stats.failed || 0;
+
+    let uptimeStr = data.uptime || '00:00:00';
+    if (stats.start_time) {
+      const diffSec = Math.floor((Date.now() - stats.start_time) / 1000);
+      if (diffSec > 0) {
+        const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+        const secs = String(diffSec % 60).padStart(2, '0');
+        uptimeStr = `${hrs}:${mins}:${secs}`;
+      }
+    }
+    document.getElementById('val-uptime').textContent = uptimeStr;
     document.getElementById('val-reconnects').textContent =
-      data.stats?.totalReconnects ?? data.reconnectAttempts ?? 0;
+      stats.totalReconnects ?? data.reconnectAttempts ?? 0;
 
     // Render streams lists
     document.getElementById('list-sent').innerHTML = data.recentSent.length

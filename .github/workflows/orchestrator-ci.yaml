@@ -329,6 +329,7 @@ jobs:
 
                 if (fs.existsSync('./index.js')) await checkFile('./index.js');
                 if (fs.existsSync('./src/index.js')) await checkFile('./src/index.js');
+                process.exit(0);
               "
             fi
           fi
