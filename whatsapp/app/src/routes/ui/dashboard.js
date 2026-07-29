@@ -17,7 +17,8 @@ async function updateDashboard() {
       return;
     }
 
-    document.getElementById('card-diagnostics').style.display = 'none';
+    const diagCard = document.getElementById('card-diagnostics');
+    if (diagCard) diagCard.style.display = 'none';
     const data = await response.json();
     isConnected = data.isConnected;
 
