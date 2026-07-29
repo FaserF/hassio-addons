@@ -9,12 +9,16 @@ const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:
 
 export function registerUIRoutes(app) {
   // Serve static assets for the UI with no-cache headers to prevent browser caching stale JS/CSS
-  app.use('/ui-assets', (req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    next();
-  }, express.static(uiDir, { maxAge: 0, etag: false }));
+  app.use(
+    '/ui-assets',
+    (req, res, next) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      next();
+    },
+    express.static(uiDir, { maxAge: 0, etag: false })
+  );
 
   app.get('/', uiAuthMiddleware, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
