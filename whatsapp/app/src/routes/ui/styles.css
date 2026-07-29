@@ -1164,8 +1164,8 @@ code {
 }
 
 .modal-overlay.show {
-    display: flex;
-    opacity: 1;
+    display: flex !important;
+    opacity: 1 !important;
 }
 
 .modal-card {

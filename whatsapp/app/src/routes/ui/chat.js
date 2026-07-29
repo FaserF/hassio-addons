@@ -826,4 +826,6 @@ function closeChatInfoDrawer() {
 
 window.openChatInfoDrawer = openChatInfoDrawer;
 window.closeChatInfoDrawer = closeChatInfoDrawer;
-}
+window.openNewChatModal = openNewChatModal;
+window.closeNewChatModal = closeNewChatModal;
+window.startNewChatSubmit = startNewChatSubmit;
