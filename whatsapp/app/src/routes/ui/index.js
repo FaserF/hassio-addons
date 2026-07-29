@@ -471,6 +471,7 @@ function renderDashboard(sessionId) {
           <span onclick="sendReaction('😢')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">😢</span>
           <span onclick="sendReaction('🙏')" style="cursor:pointer;font-size:18px;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'">🙏</span>
       </div>
+      <button onclick="sendReaction('')" style="color:var(--text-muted);"><i class="fas fa-ban"></i> Remove Reaction</button>
       <button onclick="ctxReact(event)"><i class="far fa-smile"></i> More Reactions</button>
       <button onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</button>
       <button onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy</button>

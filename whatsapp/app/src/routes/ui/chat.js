@@ -361,7 +361,11 @@ async function loadChatMessages(jid) {
         const reactBlock = renderReactions(m);
         const buttonsBlock = renderButtons(m);
 
-        return `<div class="msg-bubble-row ${direction}" data-msg-id="${m.id}" data-msg-text="${escapeAttr(m.text || m.caption || '')}" data-sender="${escapeAttr(m.senderName || '')}"
+        const myReaction =
+          (m.reactions || []).find((r) => r.sender === 'me' || r.sender === (m.fromMe ? 'You' : ''))
+            ?.emoji || '';
+
+        return `<div class="msg-bubble-row ${direction}" data-msg-id="${m.id}" data-msg-text="${escapeAttr(m.text || m.caption || '')}" data-sender="${escapeAttr(m.senderName || '')}" data-my-reaction="${escapeAttr(myReaction)}"
                          oncontextmenu="showContextMenu(event,'${m.id}')">
                         <div class="msg-bubble">
                             ${senderLabel}
@@ -545,13 +549,19 @@ async function sendReaction(emoji) {
   closeAllOverlays();
   if (!reactionTargetMsgId) return;
   try {
+    const targetMsg = document.querySelector(`[data-msg-id="${reactionTargetMsgId}"]`);
+    const existingReaction = targetMsg?.dataset?.myReaction || '';
+
+    // Toggle off if clicking the same emoji again
+    const finalEmoji = existingReaction && existingReaction === emoji ? '' : emoji;
+
     const resp = await fetch(basePath + 'send_reaction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': apiToken },
       body: JSON.stringify({
         number: activeChatJid,
         messageId: reactionTargetMsgId,
-        reaction: emoji,
+        reaction: finalEmoji,
         session_id: currentSession,
       }),
     });
@@ -560,11 +570,11 @@ async function sendReaction(emoji) {
       showToast('Reaction failed: ' + (err.detail || resp.status), 'danger');
       return;
     }
-    showToast('Reaction sent', 'success');
+    showToast(finalEmoji ? 'Reaction sent' : 'Reaction removed', 'success');
     delete lastLoadedMessagesCache[activeChatJid];
-    setTimeout(() => loadChatMessages(activeChatJid), 400);
+    setTimeout(() => loadChatMessages(activeChatJid), 300);
   } catch {
-    showToast('Failed to send reaction', 'danger');
+    showToast('Failed to update reaction', 'danger');
   }
 }
 
@@ -827,6 +837,7 @@ async function sendChatMessage(event) {
     });
     if (response.ok) {
       showToast('Message sent', 'success');
+      delete lastLoadedMessagesCache[activeChatJid];
       loadChatMessages(activeChatJid);
       loadChats();
     } else {

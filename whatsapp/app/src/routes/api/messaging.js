@@ -23,6 +23,9 @@ export function registerMessagingRoutes(app) {
         if (quotedMsg) options.quoted = quotedMsg;
       }
       const sentMsg = await session.sock.sendMessage(jid, { text: message }, options);
+      if (sentMsg && sentMsg.key?.id) {
+        session.messageStore?.set(sentMsg.key.id, sentMsg);
+      }
       trackSent(session, number, message);
       res.json({ status: 'sent', id: sentMsg?.key?.id || generateMessageID() });
     } catch (err) {
@@ -360,6 +363,19 @@ export function registerMessagingRoutes(app) {
           key: msgKey,
         },
       });
+
+      // Update reaction locally in messageStore immediately
+      if (targetMsg) {
+        if (!targetMsg._reactions) targetMsg._reactions = [];
+        const myJid = session.sock?.user?.id
+          ? session.sock.user.id.split(':')[0] + '@s.whatsapp.net'
+          : 'me';
+        targetMsg._reactions = targetMsg._reactions.filter((r) => r.sender !== myJid);
+        if (reaction) {
+          targetMsg._reactions.push({ emoji: reaction, sender: myJid });
+        }
+      }
+
       res.json({ status: 'reaction_sent' });
     } catch (err) {
       res.status(500).json({ detail: err.message });
