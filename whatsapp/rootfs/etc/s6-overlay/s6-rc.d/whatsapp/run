@@ -8,6 +8,7 @@ if [ -f /etc/environment ]; then
     # Re-export so they are available as process env vars for Node.js
     [ -n "${BAILEYS_VERSION:-}" ] && export BAILEYS_VERSION
     [ -n "${FASTAPI_VERSION:-}" ] && export FASTAPI_VERSION
+    [ -n "${ALPINE_VERSION:-}" ] && export ALPINE_VERSION
 fi
 
 bashio::log.info "Starting WhatsApp Home Assistant App (Baileys)..."

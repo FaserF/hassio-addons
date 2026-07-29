@@ -1102,6 +1102,7 @@ export function registerAPIRoutes(app) {
       recentReceived: (session.recentReceived || []).slice(0, 5),
       recentFailures: (session.recentFailures || []).slice(0, 5),
       nodeVersion: process.version,
+      alpineVersion: process.env.ALPINE_VERSION || 'unknown',
       addonVersion: ADDON_VERSION,
       addonSlug: ADDON_SLUG,
       integrationVersion: INTEGRATION_VERSION,

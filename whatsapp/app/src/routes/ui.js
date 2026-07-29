@@ -1362,6 +1362,7 @@ function renderDashboard(sessionId) {
                     <a href="https://github.com/WhiskeySockets/Baileys" target="_blank" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span></a>
                     <a href="https://github.com/nodejs/node" target="_blank" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span></a>
                     <a href="https://github.com/fastapi/fastapi" target="_blank" class="sys-info-link">Fastapi: <span id="fastapi-version" class="sys-info-val">...</span></a>
+                    <a href="https://alpinelinux.org" target="_blank" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span></a>
                 </div>
             </div>
         </aside>
@@ -2103,6 +2104,7 @@ function renderDashboard(sessionId) {
 
                     // Version elements
                     document.getElementById('node-version').textContent = data.nodeVersion || 'N/A';
+                    document.getElementById('alpine-version').textContent = data.alpineVersion || 'N/A';
                     document.getElementById('addon-version-sidebar').textContent = data.addonVersion || 'N/A';
                     document.getElementById('int-version-sidebar').textContent = data.integrationVersion || 'N/A';
                     document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
