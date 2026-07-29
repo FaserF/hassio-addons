@@ -130,8 +130,8 @@ function renderDashboard(sessionId) {
   <div class="app-layout">
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fab fa-whatsapp logo-icon"></i>
+            <div class="logo" style="cursor:pointer;" onclick="toggleSidebar(event)">
+                <i class="fab fa-whatsapp logo-icon" id="sidebar-logo-icon"></i>
                 <div class="logo-text">
                     <span class="logo-title">WhatsApp Gateway</span>
                     <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
@@ -639,10 +639,6 @@ function renderDashboard(sessionId) {
     }
     window.toggleSidebar = toggleSidebar;
 
-    var sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-    if (sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener('click', toggleSidebar);
-    }
     document.addEventListener('click', function (e) {
         var target = e.target;
         if (target && (target.id === 'sidebar-toggle-btn' || (target.closest && target.closest('#sidebar-toggle-btn')))) {
