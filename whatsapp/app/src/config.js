@@ -79,6 +79,7 @@ if (IS_WIN && !fs.existsSync(DATA_DIR)) {
 
 // --- Configuration ---
 export const SEND_MESSAGE_TIMEOUT = parseEnvInt('SEND_MESSAGE_TIMEOUT', 25000);
+export const MEDIA_UPLOAD_TIMEOUT = parseEnvInt('MEDIA_UPLOAD_TIMEOUT', 60000);
 export const KEEP_ALIVE_INTERVAL = parseEnvInt('KEEP_ALIVE_INTERVAL', 30000);
 export const NOTIFY_RESTORE_THRESHOLD = 60000; // 1 minute
 export const MASK_SENSITIVE_DATA = parseEnvBool('MASK_SENSITIVE_DATA', false);
@@ -89,6 +90,7 @@ export const GROUP_FETCH_COOLDOWN_ON_RATE_LIMIT = parseEnvInt(
   900000
 );
 export const MESSAGE_SEND_INTERVAL = parseEnvInt('MESSAGE_SEND_INTERVAL', 1000);
+export const MEDIA_RETENTION_DAYS = parseEnvInt('MEDIA_RETENTION_DAYS', 7);
 
 export const UI_AUTH_ENABLED = parseEnvBool('UI_AUTH_ENABLED', false);
 export const UI_AUTH_PASSWORD = getEnv('UI_AUTH_PASSWORD', '');

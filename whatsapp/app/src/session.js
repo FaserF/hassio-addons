@@ -294,5 +294,35 @@ export function startSessionCleanupTask(deleteSessionFn) {
         }
       }
     }
+
+    // Media directory cleanup (files older than MEDIA_RETENTION_DAYS)
+    const { MEDIA_DIR, MEDIA_RETENTION_DAYS } = await import('./config.js');
+    if (MEDIA_RETENTION_DAYS > 0 && fs.existsSync(MEDIA_DIR)) {
+      const maxAgeMs = MEDIA_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+      try {
+        const files = fs.readdirSync(MEDIA_DIR);
+        let removedCount = 0;
+        for (const file of files) {
+          const filePath = path.join(MEDIA_DIR, file);
+          try {
+            const fileStats = fs.statSync(filePath);
+            if (fileStats.isFile() && now - fileStats.mtimeMs > maxAgeMs) {
+              fs.unlinkSync(filePath);
+              removedCount += 1;
+            }
+          } catch (e) {
+            /* ignore individual file errors */
+          }
+        }
+        if (removedCount > 0) {
+          logger.info(
+            { removedCount, retentionDays: MEDIA_RETENTION_DAYS },
+            '🧹 Cleaned up old media files'
+          );
+        }
+      } catch (err) {
+        logger.warn({ error: err.message }, '⚠️ Media cleanup failed');
+      }
+    }
   }, CLEANUP_INTERVAL);
 }

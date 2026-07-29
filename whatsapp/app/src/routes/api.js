@@ -17,6 +17,7 @@ import { maskData, generateMessageID } from '../utils/security.js';
 import {
   BAILEYS_VERSION,
   SEND_MESSAGE_TIMEOUT,
+  MEDIA_UPLOAD_TIMEOUT,
   KEEP_ALIVE_INTERVAL,
   API_TOKEN,
   UI_AUTH_ENABLED,
@@ -370,7 +371,7 @@ export function registerAPIRoutes(app) {
         return await session.sock.sendMessage(
           jid,
           { image: { url: url }, caption: caption },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         );
       });
       session.stats.sent += 1;
@@ -452,7 +453,7 @@ export function registerAPIRoutes(app) {
               selectableCount: normalizedSelectableCount,
             },
           },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         );
       });
       session.messageStore.set(sentMsg.key.id, sentMsg);
@@ -505,7 +506,7 @@ export function registerAPIRoutes(app) {
               address: description,
             },
           },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         );
       });
       session.stats.sent += 1;
@@ -710,7 +711,7 @@ export function registerAPIRoutes(app) {
             caption: caption,
             mimetype: 'application/octet-stream',
           },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -745,7 +746,7 @@ export function registerAPIRoutes(app) {
             ...(seconds ? { seconds: Number(seconds) } : {}),
             caption: caption,
           },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         )
       );
       session.stats.sent += 1;
@@ -781,7 +782,7 @@ export function registerAPIRoutes(app) {
             ptt: !!ptt,
             mimetype: 'audio/mp4',
           },
-          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: SEND_MESSAGE_TIMEOUT }
+          { quoted, ephemeralExpiration: expiration, mediaUploadTimeoutMs: MEDIA_UPLOAD_TIMEOUT }
         )
       );
       session.stats.sent += 1;

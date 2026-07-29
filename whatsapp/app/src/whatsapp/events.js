@@ -510,12 +510,15 @@ export function handleIncomingMessages(session) {
         }
         const effectiveSenderNumber = effectiveSenderJid.split('@')[0];
 
+        const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
+
         const event = {
           id: msg.key.id,
           type: eventType,
           content: text,
           vote: vote,
           sender: senderJid,
+          sender_name: senderName,
           from: senderJid,
           sender_number: effectiveSenderNumber,
           is_group: isGroup,
