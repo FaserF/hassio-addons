@@ -7,7 +7,7 @@ if [ -f /etc/environment ]; then
     source /etc/environment 2>/dev/null || true
     # Re-export so they are available as process env vars for Node.js
     [ -n "${BAILEYS_VERSION:-}" ] && export BAILEYS_VERSION
-    [ -n "${FASTAPI_VERSION:-}" ] && export FASTAPI_VERSION
+    [ -n "${EXPRESS_VERSION:-}" ] && export EXPRESS_VERSION
     [ -n "${ALPINE_VERSION:-}" ] && export ALPINE_VERSION
 fi
 

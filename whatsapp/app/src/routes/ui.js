@@ -1361,7 +1361,7 @@ function renderDashboard(sessionId) {
                     <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span></a>
                     <a href="https://github.com/WhiskeySockets/Baileys" target="_blank" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span></a>
                     <a href="https://github.com/nodejs/node" target="_blank" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span></a>
-                    <a href="https://github.com/fastapi/fastapi" target="_blank" class="sys-info-link">Fastapi: <span id="fastapi-version" class="sys-info-val">...</span></a>
+                    <a href="https://github.com/expressjs/express" target="_blank" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span></a>
                     <a href="https://alpinelinux.org" target="_blank" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span></a>
                 </div>
             </div>
@@ -2108,7 +2108,7 @@ function renderDashboard(sessionId) {
                     document.getElementById('addon-version-sidebar').textContent = data.addonVersion || 'N/A';
                     document.getElementById('int-version-sidebar').textContent = data.integrationVersion || 'N/A';
                     document.getElementById('baileys-version').textContent = data.baileysVersion || 'N/A';
-                    document.getElementById('fastapi-version').textContent = data.fastapiVersion || 'N/A';
+                    document.getElementById('express-version').textContent = data.expressVersion || 'N/A';
 
                     // Dev/Beta releases banner
                     const addonVer = data.addonVersion || '';

@@ -60,12 +60,10 @@ RUN \
         echo "BAILEYS_VERSION=${BAILEYS_VERSION}" >> /etc/environment; \
     fi
 
-# Detect installed FastAPI version at build time
+# Detect installed Express version at build time (the actual web framework used)
 RUN \
-    FASTAPI_VERSION=$(python3 -c "import fastapi; print(fastapi.__version__)" 2>/dev/null \
-        || pip3 show fastapi 2>/dev/null | grep ^Version | awk '{print $2}' \
-        || echo "unknown"); \
-    echo "FASTAPI_VERSION=${FASTAPI_VERSION}" >> /etc/environment
+    EXPRESS_VERSION=$(node -p "require('./node_modules/express/package.json').version" 2>/dev/null || echo "unknown"); \
+    echo "EXPRESS_VERSION=${EXPRESS_VERSION}" >> /etc/environment
 
 # Build arguments
 ARG BUILD_ARCH
