@@ -56,8 +56,9 @@ export function registerSessionRoutes(app) {
 
   app.get('/qr', authMiddleware, (req, res) => {
     const session = getReqSession(req);
+    const qrData = session.qr || session.currentQR;
     if (session.isConnected) return res.json({ status: 'connected', qr: null });
-    if (session.qr) return res.json({ status: 'qr_ready', qr: session.qr });
+    if (qrData) return res.json({ status: 'qr_ready', qr: qrData });
     res.json({ status: 'waiting_for_qr', qr: null });
   });
 
