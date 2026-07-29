@@ -8,10 +8,16 @@ import { API_TOKEN, PORT } from '../../config.js';
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
 export function registerUIRoutes(app) {
-  // Serve static assets for the UI (styles.css, helpers.js, etc.)
-  app.use('/ui-assets', express.static(uiDir));
+  // Serve static assets for the UI with no-cache headers to prevent browser caching stale JS/CSS
+  app.use('/ui-assets', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  }, express.static(uiDir, { maxAge: 0, etag: false }));
 
   app.get('/', uiAuthMiddleware, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     let sessionId = req.query.session_id;
     if (!sessionId) {
       const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
@@ -42,7 +48,7 @@ function renderDashboard(sessionId) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="ui-assets/styles.css">
+    <link rel="stylesheet" href="ui-assets/styles.css?v=${Date.now()}">
 </head>
 <body>
   <div class="app-layout">
@@ -460,9 +466,9 @@ function renderDashboard(sessionId) {
     };
     const basePath = getBasePath().replace(/[/]+/g, '/');
   </script>
-  <script src="ui-assets/helpers.js"></script>
-  <script src="ui-assets/dashboard.js"></script>
-  <script src="ui-assets/chat.js"></script>
+  <script src="ui-assets/helpers.js?v=${Date.now()}"></script>
+  <script src="ui-assets/dashboard.js?v=${Date.now()}"></script>
+  <script src="ui-assets/chat.js?v=${Date.now()}"></script>
   <script>
     const navItems = document.querySelectorAll('.nav-item');
     const tabPanels = document.querySelectorAll('.tab-panel');
