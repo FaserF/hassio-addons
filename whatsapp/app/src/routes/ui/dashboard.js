@@ -137,7 +137,9 @@ async function updateDashboard() {
       document.getElementById('device-session').textContent = data.sessionId || 'default';
       const statusEl = document.getElementById('device-status');
       if (statusEl) {
-        statusEl.textContent = data.deviceInfo.status ? `"${data.deviceInfo.status}"` : 'No profile status set';
+        statusEl.textContent = data.deviceInfo.status
+          ? `"${data.deviceInfo.status}"`
+          : 'No profile status set';
       }
     }
 

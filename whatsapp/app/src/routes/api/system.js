@@ -39,9 +39,14 @@ export function registerSystemRoutes(app) {
       if (session._myStatusText !== undefined) {
         statusText = session._myStatusText;
       } else {
-        session.sock.fetchStatus(myJid).then((st) => {
-          if (st && st.status) session._myStatusText = st.status;
-        }).catch(() => { session._myStatusText = null; });
+        session.sock
+          .fetchStatus(myJid)
+          .then((st) => {
+            if (st && st.status) session._myStatusText = st.status;
+          })
+          .catch(() => {
+            session._myStatusText = null;
+          });
         statusText = session._myStatusText || null;
       }
     }
