@@ -86,3 +86,4 @@ validate_json.py
 /scratch
 /whatsapp/app/data/
 /whatsapp/app/sessions/
+data/.api_token

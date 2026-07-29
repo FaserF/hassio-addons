@@ -1,9 +1,10 @@
 import express from 'express';
 import path from 'path';
 import os from 'os';
+import fs from 'fs';
 import { uiAuthMiddleware } from '../../middleware.js';
-import { sanitizeSessionId, sessions } from '../../session.js';
-import { API_TOKEN, PORT } from '../../config.js';
+import { getSession, sanitizeSessionId, sessions } from '../../session.js';
+import { API_TOKEN, PORT, DATA_DIR } from '../../config.js';
 
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
@@ -27,6 +28,16 @@ function getLocalIP() {
   return fallback || os.hostname() || '127.0.0.1';
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function registerUIRoutes(app) {
   // Serve static assets for the UI with no-cache headers to prevent browser caching stale JS/CSS
   app.use(
@@ -42,6 +53,28 @@ export function registerUIRoutes(app) {
 
   app.get('/', uiAuthMiddleware, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
+    // Ensure all sessions from disk are loaded into memory map before resolving default active session
+    const sessionsDir = path.join(path.dirname(uiDir), '../data', 'sessions');
+    // Also check standard DATA_DIR path
+    try {
+      const dataSessionsDir = path.join(process.env.DATA_DIR || '/data', 'sessions');
+      const targetDir = fs.existsSync(dataSessionsDir)
+        ? dataSessionsDir
+        : fs.existsSync(sessionsDir)
+          ? sessionsDir
+          : null;
+      if (targetDir) {
+        const sDirs = fs.readdirSync(targetDir);
+        for (const sDir of sDirs) {
+          const fullPath = path.join(targetDir, sDir);
+          if (fs.statSync(fullPath).isDirectory()) {
+            getSession(sDir);
+          }
+        }
+      }
+    } catch (e) {}
+
     let sessionId = req.query.session_id;
     if (!sessionId) {
       const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
