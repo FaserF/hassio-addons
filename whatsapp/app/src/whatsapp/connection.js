@@ -263,6 +263,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
       if (isLoggedOut) {
         disconnectReason = 'Session Expired / Logged Out (401)';
+      } else if (errorMsg.includes('QR refs attempts ended')) {
+        disconnectReason = 'QR Code Expired (Timed out after 5 attempts)';
       } else if (statusCode === DisconnectReason.connectionLost) {
         disconnectReason = 'Connection Lost to WhatsApp Servers (408)';
       } else if (statusCode === DisconnectReason.connectionReplaced) {
@@ -281,6 +283,13 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         disconnectReason = 'Home Assistant Integration Unreachable';
       } else if (errorMsg.includes('Handshake')) {
         disconnectReason = 'WhatsApp TLS/WebSocket Handshake Error';
+      }
+
+      if (errorMsg.includes('QR refs attempts ended')) {
+        session.currentQR = null;
+        session.qrGenerated = false;
+        logger.info({ sessionId }, '⌛ QR Code expired, auto-cleared QR state for fresh retry.');
+        addLog(session, 'QR Code expired. Click reconnect or refresh to generate a new QR Code.', 'warning');
       }
 
       logger.warn(
