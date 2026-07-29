@@ -7,6 +7,30 @@ import { API_TOKEN, PORT } from '../../config.js';
 
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
+/**
+ * Returns the best available local IPv4 address.
+ * Prefers private ranges (192.168.x.x, 10.x.x.x, 172.16-31.x.x),
+ * then any non-loopback IPv4, then hostname, then 127.0.0.1.
+ */
+function getLocalIP() {
+  const nets = os.networkInterfaces();
+  let fallback = null;
+  const privateRanges = [
+    /^192\.168\./,
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[01])\./,
+  ];
+  for (const iface of Object.values(nets)) {
+    for (const addr of iface || []) {
+      if (addr.family !== 'IPv4' || addr.internal) continue;
+      if (addr.address.startsWith('169.254.')) continue; // link-local
+      if (privateRanges.some((re) => re.test(addr.address))) return addr.address;
+      if (!fallback) fallback = addr.address;
+    }
+  }
+  return fallback || os.hostname() || '127.0.0.1';
+}
+
 export function registerUIRoutes(app) {
   // Serve static assets for the UI with no-cache headers to prevent browser caching stale JS/CSS
   app.use(
@@ -65,38 +89,41 @@ function renderDashboard(sessionId) {
                     <span class="logo-subtitle" id="logo-subtitle">Home Assistant</span>
                 </div>
             </div>
+            <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
         
         <nav class="nav-menu">
-            <button class="nav-item active" data-tab="dashboard">
+            <button class="nav-item active" data-tab="dashboard" data-tooltip="Dashboard">
                 <i class="fas fa-chart-pie nav-icon"></i>
                 <span>Dashboard</span>
             </button>
-            <button class="nav-item" data-tab="logs">
+            <button class="nav-item" data-tab="logs" data-tooltip="Daemon Logs">
                 <i class="fas fa-terminal nav-icon"></i>
                 <span>Daemon Logs</span>
             </button>
-            <button class="nav-item" data-tab="chats">
+            <button class="nav-item" data-tab="chats" data-tooltip="Chats">
                 <i class="fas fa-comments nav-icon"></i>
                 <span>Chats</span>
             </button>
-            <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item">
+            <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item" data-tooltip="Documentation">
                 <i class="fas fa-book nav-icon"></i>
                 <span>Documentation</span>
             </a>
-            <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="nav-item">
+            <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="nav-item" data-tooltip="Integration Repo">
                 <i class="fas fa-puzzle-piece nav-icon"></i>
                 <span>Integration Repo</span>
             </a>
-            <a id="ha-repo-link" href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item">
+            <a id="ha-repo-link" href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item" data-tooltip="HA App Repo">
                 <i class="fas fa-cubes nav-icon"></i>
                 <span>HA App Repo</span>
             </a>
-            <a id="raw-logs-link" href="#" target="_blank" class="nav-item">
+            <a id="raw-logs-link" href="#" target="_blank" class="nav-item" data-tooltip="Raw Connection Logs">
                 <i class="fas fa-file-alt nav-icon"></i>
                 <span>Raw Connection Logs</span>
             </a>
-            <a id="full-logs-link" href="#" target="_top" class="nav-item" style="display:none;">
+            <a id="full-logs-link" href="#" target="_top" class="nav-item" style="display:none;" data-tooltip="Full System Logs">
                 <i class="fas fa-file-invoice nav-icon"></i>
                 <span>Full System Logs</span>
             </a>
@@ -184,7 +211,7 @@ function renderDashboard(sessionId) {
                             </div>
                             <div class="details-item">
                                 <span class="details-label">Static Local Address</span>
-                                <code>http://${os.networkInterfaces().eth0?.[0]?.address || '127.0.0.1'}:${PORT}</code>
+                                <code>http://${getLocalIP()}:${PORT}</code>
                             </div>
                         </div>
                         <p style="font-size:11px; color: var(--text-muted); line-height:1.4;">
@@ -518,6 +545,19 @@ function renderDashboard(sessionId) {
         } else {
             document.body.classList.remove('chat-open');
         }
+    }
+
+    // ── Sidebar toggle ────────────────────────────────
+    const sidebar = document.querySelector('.sidebar');
+
+    function toggleSidebar() {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+    }
+
+    // Restore sidebar state from last visit (default: expanded)
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        sidebar.classList.add('collapsed');
     }
 
     document.getElementById('diag-basepath').textContent = basePath;

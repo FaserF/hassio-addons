@@ -293,6 +293,8 @@ jobs:
 
       # 3b. Node.js ES Module & Import Syntax Validation (Catches missing exports & syntax errors)
       - name: ⚡ Node.js Module Verification
+        env:
+          CI: "true"
         run: |
           LINT_DIR=""
           if [ -f "./${{ matrix.App }}/package.json" ]; then

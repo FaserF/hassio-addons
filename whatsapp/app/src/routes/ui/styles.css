@@ -35,10 +35,12 @@
 
   /* Layout */
   --sidebar-width: 280px;
+  --sidebar-collapsed-width: 68px;
   --header-height: 70px;
   --border-radius: 16px;
   --border-radius-sm: 8px;
   --transition-speed: 0.2s;
+  --sidebar-transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family:
     'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -94,7 +96,120 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   height: 100vh;
-  transition: var(--transition-speed) ease;
+  transition: var(--sidebar-transition);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Collapsed state ─────────────────────────── */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .sidebar-footer .sys-info-text,
+.sidebar.collapsed .sidebar-footer .sys-info-title {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 0;
+  justify-content: center;
+}
+
+.sidebar.collapsed .logo {
+  gap: 0;
+}
+
+.sidebar.collapsed .nav-menu {
+  padding: 16px 10px;
+}
+
+.sidebar.collapsed .nav-item {
+  padding: 12px 0;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+}
+
+/* Hide label text in nav items when collapsed */
+.sidebar.collapsed .nav-item > span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Tooltip shown on hover when sidebar is collapsed */
+.sidebar.collapsed .nav-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.sidebar.collapsed .nav-item:hover::after {
+  opacity: 1;
+}
+
+/* Toggle button */
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  line-height: 1;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.sidebar.collapsed .sidebar-toggle-btn {
+  margin-left: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  color: var(--text-main);
+  background-color: rgba(0, 168, 132, 0.1);
+}
+
+/* Smooth text transitions */
+.logo-text,
+.nav-item > span,
+.sidebar-footer .sys-info-text,
+.sidebar-footer .sys-info-title {
+  transition: opacity 0.2s ease, width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -103,23 +218,30 @@ body {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-grow: 1;
+  overflow: hidden;
+  transition: gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-icon {
   font-size: 28px;
   color: var(--primary);
   filter: drop-shadow(0 0 6px rgba(0, 168, 132, 0.4));
+  flex-shrink: 0;
 }
 
 .logo-text {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .logo-title {
@@ -142,6 +264,8 @@ body {
   gap: 8px;
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-item {
@@ -161,6 +285,7 @@ body {
   transition: all var(--transition-speed) ease;
   width: 100%;
   text-decoration: none;
+  overflow: hidden;
 }
 
 .nav-item:hover {
@@ -182,12 +307,15 @@ body {
   font-size: 16px;
   width: 20px;
   text-align: center;
+  flex-shrink: 0;
   transition: color var(--transition-speed);
 }
 
 .sidebar-footer {
   padding: 20px 24px;
   border-top: 1px solid var(--border-color);
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 .chat-back-btn {
   display: none;
@@ -230,6 +358,27 @@ body {
 
   .nav-item span {
     display: none;
+  }
+
+  /* Hide toggle button on mobile — sidebar behaves as top nav bar */
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* Never apply collapsed styles on mobile */
+  .sidebar.collapsed {
+    width: 100% !important;
+  }
+
+  .sidebar.collapsed .logo-text,
+  .sidebar.collapsed .nav-item > span {
+    opacity: 1 !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+
+  .sidebar.collapsed .nav-item::after {
+    display: none !important;
   }
 }
 

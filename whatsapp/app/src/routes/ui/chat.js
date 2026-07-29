@@ -368,27 +368,48 @@ function showContextMenu(e, msgId) {
   ctxTargetMsg = document.querySelector(`[data-msg-id="${msgId}"]`);
   reactionTargetMsgId = msgId;
   const menu = document.getElementById('msg-context-menu');
+
+  // Capture click coordinates immediately before any async frames
+  const clickX = e.clientX;
+  const clickY = e.clientY;
+
+  // Phase 1: make menu visible but invisible so the browser paints & computes its size
+  menu.style.visibility = 'hidden';
+  menu.style.left = '0px';
+  menu.style.top = '0px';
   menu.style.display = 'block';
 
+  // Phase 2: after browser has computed layout, read real dimensions and clamp to viewport
   requestAnimationFrame(() => {
-    const menuWidth = menu.getBoundingClientRect().width || 200;
-    const menuHeight = menu.getBoundingClientRect().height || 260;
+    requestAnimationFrame(() => {
+      const rect = menu.getBoundingClientRect();
+      const menuWidth = rect.width || 220;
+      const menuHeight = rect.height || 280;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 8;
 
-    let left = e.clientX;
-    let top = e.clientY;
+      let left = clickX;
+      let top = clickY;
 
-    if (left + menuWidth > window.innerWidth - 10) {
-      left = Math.max(10, window.innerWidth - menuWidth - 15);
-    }
-    if (left < 10) left = 10;
+      // Clamp right edge
+      if (left + menuWidth > vw - margin) {
+        left = Math.max(margin, vw - menuWidth - margin);
+      }
+      // Clamp left edge
+      if (left < margin) left = margin;
 
-    if (top + menuHeight > window.innerHeight - 10) {
-      top = Math.max(10, window.innerHeight - menuHeight - 15);
-    }
-    if (top < 10) top = 10;
+      // Clamp bottom edge
+      if (top + menuHeight > vh - margin) {
+        top = Math.max(margin, vh - menuHeight - margin);
+      }
+      // Clamp top edge
+      if (top < margin) top = margin;
 
-    menu.style.left = left + 'px';
-    menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+      menu.style.visibility = 'visible';
+    });
   });
 }
 
@@ -485,7 +506,7 @@ async function sendReaction(emoji) {
   closeAllOverlays();
   if (!reactionTargetMsgId) return;
   try {
-    await fetch(basePath + 'send_reaction', {
+    const resp = await fetch(basePath + 'send_reaction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': apiToken },
       body: JSON.stringify({
@@ -495,6 +516,11 @@ async function sendReaction(emoji) {
         session_id: currentSession,
       }),
     });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      showToast('Reaction failed: ' + (err.detail || resp.status), 'danger');
+      return;
+    }
     showToast('Reaction sent', 'success');
     delete lastLoadedMessagesCache[activeChatJid];
     setTimeout(() => loadChatMessages(activeChatJid), 400);
@@ -708,7 +734,7 @@ function closeAllOverlays(e) {
     return;
   }
   const ctx = document.getElementById('msg-context-menu');
-  if (ctx) ctx.style.display = 'none';
+  if (ctx) { ctx.style.display = 'none'; ctx.style.visibility = ''; }
   const rx = document.getElementById('reaction-picker');
   if (rx) rx.style.display = 'none';
   const em = document.getElementById('emoji-picker');

@@ -123,13 +123,15 @@ process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGHUP', () => handleShutdown('SIGHUP'));
 
-// Start mDNS advertisement
+// Start mDNS advertisement (skip in CI to avoid hanging event loop)
 const baseMDNSName =
   process.env.MDNS_NAME ||
   (process.env.SUPERVISOR_TOKEN
     ? `WhatsApp Homeassistant App (${ADDON_SLUG})`
     : `WhatsApp Gateway (${ADDON_SLUG})`);
-publishMDNS(baseMDNSName, sessions);
+if (!process.env.CI) {
+  publishMDNS(baseMDNSName, sessions);
+}
 
 // --- Process Error Handling ---
 process.on('uncaughtException', (err) => {

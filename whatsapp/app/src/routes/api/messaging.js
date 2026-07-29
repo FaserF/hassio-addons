@@ -345,20 +345,21 @@ export function registerMessagingRoutes(app) {
     try {
       const jid = getJid(number);
       const targetMsg = session.messageStore?.get(messageId);
-      const fromMe = targetMsg ? targetMsg.fromMe : false;
 
-      const reactionMessage = {
-        react: {
-          text: reaction || '',
-          key: {
-            remoteJid: jid,
-            fromMe: fromMe,
-            id: messageId,
-          },
-        },
+      // Use the full stored key (includes fromMe + participant for groups).
+      // Reconstruct manually only as a fallback when the message isn't cached.
+      const msgKey = targetMsg?.key ?? {
+        remoteJid: jid,
+        fromMe: false,
+        id: messageId,
       };
 
-      await session.sock.sendMessage(jid, reactionMessage);
+      await session.sock.sendMessage(jid, {
+        react: {
+          text: reaction || '',
+          key: msgKey,
+        },
+      });
       res.json({ status: 'reaction_sent' });
     } catch (err) {
       res.status(500).json({ detail: err.message });

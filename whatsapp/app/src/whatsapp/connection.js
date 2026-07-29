@@ -418,10 +418,14 @@ function getDiscoveryStatus(sessions) {
   const now = Date.now();
   const integrationActive = now - (SYSTEM_STATE.last_integration_online || 0) < 120000;
 
+  const anyHasCreds = Array.from(sessions.keys()).some((id) =>
+    fs.existsSync(path.join(getAuthDir(id), 'creds.json'))
+  );
+
   // 1. Should we broadcast at all?
-  // If we have a working connection to both sides, we stop broadcasting entirely (Stealth Mode)
-  // as requested to prevent redundant discovery.
-  const shouldBroadcast = !(anyConnected && integrationActive);
+  // Stop broadcasting if already fully set up (has credentials), or if both sides are active.
+  // This prevents spurious "Discovered WhatsApp Integration" popups in HA after restarts.
+  const shouldBroadcast = !anyHasCreds && !(anyConnected && integrationActive);
 
   // 2. Should we include the secret?
   // Security: Only even consider it on trusted networks.
@@ -429,9 +433,6 @@ function getDiscoveryStatus(sessions) {
 
   // Hide secret if ALREADY set up (connected or has creds)
   if (anyConnected) showSecret = false;
-  const anyHasCreds = Array.from(sessions.keys()).some((id) =>
-    fs.existsSync(path.join(getAuthDir(id), 'creds.json'))
-  );
   if (anyHasCreds) showSecret = false;
 
   // Hide secret if integration is already talking to us
