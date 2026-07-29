@@ -57,11 +57,14 @@ export function registerUiApiRoutes(app) {
             c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
             // Background fetch metadata without blocking response
             if (session.sock) {
-              session.sock.groupMetadata(c.jid).then((meta) => {
-                if (meta && meta.subject) {
-                  session.groupCache?.set(c.jid, meta.subject);
-                }
-              }).catch(() => {});
+              session.sock
+                .groupMetadata(c.jid)
+                .then((meta) => {
+                  if (meta && meta.subject) {
+                    session.groupCache?.set(c.jid, meta.subject);
+                  }
+                })
+                .catch(() => {});
             }
           }
         } else if (contactNames.has(c.jid)) {
