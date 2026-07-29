@@ -238,6 +238,14 @@ export function registerUiApiRoutes(app) {
       } else {
         info.name = jid.split('@')[0];
       }
+      if (session.sock) {
+        try {
+          const st = await session.sock.fetchStatus(jid);
+          if (st && st.status) {
+            info.status = st.status;
+          }
+        } catch (e) {}
+      }
     }
 
     try {

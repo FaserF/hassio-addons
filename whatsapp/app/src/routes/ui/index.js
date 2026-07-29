@@ -423,6 +423,9 @@ function renderDashboard(sessionId) {
         <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
         <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Confirm</button>
       </div>
+    </div>
+  </div>
+
   <!-- New Chat Modal Dialog -->
   <div class="modal-overlay" id="new-chat-modal">
     <div class="modal-card">
@@ -506,7 +509,7 @@ function renderDashboard(sessionId) {
 
     document.getElementById('diag-basepath').textContent = basePath;
     document.getElementById('diag-pathname').textContent = window.location.pathname;
-    document.getElementById('raw-logs-link').href = basePath + 'logs';
+    document.getElementById('raw-logs-link').href = basePath + 'logs?session_id=' + currentSession;
 
     updateDashboard();
     setInterval(updateDashboard, 10000);

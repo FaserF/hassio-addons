@@ -104,7 +104,11 @@ export function registerSessionRoutes(app) {
     res.json(events);
   });
 
-  app.get('/logs', (req, res) => res.json(getReqSession(req).connectionLogs));
+  app.get('/logs', (req, res) => {
+    const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+    const session = getSession(sessionId);
+    res.json(session.connectionLogs || []);
+  });
 
   app.get('/stats', authMiddleware, (req, res) => {
     const session = getReqSession(req);
