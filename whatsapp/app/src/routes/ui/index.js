@@ -614,19 +614,23 @@ function renderDashboard(sessionId) {
     }
     window.showSystemPropertiesModal = showSystemPropertiesModal;
 
-    // ── Sidebar toggle ────────────────────────────────
     function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        if (!sidebar) return;
-        const isCollapsed = sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var isCollapsed = sb.classList.toggle('collapsed');
+        try {
+            localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+        } catch (e) {}
     }
     window.toggleSidebar = toggleSidebar;
 
-    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    var sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     if (sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+        sidebarToggleBtn.addEventListener('click', function(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             toggleSidebar();
         });
     }

@@ -4,6 +4,10 @@ let lastLoadedMessagesCache = {};
 let lastChatsCache = '';
 
 function openNewChatModal() {
+  if (!isConnected) {
+    showToast('WhatsApp is not connected. Scan QR Code first.', 'warning');
+    return;
+  }
   const modal = document.getElementById('new-chat-modal');
   if (modal) {
     modal.classList.add('show');

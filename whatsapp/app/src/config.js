@@ -100,8 +100,36 @@ export const SHOULD_RESET = parseEnvBool('RESET_SESSION', false);
 export const WELCOME_MESSAGE_ENABLED = parseEnvBool('WELCOME_MESSAGE_ENABLED', true);
 export const ADMIN_NOTIFICATIONS_ENABLED = parseEnvBool('ADMIN_NOTIFICATIONS_ENABLED', true);
 
-export const ADDON_VERSION = getEnv('ADDON_VERSION', 'Unknown');
-export const ADDON_SLUG = getEnv('ADDON_SLUG', 'Unknown');
+function getAddonVersion() {
+  const envVer = getEnv('ADDON_VERSION');
+  if (envVer) return envVer;
+  try {
+    const configYamlPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../../config.yaml');
+    if (fs.existsSync(configYamlPath)) {
+      const content = fs.readFileSync(configYamlPath, 'utf8');
+      const match = content.match(/^version:\s*"([^"]+)"/m) || content.match(/^version:\s*([^\s]+)/m);
+      if (match) return match[1];
+    }
+  } catch (e) {}
+  return 'Unknown';
+}
+
+function getAddonSlug() {
+  const envSlug = getEnv('ADDON_SLUG');
+  if (envSlug) return envSlug;
+  try {
+    const configYamlPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../../config.yaml');
+    if (fs.existsSync(configYamlPath)) {
+      const content = fs.readFileSync(configYamlPath, 'utf8');
+      const match = content.match(/^slug:\s*"([^"]+)"/m) || content.match(/^slug:\s*([^\s]+)/m);
+      if (match) return match[1];
+    }
+  } catch (e) {}
+  return 'whatsapp';
+}
+
+export const ADDON_VERSION = getAddonVersion();
+export const ADDON_SLUG = getAddonSlug();
 export const INTEGRATION_VERSION = getEnv('INTEGRATION_VERSION', 'Unknown');
 
 // --- Debugging Flags ---
@@ -121,27 +149,24 @@ logger.info(
     : '🛠️ Gateway Configuration Loaded'
 );
 
-// --- Baileys Version Check ---
 function getBaileysVersion() {
-  try {
-    const pkgPath = path.resolve('node_modules', '@whiskeysockets', 'baileys', 'package.json');
-    if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      return pkg.version;
-    }
-  } catch (e) {
-    logger.warn({ error: e.message }, 'Could not read Baileys version');
-  }
-  return 'Unknown';
+  return getPackageVersion('@whiskeysockets/baileys');
 }
 
 export const BAILEYS_VERSION = getBaileysVersion();
 
 function getPackageVersion(packageName) {
   try {
-    const pkgPath = path.resolve('node_modules', packageName, 'package.json');
+    const pkgPath = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../node_modules', packageName, 'package.json');
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      return pkg.version;
+    }
+  } catch (e) {}
+  try {
+    const rootPkgPath = path.resolve('node_modules', packageName, 'package.json');
+    if (fs.existsSync(rootPkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
       return pkg.version;
     }
   } catch (e) {}
