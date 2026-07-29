@@ -2051,7 +2051,8 @@ function renderDashboard(sessionId) {
                 showToast('Sending message...', 'info');
 
                 try {
-                    const rawNumber = activeChatJid.split('@')[0];
+                    // Pass the full JID – getJid() returns it as-is when it contains @,
+                    // which correctly handles both 1:1 and group chats
                     const response = await fetch(basePath + 'send_message', {
                         method: 'POST',
                         headers: {
@@ -2060,8 +2061,9 @@ function renderDashboard(sessionId) {
                             'X-Auth-Token': apiToken
                         },
                         body: JSON.stringify({
-                            number: rawNumber,
-                            message: message
+                            number: activeChatJid,
+                            message: message,
+                            session_id: currentSession
                         })
                     });
 
