@@ -192,6 +192,7 @@ export function registerAPIRoutes(app) {
     const session = getReqSession(req);
     res.json({
       ...session.stats,
+      version: BAILEYS_VERSION,
       connected: session.isConnected,
       disconnect_reason: session.isConnected ? null : session.disconnectReason,
       uptime: Math.floor((Date.now() - session.stats.start_time) / 1000),
