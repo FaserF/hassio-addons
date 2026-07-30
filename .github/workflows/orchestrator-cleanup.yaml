@@ -199,3 +199,44 @@ jobs:
             }
 
             console.log(`Deployment cleanup complete! Deleted ${deleted} deployments. Kept ${KEEP_RECENT} recent.`);
+
+  cleanup-caches:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: 🧹 Cleanup Actions Caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹 Delete Old Actions Caches
+        uses: actions/github-script@v9
+        with:
+          script: |
+            console.log("Starting GitHub Actions cache cleanup...");
+            let deleted = 0;
+            let page = 1;
+            
+            while (true) {
+              const { data: caches } = await github.rest.actions.getActionsCacheList({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100,
+                page: page
+              });
+
+              if (!caches.actions_caches || caches.actions_caches.length === 0) break;
+
+              for (const cache of caches.actions_caches) {
+                try {
+                  console.log(`Deleting cache ID ${cache.id} (${cache.key})...`);
+                  await github.rest.actions.deleteActionsCacheById({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    cache_id: cache.id
+                  });
+                  deleted++;
+                } catch (e) {
+                  console.log(`Failed to delete cache ${cache.id}: ${e.message}`);
+                }
+              }
+              page++;
+            }
+            console.log(`Cache cleanup complete! Deleted ${deleted} caches.`);
+
