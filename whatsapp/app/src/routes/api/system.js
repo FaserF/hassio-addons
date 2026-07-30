@@ -181,7 +181,7 @@ export function registerSystemRoutes(app) {
     }
   });
 
-  app.post('/api/sessions/purge', uiAuthMiddleware, async (req, res) => {
+  app.post('/api/sessions/purge', uiLimiter, uiAuthMiddleware, async (req, res) => {
     try {
       const purged = await purgeDisconnectedSessions();
       res.json({ status: 'success', purgedCount: purged });
@@ -190,7 +190,7 @@ export function registerSystemRoutes(app) {
     }
   });
 
-  app.post('/api/logs/clear', uiAuthMiddleware, (req, res) => {
+  app.post('/api/logs/clear', uiLimiter, uiAuthMiddleware, (req, res) => {
     try {
       const sessionId = sanitizeSessionId(req.body?.session_id || 'default');
       const session = getSession(sessionId);

@@ -66,7 +66,7 @@ export function registerSessionRoutes(app) {
     })
   );
 
-  app.get('/qr', anyAuthMiddleware, (req, res) => {
+  app.get('/qr', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       const qrData = session.qr || session.currentQR;
@@ -78,7 +78,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/passkey/status', anyAuthMiddleware, (req, res) => {
+  app.get('/passkey/status', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json({
@@ -94,6 +94,7 @@ export function registerSessionRoutes(app) {
 
   app.post(
     '/session/pair',
+    apiLimiter,
     anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       const session = getReqSession(req);
@@ -111,7 +112,7 @@ export function registerSessionRoutes(app) {
     })
   );
 
-  app.get('/status', anyAuthMiddleware, (req, res) => {
+  app.get('/status', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json({
@@ -126,7 +127,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/events', anyAuthMiddleware, (req, res) => {
+  app.get('/events', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       const events = [...session.eventQueue];
@@ -137,7 +138,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/logs', anyAuthMiddleware, (req, res) => {
+  app.get('/logs', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const sessionId = sanitizeSessionId(req.query.session_id || 'default');
       const session = getSession(sessionId);
@@ -147,7 +148,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/stats', anyAuthMiddleware, (req, res) => {
+  app.get('/stats', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json(session.stats);
