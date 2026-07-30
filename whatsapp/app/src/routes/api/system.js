@@ -19,17 +19,22 @@ import { logger } from '../../logger.js';
 import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
 import { getLatestReleases } from '../../utils/versionCheck.js';
+import { asyncHandler } from './helpers.js';
 
 export function registerSystemRoutes(app) {
   app.get('/health', uiLimiter, (req, res) => {
+    try {
     res.json({
       status: HEALTH_STATE.status || 'ok',
       uptime: process.uptime(),
       memory: process.memoryUsage(),
     });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
-  app.get('/api/dashboard', uiLimiter, async (req, res) => {
+  app.get('/api/dashboard', uiLimiter, asyncHandler(async (req, res) => {
     // Scan disk for all session folders so sessionList is complete
     const sessionsDir = path.join(DATA_DIR, 'sessions');
     if (fs.existsSync(sessionsDir)) {
@@ -95,7 +100,12 @@ export function registerSystemRoutes(app) {
       statusText = session._myStatusText || null;
     }
 
-    const releases = await getLatestReleases();
+    let releases = {};
+    try {
+      releases = await getLatestReleases();
+    } catch (e) {
+      logger.error({ error: e.message }, 'Failed to get latest releases');
+    }
 
     res.json({
       sessionId: session.id,
@@ -135,10 +145,11 @@ export function registerSystemRoutes(app) {
       integrationChangelog: releases.integrationChangelog,
       integrationReleaseUrl: releases.integrationReleaseUrl,
     });
-  });
+  }));
 
   app.post('/api/session/restart', uiAuthMiddleware, (req, res) => {
-    const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+    try {
+    const sessionId = sanitizeSessionId(req.body?.session_id || 'default');
     const session = getSession(sessionId);
 
     if (session.sock) {
@@ -152,16 +163,24 @@ export function registerSystemRoutes(app) {
       }, 500);
     }
     res.json({ status: 'restarting', session_id: sessionId });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.post('/api/logs/clear', uiAuthMiddleware, (req, res) => {
-    const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+    try {
+    const sessionId = sanitizeSessionId(req.body?.session_id || 'default');
     const session = getSession(sessionId);
     session.connectionLogs = [];
     res.json({ status: 'cleared' });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.get('/api/debug/download', uiLimiter, (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
 
@@ -185,11 +204,18 @@ export function registerSystemRoutes(app) {
       `attachment; filename="whatsapp-debug-${session.id}.json"`
     );
     res.send(JSON.stringify(debugBundle, null, 2));
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.post('/settings/webhook', authMiddleware, (req, res) => {
-    const { enabled, url, token } = req.body;
+    try {
+    const { enabled, url, token } = req.body || {};
     updateWebhookConfig(enabled, url, token);
     res.json({ status: 'updated', enabled: WEBHOOK_ENABLED, url: WEBHOOK_URL });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 }

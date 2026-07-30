@@ -1,5 +1,32 @@
 // Dashboard logic & polling
 
+// Semantic version comparison (returns true if latest > curr)
+function isNewerVersion(curr, latest) {
+  if (!curr || !latest) return false;
+  const cleanC = curr.replace(/^v/, '').trim();
+  const cleanL = latest.replace(/^v/, '').trim();
+  if (
+    !cleanL ||
+    cleanC === cleanL ||
+    cleanC === 'Unknown' ||
+    cleanC.includes('dev') ||
+    cleanC.includes('edge')
+  ) {
+    return false;
+  }
+  const partsC = cleanC.split('.').map((p) => parseInt(p, 10) || 0);
+  const partsL = cleanL.split('.').map((p) => parseInt(p, 10) || 0);
+  const maxLen = Math.max(partsC.length, partsL.length);
+  for (let i = 0; i < maxLen; i++) {
+    const valC = partsC[i] || 0;
+    const valL = partsL[i] || 0;
+    if (valL > valC) return true;
+    if (valL < valC) return false;
+  }
+  return false;
+}
+window.isNewerVersion = isNewerVersion;
+
 async function updateDashboard() {
   try {
     let response;
@@ -66,31 +93,7 @@ async function updateDashboard() {
 
     window._latestReleaseData = data;
 
-    // Semantic version comparison (returns true if latest > curr)
-    const isNewerVersion = (curr, latest) => {
-      if (!curr || !latest) return false;
-      const cleanC = curr.replace(/^v/, '').trim();
-      const cleanL = latest.replace(/^v/, '').trim();
-      if (
-        !cleanL ||
-        cleanC === cleanL ||
-        cleanC === 'Unknown' ||
-        cleanC.includes('dev') ||
-        cleanC.includes('edge')
-      ) {
-        return false;
-      }
-      const partsC = cleanC.split('.').map((p) => parseInt(p, 10) || 0);
-      const partsL = cleanL.split('.').map((p) => parseInt(p, 10) || 0);
-      const maxLen = Math.max(partsC.length, partsL.length);
-      for (let i = 0; i < maxLen; i++) {
-        const valC = partsC[i] || 0;
-        const valL = partsL[i] || 0;
-        if (valL > valC) return true;
-        if (valL < valC) return false;
-      }
-      return false;
-    };
+    // isNewerVersion is defined at the top-level scope above
 
     const hasAddonUpdate = isNewerVersion(data.addonVersion, data.latestAddonVersion);
     const hasIntUpdate = isNewerVersion(data.integrationVersion, data.latestIntegrationVersion);
@@ -107,7 +110,7 @@ async function updateDashboard() {
     });
 
     const devBanner = document.getElementById('dev-banner');
-    if (devBanner) devBanner.style.display = isDev ? 'flex' : 'none';
+    if (devBanner) devBanner.style.display = data.isDev ? 'flex' : 'none';
 
     // Standalone mode adjustments
     const hostUriLabel = document.getElementById('label-host-uri');
@@ -701,4 +704,4 @@ window.openUpdateModal = openUpdateModal;
 window.closeUpdateModal = closeUpdateModal;
 window.openDependencyModal = openDependencyModal;
 window.closeDependencyModal = closeDependencyModal;
-window.isNewerVersion = isNewerVersion;
+

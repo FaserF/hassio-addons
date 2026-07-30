@@ -11,7 +11,7 @@ export const ipFilterMiddleware = (req, res, next) => {
   // Always allow Ingress
   if (req.headers['x-ingress-path']) return next();
 
-  let ip = req.ip || req.connection.remoteAddress;
+  let ip = req.ip || req.socket?.remoteAddress;
   if (ip.startsWith('::ffff:')) ip = ip.substr(7);
 
   const isPrivate =
@@ -78,9 +78,13 @@ export const uiAuthMiddleware = (req, res, next) => {
     return res.status(401).send('Unauthorized');
   }
 
-  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  const user = auth[0];
-  const pass = auth[1];
+  let user = '';
+  let pass = '';
+  try {
+    const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64').toString().split(':');
+    user = auth[0] || '';
+    pass = auth[1] || '';
+  } catch (err) {}
 
   if (user === 'admin' && pass === UI_AUTH_PASSWORD) {
     next();
@@ -110,7 +114,7 @@ export const ingressPrefixMiddleware = (req, res, next) => {
 export const httpLoggerMiddleware = (req, res, next) => {
   const start = Date.now();
   const { method, url } = req;
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.ip || req.socket?.remoteAddress;
 
   res.on('finish', () => {
     const duration = Date.now() - start;
@@ -148,7 +152,7 @@ export const uiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
+  skip: (req) => isPrivateIP(req.ip || req.socket?.remoteAddress),
   validate: { trustProxy: false },
 });
 
@@ -158,6 +162,6 @@ export const apiLimiter = rateLimit({
   message: 'Too many API requests from this IP, please try again after a minute',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => isPrivateIP(req.ip || req.connection.remoteAddress),
+  skip: (req) => isPrivateIP(req.ip || req.socket?.remoteAddress),
   validate: { trustProxy: false },
 });

@@ -1,9 +1,10 @@
 import { uiAuthMiddleware } from '../../middleware.js';
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
-import { getMessageText } from './helpers.js';
+import { getMessageText, asyncHandler } from './helpers.js';
 
 export function registerUiApiRoutes(app) {
   app.get('/api/chats', uiAuthMiddleware, (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     let session = getSession(sessionId);
     if (!session || !session.messageStore || session.messageStore.size === 0) {
@@ -87,9 +88,13 @@ export function registerUiApiRoutes(app) {
       .sort((a, b) => b.timestamp - a.timestamp);
 
     res.json(chats);
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     let session = getSession(sessionId);
     if (!session || !session.messageStore || session.messageStore.size === 0) {
@@ -175,9 +180,7 @@ export function registerUiApiRoutes(app) {
         } else if (rawMsg?.interactiveMessage?.nativeFlowMessage?.buttons) {
           buttons = rawMsg.interactiveMessage.nativeFlowMessage.buttons.map((b) => ({
             id: b.name || '',
-            text: b.buttonParamsJson
-              ? JSON.parse(b.buttonParamsJson)?.display_text || b.name
-              : b.name,
+            text: b.buttonParamsJson ? (() => { try { return JSON.parse(b.buttonParamsJson)?.display_text || b.name; } catch (e) { return b.name; } })() : b.name,
           }));
         } else if (rawMsg?.listMessage?.sections) {
           rawMsg.listMessage.sections.forEach((sec) => {
@@ -213,9 +216,13 @@ export function registerUiApiRoutes(app) {
       .sort((a, b) => a.timestamp - b.timestamp);
 
     res.json(messages);
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.get('/api/presence', uiAuthMiddleware, (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
     const jid = req.query.jid;
@@ -223,9 +230,13 @@ export function registerUiApiRoutes(app) {
     const p = session._presenceStore?.get(jid);
     if (!p || Date.now() - p.lastSeen > 10000) return res.json({ typing: false });
     res.json({ typing: p.status === 'composing', status: p.status });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
   app.get('/api/messages/search', uiAuthMiddleware, (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
     const jid = req.query.jid;
@@ -245,9 +256,12 @@ export function registerUiApiRoutes(app) {
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     res.json(results);
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
   });
 
-  app.get('/api/avatar', uiAuthMiddleware, async (req, res) => {
+  app.get('/api/avatar', uiAuthMiddleware, asyncHandler(async (req, res) => {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
     const jid = req.query.jid;
@@ -267,9 +281,10 @@ export function registerUiApiRoutes(app) {
     } catch (err) {
       res.status(404).json({ error: 'Not found' });
     }
-  });
+  }));
 
-  app.get('/api/chat_info', uiAuthMiddleware, async (req, res) => {
+  app.get('/api/chat_info', uiAuthMiddleware, asyncHandler(async (req, res) => {
+    try {
     const sessionId = sanitizeSessionId(req.query.session_id || 'default');
     const session = getSession(sessionId);
     const jid = req.query.jid;
@@ -332,5 +347,8 @@ export function registerUiApiRoutes(app) {
     } catch {}
 
     res.json(info);
-  });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  }));
 }

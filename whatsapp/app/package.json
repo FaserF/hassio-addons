@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:ui": "node tests/validate-ui-scope.js",
+    "test": "npm run lint && npm run test:ui"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",

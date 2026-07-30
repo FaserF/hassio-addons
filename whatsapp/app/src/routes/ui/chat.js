@@ -2,6 +2,7 @@
 
 let lastLoadedMessagesCache = {};
 let lastChatsCache = '';
+let reactionTargetMsgId = null;
 
 function openNewChatModal() {
   if (!isConnected) {
@@ -529,7 +530,6 @@ function cancelReply() {
   if (bar) bar.style.display = 'none';
 }
 
-let reactionTargetMsgId = null;
 function showReactionPicker(e, msgId) {
   if (e) e.stopPropagation();
   closeAllOverlays();
@@ -989,3 +989,5 @@ window.searchInActiveChat = searchInActiveChat;
 window.closeChatSearch = closeChatSearch;
 window.openChatInfoDrawer = openChatInfoDrawer;
 window.closeChatInfoDrawer = closeChatInfoDrawer;
+window.sendChatMessage = sendChatMessage;
+window.sendInteractiveReply = sendInteractiveReply;

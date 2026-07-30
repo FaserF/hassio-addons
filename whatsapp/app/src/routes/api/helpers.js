@@ -1,6 +1,7 @@
 import { delay } from '@whiskeysockets/baileys';
 
 export async function ensureConnected(session, maxWaitMs = 3000) {
+  if (!session) return false;
   if (session.isConnected) return true;
   if (session.sock && !session.sock.ws?.isClosed) {
     const startTime = Date.now();
@@ -44,3 +45,12 @@ export function getMessageText(msg) {
     ''
   );
 }
+
+export const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch((err) => {
+    console.error(`❌ Unhandled route error [${req.method} ${req.path}]:`, err.message || err);
+    if (!res.headersSent) {
+      res.status(500).json({ detail: err.message || 'Internal server error' });
+    }
+  });
+};

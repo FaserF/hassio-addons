@@ -3,11 +3,12 @@ import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { trackSent } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';
-import { ensureConnected } from './helpers.js';
+import { ensureConnected, asyncHandler } from './helpers.js';
 import { generateMessageID } from '../../utils/security.js';
 
 export function registerMessagingRoutes(app) {
-  app.post('/send_message', authMiddleware, async (req, res) => {
+  app.post('/send_message', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, message, quotedMessageId } = req.body;
     if (!number || !message) return res.status(400).json({ detail: 'Missing number or message' });
@@ -15,7 +16,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected to WhatsApp' });
 
-    try {
+    
       const jid = getJid(number);
       const options = {};
       if (quotedMessageId) {
@@ -31,9 +32,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_image', authMiddleware, async (req, res) => {
+  app.post('/send_image', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, url, caption } = req.body;
     if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
@@ -41,7 +43,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         image: { url },
@@ -52,9 +54,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_poll', authMiddleware, async (req, res) => {
+  app.post('/send_poll', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, name, options, selectableCount } = req.body;
     if (!number || !name || !options || !Array.isArray(options)) {
@@ -64,7 +67,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         poll: {
@@ -78,9 +81,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_location', authMiddleware, async (req, res) => {
+  app.post('/send_location', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, degreesLatitude, degreesLongitude, name, address } = req.body;
     if (!number || degreesLatitude == null || degreesLongitude == null) {
@@ -90,7 +94,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         location: { degreesLatitude, degreesLongitude, name, address },
@@ -100,9 +104,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_event', authMiddleware, async (req, res) => {
+  app.post('/send_event', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, name, description, startTime, endTime, location } = req.body;
     if (!number || !name) return res.status(400).json({ detail: 'Missing number or name' });
@@ -110,7 +115,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         event: {
@@ -126,29 +131,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_reaction', authMiddleware, async (req, res) => {
-    const session = getReqSession(req);
-    const { number, messageId, reaction } = req.body;
-    if (!number || !messageId)
-      return res.status(400).json({ detail: 'Missing number or messageId' });
-
-    const connected = await ensureConnected(session);
-    if (!connected) return res.status(503).json({ detail: 'Not connected' });
-
+  app.post('/send_buttons', authMiddleware, asyncHandler(async (req, res) => {
     try {
-      const jid = getJid(number);
-      await session.sock.sendMessage(jid, {
-        react: { text: reaction || '', key: { remoteJid: jid, id: messageId } },
-      });
-      res.json({ status: 'sent' });
-    } catch (err) {
-      res.status(500).json({ detail: err.message });
-    }
-  });
-
-  app.post('/send_buttons', authMiddleware, async (req, res) => {
     const session = getReqSession(req);
     const { number, text, buttons, footer } = req.body;
     if (!number || !text || !buttons) return res.status(400).json({ detail: 'Missing parameters' });
@@ -156,7 +142,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const formattedButtons = buttons.map((b, i) => ({
         buttonId: b.id || `btn_${i}`,
@@ -174,9 +160,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_document', authMiddleware, async (req, res) => {
+  app.post('/send_document', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, url, fileName, caption } = req.body;
     if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
@@ -184,7 +171,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         document: { url },
@@ -196,9 +183,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_video', authMiddleware, async (req, res) => {
+  app.post('/send_video', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, url, caption } = req.body;
     if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
@@ -206,7 +194,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         video: { url },
@@ -217,9 +205,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_audio', authMiddleware, async (req, res) => {
+  app.post('/send_audio', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, url, ptt } = req.body;
     if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
@@ -227,7 +216,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         audio: { url },
@@ -239,9 +228,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/revoke_message', authMiddleware, async (req, res) => {
+  app.post('/revoke_message', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, messageId } = req.body;
     if (!number || !messageId)
@@ -250,7 +240,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       await session.sock.sendMessage(jid, {
         delete: { remoteJid: jid, fromMe: true, id: messageId },
@@ -259,9 +249,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/edit_message', authMiddleware, async (req, res) => {
+  app.post('/edit_message', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, messageId, newText } = req.body;
     if (!number || !messageId || !newText) {
@@ -271,7 +262,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       await session.sock.sendMessage(jid, {
         text: newText,
@@ -281,9 +272,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_list', authMiddleware, async (req, res) => {
+  app.post('/send_list', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, title, buttonText, sections } = req.body;
     if (!number || !title || !sections)
@@ -292,7 +284,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const sentMsg = await session.sock.sendMessage(jid, {
         text: title,
@@ -304,9 +296,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_contact', authMiddleware, async (req, res) => {
+  app.post('/send_contact', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, contactName, contactNumber } = req.body;
     if (!number || !contactName || !contactNumber) {
@@ -316,7 +309,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const vcard =
         'BEGIN:VCARD\n' +
@@ -333,9 +326,10 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 
-  app.post('/send_reaction', authMiddleware, async (req, res) => {
+  app.post('/send_reaction', authMiddleware, asyncHandler(async (req, res) => {
+    try {
     const session = getReqSession(req);
     const { number, messageId, reaction } = req.body;
     if (!number || !messageId) {
@@ -345,7 +339,7 @@ export function registerMessagingRoutes(app) {
     const connected = await ensureConnected(session);
     if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-    try {
+    
       const jid = getJid(number);
       const targetMsg = session.messageStore?.get(messageId);
 
@@ -380,5 +374,5 @@ export function registerMessagingRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  }));
 }

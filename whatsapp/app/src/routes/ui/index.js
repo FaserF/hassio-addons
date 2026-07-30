@@ -426,6 +426,7 @@ function renderDashboard(sessionId) {
                                     <i class="fas fa-search search-icon"></i>
                                     <input type="text" id="in-chat-search-input" class="chat-search-input" placeholder="Search in this conversation…" oninput="searchInActiveChat()">
                                     <button onclick="closeChatSearch()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;"><i class="fas fa-times"></i></button>
+                                    <span id="chat-search-count" style="font-size:12px;color:var(--text-muted);margin-left:4px;white-space:nowrap;"></span>
                                 </div>
                             </div>
 
