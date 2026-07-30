@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2 (2026-07-30)
+
+### 📦 Dependencies
+- ⬆️ Update ER-Startseite to v2026.7.7 [skip-tests] (#935) ([`aa144c6e`](https://github.com/FaserF/hassio-addons/commit/aa144c6eea24e48baa617ffb4edb10c922a0fa60))
+
+
 ## 1.4.1 (2026-07-28)
 
 ### 📦 Dependencies
