@@ -17,7 +17,7 @@ export function registerSessionRoutes(app) {
       const sessionId = sanitizeSessionId(
         req.body?.session_id || req.query?.session_id || 'default'
       );
-      signalInterest(sessionId);
+      signalInterest(sessionId, connectToWhatsApp);
       let session = sessions.get(sessionId);
       if (!session) {
         session = getSession(sessionId);

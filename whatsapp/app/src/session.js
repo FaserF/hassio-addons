@@ -263,7 +263,11 @@ export function signalInterest(sessionId, connectFn) {
   if (!session.isConnected && socketMissing) {
     logger.info({ sessionId }, '🎯 Interest signaled - starting connection...');
     addLog(session, 'Interest signaled - initiating connection...', 'info');
-    connectFn(sessionId, sessions, getSession).catch((err) => {
+    const fn = typeof connectFn === 'function' ? connectFn : async (sId, sessMap, getSess) => {
+      const { connectToWhatsApp } = await import('./whatsapp/connection.js');
+      return connectToWhatsApp(sId, sessMap, getSess);
+    };
+    fn(sessionId, sessions, getSession).catch((err) => {
       logger.error({ error: err.message, sessionId }, 'Failed to start WhatsApp connection');
       addLog(session, `Failed to start connection: ${err.message}`, 'error');
     });
@@ -291,7 +295,11 @@ export function startSessionCleanupTask(deleteSessionFn) {
       );
       if (now - lastActivity > STALE_THRESHOLD) {
         logger.info({ sessionId: id }, '🧹 Removing stale in-memory session');
-        await deleteSessionFn(id);
+        if (typeof deleteSessionFn === 'function') {
+          await deleteSessionFn(id);
+        } else {
+          sessions.delete(id);
+        }
       }
     }
 
