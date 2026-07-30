@@ -279,7 +279,8 @@ export function handleIncomingMessages(session) {
 
               for (const [id, s] of sessions.entries()) {
                 if (!s.isConnected) {
-                  const reason = s.stats?.last_disconnect_reason || s.disconnectReason || 'Disconnected';
+                  const reason =
+                    s.stats?.last_disconnect_reason || s.disconnectReason || 'Disconnected';
                   errors.push(`• *Session ${id}:* Disconnected (${reason})`);
                 }
                 if (s.passkeyDetected) {
@@ -295,8 +296,12 @@ export function handleIncomingMessages(session) {
               }
 
               if (session.stats.failed > 0) {
-                const lastReason = session.stats.last_error_reason ? ` (${session.stats.last_error_reason})` : '';
-                warnings.push(`• *Failed Messages:* ${session.stats.failed} send failure(s) recorded${lastReason}`);
+                const lastReason = session.stats.last_error_reason
+                  ? ` (${session.stats.last_error_reason})`
+                  : '';
+                warnings.push(
+                  `• *Failed Messages:* ${session.stats.failed} send failure(s) recorded${lastReason}`
+                );
               }
 
               const logErrors = (session.connectionLogs || [])
@@ -321,7 +326,8 @@ export function handleIncomingMessages(session) {
                     logErrors.map((l) => `• \`[${l.timestamp}]\` ${l.msg}`).join('\n') +
                     '\n\n';
                 }
-                report += '💡 *Tip:* Use `ha-app-restart` to attempt reconnection or `ha-app-logs` for details.';
+                report +=
+                  '💡 *Tip:* Use `ha-app-restart` to attempt reconnection or `ha-app-logs` for details.';
                 await reply(session, senderJid, { text: report });
               }
             } else if (body.startsWith('ha-app-stats')) {
