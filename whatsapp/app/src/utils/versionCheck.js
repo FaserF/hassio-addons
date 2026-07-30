@@ -64,7 +64,7 @@ export async function getLatestReleases(forceRefresh = false) {
     );
     if (intRelease && intRelease.tag_name) {
       cache.data.latestIntegrationVersion = intRelease.tag_name.replace(/^v/, '');
-      cache.data.integrationChangelog = intRelease.body || 'Keine Releasenotes verfügbar.';
+      cache.data.integrationChangelog = intRelease.body || 'No release notes available.';
       cache.data.integrationReleaseUrl =
         intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
     }
@@ -77,7 +77,7 @@ export async function getLatestReleases(forceRefresh = false) {
       cache.data.latestAddonVersion = addonRelease.tag_name
         .replace(/^v/, '')
         .replace(/^whatsapp-/, '');
-      cache.data.addonChangelog = addonRelease.body || 'Keine Releasenotes verfügbar.';
+      cache.data.addonChangelog = addonRelease.body || 'No release notes available.';
       cache.data.addonReleaseUrl =
         addonRelease.html_url || 'https://github.com/FaserF/hassio-addons/releases';
     }
