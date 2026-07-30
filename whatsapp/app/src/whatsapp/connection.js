@@ -43,6 +43,18 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     return;
   }
 
+  // Safely cleanup previous unclosed socket instance to avoid Stream Errored (conflict)
+  if (session.sock) {
+    try {
+      logger.debug({ sessionId }, '🧹 Destroying existing socket before reconnecting...');
+      session.sock.ev.removeAllListeners();
+      session.sock.end(new Error('Replacing existing socket instance'));
+    } catch (e) {
+      logger.debug({ sessionId, error: e.message }, 'Error closing previous socket before reconnecting');
+    }
+    session.sock = null;
+  }
+
   session.isConnecting = true;
   session.passkeyDetected = false;
   session.passkeyWaiting = false;
@@ -317,10 +329,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
 
         logger.warn({ sessionId }, '⚠️ WhatsApp disconnected. Admin notification pending restore.');
 
-        // Clear any existing restore timer
-        if (session._restoreTimer) {
-          clearTimeout(session._restoreTimer);
-          session._restoreTimer = null;
+        // Clear any existing disconnect timer to prevent duplicate alerts
+        if (session._disconnectTimer) {
+          clearTimeout(session._disconnectTimer);
+          session._disconnectTimer = null;
         }
 
         // Delay the disconnect notification to avoid spam during quick reconnects

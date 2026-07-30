@@ -39,68 +39,78 @@ export function getChangelogUrl(repo, version, defaultBranch = 'main') {
   return `https://github.com/${repo}/releases/tag/${tagVersion}`;
 }
 
+let isCheckingUpdates = false;
+
 export async function checkSystemUpdates(session) {
-  const currentAddonVersion = ADDON_VERSION;
-  const currentIntegrationVersion = INTEGRATION_VERSION;
-  const haVersions = await fetchHAVersions();
-  const currentHAVersion = haVersions.core;
-  const now = formatHATime(new Date());
+  if (isCheckingUpdates) return;
+  isCheckingUpdates = true;
 
-  let updateMessages = [];
+  try {
+    const currentAddonVersion = ADDON_VERSION;
+    const currentIntegrationVersion = INTEGRATION_VERSION;
+    const haVersions = await fetchHAVersions();
+    const currentHAVersion = haVersions.core;
+    const now = formatHATime(new Date());
 
-  if (
-    SYSTEM_STATE.last_addon_version !== 'Unknown' &&
-    SYSTEM_STATE.last_addon_version !== currentAddonVersion
-  ) {
-    const changelogUrl = getChangelogUrl('FaserF/hassio-addons', currentAddonVersion, 'master');
-    updateMessages.push(
-      `📦 *WhatsApp App Updated*\n• *Version:* ${SYSTEM_STATE.last_addon_version} ➔ ${currentAddonVersion}\n• *Changelog:* ${changelogUrl}`
-    );
-  }
+    let updateMessages = [];
 
-  if (
-    SYSTEM_STATE.last_integration_version !== 'Unknown' &&
-    SYSTEM_STATE.last_integration_version !== currentIntegrationVersion
-  ) {
-    const changelogUrl = getChangelogUrl('FaserF/ha-whatsapp', currentIntegrationVersion, 'main');
-    updateMessages.push(
-      `🧩 *Integration Updated*\n• *Version:* ${SYSTEM_STATE.last_integration_version} ➔ ${currentIntegrationVersion}\n• *Changelog:* ${changelogUrl}`
-    );
-  }
-
-  if (SYSTEM_STATE.last_ha_disconnect_time) {
-    const downtime = Date.now() - SYSTEM_STATE.last_ha_disconnect_time;
-    const durationStr = formatDuration(downtime);
-
-    if (haVersions.safe_mode) {
-      const haLogs = await fetchHALogs();
-      updateMessages.push(
-        `⚠️ *Home Assistant Booted in SAFE MODE*\n• *Downtime:* ${durationStr}\n\n📋 *Recent Logs:*\n\`\`\`\n${haLogs}\n\`\`\``
-      );
-    } else if (
-      SYSTEM_STATE.last_ha_version !== 'Unknown' &&
-      SYSTEM_STATE.last_ha_version !== currentHAVersion
+    if (
+      SYSTEM_STATE.last_addon_version !== 'Unknown' &&
+      SYSTEM_STATE.last_addon_version !== currentAddonVersion
     ) {
+      const changelogUrl = getChangelogUrl('FaserF/hassio-addons', currentAddonVersion, 'master');
       updateMessages.push(
-        `✅ *Home Assistant Update Successful*\n• *Core:* ${SYSTEM_STATE.last_ha_version} ➔ ${currentHAVersion}\n• *Downtime:* ${durationStr}`
+        `📦 *WhatsApp App Updated*\n• *Version:* ${SYSTEM_STATE.last_addon_version} ➔ ${currentAddonVersion}\n• *Changelog:* ${changelogUrl}`
       );
-    } else {
-      updateMessages.push(`🔄 *Home Assistant back online*\n• *Downtime:* ${durationStr}`);
     }
-  }
 
-  if (updateMessages.length > 0) {
-    const fullText =
-      `🔔 *System Status Update*\n• *Time:* ${now}\n\n` + updateMessages.join('\n\n');
-    await notifyAdmins(session, fullText);
-  }
+    if (
+      SYSTEM_STATE.last_integration_version !== 'Unknown' &&
+      SYSTEM_STATE.last_integration_version !== currentIntegrationVersion
+    ) {
+      const changelogUrl = getChangelogUrl('FaserF/ha-whatsapp', currentIntegrationVersion, 'main');
+      updateMessages.push(
+        `🧩 *Integration Updated*\n• *Version:* ${SYSTEM_STATE.last_integration_version} ➔ ${currentIntegrationVersion}\n• *Changelog:* ${changelogUrl}`
+      );
+    }
 
-  SYSTEM_STATE.last_addon_version = currentAddonVersion;
-  SYSTEM_STATE.last_integration_version = currentIntegrationVersion;
-  SYSTEM_STATE.last_ha_version = currentHAVersion;
-  SYSTEM_STATE.last_ha_safe_mode = haVersions.safe_mode;
-  SYSTEM_STATE.last_ha_disconnect_time = null;
-  saveSystemState();
+    if (SYSTEM_STATE.last_ha_disconnect_time) {
+      const downtime = Date.now() - SYSTEM_STATE.last_ha_disconnect_time;
+      const durationStr = formatDuration(downtime);
+
+      if (haVersions.safe_mode) {
+        const haLogs = await fetchHALogs();
+        updateMessages.push(
+          `⚠️ *Home Assistant Booted in SAFE MODE*\n• *Downtime:* ${durationStr}\n\n📋 *Recent Logs:*\n\`\`\`\n${haLogs}\n\`\`\``
+        );
+      } else if (
+        SYSTEM_STATE.last_ha_version !== 'Unknown' &&
+        SYSTEM_STATE.last_ha_version !== currentHAVersion
+      ) {
+        updateMessages.push(
+          `✅ *Home Assistant Update Successful*\n• *Core:* ${SYSTEM_STATE.last_ha_version} ➔ ${currentHAVersion}\n• *Downtime:* ${durationStr}`
+        );
+      } else {
+        updateMessages.push(`🔄 *Home Assistant back online*\n• *Downtime:* ${durationStr}`);
+      }
+    }
+
+    // Immediately update SYSTEM_STATE to lock out duplicate concurrent triggers from other sessions
+    SYSTEM_STATE.last_addon_version = currentAddonVersion;
+    SYSTEM_STATE.last_integration_version = currentIntegrationVersion;
+    SYSTEM_STATE.last_ha_version = currentHAVersion;
+    SYSTEM_STATE.last_ha_safe_mode = haVersions.safe_mode;
+    SYSTEM_STATE.last_ha_disconnect_time = null;
+    saveSystemState();
+
+    if (updateMessages.length > 0) {
+      const fullText =
+        `🔔 *System Status Update*\n• *Time:* ${now}\n\n` + updateMessages.join('\n\n');
+      await notifyAdmins(session, fullText);
+    }
+  } finally {
+    isCheckingUpdates = false;
+  }
 }
 
 export async function monitorHACore(session) {
