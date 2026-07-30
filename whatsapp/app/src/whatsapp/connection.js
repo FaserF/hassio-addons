@@ -50,7 +50,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.sock.ev.removeAllListeners();
       session.sock.end(new Error('Replacing existing socket instance'));
     } catch (e) {
-      logger.debug({ sessionId, error: e.message }, 'Error closing previous socket before reconnecting');
+      logger.debug(
+        { sessionId, error: e.message },
+        'Error closing previous socket before reconnecting'
+      );
     }
     session.sock = null;
   }
