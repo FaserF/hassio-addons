@@ -784,6 +784,13 @@ function renderDashboard(sessionId) {
         if (target && (target.id === 'sidebar-toggle-btn' || (target.closest && target.closest('#sidebar-toggle-btn')))) {
             toggleSidebar(e);
         }
+        if (target && target.classList && target.classList.contains('modal-overlay')) {
+            if (target.id === 'confirm-modal' && typeof closeConfirm === 'function') {
+                closeConfirm(false);
+            } else {
+                target.classList.remove('show');
+            }
+        }
     });
 
     // Restore sidebar state from last visit (default: expanded)
