@@ -67,6 +67,20 @@ export const authMiddleware = (req, res, next) => {
   next();
 };
 
+export const anyAuthMiddleware = (req, res, next) => {
+  const providedToken = req.header('X-Auth-Token');
+  if (providedToken) {
+    if (providedToken === API_TOKEN) {
+      SYSTEM_STATE.last_integration_online = Date.now();
+      saveSystemState();
+      return next();
+    }
+    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid X-Auth-Token' });
+  }
+
+  return uiAuthMiddleware(req, res, next);
+};
+
 export const uiAuthMiddleware = (req, res, next) => {
   // Always skip if Ingress is used (Home Assistant handles auth)
   if (req.headers['x-ingress-path']) return next();

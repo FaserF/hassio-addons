@@ -1,4 +1,4 @@
-import { authMiddleware, apiLimiter } from '../../middleware.js';
+import { anyAuthMiddleware, apiLimiter } from '../../middleware.js';
 import {
   getReqSession,
   getSession,
@@ -12,7 +12,7 @@ import { asyncHandler } from './helpers.js';
 import fs from 'fs';
 
 export function registerSessionRoutes(app) {
-  app.post('/session/start', apiLimiter, authMiddleware, (req, res) => {
+  app.post('/session/start', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const sessionId = sanitizeSessionId(
         req.body?.session_id || req.query?.session_id || 'default'
@@ -34,7 +34,7 @@ export function registerSessionRoutes(app) {
   app.delete(
     '/session',
     apiLimiter,
-    authMiddleware,
+    anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       const session = getReqSession(req);
       const authDir = getAuthDir(session.id);
@@ -66,7 +66,7 @@ export function registerSessionRoutes(app) {
     })
   );
 
-  app.get('/qr', authMiddleware, (req, res) => {
+  app.get('/qr', anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       const qrData = session.qr || session.currentQR;
@@ -78,7 +78,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/passkey/status', authMiddleware, (req, res) => {
+  app.get('/passkey/status', anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json({
@@ -94,7 +94,7 @@ export function registerSessionRoutes(app) {
 
   app.post(
     '/session/pair',
-    authMiddleware,
+    anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       const session = getReqSession(req);
       const phoneNumber = req.body?.phone_number;
@@ -111,7 +111,7 @@ export function registerSessionRoutes(app) {
     })
   );
 
-  app.get('/status', authMiddleware, (req, res) => {
+  app.get('/status', anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json({
@@ -126,7 +126,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/events', authMiddleware, (req, res) => {
+  app.get('/events', anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       const events = [...session.eventQueue];
@@ -137,7 +137,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/logs', authMiddleware, (req, res) => {
+  app.get('/logs', anyAuthMiddleware, (req, res) => {
     try {
       const sessionId = sanitizeSessionId(req.query.session_id || 'default');
       const session = getSession(sessionId);
@@ -147,7 +147,7 @@ export function registerSessionRoutes(app) {
     }
   });
 
-  app.get('/stats', authMiddleware, (req, res) => {
+  app.get('/stats', anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
       res.json(session.stats);
