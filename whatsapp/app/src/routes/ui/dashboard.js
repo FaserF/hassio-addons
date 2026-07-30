@@ -505,20 +505,24 @@ function openUpdateModal(type) {
     latestVersion = data.latestAddonVersion || null;
     changelogText = data.addonChangelog || 'No release notes available.';
     repoUrl = data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases';
-    directUpdateUrl = data.isStandalone ? repoUrl : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
+    directUpdateUrl = data.isStandalone
+      ? repoUrl
+      : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
   } else if (type === 'integration') {
     compName = 'WhatsApp Integration';
     currentVersion = data.integrationVersion || 'N/A';
     latestVersion = data.latestIntegrationVersion || null;
     changelogText = data.integrationChangelog || 'No release notes available.';
     repoUrl = data.integrationReleaseUrl || 'https://github.com/FaserF/ha-whatsapp/releases';
-    directUpdateUrl = 'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
+    directUpdateUrl =
+      'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
   }
 
   // Check if latest version is actually newer than current
-  const isNewer = typeof window.isNewerVersion === 'function'
-    ? window.isNewerVersion(currentVersion, latestVersion)
-    : (latestVersion && latestVersion !== currentVersion);
+  const isNewer =
+    typeof window.isNewerVersion === 'function'
+      ? window.isNewerVersion(currentVersion, latestVersion)
+      : latestVersion && latestVersion !== currentVersion;
 
   if (title) title.textContent = isNewer ? `${compName} Update Available` : `${compName} Info`;
   if (currVer) currVer.textContent = currentVersion;
@@ -574,7 +578,7 @@ function openDependencyModal(depName) {
   const actionBtn = document.getElementById('dep-action-btn');
 
   const depInfo = {
-    'Baileys': {
+    Baileys: {
       repo: 'https://github.com/WhiskeySockets/Baileys',
       releases: 'https://github.com/WhiskeySockets/Baileys/releases',
       version: data.baileysVersion || 'N/A',
@@ -586,7 +590,7 @@ function openDependencyModal(depName) {
       version: data.nodeVersion || 'N/A',
       role: 'JavaScript Runtime Environment',
     },
-    'Express': {
+    Express: {
       repo: 'https://github.com/expressjs/express',
       releases: 'https://github.com/expressjs/express/releases',
       version: data.expressVersion || 'N/A',
@@ -607,9 +611,10 @@ function openDependencyModal(depName) {
     role: 'Core Gateway Component',
   };
 
-  const hasAddonUpdate = typeof window.isNewerVersion === 'function'
-    ? window.isNewerVersion(data.addonVersion, data.latestAddonVersion)
-    : false;
+  const hasAddonUpdate =
+    typeof window.isNewerVersion === 'function'
+      ? window.isNewerVersion(data.addonVersion, data.latestAddonVersion)
+      : false;
 
   if (title) title.textContent = `${depName} Dependency Info`;
   if (currVer) currVer.textContent = info.version;
@@ -655,7 +660,7 @@ function openDependencyModal(depName) {
       actionBtn.className = 'btn btn-primary btn-sm';
       actionBtn.innerHTML = '<i class="fas fa-download"></i> Update Addon Now';
       actionBtn.href = data.isStandalone
-        ? (data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases')
+        ? data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases'
         : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
       actionBtn.target = '_blank';
     } else {
