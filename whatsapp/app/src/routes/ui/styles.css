@@ -2198,3 +2198,120 @@ code {
   background: rgba(255, 210, 0, 0.4);
   border-radius: 2px;
 }
+
+/* Update badges & Modal Styles */
+.update-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--primary);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 8px rgba(0, 168, 132, 0.5);
+  animation: badgePulse 2s infinite ease-in-out;
+}
+.update-badge.dep-badge {
+  background-color: var(--info);
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.modal-card.modal-lg {
+  max-width: 620px;
+  width: 90%;
+}
+
+.update-version-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background-color: var(--bg-input);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.ver-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ver-current {
+  background: rgba(134, 150, 160, 0.15);
+  color: var(--text-muted);
+}
+.ver-new {
+  background: var(--primary-glow);
+  color: var(--primary);
+}
+.ver-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.update-rationale-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background-color: rgba(0, 168, 132, 0.08);
+  border: 1px solid rgba(0, 168, 132, 0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.update-rationale-box.warning {
+  background-color: rgba(255, 188, 0, 0.08);
+  border-color: rgba(255, 188, 0, 0.25);
+}
+.update-rationale-box .rationale-icon {
+  font-size: 20px;
+  color: var(--primary);
+  margin-top: 2px;
+}
+.update-rationale-box.warning .rationale-icon {
+  color: var(--warning);
+}
+.update-rationale-box p {
+  margin: 4px 0 0 0;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.changelog-container {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.changelog-title {
+  background: var(--bg-input);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+.changelog-body {
+  padding: 14px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--text-main);
+  background-color: var(--bg-card);
+}
+

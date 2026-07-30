@@ -52,15 +52,42 @@ async function updateDashboard() {
       );
     }
 
-    // Dev/Beta releases banner
-    const addonVer = data.addonVersion || '';
-    const intVer = data.integrationVersion || '';
-    const isDev =
-      addonVer.toLowerCase().includes('edge') ||
-      addonVer.toLowerCase().includes('dev') ||
-      intVer.toLowerCase().includes('dev') ||
-      intVer.toLowerCase().includes('beta') ||
-      intVer.toLowerCase().includes('pre');
+    window._latestReleaseData = data;
+
+    // Semantic version comparison (returns true if latest > curr)
+    const isNewerVersion = (curr, latest) => {
+      if (!curr || !latest) return false;
+      const cleanC = curr.replace(/^v/, '').trim();
+      const cleanL = latest.replace(/^v/, '').trim();
+      if (!cleanL || cleanC === cleanL || cleanC === 'Unknown' || cleanC.includes('dev') || cleanC.includes('edge')) {
+        return false;
+      }
+      const partsC = cleanC.split('.').map((p) => parseInt(p, 10) || 0);
+      const partsL = cleanL.split('.').map((p) => parseInt(p, 10) || 0);
+      const maxLen = Math.max(partsC.length, partsL.length);
+      for (let i = 0; i < maxLen; i++) {
+        const valC = partsC[i] || 0;
+        const valL = partsL[i] || 0;
+        if (valL > valC) return true;
+        if (valL < valC) return false;
+      }
+      return false;
+    };
+
+    const hasAddonUpdate = isNewerVersion(data.addonVersion, data.latestAddonVersion);
+    const hasIntUpdate = isNewerVersion(data.integrationVersion, data.latestIntegrationVersion);
+
+    const addonBadge = document.getElementById('addon-update-badge');
+    if (addonBadge) addonBadge.style.display = hasAddonUpdate ? 'inline-flex' : 'none';
+
+    const intBadge = document.getElementById('int-update-badge');
+    if (intBadge) intBadge.style.display = hasIntUpdate ? 'inline-flex' : 'none';
+
+    ['baileys', 'node', 'express', 'alpine'].forEach((dep) => {
+      const depBadge = document.getElementById(`${dep}-update-badge`);
+      if (depBadge) depBadge.style.display = hasAddonUpdate ? 'inline-flex' : 'none';
+    });
+
     const devBanner = document.getElementById('dev-banner');
     if (devBanner) devBanner.style.display = isDev ? 'flex' : 'none';
 
@@ -449,9 +476,68 @@ function switchSession(id) {
   updateDashboard();
 }
 
+function openUpdateModal(type) {
+  const data = window._latestReleaseData || {};
+  const modal = document.getElementById('version-update-modal');
+  const title = document.getElementById('update-modal-title');
+  const currVer = document.getElementById('update-curr-ver');
+  const newVer = document.getElementById('update-new-ver');
+  const changelog = document.getElementById('update-changelog-content');
+  const actionBtn = document.getElementById('update-action-btn');
+
+  if (type === 'addon') {
+    if (title) title.textContent = 'WhatsApp Addon Update Verfügbar';
+    if (currVer) currVer.textContent = data.addonVersion || 'N/A';
+    if (newVer) newVer.textContent = data.latestAddonVersion || 'Neu';
+    if (changelog) changelog.innerHTML = escapeHtml(data.addonChangelog || 'Kein Changelog verfügbar.');
+    if (actionBtn) {
+      actionBtn.href = data.isStandalone
+        ? (data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases')
+        : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
+      actionBtn.target = '_blank';
+    }
+  } else if (type === 'integration') {
+    if (title) title.textContent = 'WhatsApp Integration Update Verfügbar';
+    if (currVer) currVer.textContent = data.integrationVersion || 'N/A';
+    if (newVer) newVer.textContent = data.latestIntegrationVersion || 'Neu';
+    if (changelog) changelog.innerHTML = escapeHtml(data.integrationChangelog || 'Kein Changelog verfügbar.');
+    if (actionBtn) {
+      actionBtn.href = 'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
+      actionBtn.target = '_blank';
+    }
+  }
+
+  if (modal) modal.classList.add('show');
+}
+
+function closeUpdateModal() {
+  const modal = document.getElementById('version-update-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function openDependencyModal(depName) {
+  const modal = document.getElementById('dependency-info-modal');
+  const title = document.getElementById('dep-modal-title');
+  const placeholder = document.getElementById('dep-name-placeholder');
+
+  if (title) title.textContent = `${depName} Paket-Abhängigkeit`;
+  if (placeholder) placeholder.textContent = depName;
+
+  if (modal) modal.classList.add('show');
+}
+
+function closeDependencyModal() {
+  const modal = document.getElementById('dependency-info-modal');
+  if (modal) modal.classList.remove('show');
+}
+
 window.updateDashboard = updateDashboard;
 window.downloadDebugInfo = downloadDebugInfo;
 window.restartSession = restartSession;
 window.logoutSession = logoutSession;
 window.clearLogs = clearLogs;
 window.switchSession = switchSession;
+window.openUpdateModal = openUpdateModal;
+window.closeUpdateModal = closeUpdateModal;
+window.openDependencyModal = openDependencyModal;
+window.closeDependencyModal = closeDependencyModal;

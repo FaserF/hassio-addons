@@ -180,12 +180,12 @@ function renderDashboard(sessionId) {
         <div class="sidebar-footer">
             <div class="sys-info-title">System Properties</div>
             <div class="sys-info-text">
-                <a href="https://github.com/FaserF/hassio-addons/tree/master/whatsapp" target="_blank" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span></a>
-                <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span></a>
-                <a href="https://github.com/WhiskeySockets/Baileys" target="_blank" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span></a>
-                <a href="https://github.com/nodejs/node" target="_blank" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span></a>
-                <a href="https://github.com/expressjs/express" target="_blank" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span></a>
-                <a href="https://alpinelinux.org" target="_blank" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span></a>
+                <a href="#" onclick="openUpdateModal('addon'); return false;" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span><span id="addon-update-badge" class="update-badge" style="display:none;" title="Update verfügbar!">⚡ Update</span></a>
+                <a href="#" onclick="openUpdateModal('integration'); return false;" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span><span id="int-update-badge" class="update-badge" style="display:none;" title="Update verfügbar!">⚡ Update</span></a>
+                <a href="#" onclick="openDependencyModal('Baileys'); return false;" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span><span id="baileys-update-badge" class="update-badge dep-badge" style="display:none;" title="Wird durch Addon-Update aktualisiert">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Node.js'); return false;" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span><span id="node-update-badge" class="update-badge dep-badge" style="display:none;" title="Wird durch Addon-Update aktualisiert">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Express'); return false;" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span><span id="express-update-badge" class="update-badge dep-badge" style="display:none;" title="Wird durch Addon-Update aktualisiert">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Alpine Linux'); return false;" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span><span id="alpine-update-badge" class="update-badge dep-badge" style="display:none;" title="Wird durch Addon-Update aktualisiert">⚡ Info</span></a>
             </div>
             <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading..." title="Click for System Properties" onclick="showSystemPropertiesModal()">
                 <i class="fas fa-info"></i>
@@ -490,6 +490,66 @@ function renderDashboard(sessionId) {
       <div class="modal-footer">
         <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
         <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Version Update Modal Dialog -->
+  <div class="modal-overlay" id="version-update-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="fas fa-arrow-alt-circle-up" style="color:var(--primary);margin-right:8px;"></i> <span id="update-modal-title">Update Verfügbar</span></h3>
+        <button class="modal-close-btn" onclick="closeUpdateModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="update-version-banner">
+          <div class="ver-pill ver-current">Aktuell: <strong id="update-curr-ver">...</strong></div>
+          <i class="fas fa-arrow-right ver-arrow"></i>
+          <div class="ver-pill ver-new">Neu: <strong id="update-new-ver">...</strong></div>
+        </div>
+
+        <div class="update-rationale-box">
+          <i class="fas fa-shield-alt rationale-icon"></i>
+          <div>
+            <strong>Warum solltest du deine Software aktuell halten?</strong>
+            <p>Updates bieten wichtige Sicherheitskorrekturen, Stabilitätsverbesserungen und Kompatibilitätsupdates für WhatsApp Web Protokolle (Baileys) sowie Home Assistant.</p>
+          </div>
+        </div>
+
+        <div class="changelog-container">
+          <div class="changelog-title"><i class="fas fa-list-ul"></i> Changelog / Änderungen</div>
+          <div id="update-changelog-content" class="changelog-body">Lädt Changelog...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeUpdateModal()">Später</button>
+        <a id="update-action-btn" href="#" target="_top" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Jetzt Aktualisieren</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependency Info Modal Dialog -->
+  <div class="modal-overlay" id="dependency-info-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-cubes" style="color:var(--primary);margin-right:8px;"></i> <span id="dep-modal-title">Paket-Abhängigkeit</span></h3>
+        <button class="modal-close-btn" onclick="closeDependencyModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="update-rationale-box warning">
+          <i class="fas fa-exclamation-triangle rationale-icon"></i>
+          <div>
+            <strong>Update über Addon-Aktualisierung</strong>
+            <p><span id="dep-name-placeholder">Diese Komponente</span> wird automatisch bei einem Update des <strong>WhatsApp Addons</strong> auf den neuesten Stand gebracht.</p>
+          </div>
+        </div>
+        <p style="font-size:13px; color:var(--text-main); line-height:1.5; margin-top:12px;">
+          Es ist wichtig, Abhängigkeiten wegen Sicherheitslücken und API-Kompatibilität regelmäßig aktuell zu halten. Falls für längere Zeit kein Addon-Update erscheint oder eine wichtige Sicherheitslücke in dieser Bibliothek bekannt ist, erstelle bitte ein Issue auf GitHub.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeDependencyModal()">Schließen</button>
+        <a href="https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml" target="_blank" class="btn btn-primary btn-sm"><i class="fab fa-github"></i> Issue Eröffnen</a>
       </div>
     </div>
   </div>

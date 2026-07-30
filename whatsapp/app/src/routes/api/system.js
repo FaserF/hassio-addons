@@ -18,6 +18,8 @@ import { HEALTH_STATE } from '../../state.js';
 import { logger } from '../../logger.js';
 import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
+import { getLatestReleases } from '../../utils/versionCheck.js';
+
 export function registerSystemRoutes(app) {
   app.get('/health', uiLimiter, (req, res) => {
     res.json({
@@ -27,7 +29,7 @@ export function registerSystemRoutes(app) {
     });
   });
 
-  app.get('/api/dashboard', uiLimiter, (req, res) => {
+  app.get('/api/dashboard', uiLimiter, async (req, res) => {
     // Scan disk for all session folders so sessionList is complete
     const sessionsDir = path.join(DATA_DIR, 'sessions');
     if (fs.existsSync(sessionsDir)) {
@@ -93,6 +95,8 @@ export function registerSystemRoutes(app) {
       statusText = session._myStatusText || null;
     }
 
+    const releases = await getLatestReleases();
+
     res.json({
       sessionId: session.id,
       isConnected: session.isConnected,
@@ -124,6 +128,12 @@ export function registerSystemRoutes(app) {
       addonSlug: ADDON_SLUG,
       isStandalone: !process.env.SUPERVISOR_TOKEN,
       uptimeSeconds: Math.floor(process.uptime()),
+      latestAddonVersion: releases.latestAddonVersion,
+      addonChangelog: releases.addonChangelog,
+      addonReleaseUrl: releases.addonReleaseUrl,
+      latestIntegrationVersion: releases.latestIntegrationVersion,
+      integrationChangelog: releases.integrationChangelog,
+      integrationReleaseUrl: releases.integrationReleaseUrl,
     });
   });
 
