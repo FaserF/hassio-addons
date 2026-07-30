@@ -238,6 +238,52 @@ export async function deleteSession(sessionId) {
 }
 
 /**
+ * Purges all disconnected/stale sessions from memory and disk.
+ */
+export async function purgeDisconnectedSessions() {
+  let purgedCount = 0;
+  const now = Date.now();
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  for (const [id, session] of sessions.entries()) {
+    // Multi-Account Protection: Never purge a session that is connected, has an active QR code,
+    // is in progress of connecting, or had user interest/pairing activity in the last 5 minutes.
+    const isActiveOrPairing =
+      session.isConnected ||
+      session.currentQR ||
+      session.isConnecting ||
+      (session.lastInterestTime && now - session.lastInterestTime < FIVE_MINUTES);
+
+    if (isActiveOrPairing) {
+      continue;
+    }
+
+    logger.info({ sessionId: id }, '🧹 Purging inactive disconnected session');
+    await deleteSession(id);
+    purgedCount++;
+  }
+
+  const sessionsDir = path.join(DATA_DIR, 'sessions');
+  if (fs.existsSync(sessionsDir)) {
+    try {
+      const sessionDirs = fs
+        .readdirSync(sessionsDir)
+        .filter((d) => fs.statSync(path.join(sessionsDir, d)).isDirectory());
+      for (const sDir of sessionDirs) {
+        if (!sessions.has(sDir)) {
+          const fullPath = path.join(sessionsDir, sDir);
+          fs.rmSync(fullPath, { recursive: true, force: true });
+          purgedCount++;
+        }
+      }
+    } catch (e) {
+      logger.error({ error: e.message }, 'Failed to scan/delete orphan session directories');
+    }
+  }
+  return purgedCount;
+}
+
+/**
  * Signals that someone is actively watching/configuring this session.
  */
 export function signalInterest(sessionId, connectFn) {

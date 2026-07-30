@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { authMiddleware, uiAuthMiddleware, uiLimiter } from '../../middleware.js';
-import { getSession, sessions, sanitizeSessionId, addLog, signalInterest } from '../../session.js';
+import { getSession, sessions, sanitizeSessionId, addLog, signalInterest, purgeDisconnectedSessions } from '../../session.js';
 import {
   DATA_DIR,
   ADDON_VERSION,
@@ -169,6 +169,15 @@ export function registerSystemRoutes(app) {
         }, 500);
       }
       res.json({ status: 'restarting', session_id: sessionId });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
+
+  app.post('/api/sessions/purge', uiAuthMiddleware, async (req, res) => {
+    try {
+      const purged = await purgeDisconnectedSessions();
+      res.json({ status: 'success', purgedCount: purged });
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }

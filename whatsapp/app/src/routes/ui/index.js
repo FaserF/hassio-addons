@@ -314,8 +314,9 @@ function renderDashboard(sessionId) {
 
                     <div class="card">
                         <div class="card-title"><i class="fas fa-sliders-h"></i> System Maintenance</div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
                             <button class="btn btn-secondary" onclick="restartSession()"><i class="fas fa-sync-alt"></i> Restart Daemon</button>
+                            <button class="btn btn-secondary" onclick="purgeSessions()"><i class="fas fa-broom"></i> Clean Inactive Sessions</button>
                             <button class="btn btn-danger" onclick="logoutSession()"><i class="fas fa-sign-out-alt"></i> Hard Reset / Logout</button>
                         </div>
                         <p style="font-size:11px; color:var(--text-muted); margin:0;">Restarting will attempt a fresh connection without deleting credentials.</p>

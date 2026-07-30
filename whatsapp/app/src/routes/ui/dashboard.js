@@ -464,6 +464,34 @@ async function logoutSession() {
   }
 }
 
+async function purgeSessions() {
+  const ok = await showConfirm(
+    'Clean Disconnected Sessions?',
+    'This will delete all inactive or stale session directories and free up resources.'
+  );
+  if (!ok) return;
+
+  showToast('Purging disconnected sessions...', 'info');
+  try {
+    const response = await fetch(basePath + 'api/sessions/purge', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    if (response.ok) {
+      const resData = await response.json();
+      showToast(`Purged ${resData.purgedCount || 0} disconnected session(s)`, 'success');
+      updateDashboard();
+    } else {
+      showToast('Purge request failed', 'danger');
+    }
+  } catch (e) {
+    showToast('Purge request failed: ' + e.message, 'danger');
+  }
+}
+
 async function clearLogs() {
   const ok = await showConfirm('Clear Connection Logs?', 'Do you want to purge connection logs?');
   if (!ok) return;
@@ -698,6 +726,7 @@ window.updateDashboard = updateDashboard;
 window.downloadDebugInfo = downloadDebugInfo;
 window.restartSession = restartSession;
 window.logoutSession = logoutSession;
+window.purgeSessions = purgeSessions;
 window.clearLogs = clearLogs;
 window.switchSession = switchSession;
 window.openUpdateModal = openUpdateModal;
