@@ -577,6 +577,46 @@ function renderDashboard(sessionId) {
       </div>
     </div>
   </div>
+  <!-- System Properties Overview Modal Dialog -->
+  <div class="modal-overlay" id="system-properties-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="fas fa-microchip" style="color:var(--primary);margin-right:8px;"></i> System Properties Overview</h3>
+        <button class="modal-close-btn" onclick="closeSystemPropertiesModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="dep-details-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openUpdateModal('addon');">
+            <span class="dep-detail-label">Addon Version</span>
+            <span class="dep-detail-val" id="sys-modal-addon">...</span>
+          </div>
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openUpdateModal('integration');">
+            <span class="dep-detail-label">Integration Version</span>
+            <span class="dep-detail-val" id="sys-modal-int">...</span>
+          </div>
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Baileys');">
+            <span class="dep-detail-label">Baileys Library</span>
+            <span class="dep-detail-val" id="sys-modal-baileys">...</span>
+          </div>
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Node.js');">
+            <span class="dep-detail-label">Node.js Engine</span>
+            <span class="dep-detail-val" id="sys-modal-node">...</span>
+          </div>
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Express');">
+            <span class="dep-detail-label">Express Framework</span>
+            <span class="dep-detail-val" id="sys-modal-express">...</span>
+          </div>
+          <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Alpine Linux');">
+            <span class="dep-detail-label">Alpine Base OS</span>
+            <span class="dep-detail-val" id="sys-modal-alpine">...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSystemPropertiesModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- New Chat Modal Dialog -->
   <div class="modal-overlay" id="new-chat-modal">
@@ -692,11 +732,27 @@ function renderDashboard(sessionId) {
     window.switchTab = switchTab;
 
     function showSystemPropertiesModal() {
-        const badge = document.getElementById('sidebar-info-badge');
-        const infoText = badge ? badge.getAttribute('data-tooltip') : 'System Information';
-        alert('System Properties: ' + infoText);
+        const data = window._latestReleaseData || {};
+        const modal = document.getElementById('system-properties-modal');
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val || 'N/A';
+        };
+        setVal('sys-modal-addon', data.addonVersion);
+        setVal('sys-modal-int', data.integrationVersion);
+        setVal('sys-modal-baileys', data.baileysVersion);
+        setVal('sys-modal-node', data.nodeVersion);
+        setVal('sys-modal-express', data.expressVersion);
+        setVal('sys-modal-alpine', data.alpineVersion);
+
+        if (modal) modal.classList.add('show');
+    }
+    function closeSystemPropertiesModal() {
+        const modal = document.getElementById('system-properties-modal');
+        if (modal) modal.classList.remove('show');
     }
     window.showSystemPropertiesModal = showSystemPropertiesModal;
+    window.closeSystemPropertiesModal = closeSystemPropertiesModal;
 
     function toggleSidebar(e) {
         if (e) {
