@@ -59,7 +59,13 @@ async function updateDashboard() {
       if (!curr || !latest) return false;
       const cleanC = curr.replace(/^v/, '').trim();
       const cleanL = latest.replace(/^v/, '').trim();
-      if (!cleanL || cleanC === cleanL || cleanC === 'Unknown' || cleanC.includes('dev') || cleanC.includes('edge')) {
+      if (
+        !cleanL ||
+        cleanC === cleanL ||
+        cleanC === 'Unknown' ||
+        cleanC.includes('dev') ||
+        cleanC.includes('edge')
+      ) {
         return false;
       }
       const partsC = cleanC.split('.').map((p) => parseInt(p, 10) || 0);
@@ -489,10 +495,11 @@ function openUpdateModal(type) {
     if (title) title.textContent = 'WhatsApp Addon Update Verfügbar';
     if (currVer) currVer.textContent = data.addonVersion || 'N/A';
     if (newVer) newVer.textContent = data.latestAddonVersion || 'Neu';
-    if (changelog) changelog.innerHTML = escapeHtml(data.addonChangelog || 'Kein Changelog verfügbar.');
+    if (changelog)
+      changelog.innerHTML = escapeHtml(data.addonChangelog || 'Kein Changelog verfügbar.');
     if (actionBtn) {
       actionBtn.href = data.isStandalone
-        ? (data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases')
+        ? data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases'
         : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
       actionBtn.target = '_blank';
     }
@@ -500,9 +507,11 @@ function openUpdateModal(type) {
     if (title) title.textContent = 'WhatsApp Integration Update Verfügbar';
     if (currVer) currVer.textContent = data.integrationVersion || 'N/A';
     if (newVer) newVer.textContent = data.latestIntegrationVersion || 'Neu';
-    if (changelog) changelog.innerHTML = escapeHtml(data.integrationChangelog || 'Kein Changelog verfügbar.');
+    if (changelog)
+      changelog.innerHTML = escapeHtml(data.integrationChangelog || 'Kein Changelog verfügbar.');
     if (actionBtn) {
-      actionBtn.href = 'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
+      actionBtn.href =
+        'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
       actionBtn.target = '_blank';
     }
   }

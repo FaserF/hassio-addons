@@ -59,19 +59,27 @@ export async function getLatestReleases(forceRefresh = false) {
 
   try {
     // 1. Fetch Integration latest release (FaserF/ha-whatsapp)
-    const intRelease = await fetchJson('https://api.github.com/repos/FaserF/ha-whatsapp/releases/latest');
+    const intRelease = await fetchJson(
+      'https://api.github.com/repos/FaserF/ha-whatsapp/releases/latest'
+    );
     if (intRelease && intRelease.tag_name) {
       cache.data.latestIntegrationVersion = intRelease.tag_name.replace(/^v/, '');
       cache.data.integrationChangelog = intRelease.body || 'Keine Releasenotes verfügbar.';
-      cache.data.integrationReleaseUrl = intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
+      cache.data.integrationReleaseUrl =
+        intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
     }
 
     // 2. Fetch Addon latest release (FaserF/hassio-addons)
-    const addonRelease = await fetchJson('https://api.github.com/repos/FaserF/hassio-addons/releases/latest');
+    const addonRelease = await fetchJson(
+      'https://api.github.com/repos/FaserF/hassio-addons/releases/latest'
+    );
     if (addonRelease && addonRelease.tag_name) {
-      cache.data.latestAddonVersion = addonRelease.tag_name.replace(/^v/, '').replace(/^whatsapp-/, '');
+      cache.data.latestAddonVersion = addonRelease.tag_name
+        .replace(/^v/, '')
+        .replace(/^whatsapp-/, '');
       cache.data.addonChangelog = addonRelease.body || 'Keine Releasenotes verfügbar.';
-      cache.data.addonReleaseUrl = addonRelease.html_url || 'https://github.com/FaserF/hassio-addons/releases';
+      cache.data.addonReleaseUrl =
+        addonRelease.html_url || 'https://github.com/FaserF/hassio-addons/releases';
     }
 
     cache.lastFetch = now;
