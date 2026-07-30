@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1 (2026-07-30)
+
+### 🐛 Bug Fixes
+- docker build fixes ([`95ba64fd`](https://github.com/FaserF/hassio-addons/commit/95ba64fd64e871bfcaa138aea6c411d57f1ecbbe))
+
+### 📦 Dependencies
+- Update Dockerfile ([`ceb0ffd3`](https://github.com/FaserF/hassio-addons/commit/ceb0ffd39c35cb2557fd8d704b2684c641dfff96))
+- Update Dockerfile ([`2f7c9601`](https://github.com/FaserF/hassio-addons/commit/2f7c9601ceadbd17fb37aac9adf1eb2eb680bdd2))
+- ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.3.0 (#937) [skip-tests] ([`72d8fd49`](https://github.com/FaserF/hassio-addons/commit/72d8fd490c0f11d0e6b82a51c0259f6fe9253706))
+- ⬆️ Update dependency moghtech/komodo to v2.3.0 ([`4398a5d3`](https://github.com/FaserF/hassio-addons/commit/4398a5d3ee482525bbfbd74fb33dba2ab9e6d023))
+
+
 ## 0.2.0 (2026-06-16)
 
 ### 📦 Dependencies
