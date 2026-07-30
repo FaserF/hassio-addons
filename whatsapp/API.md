@@ -364,8 +364,9 @@ Available to anyone:
 Requires the sender's number to be in the `admin_numbers` whitelist.
 
 - **`ha-app-help`**: Lists all available commands and examples.
+- **`ha-app-errors`** (or `ha-app-issues`): Show filtered errors, warnings, and system health status.
 - **`ha-app-welcome`**: Manually trigger the role-aware welcome message.
-- **`ha-app-diagnose`**: Run full message type diagnostic.
+- **`ha-app-diagnose`** (or `ha-app-diag`): Run full message type diagnostic.
 - **`ha-app-logs`**: Retrieves the latest 10 connection events.
 - **`ha-app-restart`**: Gracefully restarts the WhatsApp connection.
 - **`ha-app-stats`**: View message statistics.

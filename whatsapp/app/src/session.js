@@ -203,21 +203,26 @@ export function addLog(session, msg, type = 'info') {
  */
 export async function deleteSession(sessionId) {
   const session = sessions.get(sessionId);
-  if (session && session.sock) {
-    try {
-      session.sock.logout();
-      session.sock.ev.removeAllListeners();
-      session.sock.end(new Error('Session deleted'));
-    } catch (e) {
-      logger.debug({ sessionId, error: e.message }, 'Error closing socket during delete');
-    }
-  }
+  if (session) {
+    session.isDestroyed = true;
+    session.isConnecting = false;
+    session.isConnected = false;
 
-  if (session && session.haMonitorInterval) {
-    clearInterval(session.haMonitorInterval);
-  }
-  if (session && session._saveInterval) {
-    clearInterval(session._saveInterval);
+    if (session.sock) {
+      try {
+        session.sock.ev.removeAllListeners();
+        session.sock.end(new Error('Session deleted'));
+      } catch (e) {
+        logger.debug({ sessionId, error: e.message }, 'Error closing socket during delete');
+      }
+      session.sock = null;
+    }
+
+    if (session.haMonitorInterval) clearInterval(session.haMonitorInterval);
+    if (session._saveInterval) clearInterval(session._saveInterval);
+    if (session._connectingTimeout) clearTimeout(session._connectingTimeout);
+    if (session._restoreTimer) clearTimeout(session._restoreTimer);
+    if (session._disconnectTimer) clearTimeout(session._disconnectTimer);
   }
 
   sessions.delete(sessionId);

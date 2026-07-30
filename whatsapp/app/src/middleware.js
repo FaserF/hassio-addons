@@ -135,7 +135,7 @@ export const httpLoggerMiddleware = (req, res, next) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     const statusCode = res.statusCode;
-    if (statusCode >= 400) {
+    if (statusCode >= 500) {
       logger.warn(
         { method, url, statusCode, duration, ip },
         `🌐 HTTP ${method} ${url} ${statusCode} (${duration}ms)`

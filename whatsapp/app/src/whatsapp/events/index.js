@@ -17,7 +17,7 @@ import {
   reply,
   runDiagnostic,
 } from '../actions.js';
-import { addLog } from '../../session.js';
+import { addLog, sessions } from '../../session.js';
 
 import { resolvePollVotes } from './poll.js';
 import { registerAckListener } from './ack.js';
@@ -213,7 +213,7 @@ export function handleIncomingMessages(session) {
               await reply(session, senderJid, { text: 'Pong! 🏓' });
             } else if (body === 'ha-app-getid') {
               await reply(session, senderJid, { text: `Chat ID: \`${senderJid}\`` });
-            } else if (isAdminUser && body === 'ha-app-diag') {
+            } else if (isAdminUser && (body === 'ha-app-diag' || body === 'ha-app-diagnose')) {
               await runDiagnostic(session, senderJid, addLog);
             } else if (isAdminUser && body === 'ha-app-status') {
               const now = Date.now();
@@ -272,6 +272,58 @@ export function handleIncomingMessages(session) {
                   text: `📜 *Recent Connection Events:*\n\n${logText}`,
                 });
               }
+            } else if (isAdminUser && (body === 'ha-app-errors' || body === 'ha-app-issues')) {
+              const haInfo = await fetchHAVersions();
+              const errors = [];
+              const warnings = [];
+
+              for (const [id, s] of sessions.entries()) {
+                if (!s.isConnected) {
+                  const reason = s.stats?.last_disconnect_reason || s.disconnectReason || 'Disconnected';
+                  errors.push(`• *Session ${id}:* Disconnected (${reason})`);
+                }
+                if (s.passkeyDetected) {
+                  errors.push(`• *Session ${id}:* Passkey restriction detected on phone`);
+                }
+              }
+
+              if (haInfo.core === 'Unknown') {
+                errors.push('• *Home Assistant Core:* Unreachable / Offline');
+              }
+              if (haInfo.safe_mode) {
+                warnings.push('• *Home Assistant Core:* Booted in SAFE MODE');
+              }
+
+              if (session.stats.failed > 0) {
+                const lastReason = session.stats.last_error_reason ? ` (${session.stats.last_error_reason})` : '';
+                warnings.push(`• *Failed Messages:* ${session.stats.failed} send failure(s) recorded${lastReason}`);
+              }
+
+              const logErrors = (session.connectionLogs || [])
+                .filter((l) => l.type === 'error' || l.type === 'warning')
+                .slice(0, 3);
+
+              if (errors.length === 0 && warnings.length === 0 && logErrors.length === 0) {
+                await reply(session, senderJid, {
+                  text: '🟢 *System Health: 100% OK*\n\nNo active errors or warnings detected across Addon and Integration.',
+                });
+              } else {
+                let report = '🚨 *WhatsApp System Diagnostic & Error Report*\n\n';
+                if (errors.length > 0) {
+                  report += `🔴 *Errors (${errors.length}):*\n` + errors.join('\n') + '\n\n';
+                }
+                if (warnings.length > 0) {
+                  report += `⚠️ *Warnings (${warnings.length}):*\n` + warnings.join('\n') + '\n\n';
+                }
+                if (logErrors.length > 0) {
+                  report +=
+                    `📜 *Recent Warning Logs:*\n` +
+                    logErrors.map((l) => `• \`[${l.timestamp}]\` ${l.msg}`).join('\n') +
+                    '\n\n';
+                }
+                report += '💡 *Tip:* Use `ha-app-restart` to attempt reconnection or `ha-app-logs` for details.';
+                await reply(session, senderJid, { text: report });
+              }
             } else if (body.startsWith('ha-app-stats')) {
               const range = body.replace('ha-app-stats', '').trim() || 'all-time';
               const statsText =
@@ -290,7 +342,7 @@ export function handleIncomingMessages(session) {
                 `• \`ha-app-status\`: Get system status\n` +
                 `• \`ha-app-stats\`: Get message statistics\n\n` +
                 (isAdminUser
-                  ? `*Admin Commands:*\n• \`ha-app-diag\`: Run diagnostics\n• \`ha-app-restart\`: Restart connection\n• \`ha-app-logs\`: View recent logs\n`
+                  ? `*Admin Commands:*\n• \`ha-app-errors\`: Show filtered errors & warnings\n• \`ha-app-diag\`: Run diagnostics\n• \`ha-app-restart\`: Restart connection\n• \`ha-app-logs\`: View recent logs\n`
                   : '');
               await reply(session, senderJid, { text: helpText });
             } else if (isAdminUser) {

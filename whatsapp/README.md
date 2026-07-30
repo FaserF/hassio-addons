@@ -27,8 +27,9 @@ Control your addon via WhatsApp!
 **Admin Commands (Protected):**
 
 - `ha-app-help`: Show available commands and examples.
+- `ha-app-errors`: Show filtered system errors, warnings, and diagnostic status.
 - `ha-app-welcome`: Manually show the role-aware welcome message.
-- `ha-app-diagnose`: Run full message type diagnostic (Buttons, Lists, etc.).
+- `ha-app-diagnose` (or `ha-app-diag`): Run full message type diagnostic (Buttons, Lists, etc.).
 - `ha-app-logs`: See recent connection events.
 - `ha-app-restart`: Restart the WhatsApp connection.
 

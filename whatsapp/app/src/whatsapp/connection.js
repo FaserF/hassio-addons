@@ -8,7 +8,18 @@ import {
 import QRCode from 'qrcode';
 import path from 'path';
 import fs from 'fs';
+import dns from 'dns';
 import { logger, LOG_LEVEL } from '../logger.js';
+
+const resolveDNSHost = async (url) => {
+  try {
+    const hostname = new URL(url).hostname;
+    const res = await dns.promises.lookup(hostname);
+    return res.address;
+  } catch (e) {
+    return null;
+  }
+};
 import {
   KEEP_ALIVE_INTERVAL,
   MARK_ONLINE,
@@ -136,7 +147,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       retryRequestDelayMs: 5000,
       generateHighQualityLinkPreview: true,
       linkPreviewImageOptions: {
-        resolveDNSHost: true,
+        resolveDNSHost,
       },
       getMessage: async (key) => {
         if (session.messageStore.has(key.id)) {

@@ -26,6 +26,25 @@ import path from 'path';
 const app = express();
 app.set('trust proxy', true);
 
+// Suppress unhandled promise rejections from Baileys connection resets/closures
+process.on('unhandledRejection', (reason) => {
+  const msg = reason?.message || String(reason);
+  const code = reason?.output?.statusCode || reason?.statusCode;
+
+  if (
+    code === 428 ||
+    code === 408 ||
+    code === 401 ||
+    msg?.includes('Connection Closed') ||
+    msg?.includes('Stream Errored') ||
+    msg?.includes('QR refs attempts ended')
+  ) {
+    logger.debug({ error: msg, code }, '🛡️ Handled expected Baileys connection closure rejection');
+    return;
+  }
+  logger.warn({ error: msg, code }, '⚠️ Unhandled promise rejection');
+});
+
 if (SHOULD_RESET) {
   logger.warn('⚠️ RESET_SESSION ENABLED - Clearing authentication data...');
   if (fs.existsSync(AUTH_DIR)) {
