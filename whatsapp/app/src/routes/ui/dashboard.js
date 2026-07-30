@@ -2,9 +2,21 @@
 
 async function updateDashboard() {
   try {
-    const response = await fetch(basePath + 'api/dashboard?session_id=' + currentSession, {
-      headers: { Accept: 'application/json' },
-    });
+    let response;
+    try {
+      response = await fetch(basePath + 'api/dashboard?session_id=' + currentSession, {
+        headers: { Accept: 'application/json' },
+      });
+    } catch (netErr) {
+      console.warn('⚡ Network error fetching dashboard API:', netErr);
+      const badge = document.getElementById('status-badge');
+      if (badge) {
+        badge.className = 'status-badge disconnected';
+        badge.textContent = 'Connection Error ⚠️';
+      }
+      return;
+    }
+
     if (!response.ok) {
       const diagCard = document.getElementById('card-diagnostics');
       if (diagCard) diagCard.style.display = 'block';

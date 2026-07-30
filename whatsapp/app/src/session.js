@@ -50,6 +50,12 @@ export function getSession(rawSessionId) {
       id: sessionId,
       sock: null,
       currentQR: null,
+      get qr() {
+        return this.currentQR;
+      },
+      set qr(val) {
+        this.currentQR = val;
+      },
       isConnected: false,
       disconnectReason: null,
       reconnectAttempts: 0,
