@@ -3,6 +3,7 @@
 ## 1.8.0 (2026-07-30)
 
 ### ✨ Features
+
 - add 'Clean Inactive Sessions' button and API endpoint to purge stale sessions ([`f554854c`](https://github.com/FaserF/hassio-addons/commit/f554854c457e938aad8624a9ce07e37f3b5f0259))
 - allow closing any modal by clicking outside the modal content (backdrop click) ([`fb9d4566`](https://github.com/FaserF/hassio-addons/commit/fb9d45665439e53ba89474b77fc446a88543aba4))
 - replace browser alert with styled System Properties Overview Modal in frontend ([`bec7e5fe`](https://github.com/FaserF/hassio-addons/commit/bec7e5feceb951de9dff3e7329abcf895b57b002))
@@ -20,6 +21,7 @@
 - show sender name in group chat message bubbles ([`043fcf19`](https://github.com/FaserF/hassio-addons/commit/043fcf193f1e1aa192354c5e7a996a6623f42687))
 
 ### 🐛 Bug Fixes
+
 - resolve CodeQL security alerts #34-#40 for format string and rate limiting ([`d6edd34f`](https://github.com/FaserF/hassio-addons/commit/d6edd34f7cbd54335f1c95d814478e1eced3cb9d))
 - handle unhandled rejection connection closures, add ENOENT session guards, and tune HTTP log levels ([`651363e0`](https://github.com/FaserF/hassio-addons/commit/651363e0a4d2cf2dd8372983d986686ddc436098))
 - prevent duplicate admin notifications and destroy existing sockets to avoid stream conflict ([`6332113b`](https://github.com/FaserF/hassio-addons/commit/6332113b69c1f4a3e1b4923e69ac5b98fca095cf))
@@ -37,6 +39,7 @@
 - make toggleSidebar event handler robust against click bubbling ([`6aba8b9e`](https://github.com/FaserF/hassio-addons/commit/6aba8b9e052e757c365ce0a329aaa0c5386e89f2))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency brace-expansion to v5.0.9 [skip-tests] (#938) [skip-tests] ([`fd1fe47e`](https://github.com/FaserF/hassio-addons/commit/fd1fe47e9503398bdecc7de6dd7d626fbfd0476e))
 - ⬆️ Update dependency fastapi to v0.141.1 [skip-tests] (#934) [skip-tests] ([`b9c2188c`](https://github.com/FaserF/hassio-addons/commit/b9c2188caa481ff71f5158deeaf4d8246891f73a))
 - ⬆️ Update dependency fastapi to v0.141.0 (#933) [skip-tests] ([`8d5710d3`](https://github.com/FaserF/hassio-addons/commit/8d5710d3ac30953181a7589f7819bcecdf40e7a8))
@@ -48,6 +51,7 @@
 - ⬆️ Update dependency fastapi to v0.140.9 [skip-tests] (#926) [skip-tests] ([`d3dc2ee5`](https://github.com/FaserF/hassio-addons/commit/d3dc2ee59012957557a8115da60f36a42971744f))
 
 ### 🎨 Style
+
 - fix Maintenance card button layout to auto-fit grid and prevent text overflow ([`51c43496`](https://github.com/FaserF/hassio-addons/commit/51c43496e4e3c9ba9a76d39f3eb25f4870aa94d3))
 - fix UI script loading, tab switching, and HTTP logging ([`7f68ce7b`](https://github.com/FaserF/hassio-addons/commit/7f68ce7bf191699c8ec1701b801d3c669d553f62))
 - enforce explicit inline flexbox styles on header elements to guarantee layout alignment regardless of CSS caching ([`c374bd03`](https://github.com/FaserF/hassio-addons/commit/c374bd030e8f65299d830dc87bc384cfd46154ab))
@@ -55,16 +59,17 @@
 - split ui.js (124KB) into modular routes/ui/ directory with static assets ([`7d97904f`](https://github.com/FaserF/hassio-addons/commit/7d97904f14bf6dbe7704becb581761220eca3f42))
 
 ### ♻️ Refactor
+
 - small improvements ([`e5442638`](https://github.com/FaserF/hassio-addons/commit/e5442638c9044405e84b461314486576170c1022))
 - split events.js into modular events/ directory ([`d49de643`](https://github.com/FaserF/hassio-addons/commit/d49de643a05314154a085e94e9281c7252bee0ed))
 - split api.js into modular routes/api/ directory ([`45b47a7c`](https://github.com/FaserF/hassio-addons/commit/45b47a7c5b6f3977a0bdfa751fcd0446213451b1))
 - split events.js into modular whatsapp/events/ directory ([`738fcd2a`](https://github.com/FaserF/hassio-addons/commit/738fcd2a88b660d651a11f2253c6d758673a4de8))
 
 ### 🚀 Other
+
 - small fix ([`f6f3a4e6`](https://github.com/FaserF/hassio-addons/commit/f6f3a4e64511c42c51256707f397b3e19c0a4bcf))
 - small connection typo fix ([`28e4f30d`](https://github.com/FaserF/hassio-addons/commit/28e4f30dbcd4fa6559a3658c7964a3eec082493e))
 - fix addon connection ([`d2a81980`](https://github.com/FaserF/hassio-addons/commit/d2a81980e2ff10d884958e22bdeb43320b075baf))
-
 
 ## 1.7.5 (2026-07-28)
 
