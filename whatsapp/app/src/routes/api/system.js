@@ -1,7 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { authMiddleware, uiAuthMiddleware, uiLimiter } from '../../middleware.js';
-import { getSession, sessions, sanitizeSessionId, addLog, signalInterest, purgeDisconnectedSessions } from '../../session.js';
+import {
+  getSession,
+  sessions,
+  sanitizeSessionId,
+  addLog,
+  signalInterest,
+  purgeDisconnectedSessions,
+} from '../../session.js';
 import {
   DATA_DIR,
   ADDON_VERSION,
