@@ -1,20 +1,28 @@
 // Helper functions & Toast alerts
 
 // Global error handlers - catch and display any uncaught JS errors
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function (message, source, lineno, colno, error) {
   console.error('💥 Uncaught error:', message, 'at', source, lineno + ':' + colno, error);
   try {
     const container = document.getElementById('toast-container');
     if (container) {
       const toast = document.createElement('div');
       toast.className = 'toast danger';
-      toast.innerHTML = '<i class="fas fa-exclamation-circle toast-icon"></i><span>JS Error: ' + String(message).substring(0, 100) + '</span>';
+      toast.innerHTML =
+        '<i class="fas fa-exclamation-circle toast-icon"></i><span>JS Error: ' +
+        String(message).substring(0, 100) +
+        '</span>';
       container.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 5000);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 200);
+      }, 5000);
     }
-  } catch (e) { /* ignore rendering errors in the error handler itself */ }
+  } catch (e) {
+    /* ignore rendering errors in the error handler itself */
+  }
 };
-window.addEventListener('unhandledrejection', function(event) {
+window.addEventListener('unhandledrejection', function (event) {
   console.error('💥 Unhandled promise rejection:', event.reason);
   try {
     const container = document.getElementById('toast-container');
@@ -22,11 +30,19 @@ window.addEventListener('unhandledrejection', function(event) {
       const toast = document.createElement('div');
       toast.className = 'toast danger';
       const msg = event.reason?.message || String(event.reason || 'Unknown rejection');
-      toast.innerHTML = '<i class="fas fa-exclamation-circle toast-icon"></i><span>Async Error: ' + msg.substring(0, 100) + '</span>';
+      toast.innerHTML =
+        '<i class="fas fa-exclamation-circle toast-icon"></i><span>Async Error: ' +
+        msg.substring(0, 100) +
+        '</span>';
       container.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 5000);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 200);
+      }, 5000);
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    /* ignore */
+  }
 });
 
 function showToast(message, type = 'info') {

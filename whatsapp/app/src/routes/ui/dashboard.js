@@ -704,4 +704,3 @@ window.openUpdateModal = openUpdateModal;
 window.closeUpdateModal = closeUpdateModal;
 window.openDependencyModal = openDependencyModal;
 window.closeDependencyModal = closeDependencyModal;
-

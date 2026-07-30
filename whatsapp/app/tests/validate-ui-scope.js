@@ -72,12 +72,18 @@ function checkWindowExports(filename) {
 
   // Find all window.X = X assignments
   for (let i = 0; i < lines.length; i++) {
-    const match = lines[i].match(/^\s*window\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*;/);
+    const match = lines[i].match(
+      /^\s*window\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*;/
+    );
     if (match) {
       const windowProp = match[1];
       const refName = match[2];
       if (!topLevelDefs.has(refName)) {
-        error(filename, i + 1, `window.${windowProp} = ${refName} — but '${refName}' is NOT defined at top-level scope. This will cause a ReferenceError that crashes the entire script.`);
+        error(
+          filename,
+          i + 1,
+          `window.${windowProp} = ${refName} — but '${refName}' is NOT defined at top-level scope. This will cause a ReferenceError that crashes the entire script.`
+        );
       }
     }
   }
@@ -110,14 +116,17 @@ function checkHtmlHandlers() {
   }
 
   // Also add functions defined directly in index.js with window.X = function pattern
-  const indexFuncMatches = content.matchAll(/window\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:function|async function|\()/g);
+  const indexFuncMatches = content.matchAll(
+    /window\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:function|async function|\()/g
+  );
   for (const m of indexFuncMatches) {
     windowExports.add(m[1]);
   }
 
   // Find all inline event handlers in HTML strings
   const lines = content.split('\n');
-  const handlerPattern = /on(?:click|submit|change|input|focus|blur|keydown|keyup|keypress|mouseover|mouseout|mouseenter|mouseleave|contextmenu|dblclick|load|error)\s*=\s*"([^"]+)"/gi;
+  const handlerPattern =
+    /on(?:click|submit|change|input|focus|blur|keydown|keyup|keypress|mouseover|mouseout|mouseenter|mouseleave|contextmenu|dblclick|load|error)\s*=\s*"([^"]+)"/gi;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -129,12 +138,75 @@ function checkHtmlHandlers() {
       for (const funcCall of funcCalls) {
         const funcName = funcCall[1];
         // Skip built-in/common functions and DOM methods
-        const skipList = new Set(['event', 'this', 'return', 'window', 'document', 'console', 'alert', 'confirm', 'prompt', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'parseInt', 'parseFloat', 'encodeURIComponent', 'decodeURIComponent', 'JSON', 'Array', 'Object', 'String', 'Number', 'Boolean', 'Date', 'Math', 'RegExp', 'Error', 'open', 'close', 'focus', 'blur', 'remove', 'stopPropagation', 'preventDefault', 'scale', 'trim', 'split', 'join', 'map', 'filter', 'push', 'pop', 'shift', 'splice', 'toString', 'valueOf', 'hasOwnProperty', 'includes', 'replace', 'match', 'indexOf', 'substring', 'charAt', 'toLowerCase', 'toUpperCase', 'fetch', 'then', 'catch']);
+        const skipList = new Set([
+          'event',
+          'this',
+          'return',
+          'window',
+          'document',
+          'console',
+          'alert',
+          'confirm',
+          'prompt',
+          'setTimeout',
+          'setInterval',
+          'clearTimeout',
+          'clearInterval',
+          'parseInt',
+          'parseFloat',
+          'encodeURIComponent',
+          'decodeURIComponent',
+          'JSON',
+          'Array',
+          'Object',
+          'String',
+          'Number',
+          'Boolean',
+          'Date',
+          'Math',
+          'RegExp',
+          'Error',
+          'open',
+          'close',
+          'focus',
+          'blur',
+          'remove',
+          'stopPropagation',
+          'preventDefault',
+          'scale',
+          'trim',
+          'split',
+          'join',
+          'map',
+          'filter',
+          'push',
+          'pop',
+          'shift',
+          'splice',
+          'toString',
+          'valueOf',
+          'hasOwnProperty',
+          'includes',
+          'replace',
+          'match',
+          'indexOf',
+          'substring',
+          'charAt',
+          'toLowerCase',
+          'toUpperCase',
+          'fetch',
+          'then',
+          'catch',
+        ]);
         if (skipList.has(funcName)) {
           continue;
         }
         if (!windowExports.has(funcName)) {
-          error('index.js', i + 1, `HTML handler references '${funcName}()' but no 'window.${funcName}' export found in any UI file`);
+          error(
+            'index.js',
+            i + 1,
+            `HTML handler references '${funcName}()' but no 'window.${funcName}' export found in any UI file`
+          );
         }
       }
     }
@@ -193,7 +265,11 @@ function checkDuplicateRoutes() {
 
       if (routes.has(key)) {
         const lineNum = content.substring(0, match.index).split('\n').length;
-        error(filename, lineNum, `Duplicate route registration: ${key} (first at line ${routes.get(key)})`);
+        error(
+          filename,
+          lineNum,
+          `Duplicate route registration: ${key} (first at line ${routes.get(key)})`
+        );
       } else {
         const lineNum = content.substring(0, match.index).split('\n').length;
         routes.set(key, lineNum);

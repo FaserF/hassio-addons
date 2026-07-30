@@ -81,7 +81,9 @@ export const uiAuthMiddleware = (req, res, next) => {
   let user = '';
   let pass = '';
   try {
-    const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64').toString().split(':');
+    const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64')
+      .toString()
+      .split(':');
     user = auth[0] || '';
     pass = auth[1] || '';
   } catch (err) {}
