@@ -1,5 +1,71 @@
 # Changelog
 
+## 1.8.0 (2026-07-30)
+
+### ✨ Features
+- add 'Clean Inactive Sessions' button and API endpoint to purge stale sessions ([`f554854c`](https://github.com/FaserF/hassio-addons/commit/f554854c457e938aad8624a9ce07e37f3b5f0259))
+- allow closing any modal by clicking outside the modal content (backdrop click) ([`fb9d4566`](https://github.com/FaserF/hassio-addons/commit/fb9d45665439e53ba89474b77fc446a88543aba4))
+- replace browser alert with styled System Properties Overview Modal in frontend ([`bec7e5fe`](https://github.com/FaserF/hassio-addons/commit/bec7e5feceb951de9dff3e7329abcf895b57b002))
+- enhance dependency update modal ([`6e5a607a`](https://github.com/FaserF/hassio-addons/commit/6e5a607ad0e1e3877316aeea67eb7ffec97d2f45))
+- add version update notifications and release popups in frontend UI ([`e4825a30`](https://github.com/FaserF/hassio-addons/commit/e4825a308c80c25c8a8f8df36b854e363aa6f17e))
+- add uiLimiter rate limiting to health, dashboard and debug endpoints ([`92dff890`](https://github.com/FaserF/hassio-addons/commit/92dff890d0b3794fb17916e48a5582373413b766))
+- toggle frontend UI navbar ([`6900afd2`](https://github.com/FaserF/hassio-addons/commit/6900afd233585de92d6c451357b63e901b4d61d9))
+- display WhatsApp profile status/about text in Connected Account dashboard card ([`ade50a92`](https://github.com/FaserF/hassio-addons/commit/ade50a92e55dbd56ef523fbc2e456e2692f7b7ee))
+- add Contact and Group Info Drawer (description, participants list, profile info, creation date) ([`8d73280c`](https://github.com/FaserF/hassio-addons/commit/8d73280c4179025f16fa7e06afb5e131ae5c39d4))
+- fetch and display contact/group profile pictures in chat list and chat header ([`01280fa8`](https://github.com/FaserF/hassio-addons/commit/01280fa8886d8d4221fbf2a99e6727a7d3cbcb9e))
+- add Start New Chat (+) button and modal to open chats by phone number ([`a494e9b9`](https://github.com/FaserF/hassio-addons/commit/a494e9b9fb2af1f296c0fd107b456b29ffff2664))
+- add React option to message context menu with emoji picker ([`5e4757ed`](https://github.com/FaserF/hassio-addons/commit/5e4757ed457f73adb7d7cce03407ccd959b83c65))
+- WhatsApp Web feature parity - media, quotes, reactions, ACK ticks, emoji picker, file upload, message search, typing indicator, context menu ([`f79eb757`](https://github.com/FaserF/hassio-addons/commit/f79eb7577796553fcb84020e7a56bfda5f99d043))
+- modern dark/light mode overhaul - WhatsApp-style chat bubbles, pill input bar, proper color tokens ([`bc7ada0f`](https://github.com/FaserF/hassio-addons/commit/bc7ada0fc64254ec45e31225b8cbf8f6555d2bff))
+- show sender name in group chat message bubbles ([`043fcf19`](https://github.com/FaserF/hassio-addons/commit/043fcf193f1e1aa192354c5e7a996a6623f42687))
+
+### 🐛 Bug Fixes
+- resolve CodeQL security alerts #34-#40 for format string and rate limiting ([`d6edd34f`](https://github.com/FaserF/hassio-addons/commit/d6edd34f7cbd54335f1c95d814478e1eced3cb9d))
+- handle unhandled rejection connection closures, add ENOENT session guards, and tune HTTP log levels ([`651363e0`](https://github.com/FaserF/hassio-addons/commit/651363e0a4d2cf2dd8372983d986686ddc436098))
+- prevent duplicate admin notifications and destroy existing sockets to avoid stream conflict ([`6332113b`](https://github.com/FaserF/hassio-addons/commit/6332113b69c1f4a3e1b4923e69ac5b98fca095cf))
+- resolve connectFn parameter error in signalInterest and /session/start ([`dce9b8ac`](https://github.com/FaserF/hassio-addons/commit/dce9b8aca3732c04ea2a7276a0d6dfa43e1bbf99))
+- general code improvements & fixes ([`5b13577b`](https://github.com/FaserF/hassio-addons/commit/5b13577b044e5d3c41bfffbda824e156c662ab2f))
+- handle fetch network errors explicitly in updateDashboard to update status badge text ([`27a3501e`](https://github.com/FaserF/hassio-addons/commit/27a3501e5bbb80276515a146e7417bd857d6990d))
+- update /qr endpoint to check session.currentQR as fallback ([`2df8b0ea`](https://github.com/FaserF/hassio-addons/commit/2df8b0ea95728e4a67354261fecb517770c5cb3d))
+- prevent double event triggering on sidebar toggle and make logo clickable ([`e5aa4c3b`](https://github.com/FaserF/hassio-addons/commit/e5aa4c3b814566787a589da14ab081ea0398129d))
+- fix connectToWhatsApp parameter signature in /session/start route ([`fae1515c`](https://github.com/FaserF/hassio-addons/commit/fae1515c6ed668b7f6c6dd4ff4e764488891a961))
+- add document delegation fallback listener for sidebar toggle ([`0bfbe659`](https://github.com/FaserF/hassio-addons/commit/0bfbe6593e11d2fd2e57de97767732edd38ddc89))
+- hide disconnectReason label when currentQR is active ([`bb039711`](https://github.com/FaserF/hassio-addons/commit/bb03971152529476fd946fe9f40aa61f758e0b26))
+- enforce explicit width style in toggleSidebar for guaranteed collapse rendering and add space below subtitle ([`00d3d75e`](https://github.com/FaserF/hassio-addons/commit/00d3d75e57e8c16353d984f7f65e7ac037e0559e))
+- pass event explicitly to toggleSidebar in HTML template and set pointer-events none on icon ([`8a53a18f`](https://github.com/FaserF/hassio-addons/commit/8a53a18ffefed7d488f091bc0929f3510347972f))
+- simplify toggleSidebar event delegation and add try-catch around localStorage ([`4a7f357f`](https://github.com/FaserF/hassio-addons/commit/4a7f357ffbe16d5616f78ca0ec55f8e948674871))
+- make toggleSidebar event handler robust against click bubbling ([`6aba8b9e`](https://github.com/FaserF/hassio-addons/commit/6aba8b9e052e757c365ce0a329aaa0c5386e89f2))
+
+### 📦 Dependencies
+- ⬆️ Update dependency brace-expansion to v5.0.9 [skip-tests] (#938) [skip-tests] ([`fd1fe47e`](https://github.com/FaserF/hassio-addons/commit/fd1fe47e9503398bdecc7de6dd7d626fbfd0476e))
+- ⬆️ Update dependency fastapi to v0.141.1 [skip-tests] (#934) [skip-tests] ([`b9c2188c`](https://github.com/FaserF/hassio-addons/commit/b9c2188caa481ff71f5158deeaf4d8246891f73a))
+- ⬆️ Update dependency fastapi to v0.141.0 (#933) [skip-tests] ([`8d5710d3`](https://github.com/FaserF/hassio-addons/commit/8d5710d3ac30953181a7589f7819bcecdf40e7a8))
+- ⬆️ Update dependency uvicorn to v0.52.0 ([`1918c934`](https://github.com/FaserF/hassio-addons/commit/1918c93429eef3262b396dd5258ed80c94373e1d))
+- ⬆️ Update dependency protobufjs to v8.7.1 [skip-tests] ([`96481bf4`](https://github.com/FaserF/hassio-addons/commit/96481bf444d8d3b961700374c428b7d3d365d422))
+- ⬆️ Update dependency @whiskeysockets/baileys to v7.0.0-rc14 [skip-tests] (#929) [skip-tests] ([`afe732e5`](https://github.com/FaserF/hassio-addons/commit/afe732e5cdffdc3bb5d7630045253738155fef53))
+- ⬆️ Update dependency fastapi to v0.140.13 [skip-tests] (#928) ([`89321130`](https://github.com/FaserF/hassio-addons/commit/8932113003a2089bbd8d4e04f7828b6863f2152b))
+- ⬆️ Update dependency bonjour-service to v1.4.4 [skip-tests] (#927) [skip-tests] ([`ef805057`](https://github.com/FaserF/hassio-addons/commit/ef805057766c05f85f46bec7e75546732aadc1fe))
+- ⬆️ Update dependency fastapi to v0.140.9 [skip-tests] (#926) [skip-tests] ([`d3dc2ee5`](https://github.com/FaserF/hassio-addons/commit/d3dc2ee59012957557a8115da60f36a42971744f))
+
+### 🎨 Style
+- fix Maintenance card button layout to auto-fit grid and prevent text overflow ([`51c43496`](https://github.com/FaserF/hassio-addons/commit/51c43496e4e3c9ba9a76d39f3eb25f4870aa94d3))
+- fix UI script loading, tab switching, and HTTP logging ([`7f68ce7b`](https://github.com/FaserF/hassio-addons/commit/7f68ce7bf191699c8ec1701b801d3c669d553f62))
+- enforce explicit inline flexbox styles on header elements to guarantee layout alignment regardless of CSS caching ([`c374bd03`](https://github.com/FaserF/hassio-addons/commit/c374bd030e8f65299d830dc87bc384cfd46154ab))
+- mobile responsive overhaul - fullscreen mobile chat thread, auto-hide headers on active chat, 100% viewport height usage ([`d055c052`](https://github.com/FaserF/hassio-addons/commit/d055c052682475327626026a780ef916b5c22705))
+- split ui.js (124KB) into modular routes/ui/ directory with static assets ([`7d97904f`](https://github.com/FaserF/hassio-addons/commit/7d97904f14bf6dbe7704becb581761220eca3f42))
+
+### ♻️ Refactor
+- small improvements ([`e5442638`](https://github.com/FaserF/hassio-addons/commit/e5442638c9044405e84b461314486576170c1022))
+- split events.js into modular events/ directory ([`d49de643`](https://github.com/FaserF/hassio-addons/commit/d49de643a05314154a085e94e9281c7252bee0ed))
+- split api.js into modular routes/api/ directory ([`45b47a7c`](https://github.com/FaserF/hassio-addons/commit/45b47a7c5b6f3977a0bdfa751fcd0446213451b1))
+- split events.js into modular whatsapp/events/ directory ([`738fcd2a`](https://github.com/FaserF/hassio-addons/commit/738fcd2a88b660d651a11f2253c6d758673a4de8))
+
+### 🚀 Other
+- small fix ([`f6f3a4e6`](https://github.com/FaserF/hassio-addons/commit/f6f3a4e64511c42c51256707f397b3e19c0a4bcf))
+- small connection typo fix ([`28e4f30d`](https://github.com/FaserF/hassio-addons/commit/28e4f30dbcd4fa6559a3658c7964a3eec082493e))
+- fix addon connection ([`d2a81980`](https://github.com/FaserF/hassio-addons/commit/d2a81980e2ff10d884958e22bdeb43320b075baf))
+
+
 ## 1.7.5 (2026-07-28)
 
 ### ✨ Features
