@@ -1,2 +1,0 @@
-#!/usr/bin/with-contenv bashio
-exec /usr/sbin/crond -f -l 8

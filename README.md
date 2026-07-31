@@ -1,5 +1,14 @@
 # FaserF's Home Assistant Apps 🏠
 
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is no longer maintained and has been moved to the `unsupported` branch.
+> It is provided for archival purposes only.
+> **USE AT YOUR OWN RISK.**
+>
+
+
 This repository contains a collection of custom **Home Assistant Apps** (formerly known as Add-ons)
 maintained by FaserF.
 
