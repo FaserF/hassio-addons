@@ -3,22 +3,25 @@
 ## 1.1.1 (2026-07-31)
 
 ### ✨ Features
+
 - add translations (DE+EN) for sync_full_history, auto_install_integration, and github_token ([`fda5d0d4`](https://github.com/FaserF/hassio-addons/commit/fda5d0d4a7e4e1f532c1b13c0a91c0e997c682ae))
 - add auto_install_integration toggle for whatsapp and dbf addons ([`e2a3dd03`](https://github.com/FaserF/hassio-addons/commit/e2a3dd038ffc29f4dc1707e218a11610ed82af39))
 - add detailed logging for supervisor discovery registration ([`23938877`](https://github.com/FaserF/hassio-addons/commit/23938877df652a091cf26d4f7f5e3d37f4e533e3))
 - enable auto-discovery for dbf addon (db_infoscreen) ([`abdbc335`](https://github.com/FaserF/hassio-addons/commit/abdbc3351d43f1f8e908aa29dbb5b9104bd37ea1))
 
 ### 🐛 Bug Fixes
+
 - CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
 - fix UI script loading, tab switching, and HTTP logging ([`7f68ce7b`](https://github.com/FaserF/hassio-addons/commit/7f68ce7bf191699c8ec1701b801d3c669d553f62))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
 - download integrations from release zips and update workflows ([`d1b640b8`](https://github.com/FaserF/hassio-addons/commit/d1b640b86f729bf90fae51fe101553aa2010d1d0))
 
 ### 🚀 Other
-- redirect addon support/issues to integration repository ([`5917aec1`](https://github.com/FaserF/hassio-addons/commit/5917aec1f9717207dfbf012404c39c8cb9b86e14))
 
+- redirect addon support/issues to integration repository ([`5917aec1`](https://github.com/FaserF/hassio-addons/commit/5917aec1f9717207dfbf012404c39c8cb9b86e14))
 
 ## 1.1.0 (2026-06-16)
 

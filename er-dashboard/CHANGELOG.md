@@ -3,12 +3,13 @@
 ## 1.4.3 (2026-07-31)
 
 ### 🐛 Bug Fixes
+
 - small workflow fixes ([`8bd241d9`](https://github.com/FaserF/hassio-addons/commit/8bd241d974c7a7e5d3df19857de3b4bab1ceb211))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
 - ⬆️ Update ER-Startseite to v2026.7.8 [skip-tests] (#941) [skip-tests] ([`67515916`](https://github.com/FaserF/hassio-addons/commit/67515916f503906dba13565bbad007c6a4cb3630))
-
 
 ## 1.4.2 (2026-07-30)
 
