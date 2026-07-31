@@ -322,7 +322,7 @@ jobs:
             find /etc/s6-overlay -type f 2>/dev/null | xargs -r sed -i 's/s6-svscanctl -q/true # s6-svscanctl -q/g; s/s6-svscanctl -a/true # s6-svscanctl -a/g' || true
 
             # Prevent Docker daemon from being killed on service restart
-            find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/Stopping Docker daemon/Skipping Docker daemon stop/g; s/kill .*dockerd.*/true/g; s/killall .*dockerd.*/true/g' || true
+            find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/Stopping Docker daemon/Skipping Docker daemon stop/g; s/Sending SIGTERM to docker daemon/Skipping SIGTERM to docker daemon/g; s/kill .*DOCKER_PID.*/true # kill DOCKER_PID/g; s/kill -15 .*/true # kill -15/g; s/kill -TERM .*/true # kill -TERM/g; s/kill .*dockerd.*/true/g; s/killall .*dockerd.*/true/g' || true
           "
 
           # Start Supervisor in background with output redirected to log file
