@@ -27,7 +27,7 @@ NGINX is a high-performance HTTP server and reverse proxy renowned for its stabi
 
 ## 🏠 Home Assistant Integration
 
-This addon supports the **Webserver App** integration for Home Assistant. 
+This addon supports the **Webserver App** integration for Home Assistant.
 The integration is automatically installed/updated when the addon starts.
 
 For more information and configuration details, please refer to the [Integration README](https://github.com/FaserF/ha-webserver).
