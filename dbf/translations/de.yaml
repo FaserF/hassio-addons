@@ -14,5 +14,8 @@ configuration:
   privacy_policy_url:
     name: "Datenschutzerklärung URL"
     description: "URL, die auf eine externe Datenschutzerklärung verweist. Wenn leer, wird ein lokaler Standardplatzhalter verwendet."
+  auto_install_integration:
+    name: "Integration automatisch installieren/aktualisieren"
+    description: "Installiert und aktualisiert die Home Assistant DBF-Integration automatisch im Ordner custom_components."
 network:
   8092/tcp: Web-Interface-Port für DBF. Wird für die Integration in der Home Assistant App benötigt, ist aber für den Ingress-Zugriff im Browser nicht erforderlich.

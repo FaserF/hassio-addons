@@ -59,5 +59,14 @@ configuration:
   reject_unauthorized:
     name: "Nicht autorisierte Zertifikate abweisen"
     description: "Gibt an, ob selbstsignierte oder nicht autorisierte Zertifikate beim Abrufen von Medien-URLs oder Aufrufen von APIs abgewiesen werden sollen (Deaktivieren, um selbstsignierte Zertifikate zu erlauben)."
+  sync_full_history:
+    name: "Vollständigen Verlauf synchronisieren"
+    description: "Steuert, ob beim ersten Koppeln der gesamte WhatsApp-Nachrichtenverlauf synchronisiert werden soll (standardmäßig deaktiviert)."
+  auto_install_integration:
+    name: "Integration automatisch installieren/aktualisieren"
+    description: "Installiert und aktualisiert die Home Assistant WhatsApp-Integration automatisch im Ordner custom_components."
+  github_token:
+    name: "GitHub Token (Optional)"
+    description: "Personal Access Token zur Erhöhung des GitHub API-Rate-Limits bei automatischen Update-Prüfungen."
 network:
   8066/tcp: Interner API-Port, über den sich die Integration verbindet.

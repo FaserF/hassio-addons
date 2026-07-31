@@ -124,8 +124,11 @@ reject_unauthorized: true
 > [!WARNING]
 > **Privacy Trade-off:** Enabling `mask_sensitive_data` will also mask Group IDs (e.g. `123*****89@g.us`). If you are trying to find out the ID of a new group to send messages to, you MUST temporarily **disable** this option to see the full ID in the logs.
 
-> [!NOTE]
-> **Full History Sync:** Setting `sync_full_history` to `true` causes WhatsApp to synchronize full chat history upon pairing/reconnecting. Note that this increases initial loading time, memory consumption, and bandwidth usage during connection setup. Default is `false`.
+> [!IMPORTANT]
+> **Full History Sync (`sync_full_history`):**
+> - **Pairing-Only Limitation:** WhatsApp's Multi-Device protocol sends historical chat data **only once during initial QR code pairing**. Enabling `sync_full_history` on an already paired session will **not** retrieve historical messages retroactively.
+> - **How to sync history:** To sync chat history, set `sync_full_history: true`, reset the session (via `reset_session: true` or Web UI Session Reset), and scan the QR code again.
+> - **WhatsApp Multi-Device Limits:** Meta limits historical message transfer to secondary linked devices to approximately the last 2–4 weeks (or ~50–100 messages per chat). Default is `false`.
 
 ## 📂 Folder Usage
 

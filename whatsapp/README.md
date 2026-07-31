@@ -112,6 +112,9 @@ webhook_url: ''
 welcome_message_enabled: false
 ```
 
+> [!IMPORTANT]
+> **Full History Sync (`sync_full_history`):** WhatsApp's Multi-Device protocol sends chat history **only during initial QR code pairing**. Enabling `sync_full_history` on an existing session will not load old chats retroactively. To sync history, set `sync_full_history: true`, reset the session (`reset_session: true`), and scan the QR code again.
+
 ---
 
 ## 👨‍💻 Credits & License

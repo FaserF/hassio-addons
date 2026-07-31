@@ -13,6 +13,9 @@ configuration:
     description: "The address to be displayed on the imprint page (Impressum)."
   privacy_policy_url:
     name: "Privacy Policy URL"
-    description: "URL pointing to an external privacy policy page. If left blank, a local default placeholder will be used."
+    description: "URL pointing to an external privacy policy. If empty, a default local placeholder is used."
+  auto_install_integration:
+    name: "Auto-Install/Update Integration"
+    description: "Automatically installs and updates the Home Assistant DBF integration in custom_components."
 network:
-  8092/tcp: DBF web interface port. Required for the Home Assistant integration app to connect, but not needed for Ingress access.
+  8092/tcp: Web interface port for DBF. Required for integration within Home Assistant App, but not needed for browser access via Ingress.
