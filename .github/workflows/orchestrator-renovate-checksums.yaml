@@ -34,14 +34,15 @@ jobs:
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           ref: ${{ github.head_ref }}
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: 🔍 Detect changed addon and version
         id: detect
         run: |
           set -euo pipefail
 
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only origin/master...HEAD)
+          git fetch origin master --depth=1 2>/dev/null || true
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only origin/master...HEAD 2>/dev/null || git ls-tree -r HEAD --name-only)
           echo "Changed files: $CHANGED_FILES"
 
           ADDON=""

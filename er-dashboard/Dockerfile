@@ -128,4 +128,4 @@ HEALTHCHECK \
     --timeout=10s \
     --retries=3 \
     --start-period=5m \
-    CMD /usr/bin/curl --fail http://127.0.0.1:8099 || exit 1
+    CMD ["/usr/bin/curl", "--fail", "http://127.0.0.1:8099"]

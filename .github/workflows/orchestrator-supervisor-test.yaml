@@ -311,13 +311,14 @@ jobs:
             exit 1
           fi
 
-          # Patch stty sane to be non-fatal (no TTY available in nohup/background mode)
-          # Without this, supervisor_run dies immediately due to set -e
+          # Patch stty sane and prevent watchdog from stopping Docker daemon on restart
           echo "Patching supervisor scripts inside container..."
-          docker exec ha-supervisor-test sed -i 's/stty sane/stty sane || true/' /etc/supervisor_scripts/common
+          docker exec ha-supervisor-test bash -c "
+            [ -f /etc/supervisor_scripts/common ] && sed -i 's/stty sane/stty sane || true/' /etc/supervisor_scripts/common || true
+            [ -f /etc/s6-overlay/s6-rc.d/init-stage2/run ] && sed -i 's/shutdown/true/' /etc/s6-overlay/s6-rc.d/init-stage2/run 2>/dev/null || true
+          "
 
           # Start Supervisor in background with output redirected to log file
-          # Using nohup+bash instead of 'script' because 'script' killed the container
           docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
 
           echo "Waiting for Supervisor to be ready..."
