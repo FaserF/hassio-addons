@@ -2,6 +2,11 @@ import os
 
 import yaml
 
+
+class IndentedYamlDumper(yaml.SafeDumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow=flow, indentless=False)
+
 # Constants
 UNSUPPORTED_BANNER = """
 > [!CAUTION]
@@ -63,6 +68,7 @@ def add_banner(params):
                     yaml.dump(
                         config,
                         f,
+                        Dumper=IndentedYamlDumper,
                         default_flow_style=False,
                         sort_keys=False,
                         allow_unicode=True,
@@ -104,6 +110,7 @@ def remove_banner(params):
                     yaml.dump(
                         config,
                         f,
+                        Dumper=IndentedYamlDumper,
                         default_flow_style=False,
                         sort_keys=False,
                         allow_unicode=True,

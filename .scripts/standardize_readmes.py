@@ -5,6 +5,11 @@ import re
 
 import yaml
 
+class IndentedYamlDumper(yaml.SafeDumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow=flow, indentless=False)
+
+
 # Repo Parameters
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_HASH = "605cee21"  # Hash for FaserF/hassio-addons
@@ -279,7 +284,7 @@ def maximize_config_example(config, config_type):
         return f"```json\n{json.dumps(options, indent=2)}\n```"
     else:
         # Simple YAML dump for options
-        return f"```yaml\n{yaml.dump(options, default_flow_style=False)}```"
+        return f"```yaml\n{yaml.dump(options, Dumper=IndentedYamlDumper, default_flow_style=False)}```"
 
 
 def find_addons(base_path):

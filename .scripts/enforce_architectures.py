@@ -7,6 +7,11 @@ import yaml
 UNSUPPORTED_ARCHES = ["armhf", "armv7", "i386"]
 
 
+class IndentedYamlDumper(yaml.SafeDumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow=flow, indentless=False)
+
+
 def enforce_config(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         try:
@@ -26,7 +31,7 @@ def enforce_config(file_path):
     if len(original_arch) != len(new_arch):
         content["arch"] = new_arch
         with open(file_path, "w", encoding="utf-8") as f:
-            yaml.dump(content, f, sort_keys=False, default_flow_style=False)
+            yaml.dump(content, f, Dumper=IndentedYamlDumper, sort_keys=False, default_flow_style=False)
         return True
     return False
 
@@ -65,7 +70,7 @@ def enforce_build(file_path):
     if modified:
         if file_path.suffix == ".yaml":
             with open(file_path, "w", encoding="utf-8") as f:
-                yaml.dump(content, f, sort_keys=False, default_flow_style=False)
+                yaml.dump(content, f, Dumper=IndentedYamlDumper, sort_keys=False, default_flow_style=False)
         else:
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(content, f, indent=2)
