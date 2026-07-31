@@ -49,6 +49,7 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ### Options
 
 ```yaml
+auto_install_integration: true
 imprint_address: ''
 imprint_name: ''
 log_level: info

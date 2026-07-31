@@ -89,6 +89,8 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ```yaml
 admin_notifications_enabled: true
 admin_numbers: ''
+auto_install_integration: true
+github_token: ''
 group_fetch_cooldown_on_error: 60000
 group_fetch_cooldown_on_rate_limit: 900000
 group_fetch_interval: 300000
