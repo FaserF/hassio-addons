@@ -213,6 +213,34 @@ jobs:
   # --------------------------------------------------------------------------------
   # LINT: Static Analysis (Fail Fast)
   # --------------------------------------------------------------------------------
+  # ROOT LINT: Lint root level & non-app files (package.json, workflows, root scripts)
+  # --------------------------------------------------------------------------------
+  root-lint:
+    name: 🧹 Root Lint & Validate
+    needs: filter
+    if: |
+      (needs.filter.outputs.Apps == '[]' || needs.filter.outputs.Apps == '') &&
+      needs.filter.outputs.docs_only != 'true' &&
+      needs.filter.outputs.is_stale != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: ⤵️ Check out code
+        uses: actions/checkout@v7
+
+      - name: 📦 Validate Root package.json
+        run: |
+          if [ -f package.json ]; then
+            node -e "JSON.parse(require('fs').readFileSync('package.json'))"
+            echo "✅ Root package.json is valid JSON"
+          fi
+          if [ -f package-lock.json ]; then
+            node -e "JSON.parse(require('fs').readFileSync('package-lock.json'))"
+            echo "✅ Root package-lock.json is valid JSON"
+          fi
+
+  # --------------------------------------------------------------------------------
   lint:
     name: 🧹 Lint & Validate
     needs: filter
@@ -243,6 +271,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: "./${{ matrix.App }}/Dockerfile"
+          config: .hadolint.yaml
 
       # 3. Common Linters (Markdown/YAML/JSON/Prettier)
       # ADVISORY CHECKS: These use continue-on-error: true intentionally.

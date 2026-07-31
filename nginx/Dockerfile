@@ -10,7 +10,6 @@ ARG NGINX_VERSION="1.30.4-r2"
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-# renovate: datasource=repology depName=alpine_edge/php85 versioning=loose
 ARG PHP_VERSION="8.5"
 
 # App metadata (injected by CI)
@@ -100,7 +99,7 @@ COPY index.html /
 RUN chmod +x /etc/cont-init.d/nginx.sh /etc/services.d/*/run /usr/bin/webserver_app_integration.sh
 
 # Health check
-HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:80 || exit 1
+HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:80 || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="NGINX"

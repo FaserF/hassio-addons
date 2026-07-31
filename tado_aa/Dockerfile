@@ -51,7 +51,7 @@ RUN chmod a+x /run.sh \
     && chmod a+x /tado_aa.py
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=15s --start-period=15s --retries=3 \
-    CMD pgrep -f "python3.*tado_aa.py" || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -f \"python3.*tado_aa.py\" || exit 1"]
 
 CMD [ "/run.sh" ]
 

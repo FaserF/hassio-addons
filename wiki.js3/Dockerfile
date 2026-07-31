@@ -53,7 +53,7 @@ RUN find /etc/cont-init.d /etc/services.d /etc/s6-overlay/s6-rc.d -type f -name 
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
-    CMD wget --spider -q http://127.0.0.1:3011/ || exit 1
+    CMD ["/bin/sh", "-c", "wget --spider -q http://127.0.0.1:3011/ || exit 1"]
 
 # Labels
 LABEL \

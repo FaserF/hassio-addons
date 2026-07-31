@@ -43,7 +43,7 @@ RUN chmod a+x /run.sh
 CMD [ "/run.sh" ]
 
 # Health check
-HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD curl --fail http://127.0.0.1:8080 || exit 1
+HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:8080 || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="pterodactyl Wings Gameserver"

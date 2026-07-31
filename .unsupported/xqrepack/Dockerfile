@@ -31,7 +31,7 @@ CMD [ "/run.sh" ]
 
 # Health check - use pgrep -f to match script name in process args
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD pgrep -f "/run.sh" >/dev/null || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -f \"/run.sh\" >/dev/null || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="xqrepack"

@@ -42,7 +42,7 @@ CMD [ "/run.sh" ]
 
 # Health check - verify main process is running (use exact path)
 HEALTHCHECK --interval=300s --timeout=10s --start-period=30s --retries=3 \
-    CMD pgrep -f "^/bin/bash /run.sh" >/dev/null || pgrep -x "bashio" >/dev/null || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -f \"^/bin/bash /run.sh\" >/dev/null || pgrep -x \"bashio\" >/dev/null || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="Freenom-dns-updater"

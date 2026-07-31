@@ -67,7 +67,7 @@ RUN chmod a+x /run.sh
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD pgrep -x node >/dev/null || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -x node >/dev/null || exit 1"]
 
 WORKDIR /
 CMD [ "/run.sh" ]

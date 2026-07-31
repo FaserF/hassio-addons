@@ -81,7 +81,7 @@ ARG BUILD_VERSION
 
 # Health Check
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=30s \
-  CMD curl --fail http://127.0.0.1:8080 || exit 1
+  CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:8080 || exit 1"]
 
 # Labels
 LABEL \

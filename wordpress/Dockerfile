@@ -101,4 +101,4 @@ HEALTHCHECK \
     --interval=1m \
     --timeout=15s \
     --retries=3 \
-    CMD curl --fail http://127.0.0.1:80/ || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:80/ || exit 1"]

@@ -24,7 +24,7 @@ COPY run.sh /etc/services.d/openssl/run
 RUN chmod +x /etc/services.d/openssl/run
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD /usr/bin/openssl rand -base64 8 > /dev/null 2>&1 || exit 1
+    CMD ["/bin/sh", "-c", "/usr/bin/openssl rand -base64 8 > /dev/null 2>&1 || exit 1"]
 
 # Labels
 LABEL \

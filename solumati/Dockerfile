@@ -137,7 +137,7 @@ RUN chmod a+x /run.sh
 
 # Healthcheck
 HEALTHCHECK --interval=5m --timeout=3s --start-period=60s --retries=3 \
-    CMD curl --fail http://127.0.0.1:80/ || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:80/ || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="Solumati"

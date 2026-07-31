@@ -44,7 +44,7 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 # Health check
 HEALTHCHECK --start-period=10s --interval=60s --timeout=5s --retries=5 \
-    CMD curl --fail http://127.0.0.1:8035 || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:8035 || exit 1"]
 
 # Build arguments
 ARG BUILD_ARCH

@@ -40,7 +40,7 @@ RUN chmod +x /etc/services.d/matterbridge/run
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
-    CMD pgrep -x matterbridge || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -x matterbridge || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="Matterbridge"

@@ -57,7 +57,7 @@ CMD [ "/start.sh" ]
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD pgrep -f "gateway.py" || exit 1
+    CMD ["/bin/sh", "-c", "pgrep -f \"gateway.py\" || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="bt-mqtt-gateway"

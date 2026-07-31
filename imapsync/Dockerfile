@@ -65,7 +65,7 @@ COPY rootfs /
 RUN chmod +x /etc/s6-overlay/s6-rc.d/imapsync/run
 
 # Health check
-HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD /usr/local/bin/imapsync --version || exit 1
+HEALTHCHECK --interval=60s --timeout=15s --retries=3 CMD ["/bin/sh", "-c", "/usr/local/bin/imapsync --version || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="Imapsync"

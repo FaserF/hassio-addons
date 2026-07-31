@@ -10,6 +10,9 @@
     "^python3 \\.scripts/bump_version\\.py .*",
     "^bash \\.github/scripts/update-checksums\\.sh .*"
   ],
+  "ignorePaths": [
+    ".unsupported/sap-abap-cloud-dev/**"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -218,17 +221,6 @@
     },
     {
       "customType": "regex",
-      "description": "Track NGINX Alpine package version",
-      "managerFilePatterns": ["/nginx/Dockerfile$/"],
-      "matchStrings": [
-        "# renovate: datasource=repology depName=alpine_edge/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
-      ],
-      "datasourceTemplate": "repology",
-      "depNameTemplate": "alpine_edge/nginx",
-      "versioningTemplate": "loose"
-    },
-    {
-      "customType": "regex",
       "description": "Track Wordpress version in Dockerfile",
       "managerFilePatterns": ["/wordpress/Dockerfile$/"],
       "matchStrings": [
@@ -285,6 +277,17 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/home-assistant/amd64-builder"
+    },
+    {
+      "customType": "regex",
+      "description": "Track NGINX Alpine package version",
+      "managerFilePatterns": ["/nginx/Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=repology depName=alpine_edge/nginx versioning=loose\\nARG NGINX_VERSION=[\"']?(?<currentValue>[^\"']*)[\"']?"
+      ],
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "alpine_edge/nginx",
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",

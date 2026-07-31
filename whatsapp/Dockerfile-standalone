@@ -32,7 +32,7 @@ USER node
 CMD ["node", "index.js"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl --fail -s http://127.0.0.1:8066/health || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail -s http://127.0.0.1:8066/health || exit 1"]
 
 # Labels
 ARG BUILD_DATE

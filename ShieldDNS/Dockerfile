@@ -82,7 +82,7 @@ RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns
 
 # Healthcheck
 HEALTHCHECK --interval=5s --timeout=3s --retries=3 --start-period=10s \
-    CMD curl -fS http://localhost:8080/api/health/live || exit 1
+    CMD ["/bin/sh", "-c", "curl -fS http://localhost:8080/api/health/live || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"

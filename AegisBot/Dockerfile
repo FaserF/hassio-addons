@@ -122,7 +122,7 @@ RUN chmod a+x /run.sh /usr/bin/aegisbot_integration.sh
 
 # Health check - faster detection with startup grace period
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
-    CMD curl -fsS http://127.0.0.1:8077/ || exit 1
+    CMD ["/bin/sh", "-c", "curl -fsS http://127.0.0.1:8077/ || exit 1"]
 
 CMD [ "/run.sh" ]
 

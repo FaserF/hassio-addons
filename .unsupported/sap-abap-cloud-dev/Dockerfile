@@ -101,4 +101,4 @@ LABEL \
 
 # Healthcheck - SAP takes a long time to start (5+ minutes)
 HEALTHCHECK --interval=60s --timeout=30s --start-period=600s --retries=5 \
-    CMD curl --fail -k https://127.0.0.1:8443/ || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail -k https://127.0.0.1:8443/ || exit 1"]

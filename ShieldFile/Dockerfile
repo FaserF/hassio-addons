@@ -46,7 +46,7 @@ RUN find /etc/s6-overlay/s6-rc.d -type f -exec dos2unix {} + \
 # Healthcheck
 HEALTHCHECK \
     --start-period=60s --interval=30s --timeout=10s --retries=3 \
-    CMD curl --fail http://127.0.0.1:8098/ || exit 1
+    CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:8098/ || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldFile"

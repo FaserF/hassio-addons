@@ -311,11 +311,17 @@ jobs:
             exit 1
           fi
 
-          # Patch stty sane and prevent watchdog from stopping Docker daemon on restart
+          # Patch stty sane and prevent watchdog/s6 from stopping Docker daemon on restart
           echo "Patching supervisor scripts inside container..."
           docker exec ha-supervisor-test bash -c "
-            [ -f /etc/supervisor_scripts/common ] && sed -i 's/stty sane/stty sane || true/' /etc/supervisor_scripts/common || true
+            # Patch stty in all supervisor scripts, s6 overlay files, and binaries
+            find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/stty sane/stty sane || true/g; s/\bstty\b/true # stty/g' || true
+
+            # Prevent s6 shutdown from taking down dockerd or container
             [ -f /etc/s6-overlay/s6-rc.d/init-stage2/run ] && sed -i 's/shutdown/true/' /etc/s6-overlay/s6-rc.d/init-stage2/run 2>/dev/null || true
+
+            # Prevent Docker daemon from being killed on service restart
+            find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/Stopping Docker daemon/Skipping Docker daemon stop/g; s/kill .*dockerd.*/true/g; s/killall .*dockerd.*/true/g' || true
           "
 
           # Start Supervisor in background with output redirected to log file
