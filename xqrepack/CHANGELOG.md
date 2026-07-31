@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1-dev-20260731-0827-79a37ff (2026-07-31)
+
+### 🔧 Configuration
+- rearrange unsupported Apps ([`79a37ff0`](https://github.com/FaserF/hassio-addons/commit/79a37ff0e68ee93a3cdf4954cfd52fabb4d94b23))
+
+
 ## 2.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉

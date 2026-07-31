@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1-dev-20260731-0827-79a37ff (2026-07-31)
+
+### 🔧 Configuration
+- rearrange unsupported Apps ([`79a37ff0`](https://github.com/FaserF/hassio-addons/commit/79a37ff0e68ee93a3cdf4954cfd52fabb4d94b23))
+- align APP_VERSION in Dockerfiles with config.yaml version ([`a815262c`](https://github.com/FaserF/hassio-addons/commit/a815262c04aaee9b76412f34840022159dd446b2))
+
+### 🚀 Other
+- deprecate sap ha app ([`2597fa82`](https://github.com/FaserF/hassio-addons/commit/2597fa8208bff90d1c5a18e4a93400da078931b2))
+
+
 ## 0.3.0 (2026-06-16)
 
 ### 📦 Dependencies
