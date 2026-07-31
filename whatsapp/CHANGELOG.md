@@ -3,17 +3,19 @@
 ## 1.8.1 (2026-07-31)
 
 ### ✨ Features
+
 - add translations (DE+EN) for sync_full_history, auto_install_integration, and github_token ([`fda5d0d4`](https://github.com/FaserF/hassio-addons/commit/fda5d0d4a7e4e1f532c1b13c0a91c0e997c682ae))
 - add optional sync_full_history config option ([`90cd2ed7`](https://github.com/FaserF/hassio-addons/commit/90cd2ed7e90d5a5b731b44c7e8c0d8be452aceb7))
 - add auto_install_integration toggle for whatsapp and dbf addons ([`e2a3dd03`](https://github.com/FaserF/hassio-addons/commit/e2a3dd038ffc29f4dc1707e218a11610ed82af39))
 
 ### 🐛 Bug Fixes
+
 - CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
 - fix check_contacts service #902 ([`57c5ef5d`](https://github.com/FaserF/hassio-addons/commit/57c5ef5db36c9533253219372b4f48afc95fe658))
 
 ### 📦 Dependencies
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
 
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
 
 ## 1.8.0 (2026-07-30)
 

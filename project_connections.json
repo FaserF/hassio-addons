@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-07-31T08:11:28.888408",
+  "timestamp": "2026-07-31T08:27:45.086858",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -212,7 +212,7 @@
     },
     "bentopdf": {
       "name": "BentoPDF",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "Self-hosted, privacy-first PDF toolkit",
       "arch": [
         "aarch64",
@@ -338,7 +338,7 @@
     },
     "netboot-xyz": {
       "name": "Netboot.xyz",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "description": "PXE-Server to deploy a OS inside your local network",
       "arch": [
         "aarch64",
@@ -362,7 +362,7 @@
     },
     "nginx": {
       "name": "NGINX",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "description": "Open Source Webserver with PHP and MariaDB.",
       "arch": [
         "aarch64",
@@ -391,7 +391,7 @@
     },
     "openssl": {
       "name": "OpenSSL",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "description": "Generate self-signed certificates",
       "arch": [
         "aarch64",
@@ -419,7 +419,7 @@
     },
     "planka": {
       "name": "Planka",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "description": "The elegant open source project tracking tool",
       "arch": [
         "aarch64",
@@ -446,7 +446,7 @@
     },
     "pterodactyl-panel": {
       "name": "pterodactyl Panel Gameserver",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "Open-Source Gameserver Management Panel",
       "arch": [
         "aarch64",
@@ -475,7 +475,7 @@
     },
     "pterodactyl-wings": {
       "name": "pterodactyl Wings Gameserver",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "description": "Open Source Gameserver",
       "arch": [
         "aarch64",
@@ -531,7 +531,7 @@
     },
     "switch_lan_play": {
       "name": "Switch LAN Play Client",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "description": "Nintendo Switch Lan Play -Client",
       "arch": [
         "amd64"
@@ -558,7 +558,7 @@
     },
     "switch_lan_play_server": {
       "name": "Switch LAN Play Server",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "description": "Nintendo Switch Lan Play -Server",
       "arch": [
         "amd64"
@@ -640,7 +640,7 @@
     },
     "tt-rss": {
       "name": "Tiny Tiny RSS",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "A web-based news feed (RSS/Atom) reader and aggregator",
       "arch": [
         "aarch64",
@@ -669,7 +669,7 @@
     },
     "whatsapp": {
       "name": "WhatsApp Home Assistant App",
-      "version": "1.8.0",
+      "version": "1.8.1",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": [
         "aarch64",
@@ -696,7 +696,7 @@
     },
     "wiki.js": {
       "name": "Wiki.JS",
-      "version": "3.5.0",
+      "version": "3.5.1",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": [
         "amd64"
@@ -724,7 +724,7 @@
     },
     "wiki.js3": {
       "name": "Wiki.JS (Version 3 - Alpha)",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "description": "The most powerful and extensible open source Wiki software (Version 3 - Alpha)",
       "arch": [],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
@@ -752,7 +752,7 @@
     },
     "wordpress": {
       "name": "Wordpress",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "The most popular publication platform on the Web.",
       "arch": [
         "aarch64",
