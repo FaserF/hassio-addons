@@ -126,6 +126,7 @@ reject_unauthorized: true
 
 > [!IMPORTANT]
 > **Full History Sync (`sync_full_history`):**
+>
 > - **Pairing-Only Limitation:** WhatsApp's Multi-Device protocol sends historical chat data **only once during initial QR code pairing**. Enabling `sync_full_history` on an already paired session will **not** retrieve historical messages retroactively.
 > - **How to sync history:** To sync chat history, set `sync_full_history: true`, reset the session (via `reset_session: true` or Web UI Session Reset), and scan the QR code again.
 > - **WhatsApp Multi-Device Limits:** Meta limits historical message transfer to secondary linked devices to approximately the last 2–4 weeks (or ~50–100 messages per chat). Default is `false`.
