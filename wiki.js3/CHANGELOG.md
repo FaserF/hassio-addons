@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1 (2026-07-31)
+
+### 🐛 Bug Fixes
+- CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
+
+
 ## 0.7.0 (2026-06-16)
 
 ### 🐛 Bug Fixes
