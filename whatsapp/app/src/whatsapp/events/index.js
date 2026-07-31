@@ -17,7 +17,7 @@ import {
   reply,
   runDiagnostic,
 } from '../actions.js';
-import { addLog, sessions } from '../../session.js';
+import { addLog, sessions, getAuthDir } from '../../session.js';
 
 import { resolvePollVotes } from './poll.js';
 import { registerAckListener } from './ack.js';
@@ -278,12 +278,14 @@ export function handleIncomingMessages(session) {
               const warnings = [];
 
               for (const [id, s] of sessions.entries()) {
-                if (!s.isConnected) {
+                const authDir = getAuthDir(id);
+                const hasCreds = fs.existsSync(path.join(authDir, 'creds.json'));
+                if (!s.isConnected && (hasCreds || s.sock || s.reconnectAttempts > 0)) {
                   const reason =
                     s.stats?.last_disconnect_reason || s.disconnectReason || 'Disconnected';
                   errors.push(`• *Session ${id}:* Disconnected (${reason})`);
                 }
-                if (s.passkeyDetected) {
+                if (s.passkeyDetected && hasCreds) {
                   errors.push(`• *Session ${id}:* Passkey restriction detected on phone`);
                 }
               }

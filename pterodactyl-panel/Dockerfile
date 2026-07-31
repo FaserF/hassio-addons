@@ -1,6 +1,6 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.1
 # hadolint ignore=DL3006
-FROM ${BUILD_FROM} as base
+FROM ${BUILD_FROM} AS base
 
 ENV PTERODACTYL_VERSION="v1.12.0"
 
@@ -54,7 +54,7 @@ RUN \
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
-FROM base as build
+FROM base AS build
 
 WORKDIR /var/www/html
 # Install build-only dependencies (not needed in production)
@@ -86,7 +86,7 @@ RUN \
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
-FROM base as production
+FROM base AS production
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 WORKDIR /var/www/html
