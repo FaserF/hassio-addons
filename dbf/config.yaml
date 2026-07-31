@@ -25,10 +25,12 @@ options:
   imprint_name: ""
   imprint_address: ""
   privacy_policy_url: ""
+  auto_install_integration: true
 schema:
   log_level: list(debug|info|warning|error|fatal)?
   workers: int?
   imprint_name: str?
   imprint_address: str?
   privacy_policy_url: str?
+  auto_install_integration: bool?
 image: ghcr.io/faserf/hassio-addons-dbf-{arch}

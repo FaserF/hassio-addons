@@ -213,6 +213,18 @@ bashio::log.debug "NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED}
 bashio::log.debug "HA_CONFIG_ROOT: ${HA_CONFIG_ROOT}"
 bashio::log.debug "INTEGRATION_DIR: ${INTEGRATION_DIR}"
 bashio::log.debug "API_TOKEN length: ${#API_TOKEN}"
+AUTO_INSTALL_INTEGRATION="true"
+if bashio::config.false 'auto_install_integration'; then
+    AUTO_INSTALL_INTEGRATION="false"
+fi
+export AUTO_INSTALL_INTEGRATION
+
+GITHUB_TOKEN=""
+if bashio::config.has_value 'github_token'; then
+    GITHUB_TOKEN=$(bashio::config 'github_token')
+fi
+export GITHUB_TOKEN
+bashio::log.debug "AUTO_INSTALL_INTEGRATION: ${AUTO_INSTALL_INTEGRATION}"
 bashio::log.debug "----------------------"
 
 # Function to compare semantic versions
@@ -332,109 +344,116 @@ else
     bashio::log.info "🔵 Stable channel detected."
 fi
 
-# Fetch Releases once
-bashio::log.info "Fetching release information..."
-RELEASES_JSON=$(curl -s -f -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-whatsapp/releases" || echo "[]")
-bashio::log.trace "GitHub Releases API response length: ${#RELEASES_JSON}"
-
-# Valid JSON check
-if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
-    bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
-    RELEASES_JSON="[]"
-fi
-
-# Determine Latest Versions based on channel
-TARGET_TAG=""
-if [ "$RELEASES_JSON" != "[]" ]; then
-    if [ "$CHANNEL" == "edge" ]; then
-        # Edge: Latest release (whether stable or beta)
-        TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
-    else
-        # Stable: Latest non-prerelease
-        TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
-    fi
-
-    # Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
-    if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
-        if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
-            fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
-            bashio::log.info "No stable release found, falling back to latest tag: $fallback"
-            TARGET_TAG="$fallback"
-        fi
-    fi
-fi
-
-
 # Manage Integration
-if [ ! -d "$INTEGRATION_DIR" ]; then
-    bashio::log.warning "Integration not found in $INTEGRATION_DIR"
-
-    if [ -n "$TARGET_TAG" ]; then
-        bashio::log.info "Target version (Initial Install): $TARGET_TAG"
-        install_integration "$TARGET_TAG" "false"
-    else
-        bashio::log.info "No releases found. Installing from Main branch..."
-        install_integration "" "false"
-    fi
+if [ "$AUTO_INSTALL_INTEGRATION" = "false" ]; then
+    bashio::log.info "Auto-installing/updating integration is disabled in configuration options."
 else
-    # Validate that the integration is actually FaserF's ha-whatsapp
-    IS_FASERF_INTEGRATION="false"
-    if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
-        if jq -e '(.codeowners // []) | contains(["@FaserF"]) or (.documentation // "" | contains("FaserF")) or (.issue_tracker // "" | contains("FaserF/ha-whatsapp"))' "$INTEGRATION_DIR/manifest.json" >/dev/null 2>&1; then
-            IS_FASERF_INTEGRATION="true"
+    # Fetch Releases once
+    bashio::log.info "Fetching release information..."
+    CURL_AUTH=()
+    if [ -n "${GITHUB_TOKEN:-}" ] && [ "$GITHUB_TOKEN" != "null" ]; then
+        CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
+    fi
+    RELEASES_JSON=$(curl -s -f "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-whatsapp/releases" || echo "[]")
+    bashio::log.trace "GitHub Releases API response length: ${#RELEASES_JSON}"
+
+    # Valid JSON check
+    if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' > /dev/null 2>&1; then
+        bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
+        RELEASES_JSON="[]"
+    fi
+
+    # Determine Latest Versions based on channel
+    TARGET_TAG=""
+    if [ "$RELEASES_JSON" != "[]" ]; then
+        if [ "$CHANNEL" == "edge" ]; then
+            # Edge: Latest release (whether stable or beta)
+            TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+        else
+            # Stable: Latest non-prerelease
+            TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
+        fi
+
+        # Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
+        if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
+            if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
+                fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
+                bashio::log.info "No stable release found, falling back to latest tag: $fallback"
+                TARGET_TAG="$fallback"
+            fi
         fi
     fi
 
-    if [ "$IS_FASERF_INTEGRATION" != "true" ]; then
-        bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-whatsapp (missing @FaserF codeowners / documentation / issue_tracker). Overwriting with official release..."
-        install_integration "$TARGET_TAG" "true"
-    else
-        bashio::log.info "✅ Official FaserF ha-whatsapp integration found at $INTEGRATION_DIR"
+    if [ ! -d "$INTEGRATION_DIR" ]; then
+        bashio::log.warning "Integration not found in $INTEGRATION_DIR"
 
-        # Export integration version for Node.js app
-        INTEGRATION_VERSION=$(jq -r '.version // "unknown"' "$INTEGRATION_DIR/manifest.json")
-        export INTEGRATION_VERSION
-        bashio::log.info "Integration Version: ${INTEGRATION_VERSION}"
-
-        bashio::log.info "Checking for updates..."
-
-        CURRENT_VERSION="$INTEGRATION_VERSION"
-        bashio::log.info "Current Version: $CURRENT_VERSION"
-
-        UPDATE_NEEDED="false"
-
-        # Comparison Logic
         if [ -n "$TARGET_TAG" ]; then
-             # We should compare full strings, but often manifests are 0.0.1 and tags are v0.0.1
-             # Let's normalize
-             curr=$(echo "$CURRENT_VERSION" | sed 's/^v//')
-             targ=$(echo "$TARGET_TAG" | sed 's/^v//')
-             bashio::log.debug "Normalized versions - Current: ${curr}, Target: ${targ}"
-
-             if [ "$curr" != "$targ" ]; then
-                 # If strings differ, check semantic
-                 if version_gt "$targ" "$curr"; then
-                     bashio::log.info "Update Available: $targ > $curr"
-                     UPDATE_NEEDED="true"
-                 else
-                     if version_gt "$curr" "$targ"; then
-                         bashio::log.info "Current version ($curr) is newer than target ($targ)."
-                     else
-                         bashio::log.info "Current version ($curr) is equal to target ($targ)."
-                     fi
-                 fi
-             else
-                 bashio::log.info "Current version ($curr) matches target ($targ)."
-             fi
-        elif [ "$RELEASES_JSON" != "[]" ]; then
-             bashio::log.warning "Could not determine target tag from GitHub releases."
+            bashio::log.info "Target version (Initial Install): $TARGET_TAG"
+            install_integration "$TARGET_TAG" "false"
+        else
+            bashio::log.info "No releases found. Installing from Main branch..."
+            install_integration "" "false"
+        fi
+    else
+        # Validate that the integration is actually FaserF's ha-whatsapp
+        IS_FASERF_INTEGRATION="false"
+        if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+            if jq -e '(.codeowners // []) | contains(["@FaserF"]) or (.documentation // "" | contains("FaserF")) or (.issue_tracker // "" | contains("FaserF/ha-whatsapp"))' "$INTEGRATION_DIR/manifest.json" >/dev/null 2>&1; then
+                IS_FASERF_INTEGRATION="true"
+            fi
         fi
 
-        if [ "$UPDATE_NEEDED" == "true" ]; then
-             bashio::log.info "⬆️  Auto-updating to $TARGET_TAG..."
-             install_integration "$TARGET_TAG" "true"
+        if [ "$IS_FASERF_INTEGRATION" != "true" ]; then
+            bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-whatsapp (missing @FaserF codeowners / documentation / issue_tracker). Overwriting with official release..."
+            install_integration "$TARGET_TAG" "true"
         else
-             bashio::log.info "✨ Integration is up to date."
+            bashio::log.info "✅ Official FaserF ha-whatsapp integration found at $INTEGRATION_DIR"
+
+            # Export integration version for Node.js app
+            INTEGRATION_VERSION=$(jq -r '.version // "unknown"' "$INTEGRATION_DIR/manifest.json")
+            export INTEGRATION_VERSION
+            bashio::log.info "Integration Version: ${INTEGRATION_VERSION}"
+
+            bashio::log.info "Checking for updates..."
+
+            CURRENT_VERSION="$INTEGRATION_VERSION"
+            bashio::log.info "Current Version: $CURRENT_VERSION"
+
+            UPDATE_NEEDED="false"
+
+            # Comparison Logic
+            if [ -n "$TARGET_TAG" ]; then
+                 # We should compare full strings, but often manifests are 0.0.1 and tags are v0.0.1
+                 # Let's normalize
+                 curr=$(echo "$CURRENT_VERSION" | sed 's/^v//')
+                 targ=$(echo "$TARGET_TAG" | sed 's/^v//')
+                 bashio::log.debug "Normalized versions - Current: ${curr}, Target: ${targ}"
+
+                 if [ "$curr" != "$targ" ]; then
+                     # If strings differ, check semantic
+                     if version_gt "$targ" "$curr"; then
+                         bashio::log.info "Update Available: $targ > $curr"
+                         UPDATE_NEEDED="true"
+                     else
+                         if version_gt "$curr" "$targ"; then
+                             bashio::log.info "Current version ($curr) is newer than target ($targ)."
+                         else
+                             bashio::log.info "Current version ($curr) is equal to target ($targ)."
+                         fi
+                     fi
+                 else
+                     bashio::log.info "Current version ($curr) matches target ($targ)."
+                 fi
+            elif [ "$RELEASES_JSON" != "[]" ]; then
+                 bashio::log.warning "Could not determine target tag from GitHub releases."
+            fi
+
+            if [ "$UPDATE_NEEDED" == "true" ]; then
+                 bashio::log.info "⬆️  Auto-updating to $TARGET_TAG..."
+                 install_integration "$TARGET_TAG" "true"
+            else
+                 bashio::log.info "✨ Integration is up to date."
+            fi
         fi
     fi
 fi

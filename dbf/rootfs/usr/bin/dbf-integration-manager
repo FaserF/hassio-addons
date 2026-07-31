@@ -4,6 +4,11 @@
 # Manages the installation and update of the DB Infoscreen Integration
 # ==============================================================================
 
+if bashio::config.false 'auto_install_integration'; then
+    bashio::log.info "Auto-installing/updating integration is disabled in configuration options."
+    exit 0
+fi
+
 if ! bashio::fs.directory_exists "/config" && ! bashio::fs.directory_exists "/homeassistant"; then
     bashio::log.error "Could not find Home Assistant configuration directory."
     exit 1

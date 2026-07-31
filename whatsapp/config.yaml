@@ -34,6 +34,8 @@ options:
   group_fetch_cooldown_on_error: 60000
   group_fetch_cooldown_on_rate_limit: 900000
   reject_unauthorized: true
+  auto_install_integration: true
+  github_token: ""
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
@@ -56,6 +58,8 @@ schema:
   group_fetch_cooldown_on_error: int
   group_fetch_cooldown_on_rate_limit: int
   reject_unauthorized: bool
+  auto_install_integration: bool
+  github_token: str?
 
 ports:
   8066/tcp: 8066
