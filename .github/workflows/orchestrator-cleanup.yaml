@@ -212,7 +212,7 @@ jobs:
             console.log("Starting GitHub Actions cache cleanup...");
             let deleted = 0;
             let page = 1;
-            
+
             while (true) {
               const { data: caches } = await github.rest.actions.getActionsCacheList({
                 owner: context.repo.owner,
@@ -239,4 +239,3 @@ jobs:
               page++;
             }
             console.log(`Cache cleanup complete! Deleted ${deleted} caches.`);
-

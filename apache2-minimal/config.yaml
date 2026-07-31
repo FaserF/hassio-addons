@@ -12,7 +12,7 @@ map:
   - ssl:rw
   - media:rw
   - share:rw
-  - config:rw
+  - homeassistant_config:rw
 ingress: true
 ingress_port: 80
 init: false

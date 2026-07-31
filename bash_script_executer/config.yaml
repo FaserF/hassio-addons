@@ -11,7 +11,7 @@ arch:
 image: ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}
 map:
   - share:rw
-  - config:rw
+  - homeassistant_config:rw
 init: false
 panel_icon: mdi:web-box
 options:

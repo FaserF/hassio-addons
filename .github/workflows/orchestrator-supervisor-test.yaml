@@ -287,7 +287,7 @@ jobs:
 
           # Authenticate internal Docker to GHCR without mounting host config
           echo "Authenticating internal Docker to GHCR..."
-          docker exec ha-supervisor-test sh -c "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin"
+          docker exec ha-supervisor-test sh -c "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin 2>/dev/null"
 
           # Verify container is actually running
           CONTAINER_STATUS="$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null || echo 'not found')"
@@ -319,13 +319,14 @@ jobs:
 
             # Prevent s6 shutdown from taking down dockerd or container
             [ -f /etc/s6-overlay/s6-rc.d/init-stage2/run ] && sed -i 's/shutdown/true/' /etc/s6-overlay/s6-rc.d/init-stage2/run 2>/dev/null || true
+            find /etc/s6-overlay -type f 2>/dev/null | xargs -r sed -i 's/s6-svscanctl -q/true # s6-svscanctl -q/g; s/s6-svscanctl -a/true # s6-svscanctl -a/g' || true
 
             # Prevent Docker daemon from being killed on service restart
             find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/Stopping Docker daemon/Skipping Docker daemon stop/g; s/kill .*dockerd.*/true/g; s/killall .*dockerd.*/true/g' || true
           "
 
           # Start Supervisor in background with output redirected to log file
-          docker exec -d ha-supervisor-test bash -c "nohup supervisor_run > /tmp/supervisor.log 2>&1 &"
+          docker exec -d ha-supervisor-test bash -c "nohup bash -c 'while true; do supervisor_run; sleep 2; done' > /tmp/supervisor.log 2>&1 &"
 
           echo "Waiting for Supervisor to be ready..."
           # Show the very first bootup logs in a group
