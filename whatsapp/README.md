@@ -103,6 +103,7 @@ message_send_interval: 1000
 reject_unauthorized: true
 reset_session: false
 send_message_timeout: 25000
+sync_full_history: false
 ui_auth_enabled: false
 ui_auth_password: ''
 webhook_enabled: false
