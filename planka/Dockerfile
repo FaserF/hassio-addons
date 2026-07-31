@@ -16,6 +16,12 @@ ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="1.4.1"
+ENV APP_NAME="Planka"
+ENV APP_SLUG="planka"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
