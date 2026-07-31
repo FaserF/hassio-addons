@@ -258,10 +258,46 @@ def categorize_commits(commits, repo_url, addon_slug=None):
         entry = f"{clean_msg} ({commit_link})"
 
         # Categorize
-        if any(x in msg_lower for x in ["feat:", "feat(", "add:", "new:", "added:", "new feat:", "feature"]):
+        if any(
+            x in msg_lower
+            for x in [
+                "feat:",
+                "feat(",
+                "feat ",
+                "add:",
+                "add ",
+                "added:",
+                "added ",
+                "adding ",
+                "addition",
+                "new:",
+                "new ",
+                "new feat:",
+                "feature",
+                "translation",
+                "translations",
+                "i18n",
+            ]
+        ):
             categories["✨ Features"].append(entry)
         elif any(
-            x in msg_lower for x in ["fix:", "fix(", "fixes", "bug:", "bugfix:", "fixed:", "bugfix(", "repair", "patch"]
+            x in msg_lower
+            for x in [
+                "fix:",
+                "fix(",
+                "fix ",
+                "fixes",
+                "fixed",
+                "fixing ",
+                "bug:",
+                "bugfix:",
+                "bugfix(",
+                "repair",
+                "patch",
+                "resolve",
+                "resolved",
+                "resolving",
+            ]
         ):
             categories["🐛 Bug Fixes"].append(entry)
         elif any(
