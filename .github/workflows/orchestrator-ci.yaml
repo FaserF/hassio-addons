@@ -287,6 +287,10 @@ jobs:
             else
               echo "⏭️ No lint script found in package.json, skipping."
             fi
+            if npm run | grep -q "test"; then
+              echo "🧪 Running npm test in $LINT_DIR"
+              npm test
+            fi
           else
             echo "⏭️ No package.json found, skipping ESLint."
           fi

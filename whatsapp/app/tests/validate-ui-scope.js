@@ -281,6 +281,69 @@ function checkDuplicateRoutes() {
 }
 
 // --------------------------------------------------------------------------
+// Test 5: Check Home Assistant API endpoints exist in backend Express routes
+// --------------------------------------------------------------------------
+function checkHAEndpoints() {
+  const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
+  const apiFiles = ['messaging.js', 'contacts.js', 'session.js', 'system.js', 'ui_api.js'];
+
+  const registeredRoutes = new Set();
+  for (const filename of apiFiles) {
+    const filepath = join(apiDir, filename);
+    if (!existsSync(filepath)) continue;
+    const content = readFileSync(filepath, 'utf8');
+    const routePattern = /app\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = routePattern.exec(content)) !== null) {
+      registeredRoutes.add(`${match[1].toUpperCase()} ${match[2]}`);
+    }
+  }
+
+  // List of endpoints expected by the Home Assistant integration (ha-whatsapp / api.py)
+  const expectedHAEndpoints = [
+    'GET /status',
+    'POST /session/start',
+    'DELETE /session',
+    'POST /session/pair',
+    'GET /qr',
+    'GET /stats',
+    'GET /health',
+    'POST /send_message',
+    'POST /send_image',
+    'POST /send_audio',
+    'POST /send_document',
+    'POST /send_video',
+    'POST /send_location',
+    'POST /send_contact',
+    'POST /send_event',
+    'POST /send_poll',
+    'POST /send_reaction',
+    'POST /send_list',
+    'POST /send_buttons',
+    'POST /revoke_message',
+    'POST /edit_message',
+    'POST /contacts/check',
+    'GET /contacts',
+    'GET /groups',
+    'GET /chats',
+    'POST /mark_as_read',
+    'POST /set_presence',
+  ];
+
+  for (const ep of expectedHAEndpoints) {
+    if (!registeredRoutes.has(ep)) {
+      error(
+        'routes/api',
+        0,
+        `Missing required API endpoint for Home Assistant integration: '${ep}'`
+      );
+    }
+  }
+
+  info(`API endpoint check complete (${expectedHAEndpoints.length} HA endpoints validated)`);
+}
+
+// --------------------------------------------------------------------------
 // Run all checks
 // --------------------------------------------------------------------------
 console.log('\n🔍 WhatsApp UI Scope & Reference Validation\n');
@@ -301,6 +364,9 @@ checkSyntax('chat.js');
 
 console.log('\n📋 Test 4: Duplicate Route Detection\n');
 checkDuplicateRoutes();
+
+console.log('\n📋 Test 5: Home Assistant Integration Endpoint Validation\n');
+checkHAEndpoints();
 
 console.log('\n' + '='.repeat(60));
 console.log(`\n📊 Results: ${errors} error(s), ${warnings} warning(s)\n`);

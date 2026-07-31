@@ -119,4 +119,67 @@ export function registerContactRoutes(app) {
       }
     })
   );
+
+  app.post(
+    '/contacts/check',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const formattedNumber = number.replace(/[^\d]/g, '');
+        const jid = getJid(formattedNumber);
+
+        // Check if number exists on WhatsApp using Baileys onWhatsApp
+        const result = await session.sock.onWhatsApp(jid);
+        const existsInfo = Array.isArray(result) && result.length > 0 ? result[0] : null;
+
+        if (!existsInfo || !existsInfo.exists) {
+          return res.json({
+            exists: false,
+            in_contacts: false,
+            name: null,
+            notify: null,
+            verified_name: null,
+            jid,
+            number: formattedNumber,
+          });
+        }
+
+        const targetJid = existsInfo.jid || jid;
+
+        // Check contacts cache
+        let cachedContact = session.contactCache?.get(targetJid);
+
+        // Try fuzzy lookup if exact match not found
+        if (!cachedContact && session.contactCache) {
+          const userPart = targetJid.split('@')[0];
+          for (const [cJid, contact] of session.contactCache.entries()) {
+            const cUser = cJid.split('@')[0];
+            if (cUser === userPart || cUser.slice(-10) === userPart.slice(-10)) {
+              cachedContact = contact;
+              break;
+            }
+          }
+        }
+
+        res.json({
+          exists: true,
+          in_contacts: !!cachedContact,
+          name: cachedContact?.name || null,
+          notify: cachedContact?.notify || null,
+          verified_name: cachedContact?.verifiedName || null,
+          jid: targetJid,
+          number: formattedNumber,
+        });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
 }

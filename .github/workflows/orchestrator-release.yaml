@@ -870,6 +870,9 @@ jobs:
 
              eval "$PYTHON_CMD"
           fi
+
+          # Re-inject updated version into Dockerfile after version bump
+          python3 .scripts/inject_version_warning.py "${{ matrix.App }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
