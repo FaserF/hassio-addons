@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.4.4 (2026-07-31)
+
+### ✨ Features
+- add detailed logging for supervisor discovery registration ([`23938877`](https://github.com/FaserF/hassio-addons/commit/23938877df652a091cf26d4f7f5e3d37f4e533e3))
+- trigger supervisor discovery for webserver_app during addon startup ([`bc5834be`](https://github.com/FaserF/hassio-addons/commit/bc5834be812484c75b0aae2deef4bc9e391b6f63))
+- add discovery key for webserver_app to webserver config.yaml files ([`0e554dc1`](https://github.com/FaserF/hassio-addons/commit/0e554dc1df72a9c693ff197cf25dcf784adaccff))
+
+### 🐛 Bug Fixes
+- CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
+- small fix for integration management ([`dc589881`](https://github.com/FaserF/hassio-addons/commit/dc589881ae3bfc7b0234759f816d2e42963559aa))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) [skip-tests] ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
+
+### 🚀 Other
+- replace deprecated map commands ([`13e55395`](https://github.com/FaserF/hassio-addons/commit/13e553958efef24d58296f33f9f9e3893ae8bcf2))
+
+
 ## 3.4.3 (2026-07-10)
 
 ### 📦 Dependencies
