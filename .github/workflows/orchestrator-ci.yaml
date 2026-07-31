@@ -506,20 +506,15 @@ jobs:
             echo "build_from=$BUILD_FROM"
           } >> "$GITHUB_OUTPUT"
 
-      - name: 🏗️ Build amd64 (CI optimized)
-        uses: home-assistant/builder/actions/build-image@2026.03.2
-        with:
-          arch: amd64
-          image: ${{ steps.prep.outputs.image }}
-          image-tags: latest
-          push: false
-          cosign: false
-          context: ./${{ matrix.App }}
-          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ steps.prep.outputs.version }}
-          build-args: |
-            BUILD_FROM=${{ steps.prep.outputs.build_from }}
-            GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
+      - name: 🏗️ Test Build amd64 (CI optimized)
+        run: |
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/data" \
+            ghcr.io/home-assistant/amd64-builder:2026.06.0 \
+            --amd64 \
+            --test \
+            --target "/data/${{ matrix.App }}"
 
       - name: ✅ Build Success
         run: echo "✅ amd64 build successful"

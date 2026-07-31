@@ -210,8 +210,8 @@ def categorize_commits(commits, repo_url, addon_slug=None):
         short_hash = commit["short_hash"]
         msg_lower = msg.lower()
 
-        # Skip merge commits and CI commits
-        if msg_lower.startswith("merge ") or "[skip ci]" in msg_lower:
+        # Skip merge commits
+        if msg_lower.startswith("merge "):
             continue
 
         # Skip release commits for this or other addons
@@ -246,6 +246,14 @@ def categorize_commits(commits, repo_url, addon_slug=None):
             msg,
             flags=re.IGNORECASE,
         )
+
+        # Remove skip flags (e.g. [skip-tests], [skip ci], [skip tests], [skip-ci]) from message text
+        clean_msg = re.sub(
+            r"\s*\[skip[\s-][^\]]+\]\s*",
+            " ",
+            clean_msg,
+            flags=re.IGNORECASE,
+        ).strip()
 
         # Make version references clickable
         version_match = re.search(r"(\d+\.\d+\.\d+)", clean_msg)

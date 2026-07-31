@@ -738,19 +738,14 @@ jobs:
 
       - name: 🏗️ Test Build
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: home-assistant/builder/actions/build-image@2026.03.2
-        with:
-          arch: amd64
-          image: ${{ steps.info.outputs.image }}
-          image-tags: latest
-          push: false
-          cosign: false
-          context: ./${{ matrix.App }}
-          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: test
-          build-args: |
-            GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
-            BUILD_VERSION=${{ steps.info.outputs.version }}
+        run: |
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/data" \
+            ghcr.io/home-assistant/amd64-builder:2026.06.0 \
+            --amd64 \
+            --test \
+            --target "/data/${{ matrix.App }}"
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -1170,45 +1165,23 @@ jobs:
             echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64"
           } >> "$GITHUB_ENV"
 
-      - name: 🏗️ Build amd64
-        if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'amd64')
-        uses: home-assistant/builder/actions/build-image@2026.03.2
-        env:
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-        with:
-          arch: amd64
-          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
-          image-tags: |
-             ${{ env.VERSION }}
-             latest
-          push: true
-          cosign: false
-          context: ./${{ matrix.App }}
-          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ env.VERSION }}
-          build-args: |
-             BUILD_FROM=${{ env.BUILD_FROM_AMD64 }}
-             GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
+      - name: 🏗️ Build and Push Addon Images
+        if: matrix.App != 'sap-abap-cloud-dev'
+        run: |
+          ARCH_FLAGS=""
+          if [[ "${ARCHS}" == *"amd64"* ]]; then ARCH_FLAGS="${ARCH_FLAGS} --amd64"; fi
+          if [[ "${ARCHS}" == *"aarch64"* || "${ARCHS}" == *"arm64"* ]]; then ARCH_FLAGS="${ARCH_FLAGS} --aarch64"; fi
+          if [ -z "$ARCH_FLAGS" ]; then ARCH_FLAGS="--amd64 --aarch64"; fi
 
-      - name: 🏗️ Build aarch64
-        if: matrix.App != 'sap-abap-cloud-dev' && contains(env.ARCHS, 'aarch64')
-        uses: home-assistant/builder/actions/build-image@2026.03.2
-        env:
-          DOCKER_DEFAULT_PLATFORM: linux/arm64
-        with:
-          arch: aarch64
-          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64
-          image-tags: |
-             ${{ env.VERSION }}
-             latest
-          push: true
-          cosign: false
-          context: ./${{ matrix.App }}
-          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ env.VERSION }}
-          build-args: |
-             BUILD_FROM=${{ env.BUILD_FROM_AARCH64 }}
-             GITHUB_TOKEN=${{ secrets.SOLUMATI_GITHUB_TOKEN }}
+          docker run --rm --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/data" \
+            ghcr.io/home-assistant/amd64-builder:2026.06.0 \
+            ${ARCH_FLAGS} \
+            --target "/data/${{ matrix.App }}" \
+            --image "ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-{arch}" \
+            --version "${{ env.VERSION }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}"
 
       - name: 📅 Get BUILD_DATE for Standalone WhatsApp
         if: matrix.App == 'whatsapp'
