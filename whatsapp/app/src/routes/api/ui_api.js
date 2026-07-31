@@ -57,6 +57,22 @@ export function registerUiApiRoutes(app) {
         }
       });
 
+      // Also incorporate chats from session.chatCache that might not have stored messages yet
+      if (session.chatCache) {
+        for (const jid of session.chatCache.keys()) {
+          if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) continue;
+          if (!JidMap[jid]) {
+            JidMap[jid] = {
+              jid,
+              name: jid.split('@')[0],
+              preview: '[No messages cached]',
+              timestamp: 0,
+              fromMe: false,
+            };
+          }
+        }
+      }
+
       // Resolve final display names synchronously (with async background cache enrichment)
       const chats = Object.values(JidMap)
         .map((c) => {

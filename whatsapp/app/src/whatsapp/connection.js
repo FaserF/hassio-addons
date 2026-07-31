@@ -23,6 +23,7 @@ const resolveDNSHost = async (url) => {
 import {
   KEEP_ALIVE_INTERVAL,
   MARK_ONLINE,
+  SYNC_FULL_HISTORY,
   NOTIFY_RESTORE_THRESHOLD,
   ADMIN_NOTIFICATIONS_ENABLED,
 } from '../config.js';
@@ -138,7 +139,7 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       version,
       logger: logger.child({ module: `baileys-${sessionId}` }, { level: baileysLogLevel }),
       browser: Browsers.ubuntu('Chrome'),
-      syncFullHistory: false,
+      syncFullHistory: SYNC_FULL_HISTORY,
       markOnlineOnConnect: MARK_ONLINE,
 
       keepAliveIntervalMs: KEEP_ALIVE_INTERVAL,

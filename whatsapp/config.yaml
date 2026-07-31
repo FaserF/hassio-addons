@@ -33,6 +33,7 @@ options:
   group_fetch_interval: 300000
   group_fetch_cooldown_on_error: 60000
   group_fetch_cooldown_on_rate_limit: 900000
+  sync_full_history: false
   reject_unauthorized: true
   auto_install_integration: true
   github_token: ""
@@ -49,6 +50,7 @@ schema:
   ui_auth_enabled: bool
   ui_auth_password: str?
   mark_online: bool
+  sync_full_history: bool
   media_folder: str?
   admin_numbers: str?
   welcome_message_enabled: bool

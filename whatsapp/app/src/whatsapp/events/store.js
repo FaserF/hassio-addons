@@ -33,6 +33,29 @@ export function bindStore(session, ev) {
     }
   });
 
+  ev.on('messaging-history.set', ({ chats, messages }) => {
+    if (chats) {
+      for (const chat of chats) {
+        if (chat.id) session.chatCache?.set(chat.id, true);
+      }
+    }
+    if (messages) {
+      for (const msg of messages) {
+        if (msg.key && msg.key.id) {
+          const hasContent = !!(msg.message || msg.editedMessage);
+          const existing = session.messageStore.get(msg.key.id);
+          const existingHasContent = !!(existing?.message || existing?.editedMessage);
+          if (hasContent || !existingHasContent) {
+            session.messageStore.set(msg.key.id, msg);
+          }
+          if (msg.key.remoteJid) {
+            session.chatCache?.set(msg.key.remoteJid, true);
+          }
+        }
+      }
+    }
+  });
+
   ev.on('chats.upsert', (chats) => {
     for (const chat of chats) {
       session.chatCache?.set(chat.id, true);

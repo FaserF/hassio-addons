@@ -117,6 +117,13 @@ else
     export MARK_ONLINE="false"
 fi
 
+# Sync Full History (Default false)
+if bashio::config.true 'sync_full_history'; then
+    export SYNC_FULL_HISTORY="true"
+else
+    export SYNC_FULL_HISTORY="false"
+fi
+
 # Admin Notifications (Default true)
 if bashio::config.false 'admin_notifications_enabled'; then
     export ADMIN_NOTIFICATIONS_ENABLED="false"
@@ -202,6 +209,7 @@ bashio::log.debug "WEBHOOK_ENABLED: ${WEBHOOK_ENABLED}"
 bashio::log.debug "WEBHOOK_URL: ${WEBHOOK_URL}"
 bashio::log.debug "UI_AUTH_ENABLED: ${UI_AUTH_ENABLED}"
 bashio::log.debug "MARK_ONLINE: ${MARK_ONLINE}"
+bashio::log.debug "SYNC_FULL_HISTORY: ${SYNC_FULL_HISTORY}"
 bashio::log.debug "ADMIN_NOTIFICATIONS_ENABLED: ${ADMIN_NOTIFICATIONS_ENABLED}"
 bashio::log.debug "WELCOME_MESSAGE_ENABLED: ${WELCOME_MESSAGE_ENABLED}"
 bashio::log.debug "MEDIA_FOLDER: ${MEDIA_FOLDER}"

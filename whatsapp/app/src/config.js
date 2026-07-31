@@ -95,6 +95,7 @@ export const MEDIA_RETENTION_DAYS = parseEnvInt('MEDIA_RETENTION_DAYS', 7);
 export const UI_AUTH_ENABLED = parseEnvBool('UI_AUTH_ENABLED', false);
 export const UI_AUTH_PASSWORD = getEnv('UI_AUTH_PASSWORD', '');
 export const MARK_ONLINE = parseEnvBool('MARK_ONLINE', false);
+export const SYNC_FULL_HISTORY = parseEnvBool('SYNC_FULL_HISTORY', false);
 export const SHOULD_RESET = parseEnvBool('RESET_SESSION', false);
 
 export const WELCOME_MESSAGE_ENABLED = parseEnvBool('WELCOME_MESSAGE_ENABLED', true);
@@ -145,6 +146,7 @@ logger.info(
     WELCOME_MESSAGE_ENABLED,
     ADMIN_NOTIFICATIONS_ENABLED,
     MARK_ONLINE,
+    SYNC_FULL_HISTORY,
     SHOULD_RESET,
     LOG_LEVEL: process.env.LOG_LEVEL,
     NODE_TLS_REJECT_UNAUTHORIZED: process.env.NODE_TLS_REJECT_UNAUTHORIZED,
