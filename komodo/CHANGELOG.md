@@ -3,11 +3,12 @@
 ## 0.2.2 (2026-08-01)
 
 ### 🐛 Bug Fixes
+
 - CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
 
 ### 📦 Dependencies
-- ⬆️ Update dependency moghtech/komodo to v2.3.1 ([`f667737a`](https://github.com/FaserF/hassio-addons/commit/f667737a7eed37dae1b7e37aafd538737b9ea5d2))
 
+- ⬆️ Update dependency moghtech/komodo to v2.3.1 ([`f667737a`](https://github.com/FaserF/hassio-addons/commit/f667737a7eed37dae1b7e37aafd538737b9ea5d2))
 
 ## 0.2.1 (2026-07-30)
 

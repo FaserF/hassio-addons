@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-01T15:55:56.612202",
+  "timestamp": "2026-08-01T22:39:56.730236",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -175,7 +175,7 @@
     {
       "slug": "er-dashboard",
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.3",
+      "version": "1.4.4",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": [
         "aarch64",
@@ -211,7 +211,7 @@
     {
       "slug": "komodo",
       "name": "Komodo",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "description": "A tool to build and deploy software on many servers",
       "arch": [
         "amd64"
