@@ -93,11 +93,30 @@ assert(resolvePollTitle({ name: 'Pizza or Burger?' }) === 'Pizza or Burger?', 'R
 assert(resolvePollTitle({ name: 'Name Title', question: 'Question Title' }) === 'Name Title', 'Prefers name if both name and question are provided');
 assert(resolvePollTitle({}) === undefined, 'Returns undefined if neither name nor question is provided');
 
+// Test 4: isAdmin Self-Message / LID Matching
+import { isAdmin } from '../src/utils/security.js';
+
+const mockLidSession = {
+  sock: {
+    user: { id: '123456789012345:2@lid', lid: '123456789012345:2@lid' },
+  },
+  stats: {
+    my_number: '491701234567',
+  },
+  contactCache: new Map([
+    ['491701234567@s.whatsapp.net', { id: '491701234567@s.whatsapp.net', lid: '123456789012345@lid' }],
+  ]),
+};
+
+assert(isAdmin('123456789012345@lid', mockLidSession) === true, 'isAdmin matches user LID');
+assert(isAdmin('491701234567@s.whatsapp.net', mockLidSession) === true, 'isAdmin matches self PN via stats and contactCache');
+assert(isAdmin('499999999999@s.whatsapp.net', mockLidSession) === false, 'isAdmin rejects non-admin number');
+
 console.log('='.repeat(50));
 if (failed) {
   console.error('❌ TESTS FAILED');
   process.exit(1);
 } else {
-  console.log('✅ ALL CONTACT CACHE & POLL TESTS PASSED\n');
+  console.log('✅ ALL TESTS PASSED\n');
   process.exit(0);
 }

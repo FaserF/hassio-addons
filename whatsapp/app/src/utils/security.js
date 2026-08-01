@@ -17,34 +17,74 @@ export function maskData(str) {
 export function isAdmin(jid, session = null) {
   if (!jid) return false;
 
-  // 0. Implicit Admin: If it's our own JID, we are always an admin
-  if (session?.sock?.user?.id) {
-    const myNormalizedJid = session.sock.user.id.replace(/:.*@/, '@');
-    const targetNormalizedJid = jid.replace(/:.*@/, '@');
+  const targetNormalizedJid = jid.replace(/:.*@/, '@');
+  const targetUser = targetNormalizedJid.split('@')[0];
+  const targetDigits = targetUser.replace(/\D/g, '');
 
-    // Strict Match
-    if (targetNormalizedJid === myNormalizedJid) return true;
+  // 0. Implicit Admin: If it's our own JID / account, we are always an admin
+  if (session?.sock?.user) {
+    const myUser = session.sock.user;
+    const myId = myUser.id ? myUser.id.replace(/:.*@/, '@') : '';
+    const myLid = myUser.lid ? myUser.lid.replace(/:.*@/, '@') : '';
 
-    // Cross-Format Match (PN vs LID) via session prefix
-    const myId = myNormalizedJid.split('@')[0];
-    const targetId = targetNormalizedJid.split('@')[0];
-    if (myId === targetId) return true;
+    // Direct match against user.id or user.lid
+    if (targetNormalizedJid === myId || (myLid && targetNormalizedJid === myLid)) {
+      return true;
+    }
+
+    const myIdUser = myId ? myId.split('@')[0] : '';
+    const myLidUser = myLid ? myLid.split('@')[0] : '';
+
+    if (myIdUser && targetUser === myIdUser) return true;
+    if (myLidUser && targetUser === myLidUser) return true;
+
+    // Check my_number from session stats
+    if (session.stats?.my_number) {
+      const myNumDigits = session.stats.my_number.replace(/\D/g, '');
+      if (myNumDigits && targetDigits) {
+        if (
+          myNumDigits === targetDigits ||
+          (myNumDigits.length >= 7 &&
+            targetDigits.length >= 7 &&
+            (myNumDigits.endsWith(targetDigits) || targetDigits.endsWith(myNumDigits)))
+        ) {
+          return true;
+        }
+      }
+    }
+
+    // Check contactCache for LID <-> PN mapping for our own account or target
+    if (session.contactCache) {
+      for (const contact of session.contactCache.values()) {
+        const cId = contact.id ? contact.id.replace(/:.*@/, '@') : '';
+        const cLid = contact.lid ? contact.lid.replace(/:.*@/, '@') : '';
+
+        const isSelfContact =
+          (myId && (cId === myId || cLid === myId)) ||
+          (myLid && (cId === myLid || cLid === myLid));
+
+        if (isSelfContact) {
+          if (
+            targetNormalizedJid === cId ||
+            (cLid && targetNormalizedJid === cLid) ||
+            targetUser === cId.split('@')[0] ||
+            (cLid && targetUser === cLid.split('@')[0])
+          ) {
+            return true;
+          }
+        }
+      }
+    }
   }
 
   const currentAdmins = ADMIN_NUMBERS;
   if (!currentAdmins || currentAdmins.length === 0) {
-    // One-time retry if list is empty (might be late config population)
     const refreshedAdmins = refreshAdminNumbers();
     if (refreshedAdmins.length > 0) return isAdmin(jid, session);
     return false;
   }
 
-  // 1. Extract pure sender number from JID
-  const numberPart = jid.split('@')[0];
-  const pureSender = numberPart.split(':')[0].replace(/\D/g, ''); // e.g. 491761234567
-
-  // Normalize sender (strip leading zeros)
-  let cleanSender = pureSender;
+  let cleanSender = targetDigits;
   if (cleanSender.startsWith('00')) cleanSender = cleanSender.substring(2);
   if (cleanSender.startsWith('0')) cleanSender = cleanSender.substring(1);
 
@@ -53,10 +93,8 @@ export function isAdmin(jid, session = null) {
     if (cleanAdmin.startsWith('00')) cleanAdmin = cleanAdmin.substring(2);
     if (cleanAdmin.startsWith('0')) cleanAdmin = cleanAdmin.substring(1);
 
-    // Exact match of normalized parts
     if (cleanSender === cleanAdmin) return true;
 
-    // Suffix match (handles one being local "176..." and other international "49176...")
     if (cleanSender.length >= 7 && cleanAdmin.length >= 7) {
       if (cleanSender.endsWith(cleanAdmin) || cleanAdmin.endsWith(cleanSender)) {
         return true;
