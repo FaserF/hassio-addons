@@ -1181,7 +1181,8 @@ jobs:
             --target "/data/${{ matrix.App }}" \
             --image "ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-{arch}" \
             --version "${{ env.VERSION }}" \
-            --token "${{ secrets.GITHUB_TOKEN }}"
+            --docker-user "${{ github.actor }}" \
+            --docker-password "${{ secrets.GITHUB_TOKEN }}"
 
       - name: 📅 Get BUILD_DATE for Standalone WhatsApp
         if: matrix.App == 'whatsapp'
