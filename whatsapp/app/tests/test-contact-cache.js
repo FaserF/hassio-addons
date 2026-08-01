@@ -82,11 +82,22 @@ assert(match2?.name === 'Bob', 'Matches national number format via suffix digit 
 const match3 = findContact('99999999999@s.whatsapp.net', testCache);
 assert(match3 === undefined, 'Returns undefined for unknown number');
 
+// Test 3: Poll Title Resolution (name vs question)
+function resolvePollTitle(body) {
+  const { name, question } = body;
+  return name || question;
+}
+
+assert(resolvePollTitle({ question: 'Pizza or Burger?' }) === 'Pizza or Burger?', 'Resolves poll title when question is provided');
+assert(resolvePollTitle({ name: 'Pizza or Burger?' }) === 'Pizza or Burger?', 'Resolves poll title when name is provided');
+assert(resolvePollTitle({ name: 'Name Title', question: 'Question Title' }) === 'Name Title', 'Prefers name if both name and question are provided');
+assert(resolvePollTitle({}) === undefined, 'Returns undefined if neither name nor question is provided');
+
 console.log('='.repeat(50));
 if (failed) {
   console.error('❌ TESTS FAILED');
   process.exit(1);
 } else {
-  console.log('✅ ALL CONTACT CACHE TESTS PASSED\n');
+  console.log('✅ ALL CONTACT CACHE & POLL TESTS PASSED\n');
   process.exit(0);
 }

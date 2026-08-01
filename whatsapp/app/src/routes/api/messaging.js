@@ -69,8 +69,9 @@ export function registerMessagingRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const { number, name, options, selectableCount } = req.body;
-        if (!number || !name || !options || !Array.isArray(options)) {
+        const { number, name, question, options, selectableCount } = req.body;
+        const pollTitle = name || question;
+        if (!number || !pollTitle || !options || !Array.isArray(options)) {
           return res.status(400).json({ detail: 'Missing number, name, or options array' });
         }
 
@@ -80,12 +81,12 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const sentMsg = await session.sock.sendMessage(jid, {
           poll: {
-            name,
+            name: pollTitle,
             values: options,
             selectableCount: selectableCount || 1,
           },
         });
-        trackSent(session, number, `[Poll] ${name}`);
+        trackSent(session, number, `[Poll] ${pollTitle}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
         res.status(500).json({ detail: err.message });
