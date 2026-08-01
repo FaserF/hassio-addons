@@ -190,7 +190,10 @@ export function saveContactCache(session) {
   try {
     const entries = Array.from(session.contactCache.entries());
     fs.writeFileSync(file, JSON.stringify(entries));
-    logger.debug({ sessionId: session.id, count: entries.length }, '💾 Contact cache saved to disk');
+    logger.debug(
+      { sessionId: session.id, count: entries.length },
+      '💾 Contact cache saved to disk'
+    );
   } catch (e) {
     logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save contact cache');
   }

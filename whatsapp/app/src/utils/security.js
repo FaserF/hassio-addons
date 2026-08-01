@@ -60,8 +60,7 @@ export function isAdmin(jid, session = null) {
         const cLid = contact.lid ? contact.lid.replace(/:.*@/, '@') : '';
 
         const isSelfContact =
-          (myId && (cId === myId || cLid === myId)) ||
-          (myLid && (cId === myLid || cLid === myLid));
+          (myId && (cId === myId || cLid === myId)) || (myLid && (cId === myLid || cLid === myLid));
 
         if (isSelfContact) {
           if (

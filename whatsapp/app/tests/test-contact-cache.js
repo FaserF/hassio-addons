@@ -19,7 +19,10 @@ const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-test-'));
 const mockSession = {
   id: 'test_session',
   contactCache: new Map([
-    ['554399998888@s.whatsapp.net', { id: '554399998888@s.whatsapp.net', name: 'John Doe', notify: 'John' }],
+    [
+      '554399998888@s.whatsapp.net',
+      { id: '554399998888@s.whatsapp.net', name: 'John Doe', notify: 'John' },
+    ],
     ['1234567890:1@s.whatsapp.net', { id: '1234567890:1@s.whatsapp.net', name: 'Jane Smith' }],
   ]),
 };
@@ -38,8 +41,14 @@ for (const [id, contact] of restoredEntries) {
 }
 
 assert(restoredSession.contactCache.size === 2, 'Contact cache restored all 2 entries');
-assert(restoredSession.contactCache.get('554399998888@s.whatsapp.net')?.name === 'John Doe', 'Restored John Doe');
-assert(restoredSession.contactCache.get('1234567890:1@s.whatsapp.net')?.name === 'Jane Smith', 'Restored Jane Smith');
+assert(
+  restoredSession.contactCache.get('554399998888@s.whatsapp.net')?.name === 'John Doe',
+  'Restored John Doe'
+);
+assert(
+  restoredSession.contactCache.get('1234567890:1@s.whatsapp.net')?.name === 'Jane Smith',
+  'Restored Jane Smith'
+);
 
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
@@ -74,7 +83,10 @@ function findContact(targetJid, contactCache) {
 }
 
 const match1 = findContact('554399998888@s.whatsapp.net', testCache);
-assert(match1?.name === 'Alice', 'Matches target JID without device suffix to contact with :0 suffix');
+assert(
+  match1?.name === 'Alice',
+  'Matches target JID without device suffix to contact with :0 suffix'
+);
 
 const match2 = findContact('01701234567@s.whatsapp.net', testCache);
 assert(match2?.name === 'Bob', 'Matches national number format via suffix digit matching');
@@ -88,10 +100,22 @@ function resolvePollTitle(body) {
   return name || question;
 }
 
-assert(resolvePollTitle({ question: 'Pizza or Burger?' }) === 'Pizza or Burger?', 'Resolves poll title when question is provided');
-assert(resolvePollTitle({ name: 'Pizza or Burger?' }) === 'Pizza or Burger?', 'Resolves poll title when name is provided');
-assert(resolvePollTitle({ name: 'Name Title', question: 'Question Title' }) === 'Name Title', 'Prefers name if both name and question are provided');
-assert(resolvePollTitle({}) === undefined, 'Returns undefined if neither name nor question is provided');
+assert(
+  resolvePollTitle({ question: 'Pizza or Burger?' }) === 'Pizza or Burger?',
+  'Resolves poll title when question is provided'
+);
+assert(
+  resolvePollTitle({ name: 'Pizza or Burger?' }) === 'Pizza or Burger?',
+  'Resolves poll title when name is provided'
+);
+assert(
+  resolvePollTitle({ name: 'Name Title', question: 'Question Title' }) === 'Name Title',
+  'Prefers name if both name and question are provided'
+);
+assert(
+  resolvePollTitle({}) === undefined,
+  'Returns undefined if neither name nor question is provided'
+);
 
 // Test 4: isAdmin Self-Message / LID Matching
 import { isAdmin } from '../src/utils/security.js';
@@ -104,13 +128,22 @@ const mockLidSession = {
     my_number: '491701234567',
   },
   contactCache: new Map([
-    ['491701234567@s.whatsapp.net', { id: '491701234567@s.whatsapp.net', lid: '123456789012345@lid' }],
+    [
+      '491701234567@s.whatsapp.net',
+      { id: '491701234567@s.whatsapp.net', lid: '123456789012345@lid' },
+    ],
   ]),
 };
 
 assert(isAdmin('123456789012345@lid', mockLidSession) === true, 'isAdmin matches user LID');
-assert(isAdmin('491701234567@s.whatsapp.net', mockLidSession) === true, 'isAdmin matches self PN via stats and contactCache');
-assert(isAdmin('499999999999@s.whatsapp.net', mockLidSession) === false, 'isAdmin rejects non-admin number');
+assert(
+  isAdmin('491701234567@s.whatsapp.net', mockLidSession) === true,
+  'isAdmin matches self PN via stats and contactCache'
+);
+assert(
+  isAdmin('499999999999@s.whatsapp.net', mockLidSession) === false,
+  'isAdmin rejects non-admin number'
+);
 
 console.log('='.repeat(50));
 if (failed) {

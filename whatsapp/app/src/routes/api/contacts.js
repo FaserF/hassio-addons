@@ -166,7 +166,8 @@ export function registerContactRoutes(app) {
               (cUserDigits && cUserDigits === targetUserDigits) ||
               (cUserDigits.length >= 7 &&
                 targetUserDigits.length >= 7 &&
-                (cUserDigits.endsWith(targetUserDigits) || targetUserDigits.endsWith(cUserDigits))) ||
+                (cUserDigits.endsWith(targetUserDigits) ||
+                  targetUserDigits.endsWith(cUserDigits))) ||
               (cUserDigits.length >= 10 &&
                 targetUserDigits.length >= 10 &&
                 cUserDigits.slice(-10) === targetUserDigits.slice(-10))
