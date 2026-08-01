@@ -158,10 +158,19 @@ export function registerContactRoutes(app) {
 
         // Try fuzzy lookup if exact match not found
         if (!cachedContact && session.contactCache) {
-          const userPart = targetJid.split('@')[0];
+          const targetUserDigits = targetJid.split('@')[0].split(':')[0].replace(/[^\d]/g, '');
           for (const [cJid, contact] of session.contactCache.entries()) {
-            const cUser = cJid.split('@')[0];
-            if (cUser === userPart || cUser.slice(-10) === userPart.slice(-10)) {
+            const cUserDigits = cJid.split('@')[0].split(':')[0].replace(/[^\d]/g, '');
+            if (
+              cJid === targetJid ||
+              (cUserDigits && cUserDigits === targetUserDigits) ||
+              (cUserDigits.length >= 7 &&
+                targetUserDigits.length >= 7 &&
+                (cUserDigits.endsWith(targetUserDigits) || targetUserDigits.endsWith(cUserDigits))) ||
+              (cUserDigits.length >= 10 &&
+                targetUserDigits.length >= 10 &&
+                cUserDigits.slice(-10) === targetUserDigits.slice(-10))
+            ) {
               cachedContact = contact;
               break;
             }

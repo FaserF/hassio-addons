@@ -1,3 +1,5 @@
+import { saveContactCache } from '../../session.js';
+
 export function bindStore(session, ev) {
   ev.on('messages.upsert', ({ messages }) => {
     for (const msg of messages) {
@@ -83,6 +85,7 @@ export function bindStore(session, ev) {
         session.contactCache?.set(contact.id, { ...existing, ...contact });
       }
     }
+    saveContactCache(session);
   });
 
   ev.on('contacts.upsert', (contacts) => {
@@ -92,6 +95,7 @@ export function bindStore(session, ev) {
         session.contactCache?.set(contact.id, { ...existing, ...contact });
       }
     }
+    saveContactCache(session);
   });
 
   ev.on('contacts.update', (updates) => {
@@ -101,5 +105,6 @@ export function bindStore(session, ev) {
         session.contactCache?.set(update.id, { ...existing, ...update });
       }
     }
+    saveContactCache(session);
   });
 }

@@ -103,10 +103,12 @@ export function getSession(rawSessionId) {
       },
     });
     loadMessageStore(sessions.get(sessionId));
+    loadContactCache(sessions.get(sessionId));
     // Start periodic save for this session
     const saveInterval = setInterval(
       () => {
         saveMessageStore(sessions.get(sessionId));
+        saveContactCache(sessions.get(sessionId));
       },
       5 * 60 * 1000
     ); // Every 5 minutes
@@ -175,6 +177,42 @@ export function loadMessageStore(session) {
       );
     } catch (e) {
       logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load message store');
+    }
+  }
+}
+
+/**
+ * Persists the contact cache to disk.
+ */
+export function saveContactCache(session) {
+  if (!session.contactCache) return;
+  const file = path.join(getAuthDir(session.id), 'contact_cache.json');
+  try {
+    const entries = Array.from(session.contactCache.entries());
+    fs.writeFileSync(file, JSON.stringify(entries));
+    logger.debug({ sessionId: session.id, count: entries.length }, '💾 Contact cache saved to disk');
+  } catch (e) {
+    logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save contact cache');
+  }
+}
+
+/**
+ * Loads the contact cache from disk.
+ */
+export function loadContactCache(session) {
+  const file = path.join(getAuthDir(session.id), 'contact_cache.json');
+  if (fs.existsSync(file)) {
+    try {
+      const entries = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      for (const [id, contact] of entries) {
+        session.contactCache.set(id, contact);
+      }
+      logger.info(
+        { sessionId: session.id, count: entries.length },
+        '📂 Contact cache loaded from disk'
+      );
+    } catch (e) {
+      logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load contact cache');
     }
   }
 }
