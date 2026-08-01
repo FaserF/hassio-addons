@@ -511,7 +511,7 @@ jobs:
           docker run --rm --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "${{ github.workspace }}:/data" \
-            ghcr.io/home-assistant/amd64-builder:2026.06.0 \
+            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
             --amd64 \
             --test \
             --target "/data/${{ matrix.App }}"
