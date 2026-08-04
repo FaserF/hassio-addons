@@ -222,7 +222,9 @@ export function registerContactRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const profilePictureUrl = await session.sock.profilePictureUrl(jid, 'image').catch(() => null);
+        const profilePictureUrl = await session.sock
+          .profilePictureUrl(jid, 'image')
+          .catch(() => null);
         res.json({ jid, profile_picture_url: profilePictureUrl });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -293,4 +295,3 @@ export function registerContactRoutes(app) {
     })
   );
 }
-

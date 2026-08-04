@@ -22,7 +22,11 @@ saveModerationStore(getDefaultModerationStore());
 try {
   // Test 1: Defaults
   const store = getDefaultModerationStore();
-  assert.strictEqual(store.global_enabled, false, 'Global moderation should be disabled by default');
+  assert.strictEqual(
+    store.global_enabled,
+    false,
+    'Global moderation should be disabled by default'
+  );
   console.log('✅ PASSED: Moderation is disabled by default');
 
   const groupConfig = getGroupModerationConfig('1203630123456789@g.us');
@@ -62,7 +66,11 @@ try {
 
   clearUserWarnings('1203630123456789@g.us', '491761234567');
   updatedConfig = getGroupModerationConfig('1203630123456789@g.us');
-  assert.strictEqual(updatedConfig.warnings.user_warns['491761234567'].length, 0, 'Warnings cleared');
+  assert.strictEqual(
+    updatedConfig.warnings.user_warns['491761234567'].length,
+    0,
+    'Warnings cleared'
+  );
   console.log('✅ PASSED: User warnings cleared successfully');
 
   // Test 3: Message Moderation Locks & Blacklist

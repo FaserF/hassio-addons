@@ -82,6 +82,7 @@ action:
 The WhatsApp Addon incorporates a full-featured group moderation and defender engine inspired by Telegram's **MissRose Bot** and **AegisBot**.
 
 ### Key Capabilities
+
 - **Disabled by Default**: The moderation engine is globally disabled by default. Enable it per-group or globally via the Addon Web UI.
 - **Group Rules & Agreement**: Define rules, automatically present rules on member joins.
 - **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`{user}`, `{group}`, `{rules}`), verification captchas (button/math), clean welcome.

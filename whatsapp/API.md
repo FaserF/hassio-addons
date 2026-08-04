@@ -349,96 +349,115 @@ Sends a VCard contact.
 ### 3.1 Group Management
 
 #### `POST /groups/create`
+
 Creates a new WhatsApp group.
 Payload: `{ "subject": "Family Chat", "participants": ["491701234567"] }`
 
 #### `GET /groups/info` / `POST /groups/info`
+
 Fetches group metadata (subject, owner, participants, settings).
 Payload: `{ "number": "120363040000000000@g.us" }`
 
 #### `POST /groups/participants/add` | `remove` | `promote` | `demote`
+
 Manage group participants.
 Payload: `{ "number": "120363040000000000@g.us", "participants": ["491701234567"] }`
 
 #### `POST /groups/leave`
+
 Leaves a group.
 Payload: `{ "number": "120363040000000000@g.us" }`
 
 #### `POST /groups/subject` & `POST /groups/description`
+
 Updates group subject or description.
 Payload: `{ "number": "120363040000000000@g.us", "subject": "New Name" }`
 
 #### `POST /groups/settings`
+
 Updates group settings (`announce` mode and `locked` info mode).
 Payload: `{ "number": "120363040000000000@g.us", "announce": true, "locked": true }`
 
 #### `GET /groups/invite_code` & `POST /groups/revoke_invite`
+
 Get or revoke group invite code/link.
 Payload: `{ "number": "120363040000000000@g.us" }`
 
 #### `POST /groups/join`
+
 Joins a group via invite code.
 Payload: `{ "code": "ABC123xyz..." }`
 
 ### 3.2 Contact & Profile Management
 
 #### `POST /contacts/profile_picture`
+
 Fetch contact or group profile picture URL.
 Payload: `{ "number": "1234567890" }`
 
 #### `POST /contacts/about`
+
 Fetch status/about message of contact.
 Payload: `{ "number": "1234567890" }`
 
 #### `POST /contacts/block` & `POST /contacts/unblock`
+
 Block or unblock a contact number.
 Payload: `{ "number": "1234567890" }`
 
 ### 3.3 Advanced Chat Actions
 
 #### `POST /star_message` & `POST /unstar_message`
+
 Star/unstar message by ID.
 Payload: `{ "number": "1234567890", "messageId": "BAE5..." }`
 
 #### `POST /pin_message` & `POST /unpin_message`
+
 Pin/unpin message in chat.
 Payload: `{ "number": "1234567890", "messageId": "BAE5...", "duration": 86400 }`
 
 #### `POST /forward_message`
+
 Forward message to target JID.
 Payload: `{ "number": "1234567890", "messageId": "BAE5...", "targetNumber": "491701234567" }`
 
 #### `POST /send_status`
+
 Post status/story to broadcast.
 Payload: `{ "message": "Good morning!", "url": "https://example.com/pic.jpg" }`
 
 #### `POST /chats/archive` & `POST /chats/unarchive`
+
 Archive or unarchive chat.
 Payload: `{ "number": "1234567890" }`
 
 #### `POST /chats/mute` & `POST /chats/unmute`
+
 Mute or unmute chat notifications.
 Payload: `{ "number": "1234567890", "durationMs": 28800000 }`
 
 ### 3.4 Channels (Newsletters) & Labels
 
 #### `GET /channels/info` / `POST /channels/info`
+
 Get metadata for a WhatsApp Channel (Newsletter) via JID or invite code.
 Payload: `{ "number": "120363000000000000@newsletter" }` or `{ "code": "0029Va..." }`
 
 #### `POST /channels/follow` & `POST /channels/unfollow`
+
 Follow or unfollow a WhatsApp Channel.
 Payload: `{ "number": "120363000000000000@newsletter" }`
 
 #### `POST /channels/mute` & `POST /channels/unmute`
+
 Mute or unmute a WhatsApp Channel.
 Payload: `{ "number": "120363000000000000@newsletter" }`
 
 #### `POST /labels/add_to_chat` & `POST /labels/remove_from_chat`
+
 Add or remove WhatsApp Business labels to/from a chat.
 Payload: `{ "number": "1234567890", "labelId": "1" }`
-
-
 
 ### 4. Native Commands
 
@@ -510,26 +529,33 @@ Healthcheck endpoint for Docker/Supervisor. No auth required.
 ### 🛡️ Moderation Endpoints (Rose & Aegis)
 
 #### `GET /api/moderation/config`
+
 Fetches global and group moderation configuration.
 
 #### `POST /api/moderation/config`
+
 Updates global moderation settings or specific group configuration.
 
 #### `POST /api/moderation/groups/:groupId/enable`
+
 Enables moderation engine for target group.
 
 #### `POST /api/moderation/groups/:groupId/disable`
+
 Disables moderation engine for target group.
 
 #### `POST /api/moderation/groups/:groupId/warn`
+
 Issues a warning to a user in group.
 
 #### `DELETE /api/moderation/groups/:groupId/warn/:userId`
+
 Clears active warnings for user.
 
 #### `POST /api/moderation/groups/:groupId/export`
+
 Exports group configuration as JSON (Rose / Aegis format).
 
 #### `POST /api/moderation/groups/:groupId/import`
-Imports Rose or AegisBot JSON configuration.
 
+Imports Rose or AegisBot JSON configuration.

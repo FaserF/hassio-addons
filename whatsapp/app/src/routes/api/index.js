@@ -17,6 +17,3 @@ export function registerAPIRoutes(app) {
   registerUiApiRoutes(app);
   registerModerationRoutes(app);
 }
-
-
-

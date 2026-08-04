@@ -548,9 +548,7 @@ export function registerMessagingRoutes(app) {
         const session = getReqSession(req);
         const { number, messageId, targetNumber } = req.body;
         if (!number || !messageId || !targetNumber) {
-          return res
-            .status(400)
-            .json({ detail: 'Missing number, messageId, or targetNumber' });
+          return res.status(400).json({ detail: 'Missing number, messageId, or targetNumber' });
         }
 
         const connected = await ensureConnected(session);
@@ -686,4 +684,3 @@ export function registerMessagingRoutes(app) {
     })
   );
 }
-

@@ -13,14 +13,21 @@ function getWindowKey(groupId, userId) {
 }
 
 export async function executePenalty(session, groupId, userId, action, reason = '') {
-  logger.info(`🛡️ Executing moderation penalty [${action}] on ${userId} in ${groupId}. Reason: ${reason}`);
+  logger.info(
+    `🛡️ Executing moderation penalty [${action}] on ${userId} in ${groupId}. Reason: ${reason}`
+  );
 
   try {
     if (action === 'delete') {
       // Deletion is handled per message key in message handler
       return;
     } else if (action === 'warn') {
-      await issueUserWarning(session, groupId, userId, reason || 'Violation of group moderation rules');
+      await issueUserWarning(
+        session,
+        groupId,
+        userId,
+        reason || 'Violation of group moderation rules'
+      );
     } else if (action === 'mute') {
       // Mute user or restrict group send permissions via Baileys if supported
       await reply(session, groupId, {
@@ -74,7 +81,13 @@ export async function issueUserWarning(session, groupId, userId, reason) {
       text: `🚨 @${userId} reached maximum warnings (${maxWarns})! Executing penalty: *${warnConfig.action}*`,
       mentions: [`${userId}@s.whatsapp.net`],
     });
-    await executePenalty(session, groupId, userId, warnConfig.action, `Exceeded max warnings (${maxWarns})`);
+    await executePenalty(
+      session,
+      groupId,
+      userId,
+      warnConfig.action,
+      `Exceeded max warnings (${maxWarns})`
+    );
     // Reset warnings after penalty
     config.warnings.user_warns[userId] = [];
     store.groups[groupId] = config;
@@ -163,7 +176,10 @@ export async function handleModerationMessage(session, event) {
   if (event.media_type === 'document' && (await triggerLock('document', 'Documents'))) return true;
   if (event.media_type === 'sticker' && (await triggerLock('sticker', 'Stickers'))) return true;
 
-  if (locks.url?.enabled && (text.includes('http://') || text.includes('https://') || text.includes('www.'))) {
+  if (
+    locks.url?.enabled &&
+    (text.includes('http://') || text.includes('https://') || text.includes('www.'))
+  ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
   if (locks.invite?.enabled && text.includes('chat.whatsapp.com/')) {
@@ -228,7 +244,13 @@ export async function handleModerationMessage(session, event) {
     userFloodMap.set(key, timestamps);
 
     if (timestamps.length > (floodConfig.max_messages || 5)) {
-      await executePenalty(session, groupId, userId, floodConfig.action || 'mute', 'Message flood rate exceeded');
+      await executePenalty(
+        session,
+        groupId,
+        userId,
+        floodConfig.action || 'mute',
+        'Message flood rate exceeded'
+      );
       userFloodMap.set(key, []);
       return true;
     }
@@ -331,7 +353,13 @@ export async function handleModerationParticipantUpdate(session, update) {
       if (config.federation_id) {
         const fed = store.federations.find((f) => f.id === config.federation_id);
         if (fed && fed.banned_users.includes(userId)) {
-          await executePenalty(session, groupId, userId, 'ban', 'Banned in Aegis Federation cluster');
+          await executePenalty(
+            session,
+            groupId,
+            userId,
+            'ban',
+            'Banned in Aegis Federation cluster'
+          );
           continue;
         }
       }

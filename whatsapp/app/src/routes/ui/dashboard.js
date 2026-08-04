@@ -830,7 +830,17 @@ function selectModerationGroup(groupId) {
   }
 
   // Locks
-  const lockKeys = ['image', 'video', 'audio', 'document', 'sticker', 'url', 'invite', 'poll', 'rtl'];
+  const lockKeys = [
+    'image',
+    'video',
+    'audio',
+    'document',
+    'sticker',
+    'url',
+    'invite',
+    'poll',
+    'rtl',
+  ];
   lockKeys.forEach((key) => {
     const el = document.getElementById(`mod-lock-${key}`);
     if (el) el.checked = Boolean(config.locks?.[key]?.enabled);
@@ -839,7 +849,9 @@ function selectModerationGroup(groupId) {
 
 async function toggleGroupModeration(enabled) {
   if (!currentModGroup) return;
-  const url = basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/${enabled ? 'enable' : 'disable'}`;
+  const url =
+    basePath +
+    `api/moderation/groups/${encodeURIComponent(currentModGroup)}/${enabled ? 'enable' : 'disable'}`;
   try {
     const res = await fetch(url, { method: 'POST' });
     if (res.ok) {
@@ -880,7 +892,8 @@ async function saveGroupGreetings() {
     goodbye_message: document.getElementById('mod-goodbye-msg')?.value || '',
     captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
     captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'button',
-    captcha_timeout_seconds: parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+    captcha_timeout_seconds:
+      parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
   };
   await saveGroupConfig(groupConfig);
   showToast('Greetings & Captcha saved!', 'success');
@@ -901,7 +914,17 @@ async function saveGroupWarnings() {
 async function saveGroupLocks() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  const lockKeys = ['image', 'video', 'audio', 'document', 'sticker', 'url', 'invite', 'poll', 'rtl'];
+  const lockKeys = [
+    'image',
+    'video',
+    'audio',
+    'document',
+    'sticker',
+    'url',
+    'invite',
+    'poll',
+    'rtl',
+  ];
   groupConfig.locks = groupConfig.locks || {};
   lockKeys.forEach((k) => {
     const el = document.getElementById(`mod-lock-${k}`);
@@ -992,7 +1015,9 @@ async function saveGroupAiConfig() {
   groupConfig.ai = {
     enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
     faq_auto_reply: Boolean(document.getElementById('mod-ai-faq')?.checked),
-    system_prompt: document.getElementById('mod-ai-prompt')?.value || 'You are a helpful group moderator AI assistant.',
+    system_prompt:
+      document.getElementById('mod-ai-prompt')?.value ||
+      'You are a helpful group moderator AI assistant.',
   };
   await saveGroupConfig(groupConfig);
   showToast('AI Config saved!', 'success');
@@ -1016,9 +1041,12 @@ async function saveGroupConfig(groupConfig) {
 async function exportGroupModerationConfig() {
   if (!currentModGroup) return showToast('Please select a group first', 'warning');
   try {
-    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/export`, {
-      method: 'POST',
-    });
+    const res = await fetch(
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/export`,
+      {
+        method: 'POST',
+      }
+    );
     if (!res.ok) return;
     const json = await res.json();
     const str = JSON.stringify(json.data, null, 2);
@@ -1041,11 +1069,14 @@ async function importGroupModerationConfig() {
 
   try {
     const data = JSON.parse(txt);
-    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/import`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+    const res = await fetch(
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/import`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }
+    );
     if (res.ok) {
       showToast('Config imported successfully!', 'success');
       loadModerationConfig();
@@ -1060,9 +1091,13 @@ async function importGroupModerationConfig() {
 async function clearUserWarnInUi(userId) {
   if (!currentModGroup || !userId) return;
   try {
-    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/warn/${encodeURIComponent(userId)}`, {
-      method: 'DELETE',
-    });
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/warn/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
     if (res.ok) {
       showToast(`Warnings cleared for @${userId}`, 'success');
       loadModerationConfig();
@@ -1104,4 +1139,3 @@ window.saveGroupAiConfig = saveGroupAiConfig;
 window.exportGroupModerationConfig = exportGroupModerationConfig;
 window.importGroupModerationConfig = importGroupModerationConfig;
 window.clearUserWarnInUi = clearUserWarnInUi;
-

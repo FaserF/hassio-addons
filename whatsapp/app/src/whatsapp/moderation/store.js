@@ -93,7 +93,10 @@ export function loadModerationStore() {
       return storeMemory;
     }
   } catch (err) {
-    logger.error({ error: err.message }, '⚠️ Failed to read moderation_config.json, using defaults.');
+    logger.error(
+      { error: err.message },
+      '⚠️ Failed to read moderation_config.json, using defaults.'
+    );
   }
 
   storeMemory = getDefaultModerationStore();

@@ -11,10 +11,17 @@ export function registerGroupRoutes(app) {
       try {
         const session = getReqSession(req);
         const { subject, participants } = req.body;
-        if (!subject || !participants || !Array.isArray(participants) || participants.length === 0) {
+        if (
+          !subject ||
+          !participants ||
+          !Array.isArray(participants) ||
+          participants.length === 0
+        ) {
           return res
             .status(400)
-            .json({ detail: 'Missing subject or participants array (at least 1 participant required)' });
+            .json({
+              detail: 'Missing subject or participants array (at least 1 participant required)',
+            });
         }
 
         const connected = await ensureConnected(session);
@@ -66,7 +73,11 @@ export function registerGroupRoutes(app) {
 
         const jid = getJid(number);
         const formattedParticipants = participants.map((p) => getJid(p));
-        const result = await session.sock.groupParticipantsUpdate(jid, formattedParticipants, 'add');
+        const result = await session.sock.groupParticipantsUpdate(
+          jid,
+          formattedParticipants,
+          'add'
+        );
         res.json({ status: 'updated', result });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -186,7 +197,8 @@ export function registerGroupRoutes(app) {
       try {
         const session = getReqSession(req);
         const { number, subject } = req.body;
-        if (!number || !subject) return res.status(400).json({ detail: 'Missing number or subject' });
+        if (!number || !subject)
+          return res.status(400).json({ detail: 'Missing number or subject' });
 
         const connected = await ensureConnected(session);
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
