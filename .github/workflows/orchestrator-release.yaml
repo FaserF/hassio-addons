@@ -738,16 +738,16 @@ jobs:
 
       - name: 🏗️ Test Build
         if: matrix.App != 'sap-abap-cloud-dev'
-        run: |
-          docker run --rm --privileged \
-            -e DOCKER_USERNAME="" \
-            -e DOCKER_PASSWORD="" \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${{ github.workspace }}:/data" \
-            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
-            --amd64 \
-            --test \
-            --target "/data/${{ matrix.App }}"
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.App }}
+          file: ./${{ matrix.App }}/Dockerfile
+          platforms: linux/amd64
+          push: false
+          build-args: |
+            BUILD_ARCH=amd64
+          cache-from: type=gha,scope=${{ matrix.App }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.App }}
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -1169,22 +1169,19 @@ jobs:
 
       - name: 🏗️ Build and Push Addon Images
         if: matrix.App != 'sap-abap-cloud-dev'
-        run: |
-          ARCH_FLAGS=""
-          if [[ "${ARCHS}" == *"amd64"* ]]; then ARCH_FLAGS="${ARCH_FLAGS} --amd64"; fi
-          if [[ "${ARCHS}" == *"aarch64"* || "${ARCHS}" == *"arm64"* ]]; then ARCH_FLAGS="${ARCH_FLAGS} --aarch64"; fi
-          if [ -z "$ARCH_FLAGS" ]; then ARCH_FLAGS="--amd64 --aarch64"; fi
-
-          docker run --rm --privileged \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${{ github.workspace }}:/data" \
-            ghcr.io/home-assistant/amd64-builder:2026.03.2 \
-            ${ARCH_FLAGS} \
-            --target "/data/${{ matrix.App }}" \
-            --image "ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-{arch}" \
-            --version "${{ env.VERSION }}" \
-            --docker-user "${{ github.actor }}" \
-            --docker-password "${{ secrets.GITHUB_TOKEN }}"
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.App }}
+          file: ./${{ matrix.App }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64:${{ env.VERSION }}
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64:${{ env.VERSION }}
+          build-args: |
+            BUILD_ARCH=${{ matrix.App }}
+          cache-from: type=gha,scope=${{ matrix.App }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.App }}
 
       - name: 📅 Get BUILD_DATE for Standalone WhatsApp
         if: matrix.App == 'whatsapp'
