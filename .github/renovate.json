@@ -6,10 +6,7 @@
   "dependencyDashboard": true,
   "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
-  "allowedCommands": [
-    "^python3 \\.scripts/bump_version\\.py .*",
-    "^bash \\.github/scripts/update-checksums\\.sh .*"
-  ],
+
   "ignorePaths": [
     ".unsupported/sap-abap-cloud-dev/**"
   ],
@@ -363,51 +360,24 @@
       "automerge": false
     },
     {
-      "description": "Solumati - auto-update checksums via postUpgradeTasks",
+      "description": "Solumati - automerge enabled",
       "matchDepNames": ["FaserF/Solumati"],
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh solumati {{{newVersion}}}"
-        ],
-        "fileFilters": ["solumati/Dockerfile"],
-        "executionMode": "branch"
-      }
+      "automerge": true
     },
     {
-      "description": "Netboot.xyz - auto-update checksums",
+      "description": "Netboot.xyz - automerge enabled",
       "matchDepNames": ["netbootxyz/webapp"],
-      "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh netboot-xyz {{{newVersion}}}"
-        ],
-        "fileFilters": ["netboot-xyz/Dockerfile"],
-        "executionMode": "branch"
-      }
+      "automerge": true
     },
     {
-      "description": "Pterodactyl Wings - automerge enabled and update checksums",
+      "description": "Pterodactyl Wings - automerge enabled",
       "matchDepNames": ["pterodactyl/wings"],
-      "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh pterodactyl-wings {{{newVersion}}}"
-        ],
-        "fileFilters": ["pterodactyl-wings/Dockerfile"],
-        "executionMode": "branch"
-      }
+      "automerge": true
     },
     {
-      "description": "Matterbridge - auto-update checksums via postUpgradeTasks",
+      "description": "Matterbridge - automerge enabled",
       "matchDepNames": ["42wim/matterbridge"],
-      "automerge": true,
-      "postUpgradeTasks": {
-        "commands": [
-          "bash .github/scripts/update-checksums.sh matterbridge {{{newVersion}}}"
-        ],
-        "fileFilters": ["matterbridge/Dockerfile"],
-        "executionMode": "branch"
-      }
+      "automerge": true
     },
     {
       "description": "Allow pre-releases for Wiki.js V3",

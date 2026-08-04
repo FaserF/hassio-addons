@@ -7,6 +7,8 @@
 #   - pterodactyl-wings: Downloads binaries from GitHub releases and computes checksums
 #   - matterbridge: Downloads source tarball and computes checksum
 #   - netboot-xyz: Downloads source tarball and computes checksum for WebApp
+#   - solumati: Downloads source tarball and computes checksum
+#   - wordpress: Fetches official sha256 or downloads tarball and computes checksum
 
 set -euo pipefail
 
@@ -126,6 +128,32 @@ update_solumati() {
 	log "Updated $dockerfile with new checksum"
 }
 
+update_wordpress() {
+	local version="$1"
+	local dockerfile="wordpress/Dockerfile"
+
+	log "Fetching checksum for WordPress/WordPress $version..."
+
+	# Download official WordPress release tarball sha256 or compute it
+	local checksum
+	checksum=$(curl -sL "https://wordpress.org/wordpress-${version}.tar.gz.sha256" | cut -d' ' -f1 || true)
+	if [[ -z "$checksum" || "$checksum" == *"Not Found"* || ${#checksum} -ne 64 ]]; then
+		checksum=$(curl -sL "https://wordpress.org/wordpress-${version}.tar.gz" | sha256sum | cut -d' ' -f1)
+	fi
+
+	if [[ -z "$checksum" || "$checksum" == *"Not Found"* ]]; then
+		log "ERROR: Failed to download source tarball or sha256 for WordPress $version"
+		exit 1
+	fi
+
+	log "Source checksum: $checksum"
+
+	# Update Dockerfile checksum line
+	sed -i -E "s/echo \"[a-f0-9]{64}  \/tmp\/wordpress\.tar\.gz\"/echo \"${checksum}  \/tmp\/wordpress.tar.gz\"/" "$dockerfile"
+
+	log "Updated $dockerfile with new checksum"
+}
+
 case "$PACKAGE" in
 pterodactyl-wings | pterodactyl/wings)
 	update_pterodactyl_wings "$VERSION"
@@ -139,9 +167,12 @@ netboot-xyz | netbootxyz/webapp)
 solumati | FaserF/Solumati)
 	update_solumati "$VERSION"
 	;;
+wordpress | WordPress/WordPress)
+	update_wordpress "$VERSION"
+	;;
 *)
 	log "Unknown package: $PACKAGE"
-	log "Supported packages: pterodactyl-wings, matterbridge"
+	log "Supported packages: pterodactyl-wings, matterbridge, netboot-xyz, solumati, wordpress"
 	exit 1
 	;;
 esac

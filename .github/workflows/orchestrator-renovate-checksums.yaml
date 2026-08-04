@@ -13,6 +13,7 @@ on:
       - "matterbridge/Dockerfile"
       - "netboot-xyz/Dockerfile"
       - "solumati/Dockerfile"
+      - "wordpress/Dockerfile"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -60,6 +61,9 @@ jobs:
           elif echo "$CHANGED_FILES" | grep -q "solumati/Dockerfile"; then
             ADDON="solumati"
             VERSION=$(grep -oP 'ARG SOLUMATI_VERSION=\K(.+?)(?=\s|$)' solumati/Dockerfile || true)
+          elif echo "$CHANGED_FILES" | grep -q "wordpress/Dockerfile"; then
+            ADDON="wordpress"
+            VERSION=$(grep -oP 'ARG WORDPRESS_VERSION=\K(.+?)(?=\s|$)' wordpress/Dockerfile || true)
           fi
 
           echo "addon=$ADDON" >> "$GITHUB_OUTPUT"
