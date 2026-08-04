@@ -25,7 +25,8 @@ RUN \
         sudo \
     && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
        gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor \
-    && echo "deb [ arch=amd64 trusted=yes ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
+    && ARCH=$(dpkg --print-architecture) \
+    && echo "deb [ arch=${ARCH} trusted=yes ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
        tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
     && apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticated=true -o Dir::Bin::sqv="" \
     && apt-get install -y --no-install-recommends --allow-unauthenticated \
