@@ -247,14 +247,14 @@ function checkSyntax(filename) {
 // --------------------------------------------------------------------------
 function checkDuplicateRoutes() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'session.js', 'system.js', 'ui_api.js'];
 
   for (const filename of apiFiles) {
     const filepath = join(apiDir, filename);
     if (!existsSync(filepath)) continue;
 
     const content = readFileSync(filepath, 'utf8');
-    const routePattern = /app\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g;
+    const routePattern = /app\.(get|post|put|delete|patch|all)\s*\(\s*['"]([^'"]+)['"]/g;
     const routes = new Map();
 
     let match;
@@ -285,17 +285,24 @@ function checkDuplicateRoutes() {
 // --------------------------------------------------------------------------
 function checkHAEndpoints() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'session.js', 'system.js', 'ui_api.js'];
 
   const registeredRoutes = new Set();
   for (const filename of apiFiles) {
     const filepath = join(apiDir, filename);
     if (!existsSync(filepath)) continue;
     const content = readFileSync(filepath, 'utf8');
-    const routePattern = /app\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g;
+    const routePattern = /app\.(get|post|put|delete|patch|all)\s*\(\s*['"]([^'"]+)['"]/g;
     let match;
     while ((match = routePattern.exec(content)) !== null) {
-      registeredRoutes.add(`${match[1].toUpperCase()} ${match[2]}`);
+      const method = match[1].toUpperCase();
+      const path = match[2];
+      if (method === 'ALL') {
+        registeredRoutes.add(`GET ${path}`);
+        registeredRoutes.add(`POST ${path}`);
+      } else {
+        registeredRoutes.add(`${method} ${path}`);
+      }
     }
   }
 
@@ -328,6 +335,33 @@ function checkHAEndpoints() {
     'GET /chats',
     'POST /mark_as_read',
     'POST /set_presence',
+    'POST /groups/create',
+    'POST /groups/info',
+    'POST /groups/participants/add',
+    'POST /groups/participants/remove',
+    'POST /groups/participants/promote',
+    'POST /groups/participants/demote',
+    'POST /groups/leave',
+    'POST /groups/subject',
+    'POST /groups/description',
+    'POST /groups/settings',
+    'POST /groups/invite_code',
+    'POST /groups/revoke_invite',
+    'POST /groups/join',
+    'POST /contacts/profile_picture',
+    'POST /contacts/about',
+    'POST /contacts/block',
+    'POST /contacts/unblock',
+    'POST /star_message',
+    'POST /unstar_message',
+    'POST /pin_message',
+    'POST /unpin_message',
+    'POST /forward_message',
+    'POST /send_status',
+    'POST /chats/archive',
+    'POST /chats/unarchive',
+    'POST /chats/mute',
+    'POST /chats/unmute',
   ];
 
   for (const ep of expectedHAEndpoints) {
@@ -342,6 +376,7 @@ function checkHAEndpoints() {
 
   info(`API endpoint check complete (${expectedHAEndpoints.length} HA endpoints validated)`);
 }
+
 
 // --------------------------------------------------------------------------
 // Run all checks
