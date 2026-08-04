@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.2 (2026-08-04)
+
+### 🐛 Bug Fixes
+- resolve self-sent messages via LID, PN, stats, and contactCache (FaserF/ha-whatsapp#80) ([`7d42a5a8`](https://github.com/FaserF/hassio-addons/commit/7d42a5a86b05705d2970325d5cd866a21a9fa4bf))
+- support question and name parameters in send_poll (FaserF/ha-whatsapp#81) ([`015e0367`](https://github.com/FaserF/hassio-addons/commit/015e03679ae92e0b0d0b97d3a05b92693c33d7fb))
+- persist contact cache to disk and improve check_number matching (#902) ([`72720e78`](https://github.com/FaserF/hassio-addons/commit/72720e7805b5e35585a32db2f8aac622012a0860))
+
+### 📦 Dependencies
+- build(deps): bump ip-address from 10.2.0 to 10.4.0 in /whatsapp/app in the npm_and_yarn group across 1 directory (#952) ([`bc7cc6e8`](https://github.com/FaserF/hassio-addons/commit/bc7cc6e86b9f12bc384b47d69ae4d67f92d0ba4f))
+- ⬆️ Update dependency globals to v17.9.0 (#951) ([`7200762a`](https://github.com/FaserF/hassio-addons/commit/7200762a13546bfeafbb782dc52c3c3b4ce0e231))
+- ⬆️ Update dependency uvicorn to v0.52.1 (#948) ([`e916a6dc`](https://github.com/FaserF/hassio-addons/commit/e916a6dcb14183dbd0000865bf7dc4efe0122493))
+- ⬆️ Update dependency link-preview-js to v5 (#945) ([`ace19c0d`](https://github.com/FaserF/hassio-addons/commit/ace19c0d6f6ddcc8d6687f29acbe20ae91c5fc17))
+- ⬆️ Update dependency playwright to v1.62.0 (#944) ([`dd26eaa1`](https://github.com/FaserF/hassio-addons/commit/dd26eaa1c2d7ff30ba06b1881dabe324d6647a4e))
+
+
 ## 1.8.1 (2026-07-31)
 
 ### ✨ Features
