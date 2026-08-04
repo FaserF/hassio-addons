@@ -728,23 +728,39 @@ let currentModGroup = '';
 
 async function loadModerationConfig() {
   try {
-    const res = await fetch(basePath + 'api/moderation/config');
-    if (!res.ok) return;
-    const json = await res.json();
-    if (json.success && json.data) {
-      modStoreCache = json.data;
-      const globalToggle = document.getElementById('mod-global-toggle');
-      if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+    const [modRes, chatsRes] = await Promise.all([
+      fetch(basePath + 'api/moderation/config'),
+      fetch(basePath + 'api/chats?session_id=' + currentSession),
+    ]);
 
-      // Populate group select dropdown
-      const select = document.getElementById('mod-group-select');
-      if (select && Array.isArray(window.allChats)) {
-        const groups = window.allChats.filter((c) => c.id && c.id.endsWith('@g.us'));
-        let opts = '<option value="">Select a group...</option>';
-        groups.forEach((g) => {
-          opts += `<option value="${g.id}">${g.name || g.id}</option>`;
-        });
-        select.innerHTML = opts;
+    if (modRes.ok) {
+      const json = await modRes.json();
+      if (json.success && json.data) {
+        modStoreCache = json.data;
+        const globalToggle = document.getElementById('mod-global-toggle');
+        if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+      }
+    }
+
+    // Populate group select dropdown from live chat list
+    const select = document.getElementById('mod-group-select');
+    if (select) {
+      let groups = [];
+      if (chatsRes.ok) {
+        const chats = await chatsRes.json();
+        if (Array.isArray(chats)) {
+          groups = chats.filter((c) => c.id && c.id.endsWith('@g.us'));
+        }
+      }
+      const preserved = select.value;
+      let opts = '<option value="">Select a group...</option>';
+      groups.forEach((g) => {
+        const label = g.name || g.id;
+        opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${label}</option>`;
+      });
+      select.innerHTML = opts;
+      if (preserved && groups.some((g) => g.id === preserved)) {
+        select.value = preserved;
       }
     }
   } catch (e) {
@@ -864,10 +880,19 @@ async function toggleGroupModeration(enabled) {
 }
 
 function switchModSubTab(subTab) {
+  // Hide all panels
   const panels = document.querySelectorAll('.mod-subpanel');
   panels.forEach((p) => (p.style.display = 'none'));
   const activeP = document.getElementById(`mod-subpanel-${subTab}`);
   if (activeP) activeP.style.display = 'block';
+
+  // Update active button state
+  const subTabBar = document.querySelector('#tab-moderation .mod-subtab-bar');
+  if (subTabBar) {
+    subTabBar.querySelectorAll('button').forEach((btn) => btn.classList.remove('active'));
+    const activeBtn = subTabBar.querySelector(`[data-subtab="${subTab}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
 }
 
 async function saveGroupRules() {
