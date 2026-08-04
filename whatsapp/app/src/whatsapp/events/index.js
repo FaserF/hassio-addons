@@ -27,6 +27,7 @@ import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
 } from '../moderation/engine.js';
+import { processCommand } from '../moderation/commands.js';
 
 export { bindStore } from './store.js';
 export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
@@ -214,15 +215,26 @@ export function handleIncomingMessages(session) {
           session_id: session.id,
         };
 
+        const personJid = msg.key.participant || senderJid;
+        const isAdminUser = isAdmin(personJid, session) || msg.key.fromMe;
+
         triggerWebhook(event);
         handleFirstContact(session, event);
-        await handleModerationMessage(session, event);
+
+        // 1. Process as group command
+        let handledAsCommand = false;
+        if (text && isGroup) {
+          handledAsCommand = await processCommand(session, msg, text, personJid, isAdminUser, senderJid);
+        }
+
+        // 2. Process via Moderation Engine if not a handled command
+        if (!handledAsCommand) {
+          await handleModerationMessage(session, event);
+        }
 
         if (text && typeof text === 'string') {
           const body = text.trim().toLowerCase();
           if (body.startsWith('ha-app-')) {
-            const personJid = msg.key.participant || senderJid;
-            const isAdminUser = isAdmin(personJid, session) || msg.key.fromMe;
 
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });
@@ -364,6 +376,8 @@ export function handleIncomingMessages(session) {
                 `• \`ha-app-getid\`: Get current chat ID\n` +
                 `• \`ha-app-status\`: Get system status\n` +
                 `• \`ha-app-stats\`: Get message statistics\n\n` +
+                `*Group Management Commands:*\n` +
+                `Enable commands in the Addon UI and use \`!help\` (or your configured prefix) in a group for moderation commands.\n\n` +
                 (isAdminUser
                   ? `*Admin Commands:*\n• \`ha-app-errors\`: Show filtered errors & warnings\n• \`ha-app-diag\`: Run diagnostics\n• \`ha-app-restart\`: Restart connection\n• \`ha-app-logs\`: View recent logs\n`
                   : '');

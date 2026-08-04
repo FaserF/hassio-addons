@@ -51,6 +51,7 @@ export default () => `
                             <button class="mod-pill" data-subtab="filters" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters</button>
                             <button class="mod-pill" data-subtab="antispam" onclick="switchModSubTab('antispam')"><i class="fas fa-bolt"></i> Anti-Spam</button>
                             <button class="mod-pill" data-subtab="federation" onclick="switchModSubTab('federation')"><i class="fas fa-network-wired"></i> Federation</button>
+                            <button class="mod-pill" data-subtab="commands" onclick="switchModSubTab('commands')"><i class="fas fa-terminal"></i> Commands</button>
                             <button class="mod-pill" data-subtab="ai" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> Gemini AI</button>
                             <button class="mod-pill" data-subtab="migration" onclick="switchModSubTab('migration')"><i class="fas fa-file-export"></i> Import/Export</button>
                         </div>
@@ -213,6 +214,30 @@ export default () => `
                         <div class="mod-option-row" style="margin-bottom:16px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-faq"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Auto-reply to group FAQs</span></div>
                         <div class="mod-field-group"><label class="mod-field-label">AI System Prompt</label><textarea id="mod-ai-prompt" class="mod-textarea" style="height:100px;" placeholder="You are a helpful group moderator AI assistant."></textarea></div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> Save AI Config</button></div>
+                    </div>
+
+                    <!-- COMMANDS -->
+                    <div id="mod-subpanel-commands" class="mod-subpanel" style="display:none;">
+                        <div class="mod-feature-header">
+                            <div class="mod-feature-icon-wrap" style="background:linear-gradient(135deg,rgba(0,168,132,0.2),rgba(52,152,219,0.2));color:var(--primary);"><i class="fas fa-terminal"></i></div>
+                            <div><div class="mod-feature-title">Bot Commands (Rose/AegisBot)</div><div class="mod-feature-desc">Allow members and admins to interact with the bot via group commands.</div></div>
+                        </div>
+                        <div class="mod-option-row" style="margin-bottom:10px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label">Enable group commands (!help, !warn, !ban, etc.)</span>
+                        </div>
+                        <div class="mod-field-group" style="max-width:200px;">
+                            <label class="mod-field-label">Command Prefix</label>
+                            <input type="text" id="mod-cmds-prefix" class="mod-input" value="!" maxlength="3">
+                        </div>
+                        <div class="mod-field-group" style="max-width:300px;">
+                            <label class="mod-field-label">Mute Action (WhatsApp API Limit)</label>
+                            <select id="mod-cmds-mute-action" class="mod-select mod-select-sm">
+                                <option value="delete">Delete user's messages</option>
+                            </select>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">WhatsApp does not support user-specific mutes. This defines how mutes are enforced.</p>
+                        </div>
+                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupCommands()"><i class="fas fa-save"></i> Save Commands Config</button></div>
                     </div>
 
                     <!-- IMPORT / EXPORT -->

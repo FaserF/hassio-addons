@@ -117,6 +117,11 @@ export function getDefaultGroupConfig() {
       sentiment_moderation: false,
       system_prompt: 'You are a helpful group moderator AI assistant.',
     },
+    commands: {
+      enabled: false,
+      prefix: '!',
+      mute_action: 'delete', // WhatsApp limitation: 'delete' un-sends their future messages or restricts group
+    },
     federation_id: '',
   };
 }
