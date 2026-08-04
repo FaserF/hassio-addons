@@ -1164,10 +1164,34 @@ jobs:
             BUILD_FROM_AARCH64=""
           fi
 
+          BUILD_DESCRIPTION=$(yq -r '.description' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")
+          BUILD_NAME=$(yq -r '.name' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")
+          BUILD_URL=$(yq -r '.url' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "https://github.com/FaserF/hassio-addons")
+          
           {
             echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64"
             echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64"
+            echo "BUILD_DESCRIPTION=$BUILD_DESCRIPTION"
+            echo "BUILD_NAME=$BUILD_NAME"
+            echo "BUILD_URL=$BUILD_URL"
           } >> "$GITHUB_ENV"
+
+      - name: 🏷️ Extract Docker Metadata & OCI Labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64
+          labels: |
+            org.opencontainers.image.title=${{ env.BUILD_NAME }}
+            org.opencontainers.image.description=${{ env.BUILD_DESCRIPTION }}
+            org.opencontainers.image.vendor=FaserF's Home Assistant Apps
+            org.opencontainers.image.authors=FaserF <https://github.com/FaserF>
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.url=${{ env.BUILD_URL }}
+            org.opencontainers.image.source=https://github.com/FaserF/hassio-addons/tree/master/${{ matrix.App }}
+            org.opencontainers.image.documentation=https://github.com/FaserF/hassio-addons/blob/master/${{ matrix.App }}/README.md
 
       - name: 🏗️ Build and Push Addon Images
         if: matrix.App != 'sap-abap-cloud-dev'
@@ -1180,6 +1204,8 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64:${{ env.VERSION }}
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-aarch64:${{ env.VERSION }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
           build-args: |
             BUILD_ARCH=${{ matrix.App }}
           cache-from: type=gha,scope=${{ matrix.App }}
@@ -1189,6 +1215,23 @@ jobs:
         if: matrix.App == 'whatsapp'
         id: date
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: 🏷️ Extract Docker Metadata & OCI Labels for Standalone WhatsApp Gateway
+        if: matrix.App == 'whatsapp'
+        id: meta-standalone
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ env.OWNER }}/whatsapp-gw
+          labels: |
+            org.opencontainers.image.title=WhatsApp Gateway Standalone
+            org.opencontainers.image.description=Standalone Docker container for WhatsApp Home Assistant App (Baileys/Node.js REST API & Web UI).
+            org.opencontainers.image.vendor=FaserF's Home Assistant Apps
+            org.opencontainers.image.authors=FaserF <https://github.com/FaserF>
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.url=https://github.com/FaserF/ha-whatsapp
+            org.opencontainers.image.source=https://github.com/FaserF/hassio-addons/tree/master/whatsapp
+            org.opencontainers.image.documentation=https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md
 
       - name: 🏗️ Build and Push Standalone WhatsApp Image (Docker Only)
         if: matrix.App == 'whatsapp'
@@ -1200,6 +1243,8 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER }}/whatsapp-gw:latest
             ghcr.io/${{ env.OWNER }}/whatsapp-gw:${{ env.VERSION }}
+          labels: ${{ steps.meta-standalone.outputs.labels }}
+          annotations: ${{ steps.meta-standalone.outputs.annotations }}
           platforms: linux/amd64
           build-args: |
             BUILD_DATE=${{ steps.date.outputs.date }}
