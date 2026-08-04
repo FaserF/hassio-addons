@@ -35,11 +35,20 @@ export function bindStore(session, ev) {
     }
   });
 
-  ev.on('messaging-history.set', ({ chats, messages }) => {
+  ev.on('messaging-history.set', ({ chats, messages, contacts }) => {
     if (chats) {
       for (const chat of chats) {
         if (chat.id) session.chatCache?.set(chat.id, true);
       }
+    }
+    if (contacts) {
+      for (const contact of contacts) {
+        if (contact.id) {
+          const existing = session.contactCache?.get(contact.id) || {};
+          session.contactCache?.set(contact.id, { ...existing, ...contact });
+        }
+      }
+      saveContactCache(session);
     }
     if (messages) {
       for (const msg of messages) {

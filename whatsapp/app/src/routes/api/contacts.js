@@ -156,21 +156,32 @@ export function registerContactRoutes(app) {
         // Check contacts cache
         let cachedContact = session.contactCache?.get(targetJid);
 
+        // Fallback to socket store contacts if available
+        if (!cachedContact && session.sock?.store?.contacts) {
+          cachedContact = session.sock.store.contacts[targetJid];
+        }
+
         // Try fuzzy lookup if exact match not found
         if (!cachedContact && session.contactCache) {
           const targetUserDigits = targetJid.split('@')[0].split(':')[0].replace(/[^\d]/g, '');
           for (const [cJid, contact] of session.contactCache.entries()) {
             const cUserDigits = cJid.split('@')[0].split(':')[0].replace(/[^\d]/g, '');
+            if (!cUserDigits || !targetUserDigits) continue;
+
+            const cLast8 = cUserDigits.slice(-8);
+            const targetLast8 = targetUserDigits.slice(-8);
+            const cCC = cUserDigits.length >= 10 ? cUserDigits.slice(0, 2) : '';
+            const targetCC = targetUserDigits.length >= 10 ? targetUserDigits.slice(0, 2) : '';
+
             if (
               cJid === targetJid ||
-              (cUserDigits && cUserDigits === targetUserDigits) ||
-              (cUserDigits.length >= 7 &&
-                targetUserDigits.length >= 7 &&
-                (cUserDigits.endsWith(targetUserDigits) ||
-                  targetUserDigits.endsWith(cUserDigits))) ||
-              (cUserDigits.length >= 10 &&
-                targetUserDigits.length >= 10 &&
-                cUserDigits.slice(-10) === targetUserDigits.slice(-10))
+              cUserDigits === targetUserDigits ||
+              cUserDigits.endsWith(targetUserDigits) ||
+              targetUserDigits.endsWith(cUserDigits) ||
+              (cLast8.length >= 7 &&
+                targetLast8.length >= 7 &&
+                cLast8 === targetLast8 &&
+                (!cCC || !targetCC || cCC === targetCC))
             ) {
               cachedContact = contact;
               break;
@@ -178,10 +189,15 @@ export function registerContactRoutes(app) {
           }
         }
 
+        const isInContacts = !!(
+          cachedContact &&
+          (cachedContact.name || cachedContact.verifiedName)
+        );
+
         res.json({
           exists: true,
-          in_contacts: !!cachedContact,
-          name: cachedContact?.name || null,
+          in_contacts: isInContacts,
+          name: cachedContact?.name || cachedContact?.verifiedName || null,
           notify: cachedContact?.notify || null,
           verified_name: cachedContact?.verifiedName || null,
           jid: targetJid,
