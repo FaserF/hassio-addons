@@ -504,3 +504,32 @@ Healthcheck endpoint for Docker/Supervisor. No auth required.
 ```json
 { "status": "ok", "service": "whatsapp-addon" }
 ```
+
+---
+
+### 🛡️ Moderation Endpoints (Rose & Aegis)
+
+#### `GET /api/moderation/config`
+Fetches global and group moderation configuration.
+
+#### `POST /api/moderation/config`
+Updates global moderation settings or specific group configuration.
+
+#### `POST /api/moderation/groups/:groupId/enable`
+Enables moderation engine for target group.
+
+#### `POST /api/moderation/groups/:groupId/disable`
+Disables moderation engine for target group.
+
+#### `POST /api/moderation/groups/:groupId/warn`
+Issues a warning to a user in group.
+
+#### `DELETE /api/moderation/groups/:groupId/warn/:userId`
+Clears active warnings for user.
+
+#### `POST /api/moderation/groups/:groupId/export`
+Exports group configuration as JSON (Rose / Aegis format).
+
+#### `POST /api/moderation/groups/:groupId/import`
+Imports Rose or AegisBot JSON configuration.
+

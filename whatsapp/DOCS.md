@@ -77,6 +77,25 @@ action:
 > - **Vote List**: `trigger.event.data.vote` is a **list** of selected option names.
 > - **Decryption requirement**: Poll vote decryption only works if the addon has the original poll in its store (either the bot sent the poll, or the poll was received while the bot was online).
 
+## 🛡️ Rose & Aegis Group Moderation & Defender Engine
+
+The WhatsApp Addon incorporates a full-featured group moderation and defender engine inspired by Telegram's **MissRose Bot** and **AegisBot**.
+
+### Key Capabilities
+- **Disabled by Default**: The moderation engine is globally disabled by default. Enable it per-group or globally via the Addon Web UI.
+- **Group Rules & Agreement**: Define rules, automatically present rules on member joins.
+- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`{user}`, `{group}`, `{rules}`), verification captchas (button/math), clean welcome.
+- **Warnings System**: Configurable warning thresholds, warn decay, and automated penalties (mute/kick/ban).
+- **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, and RTL text.
+- **Blacklist & Word Filters**: Match prohibited words or regex patterns with automated penalties.
+- **Auto-Responder Filters & Saved Notes**: Keyword triggers (`!rules`, `#faq`) and saved group notes.
+- **Anti-Raid & Flood Protection**: Message rate limiting per user and high-velocity join detection with automatic group lockdown.
+- **Aegis Federations**: Network ban propagation across group clusters.
+- **Gemini AI Engine**: Optional AI auto-responder for answering group FAQs.
+- **1-Click Import & Export**: One-click JSON import/export compatible with Rose and AegisBot configurations.
+
+---
+
 ## ⚙️ Configuration
 
 Configure the app via the **Configuration** tab in the Home Assistant app page.
