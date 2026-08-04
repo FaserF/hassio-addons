@@ -208,4 +208,89 @@ export function registerContactRoutes(app) {
       }
     })
   );
+
+  app.post(
+    '/contacts/profile_picture',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const profilePictureUrl = await session.sock.profilePictureUrl(jid, 'image').catch(() => null);
+        res.json({ jid, profile_picture_url: profilePictureUrl });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/contacts/about',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const statusObj = await session.sock.fetchStatus(jid).catch(() => null);
+        res.json({ jid, status: statusObj?.status || null, setAt: statusObj?.setAt || null });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/contacts/block',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.updateBlockStatus(jid, 'block');
+        res.json({ status: 'blocked', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/contacts/unblock',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.updateBlockStatus(jid, 'unblock');
+        res.json({ status: 'unblocked', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
 }
+

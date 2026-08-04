@@ -424,4 +424,266 @@ export function registerMessagingRoutes(app) {
       }
     })
   );
+
+  app.post(
+    '/star_message',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, messageId, star = true } = req.body;
+        if (!number || !messageId) {
+          return res.status(400).json({ detail: 'Missing number or messageId' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const targetMsg = session.messageStore?.get(messageId);
+        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+
+        await session.sock.chatModify({ star: { messages: [msgKey], star: !!star } }, jid);
+        res.json({ status: star ? 'starred' : 'unstarred', messageId });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/unstar_message',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, messageId } = req.body;
+        if (!number || !messageId) {
+          return res.status(400).json({ detail: 'Missing number or messageId' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const targetMsg = session.messageStore?.get(messageId);
+        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+
+        await session.sock.chatModify({ star: { messages: [msgKey], star: false } }, jid);
+        res.json({ status: 'unstarred', messageId });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/pin_message',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, messageId, duration = 86400 } = req.body;
+        if (!number || !messageId) {
+          return res.status(400).json({ detail: 'Missing number or messageId' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const targetMsg = session.messageStore?.get(messageId);
+        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+
+        await session.sock.sendMessage(jid, {
+          pin: {
+            key: msgKey,
+            type: 1,
+            time: duration,
+          },
+        });
+        res.json({ status: 'pinned', messageId });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/unpin_message',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, messageId } = req.body;
+        if (!number || !messageId) {
+          return res.status(400).json({ detail: 'Missing number or messageId' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        const targetMsg = session.messageStore?.get(messageId);
+        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+
+        await session.sock.sendMessage(jid, {
+          pin: {
+            key: msgKey,
+            type: 2,
+          },
+        });
+        res.json({ status: 'unpinned', messageId });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/forward_message',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, messageId, targetNumber } = req.body;
+        if (!number || !messageId || !targetNumber) {
+          return res
+            .status(400)
+            .json({ detail: 'Missing number, messageId, or targetNumber' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const targetJid = getJid(targetNumber);
+        const storedMsg = session.messageStore?.get(messageId);
+        if (!storedMsg) {
+          return res.status(404).json({ detail: 'Message not found in memory store' });
+        }
+
+        const sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg });
+        trackSent(session, targetNumber, `[Forwarded Message]`);
+        res.json({ status: 'forwarded', id: sentMsg?.key?.id });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/send_status',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { message, url, caption } = req.body;
+        if (!message && !url) {
+          return res.status(400).json({ detail: 'Missing message or url for status' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const statusJid = 'status@broadcast';
+        let payload = {};
+        if (url) {
+          payload = { image: { url }, caption: caption || message || '' };
+        } else {
+          payload = { text: message };
+        }
+
+        const sentMsg = await session.sock.sendMessage(statusJid, payload);
+        trackSent(session, 'status@broadcast', `[Status Update] ${message || caption || ''}`);
+        res.json({ status: 'sent', id: sentMsg?.key?.id });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/chats/archive',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ archive: true }, jid);
+        res.json({ status: 'archived', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/chats/unarchive',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ archive: false }, jid);
+        res.json({ status: 'unarchived', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/chats/mute',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, durationMs = 8 * 3600 * 1000 } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ mute: durationMs }, jid);
+        res.json({ status: 'muted', jid, durationMs });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/chats/unmute',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ mute: null }, jid);
+        res.json({ status: 'unmuted', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
 }
+
