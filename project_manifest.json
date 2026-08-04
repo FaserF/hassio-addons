@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-04T09:52:43.044664",
+  "timestamp": "2026-08-04T09:56:32.853477",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -211,7 +211,7 @@
     {
       "slug": "komodo",
       "name": "Komodo",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "description": "A tool to build and deploy software on many servers",
       "arch": [
         "amd64"

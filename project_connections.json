@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-04T09:52:43.347877",
+  "timestamp": "2026-08-04T09:56:33.168160",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -316,7 +316,7 @@
     },
     "komodo": {
       "name": "Komodo",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "description": "A tool to build and deploy software on many servers",
       "arch": [
         "amd64"

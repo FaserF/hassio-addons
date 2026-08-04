@@ -3,8 +3,8 @@
 ## 0.2.4 (2026-08-04)
 
 ### 🐛 Bug Fixes
-- fix docker building ([`4d05f4c9`](https://github.com/FaserF/hassio-addons/commit/4d05f4c9457433d3bf520e8b46f3f06496e0c5fc))
 
+- fix docker building ([`4d05f4c9`](https://github.com/FaserF/hassio-addons/commit/4d05f4c9457433d3bf520e8b46f3f06496e0c5fc))
 
 ## 0.2.3 (2026-08-04)
 
