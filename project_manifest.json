@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-01T22:39:56.730236",
+  "timestamp": "2026-08-04T09:13:07.409916",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -175,7 +175,7 @@
     {
       "slug": "er-dashboard",
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.4",
+      "version": "1.4.5",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": [
         "aarch64",
@@ -318,7 +318,7 @@
     {
       "slug": "pterodactyl-wings",
       "name": "pterodactyl Wings Gameserver",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "description": "Open Source Gameserver",
       "arch": [
         "aarch64",

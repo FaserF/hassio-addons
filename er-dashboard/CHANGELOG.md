@@ -3,8 +3,8 @@
 ## 1.4.5 (2026-08-01)
 
 ### 📦 Dependencies
-- ⬆️ Update ER-Startseite to v2026.8.1 (#949) ([`b27aeb54`](https://github.com/FaserF/hassio-addons/commit/b27aeb5497d8aa31cf9f48e5e411243a77f3616b))
 
+- ⬆️ Update ER-Startseite to v2026.8.1 (#949) ([`b27aeb54`](https://github.com/FaserF/hassio-addons/commit/b27aeb5497d8aa31cf9f48e5e411243a77f3616b))
 
 ## 1.4.4 (2026-08-01)
 

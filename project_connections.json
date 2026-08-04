@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-01T22:39:56.943203",
+  "timestamp": "2026-08-04T09:13:07.711279",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -263,7 +263,7 @@
     },
     "er-dashboard": {
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.4",
+      "version": "1.4.5",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": [
         "aarch64",
@@ -475,7 +475,7 @@
     },
     "pterodactyl-wings": {
       "name": "pterodactyl Wings Gameserver",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "description": "Open Source Gameserver",
       "arch": [
         "aarch64",
