@@ -1,4 +1,4 @@
-module.exports = () => `
+export default () => `
 <section id="tab-moderation" class="tab-panel">
 
                 <!-- Hero Header -->

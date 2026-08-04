@@ -7,6 +7,11 @@ import { getSession, sanitizeSessionId, sessions, signalInterest } from '../../s
 import { API_TOKEN, PORT, DATA_DIR } from '../../config.js';
 import { connectToWhatsApp } from '../../whatsapp/connection.js';
 
+import dashboardView from './views/dashboard.html.js';
+import logsView from './views/logs.html.js';
+import chatsView from './views/chats.html.js';
+import moderationView from './views/moderation.html.js';
+
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
 /**
@@ -230,13 +235,13 @@ function renderDashboard(sessionId) {
                 </div>
             </div>
 
-            ${require('./views/dashboard.html.js')()}
+            ${dashboardView()}
 
-            ${require('./views/logs.html.js')()}
+            ${logsView()}
 
-            ${require('./views/chats.html.js')()}
+            ${chatsView()}
 
-            ${require('./views/moderation.html.js')()}
+            ${moderationView()}
 
             <footer class="footer-info">
                 WhatsApp Gateway &bull; Session: <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)

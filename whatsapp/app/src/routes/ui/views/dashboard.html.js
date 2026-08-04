@@ -1,4 +1,4 @@
-module.exports = () => `
+export default () => `
 <section id="tab-dashboard" class="tab-panel active">
                 <div class="grid">
                     <div class="card">

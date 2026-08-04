@@ -1,4 +1,4 @@
-module.exports = () => `
+export default () => `
 <section id="tab-chats" class="tab-panel">
                 <div class="chat-container-layout">
                     <div class="chat-list-panel">
