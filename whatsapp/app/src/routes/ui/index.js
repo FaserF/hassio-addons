@@ -155,6 +155,10 @@ function renderDashboard(sessionId) {
                 <i class="fas fa-comments nav-icon"></i>
                 <span>Chats</span>
             </button>
+            <button class="nav-item" data-tab="moderation" data-tooltip="Rose & Aegis Moderation" onclick="switchTab('moderation')">
+                <i class="fas fa-shield-alt nav-icon"></i>
+                <span>Moderation</span>
+            </button>
             <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item" data-tooltip="Documentation">
                 <i class="fas fa-book nav-icon"></i>
                 <span>Documentation</span>
@@ -466,6 +470,195 @@ function renderDashboard(sessionId) {
                             <div class="drawer-body" id="drawer-body-content">
                                 <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-moderation" class="tab-panel">
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                        <div>
+                            <h2 class="card-title" style="margin:0;"><i class="fas fa-shield-alt" style="color:var(--primary);"></i> Rose & Aegis Moderation Engine</h2>
+                            <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0 0;">Comprehensive group defender, rules enforcement, anti-raid shield, and automated moderation.</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                                <span>Global Moderation:</span>
+                                <input type="checkbox" id="mod-global-toggle" onchange="toggleGlobalModeration(this.checked)">
+                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:12px;font-weight:600;color:var(--text-muted);">Target Group:</span>
+                                <select id="mod-group-select" onchange="selectModerationGroup(this.value)" style="background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-color);padding:6px 12px;border-radius:6px;">
+                                    <option value="">Select a group...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mod-group-content" class="grid" style="grid-template-columns: 1fr;">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:16px;">
+                            <h3 id="mod-active-group-title" style="margin:0;font-size:16px;"><i class="fas fa-users"></i> Group Settings</h3>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                                <span>Enable Moderation for this Group:</span>
+                                <input type="checkbox" id="mod-group-toggle" onchange="toggleGroupModeration(this.checked)">
+                            </label>
+                        </div>
+
+                        <!-- Sub-tab Navigation -->
+                        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;border-bottom:1px solid var(--border-color);margin-bottom:16px;">
+                            <button class="btn btn-secondary btn-sm active" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('greetings')"><i class="fas fa-hand-wave"></i> Greetings & Captcha</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters & Notes</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('antispam')"><i class="fas fa-bolt"></i> Anti-Raid & Flood</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('federation')"><i class="fas fa-network-wired"></i> Federations</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> Gemini AI</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('migration')"><i class="fas fa-file-export"></i> Import / Export</button>
+                        </div>
+
+                        <!-- Sub-tab Panels -->
+                        <div id="mod-subpanel-rules" class="mod-subpanel">
+                            <h4>Group Rules</h4>
+                            <textarea id="mod-rules-text" class="chat-message-input" style="width:100%;height:120px;margin-bottom:12px;" placeholder="Enter group rules here..."></textarea>
+                            <div style="display:flex;gap:16px;margin-bottom:12px;">
+                                <label><input type="checkbox" id="mod-rules-show-on-join"> Show rules automatically on join</label>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> Save Rules</button>
+                        </div>
+
+                        <div id="mod-subpanel-greetings" class="mod-subpanel" style="display:none;">
+                            <h4>Greetings & Captcha Settings</h4>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                                <div>
+                                    <label><input type="checkbox" id="mod-welcome-enabled"> Enable Welcome Message</label>
+                                    <input type="text" id="mod-welcome-msg" class="chat-message-input" style="width:100%;margin-top:6px;" placeholder="Welcome {user} to {group}!">
+                                </div>
+                                <div>
+                                    <label><input type="checkbox" id="mod-goodbye-enabled"> Enable Goodbye Message</label>
+                                    <input type="text" id="mod-goodbye-msg" class="chat-message-input" style="width:100%;margin-top:6px;" placeholder="Goodbye {user}!">
+                                </div>
+                            </div>
+                            <hr style="border-color:var(--border-color);margin:16px 0;">
+                            <h4>Welcome Captcha Verification</h4>
+                            <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;">
+                                <label><input type="checkbox" id="mod-captcha-enabled"> Require Captcha on join</label>
+                                <select id="mod-captcha-mode" class="chat-message-input">
+                                    <option value="button">Button / Text ('pass')</option>
+                                    <option value="math">Math Problem (e.g. 5 + 3)</option>
+                                </select>
+                                <input type="number" id="mod-captcha-timeout" class="chat-message-input" style="width:100px;" value="120" placeholder="Timeout (s)">
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupGreetings()"><i class="fas fa-save"></i> Save Greetings & Captcha</button>
+                        </div>
+
+                        <div id="mod-subpanel-warnings" class="mod-subpanel" style="display:none;">
+                            <h4>Warnings Configuration</h4>
+                            <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+                                <label>Max Warnings: <input type="number" id="mod-max-warns" class="chat-message-input" style="width:80px;" value="3"></label>
+                                <label>Penalty Action: 
+                                    <select id="mod-warn-action" class="chat-message-input">
+                                        <option value="mute">Mute User</option>
+                                        <option value="kick">Kick User</option>
+                                        <option value="ban">Ban User</option>
+                                    </select>
+                                </label>
+                                <button class="btn btn-primary btn-sm" onclick="saveGroupWarnings()"><i class="fas fa-save"></i> Save Warnings Config</button>
+                            </div>
+                            <hr style="border-color:var(--border-color);margin:16px 0;">
+                            <h4>Active User Warnings</h4>
+                            <div id="mod-warns-list" class="history-list"><div class="empty-state">No active user warnings</div></div>
+                        </div>
+
+                        <div id="mod-subpanel-locks" class="mod-subpanel" style="display:none;">
+                            <h4>Granular Content Locks</h4>
+                            <p style="font-size:12px;color:var(--text-muted);">Prevent specific content types from being posted in this group.</p>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:16px;">
+                                <label><input type="checkbox" id="mod-lock-image"> Lock Images</label>
+                                <label><input type="checkbox" id="mod-lock-video"> Lock Videos</label>
+                                <label><input type="checkbox" id="mod-lock-audio"> Lock Voice / Audio</label>
+                                <label><input type="checkbox" id="mod-lock-document"> Lock Documents</label>
+                                <label><input type="checkbox" id="mod-lock-sticker"> Lock Stickers</label>
+                                <label><input type="checkbox" id="mod-lock-url"> Lock URLs / Links</label>
+                                <label><input type="checkbox" id="mod-lock-invite"> Lock Group Invites</label>
+                                <label><input type="checkbox" id="mod-lock-poll"> Lock Polls</label>
+                                <label><input type="checkbox" id="mod-lock-rtl"> Lock RTL Text</label>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupLocks()"><i class="fas fa-save"></i> Save Content Locks</button>
+                        </div>
+
+                        <div id="mod-subpanel-blacklist" class="mod-subpanel" style="display:none;">
+                            <h4>Blacklist & Prohibited Words</h4>
+                            <div style="display:flex;gap:12px;margin-bottom:12px;">
+                                <input type="text" id="mod-blacklist-new" class="chat-message-input" style="flex:1;" placeholder="Add word or pattern (e.g. spamword or /regex/)">
+                                <button class="btn btn-secondary btn-sm" onclick="addBlacklistWord()"><i class="fas fa-plus"></i> Add Word</button>
+                            </div>
+                            <div id="mod-blacklist-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupBlacklist()"><i class="fas fa-save"></i> Save Blacklist</button>
+                        </div>
+
+                        <div id="mod-subpanel-filters" class="mod-subpanel" style="display:none;">
+                            <h4>Auto-Responder Filters & Saved Notes</h4>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                                <input type="text" id="mod-filter-trigger" class="chat-message-input" placeholder="Trigger keyword (e.g. !help)">
+                                <input type="text" id="mod-filter-response" class="chat-message-input" placeholder="Response text">
+                            </div>
+                            <button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="addFilterRule()"><i class="fas fa-plus"></i> Add Filter Rule</button>
+                            <div id="mod-filters-list" class="history-list" style="margin-bottom:16px;"></div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupFilters()"><i class="fas fa-save"></i> Save Filters</button>
+                        </div>
+
+                        <div id="mod-subpanel-antispam" class="mod-subpanel" style="display:none;">
+                            <h4>Anti-Raid & Message Flood Protection</h4>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                                <div>
+                                    <h5>Flood Protection</h5>
+                                    <label><input type="checkbox" id="mod-flood-enabled"> Enable Flood Protection</label>
+                                    <div style="margin-top:8px;">Max messages: <input type="number" id="mod-flood-max" class="chat-message-input" style="width:70px;" value="5"> in <input type="number" id="mod-flood-win" class="chat-message-input" style="width:70px;" value="5"> s</div>
+                                </div>
+                                <div>
+                                    <h5>Anti-Raid Shield</h5>
+                                    <label><input type="checkbox" id="mod-antiraid-enabled"> Enable Anti-Raid Shield</label>
+                                    <div style="margin-top:8px;">Max joins: <input type="number" id="mod-antiraid-max" class="chat-message-input" style="width:70px;" value="5"> in <input type="number" id="mod-antiraid-win" class="chat-message-input" style="width:70px;" value="10"> s</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> Save Anti-Spam Config</button>
+                        </div>
+
+                        <div id="mod-subpanel-federation" class="mod-subpanel" style="display:none;">
+                            <h4>Aegis Global Ban Federation</h4>
+                            <p style="font-size:12px;color:var(--text-muted);">Sync global ban lists across group clusters.</p>
+                            <select id="mod-fed-select" class="chat-message-input" style="width:100%;margin-bottom:12px;">
+                                <option value="">No Federation Joined</option>
+                                <option value="fed_global_default">Aegis Default Federation</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="saveGroupFederation()"><i class="fas fa-save"></i> Save Federation Link</button>
+                        </div>
+
+                        <div id="mod-subpanel-ai" class="mod-subpanel" style="display:none;">
+                            <h4>Gemini AI Context Engine</h4>
+                            <label><input type="checkbox" id="mod-ai-enabled"> Enable Gemini AI Assistance</label><br>
+                            <label><input type="checkbox" id="mod-ai-faq"> Auto-reply to group FAQs</label>
+                            <div style="margin-top:12px;">
+                                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">AI System Prompt:</label>
+                                <textarea id="mod-ai-prompt" class="chat-message-input" style="width:100%;height:80px;" placeholder="You are a helpful group moderator AI assistant."></textarea>
+                            </div>
+                            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> Save AI Config</button>
+                        </div>
+
+                        <div id="mod-subpanel-migration" class="mod-subpanel" style="display:none;">
+                            <h4>1-Click Rose & Aegis Import / Export</h4>
+                            <div style="display:flex;gap:12px;margin-bottom:16px;">
+                                <button class="btn btn-secondary btn-sm" onclick="exportGroupModerationConfig()"><i class="fas fa-download"></i> Export Group Config (JSON)</button>
+                            </div>
+                            <hr style="border-color:var(--border-color);margin:16px 0;">
+                            <h5>Import Settings (Rose / Aegis JSON Format)</h5>
+                            <textarea id="mod-import-text" class="chat-message-input" style="width:100%;height:100px;margin-bottom:12px;" placeholder="Paste Rose or AegisBot JSON export here..."></textarea>
+                            <button class="btn btn-primary btn-sm" onclick="importGroupModerationConfig()"><i class="fas fa-upload"></i> Import Config</button>
                         </div>
                     </div>
                 </div>

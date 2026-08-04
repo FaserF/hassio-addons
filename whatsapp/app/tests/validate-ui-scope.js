@@ -247,7 +247,7 @@ function checkSyntax(filename) {
 // --------------------------------------------------------------------------
 function checkDuplicateRoutes() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js', 'moderation.js'];
 
   for (const filename of apiFiles) {
     const filepath = join(apiDir, filename);
@@ -285,7 +285,7 @@ function checkDuplicateRoutes() {
 // --------------------------------------------------------------------------
 function checkHAEndpoints() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js', 'moderation.js'];
 
   const registeredRoutes = new Set();
   for (const filename of apiFiles) {

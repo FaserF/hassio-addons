@@ -722,6 +722,357 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
+// --- Rose & Aegis Moderation UI Handlers ---
+let modStoreCache = null;
+let currentModGroup = '';
+
+async function loadModerationConfig() {
+  try {
+    const res = await fetch(basePath + 'api/moderation/config');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json.success && json.data) {
+      modStoreCache = json.data;
+      const globalToggle = document.getElementById('mod-global-toggle');
+      if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+
+      // Populate group select dropdown
+      const select = document.getElementById('mod-group-select');
+      if (select && Array.isArray(window.allChats)) {
+        const groups = window.allChats.filter((c) => c.id && c.id.endsWith('@g.us'));
+        let opts = '<option value="">Select a group...</option>';
+        groups.forEach((g) => {
+          opts += `<option value="${g.id}">${g.name || g.id}</option>`;
+        });
+        select.innerHTML = opts;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load moderation config:', e);
+  }
+}
+
+async function toggleGlobalModeration(enabled) {
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ global_enabled: enabled }),
+    });
+    if (res.ok) {
+      showToast(enabled ? 'Global Moderation Enabled 🛡️' : 'Global Moderation Disabled', 'info');
+      loadModerationConfig();
+    }
+  } catch (e) {
+    showToast('Failed to toggle global moderation', 'danger');
+  }
+}
+
+function selectModerationGroup(groupId) {
+  currentModGroup = groupId;
+  if (!groupId || !modStoreCache) return;
+  const config = modStoreCache.groups?.[groupId] || {};
+
+  const titleEl = document.getElementById('mod-active-group-title');
+  if (titleEl) titleEl.textContent = `Group: ${groupId}`;
+
+  const toggle = document.getElementById('mod-group-toggle');
+  if (toggle) toggle.checked = Boolean(config.enabled);
+
+  // Rules
+  const rulesText = document.getElementById('mod-rules-text');
+  if (rulesText) rulesText.value = config.rules?.text || '';
+  const rulesShow = document.getElementById('mod-rules-show-on-join');
+  if (rulesShow) rulesShow.checked = Boolean(config.rules?.show_on_join);
+
+  // Greetings
+  const welcE = document.getElementById('mod-welcome-enabled');
+  if (welcE) welcE.checked = Boolean(config.greetings?.welcome_enabled);
+  const welcM = document.getElementById('mod-welcome-msg');
+  if (welcM) welcM.value = config.greetings?.welcome_message || '';
+  const goodE = document.getElementById('mod-goodbye-enabled');
+  if (goodE) goodE.checked = Boolean(config.greetings?.goodbye_enabled);
+  const goodM = document.getElementById('mod-goodbye-message');
+  if (goodM) goodM.value = config.greetings?.goodbye_message || '';
+
+  // Captcha
+  const capE = document.getElementById('mod-captcha-enabled');
+  if (capE) capE.checked = Boolean(config.greetings?.captcha_enabled);
+  const capMode = document.getElementById('mod-captcha-mode');
+  if (capMode) capMode.value = config.greetings?.captcha_mode || 'button';
+  const capTime = document.getElementById('mod-captcha-timeout');
+  if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+
+  // Warnings
+  const maxW = document.getElementById('mod-max-warns');
+  if (maxW) maxW.value = config.warnings?.max_warnings || 3;
+  const wAct = document.getElementById('mod-warn-action');
+  if (wAct) wAct.value = config.warnings?.action || 'mute';
+
+  // Warns List UI
+  const warnList = document.getElementById('mod-warns-list');
+  if (warnList) {
+    const userWarns = config.warnings?.user_warns || {};
+    const entries = Object.keys(userWarns).filter((u) => userWarns[u]?.length);
+    if (!entries.length) {
+      warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
+    } else {
+      warnList.innerHTML = entries
+        .map(
+          (u) => `
+        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;">
+          <div><strong>@${u}</strong>: ${userWarns[u].length} warning(s)</div>
+          <button class="btn btn-secondary btn-sm" onclick="clearUserWarnInUi('${u}')">Clear</button>
+        </div>`
+        )
+        .join('');
+    }
+  }
+
+  // Locks
+  const lockKeys = ['image', 'video', 'audio', 'document', 'sticker', 'url', 'invite', 'poll', 'rtl'];
+  lockKeys.forEach((key) => {
+    const el = document.getElementById(`mod-lock-${key}`);
+    if (el) el.checked = Boolean(config.locks?.[key]?.enabled);
+  });
+}
+
+async function toggleGroupModeration(enabled) {
+  if (!currentModGroup) return;
+  const url = basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/${enabled ? 'enable' : 'disable'}`;
+  try {
+    const res = await fetch(url, { method: 'POST' });
+    if (res.ok) {
+      showToast(enabled ? 'Group Moderation Enabled' : 'Group Moderation Disabled', 'success');
+      loadModerationConfig();
+    }
+  } catch (e) {
+    showToast('Failed to update group moderation', 'danger');
+  }
+}
+
+function switchModSubTab(subTab) {
+  const panels = document.querySelectorAll('.mod-subpanel');
+  panels.forEach((p) => (p.style.display = 'none'));
+  const activeP = document.getElementById(`mod-subpanel-${subTab}`);
+  if (activeP) activeP.style.display = 'block';
+}
+
+async function saveGroupRules() {
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  const text = document.getElementById('mod-rules-text')?.value || '';
+  const showOnJoin = Boolean(document.getElementById('mod-rules-show-on-join')?.checked);
+
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.rules = { text, show_on_join: showOnJoin };
+
+  await saveGroupConfig(groupConfig);
+  showToast('Group rules saved!', 'success');
+}
+
+async function saveGroupGreetings() {
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.greetings = {
+    welcome_enabled: Boolean(document.getElementById('mod-welcome-enabled')?.checked),
+    welcome_message: document.getElementById('mod-welcome-msg')?.value || '',
+    goodbye_enabled: Boolean(document.getElementById('mod-goodbye-enabled')?.checked),
+    goodbye_message: document.getElementById('mod-goodbye-msg')?.value || '',
+    captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
+    captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'button',
+    captcha_timeout_seconds: parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+  };
+  await saveGroupConfig(groupConfig);
+  showToast('Greetings & Captcha saved!', 'success');
+}
+
+async function saveGroupWarnings() {
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.warnings = {
+    ...(groupConfig.warnings || {}),
+    max_warnings: parseInt(document.getElementById('mod-max-warns')?.value, 10) || 3,
+    action: document.getElementById('mod-warn-action')?.value || 'mute',
+  };
+  await saveGroupConfig(groupConfig);
+  showToast('Warnings config saved!', 'success');
+}
+
+async function saveGroupLocks() {
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  const lockKeys = ['image', 'video', 'audio', 'document', 'sticker', 'url', 'invite', 'poll', 'rtl'];
+  groupConfig.locks = groupConfig.locks || {};
+  lockKeys.forEach((k) => {
+    const el = document.getElementById(`mod-lock-${k}`);
+    groupConfig.locks[k] = { enabled: Boolean(el?.checked), action: 'delete' };
+  });
+  await saveGroupConfig(groupConfig);
+  showToast('Content locks saved!', 'success');
+}
+
+async function addBlacklistWord() {
+  const inp = document.getElementById('mod-blacklist-new');
+  if (!inp || !inp.value.trim() || !currentModGroup) return;
+  const word = inp.value.trim();
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.blacklist = groupConfig.blacklist || { enabled: true, words: [], action: 'delete' };
+  if (!groupConfig.blacklist.words.includes(word)) {
+    groupConfig.blacklist.words.push(word);
+    groupConfig.blacklist.enabled = true;
+  }
+  inp.value = '';
+  await saveGroupConfig(groupConfig);
+  selectModerationGroup(currentModGroup);
+}
+
+async function saveGroupBlacklist() {
+  if (!currentModGroup) return;
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  await saveGroupConfig(groupConfig);
+  showToast('Blacklist saved!', 'success');
+}
+
+async function addFilterRule() {
+  const trig = document.getElementById('mod-filter-trigger')?.value.trim();
+  const resp = document.getElementById('mod-filter-response')?.value.trim();
+  if (!trig || !resp || !currentModGroup) return;
+
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.filters = groupConfig.filters || [];
+  groupConfig.filters.push({ trigger: trig, response: resp, is_regex: false });
+
+  document.getElementById('mod-filter-trigger').value = '';
+  document.getElementById('mod-filter-response').value = '';
+
+  await saveGroupConfig(groupConfig);
+  showToast('Filter added!', 'success');
+}
+
+async function saveGroupFilters() {
+  if (!currentModGroup) return;
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  await saveGroupConfig(groupConfig);
+  showToast('Filters saved!', 'success');
+}
+
+async function saveGroupAntispam() {
+  if (!currentModGroup) return;
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.antispam = {
+    flood_protection: {
+      enabled: Boolean(document.getElementById('mod-flood-enabled')?.checked),
+      max_messages: parseInt(document.getElementById('mod-flood-max')?.value, 10) || 5,
+      window_seconds: parseInt(document.getElementById('mod-flood-win')?.value, 10) || 5,
+      action: 'mute',
+    },
+    anti_raid: {
+      enabled: Boolean(document.getElementById('mod-antiraid-enabled')?.checked),
+      max_joins: parseInt(document.getElementById('mod-antiraid-max')?.value, 10) || 5,
+      window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
+      action: 'lockdown',
+    },
+  };
+  await saveGroupConfig(groupConfig);
+  showToast('Anti-Spam & Anti-Raid saved!', 'success');
+}
+
+async function saveGroupFederation() {
+  if (!currentModGroup) return;
+  const fedId = document.getElementById('mod-fed-select')?.value || '';
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.federation_id = fedId;
+  await saveGroupConfig(groupConfig);
+  showToast('Federation settings saved!', 'success');
+}
+
+async function saveGroupAiConfig() {
+  if (!currentModGroup) return;
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.ai = {
+    enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
+    faq_auto_reply: Boolean(document.getElementById('mod-ai-faq')?.checked),
+    system_prompt: document.getElementById('mod-ai-prompt')?.value || 'You are a helpful group moderator AI assistant.',
+  };
+  await saveGroupConfig(groupConfig);
+  showToast('AI Config saved!', 'success');
+}
+
+async function saveGroupConfig(groupConfig) {
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ group_id: currentModGroup, group_config: groupConfig }),
+    });
+    if (res.ok) {
+      loadModerationConfig();
+    }
+  } catch (e) {
+    console.error('Failed to save group config:', e);
+  }
+}
+
+async function exportGroupModerationConfig() {
+  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  try {
+    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/export`, {
+      method: 'POST',
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    const str = JSON.stringify(json.data, null, 2);
+    const blob = new Blob([str], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `moderation_${currentModGroup.split('@')[0]}.json`;
+    a.click();
+    showToast('Export downloaded!', 'success');
+  } catch (e) {
+    showToast('Export failed', 'danger');
+  }
+}
+
+async function importGroupModerationConfig() {
+  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  const txt = document.getElementById('mod-import-text')?.value.trim();
+  if (!txt) return showToast('Please paste JSON data first', 'warning');
+
+  try {
+    const data = JSON.parse(txt);
+    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      showToast('Config imported successfully!', 'success');
+      loadModerationConfig();
+    } else {
+      showToast('Import failed', 'danger');
+    }
+  } catch (e) {
+    showToast('Invalid JSON format', 'danger');
+  }
+}
+
+async function clearUserWarnInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/warn/${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      showToast(`Warnings cleared for @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to clear warnings', 'danger');
+  }
+}
+
 window.updateDashboard = updateDashboard;
 window.downloadDebugInfo = downloadDebugInfo;
 window.restartSession = restartSession;
@@ -733,3 +1084,24 @@ window.openUpdateModal = openUpdateModal;
 window.closeUpdateModal = closeUpdateModal;
 window.openDependencyModal = openDependencyModal;
 window.closeDependencyModal = closeDependencyModal;
+
+window.loadModerationConfig = loadModerationConfig;
+window.toggleGlobalModeration = toggleGlobalModeration;
+window.selectModerationGroup = selectModerationGroup;
+window.toggleGroupModeration = toggleGroupModeration;
+window.switchModSubTab = switchModSubTab;
+window.saveGroupRules = saveGroupRules;
+window.saveGroupGreetings = saveGroupGreetings;
+window.saveGroupWarnings = saveGroupWarnings;
+window.saveGroupLocks = saveGroupLocks;
+window.addBlacklistWord = addBlacklistWord;
+window.saveGroupBlacklist = saveGroupBlacklist;
+window.addFilterRule = addFilterRule;
+window.saveGroupFilters = saveGroupFilters;
+window.saveGroupAntispam = saveGroupAntispam;
+window.saveGroupFederation = saveGroupFederation;
+window.saveGroupAiConfig = saveGroupAiConfig;
+window.exportGroupModerationConfig = exportGroupModerationConfig;
+window.importGroupModerationConfig = importGroupModerationConfig;
+window.clearUserWarnInUi = clearUserWarnInUi;
+
