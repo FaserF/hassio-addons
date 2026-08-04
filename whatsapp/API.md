@@ -346,6 +346,81 @@ Sends a VCard contact.
 }
 ```
 
+### 3.1 Group Management
+
+#### `POST /groups/create`
+Creates a new WhatsApp group.
+Payload: `{ "subject": "Family Chat", "participants": ["491701234567"] }`
+
+#### `GET /groups/info` / `POST /groups/info`
+Fetches group metadata (subject, owner, participants, settings).
+Payload: `{ "number": "120363040000000000@g.us" }`
+
+#### `POST /groups/participants/add` | `remove` | `promote` | `demote`
+Manage group participants.
+Payload: `{ "number": "120363040000000000@g.us", "participants": ["491701234567"] }`
+
+#### `POST /groups/leave`
+Leaves a group.
+Payload: `{ "number": "120363040000000000@g.us" }`
+
+#### `POST /groups/subject` & `POST /groups/description`
+Updates group subject or description.
+Payload: `{ "number": "120363040000000000@g.us", "subject": "New Name" }`
+
+#### `POST /groups/settings`
+Updates group settings (`announce` mode and `locked` info mode).
+Payload: `{ "number": "120363040000000000@g.us", "announce": true, "locked": true }`
+
+#### `GET /groups/invite_code` & `POST /groups/revoke_invite`
+Get or revoke group invite code/link.
+Payload: `{ "number": "120363040000000000@g.us" }`
+
+#### `POST /groups/join`
+Joins a group via invite code.
+Payload: `{ "code": "ABC123xyz..." }`
+
+### 3.2 Contact & Profile Management
+
+#### `POST /contacts/profile_picture`
+Fetch contact or group profile picture URL.
+Payload: `{ "number": "1234567890" }`
+
+#### `POST /contacts/about`
+Fetch status/about message of contact.
+Payload: `{ "number": "1234567890" }`
+
+#### `POST /contacts/block` & `POST /contacts/unblock`
+Block or unblock a contact number.
+Payload: `{ "number": "1234567890" }`
+
+### 3.3 Advanced Chat Actions
+
+#### `POST /star_message` & `POST /unstar_message`
+Star/unstar message by ID.
+Payload: `{ "number": "1234567890", "messageId": "BAE5..." }`
+
+#### `POST /pin_message` & `POST /unpin_message`
+Pin/unpin message in chat.
+Payload: `{ "number": "1234567890", "messageId": "BAE5...", "duration": 86400 }`
+
+#### `POST /forward_message`
+Forward message to target JID.
+Payload: `{ "number": "1234567890", "messageId": "BAE5...", "targetNumber": "491701234567" }`
+
+#### `POST /send_status`
+Post status/story to broadcast.
+Payload: `{ "message": "Good morning!", "url": "https://example.com/pic.jpg" }`
+
+#### `POST /chats/archive` & `POST /chats/unarchive`
+Archive or unarchive chat.
+Payload: `{ "number": "1234567890" }`
+
+#### `POST /chats/mute` & `POST /chats/unmute`
+Mute or unmute chat notifications.
+Payload: `{ "number": "1234567890", "durationMs": 28800000 }`
+
+
 ### 4. Native Commands
 
 The App supports several commands sent via WhatsApp messages directly to the bot.
