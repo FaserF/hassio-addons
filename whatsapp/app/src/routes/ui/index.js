@@ -108,7 +108,7 @@ export function registerUIRoutes(app) {
   });
 }
 
-function renderDashboard(sessionId) {
+export function renderDashboard(sessionId) {
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -235,7 +235,7 @@ function renderDashboard(sessionId) {
                 </div>
             </div>
 
-            ${dashboardView()}
+            ${dashboardView({ PORT, API_TOKEN, getLocalIP })}
 
             ${logsView()}
 

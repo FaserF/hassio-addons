@@ -8,9 +8,10 @@
     "start": "node index.js",
     "lint": "eslint .",
     "test:ui": "node tests/validate-ui-scope.js",
+    "test:ui-render": "node tests/test-ui-render.js",
     "test:contacts": "node tests/test-contact-cache.js",
     "test:moderation": "node tests/test-moderation.js",
-    "test": "npm run lint && npm run test:ui && npm run test:contacts && npm run test:moderation"
+    "test": "npm run lint && npm run test:ui && npm run test:ui-render && npm run test:contacts && npm run test:moderation"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",

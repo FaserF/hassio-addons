@@ -1,4 +1,5 @@
-export default () => `
+import os from 'os';
+export default ({ PORT, API_TOKEN, getLocalIP }) => `
 <section id="tab-dashboard" class="tab-panel active">
                 <div class="grid">
                     <div class="card">
