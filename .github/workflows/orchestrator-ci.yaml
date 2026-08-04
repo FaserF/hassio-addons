@@ -509,6 +509,8 @@ jobs:
       - name: 🏗️ Test Build amd64 (CI optimized)
         run: |
           docker run --rm --privileged \
+            -e DOCKER_USERNAME="" \
+            -e DOCKER_PASSWORD="" \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "${{ github.workspace }}:/data" \
             ghcr.io/home-assistant/amd64-builder:2026.03.2 \
