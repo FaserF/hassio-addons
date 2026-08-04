@@ -121,6 +121,10 @@ export async function handleModerationMessage(session, event) {
   const text = (event.content || '').trim();
   const rawMsg = event.raw;
 
+  if (config.approved && config.approved.includes(userId)) {
+    return false; // User is whitelisted, skip moderation
+  }
+
   // 1. Global Ban Federation check
   if (config.federation_id) {
     const fed = store.federations.find((f) => f.id === config.federation_id);
@@ -360,8 +364,10 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       // Greetings & Welcome message
       if (config.greetings?.welcome_enabled) {
-        let welcomeMsg = config.greetings.welcome_message || 'Welcome {user} to {group}!';
+        let welcomeMsg = config.greetings.welcome_text || config.greetings.welcome_message || 'Welcome {mention} to {group}!';
         welcomeMsg = welcomeMsg
+          .replace(/{mention}/g, `@${userId}`)
+          .replace(/{name}/g, userId)
           .replace(/{user}/g, `@${userId}`)
           .replace(/{group}/g, groupId.split('@')[0])
           .replace(/{rules}/g, config.rules?.text || 'Be respectful');
@@ -419,8 +425,10 @@ export async function handleModerationParticipantUpdate(session, update) {
     if (config.greetings?.goodbye_enabled) {
       for (const participantJid of participants) {
         const userId = participantJid.split('@')[0];
-        let goodbyeMsg = config.greetings.goodbye_message || 'Goodbye {user}!';
+        let goodbyeMsg = config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
         goodbyeMsg = goodbyeMsg
+          .replace(/{mention}/g, `@${userId}`)
+          .replace(/{name}/g, userId)
           .replace(/{user}/g, `@${userId}`)
           .replace(/{group}/g, groupId.split('@')[0]);
 
