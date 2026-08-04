@@ -247,7 +247,7 @@ function checkSyntax(filename) {
 // --------------------------------------------------------------------------
 function checkDuplicateRoutes() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js'];
 
   for (const filename of apiFiles) {
     const filepath = join(apiDir, filename);
@@ -285,7 +285,7 @@ function checkDuplicateRoutes() {
 // --------------------------------------------------------------------------
 function checkHAEndpoints() {
   const apiDir = join(__dirname, '..', 'src', 'routes', 'api');
-  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'session.js', 'system.js', 'ui_api.js'];
+  const apiFiles = ['messaging.js', 'contacts.js', 'groups.js', 'channels.js', 'session.js', 'system.js', 'ui_api.js'];
 
   const registeredRoutes = new Set();
   for (const filename of apiFiles) {
@@ -362,6 +362,13 @@ function checkHAEndpoints() {
     'POST /chats/unarchive',
     'POST /chats/mute',
     'POST /chats/unmute',
+    'POST /channels/info',
+    'POST /channels/follow',
+    'POST /channels/unfollow',
+    'POST /channels/mute',
+    'POST /channels/unmute',
+    'POST /labels/add_to_chat',
+    'POST /labels/remove_from_chat',
   ];
 
   for (const ep of expectedHAEndpoints) {
@@ -376,6 +383,7 @@ function checkHAEndpoints() {
 
   info(`API endpoint check complete (${expectedHAEndpoints.length} HA endpoints validated)`);
 }
+
 
 
 // --------------------------------------------------------------------------

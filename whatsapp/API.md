@@ -420,6 +420,25 @@ Payload: `{ "number": "1234567890" }`
 Mute or unmute chat notifications.
 Payload: `{ "number": "1234567890", "durationMs": 28800000 }`
 
+### 3.4 Channels (Newsletters) & Labels
+
+#### `GET /channels/info` / `POST /channels/info`
+Get metadata for a WhatsApp Channel (Newsletter) via JID or invite code.
+Payload: `{ "number": "120363000000000000@newsletter" }` or `{ "code": "0029Va..." }`
+
+#### `POST /channels/follow` & `POST /channels/unfollow`
+Follow or unfollow a WhatsApp Channel.
+Payload: `{ "number": "120363000000000000@newsletter" }`
+
+#### `POST /channels/mute` & `POST /channels/unmute`
+Mute or unmute a WhatsApp Channel.
+Payload: `{ "number": "120363000000000000@newsletter" }`
+
+#### `POST /labels/add_to_chat` & `POST /labels/remove_from_chat`
+Add or remove WhatsApp Business labels to/from a chat.
+Payload: `{ "number": "1234567890", "labelId": "1" }`
+
+
 
 ### 4. Native Commands
 
