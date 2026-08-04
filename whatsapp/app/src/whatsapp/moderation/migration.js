@@ -4,7 +4,7 @@ export function exportGroupModeration(groupId) {
   const config = getGroupModerationConfig(groupId);
   return {
     export_version: '1.0.0',
-    export_source: 'RoseAegisModerationEngine',
+    export_source: 'WhatsAppModerationEngine',
     exported_at: new Date().toISOString(),
     group_id: groupId,
     config,

@@ -722,7 +722,7 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
-// --- Rose & Aegis Moderation UI Handlers ---
+// --- Group Moderation UI Handlers ---
 let modStoreCache = null;
 let currentModGroup = '';
 

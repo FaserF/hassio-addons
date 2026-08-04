@@ -123,6 +123,9 @@ export function getSession(rawSessionId) {
  * Ensures the queue continues even if a single task fails.
  */
 export async function enqueue(session, task) {
+  if (!session.sendQueue) {
+    session.sendQueue = Promise.resolve();
+  }
   const taskPromise = session.sendQueue.then(async () => {
     try {
       const res = await task();

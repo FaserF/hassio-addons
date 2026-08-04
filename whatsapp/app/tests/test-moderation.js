@@ -15,7 +15,7 @@ import {
   importGroupModeration,
 } from '../src/whatsapp/moderation/migration.js';
 
-console.log('\n🧪 Running Rose & Aegis Moderation Unit Tests\n' + '='.repeat(50));
+console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
 
 saveModerationStore(getDefaultModerationStore());
 
@@ -97,9 +97,9 @@ try {
   assert.strictEqual(blHandled, true, 'Blacklist should match prohibited word');
   console.log('✅ PASSED: Blacklist correctly matched prohibited word');
 
-  // Test 4: Rose / Aegis Import & Export
+  // Test 4: Moderation Import & Export
   const exported = exportGroupModeration('1203630123456789@g.us');
-  assert.strictEqual(exported.export_source, 'RoseAegisModerationEngine', 'Export header matches');
+  assert.strictEqual(exported.export_source, 'WhatsAppModerationEngine', 'Export header matches');
   console.log('✅ PASSED: Moderation config export structure valid');
 
   const importPayload = {
@@ -112,7 +112,7 @@ try {
   assert.strictEqual(importedConfig.rules.text, '1. No spam\n2. Be nice');
   assert.strictEqual(importedConfig.filters[0].trigger, '!faq');
   assert.strictEqual(importedConfig.blacklist.words[0], 'prohibited');
-  console.log('✅ PASSED: Rose / Aegis JSON config imported successfully');
+  console.log('✅ PASSED: Moderation JSON config imported successfully');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

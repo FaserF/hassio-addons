@@ -155,7 +155,7 @@ function renderDashboard(sessionId) {
                 <i class="fas fa-comments nav-icon"></i>
                 <span>Chats</span>
             </button>
-            <button class="nav-item" data-tab="moderation" data-tooltip="Rose & Aegis Moderation" onclick="switchTab('moderation')">
+            <button class="nav-item" data-tab="moderation" data-tooltip="Group Moderation" onclick="switchTab('moderation')">
                 <i class="fas fa-shield-alt nav-icon"></i>
                 <span>Moderation</span>
             </button>
@@ -479,7 +479,7 @@ function renderDashboard(sessionId) {
                 <div class="card" style="margin-bottom:16px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                         <div>
-                            <h2 class="card-title" style="margin:0;"><i class="fas fa-shield-alt" style="color:var(--primary);"></i> Rose & Aegis Moderation Engine</h2>
+                            <h2 class="card-title" style="margin:0;"><i class="fas fa-shield-alt" style="color:var(--primary);"></i> WhatsApp Group Moderation Engine</h2>
                             <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0 0;">Comprehensive group defender, rules enforcement, anti-raid shield, and automated moderation.</p>
                         </div>
                         <div style="display:flex;align-items:center;gap:16px;">
@@ -630,11 +630,11 @@ function renderDashboard(sessionId) {
                         </div>
 
                         <div id="mod-subpanel-federation" class="mod-subpanel" style="display:none;">
-                            <h4>Aegis Global Ban Federation</h4>
+                            <h4>Global Ban Federation</h4>
                             <p style="font-size:12px;color:var(--text-muted);">Sync global ban lists across group clusters.</p>
                             <select id="mod-fed-select" class="chat-message-input" style="width:100%;margin-bottom:12px;">
                                 <option value="">No Federation Joined</option>
-                                <option value="fed_global_default">Aegis Default Federation</option>
+                                <option value="fed_global_default">Global Default Federation</option>
                             </select>
                             <button class="btn btn-primary btn-sm" onclick="saveGroupFederation()"><i class="fas fa-save"></i> Save Federation Link</button>
                         </div>
@@ -651,13 +651,13 @@ function renderDashboard(sessionId) {
                         </div>
 
                         <div id="mod-subpanel-migration" class="mod-subpanel" style="display:none;">
-                            <h4>1-Click Rose & Aegis Import / Export</h4>
+                            <h4>1-Click Moderation Import / Export</h4>
                             <div style="display:flex;gap:12px;margin-bottom:16px;">
                                 <button class="btn btn-secondary btn-sm" onclick="exportGroupModerationConfig()"><i class="fas fa-download"></i> Export Group Config (JSON)</button>
                             </div>
                             <hr style="border-color:var(--border-color);margin:16px 0;">
-                            <h5>Import Settings (Rose / Aegis JSON Format)</h5>
-                            <textarea id="mod-import-text" class="chat-message-input" style="width:100%;height:100px;margin-bottom:12px;" placeholder="Paste Rose or AegisBot JSON export here..."></textarea>
+                            <h5>Import Settings (JSON Format)</h5>
+                            <textarea id="mod-import-text" class="chat-message-input" style="width:100%;height:100px;margin-bottom:12px;" placeholder="Paste moderation JSON configuration here..."></textarea>
                             <button class="btn btn-primary btn-sm" onclick="importGroupModerationConfig()"><i class="fas fa-upload"></i> Import Config</button>
                         </div>
                     </div>

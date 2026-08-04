@@ -1167,7 +1167,7 @@ jobs:
           BUILD_DESCRIPTION=$(yq -r '.description' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")
           BUILD_NAME=$(yq -r '.name' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")
           BUILD_URL=$(yq -r '.url' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "https://github.com/FaserF/hassio-addons")
-          
+
           {
             echo "BUILD_FROM_AMD64=$BUILD_FROM_AMD64"
             echo "BUILD_FROM_AARCH64=$BUILD_FROM_AARCH64"

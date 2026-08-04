@@ -526,7 +526,7 @@ Healthcheck endpoint for Docker/Supervisor. No auth required.
 
 ---
 
-### 🛡️ Moderation Endpoints (Rose & Aegis)
+### 🛡️ Moderation Endpoints
 
 #### `GET /api/moderation/config`
 
@@ -554,8 +554,8 @@ Clears active warnings for user.
 
 #### `POST /api/moderation/groups/:groupId/export`
 
-Exports group configuration as JSON (Rose / Aegis format).
+Exports group configuration as JSON format.
 
 #### `POST /api/moderation/groups/:groupId/import`
 
-Imports Rose or AegisBot JSON configuration.
+Imports group moderation JSON configuration.

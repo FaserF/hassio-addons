@@ -17,11 +17,9 @@ export function registerGroupRoutes(app) {
           !Array.isArray(participants) ||
           participants.length === 0
         ) {
-          return res
-            .status(400)
-            .json({
-              detail: 'Missing subject or participants array (at least 1 participant required)',
-            });
+          return res.status(400).json({
+            detail: 'Missing subject or participants array (at least 1 participant required)',
+          });
         }
 
         const connected = await ensureConnected(session);

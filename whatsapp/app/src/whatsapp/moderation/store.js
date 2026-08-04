@@ -3,7 +3,64 @@ import path from 'path';
 import { DATA_DIR } from '../../config.js';
 import { logger } from '../../logger.js';
 
-const MODERATION_FILE = path.join(DATA_DIR, 'moderation_config.json');
+export function getModerationFilePath() {
+  const dir = process.env.DATA_DIR || DATA_DIR;
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return path.join(dir, 'moderation_config.json');
+  } catch (e) {
+    const fallbackDir = path.join(process.cwd(), '.data');
+    if (!fs.existsSync(fallbackDir)) {
+      try {
+        fs.mkdirSync(fallbackDir, { recursive: true });
+      } catch (err) {}
+    }
+    return path.join(fallbackDir, 'moderation_config.json');
+  }
+}
+
+let storeMemory = null;
+
+export function loadModerationStore() {
+  if (storeMemory) return storeMemory;
+
+  const file = getModerationFilePath();
+  try {
+    if (fs.existsSync(file)) {
+      const raw = fs.readFileSync(file, 'utf-8');
+      const parsed = JSON.parse(raw);
+      storeMemory = { ...getDefaultModerationStore(), ...parsed };
+      logger.info('🛡️ Loaded moderation configuration from disk.');
+      return storeMemory;
+    }
+  } catch (err) {
+    logger.error(
+      { error: err.message },
+      '⚠️ Failed to read moderation_config.json, using defaults.'
+    );
+  }
+
+  storeMemory = getDefaultModerationStore();
+  saveModerationStore(storeMemory);
+  return storeMemory;
+}
+
+export function saveModerationStore(data) {
+  try {
+    storeMemory = data;
+    const file = getModerationFilePath();
+    const parentDir = path.dirname(file);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    logger.error({ error: err.message }, '❌ Failed to save moderation_config.json.');
+    return false;
+  }
+}
 
 export function getDefaultGroupConfig() {
   return {
@@ -71,52 +128,12 @@ export function getDefaultModerationStore() {
     federations: [
       {
         id: 'fed_global_default',
-        name: 'Aegis Default Federation',
+        name: 'Global Default Federation',
         banned_users: [],
       },
     ],
     groups: {},
   };
-}
-
-let storeMemory = null;
-
-export function loadModerationStore() {
-  if (storeMemory) return storeMemory;
-
-  try {
-    if (fs.existsSync(MODERATION_FILE)) {
-      const raw = fs.readFileSync(MODERATION_FILE, 'utf-8');
-      const parsed = JSON.parse(raw);
-      storeMemory = { ...getDefaultModerationStore(), ...parsed };
-      logger.info('🛡️ Loaded moderation configuration from disk.');
-      return storeMemory;
-    }
-  } catch (err) {
-    logger.error(
-      { error: err.message },
-      '⚠️ Failed to read moderation_config.json, using defaults.'
-    );
-  }
-
-  storeMemory = getDefaultModerationStore();
-  saveModerationStore(storeMemory);
-  return storeMemory;
-}
-
-export function saveModerationStore(data) {
-  try {
-    storeMemory = data;
-    const parentDir = path.dirname(MODERATION_FILE);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
-    fs.writeFileSync(MODERATION_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
-  } catch (err) {
-    logger.error({ error: err.message }, '❌ Failed to save moderation_config.json.');
-    return false;
-  }
 }
 
 export function getGroupModerationConfig(groupId) {

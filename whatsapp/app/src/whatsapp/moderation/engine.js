@@ -121,11 +121,11 @@ export async function handleModerationMessage(session, event) {
   const text = (event.content || '').trim();
   const rawMsg = event.raw;
 
-  // 1. Aegis Federation check
+  // 1. Global Ban Federation check
   if (config.federation_id) {
     const fed = store.federations.find((f) => f.id === config.federation_id);
     if (fed && fed.banned_users.includes(userId)) {
-      await executePenalty(session, groupId, userId, 'ban', 'Banned in Aegis Federation cluster');
+      await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation');
       return true;
     }
   }
@@ -345,21 +345,15 @@ export async function handleModerationParticipantUpdate(session, update) {
       }
     }
 
-    // 2. Check participants against Aegis Federation & Greetings
+    // 2. Check participants against Global Ban Federation & Greetings
     for (const participantJid of participants) {
       const userId = participantJid.split('@')[0];
 
-      // Aegis Federation check
+      // Global Ban Federation check
       if (config.federation_id) {
         const fed = store.federations.find((f) => f.id === config.federation_id);
         if (fed && fed.banned_users.includes(userId)) {
-          await executePenalty(
-            session,
-            groupId,
-            userId,
-            'ban',
-            'Banned in Aegis Federation cluster'
-          );
+          await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation');
           continue;
         }
       }
