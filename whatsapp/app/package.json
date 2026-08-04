@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "test:ui": "node tests/validate-ui-scope.js",
     "test:contacts": "node tests/test-contact-cache.js",
-    "test": "npm run lint && npm run test:ui && npm run test:contacts"
+    "test:moderation": "node tests/test-moderation.js",
+    "test": "npm run lint && npm run test:ui && npm run test:contacts && npm run test:moderation"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",

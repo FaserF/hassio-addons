@@ -23,6 +23,10 @@ import { resolvePollVotes } from './poll.js';
 import { registerAckListener } from './ack.js';
 import { registerReactionListener } from './reactions.js';
 import { registerPresenceListener } from './presence.js';
+import {
+  handleModerationMessage,
+  handleModerationParticipantUpdate,
+} from '../moderation/engine.js';
 
 export { bindStore } from './store.js';
 export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
@@ -33,6 +37,16 @@ export function registerAllListeners(session) {
   registerAckListener(session);
   registerReactionListener(session);
   registerPresenceListener(session);
+
+  if (session.sock?.ev) {
+    session.sock.ev.on('group-participants.update', async (update) => {
+      try {
+        await handleModerationParticipantUpdate(session, update);
+      } catch (err) {
+        logger.error({ error: err.message }, 'Error in moderation participant update handler');
+      }
+    });
+  }
 }
 
 export function handleIncomingMessages(session) {
@@ -202,6 +216,7 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
+        await handleModerationMessage(session, event);
 
         if (text && typeof text === 'string') {
           const body = text.trim().toLowerCase();
