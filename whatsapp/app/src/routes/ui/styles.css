@@ -1304,6 +1304,17 @@ code {
   background-color: var(--bg-input-focus);
 }
 
+.btn-secondary.active {
+  background-color: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+}
+
+.btn-secondary.active:hover {
+  background-color: #34e073;
+  border-color: #34e073;
+}
+
 .btn-danger {
   background-color: rgba(234, 0, 56, 0.1);
   color: var(--danger);

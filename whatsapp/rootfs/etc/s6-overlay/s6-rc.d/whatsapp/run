@@ -524,5 +524,17 @@ fi
 rm -f "$THROTTLE_FILE"
 bashio::log.info "✅ Pre-flight checks passed."
 
+# Always re-read integration version from the live manifest.json right before starting Node.
+# This ensures INTEGRATION_VERSION reflects the actually installed version, regardless of
+# which branch ran above (initial install, auto-update, already up-to-date, etc.).
+if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+    INTEGRATION_VERSION=$(jq -r '.version // "unknown"' "$INTEGRATION_DIR/manifest.json")
+    export INTEGRATION_VERSION
+    bashio::log.info "📦 Integration Version (live): ${INTEGRATION_VERSION}"
+else
+    export INTEGRATION_VERSION="${INTEGRATION_VERSION:-unknown}"
+    bashio::log.warning "⚠️ manifest.json not found, using cached INTEGRATION_VERSION: ${INTEGRATION_VERSION}"
+fi
+
 bashio::app.print_banner
 exec node index.js

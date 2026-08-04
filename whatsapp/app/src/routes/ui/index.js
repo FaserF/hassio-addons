@@ -505,20 +505,19 @@ function renderDashboard(sessionId) {
                                 <span>Enable Moderation for this Group:</span>
                                 <input type="checkbox" id="mod-group-toggle" onchange="toggleGroupModeration(this.checked)">
                             </label>
+                            <!-- Sub-tab Navigation -->
+                        <div class="mod-subtab-bar" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;border-bottom:1px solid var(--border-color);margin-bottom:16px;">
+                            <button class="btn btn-secondary btn-sm active" data-subtab="rules" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-hand-wave"></i> Greetings &amp; Captcha</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="warnings" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="locks" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="blacklist" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="filters" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters &amp; Notes</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="antispam" onclick="switchModSubTab('antispam')"><i class="fas fa-bolt"></i> Anti-Raid &amp; Flood</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="federation" onclick="switchModSubTab('federation')"><i class="fas fa-network-wired"></i> Federations</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="ai" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> Gemini AI</button>
+                            <button class="btn btn-secondary btn-sm" data-subtab="migration" onclick="switchModSubTab('migration')"><i class="fas fa-file-export"></i> Import / Export</button>
                         </div>
-
-                        <!-- Sub-tab Navigation -->
-                        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;border-bottom:1px solid var(--border-color);margin-bottom:16px;">
-                            <button class="btn btn-secondary btn-sm active" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('greetings')"><i class="fas fa-hand-wave"></i> Greetings & Captcha</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters & Notes</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('antispam')"><i class="fas fa-bolt"></i> Anti-Raid & Flood</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('federation')"><i class="fas fa-network-wired"></i> Federations</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> Gemini AI</button>
-                            <button class="btn btn-secondary btn-sm" onclick="switchModSubTab('migration')"><i class="fas fa-file-export"></i> Import / Export</button>
                         </div>
 
                         <!-- Sub-tab Panels -->
@@ -920,6 +919,8 @@ function renderDashboard(sessionId) {
         isChatTabActive = (tabId === 'chats');
         if (isChatTabActive) {
             loadChats();
+        } else if (tabId === 'moderation') {
+            loadModerationConfig();
         } else {
             document.body.classList.remove('chat-open');
         }
