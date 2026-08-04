@@ -507,7 +507,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: 🏗️ Test Build amd64 (CI optimized)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.App }}
           file: ./${{ matrix.App }}/Dockerfile

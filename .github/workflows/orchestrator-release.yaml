@@ -738,7 +738,7 @@ jobs:
 
       - name: 🏗️ Test Build
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.App }}
           file: ./${{ matrix.App }}/Dockerfile
@@ -1169,7 +1169,7 @@ jobs:
 
       - name: 🏗️ Build and Push Addon Images
         if: matrix.App != 'sap-abap-cloud-dev'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.App }}
           file: ./${{ matrix.App }}/Dockerfile
