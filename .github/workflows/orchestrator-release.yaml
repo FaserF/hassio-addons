@@ -1178,7 +1178,7 @@ jobs:
 
       - name: 🏷️ Extract Docker Metadata & OCI Labels
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-amd64
@@ -1219,7 +1219,7 @@ jobs:
       - name: 🏷️ Extract Docker Metadata & OCI Labels for Standalone WhatsApp Gateway
         if: matrix.App == 'whatsapp'
         id: meta-standalone
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ env.OWNER }}/whatsapp-gw
