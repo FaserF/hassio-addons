@@ -845,7 +845,6 @@ function selectModerationGroup(groupId) {
     }
   }
 
-  
   // Commands
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
   if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled);
@@ -1173,7 +1172,7 @@ window.saveGroupAiConfig = saveGroupAiConfig;
 
 async function saveGroupCommands() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
-  
+
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
   const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
   const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';

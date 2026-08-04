@@ -364,7 +364,10 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       // Greetings & Welcome message
       if (config.greetings?.welcome_enabled) {
-        let welcomeMsg = config.greetings.welcome_text || config.greetings.welcome_message || 'Welcome {mention} to {group}!';
+        let welcomeMsg =
+          config.greetings.welcome_text ||
+          config.greetings.welcome_message ||
+          'Welcome {mention} to {group}!';
         welcomeMsg = welcomeMsg
           .replace(/{mention}/g, `@${userId}`)
           .replace(/{name}/g, userId)
@@ -425,7 +428,8 @@ export async function handleModerationParticipantUpdate(session, update) {
     if (config.greetings?.goodbye_enabled) {
       for (const participantJid of participants) {
         const userId = participantJid.split('@')[0];
-        let goodbyeMsg = config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
+        let goodbyeMsg =
+          config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
         goodbyeMsg = goodbyeMsg
           .replace(/{mention}/g, `@${userId}`)
           .replace(/{name}/g, userId)

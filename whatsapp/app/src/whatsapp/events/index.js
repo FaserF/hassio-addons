@@ -224,7 +224,14 @@ export function handleIncomingMessages(session) {
         // 1. Process as group command
         let handledAsCommand = false;
         if (text && isGroup) {
-          handledAsCommand = await processCommand(session, msg, text, personJid, isAdminUser, senderJid);
+          handledAsCommand = await processCommand(
+            session,
+            msg,
+            text,
+            personJid,
+            isAdminUser,
+            senderJid
+          );
         }
 
         // 2. Process via Moderation Engine if not a handled command
@@ -235,7 +242,6 @@ export function handleIncomingMessages(session) {
         if (text && typeof text === 'string') {
           const body = text.trim().toLowerCase();
           if (body.startsWith('ha-app-')) {
-
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });
             } else if (body === 'ha-app-getid') {
