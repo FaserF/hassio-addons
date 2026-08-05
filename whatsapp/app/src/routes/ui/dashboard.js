@@ -726,7 +726,7 @@ function closeDependencyModal() {
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
 let modStoreCache = null;
-let currentModGroup = "";
+let currentModGroup = '';
 
 async function loadModerationConfig() {
   try {
@@ -1458,11 +1458,11 @@ async function importGroupModerationConfig() {
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
-    window._latestReleaseData = data;
+window._latestReleaseData = data;
 window.loadLogs = loadLogs;
-    window.URL.revokeObjectURL(url);
-  window.history.replaceState({}, '', url);
-    window.updateRawLogsLink();
+window.URL.revokeObjectURL(url);
+window.history.replaceState({}, '', url);
+window.updateRawLogsLink();
 window.saveGlobalRulesInline = saveGlobalRulesInline;
 window.removeBlacklistWord = removeBlacklistWord;
 window.removeFilterRule = removeFilterRule;

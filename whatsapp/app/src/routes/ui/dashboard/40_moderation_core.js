@@ -1,7 +1,7 @@
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
 let modStoreCache = null;
-let currentModGroup = "";
+let currentModGroup = '';
 
 async function loadModerationConfig() {
   try {

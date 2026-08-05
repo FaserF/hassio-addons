@@ -1,10 +1,10 @@
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
-    window._latestReleaseData = data;
+window._latestReleaseData = data;
 window.loadLogs = loadLogs;
-    window.URL.revokeObjectURL(url);
-  window.history.replaceState({}, '', url);
-    window.updateRawLogsLink();
+window.URL.revokeObjectURL(url);
+window.history.replaceState({}, '', url);
+window.updateRawLogsLink();
 window.saveGlobalRulesInline = saveGlobalRulesInline;
 window.removeBlacklistWord = removeBlacklistWord;
 window.removeFilterRule = removeFilterRule;
