@@ -154,12 +154,12 @@ function updateFedBlacklistTagsInUi() {
 
 function openCreateFederationModal() {
   const modal = document.getElementById('create-federation-modal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) modal.classList.add('show');
 }
 
 function closeCreateFederationModal() {
   const modal = document.getElementById('create-federation-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
 }
 
 async function saveNewCustomFederation() {
@@ -239,12 +239,12 @@ function exportFederationConfig() {
 
 function openImportFederationModal() {
   const modal = document.getElementById('import-federation-modal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) modal.classList.add('show');
 }
 
 function closeImportFederationModal() {
   const modal = document.getElementById('import-federation-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
   const urlInp = document.getElementById('mod-import-fed-url');
   if (urlInp) urlInp.value = '';
   const fileInp = document.getElementById('mod-import-fed-file');

@@ -423,7 +423,7 @@ export default () => `
                 </div>
 
                 <!-- Create Custom Federation Modal -->
-                <div id="create-federation-modal" class="modal-overlay" style="display:none;">
+                <div id="create-federation-modal" class="modal-overlay">
                     <div class="modal-card">
                         <div class="modal-header">
                             <h3><i class="fas fa-network-wired" style="color:var(--primary);"></i> Create Custom Federation</h3>
@@ -450,7 +450,7 @@ export default () => `
                 </div>
 
                 <!-- Import Custom Federation Modal -->
-                <div id="import-federation-modal" class="modal-overlay" style="display:none;">
+                <div id="import-federation-modal" class="modal-overlay">
                     <div class="modal-card modal-lg">
                         <div class="modal-header">
                             <h3><i class="fas fa-file-import" style="color:var(--primary);"></i> Import Security Federation</h3>
