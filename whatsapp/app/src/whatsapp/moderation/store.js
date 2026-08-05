@@ -23,8 +23,43 @@ export function getModerationFilePath() {
 
 let storeMemory = null;
 
+/**
+ * Ensures the fed_global_default federation always contains all built-in
+ * default patterns. Called every time the store is loaded, even from cache,
+ * so that newly-added default patterns appear without a full reset.
+ */
+function _ensureDefaultFederation(store) {
+  const defaultStore = getDefaultModerationStore();
+  const defaultFed = defaultStore.federations[0]; // fed_global_default
+  if (!Array.isArray(store.federations)) {
+    store.federations = defaultStore.federations;
+    return;
+  }
+  const idx = store.federations.findIndex((f) => f.id === 'fed_global_default');
+  if (idx === -1) {
+    store.federations.unshift(defaultFed);
+  } else {
+    const stored = store.federations[idx];
+    const existingList = Array.isArray(stored.shared_blacklist) ? stored.shared_blacklist : [];
+    const merged = [...existingList];
+    for (const pattern of defaultFed.shared_blacklist) {
+      if (!merged.includes(pattern)) merged.push(pattern);
+    }
+    store.federations[idx] = {
+      ...defaultFed,
+      ...stored,
+      shared_blacklist: merged,
+    };
+  }
+}
+
 export function loadModerationStore() {
-  if (storeMemory) return storeMemory;
+  if (storeMemory) {
+    // Always re-apply the default-federation merge even on cache hits,
+    // so new built-in patterns become visible without restarting the addon.
+    _ensureDefaultFederation(storeMemory);
+    return storeMemory;
+  }
 
   const file = getModerationFilePath();
   try {
@@ -32,6 +67,7 @@ export function loadModerationStore() {
       const raw = fs.readFileSync(file, 'utf-8');
       const parsed = JSON.parse(raw);
       storeMemory = { ...getDefaultModerationStore(), ...parsed };
+      _ensureDefaultFederation(storeMemory);
       logger.info('🛡️ Loaded moderation configuration from disk.');
       return storeMemory;
     }

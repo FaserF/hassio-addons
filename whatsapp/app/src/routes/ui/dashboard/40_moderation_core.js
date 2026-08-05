@@ -12,6 +12,10 @@ const _dirty = {
   onProceed: null, // callback executed after save OR discard
 };
 
+// Snapshot of all tracked field values taken when a group is loaded or saved.
+// Used to detect changes without relying on fragile event delegation.
+let _formSnapshot = null;
+
 const SUB_PANEL_LABELS = {
   rules: 'Rules',
   greetings: 'Greetings & Captcha',
@@ -39,13 +43,94 @@ const SAVE_FN_MAP = {
   commands: () => saveGroupCommands(),
 };
 
+// IDs of all fields we track for changes (inputs, selects, textareas).
+const TRACKED_FIELD_IDS = [
+  'mod-rules-text',
+  'mod-rules-show-on-join',
+  'mod-welcome-enabled',
+  'mod-welcome-msg',
+  'mod-goodbye-enabled',
+  'mod-goodbye-msg',
+  'mod-captcha-enabled',
+  'mod-captcha-mode',
+  'mod-captcha-timeout',
+  'mod-max-warns',
+  'mod-warn-action',
+  'mod-lock-image',
+  'mod-lock-video',
+  'mod-lock-audio',
+  'mod-lock-document',
+  'mod-lock-sticker',
+  'mod-lock-url',
+  'mod-lock-invite',
+  'mod-lock-poll',
+  'mod-lock-contact',
+  'mod-lock-location',
+  'mod-lock-forwarded',
+  'mod-lock-rtl',
+  'mod-flood-enabled',
+  'mod-flood-max',
+  'mod-flood-win',
+  'mod-antiraid-enabled',
+  'mod-antiraid-max',
+  'mod-antiraid-win',
+  'mod-ai-enabled',
+  'mod-ai-faq',
+  'mod-ai-sentiment',
+  'mod-ai-prompt',
+  'mod-ai-key',
+  'mod-trans-lang',
+  'mod-trans-mode',
+  'mod-fed-select',
+  'mod-cmds-enabled',
+  'mod-cmds-prefix',
+  'mod-cmds-mute-action',
+];
+
+/** Capture current values of all tracked fields into a snapshot. */
+function _captureSnapshot() {
+  const snap = {};
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    snap[id] = el.type === 'checkbox' ? el.checked : el.value;
+  }
+  _formSnapshot = snap;
+}
+
+/** Compare current field values to snapshot. Returns true if anything changed. */
+function _isSnapshotDirty() {
+  if (!_formSnapshot) return false;
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const current = el.type === 'checkbox' ? el.checked : el.value;
+    if (current !== _formSnapshot[id]) return true;
+  }
+  return false;
+}
+
+/** Find which sub-panel contains the first changed field. */
+function _getDirtyPanel() {
+  if (!_formSnapshot) return null;
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const current = el.type === 'checkbox' ? el.checked : el.value;
+    if (current !== _formSnapshot[id]) {
+      const panel = el.closest('.mod-subpanel');
+      if (panel) return panel.id.replace('mod-subpanel-', '');
+    }
+  }
+  return null;
+}
+
 /** Call this whenever a tracked input changes. */
 function markDirty(panelId) {
   _dirty.isDirty = true;
   _dirty.panelId = panelId;
   _dirty.panelLabel = SUB_PANEL_LABELS[panelId] || panelId;
   _dirty.saveFn = SAVE_FN_MAP[panelId] || null;
-  // Visual indicator: add a dot to the active sub-tab pill
   _updateDirtyIndicator(panelId);
 }
 
@@ -56,24 +141,32 @@ function markClean() {
   _dirty.panelLabel = null;
   _dirty.saveFn = null;
   _dirty.onProceed = null;
-  // Remove all dirty indicators
+  _formSnapshot = null;
   document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
 }
 
 function _updateDirtyIndicator(panelId) {
-  // Remove existing dirty marks
   document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
-  // Mark the pill for the current dirty panel
   const pill = document.querySelector(`.mod-pill[data-subtab="${panelId}"]`);
   if (pill) pill.classList.add('dirty');
 }
 
 /**
- * Check dirty state before switching. If dirty, show the modal.
- * @param {Function} proceedFn - called when user confirms (save or discard)
- * @returns {boolean} true if we can switch immediately, false if modal shown
+ * Check dirty state before switching. Uses snapshot comparison as the
+ * primary check (reliable across all browsers) and falls back to the
+ * _dirty.isDirty flag for non-field changes (e.g. added filter rows).
  */
 function _guardDirty(proceedFn) {
+  // First, do a snapshot comparison to catch any field edits
+  if (_isSnapshotDirty()) {
+    const panelId = _getDirtyPanel() || _dirty.panelId || 'settings';
+    _dirty.isDirty = true;
+    _dirty.panelId = panelId;
+    _dirty.panelLabel = SUB_PANEL_LABELS[panelId] || panelId;
+    _dirty.saveFn = SAVE_FN_MAP[panelId] || null;
+    _updateDirtyIndicator(panelId);
+  }
+
   if (!_dirty.isDirty) return true; // no changes – proceed
 
   _dirty.onProceed = proceedFn;
@@ -81,7 +174,7 @@ function _guardDirty(proceedFn) {
   const nameEl = document.getElementById('unsaved-panel-name');
   if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
   if (modal) modal.style.display = 'flex';
-  return false; // modal shown – caller must NOT proceed
+  return false;
 }
 
 function _closeUnsavedModal() {
@@ -574,8 +667,9 @@ function selectModerationGroup(groupId) {
     fedSelect.value = activeFedId;
   }
   updateFedBlacklistTagsInUi();
-  // Register input listeners AFTER populating fields (prevents false dirty on load)
-  _registerDirtyListeners();
+  // Capture a snapshot of all field values AFTER populating them.
+  // _guardDirty() will diff against this snapshot on every subtab switch.
+  _captureSnapshot();
 }
 
 async function toggleGroupModeration(enabled) {
@@ -615,29 +709,10 @@ function switchModSubTab(subTab) {
   _doSwitchModSubTab(subTab);
 }
 
-/** Register dirty-tracking listeners on all inputs inside a sub-panel */
+/** Register dirty-tracking listeners – now snapshot-based, no event delegation needed. */
 function _registerDirtyListeners() {
-  const groupContent = document.getElementById('mod-group-content');
-  if (!groupContent || groupContent._dirtyListenersAttached) return;
-  groupContent._dirtyListenersAttached = true;
-
-  groupContent.addEventListener('input', (e) => {
-    const panel = e.target.closest('.mod-subpanel');
-    if (!panel) return;
-    const panelId = panel.id.replace('mod-subpanel-', '');
-    if (panelId && panelId !== _dirty.panelId) markDirty(panelId);
-    else if (panelId) _dirty.isDirty = true;
-  });
-
-  groupContent.addEventListener('change', (e) => {
-    // ignore the group-toggle itself (it saves immediately)
-    if (e.target.id === 'mod-group-toggle') return;
-    const panel = e.target.closest('.mod-subpanel');
-    if (!panel) return;
-    const panelId = panel.id.replace('mod-subpanel-', '');
-    if (panelId && panelId !== _dirty.panelId) markDirty(panelId);
-    else if (panelId) _dirty.isDirty = true;
-  });
+  // The snapshot is captured at the end of selectModerationGroup.
+  // No event listeners needed – _guardDirty() does a snapshot diff on every switch.
 }
 
 async function saveGroupRules() {
