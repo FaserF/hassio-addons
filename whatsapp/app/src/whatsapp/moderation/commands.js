@@ -305,6 +305,7 @@ registry.register(
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (!c.greetings) c.greetings = {};
     c.greetings.welcome_text = text;
+    c.greetings.welcome_message = text;
     c.greetings.welcome_enabled = true;
     saveModerationStore(store);
     await reply(session, groupId, { text: '✅ Welcome message updated and enabled.' });
@@ -315,7 +316,10 @@ registry.register(
 registry.register(
   'welcome',
   async (session, groupId, userId, args, config) => {
-    const text = config.greetings?.welcome_text || 'No welcome message configured.';
+    const text =
+      config.greetings?.welcome_text ||
+      config.greetings?.welcome_message ||
+      'Welcome {user} to {group}!';
     await reply(session, groupId, { text: `Current welcome message:\n\n${text}` });
   },
   { adminOnly: true, help: 'View the welcome message' }
@@ -335,6 +339,7 @@ registry.register(
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (!c.greetings) c.greetings = {};
     c.greetings.goodbye_text = text;
+    c.greetings.goodbye_message = text;
     c.greetings.goodbye_enabled = true;
     saveModerationStore(store);
     await reply(session, groupId, { text: '✅ Goodbye message updated and enabled.' });
@@ -345,7 +350,10 @@ registry.register(
 registry.register(
   'goodbye',
   async (session, groupId, userId, args, config) => {
-    const text = config.greetings?.goodbye_text || 'No goodbye message configured.';
+    const text =
+      config.greetings?.goodbye_text ||
+      config.greetings?.goodbye_message ||
+      'Goodbye {user}!';
     await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` });
   },
   { adminOnly: true, help: 'View the goodbye message' }

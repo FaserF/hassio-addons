@@ -210,13 +210,13 @@ export function handleIncomingMessages(session) {
         if (
           participantAlt &&
           typeof participantAlt === 'string' &&
-          participantAlt.endsWith('@s.whatsapp.net')
+          (participantAlt.endsWith('@s.whatsapp.net') || participantAlt.endsWith('@lid'))
         ) {
           effectiveSenderJid = participantAlt;
         } else if (
           participant &&
           typeof participant === 'string' &&
-          participant.endsWith('@s.whatsapp.net')
+          (participant.endsWith('@s.whatsapp.net') || participant.endsWith('@lid'))
         ) {
           effectiveSenderJid = participant;
         } else if (msg.key.fromMe) {
