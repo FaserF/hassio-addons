@@ -35,6 +35,7 @@ async function saveGroupFilters() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Filters saved!', 'success');
 }
 
@@ -68,6 +69,7 @@ async function saveGroupAiConfig() {
       }),
     });
     if (res.ok) {
+      markClean();
       showToast('AI & Translation Settings Saved!', 'success');
       loadModerationConfig();
     }

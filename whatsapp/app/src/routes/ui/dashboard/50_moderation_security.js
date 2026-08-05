@@ -23,6 +23,7 @@ async function saveGroupLocks() {
     groupConfig.locks[k] = { enabled: Boolean(el?.checked), action: 'delete' };
   });
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Content locks saved!', 'success');
 }
 
@@ -59,6 +60,7 @@ async function saveGroupBlacklist() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Blacklist saved!', 'success');
 }
 
@@ -80,5 +82,6 @@ async function saveGroupAntispam() {
     },
   };
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }

@@ -2365,6 +2365,34 @@ code {
   color: var(--text-main);
 }
 
+/* ── Unsaved Changes / Dirty Tracking ─────────────────────────────────────── */
+.mod-pill.dirty {
+  position: relative;
+}
+.mod-pill.dirty::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 1.5px solid var(--card-bg);
+  pointer-events: none;
+}
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
 

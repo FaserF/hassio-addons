@@ -3,6 +3,123 @@
 let modStoreCache = null;
 let currentModGroup = '';
 
+// ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────
+const _dirty = {
+  isDirty: false,
+  panelId: null, // e.g. 'rules', 'greetings', …
+  panelLabel: null, // human-readable label shown in the modal
+  saveFn: null, // async function to call when user picks "Save & Switch"
+  onProceed: null, // callback executed after save OR discard
+};
+
+const SUB_PANEL_LABELS = {
+  rules: 'Rules',
+  greetings: 'Greetings & Captcha',
+  warnings: 'Warnings',
+  locks: 'Locks',
+  blacklist: 'Blacklist',
+  filters: 'Filters',
+  antispam: 'Anti-Spam',
+  federation: 'Federation',
+  ai: 'Gemini AI',
+  commands: 'Commands',
+  migration: 'Import/Export',
+};
+
+const SAVE_FN_MAP = {
+  rules: () => saveGroupRules(),
+  greetings: () => saveGroupGreetings(),
+  warnings: () => saveGroupWarnings(),
+  locks: () => saveGroupLocks(),
+  blacklist: () => saveGroupBlacklist(),
+  filters: () => saveGroupFilters(),
+  antispam: () => saveGroupAntispam(),
+  federation: () => saveGroupFederation(),
+  ai: () => saveGroupAiConfig(),
+  commands: () => saveGroupCommands(),
+};
+
+/** Call this whenever a tracked input changes. */
+function markDirty(panelId) {
+  _dirty.isDirty = true;
+  _dirty.panelId = panelId;
+  _dirty.panelLabel = SUB_PANEL_LABELS[panelId] || panelId;
+  _dirty.saveFn = SAVE_FN_MAP[panelId] || null;
+  // Visual indicator: add a dot to the active sub-tab pill
+  _updateDirtyIndicator(panelId);
+}
+
+/** Call this after a successful save to clear dirty state. */
+function markClean() {
+  _dirty.isDirty = false;
+  _dirty.panelId = null;
+  _dirty.panelLabel = null;
+  _dirty.saveFn = null;
+  _dirty.onProceed = null;
+  // Remove all dirty indicators
+  document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
+}
+
+function _updateDirtyIndicator(panelId) {
+  // Remove existing dirty marks
+  document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
+  // Mark the pill for the current dirty panel
+  const pill = document.querySelector(`.mod-pill[data-subtab="${panelId}"]`);
+  if (pill) pill.classList.add('dirty');
+}
+
+/**
+ * Check dirty state before switching. If dirty, show the modal.
+ * @param {Function} proceedFn - called when user confirms (save or discard)
+ * @returns {boolean} true if we can switch immediately, false if modal shown
+ */
+function _guardDirty(proceedFn) {
+  if (!_dirty.isDirty) return true; // no changes – proceed
+
+  _dirty.onProceed = proceedFn;
+  const modal = document.getElementById('unsaved-changes-modal');
+  const nameEl = document.getElementById('unsaved-panel-name');
+  if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
+  if (modal) modal.style.display = 'flex';
+  return false; // modal shown – caller must NOT proceed
+}
+
+function _closeUnsavedModal() {
+  const modal = document.getElementById('unsaved-changes-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Called by modal button "Stay"
+function unsavedModalCancel() {
+  _dirty.onProceed = null;
+  _closeUnsavedModal();
+}
+
+// Called by modal button "Discard"
+function unsavedModalDiscard() {
+  const proceed = _dirty.onProceed;
+  markClean();
+  _closeUnsavedModal();
+  if (proceed) proceed();
+}
+
+// Called by modal button "Save & Switch"
+async function unsavedModalSaveAndSwitch() {
+  const proceed = _dirty.onProceed;
+  const saveFn = _dirty.saveFn;
+  _closeUnsavedModal();
+  if (saveFn) {
+    try {
+      await saveFn();
+    } catch (e) {
+      console.error('Auto-save failed', e);
+    }
+  }
+  markClean();
+  if (proceed) proceed();
+}
+// ── End Dirty Tracking ────────────────────────────────────────────────────────
+
 async function loadModerationConfig() {
   try {
     const [modRes, chatsRes] = await Promise.all([
@@ -150,6 +267,9 @@ function selectModerationGroup(groupId) {
 
   if (contentCard) contentCard.style.display = 'block';
   if (placeholderCard) placeholderCard.style.display = 'none';
+
+  // Clear any pending dirty state when switching groups
+  markClean();
 
   if (!modStoreCache) return;
   const config = modStoreCache.groups?.[groupId] || {};
@@ -454,6 +574,8 @@ function selectModerationGroup(groupId) {
     fedSelect.value = activeFedId;
   }
   updateFedBlacklistTagsInUi();
+  // Register input listeners AFTER populating fields (prevents false dirty on load)
+  _registerDirtyListeners();
 }
 
 async function toggleGroupModeration(enabled) {
@@ -472,7 +594,7 @@ async function toggleGroupModeration(enabled) {
   }
 }
 
-function switchModSubTab(subTab) {
+function _doSwitchModSubTab(subTab) {
   // Hide all panels
   const panels = document.querySelectorAll('.mod-subpanel');
   panels.forEach((p) => (p.style.display = 'none'));
@@ -488,6 +610,36 @@ function switchModSubTab(subTab) {
   }
 }
 
+function switchModSubTab(subTab) {
+  if (!_guardDirty(() => _doSwitchModSubTab(subTab))) return;
+  _doSwitchModSubTab(subTab);
+}
+
+/** Register dirty-tracking listeners on all inputs inside a sub-panel */
+function _registerDirtyListeners() {
+  const groupContent = document.getElementById('mod-group-content');
+  if (!groupContent || groupContent._dirtyListenersAttached) return;
+  groupContent._dirtyListenersAttached = true;
+
+  groupContent.addEventListener('input', (e) => {
+    const panel = e.target.closest('.mod-subpanel');
+    if (!panel) return;
+    const panelId = panel.id.replace('mod-subpanel-', '');
+    if (panelId && panelId !== _dirty.panelId) markDirty(panelId);
+    else if (panelId) _dirty.isDirty = true;
+  });
+
+  groupContent.addEventListener('change', (e) => {
+    // ignore the group-toggle itself (it saves immediately)
+    if (e.target.id === 'mod-group-toggle') return;
+    const panel = e.target.closest('.mod-subpanel');
+    if (!panel) return;
+    const panelId = panel.id.replace('mod-subpanel-', '');
+    if (panelId && panelId !== _dirty.panelId) markDirty(panelId);
+    else if (panelId) _dirty.isDirty = true;
+  });
+}
+
 async function saveGroupRules() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
   const text = document.getElementById('mod-rules-text')?.value || '';
@@ -497,6 +649,7 @@ async function saveGroupRules() {
   groupConfig.rules = { text, show_on_join: showOnJoin };
 
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Group rules saved!', 'success');
 }
 
@@ -514,6 +667,7 @@ async function saveGroupGreetings() {
       parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
   };
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Greetings & Captcha saved!', 'success');
 }
 
@@ -526,6 +680,7 @@ async function saveGroupWarnings() {
     action: document.getElementById('mod-warn-action')?.value || 'mute',
   };
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Warnings config saved!', 'success');
 }
 

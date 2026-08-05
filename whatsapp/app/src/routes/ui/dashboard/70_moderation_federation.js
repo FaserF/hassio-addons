@@ -6,6 +6,7 @@ async function saveGroupFederation() {
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.federation_id = fedId;
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Federation settings saved!', 'success');
 }
 

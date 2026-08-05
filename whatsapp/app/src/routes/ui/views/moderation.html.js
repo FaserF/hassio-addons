@@ -452,5 +452,34 @@ export default () => `
                     </div>
                 </div>
 
+                <!-- Unsaved Changes Warning Modal -->
+                <div id="unsaved-changes-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); z-index:99999; align-items:center; justify-content:center;">
+                    <div style="max-width:420px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,0.4); animation: fadeInUp 0.2s ease;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                            <div style="width:40px; height:40px; border-radius:10px; background:rgba(255,180,0,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-exclamation-triangle" style="color:#f59e0b; font-size:18px;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:700; font-size:15px; color:var(--text-main);">Unsaved Changes</div>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">You have unsaved changes in <strong id="unsaved-panel-name" style="color:var(--primary);"></strong></div>
+                            </div>
+                        </div>
+                        <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+                            If you leave now your changes will be lost. Would you like to save them first?
+                        </p>
+                        <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" onclick="unsavedModalCancel()" style="flex:1; min-width:90px;">
+                                <i class="fas fa-times"></i> Stay
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="unsavedModalDiscard()" style="flex:1; min-width:90px;">
+                                <i class="fas fa-trash-alt"></i> Discard
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="unsavedModalSaveAndSwitch()" style="flex:1; min-width:90px;">
+                                <i class="fas fa-save"></i> Save &amp; Switch
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 `;

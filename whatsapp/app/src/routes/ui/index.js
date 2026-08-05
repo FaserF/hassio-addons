@@ -488,7 +488,7 @@ export function renderDashboard(sessionId) {
         }
     });
 
-    function switchTab(tabId) {
+    function _doSwitchTab(tabId) {
         navItems.forEach(nav => nav.classList.remove('active'));
         tabPanels.forEach(panel => panel.classList.remove('active'));
         
@@ -509,6 +509,13 @@ export function renderDashboard(sessionId) {
         } else {
             document.body.classList.remove('chat-open');
         }
+    }
+
+    function switchTab(tabId) {
+        // Check for unsaved moderation changes before switching away
+        const guardFn = typeof _guardDirty === 'function' ? _guardDirty : null;
+        if (guardFn && !guardFn(() => _doSwitchTab(tabId))) return;
+        _doSwitchTab(tabId);
     }
     window.switchTab = switchTab;
 
