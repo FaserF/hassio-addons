@@ -156,12 +156,29 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 1. Global Ban Federation check
+  // 1. Global Ban Federation check & Shared Blacklist
   if (config.federation_id) {
     const fed = store.federations.find((f) => f.id === config.federation_id);
-    if (fed && fed.banned_users.includes(userId)) {
-      await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation');
-      return true;
+    if (fed) {
+      if (Array.isArray(fed.banned_users) && fed.banned_users.includes(userId)) {
+        await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Security Federation');
+        return true;
+      }
+      if (fed.shared_blacklist_enabled !== false && Array.isArray(fed.shared_blacklist)) {
+        const lowerText = text.toLowerCase();
+        for (const pat of fed.shared_blacklist) {
+          if (pat && lowerText.includes(pat.toLowerCase())) {
+            await executePenalty(
+              session,
+              groupId,
+              userId,
+              'delete',
+              `Prohibited link/pattern from Global Federation (${pat})`
+            );
+            return true;
+          }
+        }
+      }
     }
   }
 

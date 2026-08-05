@@ -128,7 +128,7 @@ export function getDefaultGroupConfig() {
       prefix: '!',
       mute_action: 'delete', // WhatsApp limitation: 'delete' un-sends their future messages or restricts group
     },
-    federation_id: '',
+    federation_id: 'fed_global_default',
   };
 }
 
@@ -140,8 +140,20 @@ export function getDefaultModerationStore() {
     federations: [
       {
         id: 'fed_global_default',
-        name: 'Global Default Federation',
+        name: 'Global Default Security Federation',
+        description: 'Shared cross-group security shield for spam prevention, botnet protection, and prohibited link filtering.',
+        auto_kick_spammers: true,
+        block_mass_invites: true,
+        shared_blacklist_enabled: true,
         banned_users: [],
+        shared_blacklist: [
+          't.me/joinchat',
+          'telegram.me/',
+          'whatsapp.com/channel/',
+          'crypto-airdrop',
+          'free-money-now',
+          'bit.ly/claim-bonus',
+        ],
       },
     ],
     groups: {},

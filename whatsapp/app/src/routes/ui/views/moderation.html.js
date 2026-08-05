@@ -221,13 +221,35 @@ export default () => `
                     <div id="mod-subpanel-federation" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-network-wired"></i></div>
-                            <div><div class="mod-feature-title">Ban Federation</div><div class="mod-feature-desc">Sync global ban lists across a cluster of groups.</div></div>
+                            <div><div class="mod-feature-title">Global Security Federation</div><div class="mod-feature-desc">Cross-group security shield for automatic spam prevention, botnet bans, and prohibited link filtering.</div></div>
                         </div>
-                        <div class="mod-field-group" style="max-width:400px;">
-                            <label class="mod-field-label">Active Federation</label>
-                            <select id="mod-fed-select" class="mod-select"><option value="">No Federation Joined</option><option value="fed_global_default">Global Default Federation</option></select>
+                        <div class="mod-field-group" style="max-width:450px; margin-bottom:16px;">
+                            <label class="mod-field-label">Active Federation Network</label>
+                            <select id="mod-fed-select" class="mod-select"><option value="">No Federation Joined</option><option value="fed_global_default" selected>Global Default Security Federation</option></select>
                         </div>
-                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupFederation()"><i class="fas fa-save"></i> Save Federation Link</button></div>
+
+                        <!-- Federation Security Shield Card -->
+                        <div class="card" style="background:rgba(37,211,102,0.04); border:1px solid rgba(37,211,102,0.2); padding:16px; border-radius:8px; margin-bottom:20px;">
+                            <h4 style="margin:0 0 10px; font-size:14px; font-weight:600; color:var(--primary);"><i class="fas fa-shield-alt"></i> Predefined Federation Rules &amp; Active Protection</h4>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; font-size:12px;">
+                                <div style="display:flex; align-items:center; gap:8px;"><i class="fas fa-check-circle" style="color:var(--primary);"></i> <span>Auto-Kick Fed-Banned Spammers</span></div>
+                                <div style="display:flex; align-items:center; gap:8px;"><i class="fas fa-check-circle" style="color:var(--primary);"></i> <span>Cross-Group Botnet Protection</span></div>
+                                <div style="display:flex; align-items:center; gap:8px;"><i class="fas fa-check-circle" style="color:var(--primary);"></i> <span>Shared Prohibited Links Filtering</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Shared Blacklist Patterns -->
+                        <div class="mod-field-group" style="margin-bottom:20px;">
+                            <label class="mod-field-label"><i class="fas fa-ban"></i> Shared Federation Blacklist (Predefined Patterns)</label>
+                            <p class="mod-field-desc">Messages containing these links or patterns are automatically deleted across all groups linked to this Federation.</p>
+                            <div id="mod-fed-blacklist-tags" class="mod-tag-cloud" style="margin-bottom:10px;"></div>
+                            <div class="mod-add-row">
+                                <input type="text" id="mod-fed-blacklist-new" class="mod-input mod-input-flex" placeholder="Add shared link pattern (e.g. t.me/joinchat)..." onkeydown="if(event.key==='Enter'){event.preventDefault();addFedBlacklistWord();}">
+                                <button class="btn btn-secondary btn-sm" onclick="addFedBlacklistWord()"><i class="fas fa-plus"></i> Add Link Pattern</button>
+                            </div>
+                        </div>
+
+                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupFederation()"><i class="fas fa-save"></i> Save Federation Settings</button></div>
                     </div>
 
                     <!-- GEMINI AI -->

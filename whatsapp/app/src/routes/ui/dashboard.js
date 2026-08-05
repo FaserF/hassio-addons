@@ -1020,6 +1020,30 @@ function selectModerationGroup(groupId) {
         .join('');
     }
   }
+
+  // Federation Select & Shared Blacklist Tags
+  const fedSelect = document.getElementById('mod-fed-select');
+  if (fedSelect) fedSelect.value = config.federation_id || 'fed_global_default';
+
+  const fedTags = document.getElementById('mod-fed-blacklist-tags');
+  if (fedTags && modStoreCache?.federations) {
+    const fedId = config.federation_id || 'fed_global_default';
+    const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+    const words = fed?.shared_blacklist || [];
+    if (!words.length) {
+      fedTags.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">No shared federation patterns configured</span>';
+    } else {
+      fedTags.innerHTML = words
+        .map(
+          (w, idx) => `
+        <span class="mod-tag" style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);padding:4px 10px;border-radius:16px;font-size:12px;margin:3px;">
+          <span>${escapeHtml(w)}</span>
+          <button style="background:none;border:none;color:#3498db;cursor:pointer;padding:0;font-size:14px;line-height:1;" onclick="removeFedBlacklistWord(${idx})">&times;</button>
+        </span>`
+        )
+        .join('');
+    }
+  }
 }
 
 async function toggleGroupModeration(enabled) {
@@ -1226,6 +1250,50 @@ async function saveGroupFederation() {
   await saveGroupConfig(groupConfig);
   showToast('Federation settings saved!', 'success');
 }
+
+async function addFedBlacklistWord() {
+  const inp = document.getElementById('mod-fed-blacklist-new');
+  if (!inp || !inp.value.trim() || !modStoreCache?.federations) return;
+  const word = inp.value.trim();
+  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  if (fed) {
+    fed.shared_blacklist = fed.shared_blacklist || [];
+    if (!fed.shared_blacklist.includes(word)) {
+      fed.shared_blacklist.push(word);
+    }
+    inp.value = '';
+    await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    showToast('Federation pattern added!', 'success');
+    loadModerationConfig();
+    setTimeout(() => {
+      const el = document.getElementById('mod-fed-blacklist-new');
+      if (el) el.focus();
+    }, 50);
+  }
+}
+window.addFedBlacklistWord = addFedBlacklistWord;
+
+async function removeFedBlacklistWord(idx) {
+  if (!modStoreCache?.federations) return;
+  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  if (fed && fed.shared_blacklist) {
+    fed.shared_blacklist.splice(idx, 1);
+    await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    showToast('Federation pattern removed', 'info');
+    loadModerationConfig();
+  }
+}
+window.removeFedBlacklistWord = removeFedBlacklistWord;
 
 async function saveGroupAiConfig() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
