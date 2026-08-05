@@ -272,7 +272,10 @@ export function handleIncomingMessages(session) {
         }
 
         if (text && typeof text === 'string') {
-          const body = text.trim().replace(/^['"`\s]+|['"`\s]+$/g, '').toLowerCase();
+          const body = text
+            .trim()
+            .replace(/^['"`\s]+|['"`\s]+$/g, '')
+            .toLowerCase();
           if (body.startsWith('ha-app-')) {
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });

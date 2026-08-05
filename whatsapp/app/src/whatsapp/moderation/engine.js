@@ -21,9 +21,15 @@ export async function sendMissingAdminWarning(session, groupId, attemptedAction 
     `2. Go to *Group Info* -> *Group Members*.\n` +
     `3. Select the Bot account and tap *Make Group Admin* (Promote).\n\n` +
     `⛔ *Limitations without Admin Rights:*\n` +
-    `• Cannot delete rule-violating or muted messages (` + '`!del` / `!mute` / content locks' + `)\n` +
-    `• Cannot kick or ban members (` + '`!kick` / `!ban` / anti-raid / flood penalty' + `)\n` +
-    `• Cannot promote or demote other users (` + '`!promote` / `!demote` / `!approve` / `!unapprove`' + `)\n` +
+    `• Cannot delete rule-violating or muted messages (` +
+    '`!del` / `!mute` / content locks' +
+    `)\n` +
+    `• Cannot kick or ban members (` +
+    '`!kick` / `!ban` / anti-raid / flood penalty' +
+    `)\n` +
+    `• Cannot promote or demote other users (` +
+    '`!promote` / `!demote` / `!approve` / `!unapprove`' +
+    `)\n` +
     `• Cannot change group settings or enforce lock restrictions`;
 
   try {
@@ -271,10 +277,7 @@ export async function handleModerationMessage(session, event) {
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
-  if (
-    locks.invite?.enabled &&
-    (/(https?:\/\/)?(chat\.whatsapp\.com\/|wa\.me\/)/i.test(text))
-  ) {
+  if (locks.invite?.enabled && /(https?:\/\/)?(chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
   if (

@@ -154,7 +154,10 @@ async function runTests() {
     false,
     '1203630123456789@g.us'
   );
-  assert(formattedHandled === true, 'Formatted command input (!ping) should be sanitized and handled');
+  assert(
+    formattedHandled === true,
+    'Formatted command input (!ping) should be sanitized and handled'
+  );
   console.log('✅ PASSED: Formatted command input (!ping) handled successfully');
 
   // Count total commands (deduplicated)

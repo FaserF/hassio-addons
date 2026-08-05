@@ -450,7 +450,9 @@ registry.register(
   async (session, groupId, userId) => {
     const cleanGroupId = groupId.split('@')[0] + '@g.us';
     const cleanUserId = userId.split('@')[0];
-    await reply(session, groupId, { text: `Group ID: \`${cleanGroupId}\`\nYour ID: \`${cleanUserId}\`` });
+    await reply(session, groupId, {
+      text: `Group ID: \`${cleanGroupId}\`\nYour ID: \`${cleanUserId}\``,
+    });
   },
   { help: 'Get the group and your user ID' }
 );
@@ -769,7 +771,9 @@ registry.register(
       for (const admin of admins) {
         const fullJid = admin.id;
         const phoneNum = fullJid.split('@')[0];
-        const cachedName = session.contactCache?.get(fullJid)?.name || session.contactCache?.get(`${phoneNum}@s.whatsapp.net`)?.name;
+        const cachedName =
+          session.contactCache?.get(fullJid)?.name ||
+          session.contactCache?.get(`${phoneNum}@s.whatsapp.net`)?.name;
         const displayName = cachedName ? `${cachedName} (@${phoneNum})` : `@${phoneNum}`;
         const icon = admin.admin === 'superadmin' ? '👑' : '👮';
         text += `${icon} ${displayName}\n`;
