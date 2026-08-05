@@ -129,7 +129,8 @@ export function handleIncomingMessages(session) {
         } else if (messageType === 'contactMessage' || messageType === 'contactsArrayMessage') {
           mediaType = 'contact';
           const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage;
-          const displayName = contactObj?.displayName || (contactObj?.vcard ? 'vCard Contact' : 'Contact Card');
+          const displayName =
+            contactObj?.displayName || (contactObj?.vcard ? 'vCard Contact' : 'Contact Card');
           text = text || `[Contact: ${displayName}]`;
         } else if (messageType === 'locationMessage' || messageType === 'liveLocationMessage') {
           mediaType = 'location';
@@ -157,7 +158,10 @@ export function handleIncomingMessages(session) {
             const mediaContent = msg.message[messageType];
             caption = mediaContent.caption || '';
             text = text || caption || `[Media: ${messageType}]`;
-            mediaType = messageType.replace('Message', '').replace('documentWithCaption', 'document').replace('ptv', 'video');
+            mediaType = messageType
+              .replace('Message', '')
+              .replace('documentWithCaption', 'document')
+              .replace('ptv', 'video');
             mimeType = mediaContent.mimetype;
 
             const buffer = await downloadMediaMessage(
