@@ -444,6 +444,62 @@ function selectModerationGroup(groupId) {
     }
   }
 
+  // Bans List UI
+  const bansList = document.getElementById('mod-bans-list');
+  if (bansList) {
+    const bannedMap = config.banned_users || {};
+    const bannedUserIds = Object.keys(bannedMap);
+    if (!bannedUserIds.length) {
+      bansList.innerHTML = '<div class="empty-state">No banned users</div>';
+    } else {
+      bansList.innerHTML = bannedUserIds
+        .map((u) => {
+          const info = bannedMap[u];
+          const timeStr = info.timestamp ? new Date(info.timestamp).toLocaleString() : 'N/A';
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong style="color:#e74c3c;">🚫 @${escapeHtml(u)}</strong>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                Reason: ${escapeHtml(info.reason || 'Banned')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> Unban</button>
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
+  // Kicks List UI
+  const kicksList = document.getElementById('mod-kicks-list');
+  if (kicksList) {
+    const kickLogs = config.kick_log || [];
+    if (!kickLogs.length) {
+      kicksList.innerHTML = '<div class="empty-state">No kick history</div>';
+    } else {
+      kicksList.innerHTML = kickLogs
+        .map((k) => {
+          const timeStr = k.timestamp ? new Date(k.timestamp).toLocaleString() : 'N/A';
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong style="color:var(--warning);">👢 @${escapeHtml(k.userId)}</strong>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                Reason: ${escapeHtml(k.reason || 'Kick')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash"></i> Remove</button>
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
   // Reports List UI
   const reportsList = document.getElementById('mod-reports-list');
   if (reportsList) {
@@ -875,5 +931,45 @@ async function resolveReportInUi(reportId) {
     }
   } catch (e) {
     showToast('Failed to resolve report', 'danger');
+  }
+}
+
+async function unbanUserInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/ban/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Unbanned @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to unban user', 'danger');
+  }
+}
+
+async function clearKickLogInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/kick/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Kick log entry removed for @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to remove kick log entry', 'danger');
   }
 }

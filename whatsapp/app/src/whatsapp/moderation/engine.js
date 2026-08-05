@@ -95,6 +95,20 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send DM ban notification to ${userJid}`);
         }
+      } else if (action === 'kick') {
+        // Persist kick to kick_log for UI history
+        const store = loadModerationStore();
+        const config = getGroupModerationConfig(groupId);
+        config.kick_log = Array.isArray(config.kick_log) ? config.kick_log : [];
+        config.kick_log.unshift({
+          userId: targetDisplayId,
+          reason: reason || 'Admin kick',
+          timestamp: Date.now(),
+        });
+        // Keep log to last 200 entries to avoid unbounded growth
+        if (config.kick_log.length > 200) config.kick_log = config.kick_log.slice(0, 200);
+        store.groups[groupId] = config;
+        saveModerationStore(store);
       }
 
       try {

@@ -122,6 +122,34 @@ export function registerModerationRoutes(app) {
     }
   });
 
+  // DELETE /api/moderation/groups/:groupId/ban/:userId
+  app.delete('/api/moderation/groups/:groupId/ban/:userId', (req, res) => {
+    const { groupId, userId } = req.params;
+    const store = loadModerationStore();
+    const config = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (config.banned_users && config.banned_users[userId]) {
+      delete config.banned_users[userId];
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+      res.json({ success: true, data: config.banned_users });
+    } else {
+      res.status(404).json({ success: false, error: 'Ban record not found' });
+    }
+  });
+
+  // DELETE /api/moderation/groups/:groupId/kick/:userId
+  app.delete('/api/moderation/groups/:groupId/kick/:userId', (req, res) => {
+    const { groupId, userId } = req.params;
+    const store = loadModerationStore();
+    const config = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (Array.isArray(config.kick_log)) {
+      config.kick_log = config.kick_log.filter((k) => k.userId !== userId);
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+    }
+    res.json({ success: true, data: config.kick_log || [] });
+  });
+
   // GET /api/moderation/federations
   app.get('/api/moderation/federations', (req, res) => {
     const store = loadModerationStore();

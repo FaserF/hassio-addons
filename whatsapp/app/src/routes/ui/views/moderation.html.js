@@ -138,7 +138,15 @@ export default () => `
                         </div>
                         <div class="mod-divider"></div>
                         <p class="mod-section-label"><i class="fas fa-list-ul"></i> Active Warnings</p>
-                        <div id="mod-warns-list" class="mod-list-container"><div class="empty-state">No active user warnings</div></div>
+                        <div id="mod-warns-list" class="mod-list-container" style="margin-bottom:20px;"><div class="empty-state">No active user warnings</div></div>
+
+                        <div class="mod-divider"></div>
+                        <p class="mod-section-label"><i class="fas fa-user-slash"></i> Banned Users (Auto-kicked on rejoin)</p>
+                        <div id="mod-bans-list" class="mod-list-container" style="margin-bottom:20px;"><div class="empty-state">No banned users</div></div>
+
+                        <div class="mod-divider"></div>
+                        <p class="mod-section-label"><i class="fas fa-user-times"></i> Kick History Log</p>
+                        <div id="mod-kicks-list" class="mod-list-container"><div class="empty-state">No kick history</div></div>
                     </div>
 
                     <!-- REPORTS -->

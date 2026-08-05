@@ -730,6 +730,99 @@ registry.register(
 );
 
 registry.register(
+  'unban',
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+    const targetMatches = [
+      ...(rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []),
+    ];
+    if (
+      targetMatches.length === 0 &&
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant
+    ) {
+      targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
+    }
+
+    // Also support passing a plain phone number in args
+    if (targetMatches.length === 0 && args.length > 0) {
+      const clean = args[0].replace(/\D/g, '');
+      if (clean) targetMatches.push(`${clean}@s.whatsapp.net`);
+    }
+
+    if (targetMatches.length === 0) {
+      await reply(session, groupId, {
+        text: `⚠️ You must mention a user, reply to their message, or specify their number (e.g. \`${config.commands.prefix}unban 49176...\`) to unban them.`,
+      });
+      return;
+    }
+
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+
+    for (const targetJid of targetMatches) {
+      const targetId = targetJid.split('@')[0];
+      if (c.banned_users && c.banned_users[targetId]) {
+        delete c.banned_users[targetId];
+        await reply(session, groupId, {
+          text: `✅ Unbanned @${targetId}. They may now rejoin the group.`,
+          mentions: [targetJid],
+        });
+      } else {
+        await reply(session, groupId, {
+          text: `⚠️ User @${targetId} is not banned in this group.`,
+          mentions: [targetJid],
+        });
+      }
+    }
+    store.groups[groupId] = c;
+    saveModerationStore(store);
+  },
+  { adminOnly: true, help: 'Unban a user so they can rejoin' }
+);
+
+registry.register(
+  'unkick',
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+    const targetMatches = [
+      ...(rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []),
+    ];
+    if (
+      targetMatches.length === 0 &&
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant
+    ) {
+      targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
+    }
+    if (targetMatches.length === 0 && args.length > 0) {
+      const clean = args[0].replace(/\D/g, '');
+      if (clean) targetMatches.push(`${clean}@s.whatsapp.net`);
+    }
+
+    if (targetMatches.length === 0) {
+      await reply(session, groupId, {
+        text: `⚠️ You must mention a user, reply to their message, or specify their number to clear kick log.`,
+      });
+      return;
+    }
+
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+
+    for (const targetJid of targetMatches) {
+      const targetId = targetJid.split('@')[0];
+      if (Array.isArray(c.kick_log)) {
+        c.kick_log = c.kick_log.filter((k) => k.userId !== targetId);
+      }
+      await reply(session, groupId, {
+        text: `✅ Cleared kick log entries for @${targetId}.`,
+        mentions: [targetJid],
+      });
+    }
+    store.groups[groupId] = c;
+    saveModerationStore(store);
+  },
+  { adminOnly: true, help: 'Clear kick history entries for a user' }
+);
+
+registry.register(
   'lock',
   async (session, groupId, userId, args, config) => {
     if (args.length === 0) {

@@ -56,3 +56,5 @@ window.unsavedModalDiscard = unsavedModalDiscard;
 window.unsavedModalSaveAndSwitch = unsavedModalSaveAndSwitch;
 window.markClean = markClean;
 window.markDirty = markDirty;
+window.unbanUserInUi = unbanUserInUi;
+window.clearKickLogInUi = clearKickLogInUi;

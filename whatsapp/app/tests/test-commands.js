@@ -31,6 +31,8 @@ async function runTests() {
   assert(registry.getCommand('id') !== undefined, 'id command is registered');
   assert(registry.getCommand('rules') !== undefined, 'rules command is registered');
   assert(registry.getCommand('unwarn') !== undefined, 'unwarn command is registered');
+  assert(registry.getCommand('unban') !== undefined, 'unban command is registered');
+  assert(registry.getCommand('unkick') !== undefined, 'unkick command is registered');
 
   // Phase 2 Commands
   assert(registry.getCommand('setrules') !== undefined, 'setrules command is registered');
