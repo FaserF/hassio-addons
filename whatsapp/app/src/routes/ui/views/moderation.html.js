@@ -233,11 +233,13 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-network-wired"></i></div>
                             <div><div class="mod-feature-title">Global Security Federation</div><div class="mod-feature-desc">Cross-group security shield for automatic spam prevention, botnet bans, and prohibited link filtering.</div></div>
                         </div>
-                        <div class="mod-field-group" style="max-width:550px; margin-bottom:16px;">
+                        <div class="mod-field-group" style="max-width:650px; margin-bottom:16px;">
                             <label class="mod-field-label">Active Federation Network</label>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <select id="mod-fed-select" class="mod-select" onchange="updateFedBlacklistTagsInUi()"><option value="">No Federation Joined</option><option value="fed_global_default" selected>Global Default Security Federation</option></select>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <select id="mod-fed-select" class="mod-select" style="min-width:220px;" onchange="updateFedBlacklistTagsInUi()"><option value="">No Federation Joined</option><option value="fed_global_default" selected>Global Default Security Federation</option></select>
                                 <button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="openCreateFederationModal()"><i class="fas fa-plus-circle"></i> Create Custom Federation</button>
+                                <button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="exportFederationConfig()"><i class="fas fa-file-export"></i> Share / Export (JSON)</button>
+                                <button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="openImportFederationModal()"><i class="fas fa-file-import"></i> Import Federation</button>
                             </div>
                         </div>
 
@@ -253,7 +255,7 @@ export default () => `
 
                         <!-- Shared Blacklist Patterns -->
                         <div class="mod-field-group" style="margin-bottom:20px;">
-                            <label class="mod-field-label"><i class="fas fa-ban"></i> Shared Federation Blacklist (Predefined Patterns)</label>
+                            <label class="mod-field-label"><i class="fas fa-ban"></i> Shared Federation Blacklist (Predefined & Custom Patterns)</label>
                             <p class="mod-field-desc">Messages containing these links or patterns are automatically deleted across all groups linked to this Federation.</p>
                             <div id="mod-fed-blacklist-tags" class="mod-tag-cloud" style="margin-bottom:10px;"></div>
                             <div class="mod-add-row">
@@ -396,7 +398,7 @@ export default () => `
                 </div>
 
                 <!-- Create Custom Federation Modal -->
-                <div id="create-federation-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-center; justify-content:center;">
+                <div id="create-federation-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
                     <div class="modal-content" style="max-width:480px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
                         <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
                             <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-network-wired" style="color:var(--primary);"></i> Create Custom Local Federation</h3>
@@ -418,6 +420,34 @@ export default () => `
                         <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
                             <button class="btn btn-secondary btn-sm" onclick="closeCreateFederationModal()">Cancel</button>
                             <button class="btn btn-primary btn-sm" onclick="saveNewCustomFederation()"><i class="fas fa-plus"></i> Create Federation</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Custom Federation Modal -->
+                <div id="import-federation-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+                    <div class="modal-content" style="max-width:520px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
+                            <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-file-import" style="color:var(--primary);"></i> Import Security Federation</h3>
+                            <button class="modal-close btn btn-sm btn-secondary" onclick="closeImportFederationModal()" style="padding:2px 8px;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
+                                Import a federation configuration by entering a remote JSON URL or by uploading a local <code>.json</code> file.
+                            </p>
+                            <div class="mod-field-group" style="margin-bottom:14px;">
+                                <label class="mod-field-label"><i class="fas fa-link"></i> Option A: Import from URL</label>
+                                <input type="text" id="mod-import-fed-url" class="mod-input" placeholder="https://example.com/federation_config.json">
+                            </div>
+                            <div class="mod-divider" style="margin:16px 0; text-align:center; position:relative;"><span style="background:var(--card-bg); padding:0 8px; font-size:11px; color:var(--text-muted);">OR</span></div>
+                            <div class="mod-field-group" style="margin-bottom:16px;">
+                                <label class="mod-field-label"><i class="fas fa-file-upload"></i> Option B: Upload JSON File</label>
+                                <input type="file" id="mod-import-fed-file" accept=".json" class="mod-input" style="padding:6px;">
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="closeImportFederationModal()">Cancel</button>
+                            <button class="btn btn-primary btn-sm" onclick="submitImportFederation()"><i class="fas fa-upload"></i> Import Federation</button>
                         </div>
                     </div>
                 </div>

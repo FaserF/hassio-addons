@@ -122,7 +122,10 @@ function updateFedBlacklistTagsInUi() {
   if (!fedTags || !modStoreCache?.federations) return;
 
   const fedId = fedSelect?.value || 'fed_global_default';
-  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  let fed = modStoreCache.federations.find((f) => f.id === fedId);
+  if (!fed && fedId === 'fed_global_default') {
+    fed = modStoreCache.federations[0];
+  }
   const words = fed?.shared_blacklist || [];
 
   if (!words.length) {
@@ -201,5 +204,114 @@ async function saveNewCustomFederation() {
     }
   } catch (e) {
     showToast('Failed to create custom federation', 'danger');
+  }
+}
+
+function exportFederationConfig() {
+  const fedSelect = document.getElementById('mod-fed-select');
+  const fedId = fedSelect?.value || 'fed_global_default';
+  const fed = (modStoreCache?.federations || []).find((f) => f.id === fedId);
+  if (!fed) return showToast('No active federation selected to export', 'warning');
+
+  const exportData = {
+    version: '1.0',
+    type: 'whatsapp_federation',
+    federation: fed,
+  };
+
+  const str = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([str], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `federation_${fed.id}.json`;
+  a.click();
+  showToast(`Exported Federation "${fed.name || fed.id}"! 🛡️`, 'success');
+}
+
+function openImportFederationModal() {
+  const modal = document.getElementById('import-federation-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeImportFederationModal() {
+  const modal = document.getElementById('import-federation-modal');
+  if (modal) modal.style.display = 'none';
+  const urlInp = document.getElementById('mod-import-fed-url');
+  if (urlInp) urlInp.value = '';
+  const fileInp = document.getElementById('mod-import-fed-file');
+  if (fileInp) fileInp.value = '';
+}
+
+async function submitImportFederation() {
+  const urlInp = document.getElementById('mod-import-fed-url')?.value.trim();
+  const fileInp = document.getElementById('mod-import-fed-file');
+  const file = fileInp?.files?.[0];
+
+  let importedData;
+
+  if (urlInp) {
+    try {
+      showToast('Fetching federation JSON from URL...', 'info');
+      const res = await fetch(urlInp);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      importedData = await res.json();
+    } catch (err) {
+      showToast(`Failed to fetch from URL: ${err.message}`, 'danger');
+      return;
+    }
+  } else if (file) {
+    try {
+      const text = await file.text();
+      importedData = JSON.parse(text);
+    } catch (err) {
+      showToast('Invalid JSON file', 'danger');
+      return;
+    }
+  } else {
+    showToast('Please enter a URL or select a JSON file to import', 'warning');
+    return;
+  }
+
+  // Handle either direct federation object or wrapped export structure
+  const fedObj = importedData?.federation || importedData;
+  if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
+    return showToast(
+      'Invalid federation JSON structure. Must contain at least a "name" property.',
+      'danger'
+    );
+  }
+
+  // Ensure unique ID
+  const targetId =
+    fedObj.id && fedObj.id !== 'fed_global_default' ? fedObj.id : `fed_imported_${Date.now()}`;
+  fedObj.id = targetId;
+
+  modStoreCache.federations = modStoreCache.federations || [];
+  const idx = modStoreCache.federations.findIndex((f) => f.id === targetId);
+  if (idx >= 0) {
+    modStoreCache.federations[idx] = fedObj;
+  } else {
+    modStoreCache.federations.push(fedObj);
+  }
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    if (res.ok) {
+      showToast(`Federation "${fedObj.name}" imported successfully! 🛡️`, 'success');
+      closeImportFederationModal();
+      await loadModerationConfig();
+      const fedSelect = document.getElementById('mod-fed-select');
+      if (fedSelect) {
+        fedSelect.value = targetId;
+        updateFedBlacklistTagsInUi();
+      }
+    }
+  } catch (e) {
+    showToast('Failed to save imported federation', 'danger');
   }
 }
