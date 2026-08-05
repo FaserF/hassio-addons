@@ -117,7 +117,11 @@ async function runTests() {
 
   // Test Custom Mapped Commands in !help
   groupConfig.commands.custom_commands = [
-    { command: 'wifi', response: 'SSID: Guest | Pass: 12345', description: 'Shows Wi-Fi credentials' },
+    {
+      command: 'wifi',
+      response: 'SSID: Guest | Pass: 12345',
+      description: 'Shows Wi-Fi credentials',
+    },
     { command: 'adminsecret', response: 'Secret', admin_only: true },
   ];
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
@@ -144,8 +148,14 @@ async function runTests() {
   );
 
   assert(helpOutput.includes('!wifi'), '!help output should contain custom command !wifi');
-  assert(helpOutput.includes('Shows Wi-Fi credentials'), '!help output should contain custom command description');
-  assert(helpOutput.includes('!adminsecret'), '!help output for admin should contain admin_only custom command');
+  assert(
+    helpOutput.includes('Shows Wi-Fi credentials'),
+    '!help output should contain custom command description'
+  );
+  assert(
+    helpOutput.includes('!adminsecret'),
+    '!help output for admin should contain admin_only custom command'
+  );
   console.log('✅ PASSED: Custom commands with optional description listed in !help');
 
   const customHandled = await processCommand(
