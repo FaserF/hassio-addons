@@ -380,7 +380,12 @@ function checkHAEndpoints() {
     'POST /chats/unarchive',
     'POST /chats/mute',
     'POST /chats/unmute',
+    'POST /mark_as_unread',
+    'POST /chats/clear',
+    'POST /chats/delete',
+    'GET /chats/messages',
     'POST /channels/info',
+
     'POST /channels/follow',
     'POST /channels/unfollow',
     'POST /channels/mute',

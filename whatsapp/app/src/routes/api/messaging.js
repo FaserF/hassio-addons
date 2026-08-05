@@ -683,4 +683,96 @@ export function registerMessagingRoutes(app) {
       }
     })
   );
+
+  app.post(
+    '/mark_as_unread',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ markRead: false }, jid);
+        res.json({ status: 'marked_unread', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/chats/clear',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number } = req.body;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ clear: { messages: [] } }, jid);
+        res.json({ status: 'cleared', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.all(
+    '/chats/delete',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const number = req.body?.number || req.query?.number;
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(number);
+        await session.sock.chatModify({ delete: true }, jid);
+        res.json({ status: 'deleted', jid });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.all(
+    '/chats/messages',
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const number = req.body?.number || req.query?.number;
+        const limit = parseInt(req.body?.limit || req.query?.limit || '50', 10);
+        if (!number) return res.status(400).json({ detail: 'Missing number' });
+
+        const jid = getJid(number);
+        const messages = [];
+
+        if (session.messageStore) {
+          for (const msg of session.messageStore.values()) {
+            if (msg.key?.remoteJid === jid || msg.key?.remoteJid?.split('@')[0] === jid.split('@')[0]) {
+              messages.push(msg);
+              if (messages.length >= limit) break;
+            }
+          }
+        }
+        res.json({ jid, count: messages.length, messages });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
 }
+
