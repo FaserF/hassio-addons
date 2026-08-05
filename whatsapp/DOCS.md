@@ -263,3 +263,11 @@ The bot can automatically greet new users who send a direct message for the firs
 - **Admin Tips**: Provides quick tips for administrators (`ha-app-status` and `ha-app-help`).
 - **Support Links**: Includes a link to the project documentation.
 - **Manual Trigger**: Use `ha-app-welcome` (Admin only) to manually trigger the message.
+
+---
+
+## 💡 Acknowledgments & Inspiration
+
+The Group Moderation Engine, Content Locks, Security Federations, and Group Commands features in this project were inspired by the conceptual architecture of **Miss Rose** and **[AegisBot](https://github.com/FaserF/AegisBot)**.
+
+- **AegisBot Project**: [https://github.com/FaserF/AegisBot](https://github.com/FaserF/AegisBot)

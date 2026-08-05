@@ -1,4 +1,5 @@
-import { registry, parseDuration } from '../src/whatsapp/moderation/commands.js';
+import { registry, parseDuration, processCommand } from '../src/whatsapp/moderation/commands.js';
+import { getGroupModerationConfig, setGroupModerationConfig } from '../src/whatsapp/moderation/store.js';
 
 let failed = 0;
 function assert(condition, message) {
@@ -87,6 +88,53 @@ async function runTests() {
   assert(parseDuration('invalid') === null, 'parseDuration invalid returns null');
   assert(parseDuration('') === null, 'parseDuration empty returns null');
   assert(parseDuration('5x') === null, 'parseDuration 5x (bad unit) returns null');
+
+  // Test Custom Commands Execution
+  const mockSession = {
+    id: 'default',
+    recentFailures: [],
+    recentSent: [],
+    stats: { sent: 0, failed: 0, received: 0 },
+    sock: {
+      sendMessage: async () => ({ key: { id: 'test_msg' } }),
+    },
+  };
+  const mockMsg = { key: { remoteJid: '1203630123456789@g.us', id: 'm1' } };
+
+  const groupConfig = getGroupModerationConfig('1203630123456789@g.us');
+  groupConfig.enabled = true;
+  groupConfig.commands = {
+    enabled: true,
+    prefix: '!',
+    custom_commands: [{ command: 'wifi', response: 'GuestWifi', admin_only: false }],
+  };
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  const customHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    '!wifi',
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(customHandled === true, 'Custom mapped command !wifi should be handled');
+  console.log('✅ PASSED: Custom mapped command !wifi executed successfully');
+
+  // Test Disabled Built-in Commands Execution
+  groupConfig.commands.disabled_commands = ['ping'];
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  const disabledHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    '!ping',
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(disabledHandled === true, 'Disabled built-in command !ping should be handled with notification');
+  console.log('✅ PASSED: Disabled built-in command !ping handled and notified user successfully');
 
   // Count total commands (deduplicated)
   const seen = new Set();

@@ -1174,7 +1174,33 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   const args = parts.slice(1);
 
   const command = registry.getCommand(cmdStr);
-  if (!command) return false; // Not a registered command
+  if (!command) {
+    // Check custom mapped commands
+    const customCmds = config.commands?.custom_commands || [];
+    const customMatch = customCmds.find(
+      (c) => c.command.toLowerCase().replace(/^[!/#]+/, '') === cmdStr
+    );
+    if (customMatch) {
+      if (customMatch.admin_only && !isAdminUser) {
+        await reply(session, groupId, {
+          text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
+        });
+        return true;
+      }
+      await reply(session, groupId, { text: customMatch.response });
+      return true;
+    }
+    return false;
+  }
+
+  // Check if built-in default command is disabled in this group
+  const disabledCmds = config.commands?.disabled_commands || [];
+  if (disabledCmds.includes(cmdStr)) {
+    await reply(session, groupId, {
+      text: `⚠️ *Command Disabled:*\nThe command \`${prefix}${cmdStr}\` is disabled in this group and will be ignored.`,
+    });
+    return true;
+  }
 
   const userId = senderJid.split('@')[0];
 

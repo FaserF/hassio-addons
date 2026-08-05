@@ -297,23 +297,52 @@ export default () => `
                     <div id="mod-subpanel-commands" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap" style="background:linear-gradient(135deg,rgba(0,168,132,0.2),rgba(52,152,219,0.2));color:var(--primary);"><i class="fas fa-terminal"></i></div>
-                            <div><div class="mod-feature-title">Bot Commands (Rose/AegisBot)</div><div class="mod-feature-desc">Allow members and admins to interact with the bot via group commands.</div></div>
+                            <div><div class="mod-feature-title">Bot Commands &amp; Custom Mappings</div><div class="mod-feature-desc">Allow members and admins to interact with the bot via group commands and custom mapped shortcuts.</div></div>
                         </div>
                         <div class="mod-option-row" style="margin-bottom:10px;">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label">Enable group commands (!help, !warn, !ban, etc.)</span>
                         </div>
-                        <div class="mod-field-group" style="max-width:200px;">
+                        <div class="mod-field-group" style="max-width:200px; margin-bottom:12px;">
                             <label class="mod-field-label">Command Prefix</label>
                             <input type="text" id="mod-cmds-prefix" class="mod-input" value="!" maxlength="3">
                         </div>
-                        <div class="mod-field-group" style="max-width:300px;">
+                        <div class="mod-field-group" style="max-width:300px; margin-bottom:16px;">
                             <label class="mod-field-label">Mute Action (WhatsApp API Limit)</label>
                             <select id="mod-cmds-mute-action" class="mod-select mod-select-sm">
                                 <option value="delete">Delete user's messages</option>
                             </select>
                             <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">WhatsApp does not support user-specific mutes. This defines how mutes are enforced.</p>
                         </div>
+
+                        <!-- Default Built-in Commands Toggles -->
+                        <div class="mod-field-group" style="margin-top:20px; margin-bottom:20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label class="mod-field-label" style="margin:0;"><i class="fas fa-toggle-on"></i> Enable/Disable Built-in Commands</label>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="toggleAllDefaultCommands(true)">Enable All</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="toggleAllDefaultCommands(false)">Disable All</button>
+                                </div>
+                            </div>
+                            <p class="mod-field-desc">Control which built-in commands are permitted in this group. When a disabled command is triggered, the bot will notify members that the command is disabled.</p>
+                            <div id="mod-default-cmds-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:8px; margin-top:10px; max-height:220px; overflow-y:auto; padding:8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(0,0,0,0.1);"></div>
+                        </div>
+
+                        <!-- Custom Mapped Commands -->
+                        <div class="mod-field-group" style="margin-top:20px; margin-bottom:20px;">
+                            <label class="mod-field-label"><i class="fas fa-terminal"></i> Custom Group Commands &amp; Mappings</label>
+                            <p class="mod-field-desc">Create custom commands (e.g. <code>!wifi</code>, <code>!faq</code>, <code>!socials</code>) that trigger automated text responses or information cards.</p>
+                            <div id="mod-custom-cmds-list" style="margin-bottom:12px;"></div>
+                            <div class="mod-add-row" style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" id="mod-cmd-name" class="mod-input" style="max-width:140px;" placeholder="Command (e.g. wifi)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                <input type="text" id="mod-cmd-response" class="mod-input mod-input-flex" placeholder="Response text (e.g. SSID: GuestWifi | Pass: 12345)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; white-space:nowrap; cursor:pointer;">
+                                    <input type="checkbox" id="mod-cmd-admin-only"> Admin Only
+                                </label>
+                                <button class="btn btn-secondary btn-sm" onclick="addCustomCommandRule()"><i class="fas fa-plus"></i> Add Command</button>
+                            </div>
+                        </div>
+
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupCommands()"><i class="fas fa-save"></i> Save Commands Config</button></div>
                     </div>
 

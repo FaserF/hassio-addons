@@ -944,6 +944,43 @@ function selectModerationGroup(groupId) {
     }
   }
 
+const BUILTIN_COMMANDS_LIST = [
+  { cmd: 'help', label: '!help' },
+  { cmd: 'ping', label: '!ping' },
+  { cmd: 'id', label: '!id' },
+  { cmd: 'rules', label: '!rules' },
+  { cmd: 'info', label: '!info' },
+  { cmd: 'adminlist', label: '!adminlist' },
+  { cmd: 'locktypes', label: '!locktypes' },
+  { cmd: 'translate', label: '!translate' },
+  { cmd: 'warn', label: '!warn' },
+  { cmd: 'warns', label: '!warns' },
+  { cmd: 'unwarn', label: '!unwarn' },
+  { cmd: 'kick', label: '!kick' },
+  { cmd: 'ban', label: '!ban' },
+  { cmd: 'mute', label: '!mute' },
+  { cmd: 'unmute', label: '!unmute' },
+  { cmd: 'tban', label: '!tban' },
+  { cmd: 'tmute', label: '!tmute' },
+  { cmd: 'promote', label: '!promote' },
+  { cmd: 'demote', label: '!demote' },
+  { cmd: 'setrules', label: '!setrules' },
+  { cmd: 'lock', label: '!lock' },
+  { cmd: 'unlock', label: '!unlock' },
+  { cmd: 'locks', label: '!locks' },
+  { cmd: 'report', label: '!report' },
+  { cmd: 'notes', label: '!notes' },
+  { cmd: 'save', label: '!save' },
+  { cmd: 'get', label: '!get' },
+  { cmd: 'filter', label: '!filter' },
+  { cmd: 'filters', label: '!filters' },
+  { cmd: 'stop', label: '!stop' },
+  { cmd: 'welcome', label: '!welcome' },
+  { cmd: 'goodbye', label: '!goodbye' },
+  { cmd: 'del', label: '!del' },
+  { cmd: 'setlang', label: '!setlang' },
+];
+
   // Commands
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
   if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled);
@@ -951,6 +988,43 @@ function selectModerationGroup(groupId) {
   if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
   const cmdsMute = document.getElementById('mod-cmds-mute-action');
   if (cmdsMute) cmdsMute.value = config.commands?.mute_action || 'delete';
+
+  // Default Commands Grid UI
+  const defaultCmdsGrid = document.getElementById('mod-default-cmds-grid');
+  if (defaultCmdsGrid) {
+    const disabledCmds = config.commands?.disabled_commands || [];
+    defaultCmdsGrid.innerHTML = BUILTIN_COMMANDS_LIST.map(
+      (c) => `
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
+        <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${c.cmd}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
+        <span><code>${escapeHtml(config.commands?.prefix || '!')}${c.cmd}</code></span>
+      </label>`
+    ).join('');
+  }
+
+  // Custom Commands List UI
+  const customCmdsList = document.getElementById('mod-custom-cmds-list');
+  if (customCmdsList) {
+    const customCmds = config.commands?.custom_commands || [];
+    if (!customCmds.length) {
+      customCmdsList.innerHTML =
+        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
+    } else {
+      customCmdsList.innerHTML = customCmds
+        .map(
+          (c, idx) => `
+        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div>
+            <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong> 
+            ${c.admin_only ? '<span style="font-size:10px;background:rgba(231,76,60,0.15);color:#e74c3c;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin Only</span>' : ''}
+            &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeCustomCommandRule(${idx})"><i class="fas fa-trash"></i></button>
+        </div>`
+        )
+        .join('');
+    }
+  }
 
   // AI & Translation
   const aiEnabled = document.getElementById('mod-ai-enabled');
@@ -1138,11 +1212,72 @@ async function saveGroupCommands() {
   const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
   const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
 
+  const disabledCmds = [];
+  document.querySelectorAll('.mod-default-cmd-toggle').forEach((cb) => {
+    if (!cb.checked) {
+      disabledCmds.push(cb.dataset.cmd);
+    }
+  });
+
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.commands = { enabled, prefix, mute_action };
+  groupConfig.commands = {
+    ...(groupConfig.commands || {}),
+    enabled,
+    prefix,
+    mute_action,
+    disabled_commands: disabledCmds,
+  };
 
   await saveGroupConfig(groupConfig);
   showToast('Commands configuration saved!', 'success');
+}
+
+function toggleAllDefaultCommands(enable) {
+  document.querySelectorAll('.mod-default-cmd-toggle').forEach((cb) => {
+    cb.checked = Boolean(enable);
+  });
+}
+
+async function addCustomCommandRule() {
+  const nameInp = document.getElementById('mod-cmd-name');
+  const respInp = document.getElementById('mod-cmd-response');
+  const adminOnlyInp = document.getElementById('mod-cmd-admin-only');
+
+  const name = nameInp?.value.trim().replace(/^[!/#]+/, '');
+  const resp = respInp?.value.trim();
+  const adminOnly = Boolean(adminOnlyInp?.checked);
+
+  if (!name || !resp || !currentModGroup) return;
+
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.commands = groupConfig.commands || { enabled: true, prefix: '!', mute_action: 'delete' };
+  groupConfig.commands.custom_commands = groupConfig.commands.custom_commands || [];
+  groupConfig.commands.custom_commands.push({
+    command: name,
+    response: resp,
+    admin_only: adminOnly,
+  });
+
+  if (nameInp) nameInp.value = '';
+  if (respInp) respInp.value = '';
+  if (adminOnlyInp) adminOnlyInp.checked = false;
+
+  await saveGroupConfig(groupConfig);
+  showToast(`Custom command !${name} added!`, 'success');
+  selectModerationGroup(currentModGroup);
+  setTimeout(() => {
+    if (nameInp) nameInp.focus();
+  }, 50);
+}
+
+async function removeCustomCommandRule(idx) {
+  if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
+  const groupConfig = modStoreCache.groups[currentModGroup];
+  if (groupConfig.commands?.custom_commands) {
+    groupConfig.commands.custom_commands.splice(idx, 1);
+    await saveGroupConfig(groupConfig);
+    selectModerationGroup(currentModGroup);
+  }
 }
 
 async function clearUserWarnInUi(userId) {
@@ -1586,3 +1721,6 @@ window.updateFedBlacklistTagsInUi = updateFedBlacklistTagsInUi;
 window.openCreateFederationModal = openCreateFederationModal;
 window.closeCreateFederationModal = closeCreateFederationModal;
 window.saveNewCustomFederation = saveNewCustomFederation;
+window.addCustomCommandRule = addCustomCommandRule;
+window.removeCustomCommandRule = removeCustomCommandRule;
+window.toggleAllDefaultCommands = toggleAllDefaultCommands;

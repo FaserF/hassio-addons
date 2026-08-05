@@ -44,3 +44,6 @@ window.updateFedBlacklistTagsInUi = updateFedBlacklistTagsInUi;
 window.openCreateFederationModal = openCreateFederationModal;
 window.closeCreateFederationModal = closeCreateFederationModal;
 window.saveNewCustomFederation = saveNewCustomFederation;
+window.addCustomCommandRule = addCustomCommandRule;
+window.removeCustomCommandRule = removeCustomCommandRule;
+window.toggleAllDefaultCommands = toggleAllDefaultCommands;
