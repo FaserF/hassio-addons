@@ -79,21 +79,67 @@ action:
 
 ## 🛡️ WhatsApp Group Moderation & Defender Engine
 
-The WhatsApp Addon incorporates a full-featured group moderation and defender engine.
+The WhatsApp Addon incorporates a full-featured group moderation, defender, and command engine.
 
 ### Key Capabilities
 
 - **Disabled by Default**: The moderation engine is globally disabled by default. Enable it per-group or globally via the Addon Web UI.
-- **Group Rules & Agreement**: Define rules, automatically present rules on member joins.
-- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`{user}`, `{group}`, `{rules}`), verification captchas (button/math), clean welcome.
-- **Warnings System**: Configurable warning thresholds, warn decay, and automated penalties (mute/kick/ban).
-- **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, and RTL text.
+- **Group Rules & Agreement**: Define rules, automatically present rules on member joins (`!setrules`, `!rules <question>` AI interpretation).
+- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{group}`), verification captchas (button/math), clean welcome.
+- **Warnings System**: Configurable warning thresholds, warn decay (`decay_hours`), and automated penalties (`!warn`, `!unwarn`, `!warns`).
+- **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, contact cards, location shares, forwarded messages, and RTL text (`!lock`, `!unlock`, `!locks`, `!locktypes`).
 - **Blacklist & Word Filters**: Match prohibited words or regex patterns with automated penalties.
-- **Auto-Responder Filters & Saved Notes**: Keyword triggers (`!rules`, `#faq`) and saved group notes.
+- **Auto-Responder Filters & Saved Notes**: Keyword triggers (`!filter`, `!stop`, `!filters`), saved group notes (`!save`, `!get`, `!notes`, `#notename` auto-trigger).
+- **User Management & Muting**: `!promote`, `!demote`, `!approve`, `!unapprove` (whitelist bypass), `!mute`, `!unmute` (messages auto-deleted), `!tban`, `!tmute` (duration-based penalties like `1d`, `12h`), `!info`, `!adminlist`, `!report` (alert admins).
 - **Anti-Raid & Flood Protection**: Message rate limiting per user and high-velocity join detection with automatic group lockdown.
 - **Global Federations**: Network ban propagation across group clusters.
-- **Gemini AI Engine**: Optional AI auto-responder for answering group FAQs.
+- **Gemini AI Engine**: Optional AI auto-responder for answering group FAQs, AI rules interpretation, and automated sentiment moderation (toxicity detection).
+- **AI Translation Engine**: `!setlang <code>` and `!translate` via Gemini API.
 - **1-Click Import & Export**: One-click JSON import/export for group moderation configurations.
+
+### 🤖 Interactive Group Commands Reference (37 Commands)
+
+The bot command engine supports configurable prefixes per group (default `!`) and Role-Based Access Control (RBAC).
+
+| Command | Admin Only | Description |
+| :--- | :---: | :--- |
+| `!help` | No | Show contextual command list (hides admin commands for non-admins) |
+| `!ping` | No | Check bot responsiveness |
+| `!id` | No | Display chat and sender JIDs |
+| `!rules [question]` | No | Show group rules or ask a question about rules (AI interpretation) |
+| `!info [@user]` | No | View user information, warning history, and whitelist status |
+| `!adminlist` / `!admins` | No | List all group administrators with superadmin/admin roles |
+| `!locktypes` | No | List all available content lock types |
+| `!report` | No | Tag all group admins with optional reason and quoted message |
+| `!get <note>` | No | Retrieve content of a saved note |
+| `!notes` | No | List all saved group notes |
+| `!filters` | No | List active auto-responder filters |
+| `!welcome` | Yes | View current welcome message |
+| `!goodbye` | Yes | View current goodbye message |
+| `!locks` | Yes | List currently active content locks |
+| `!translate [text]` | No | Translate replied-to message or text using Gemini AI |
+| `!setrules <text>` | Yes | Update group rules |
+| `!setwelcome <text>` | Yes | Configure welcome message (`{mention}`, `{name}`, `{group}`) |
+| `!setgoodbye <text>` | Yes | Configure goodbye message (`{mention}`, `{name}`, `{group}`) |
+| `!warn [@user] [reason]` | Yes | Issue a warning to a user (mention or reply) |
+| `!unwarn [@user]` | Yes | Clear all warnings for a user |
+| `!warns [@user]` | Yes | View warning history for a user |
+| `!kick` / `!ban [@user]` | Yes | Remove a user from the group |
+| `!tban <duration> [@user]` | Yes | Temporarily ban a user (e.g. `1d`, `12h`, `30m`) |
+| `!mute [@user]` | Yes | Mute a user indefinitely (auto-deletes their messages) |
+| `!tmute <duration> [@user]` | Yes | Temporarily mute a user for a specific duration |
+| `!unmute [@user]` | Yes | Unmute a muted user |
+| `!del` / `!delete` | Yes | Delete a replied-to message |
+| `!promote [@user]` | Yes | Promote a user to group admin |
+| `!demote [@user]` | Yes | Demote an admin to standard user |
+| `!approve [@user]` | Yes | Whitelist a user to bypass moderation locks and anti-spam |
+| `!unapprove [@user]` | Yes | Remove user from whitelist |
+| `!lock <type>` | Yes | Enable a content lock (`image`, `video`, `url`, `invite`, `rtl`, etc.) |
+| `!unlock <type>` | Yes | Disable a content lock |
+| `!save <name> <text>` | Yes | Save a reusable group note (trigger via `#name`) |
+| `!filter <trigger> <reply>` | Yes | Create an auto-responder filter |
+| `!stop <trigger>` | Yes | Delete an auto-responder filter |
+| `!setlang <code>` | Yes | Set target language for translation |
 
 ---
 

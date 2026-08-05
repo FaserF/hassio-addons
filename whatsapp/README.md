@@ -33,6 +33,14 @@ Control your addon via WhatsApp!
 - `ha-app-logs`: See recent connection events.
 - `ha-app-restart`: Restart the WhatsApp connection.
 
+### 🛡️ Group Moderation & Defender Commands
+
+Full-featured group moderation, anti-raid shield, and bot command engine (Rose & AegisBot style).
+
+- **Prefix-based Commands**: Configure prefix per group (default `!`). Includes 37 group commands (`!help`, `!warn`, `!kick`, `!tban`, `!mute`, `!tmute`, `!promote`, `!demote`, `!approve`, `!save`, `!filter`, `!translate`, etc.).
+- **Content Locks**: Lock images, videos, voice, docs, stickers, URLs, invites, polls, contacts, locations, forwarded messages, or RTL text (`!lock`, `!unlock`).
+- **Automation & AI**: Captchas, welcome/goodbye greetings, word blacklists, anti-flood, anti-raid, AI FAQ responder, AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
+
 > [!TIP]
 > **First Contact:** The bot automatically sends a welcome message to new users on their first direct message, identifying their role (Admin/Standard).
 
