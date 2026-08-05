@@ -980,6 +980,46 @@ function selectModerationGroup(groupId) {
     const el = document.getElementById(`mod-lock-${key}`);
     if (el) el.checked = Boolean(config.locks?.[key]?.enabled);
   });
+
+  // Blacklist Tag Cloud
+  const blTags = document.getElementById('mod-blacklist-tags');
+  if (blTags) {
+    const words = config.blacklist?.words || [];
+    if (!words.length) {
+      blTags.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">No blacklisted words or patterns yet</span>';
+    } else {
+      blTags.innerHTML = words
+        .map(
+          (w, idx) => `
+        <span class="mod-tag" style="display:inline-flex;align-items:center;gap:6px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);padding:4px 10px;border-radius:16px;font-size:12px;margin:3px;">
+          <span>${escapeHtml(w)}</span>
+          <button style="background:none;border:none;color:#e74c3c;cursor:pointer;padding:0;font-size:14px;line-height:1;" onclick="removeBlacklistWord(${idx})">&times;</button>
+        </span>`
+        )
+        .join('');
+    }
+  }
+
+  // Filters List
+  const filtersList = document.getElementById('mod-filters-list');
+  if (filtersList) {
+    const filters = config.filters || [];
+    if (!filters.length) {
+      filtersList.innerHTML = '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No filter rules configured yet</div>';
+    } else {
+      filtersList.innerHTML = filters
+        .map(
+          (f, idx) => `
+        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div>
+            <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong> &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeFilterRule(${idx})"><i class="fas fa-trash"></i></button>
+        </div>`
+        )
+        .join('');
+    }
+  }
 }
 
 async function toggleGroupModeration(enabled) {
@@ -1127,6 +1167,28 @@ async function addFilterRule() {
     if (el) el.focus();
   }, 50);
 }
+
+async function removeBlacklistWord(idx) {
+  if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
+  const groupConfig = modStoreCache.groups[currentModGroup];
+  if (groupConfig.blacklist?.words) {
+    groupConfig.blacklist.words.splice(idx, 1);
+    await saveGroupConfig(groupConfig);
+    selectModerationGroup(currentModGroup);
+  }
+}
+window.removeBlacklistWord = removeBlacklistWord;
+
+async function removeFilterRule(idx) {
+  if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
+  const groupConfig = modStoreCache.groups[currentModGroup];
+  if (groupConfig.filters) {
+    groupConfig.filters.splice(idx, 1);
+    await saveGroupConfig(groupConfig);
+    selectModerationGroup(currentModGroup);
+  }
+}
+window.removeFilterRule = removeFilterRule;
 
 async function saveGroupFilters() {
   if (!currentModGroup) return;
