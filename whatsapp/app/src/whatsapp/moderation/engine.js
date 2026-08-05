@@ -627,6 +627,8 @@ export async function handleModerationParticipantUpdate(session, update) {
   const action = update.action;
   const participants = update.participants || [];
 
+  logger.info({ groupId, action, participantsCount: participants.length }, `👥 Group participant update event received: ${action}`);
+
   if (action === 'add' || action === 'invite' || action === 'join') {
     // 1. Anti-Raid velocity check
     const antiRaid = config.antispam?.anti_raid;
