@@ -1,4 +1,7 @@
 #!/usr/bin/with-contenv bashio
+
+# shellcheck shell=bash
+# shellcheck source=/dev/null
 source /usr/lib/bashio/banner.sh
 
 SCRIPTS_DIR="/etc/s6-overlay/s6-rc.d/whatsapp/scripts"

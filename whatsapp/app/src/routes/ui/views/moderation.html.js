@@ -111,6 +111,18 @@ export default () => `
                                 <input type="text" id="mod-goodbye-msg" class="mod-input" placeholder="Goodbye {user}!">
                             </div>
                         </div>
+
+                        <!-- Variables Legend -->
+                        <div style="margin-top:12px; padding:10px 12px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
+                            <strong style="color:var(--primary);"><i class="fas fa-code"></i> Available Message Variables:</strong>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:6px; color:var(--text-main);">
+                                <div><code>{user}</code> or <code>{mention}</code> &ndash; <span style="color:var(--text-muted);">Mentions the user (@phone)</span></div>
+                                <div><code>{name}</code> &ndash; <span style="color:var(--text-muted);">User phone number / ID</span></div>
+                                <div><code>{group}</code> &ndash; <span style="color:var(--text-muted);">Group name / ID</span></div>
+                                <div><code>{rules}</code> &ndash; <span style="color:var(--text-muted);">Group rules text</span></div>
+                            </div>
+                        </div>
+
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-user-shield"></i></div>
@@ -477,7 +489,7 @@ export default () => `
                 </div>
 
                 <!-- Unsaved Changes Warning Modal -->
-                <div id="unsaved-changes-modal" class="modal-overlay" style="display:none;">
+                <div id="unsaved-changes-modal" class="modal-overlay">
                     <div class="modal-card">
                         <div class="modal-header">
                             <h3 style="display:flex;align-items:center;gap:10px;">

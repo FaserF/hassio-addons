@@ -125,9 +125,12 @@ export function registerModerationRoutes(app) {
   // DELETE /api/moderation/groups/:groupId/ban/:userId
   app.delete('/api/moderation/groups/:groupId/ban/:userId', (req, res) => {
     const { groupId, userId } = req.params;
+    if (!userId || userId === '__proto__' || userId === 'constructor' || userId === 'prototype') {
+      return res.status(400).json({ success: false, error: 'Invalid user ID' });
+    }
     const store = loadModerationStore();
     const config = store.groups[groupId] || getGroupModerationConfig(groupId);
-    if (config.banned_users && config.banned_users[userId]) {
+    if (config.banned_users && Object.prototype.hasOwnProperty.call(config.banned_users, userId)) {
       delete config.banned_users[userId];
       store.groups[groupId] = config;
       saveModerationStore(store);
@@ -140,10 +143,13 @@ export function registerModerationRoutes(app) {
   // DELETE /api/moderation/groups/:groupId/kick/:userId
   app.delete('/api/moderation/groups/:groupId/kick/:userId', (req, res) => {
     const { groupId, userId } = req.params;
+    if (!userId || userId === '__proto__' || userId === 'constructor' || userId === 'prototype') {
+      return res.status(400).json({ success: false, error: 'Invalid user ID' });
+    }
     const store = loadModerationStore();
     const config = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (Array.isArray(config.kick_log)) {
-      config.kick_log = config.kick_log.filter((k) => k.userId !== userId);
+      config.kick_log = config.kick_log.filter((k) => k && k.userId !== userId);
       store.groups[groupId] = config;
       saveModerationStore(store);
     }
@@ -153,9 +159,12 @@ export function registerModerationRoutes(app) {
   // DELETE /api/moderation/groups/:groupId/mute/:userId
   app.delete('/api/moderation/groups/:groupId/mute/:userId', (req, res) => {
     const { groupId, userId } = req.params;
+    if (!userId || userId === '__proto__' || userId === 'constructor' || userId === 'prototype') {
+      return res.status(400).json({ success: false, error: 'Invalid user ID' });
+    }
     const store = loadModerationStore();
     const config = store.groups[groupId] || getGroupModerationConfig(groupId);
-    if (config.muted_users && config.muted_users[userId]) {
+    if (config.muted_users && Object.prototype.hasOwnProperty.call(config.muted_users, userId)) {
       delete config.muted_users[userId];
       store.groups[groupId] = config;
       saveModerationStore(store);

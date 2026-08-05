@@ -173,13 +173,13 @@ function _guardDirty(proceedFn) {
   const modal = document.getElementById('unsaved-changes-modal');
   const nameEl = document.getElementById('unsaved-panel-name');
   if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
-  if (modal) modal.style.display = 'flex';
+  if (modal) modal.classList.add('show');
   return false;
 }
 
 function _closeUnsavedModal() {
   const modal = document.getElementById('unsaved-changes-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
 }
 
 // Called by modal button "Stay"

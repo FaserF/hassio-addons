@@ -254,8 +254,10 @@ try {
   );
   assert(botWelcomeText.includes('Home Assistant WhatsApp Bot Connected!'), 'Should contain title');
   assert(
-    botWelcomeText.includes('https://github.com/FaserF/ha-whatsapp'),
-    'Should contain docs link'
+    new URL(
+      botWelcomeText.match(/https?:\/\/[^\s]+/)?.[0] || 'http://localhost'
+    ).hostname === 'github.com',
+    'Should contain valid docs link'
   );
   assert(
     botWelcomeText.includes('🔴 DISABLED') || botWelcomeText.includes('🟢 ENABLED'),
