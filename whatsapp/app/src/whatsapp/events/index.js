@@ -126,7 +126,22 @@ export function handleIncomingMessages(session) {
           eventType = 'event';
           const evData = msg.message.eventMessage;
           text = `[Event] ${evData?.name || 'Untitled'}${evData?.description ? `: ${evData.description}` : ''}`;
+        } else if (messageType === 'contactMessage' || messageType === 'contactsArrayMessage') {
+          mediaType = 'contact';
+          const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage;
+          const displayName = contactObj?.displayName || (contactObj?.vcard ? 'vCard Contact' : 'Contact Card');
+          text = text || `[Contact: ${displayName}]`;
+        } else if (messageType === 'locationMessage' || messageType === 'liveLocationMessage') {
+          mediaType = 'location';
+          text = text || '[Location Share]';
+        } else if (messageType && messageType.startsWith('pollCreation')) {
+          mediaType = 'poll';
+          eventType = 'poll';
+          text = text || '[Poll Creation]';
         }
+
+        const innerMsgObj = msg.message?.[messageType];
+        const isForwarded = Boolean(innerMsgObj?.contextInfo?.isForwarded);
 
         const supportedMediaTypes = [
           'imageMessage',
@@ -209,6 +224,7 @@ export function handleIncomingMessages(session) {
           from: senderJid,
           sender_number: effectiveSenderNumber,
           is_group: isGroup,
+          is_forwarded: isForwarded,
           media_url: mediaUrl,
           media_path: mediaPath,
           media_type: mediaType,

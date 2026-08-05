@@ -246,7 +246,7 @@ export async function handleModerationMessage(session, event) {
   if (locks.invite?.enabled && text.includes('chat.whatsapp.com/')) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
-  if (locks.poll?.enabled && event.type === 'poll_update') {
+  if (locks.poll?.enabled && (event.type === 'poll_update' || event.type === 'poll' || event.media_type === 'poll')) {
     if (await triggerLock('poll', 'Polls')) return true;
   }
 
@@ -263,6 +263,7 @@ export async function handleModerationMessage(session, event) {
 
   // Forwarded message lock check
   if (
+    event.is_forwarded ||
     rawMsg?.message?.extendedTextMessage?.contextInfo?.isForwarded ||
     rawMsg?.message?.imageMessage?.contextInfo?.isForwarded ||
     rawMsg?.message?.videoMessage?.contextInfo?.isForwarded ||

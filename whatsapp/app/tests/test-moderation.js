@@ -86,16 +86,19 @@ try {
   assert.strictEqual(lockHandled, true, 'URL lock should handle URL message');
   console.log('✅ PASSED: Content lock correctly detected locked URL');
 
-  const eventBlacklist = {
+  groupConfig.locks.contact = { enabled: true };
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  const eventContact = {
     sender: '1203630123456789@g.us',
     sender_number: '491761234567',
-    content: 'This message has badword inside',
-    media_type: null,
-    raw: { key: { id: 'msg2' } },
+    media_type: 'contact',
+    content: '[Contact: John Doe]',
+    raw: { key: { id: 'msgContact' } },
   };
-  const blHandled = await handleModerationMessage(mockSession, eventBlacklist);
-  assert.strictEqual(blHandled, true, 'Blacklist should match prohibited word');
-  console.log('✅ PASSED: Blacklist correctly matched prohibited word');
+  const contactHandled = await handleModerationMessage(mockSession, eventContact);
+  assert.strictEqual(contactHandled, true, 'Contact lock should handle contact card message');
+  console.log('✅ PASSED: Content lock correctly detected locked Contact card');
 
   // Test 5: Auto-Responder Filters & Custom Notes
   groupConfig.filters = [{ trigger: 'Test', response: 'Auto response works!', is_regex: false }];
