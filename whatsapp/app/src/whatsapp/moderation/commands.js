@@ -351,9 +351,7 @@ registry.register(
   'goodbye',
   async (session, groupId, userId, args, config) => {
     const text =
-      config.greetings?.goodbye_text ||
-      config.greetings?.goodbye_message ||
-      'Goodbye {user}!';
+      config.greetings?.goodbye_text || config.greetings?.goodbye_message || 'Goodbye {user}!';
     await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` });
   },
   { adminOnly: true, help: 'View the goodbye message' }
