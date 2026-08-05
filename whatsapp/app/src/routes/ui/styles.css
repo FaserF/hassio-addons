@@ -2396,3 +2396,50 @@ code {
   background: #dc2626;
 }
 
+/* ── Styled file upload label ─────────────────────────── */
+.mod-file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-input);
+  border: 1.5px dashed var(--border-input);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: border-color .15s, background .15s, color .15s;
+  width: 100%;
+}
+.mod-file-upload-label:hover {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  color: var(--primary);
+}
+.mod-file-upload-label i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Dirty indicator dot on subtab pills ───────────────── */
+.mod-pill.dirty::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+  margin-left: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ── Helper text below form fields ─────────────────────── */
+.mod-field-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 4px 0 10px;
+}
+
+

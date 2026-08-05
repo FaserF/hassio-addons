@@ -374,23 +374,23 @@ export default () => `
 
                 </div>
 
-                <!-- Global Rules Modal -->
-                <div id="global-rules-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
-                    <div class="modal-content card" style="max-width:550px; width:90%; padding:24px;">
-                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                            <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-globe" style="color:var(--primary);"></i> Global Default Rules &amp; Settings</h3>
-                            <button class="modal-close btn btn-sm btn-secondary" onclick="closeGlobalRulesModal()" style="padding:2px 8px;">&times;</button>
+                <!-- Global Default Rules Modal -->
+                <div id="global-rules-modal" class="modal-overlay" style="display:none;">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-globe" style="color:var(--primary);"></i> Global Default Rules &amp; Settings</h3>
+                            <button class="modal-close-btn" onclick="closeGlobalRulesModal()"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="modal-body">
-                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
-                                Configure fallback rules for all WhatsApp groups. Groups that do not have custom rules set will automatically inherit these global default rules.
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.5;">
+                                Configure fallback rules for all WhatsApp groups. Groups without custom rules will inherit these global defaults.
                             </p>
-                            <div class="mod-field-group" style="margin-bottom:16px;">
+                            <div class="mod-field-group">
                                 <label class="mod-field-label">Global Default Rules</label>
                                 <textarea id="mod-global-rules-input" class="mod-textarea" style="height:120px;" placeholder="1. Be respectful to all members.&#10;2. No spam or unauthorized links.&#10;3. Follow group topic."></textarea>
                             </div>
                         </div>
-                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                        <div class="modal-footer">
                             <button class="btn btn-secondary btn-sm" onclick="closeGlobalRulesModal()">Cancel</button>
                             <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesFromModal()"><i class="fas fa-save"></i> Save Global Settings</button>
                         </div>
@@ -398,26 +398,26 @@ export default () => `
                 </div>
 
                 <!-- Create Custom Federation Modal -->
-                <div id="create-federation-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
-                    <div class="modal-content" style="max-width:480px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
-                            <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-network-wired" style="color:var(--primary);"></i> Create Custom Local Federation</h3>
-                            <button class="modal-close btn btn-sm btn-secondary" onclick="closeCreateFederationModal()" style="padding:2px 8px;">&times;</button>
+                <div id="create-federation-modal" class="modal-overlay" style="display:none;">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-network-wired" style="color:var(--primary);"></i> Create Custom Federation</h3>
+                            <button class="modal-close-btn" onclick="closeCreateFederationModal()"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="modal-body">
-                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.5;">
                                 Create a custom local security federation. Cross-group rules and shared blacklist patterns will apply to all groups connected to this federation.
                             </p>
                             <div class="mod-field-group" style="margin-bottom:12px;">
                                 <label class="mod-field-label">Federation Name</label>
                                 <input type="text" id="mod-new-fed-name" class="mod-input" placeholder="e.g. Local Security Shield">
                             </div>
-                            <div class="mod-field-group" style="margin-bottom:16px;">
+                            <div class="mod-field-group">
                                 <label class="mod-field-label">Description</label>
                                 <input type="text" id="mod-new-fed-desc" class="mod-input" placeholder="e.g. Custom local security federation for internal groups">
                             </div>
                         </div>
-                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                        <div class="modal-footer">
                             <button class="btn btn-secondary btn-sm" onclick="closeCreateFederationModal()">Cancel</button>
                             <button class="btn btn-primary btn-sm" onclick="saveNewCustomFederation()"><i class="fas fa-plus"></i> Create Federation</button>
                         </div>
@@ -425,58 +425,68 @@ export default () => `
                 </div>
 
                 <!-- Import Custom Federation Modal -->
-                <div id="import-federation-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
-                    <div class="modal-content" style="max-width:520px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
-                            <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-file-import" style="color:var(--primary);"></i> Import Security Federation</h3>
-                            <button class="modal-close btn btn-sm btn-secondary" onclick="closeImportFederationModal()" style="padding:2px 8px;">&times;</button>
+                <div id="import-federation-modal" class="modal-overlay" style="display:none;">
+                    <div class="modal-card modal-lg">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-file-import" style="color:var(--primary);"></i> Import Security Federation</h3>
+                            <button class="modal-close-btn" onclick="closeImportFederationModal()"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="modal-body">
-                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
-                                Import a federation configuration by entering a remote JSON URL or by uploading a local <code>.json</code> file.
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.5;">
+                                Import a federation configuration by entering a remote JSON URL or by uploading a local <code style="background:var(--bg-input); padding:1px 5px; border-radius:4px; font-size:11px;">.json</code> file.
                             </p>
-                            <div class="mod-field-group" style="margin-bottom:14px;">
+
+                            <div class="mod-field-group" style="margin-bottom:4px;">
                                 <label class="mod-field-label"><i class="fas fa-link"></i> Option A: Import from URL</label>
                                 <input type="text" id="mod-import-fed-url" class="mod-input" placeholder="https://example.com/federation_config.json">
                             </div>
-                            <div class="mod-divider" style="margin:16px 0; text-align:center; position:relative;"><span style="background:var(--card-bg); padding:0 8px; font-size:11px; color:var(--text-muted);">OR</span></div>
-                            <div class="mod-field-group" style="margin-bottom:16px;">
+
+                            <div style="display:flex; align-items:center; gap:12px; margin:16px 0;">
+                                <div style="flex:1; height:1px; background:var(--border-color);"></div>
+                                <span style="font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.5px;">OR</span>
+                                <div style="flex:1; height:1px; background:var(--border-color);"></div>
+                            </div>
+
+                            <div class="mod-field-group">
                                 <label class="mod-field-label"><i class="fas fa-file-upload"></i> Option B: Upload JSON File</label>
-                                <input type="file" id="mod-import-fed-file" accept=".json" class="mod-input" style="padding:6px;">
+                                <label class="mod-file-upload-label" for="mod-import-fed-file">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span id="mod-import-fed-filename">Click to choose a .json file&hellip;</span>
+                                    <input type="file" id="mod-import-fed-file" accept=".json" style="display:none;" onchange="document.getElementById('mod-import-fed-filename').textContent = this.files[0]?.name || 'Click to choose a .json file\u2026'">
+                                </label>
                             </div>
                         </div>
-                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
-                            <button class="btn btn-secondary btn-sm" onclick="closeImportFederationModal()">Cancel</button>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" onclick="closeImportFederationModal()"><i class="fas fa-times"></i> Cancel</button>
                             <button class="btn btn-primary btn-sm" onclick="submitImportFederation()"><i class="fas fa-upload"></i> Import Federation</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Unsaved Changes Warning Modal -->
-                <div id="unsaved-changes-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); z-index:99999; align-items:center; justify-content:center;">
-                    <div style="max-width:420px; width:90%; background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,0.4); animation: fadeInUp 0.2s ease;">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                            <div style="width:40px; height:40px; border-radius:10px; background:rgba(255,180,0,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                <i class="fas fa-exclamation-triangle" style="color:#f59e0b; font-size:18px;"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight:700; font-size:15px; color:var(--text-main);">Unsaved Changes</div>
-                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">You have unsaved changes in <strong id="unsaved-panel-name" style="color:var(--primary);"></strong></div>
-                            </div>
+                <div id="unsaved-changes-modal" class="modal-overlay" style="display:none;">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <h3 style="display:flex;align-items:center;gap:10px;">
+                                <span style="width:32px;height:32px;border-radius:8px;background:rgba(255,188,0,0.15);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="fas fa-exclamation-triangle" style="color:var(--warning);font-size:14px;"></i>
+                                </span>
+                                Unsaved Changes
+                            </h3>
+                            <button class="modal-close-btn" onclick="unsavedModalCancel()"><i class="fas fa-times"></i></button>
                         </div>
-                        <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
-                            If you leave now your changes will be lost. Would you like to save them first?
-                        </p>
-                        <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" onclick="unsavedModalCancel()" style="flex:1; min-width:90px;">
-                                <i class="fas fa-times"></i> Stay
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="unsavedModalDiscard()" style="flex:1; min-width:90px;">
-                                <i class="fas fa-trash-alt"></i> Discard
-                            </button>
-                            <button class="btn btn-primary btn-sm" onclick="unsavedModalSaveAndSwitch()" style="flex:1; min-width:90px;">
-                                <i class="fas fa-save"></i> Save &amp; Switch
-                            </button>
+                        <div class="modal-body">
+                            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:6px;">
+                                You have unsaved changes in <strong id="unsaved-panel-name" style="color:var(--primary);"></strong>.
+                            </p>
+                            <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+                                Would you like to save them before switching?
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" onclick="unsavedModalCancel()"><i class="fas fa-arrow-left"></i> Stay</button>
+                            <button class="btn btn-ghost btn-sm" onclick="unsavedModalDiscard()" style="color:var(--danger);"><i class="fas fa-trash-alt"></i> Discard</button>
+                            <button class="btn btn-primary btn-sm" onclick="unsavedModalSaveAndSwitch()"><i class="fas fa-save"></i> Save &amp; Switch</button>
                         </div>
                     </div>
                 </div>
