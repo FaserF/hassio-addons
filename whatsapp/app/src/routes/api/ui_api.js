@@ -38,97 +38,97 @@ export function registerUiApiRoutes(app) {
           }
         }
 
-      const messages = Array.from(session.messageStore.values());
-      const JidMap = {};
+        const messages = Array.from(session.messageStore.values());
+        const JidMap = {};
 
-      // Build name lookup map from contactCache and pushNames in stored messages
-      const contactNames = new Map();
-      if (session.contactCache) {
-        for (const [cId, contact] of session.contactCache.entries()) {
-          const cName = contact.name || contact.notify || contact.verifiedName;
-          if (cName) contactNames.set(cId, cName);
-        }
-      }
-
-      messages.forEach((msg) => {
-        if (!msg.key || !msg.key.remoteJid) return;
-        const jid = msg.key.remoteJid;
-        if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
-
-        const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
-        const previewText = getMessageText(msg);
-
-        // Collect pushName for contact if present
-        if (!jid.endsWith('@g.us') && msg.pushName) {
-          contactNames.set(jid, msg.pushName);
-        } else if (jid.endsWith('@g.us') && msg.key.participant && msg.pushName) {
-          if (!contactNames.has(msg.key.participant)) {
-            contactNames.set(msg.key.participant, msg.pushName);
+        // Build name lookup map from contactCache and pushNames in stored messages
+        const contactNames = new Map();
+        if (session.contactCache) {
+          for (const [cId, contact] of session.contactCache.entries()) {
+            const cName = contact.name || contact.notify || contact.verifiedName;
+            if (cName) contactNames.set(cId, cName);
           }
         }
 
-        if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
-          JidMap[jid] = {
-            jid,
-            name: jid.split('@')[0],
-            preview: previewText,
-            timestamp: msgTime,
-            fromMe: msg.key.fromMe || false,
-          };
-        }
-      });
+        messages.forEach((msg) => {
+          if (!msg.key || !msg.key.remoteJid) return;
+          const jid = msg.key.remoteJid;
+          if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
 
-      // Also incorporate chats from session.chatCache that might not have stored messages yet
-      if (session.chatCache) {
-        for (const jid of session.chatCache.keys()) {
-          if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) continue;
-          if (!JidMap[jid]) {
+          const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
+          const previewText = getMessageText(msg);
+
+          // Collect pushName for contact if present
+          if (!jid.endsWith('@g.us') && msg.pushName) {
+            contactNames.set(jid, msg.pushName);
+          } else if (jid.endsWith('@g.us') && msg.key.participant && msg.pushName) {
+            if (!contactNames.has(msg.key.participant)) {
+              contactNames.set(msg.key.participant, msg.pushName);
+            }
+          }
+
+          if (!JidMap[jid] || msgTime > JidMap[jid].timestamp) {
             JidMap[jid] = {
               jid,
               name: jid.split('@')[0],
-              preview: '[No messages cached]',
-              timestamp: 0,
-              fromMe: false,
+              preview: previewText,
+              timestamp: msgTime,
+              fromMe: msg.key.fromMe || false,
             };
           }
-        }
-      }
+        });
 
-      // Resolve final display names synchronously (with async background cache enrichment)
-      const chats = Object.values(JidMap)
-        .map((c) => {
-          if (!c.preview || !c.preview.trim()) {
-            c.preview = '[Message]';
-          }
-          if (c.jid.endsWith('@g.us')) {
-            if (session.groupCache && session.groupCache.has(c.jid)) {
-              c.name = session.groupCache.get(c.jid);
-            } else {
-              c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
-              // Background fetch metadata without blocking response
-              if (session.sock) {
-                session.sock
-                  .groupMetadata(c.jid)
-                  .then((meta) => {
-                    if (meta && meta.subject) {
-                      session.groupCache?.set(c.jid, meta.subject);
-                    }
-                  })
-                  .catch(() => {});
-              }
+        // Also incorporate chats from session.chatCache that might not have stored messages yet
+        if (session.chatCache) {
+          for (const jid of session.chatCache.keys()) {
+            if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) continue;
+            if (!JidMap[jid]) {
+              JidMap[jid] = {
+                jid,
+                name: jid.split('@')[0],
+                preview: '[No messages cached]',
+                timestamp: 0,
+                fromMe: false,
+              };
             }
-          } else if (contactNames.has(c.jid)) {
-            c.name = contactNames.get(c.jid);
           }
-          return c;
-        })
-        .sort((a, b) => b.timestamp - a.timestamp);
+        }
 
-      res.json(chats);
-    } catch (err) {
-      res.status(500).json({ detail: err.message });
-    }
-  })
+        // Resolve final display names synchronously (with async background cache enrichment)
+        const chats = Object.values(JidMap)
+          .map((c) => {
+            if (!c.preview || !c.preview.trim()) {
+              c.preview = '[Message]';
+            }
+            if (c.jid.endsWith('@g.us')) {
+              if (session.groupCache && session.groupCache.has(c.jid)) {
+                c.name = session.groupCache.get(c.jid);
+              } else {
+                c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
+                // Background fetch metadata without blocking response
+                if (session.sock) {
+                  session.sock
+                    .groupMetadata(c.jid)
+                    .then((meta) => {
+                      if (meta && meta.subject) {
+                        session.groupCache?.set(c.jid, meta.subject);
+                      }
+                    })
+                    .catch(() => {});
+                }
+              }
+            } else if (contactNames.has(c.jid)) {
+              c.name = contactNames.get(c.jid);
+            }
+            return c;
+          })
+          .sort((a, b) => b.timestamp - a.timestamp);
+
+        res.json(chats);
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
   );
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {

@@ -157,7 +157,8 @@ export function getGroupModerationConfig(groupId) {
   }
   const def = getDefaultGroupConfig();
   const existing = store.groups[groupId];
-  const rulesText = existing.rules?.text !== undefined ? existing.rules.text : (store.global_rules || '');
+  const rulesText =
+    existing.rules?.text !== undefined ? existing.rules.text : store.global_rules || '';
 
   return {
     ...def,
