@@ -154,6 +154,13 @@ registry.register(
       return;
     }
 
+    if (targetJid && isSameUser(targetJid, session?.sock?.user?.id, session)) {
+      await reply(session, groupId, {
+        text: `⚠️ You cannot report the bot account.`,
+      });
+      return;
+    }
+
     // Filter out args that are mention tokens (e.g. @4917647365403)
     const cleanedArgs = args.filter((a) => !a.startsWith('@'));
     const text = cleanedArgs.join(' ').trim();
@@ -721,6 +728,18 @@ registry.register(
 
     const reason = args.join(' ') || 'Admin requested kick';
     for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(session, groupId, {
+          text: `⚠️ You cannot kick yourself.`,
+        });
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(session, groupId, {
+          text: `⚠️ You cannot kick the bot account.`,
+        });
+        continue;
+      }
       const targetId = targetJid.split('@')[0];
       await executePenalty(session, groupId, targetId, 'kick', reason);
     }
@@ -750,6 +769,18 @@ registry.register(
 
     const reason = args.join(' ') || 'Admin requested ban';
     for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(session, groupId, {
+          text: `⚠️ You cannot ban yourself.`,
+        });
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(session, groupId, {
+          text: `⚠️ You cannot ban the bot account.`,
+        });
+        continue;
+      }
       const targetId = targetJid.split('@')[0];
       await executePenalty(session, groupId, targetId, 'ban', reason);
     }
@@ -1107,15 +1138,29 @@ registry.register(
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (!c.muted_users) c.muted_users = {};
 
+    const validTargets = [];
     for (const jid of targetMatches) {
+      if (isSameUser(jid, userId, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` });
+        continue;
+      }
+      if (isSameUser(jid, session?.sock?.user?.id, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` });
+        continue;
+      }
+      validTargets.push(jid);
+    }
+    if (validTargets.length === 0) return;
+
+    for (const jid of validTargets) {
       const id = jid.split('@')[0];
       c.muted_users[id] = { until: null, reason, created: Date.now() };
     }
     saveModerationStore(store);
 
     await reply(session, groupId, {
-      text: `🔇 Muted ${targetMatches.length} user(s) indefinitely.\nReason: ${reason}\n\n_Their messages will be automatically deleted._`,
-      mentions: targetMatches,
+      text: `🔇 Muted ${validTargets.length} user(s) indefinitely.\nReason: ${reason}\n\n_Their messages will be automatically deleted._`,
+      mentions: validTargets,
     });
   },
   { adminOnly: true, help: 'Mute a user (their messages will be deleted)' }
@@ -1193,7 +1238,21 @@ registry.register(
 
     const reason = args.slice(1).join(' ') || 'Temporary ban';
 
+    const validTargets = [];
     for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot ban yourself.` });
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot ban the bot account.` });
+        continue;
+      }
+      validTargets.push(targetJid);
+    }
+    if (validTargets.length === 0) return;
+
+    for (const targetJid of validTargets) {
       const targetId = targetJid.split('@')[0];
 
       // Kick the user
@@ -1216,7 +1275,7 @@ registry.register(
 
     await reply(session, groupId, {
       text: `⏱️ Temporarily banned for ${formatDuration(durationMs)}.\nReason: ${reason}`,
-      mentions: targetMatches,
+      mentions: validTargets,
     });
   },
   { adminOnly: true, help: 'Temporarily ban a user for a specific duration' }
@@ -1252,15 +1311,29 @@ registry.register(
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (!c.muted_users) c.muted_users = {};
 
+    const validTargets = [];
+    for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` });
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` });
+        continue;
+      }
+      validTargets.push(targetJid);
+    }
+    if (validTargets.length === 0) return;
+
     const until = Date.now() + durationMs;
-    for (const jid of targetMatches) {
+    for (const jid of validTargets) {
       const id = jid.split('@')[0];
       c.muted_users[id] = { until, reason, created: Date.now() };
     }
     saveModerationStore(store);
 
     // Schedule auto-unmute
-    for (const jid of targetMatches) {
+    for (const jid of validTargets) {
       const id = jid.split('@')[0];
       const key = `tmute:${groupId}:${id}`;
       if (pendingTempActions.has(key)) clearTimeout(pendingTempActions.get(key));
