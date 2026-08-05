@@ -52,6 +52,13 @@ async function removeFedBlacklistWord(idx) {
 }
 
 async function saveGroupConfig(groupConfig) {
+  // Always preserve the current enabled state from the DOM toggle
+  // to prevent it from being silently dropped on partial saves
+  const enabledToggle = document.getElementById('mod-group-toggle');
+  if (enabledToggle !== null) {
+    groupConfig.enabled = Boolean(enabledToggle.checked);
+  }
+
   try {
     const res = await fetch(basePath + 'api/moderation/config', {
       method: 'POST',

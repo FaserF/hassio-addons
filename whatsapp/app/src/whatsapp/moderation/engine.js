@@ -526,7 +526,9 @@ export async function handleModerationParticipantUpdate(session, update) {
   if (!groupId || !groupId.endsWith('@g.us')) return;
 
   const config = getGroupModerationConfig(groupId);
-  if (!config.enabled) return;
+  // Note: We intentionally do NOT gate on config.enabled here.
+  // Greetings, captcha, and ban enforcement are per-feature flags
+  // and should work regardless of whether the full moderation engine is enabled.
 
   const action = update.action;
   const participants = update.participants || [];
