@@ -239,14 +239,17 @@ export async function handleModerationMessage(session, event) {
 
   if (
     locks.url?.enabled &&
-    (/(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|de|net|org|io|me|co|app|xyz))/i.test(text))
+    /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|de|net|org|io|me|co|app|xyz))/i.test(text)
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
   if (locks.invite?.enabled && (text.includes('chat.whatsapp.com/') || text.includes('wa.me/'))) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
-  if (locks.poll?.enabled && (event.type === 'poll_update' || event.type === 'poll' || event.media_type === 'poll')) {
+  if (
+    locks.poll?.enabled &&
+    (event.type === 'poll_update' || event.type === 'poll' || event.media_type === 'poll')
+  ) {
     if (await triggerLock('poll', 'Polls')) return true;
   }
 
