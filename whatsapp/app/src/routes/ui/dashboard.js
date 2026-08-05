@@ -901,8 +901,8 @@ function selectModerationGroup(groupId) {
   if (welcM) welcM.value = config.greetings?.welcome_message || '';
   const goodE = document.getElementById('mod-goodbye-enabled');
   if (goodE) goodE.checked = Boolean(config.greetings?.goodbye_enabled);
-  const goodM = document.getElementById('mod-goodbye-message');
-  if (goodM) goodM.value = config.greetings?.goodbye_message || '';
+  const goodM = document.getElementById('mod-goodbye-msg') || document.getElementById('mod-goodbye-message');
+  if (goodM) goodM.value = config.greetings?.goodbye_message || config.greetings?.goodbye_text || '';
 
   // Captcha
   const capE = document.getElementById('mod-captcha-enabled');

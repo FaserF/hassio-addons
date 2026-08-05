@@ -336,7 +336,7 @@ export async function handleModerationMessage(session, event) {
             isMatch = new RegExp(filter.trigger, 'i').test(text);
           } catch (e) {}
         } else {
-          isMatch = text.toLowerCase() === filter.trigger.toLowerCase();
+          isMatch = text.toLowerCase() === filter.trigger.toLowerCase() || text.toLowerCase().includes(filter.trigger.toLowerCase());
         }
 
         if (isMatch) {

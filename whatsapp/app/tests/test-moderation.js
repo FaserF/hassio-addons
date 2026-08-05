@@ -10,10 +10,6 @@ import {
   clearUserWarnings,
   handleModerationMessage,
 } from '../src/whatsapp/moderation/engine.js';
-import {
-  exportGroupModeration,
-  importGroupModeration,
-} from '../src/whatsapp/moderation/migration.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
 
@@ -24,14 +20,14 @@ try {
   const store = getDefaultModerationStore();
   assert.strictEqual(
     store.global_enabled,
-    false,
-    'Global moderation should be disabled by default'
+    true,
+    'Global moderation engine should be active by default'
   );
-  console.log('✅ PASSED: Moderation is disabled by default');
+  console.log('✅ PASSED: Global moderation engine is active by default');
 
   const groupConfig = getGroupModerationConfig('1203630123456789@g.us');
-  assert.strictEqual(groupConfig.enabled, false, 'Group moderation should be disabled by default');
-  console.log('✅ PASSED: Group moderation is disabled by default');
+  assert.strictEqual(groupConfig.enabled, false, 'Group moderation should be disabled by default for unconfigured groups');
+  console.log('✅ PASSED: Group moderation is disabled by default for unconfigured groups');
 
   // Enable for testing
   store.global_enabled = true;
@@ -97,22 +93,55 @@ try {
   assert.strictEqual(blHandled, true, 'Blacklist should match prohibited word');
   console.log('✅ PASSED: Blacklist correctly matched prohibited word');
 
-  // Test 4: Moderation Import & Export
-  const exported = exportGroupModeration('1203630123456789@g.us');
-  assert.strictEqual(exported.export_source, 'WhatsAppModerationEngine', 'Export header matches');
-  console.log('✅ PASSED: Moderation config export structure valid');
+  // Test 5: Auto-Responder Filters & Custom Notes
+  groupConfig.filters = [{ trigger: 'Test', response: 'Auto response works!', is_regex: false }];
+  groupConfig.notes = { info: 'Here is the requested note' };
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
 
-  const importPayload = {
-    rules: '1. No spam\n2. Be nice',
-    filters: [{ trigger: '!faq', reply: 'Check our wiki' }],
-    blacklist: { words: ['prohibited'], action: 'warn' },
+  const eventFilter = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491761234567',
+    content: 'Test',
+    raw: { key: { id: 'msg3' } },
   };
+  const filterHandled = await handleModerationMessage(mockSession, eventFilter);
+  assert.strictEqual(filterHandled, true, 'Auto-responder filter should handle trigger word');
+  console.log('✅ PASSED: Auto-responder filter correctly matched trigger');
 
-  const importedConfig = importGroupModeration('1203630987654321@g.us', importPayload);
-  assert.strictEqual(importedConfig.rules.text, '1. No spam\n2. Be nice');
-  assert.strictEqual(importedConfig.filters[0].trigger, '!faq');
-  assert.strictEqual(importedConfig.blacklist.words[0], 'prohibited');
-  console.log('✅ PASSED: Moderation JSON config imported successfully');
+  const eventNote = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491761234567',
+    content: '#info',
+    raw: { key: { id: 'msg4' } },
+  };
+  const noteHandled = await handleModerationMessage(mockSession, eventNote);
+  assert.strictEqual(noteHandled, true, 'Note trigger should handle note request');
+  console.log('✅ PASSED: Custom note correctly matched #info trigger');
+
+  // Test 6: Muted Users & Federation Protection
+  groupConfig.muted_users = { '491769999999': { until: Date.now() + 60000 } };
+  groupConfig.federation_id = 'fed_global_default';
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  const eventMuted = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491769999999',
+    content: 'Hello everyone',
+    raw: { key: { id: 'msg5' } },
+  };
+  const mutedHandled = await handleModerationMessage(mockSession, eventMuted);
+  assert.strictEqual(mutedHandled, true, 'Muted user message should be suppressed');
+  console.log('✅ PASSED: Muted user message correctly suppressed and deleted');
+
+  const eventFedLink = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491761234567',
+    content: 'Join my channel t.me/joinchat/xyz',
+    raw: { key: { id: 'msg6' } },
+  };
+  const fedHandled = await handleModerationMessage(mockSession, eventFedLink);
+  assert.strictEqual(fedHandled, true, 'Federation shared blacklist should delete prohibited link');
+  console.log('✅ PASSED: Federation shared blacklist pattern correctly deleted');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

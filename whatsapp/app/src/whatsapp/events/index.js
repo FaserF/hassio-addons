@@ -191,6 +191,9 @@ export function handleIncomingMessages(session) {
           participant.includes('@s.whatsapp.net')
         ) {
           effectiveSenderJid = participant;
+        } else if (msg.key.fromMe) {
+          const selfPn = session.stats.my_number || session.sock?.user?.id?.split(':')[0];
+          if (selfPn) effectiveSenderJid = `${selfPn}@s.whatsapp.net`;
         }
         const effectiveSenderNumber = effectiveSenderJid.split('@')[0];
 
@@ -215,8 +218,8 @@ export function handleIncomingMessages(session) {
           session_id: session.id,
         };
 
-        const personJid = msg.key.participant || senderJid;
-        const isAdminUser = isAdmin(personJid, session) || msg.key.fromMe;
+        const personJid = effectiveSenderJid;
+        const isAdminUser = Boolean(msg.key.fromMe || isAdmin(personJid, session));
 
         triggerWebhook(event);
         handleFirstContact(session, event);

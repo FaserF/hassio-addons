@@ -124,7 +124,7 @@ export function getDefaultGroupConfig() {
       system_prompt: 'You are a helpful group moderator AI assistant.',
     },
     commands: {
-      enabled: false,
+      enabled: true,
       prefix: '!',
       mute_action: 'delete', // WhatsApp limitation: 'delete' un-sends their future messages or restricts group
     },
@@ -134,7 +134,7 @@ export function getDefaultGroupConfig() {
 
 export function getDefaultModerationStore() {
   return {
-    global_enabled: false,
+    global_enabled: true,
     gemini_api_key: '',
     global_rules: '',
     federations: [
