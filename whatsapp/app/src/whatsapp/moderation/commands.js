@@ -1,5 +1,5 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from './store.js';
-import { executePenalty, issueUserWarning } from './engine.js';
+import { executePenalty, issueUserWarning, sendMissingAdminWarning } from './engine.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
@@ -76,7 +76,7 @@ registry.register(
         mentions: targetMatches,
       });
     } catch (e) {
-      await reply(session, groupId, { text: `❌ Failed to promote users.` });
+      await sendMissingAdminWarning(session, groupId, 'Promote users');
     }
   },
   { adminOnly: true, help: 'Promote a user to Admin' }
@@ -107,7 +107,7 @@ registry.register(
         mentions: targetMatches,
       });
     } catch (e) {
-      await reply(session, groupId, { text: `❌ Failed to demote users.` });
+      await sendMissingAdminWarning(session, groupId, 'Demote users');
     }
   },
   { adminOnly: true, help: 'Demote an Admin to regular user' }
@@ -393,7 +393,7 @@ registry.register(
       return;
     }
     const list = config.filters
-      .map((f) => `• \`${f.trigger}\` -> ${f.is_regex ? '(Regex)' : ''}`)
+      .map((f) => `• \`${f.trigger}\` -> ${f.response}${f.is_regex ? ' _(Regex)_' : ''}`)
       .join('\n');
     await reply(session, groupId, { text: `🤖 *Active Filters:*\n${list}` });
   },
@@ -448,7 +448,9 @@ registry.register(
 registry.register(
   'id',
   async (session, groupId, userId) => {
-    await reply(session, groupId, { text: `Group ID: \`${groupId}\`\nYour ID: \`${userId}\`` });
+    const cleanGroupId = groupId.split('@')[0] + '@g.us';
+    const cleanUserId = userId.split('@')[0];
+    await reply(session, groupId, { text: `Group ID: \`${cleanGroupId}\`\nYour ID: \`${cleanUserId}\`` });
   },
   { help: 'Get the group and your user ID' }
 );
@@ -765,9 +767,12 @@ registry.register(
 
       let text = `👮 *Group Admins (${admins.length}):*\n\n`;
       for (const admin of admins) {
-        const id = admin.id.split('@')[0];
+        const fullJid = admin.id;
+        const phoneNum = fullJid.split('@')[0];
+        const cachedName = session.contactCache?.get(fullJid)?.name || session.contactCache?.get(`${phoneNum}@s.whatsapp.net`)?.name;
+        const displayName = cachedName ? `${cachedName} (@${phoneNum})` : `@${phoneNum}`;
         const icon = admin.admin === 'superadmin' ? '👑' : '👮';
-        text += `${icon} @${id}\n`;
+        text += `${icon} ${displayName}\n`;
       }
 
       await reply(session, groupId, { text, mentions: admins.map((a) => a.id) });
@@ -825,9 +830,7 @@ registry.register(
         await session.sock.sendMessage(groupId, { delete: rawMsg.key });
       }
     } catch (e) {
-      await reply(session, groupId, {
-        text: '❌ Failed to delete message. Ensure I have admin rights.',
-      });
+      await sendMissingAdminWarning(session, groupId, 'Delete message');
     }
   },
   { adminOnly: true, aliases: ['delete'], help: 'Delete a replied-to message' }
@@ -1165,9 +1168,12 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   const prefix = config.commands.prefix || '!';
 
-  if (!text.startsWith(prefix)) return false;
+  // Sanitize formatting wrappers (e.g. '!locktypes' -> !locktypes, `!help` -> !help)
+  const cleanText = (text || '').trim().replace(/^['"`\s]+|['"`\s]+$/g, '');
 
-  const parts = text.slice(prefix.length).trim().split(/\s+/);
+  if (!cleanText.startsWith(prefix)) return false;
+
+  const parts = cleanText.slice(prefix.length).trim().split(/\s+/);
   if (parts.length === 0 || parts[0] === '') return false;
 
   const cmdStr = parts[0].toLowerCase();

@@ -12,6 +12,27 @@ function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;
 }
 
+export async function sendMissingAdminWarning(session, groupId, attemptedAction = '') {
+  const text =
+    `⚠️ *Bot Missing Admin Permissions!*\n\n` +
+    `I attempted to execute an action requiring Admin rights (${attemptedAction || 'Moderation/Admin command'}), but I am currently NOT a group administrator.\n\n` +
+    `👉 *How to Fix:*\n` +
+    `1. Open the WhatsApp Group settings.\n` +
+    `2. Go to *Group Info* -> *Group Members*.\n` +
+    `3. Select the Bot account and tap *Make Group Admin* (Promote).\n\n` +
+    `⛔ *Limitations without Admin Rights:*\n` +
+    `• Cannot delete rule-violating or muted messages (` + '`!del` / `!mute` / content locks' + `)\n` +
+    `• Cannot kick or ban members (` + '`!kick` / `!ban` / anti-raid / flood penalty' + `)\n` +
+    `• Cannot promote or demote other users (` + '`!promote` / `!demote` / `!approve` / `!unapprove`' + `)\n` +
+    `• Cannot change group settings or enforce lock restrictions`;
+
+  try {
+    await reply(session, groupId, { text });
+  } catch (err) {
+    logger.error({ error: err.message }, 'Failed to send missing admin warning');
+  }
+}
+
 export async function executePenalty(session, groupId, userId, action, reason = '') {
   logger.info(
     `🛡️ Executing moderation penalty [${action}] on ${userId} in ${groupId}. Reason: ${reason}`
@@ -29,7 +50,13 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         reason || 'Violation of group moderation rules'
       );
     } else if (action === 'mute') {
-      // Mute user or restrict group send permissions via Baileys if supported
+      const store = loadModerationStore();
+      const config = getGroupModerationConfig(groupId);
+      config.muted_users = config.muted_users || {};
+      config.muted_users[userId] = { until: null, reason: reason || 'Moderation penalty' };
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+
       await reply(session, groupId, {
         text: `⚠️ @${userId} has been muted. Reason: ${reason || 'Moderation penalty'}`,
         mentions: [`${userId}@s.whatsapp.net`],
@@ -44,6 +71,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         });
       } catch (e) {
         logger.warn({ error: e.message }, `Failed to ${action} user ${userId}`);
+        await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`);
       }
     }
   } catch (err) {

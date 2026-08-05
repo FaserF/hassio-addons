@@ -205,11 +205,18 @@ export function handleIncomingMessages(session) {
         }
 
         const participant = msg.key.participant || msg.participant;
+        const participantAlt = msg.key.participantAlt;
         let effectiveSenderJid = senderJid;
         if (
+          participantAlt &&
+          typeof participantAlt === 'string' &&
+          participantAlt.endsWith('@s.whatsapp.net')
+        ) {
+          effectiveSenderJid = participantAlt;
+        } else if (
           participant &&
           typeof participant === 'string' &&
-          participant.includes('@s.whatsapp.net')
+          participant.endsWith('@s.whatsapp.net')
         ) {
           effectiveSenderJid = participant;
         } else if (msg.key.fromMe) {
@@ -265,7 +272,7 @@ export function handleIncomingMessages(session) {
         }
 
         if (text && typeof text === 'string') {
-          const body = text.trim().toLowerCase();
+          const body = text.trim().replace(/^['"`\s]+|['"`\s]+$/g, '').toLowerCase();
           if (body.startsWith('ha-app-')) {
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });

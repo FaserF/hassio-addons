@@ -142,6 +142,21 @@ async function runTests() {
   );
   console.log('✅ PASSED: Disabled built-in command !ping handled and notified user successfully');
 
+  // Test Formatted Text Input (e.g. '!locktypes' or `!help`)
+  groupConfig.commands.disabled_commands = [];
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  const formattedHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    "'!ping'",
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(formattedHandled === true, 'Formatted command input (!ping) should be sanitized and handled');
+  console.log('✅ PASSED: Formatted command input (!ping) handled successfully');
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;

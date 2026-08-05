@@ -792,6 +792,7 @@ async function loadModerationConfig() {
       }
       selectModerationGroup(select.value);
     }
+    updateFedBlacklistTagsInUi();
   } catch (e) {
     console.error('Failed to load moderation config:', e);
   }
