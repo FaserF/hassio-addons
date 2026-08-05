@@ -901,8 +901,10 @@ function selectModerationGroup(groupId) {
   if (welcM) welcM.value = config.greetings?.welcome_message || '';
   const goodE = document.getElementById('mod-goodbye-enabled');
   if (goodE) goodE.checked = Boolean(config.greetings?.goodbye_enabled);
-  const goodM = document.getElementById('mod-goodbye-msg') || document.getElementById('mod-goodbye-message');
-  if (goodM) goodM.value = config.greetings?.goodbye_message || config.greetings?.goodbye_text || '';
+  const goodM =
+    document.getElementById('mod-goodbye-msg') || document.getElementById('mod-goodbye-message');
+  if (goodM)
+    goodM.value = config.greetings?.goodbye_message || config.greetings?.goodbye_text || '';
 
   // Captcha
   const capE = document.getElementById('mod-captcha-enabled');
@@ -986,7 +988,8 @@ function selectModerationGroup(groupId) {
   if (blTags) {
     const words = config.blacklist?.words || [];
     if (!words.length) {
-      blTags.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">No blacklisted words or patterns yet</span>';
+      blTags.innerHTML =
+        '<span style="color:var(--text-muted);font-size:12px;">No blacklisted words or patterns yet</span>';
     } else {
       blTags.innerHTML = words
         .map(
@@ -1005,7 +1008,8 @@ function selectModerationGroup(groupId) {
   if (filtersList) {
     const filters = config.filters || [];
     if (!filters.length) {
-      filtersList.innerHTML = '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No filter rules configured yet</div>';
+      filtersList.innerHTML =
+        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No filter rules configured yet</div>';
     } else {
       filtersList.innerHTML = filters
         .map(
@@ -1028,10 +1032,12 @@ function selectModerationGroup(groupId) {
   const fedTags = document.getElementById('mod-fed-blacklist-tags');
   if (fedTags && modStoreCache?.federations) {
     const fedId = config.federation_id || 'fed_global_default';
-    const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+    const fed =
+      modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
     const words = fed?.shared_blacklist || [];
     if (!words.length) {
-      fedTags.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">No shared federation patterns configured</span>';
+      fedTags.innerHTML =
+        '<span style="color:var(--text-muted);font-size:12px;">No shared federation patterns configured</span>';
     } else {
       fedTags.innerHTML = words
         .map(

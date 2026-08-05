@@ -26,7 +26,11 @@ try {
   console.log('✅ PASSED: Global moderation engine is active by default');
 
   const groupConfig = getGroupModerationConfig('1203630123456789@g.us');
-  assert.strictEqual(groupConfig.enabled, false, 'Group moderation should be disabled by default for unconfigured groups');
+  assert.strictEqual(
+    groupConfig.enabled,
+    false,
+    'Group moderation should be disabled by default for unconfigured groups'
+  );
   console.log('✅ PASSED: Group moderation is disabled by default for unconfigured groups');
 
   // Enable for testing
@@ -119,7 +123,7 @@ try {
   console.log('✅ PASSED: Custom note correctly matched #info trigger');
 
   // Test 6: Muted Users & Federation Protection
-  groupConfig.muted_users = { '491769999999': { until: Date.now() + 60000 } };
+  groupConfig.muted_users = { 491769999999: { until: Date.now() + 60000 } };
   groupConfig.federation_id = 'fed_global_default';
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
 

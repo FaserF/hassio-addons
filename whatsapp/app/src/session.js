@@ -250,10 +250,7 @@ export function loadChatCache(session) {
       for (const k of keys) {
         session.chatCache.set(k, true);
       }
-      logger.info(
-        { sessionId: session.id, count: keys.length },
-        '📂 Chat cache loaded from disk'
-      );
+      logger.info({ sessionId: session.id, count: keys.length }, '📂 Chat cache loaded from disk');
     } catch (e) {
       logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load chat cache');
     }

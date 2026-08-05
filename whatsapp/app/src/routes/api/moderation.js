@@ -21,7 +21,8 @@ export function registerModerationRoutes(app) {
   // POST /api/moderation/config
   app.post('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();
-    const { global_enabled, gemini_api_key, global_rules, federations, group_id, group_config } = req.body || {};
+    const { global_enabled, gemini_api_key, global_rules, federations, group_id, group_config } =
+      req.body || {};
 
     if (global_enabled !== undefined) {
       store.global_enabled = Boolean(global_enabled);

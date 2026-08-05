@@ -141,7 +141,8 @@ export function getDefaultModerationStore() {
       {
         id: 'fed_global_default',
         name: 'Global Default Security Federation',
-        description: 'Shared cross-group security shield for spam prevention, botnet protection, and prohibited link filtering.',
+        description:
+          'Shared cross-group security shield for spam prevention, botnet protection, and prohibited link filtering.',
         auto_kick_spammers: true,
         block_mass_invites: true,
         shared_blacklist_enabled: true,

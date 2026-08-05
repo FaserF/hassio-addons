@@ -161,7 +161,13 @@ export async function handleModerationMessage(session, event) {
     const fed = store.federations.find((f) => f.id === config.federation_id);
     if (fed) {
       if (Array.isArray(fed.banned_users) && fed.banned_users.includes(userId)) {
-        await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Security Federation');
+        await executePenalty(
+          session,
+          groupId,
+          userId,
+          'ban',
+          'Banned in Global Security Federation'
+        );
         return true;
       }
       if (fed.shared_blacklist_enabled !== false && Array.isArray(fed.shared_blacklist)) {
@@ -336,7 +342,9 @@ export async function handleModerationMessage(session, event) {
             isMatch = new RegExp(filter.trigger, 'i').test(text);
           } catch (e) {}
         } else {
-          isMatch = text.toLowerCase() === filter.trigger.toLowerCase() || text.toLowerCase().includes(filter.trigger.toLowerCase());
+          isMatch =
+            text.toLowerCase() === filter.trigger.toLowerCase() ||
+            text.toLowerCase().includes(filter.trigger.toLowerCase());
         }
 
         if (isMatch) {
