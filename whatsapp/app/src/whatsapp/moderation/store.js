@@ -105,8 +105,14 @@ export function getDefaultGroupConfig() {
       words: [],
       action: 'delete', // 'delete' | 'warn' | 'mute' | 'kick' | 'ban'
     },
-    filters: [], // [{ trigger, response, is_regex }]
+    filters: [], // [{ trigger, response, is_regex, action }]
     notes: {}, // noteName -> content
+    muted_users: {}, // userId -> { until (timestamp or null), reason }
+    translation: {
+      enabled: false,
+      target_lang: 'en',
+      mode: 'manual', // 'manual' | 'auto' | 'forwards'
+    },
     antispam: {
       flood_protection: { enabled: false, max_messages: 5, window_seconds: 5, action: 'mute' },
       anti_raid: { enabled: false, max_joins: 5, window_seconds: 10, action: 'lockdown' },

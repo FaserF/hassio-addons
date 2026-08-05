@@ -64,6 +64,16 @@ export async function issueUserWarning(session, groupId, userId, reason) {
   }
 
   const now = Date.now();
+
+  // Warning decay: prune warnings older than decay_hours
+  const decayHours = warnConfig.decay_hours || 0;
+  if (decayHours > 0) {
+    const decayMs = decayHours * 3600 * 1000;
+    config.warnings.user_warns[userId] = config.warnings.user_warns[userId].filter(
+      (w) => now - w.timestamp < decayMs
+    );
+  }
+
   config.warnings.user_warns[userId].push({ reason, timestamp: now });
   store.groups[groupId] = config;
   saveModerationStore(store);
@@ -123,6 +133,27 @@ export async function handleModerationMessage(session, event) {
 
   if (config.approved && config.approved.includes(userId)) {
     return false; // User is whitelisted, skip moderation
+  }
+
+  // 0. Muted Users check — delete messages from muted users
+  if (config.muted_users && config.muted_users[userId]) {
+    const muteEntry = config.muted_users[userId];
+    if (!muteEntry.until || muteEntry.until > Date.now()) {
+      // User is muted, delete their message
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {
+          /* ignore delete failure */
+        }
+      }
+      return true; // silently consumed
+    } else {
+      // Mute has expired, clean up
+      delete config.muted_users[userId];
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+    }
   }
 
   // 1. Global Ban Federation check
@@ -196,6 +227,20 @@ export async function handleModerationMessage(session, event) {
   // Right-to-Left text check (RTL lock)
   if (locks.rtl?.enabled && /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text)) {
     if (await triggerLock('rtl', 'RTL text')) return true;
+  }
+
+  // Contact lock check
+  if (event.media_type === 'contact' && (await triggerLock('contact', 'Contacts'))) return true;
+
+  // Location lock check
+  if (event.media_type === 'location' && (await triggerLock('location', 'Locations'))) return true;
+
+  // Forwarded message lock check
+  if (rawMsg?.message?.extendedTextMessage?.contextInfo?.isForwarded ||
+      rawMsg?.message?.imageMessage?.contextInfo?.isForwarded ||
+      rawMsg?.message?.videoMessage?.contextInfo?.isForwarded ||
+      rawMsg?.message?.documentMessage?.contextInfo?.isForwarded) {
+    if (await triggerLock('forwarded', 'Forwarded messages')) return true;
   }
 
   // 4. Blacklist / Prohibited Words check
@@ -277,6 +322,17 @@ export async function handleModerationMessage(session, event) {
 
         if (isMatch) {
           await reply(session, groupId, { text: filter.response });
+          // Execute filter action if defined (warn, kick, ban, mute)
+          if (filter.action && filter.action !== 'reply') {
+            if (rawMsg?.key?.id) {
+              try {
+                await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+              } catch (e) { /* ignore */ }
+            }
+            if (filter.action !== 'delete') {
+              await executePenalty(session, groupId, userId, filter.action, `Filter match: "${filter.trigger}"`);
+            }
+          }
           return true;
         }
       }
@@ -305,6 +361,30 @@ export async function handleModerationMessage(session, event) {
     if (aiReply) {
       await reply(session, groupId, { text: `🤖 *AI Assistant:*\n${aiReply}` });
       return true;
+    }
+  }
+
+  // 8. Sentiment Moderation via AI
+  if (config.ai?.enabled && config.ai?.sentiment_moderation && text && text.length > 10) {
+    const apiKey = store.gemini_api_key || process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      const sentimentConfig = {
+        system_prompt: 'You are a toxicity detector. Analyze the message and reply ONLY with "TOXIC" if it is hateful, threatening, harassing, or extremely offensive. Reply "SAFE" otherwise. No other text.',
+        faq_auto_reply: true,
+      };
+      const result = await processAiModeration(text, sentimentConfig, apiKey);
+      if (result && result.trim().toUpperCase().includes('TOXIC')) {
+        if (rawMsg?.key?.id) {
+          try {
+            await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+          } catch (e) { /* ignore */ }
+        }
+        await reply(session, groupId, {
+          text: `🛡️ Message removed: Detected as potentially harmful content.`,
+        });
+        await issueUserWarning(session, groupId, userId, 'AI detected toxic content');
+        return true;
+      }
     }
   }
 
