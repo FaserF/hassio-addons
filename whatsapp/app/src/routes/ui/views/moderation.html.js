@@ -11,7 +11,6 @@ export default () => `
                         </div>
                     </div>
                     <div class="mod-hero-controls">
-                        <button class="btn btn-secondary btn-sm" onclick="openGlobalRulesModal()" style="margin-right:8px;"><i class="fas fa-globe"></i> Global Rules</button>
                         <div class="mod-toggle-row">
                             <span class="mod-toggle-label"><i class="fas fa-power-off"></i> Global</span>
                             <label class="mod-toggle-switch">
@@ -28,18 +27,26 @@ export default () => `
                     </div>
                 </div>
 
-                <!-- No Group Selected Placeholder -->
-                <div id="mod-no-group-placeholder" class="card mod-settings-card" style="text-align:center; padding: 48px 24px; margin-top: 16px;">
-                    <div style="font-size: 42px; color: var(--primary); margin-bottom: 16px; opacity:0.8;"><i class="fas fa-layer-group"></i></div>
-                    <h3 style="margin-bottom: 8px; font-weight: 600; font-size:18px;">No Group Selected</h3>
-                    <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 24px; font-size: 13px; line-height: 1.5;">
-                        Please select a WhatsApp group from the dropdown menu above to configure its specific moderation rules, greetings, captchas, content locks, and bot commands.
-                    </p>
-                    <div style="display:inline-flex; gap:12px; align-items:center; background: rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.2); padding:12px 18px; border-radius:10px; font-size:12px; color:var(--text-main); max-width:550px; text-align:left; margin:0 auto;">
-                        <i class="fas fa-globe" style="color:var(--primary); font-size:18px; flex-shrink:0;"></i>
+                <!-- No Group Selected & Global Settings Card -->
+                <div id="mod-no-group-placeholder" class="card mod-settings-card" style="margin-top: 16px;">
+                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+                        <div style="font-size: 28px; color: var(--primary);"><i class="fas fa-globe"></i></div>
                         <div>
-                            <strong>Master Switch &amp; Global Rules:</strong> The <em>Global</em> toggle turns the moderation engine on/off across all chats. Click <strong>Global Rules</strong> above to set fallback rules for all groups.
+                            <h3 style="margin: 0; font-weight: 600; font-size:16px;">Global Default Rules &amp; Moderation Settings</h3>
+                            <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 12px;">
+                                Configure global fallback rules applicable to all WhatsApp groups. Select a specific group from the dropdown menu above to customize per-group settings.
+                            </p>
                         </div>
+                    </div>
+
+                    <div class="mod-field-group" style="margin-bottom:20px;">
+                        <label class="mod-field-label"><i class="fas fa-scroll"></i> Global Default Rules (Fallback for all groups)</label>
+                        <p class="mod-field-desc">These rules will be displayed via <code>!rules</code> for any group that does not have custom group rules configured.</p>
+                        <textarea id="mod-global-rules-input" class="mod-textarea" style="height:140px;" placeholder="1. Be respectful to all members.&#10;2. No spam or unauthorized advertising.&#10;3. Follow group topic."></textarea>
+                    </div>
+
+                    <div class="mod-actions" style="display:flex; justify-content:flex-end;">
+                        <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesInline()"><i class="fas fa-save"></i> Save Global Default Rules</button>
                     </div>
                 </div>
 

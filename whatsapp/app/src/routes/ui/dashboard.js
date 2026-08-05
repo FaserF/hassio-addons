@@ -792,6 +792,24 @@ async function loadModerationConfig() {
   }
 }
 
+async function saveGlobalRulesInline() {
+  const rules = document.getElementById('mod-global-rules-input')?.value || '';
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ global_rules: rules }),
+    });
+    if (res.ok) {
+      showToast('Global default rules saved successfully! 🌐', 'success');
+      loadModerationConfig();
+    }
+  } catch (e) {
+    showToast('Failed to save global rules', 'danger');
+  }
+}
+window.saveGlobalRulesInline = saveGlobalRulesInline;
+
 function openGlobalRulesModal() {
   const modal = document.getElementById('global-rules-modal');
   if (modal) {
