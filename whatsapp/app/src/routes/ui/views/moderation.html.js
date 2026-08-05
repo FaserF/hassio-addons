@@ -170,7 +170,7 @@ export default () => `
                             <div><div class="mod-feature-title">Word &amp; Pattern Blacklist</div><div class="mod-feature-desc">Auto-delete messages containing blocked words or regex patterns.</div></div>
                         </div>
                         <div class="mod-add-row">
-                            <input type="text" id="mod-blacklist-new" class="mod-input mod-input-flex" placeholder="Add word or /regex/ pattern…">
+                            <input type="text" id="mod-blacklist-new" class="mod-input mod-input-flex" placeholder="Add word or /regex/ pattern…" onkeydown="if(event.key==='Enter'){event.preventDefault();addBlacklistWord();}">
                             <button class="btn btn-secondary btn-sm" onclick="addBlacklistWord()"><i class="fas fa-plus"></i> Add</button>
                         </div>
                         <div id="mod-blacklist-tags" class="mod-tag-cloud"></div>
@@ -184,8 +184,8 @@ export default () => `
                             <div><div class="mod-feature-title">Auto-Responder Filters</div><div class="mod-feature-desc">Trigger automatic replies on specific keywords.</div></div>
                         </div>
                         <div class="mod-two-col mod-two-col-tight">
-                            <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. !help)">
-                            <input type="text" id="mod-filter-response" class="mod-input" placeholder="Response text">
+                            <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. !help)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
+                            <input type="text" id="mod-filter-response" class="mod-input" placeholder="Response text" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
                         </div>
                         <div class="mod-actions mod-actions-split">
                             <button class="btn btn-secondary btn-sm" onclick="addFilterRule()"><i class="fas fa-plus"></i> Add Rule</button>

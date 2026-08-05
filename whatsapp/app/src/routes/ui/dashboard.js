@@ -1094,6 +1094,10 @@ async function addBlacklistWord() {
   inp.value = '';
   await saveGroupConfig(groupConfig);
   selectModerationGroup(currentModGroup);
+  setTimeout(() => {
+    const el = document.getElementById('mod-blacklist-new');
+    if (el) el.focus();
+  }, 50);
 }
 
 async function saveGroupBlacklist() {
@@ -1117,6 +1121,11 @@ async function addFilterRule() {
 
   await saveGroupConfig(groupConfig);
   showToast('Filter added!', 'success');
+  selectModerationGroup(currentModGroup);
+  setTimeout(() => {
+    const el = document.getElementById('mod-filter-trigger');
+    if (el) el.focus();
+  }, 50);
 }
 
 async function saveGroupFilters() {
