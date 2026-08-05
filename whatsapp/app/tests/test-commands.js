@@ -1,5 +1,8 @@
 import { registry, parseDuration, processCommand } from '../src/whatsapp/moderation/commands.js';
-import { getGroupModerationConfig, setGroupModerationConfig } from '../src/whatsapp/moderation/store.js';
+import {
+  getGroupModerationConfig,
+  setGroupModerationConfig,
+} from '../src/whatsapp/moderation/store.js';
 
 let failed = 0;
 function assert(condition, message) {
@@ -133,7 +136,10 @@ async function runTests() {
     false,
     '1203630123456789@g.us'
   );
-  assert(disabledHandled === true, 'Disabled built-in command !ping should be handled with notification');
+  assert(
+    disabledHandled === true,
+    'Disabled built-in command !ping should be handled with notification'
+  );
   console.log('✅ PASSED: Disabled built-in command !ping handled and notified user successfully');
 
   // Count total commands (deduplicated)

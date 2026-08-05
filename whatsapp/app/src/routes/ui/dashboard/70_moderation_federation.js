@@ -122,8 +122,7 @@ function updateFedBlacklistTagsInUi() {
   if (!fedTags || !modStoreCache?.federations) return;
 
   const fedId = fedSelect?.value || 'fed_global_default';
-  const fed =
-    modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
   const words = fed?.shared_blacklist || [];
 
   if (!words.length) {
@@ -155,8 +154,7 @@ function closeCreateFederationModal() {
 async function saveNewCustomFederation() {
   const name = document.getElementById('mod-new-fed-name')?.value.trim();
   const desc =
-    document.getElementById('mod-new-fed-desc')?.value.trim() ||
-    'Custom local security federation';
+    document.getElementById('mod-new-fed-desc')?.value.trim() || 'Custom local security federation';
   if (!name) return showToast('Please enter a federation name', 'warning');
 
   const newFed = {

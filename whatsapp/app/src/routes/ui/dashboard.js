@@ -360,7 +360,6 @@ async function updateDashboard() {
   }
 }
 
-
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -524,7 +523,6 @@ function switchSession(id) {
   }
   updateDashboard();
 }
-
 
 // Update & Dependency Modals
 
@@ -724,7 +722,6 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
-
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -944,42 +941,42 @@ function selectModerationGroup(groupId) {
     }
   }
 
-const BUILTIN_COMMANDS_LIST = [
-  { cmd: 'help', label: '!help' },
-  { cmd: 'ping', label: '!ping' },
-  { cmd: 'id', label: '!id' },
-  { cmd: 'rules', label: '!rules' },
-  { cmd: 'info', label: '!info' },
-  { cmd: 'adminlist', label: '!adminlist' },
-  { cmd: 'locktypes', label: '!locktypes' },
-  { cmd: 'translate', label: '!translate' },
-  { cmd: 'warn', label: '!warn' },
-  { cmd: 'warns', label: '!warns' },
-  { cmd: 'unwarn', label: '!unwarn' },
-  { cmd: 'kick', label: '!kick' },
-  { cmd: 'ban', label: '!ban' },
-  { cmd: 'mute', label: '!mute' },
-  { cmd: 'unmute', label: '!unmute' },
-  { cmd: 'tban', label: '!tban' },
-  { cmd: 'tmute', label: '!tmute' },
-  { cmd: 'promote', label: '!promote' },
-  { cmd: 'demote', label: '!demote' },
-  { cmd: 'setrules', label: '!setrules' },
-  { cmd: 'lock', label: '!lock' },
-  { cmd: 'unlock', label: '!unlock' },
-  { cmd: 'locks', label: '!locks' },
-  { cmd: 'report', label: '!report' },
-  { cmd: 'notes', label: '!notes' },
-  { cmd: 'save', label: '!save' },
-  { cmd: 'get', label: '!get' },
-  { cmd: 'filter', label: '!filter' },
-  { cmd: 'filters', label: '!filters' },
-  { cmd: 'stop', label: '!stop' },
-  { cmd: 'welcome', label: '!welcome' },
-  { cmd: 'goodbye', label: '!goodbye' },
-  { cmd: 'del', label: '!del' },
-  { cmd: 'setlang', label: '!setlang' },
-];
+  const BUILTIN_COMMANDS_LIST = [
+    { cmd: 'help', label: '!help' },
+    { cmd: 'ping', label: '!ping' },
+    { cmd: 'id', label: '!id' },
+    { cmd: 'rules', label: '!rules' },
+    { cmd: 'info', label: '!info' },
+    { cmd: 'adminlist', label: '!adminlist' },
+    { cmd: 'locktypes', label: '!locktypes' },
+    { cmd: 'translate', label: '!translate' },
+    { cmd: 'warn', label: '!warn' },
+    { cmd: 'warns', label: '!warns' },
+    { cmd: 'unwarn', label: '!unwarn' },
+    { cmd: 'kick', label: '!kick' },
+    { cmd: 'ban', label: '!ban' },
+    { cmd: 'mute', label: '!mute' },
+    { cmd: 'unmute', label: '!unmute' },
+    { cmd: 'tban', label: '!tban' },
+    { cmd: 'tmute', label: '!tmute' },
+    { cmd: 'promote', label: '!promote' },
+    { cmd: 'demote', label: '!demote' },
+    { cmd: 'setrules', label: '!setrules' },
+    { cmd: 'lock', label: '!lock' },
+    { cmd: 'unlock', label: '!unlock' },
+    { cmd: 'locks', label: '!locks' },
+    { cmd: 'report', label: '!report' },
+    { cmd: 'notes', label: '!notes' },
+    { cmd: 'save', label: '!save' },
+    { cmd: 'get', label: '!get' },
+    { cmd: 'filter', label: '!filter' },
+    { cmd: 'filters', label: '!filters' },
+    { cmd: 'stop', label: '!stop' },
+    { cmd: 'welcome', label: '!welcome' },
+    { cmd: 'goodbye', label: '!goodbye' },
+    { cmd: 'del', label: '!del' },
+    { cmd: 'setlang', label: '!setlang' },
+  ];
 
   // Commands
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
@@ -1250,7 +1247,11 @@ async function addCustomCommandRule() {
   if (!name || !resp || !currentModGroup) return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.commands = groupConfig.commands || { enabled: true, prefix: '!', mute_action: 'delete' };
+  groupConfig.commands = groupConfig.commands || {
+    enabled: true,
+    prefix: '!',
+    mute_action: 'delete',
+  };
   groupConfig.commands.custom_commands = groupConfig.commands.custom_commands || [];
   groupConfig.commands.custom_commands.push({
     command: name,
@@ -1299,7 +1300,6 @@ async function clearUserWarnInUi(userId) {
     showToast('Failed to clear warnings', 'danger');
   }
 }
-
 
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
@@ -1386,7 +1386,6 @@ async function saveGroupAntispam() {
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }
 
-
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
@@ -1464,7 +1463,6 @@ async function saveGroupAiConfig() {
     showToast('Failed to save AI settings', 'danger');
   }
 }
-
 
 // Moderation Federation & Import/Export
 
@@ -1590,8 +1588,7 @@ function updateFedBlacklistTagsInUi() {
   if (!fedTags || !modStoreCache?.federations) return;
 
   const fedId = fedSelect?.value || 'fed_global_default';
-  const fed =
-    modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
   const words = fed?.shared_blacklist || [];
 
   if (!words.length) {
@@ -1623,8 +1620,7 @@ function closeCreateFederationModal() {
 async function saveNewCustomFederation() {
   const name = document.getElementById('mod-new-fed-name')?.value.trim();
   const desc =
-    document.getElementById('mod-new-fed-desc')?.value.trim() ||
-    'Custom local security federation';
+    document.getElementById('mod-new-fed-desc')?.value.trim() || 'Custom local security federation';
   if (!name) return showToast('Please enter a federation name', 'warning');
 
   const newFed = {
@@ -1673,7 +1669,6 @@ async function saveNewCustomFederation() {
     showToast('Failed to create custom federation', 'danger');
   }
 }
-
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;

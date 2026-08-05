@@ -216,42 +216,42 @@ function selectModerationGroup(groupId) {
     }
   }
 
-const BUILTIN_COMMANDS_LIST = [
-  { cmd: 'help', label: '!help' },
-  { cmd: 'ping', label: '!ping' },
-  { cmd: 'id', label: '!id' },
-  { cmd: 'rules', label: '!rules' },
-  { cmd: 'info', label: '!info' },
-  { cmd: 'adminlist', label: '!adminlist' },
-  { cmd: 'locktypes', label: '!locktypes' },
-  { cmd: 'translate', label: '!translate' },
-  { cmd: 'warn', label: '!warn' },
-  { cmd: 'warns', label: '!warns' },
-  { cmd: 'unwarn', label: '!unwarn' },
-  { cmd: 'kick', label: '!kick' },
-  { cmd: 'ban', label: '!ban' },
-  { cmd: 'mute', label: '!mute' },
-  { cmd: 'unmute', label: '!unmute' },
-  { cmd: 'tban', label: '!tban' },
-  { cmd: 'tmute', label: '!tmute' },
-  { cmd: 'promote', label: '!promote' },
-  { cmd: 'demote', label: '!demote' },
-  { cmd: 'setrules', label: '!setrules' },
-  { cmd: 'lock', label: '!lock' },
-  { cmd: 'unlock', label: '!unlock' },
-  { cmd: 'locks', label: '!locks' },
-  { cmd: 'report', label: '!report' },
-  { cmd: 'notes', label: '!notes' },
-  { cmd: 'save', label: '!save' },
-  { cmd: 'get', label: '!get' },
-  { cmd: 'filter', label: '!filter' },
-  { cmd: 'filters', label: '!filters' },
-  { cmd: 'stop', label: '!stop' },
-  { cmd: 'welcome', label: '!welcome' },
-  { cmd: 'goodbye', label: '!goodbye' },
-  { cmd: 'del', label: '!del' },
-  { cmd: 'setlang', label: '!setlang' },
-];
+  const BUILTIN_COMMANDS_LIST = [
+    { cmd: 'help', label: '!help' },
+    { cmd: 'ping', label: '!ping' },
+    { cmd: 'id', label: '!id' },
+    { cmd: 'rules', label: '!rules' },
+    { cmd: 'info', label: '!info' },
+    { cmd: 'adminlist', label: '!adminlist' },
+    { cmd: 'locktypes', label: '!locktypes' },
+    { cmd: 'translate', label: '!translate' },
+    { cmd: 'warn', label: '!warn' },
+    { cmd: 'warns', label: '!warns' },
+    { cmd: 'unwarn', label: '!unwarn' },
+    { cmd: 'kick', label: '!kick' },
+    { cmd: 'ban', label: '!ban' },
+    { cmd: 'mute', label: '!mute' },
+    { cmd: 'unmute', label: '!unmute' },
+    { cmd: 'tban', label: '!tban' },
+    { cmd: 'tmute', label: '!tmute' },
+    { cmd: 'promote', label: '!promote' },
+    { cmd: 'demote', label: '!demote' },
+    { cmd: 'setrules', label: '!setrules' },
+    { cmd: 'lock', label: '!lock' },
+    { cmd: 'unlock', label: '!unlock' },
+    { cmd: 'locks', label: '!locks' },
+    { cmd: 'report', label: '!report' },
+    { cmd: 'notes', label: '!notes' },
+    { cmd: 'save', label: '!save' },
+    { cmd: 'get', label: '!get' },
+    { cmd: 'filter', label: '!filter' },
+    { cmd: 'filters', label: '!filters' },
+    { cmd: 'stop', label: '!stop' },
+    { cmd: 'welcome', label: '!welcome' },
+    { cmd: 'goodbye', label: '!goodbye' },
+    { cmd: 'del', label: '!del' },
+    { cmd: 'setlang', label: '!setlang' },
+  ];
 
   // Commands
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
@@ -522,7 +522,11 @@ async function addCustomCommandRule() {
   if (!name || !resp || !currentModGroup) return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.commands = groupConfig.commands || { enabled: true, prefix: '!', mute_action: 'delete' };
+  groupConfig.commands = groupConfig.commands || {
+    enabled: true,
+    prefix: '!',
+    mute_action: 'delete',
+  };
   groupConfig.commands.custom_commands = groupConfig.commands.custom_commands || [];
   groupConfig.commands.custom_commands.push({
     command: name,
