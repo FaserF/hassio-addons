@@ -58,3 +58,4 @@ window.markClean = markClean;
 window.markDirty = markDirty;
 window.unbanUserInUi = unbanUserInUi;
 window.clearKickLogInUi = clearKickLogInUi;
+window.unmuteUserInUi = unmuteUserInUi;

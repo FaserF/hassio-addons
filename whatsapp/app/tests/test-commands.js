@@ -115,6 +115,39 @@ async function runTests() {
   };
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
 
+  // Test Custom Mapped Commands in !help
+  groupConfig.commands.custom_commands = [
+    { command: 'wifi', response: 'SSID: Guest | Pass: 12345', description: 'Shows Wi-Fi credentials' },
+    { command: 'adminsecret', response: 'Secret', admin_only: true },
+  ];
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  let helpOutput = '';
+  const mockSessionHelp = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, msgObj) => {
+        helpOutput = msgObj.text;
+        return { key: { id: 'test_help' } };
+      },
+    },
+  };
+
+  await processCommand(
+    mockSessionHelp,
+    mockMsg,
+    '!help',
+    '491761234567@s.whatsapp.net',
+    true, // Admin user
+    '1203630123456789@g.us'
+  );
+
+  assert(helpOutput.includes('!wifi'), '!help output should contain custom command !wifi');
+  assert(helpOutput.includes('Shows Wi-Fi credentials'), '!help output should contain custom command description');
+  assert(helpOutput.includes('!adminsecret'), '!help output for admin should contain admin_only custom command');
+  console.log('✅ PASSED: Custom commands with optional description listed in !help');
+
   const customHandled = await processCommand(
     mockSession,
     mockMsg,

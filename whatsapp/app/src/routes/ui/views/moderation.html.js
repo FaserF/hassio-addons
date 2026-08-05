@@ -222,6 +222,10 @@ export default () => `
                                 </div>
                                 <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-flood-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable flood protection</span></div>
                                 <div class="mod-rate-row"><span class="mod-rate-label">Max</span><input type="number" id="mod-flood-max" class="mod-number-input" value="5" min="1" max="100"><span class="mod-rate-label">messages in</span><input type="number" id="mod-flood-win" class="mod-number-input" value="5" min="1" max="300"><span class="mod-rate-label">seconds</span></div>
+                                <div style="margin-top:16px; border-top:1px dashed var(--border-color); padding-top:12px;">
+                                    <label class="mod-field-label" style="font-size:12px; font-weight:600;"><i class="fas fa-volume-mute"></i> Currently Muted Users</label>
+                                    <div id="mod-muted-users-list" style="margin-top:8px;"></div>
+                                </div>
                             </div>
                             <div class="mod-feature-block mod-feature-block-full">
                                 <div class="mod-feature-header">
@@ -353,9 +357,10 @@ export default () => `
                             <label class="mod-field-label"><i class="fas fa-terminal"></i> Custom Group Commands &amp; Mappings</label>
                             <p class="mod-field-desc">Create custom commands (e.g. <code>!wifi</code>, <code>!faq</code>, <code>!socials</code>) that trigger automated text responses or information cards.</p>
                             <div id="mod-custom-cmds-list" style="margin-bottom:12px;"></div>
-                            <div class="mod-add-row" style="display:flex; gap:8px; align-items:center;">
-                                <input type="text" id="mod-cmd-name" class="mod-input" style="max-width:140px;" placeholder="Command (e.g. wifi)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                            <div class="mod-add-row" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <input type="text" id="mod-cmd-name" class="mod-input" style="max-width:130px;" placeholder="Command (e.g. wifi)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
                                 <input type="text" id="mod-cmd-response" class="mod-input mod-input-flex" placeholder="Response text (e.g. SSID: GuestWifi | Pass: 12345)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                <input type="text" id="mod-cmd-description" class="mod-input" style="max-width:180px;" placeholder="Help description (optional)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
                                 <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; white-space:nowrap; cursor:pointer;">
                                     <input type="checkbox" id="mod-cmd-admin-only"> Admin Only
                                 </label>

@@ -150,6 +150,21 @@ export function registerModerationRoutes(app) {
     res.json({ success: true, data: config.kick_log || [] });
   });
 
+  // DELETE /api/moderation/groups/:groupId/mute/:userId
+  app.delete('/api/moderation/groups/:groupId/mute/:userId', (req, res) => {
+    const { groupId, userId } = req.params;
+    const store = loadModerationStore();
+    const config = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (config.muted_users && config.muted_users[userId]) {
+      delete config.muted_users[userId];
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+      res.json({ success: true, data: config.muted_users });
+    } else {
+      res.status(404).json({ success: false, error: 'Mute record not found' });
+    }
+  });
+
   // GET /api/moderation/federations
   app.get('/api/moderation/federations', (req, res) => {
     const store = loadModerationStore();

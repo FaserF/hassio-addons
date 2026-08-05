@@ -121,7 +121,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       const store = loadModerationStore();
       const config = getGroupModerationConfig(groupId);
       config.muted_users = config.muted_users || {};
-      config.muted_users[userId] = { until: null, reason: reason || 'Moderation penalty' };
+      config.muted_users[userId] = {
+        until: null,
+        reason: reason || 'Moderation penalty',
+        created: Date.now(),
+      };
       store.groups[groupId] = config;
       saveModerationStore(store);
 

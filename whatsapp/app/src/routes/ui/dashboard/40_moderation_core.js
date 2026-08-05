@@ -620,6 +620,7 @@ function selectModerationGroup(groupId) {
             <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong> 
             ${c.admin_only ? '<span style="font-size:10px;background:rgba(231,76,60,0.15);color:#e74c3c;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin Only</span>' : ''}
             &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>
+            ${c.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;"><em>Help: ${escapeHtml(c.description)}</em></div>` : ''}
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeCustomCommandRule(${idx})"><i class="fas fa-trash"></i></button>
         </div>`
@@ -657,6 +658,41 @@ function selectModerationGroup(groupId) {
   if (raidMax) raidMax.value = config.antispam?.anti_raid?.max_joins || 5;
   const raidWin = document.getElementById('mod-antiraid-win');
   if (raidWin) raidWin.value = config.antispam?.anti_raid?.window_seconds || 10;
+
+  // Muted Users List UI
+  const mutedList = document.getElementById('mod-muted-users-list');
+  if (mutedList) {
+    const mutedUsers = config.muted_users || {};
+    const entries = Object.entries(mutedUsers).filter(
+      ([, data]) => !data.until || data.until > Date.now()
+    );
+    if (!entries.length) {
+      mutedList.innerHTML =
+        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">No muted users currently</div>';
+    } else {
+      mutedList.innerHTML = entries
+        .map(([userKey, data]) => {
+          const reason = data.reason || 'No reason provided';
+          const untilStr = data.until
+            ? `Until ${new Date(data.until).toLocaleTimeString()}`
+            : 'Indefinitely';
+          const dateStr = data.created ? new Date(data.created).toLocaleString() : null;
+          return `
+        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div>
+            <strong style="color:var(--text-main);font-size:12px;">@${escapeHtml(userKey)}</strong>
+            <span class="badge badge-warning" style="font-size:10px;margin-left:6px;">${escapeHtml(untilStr)}</span>
+            <div style="font-size:11px;color:var(--text-main);margin-top:2px;">
+              <strong>Reason:</strong> ${escapeHtml(reason)}
+            </div>
+            ${dateStr ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;"><i class="far fa-clock"></i> ${escapeHtml(dateStr)}</div>` : ''}
+          </div>
+          <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="unmuteUserInUi('${escapeHtml(userKey)}')"><i class="fas fa-volume-up"></i> Unmute</button>
+        </div>`;
+        })
+        .join('');
+    }
+  }
 
   // Locks
   const lockKeys = [
@@ -860,10 +896,12 @@ function toggleAllDefaultCommands(enable) {
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');
   const respInp = document.getElementById('mod-cmd-response');
+  const descInp = document.getElementById('mod-cmd-description');
   const adminOnlyInp = document.getElementById('mod-cmd-admin-only');
 
   const name = nameInp?.value.trim().replace(/^[!/#]+/, '');
   const resp = respInp?.value.trim();
+  const desc = descInp?.value.trim();
   const adminOnly = Boolean(adminOnlyInp?.checked);
 
   if (!name || !resp || !currentModGroup) return;
@@ -878,11 +916,13 @@ async function addCustomCommandRule() {
   groupConfig.commands.custom_commands.push({
     command: name,
     response: resp,
+    description: desc || undefined,
     admin_only: adminOnly,
   });
 
   if (nameInp) nameInp.value = '';
   if (respInp) respInp.value = '';
+  if (descInp) descInp.value = '';
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
   await saveGroupConfig(groupConfig);
@@ -980,5 +1020,25 @@ async function clearKickLogInUi(userId) {
     }
   } catch (e) {
     showToast('Failed to remove kick log entry', 'danger');
+  }
+}
+
+async function unmuteUserInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/mute/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Unmuted @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to unmute user', 'danger');
   }
 }

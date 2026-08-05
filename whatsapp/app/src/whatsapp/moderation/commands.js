@@ -144,9 +144,10 @@ registry.register(
     }
 
     const targetJid = targetMatches.length > 0 ? targetMatches[0] : null;
-    const targetId = targetJid ? targetJid.split('@')[0] : null;
+    const targetId = targetJid ? targetJid.split('@')[0].replace(/\D/g, '') : null;
+    const cleanUserId = userId ? userId.split('@')[0].replace(/\D/g, '') : null;
 
-    if (targetId && targetId === userId) {
+    if (targetId && cleanUserId && targetId === cleanUserId) {
       await reply(session, groupId, {
         text: `⚠️ You cannot report yourself.`,
       });
@@ -495,6 +496,20 @@ registry.register(
       seen.add(details);
       const line = `• \`${config.commands.prefix}${cmd}\`: ${details.help}`;
       if (details.adminOnly) {
+        adminCmds.push(line);
+      } else {
+        userCmds.push(line);
+      }
+    }
+
+    // Append Custom Group Commands if configured
+    const customCmds = config.commands?.custom_commands || [];
+    for (const c of customCmds) {
+      const cleanCmdName = (c.command || '').replace(/^[!/#]+/, '');
+      if (!cleanCmdName) continue;
+      const desc = c.description ? c.description.trim() : c.response || 'Custom command';
+      const line = `• \`${config.commands.prefix}${cleanCmdName}\`: ${desc}`;
+      if (c.admin_only) {
         adminCmds.push(line);
       } else {
         userCmds.push(line);
@@ -1088,7 +1103,7 @@ registry.register(
 
     for (const jid of targetMatches) {
       const id = jid.split('@')[0];
-      c.muted_users[id] = { until: null, reason };
+      c.muted_users[id] = { until: null, reason, created: Date.now() };
     }
     saveModerationStore(store);
 
@@ -1234,7 +1249,7 @@ registry.register(
     const until = Date.now() + durationMs;
     for (const jid of targetMatches) {
       const id = jid.split('@')[0];
-      c.muted_users[id] = { until, reason };
+      c.muted_users[id] = { until, reason, created: Date.now() };
     }
     saveModerationStore(store);
 

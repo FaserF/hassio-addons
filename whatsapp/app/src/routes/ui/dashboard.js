@@ -1239,10 +1239,12 @@ function toggleAllDefaultCommands(enable) {
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');
   const respInp = document.getElementById('mod-cmd-response');
+  const descInp = document.getElementById('mod-cmd-description');
   const adminOnlyInp = document.getElementById('mod-cmd-admin-only');
 
   const name = nameInp?.value.trim().replace(/^[!/#]+/, '');
   const resp = respInp?.value.trim();
+  const desc = descInp?.value.trim();
   const adminOnly = Boolean(adminOnlyInp?.checked);
 
   if (!name || !resp || !currentModGroup) return;
@@ -1257,11 +1259,13 @@ async function addCustomCommandRule() {
   groupConfig.commands.custom_commands.push({
     command: name,
     response: resp,
+    description: desc || undefined,
     admin_only: adminOnly,
   });
 
   if (nameInp) nameInp.value = '';
   if (respInp) respInp.value = '';
+  if (descInp) descInp.value = '';
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
   await saveGroupConfig(groupConfig);

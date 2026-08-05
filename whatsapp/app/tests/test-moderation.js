@@ -56,7 +56,7 @@ try {
   // Mock session object
   const mockSession = {
     sock: {
-      user: { id: '491761234567@s.whatsapp.net' },
+      user: { id: '491761234567@s.whatsapp.net', lid: '157608354779256@lid' },
       sendMessage: async () => ({ key: { id: 'test' } }),
       sendMessageAck: async () => {},
       groupParticipantsUpdate: async () => {},
@@ -77,7 +77,7 @@ try {
   clearUserWarnings('1203630123456789@g.us', '491761234567');
   updatedConfig = getGroupModerationConfig('1203630123456789@g.us');
   assert.strictEqual(
-    updatedConfig.warnings.user_warns['491761234567'].length,
+    (updatedConfig.warnings.user_warns['491761234567'] || []).length,
     0,
     'Warnings cleared'
   );
