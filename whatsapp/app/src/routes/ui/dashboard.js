@@ -895,6 +895,9 @@ function selectModerationGroup(groupId) {
     'url',
     'invite',
     'poll',
+    'contact',
+    'location',
+    'forwarded',
     'rtl',
   ];
   lockKeys.forEach((key) => {
@@ -988,6 +991,9 @@ async function saveGroupLocks() {
     'url',
     'invite',
     'poll',
+    'contact',
+    'location',
+    'forwarded',
     'rtl',
   ];
   groupConfig.locks = groupConfig.locks || {};
