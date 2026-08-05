@@ -123,8 +123,12 @@ export function generateMessageID() {
 export function isSameUser(jidA, jidB, session = null) {
   if (!jidA || !jidB) return false;
 
-  const normA = String(jidA).replace(/:[^@]*@/, '@').trim();
-  const normB = String(jidB).replace(/:[^@]*@/, '@').trim();
+  const normA = String(jidA)
+    .replace(/:[^@]*@/, '@')
+    .trim();
+  const normB = String(jidB)
+    .replace(/:[^@]*@/, '@')
+    .trim();
 
   if (normA === normB) return true;
 
@@ -160,10 +164,16 @@ export function isSameUser(jidA, jidB, session = null) {
   if (session?.contactCache) {
     for (const contact of session.contactCache.values()) {
       const cIdDigits = contact.id
-        ? contact.id.replace(/:[^@]*@/, '@').split('@')[0].replace(/\D/g, '')
+        ? contact.id
+            .replace(/:[^@]*@/, '@')
+            .split('@')[0]
+            .replace(/\D/g, '')
         : '';
       const cLidDigits = contact.lid
-        ? contact.lid.replace(/:[^@]*@/, '@').split('@')[0].replace(/\D/g, '')
+        ? contact.lid
+            .replace(/:[^@]*@/, '@')
+            .split('@')[0]
+            .replace(/\D/g, '')
         : '';
       const cNumDigits = contact.phoneNumber ? contact.phoneNumber.replace(/\D/g, '') : '';
 
@@ -185,7 +195,9 @@ export function isSameUser(jidA, jidB, session = null) {
  */
 export function resolveCanonicalUserKey(rawUserId, session = null) {
   if (!rawUserId) return '';
-  const rawStr = String(rawUserId).replace(/:[^@]*@/, '@').trim();
+  const rawStr = String(rawUserId)
+    .replace(/:[^@]*@/, '@')
+    .trim();
   const rawUser = rawStr.split('@')[0];
   const digits = rawUser.replace(/\D/g, '');
 

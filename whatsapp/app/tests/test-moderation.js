@@ -254,9 +254,8 @@ try {
   );
   assert(botWelcomeText.includes('Home Assistant WhatsApp Bot Connected!'), 'Should contain title');
   assert(
-    new URL(
-      botWelcomeText.match(/https?:\/\/[^\s]+/)?.[0] || 'http://localhost'
-    ).hostname === 'github.com',
+    new URL(botWelcomeText.match(/https?:\/\/[^\s]+/)?.[0] || 'http://localhost').hostname ===
+      'github.com',
     'Should contain valid docs link'
   );
   assert(
