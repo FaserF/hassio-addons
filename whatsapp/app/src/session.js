@@ -104,11 +104,13 @@ export function getSession(rawSessionId) {
     });
     loadMessageStore(sessions.get(sessionId));
     loadContactCache(sessions.get(sessionId));
+    loadChatCache(sessions.get(sessionId));
     // Start periodic save for this session
     const saveInterval = setInterval(
       () => {
         saveMessageStore(sessions.get(sessionId));
         saveContactCache(sessions.get(sessionId));
+        saveChatCache(sessions.get(sessionId));
       },
       5 * 60 * 1000
     ); // Every 5 minutes
@@ -219,6 +221,41 @@ export function loadContactCache(session) {
       );
     } catch (e) {
       logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load contact cache');
+    }
+  }
+}
+
+/**
+ * Persists the chat cache to disk.
+ */
+export function saveChatCache(session) {
+  if (!session.chatCache) return;
+  const file = path.join(getAuthDir(session.id), 'chat_cache.json');
+  try {
+    const entries = Array.from(session.chatCache.keys());
+    fs.writeFileSync(file, JSON.stringify(entries), 'utf-8');
+  } catch (e) {
+    logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save chat cache');
+  }
+}
+
+/**
+ * Loads the chat cache from disk.
+ */
+export function loadChatCache(session) {
+  const file = path.join(getAuthDir(session.id), 'chat_cache.json');
+  if (fs.existsSync(file)) {
+    try {
+      const keys = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      for (const k of keys) {
+        session.chatCache.set(k, true);
+      }
+      logger.info(
+        { sessionId: session.id, count: keys.length },
+        '📂 Chat cache loaded from disk'
+      );
+    } catch (e) {
+      logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load chat cache');
     }
   }
 }

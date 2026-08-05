@@ -45,9 +45,31 @@ export function registerContactRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const chats = Array.from(session.chatCache?.keys() || []).map((jid) => ({
+        const chatJids = new Set(session.chatCache?.keys() || []);
+        if (session.messageStore) {
+          for (const msg of session.messageStore.values()) {
+            if (msg?.key?.remoteJid) chatJids.add(msg.key.remoteJid);
+          }
+        }
+        if (session.groupCache) {
+          for (const gId of session.groupCache.keys()) {
+            chatJids.add(gId);
+          }
+        }
+        if (session.contactCache) {
+          for (const cId of session.contactCache.keys()) {
+            if (cId && cId !== 'status@broadcast') chatJids.add(cId);
+          }
+        }
+        chatJids.delete('status@broadcast');
+
+        const chats = Array.from(chatJids).map((jid) => ({
           jid,
-          name: session.contactCache?.get(jid)?.name || jid.split('@')[0],
+          name:
+            session.groupCache?.get(jid) ||
+            session.contactCache?.get(jid)?.name ||
+            session.contactCache?.get(jid)?.notify ||
+            jid.split('@')[0],
         }));
         res.json(chats);
       } catch (err) {
