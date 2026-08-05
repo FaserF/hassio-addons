@@ -9,6 +9,7 @@ import {
   issueUserWarning,
   clearUserWarnings,
   handleModerationMessage,
+  handleModerationParticipantUpdate,
 } from '../src/whatsapp/moderation/engine.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
@@ -160,6 +161,18 @@ try {
   const fedHandled = await handleModerationMessage(mockSession, eventFedLink);
   assert.strictEqual(fedHandled, true, 'Federation shared blacklist should delete prohibited link');
   console.log('✅ PASSED: Federation shared blacklist pattern correctly deleted');
+
+  // Test 7: Participant Leave & Goodbye Message
+  groupConfig.greetings.goodbye_enabled = true;
+  groupConfig.greetings.goodbye_message = 'Goodbye {name}!';
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  await handleModerationParticipantUpdate(mockSession, {
+    id: '1203630123456789@g.us',
+    action: 'leave',
+    participants: ['491761234567@s.whatsapp.net'],
+  });
+  console.log('✅ PASSED: Participant leave event correctly processed for goodbye message');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

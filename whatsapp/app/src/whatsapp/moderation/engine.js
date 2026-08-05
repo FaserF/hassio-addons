@@ -239,11 +239,11 @@ export async function handleModerationMessage(session, event) {
 
   if (
     locks.url?.enabled &&
-    (text.includes('http://') || text.includes('https://') || text.includes('www.'))
+    (/(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|de|net|org|io|me|co|app|xyz))/i.test(text))
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
-  if (locks.invite?.enabled && text.includes('chat.whatsapp.com/')) {
+  if (locks.invite?.enabled && (text.includes('chat.whatsapp.com/') || text.includes('wa.me/'))) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
   if (locks.poll?.enabled && (event.type === 'poll_update' || event.type === 'poll' || event.media_type === 'poll')) {
@@ -264,10 +264,7 @@ export async function handleModerationMessage(session, event) {
   // Forwarded message lock check
   if (
     event.is_forwarded ||
-    rawMsg?.message?.extendedTextMessage?.contextInfo?.isForwarded ||
-    rawMsg?.message?.imageMessage?.contextInfo?.isForwarded ||
-    rawMsg?.message?.videoMessage?.contextInfo?.isForwarded ||
-    rawMsg?.message?.documentMessage?.contextInfo?.isForwarded
+    Boolean(rawMsg?.message?.[Object.keys(rawMsg?.message || {})[0]]?.contextInfo?.isForwarded)
   ) {
     if (await triggerLock('forwarded', 'Forwarded messages')) return true;
   }
@@ -446,7 +443,7 @@ export async function handleModerationParticipantUpdate(session, update) {
   const action = update.action;
   const participants = update.participants || [];
 
-  if (action === 'add') {
+  if (action === 'add' || action === 'invite' || action === 'join') {
     // 1. Anti-Raid velocity check
     const antiRaid = config.antispam?.anti_raid;
     if (antiRaid?.enabled) {
@@ -545,7 +542,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         });
       }
     }
-  } else if (action === 'remove') {
+  } else if (action === 'remove' || action === 'leave') {
     // Goodbye message
     if (config.greetings?.goodbye_enabled) {
       for (const participantJid of participants) {

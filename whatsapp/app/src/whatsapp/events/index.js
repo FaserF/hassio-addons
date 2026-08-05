@@ -146,8 +146,10 @@ export function handleIncomingMessages(session) {
         const supportedMediaTypes = [
           'imageMessage',
           'videoMessage',
+          'ptvMessage',
           'audioMessage',
           'documentMessage',
+          'documentWithCaptionMessage',
           'stickerMessage',
         ];
         if (supportedMediaTypes.includes(messageType)) {
@@ -155,7 +157,7 @@ export function handleIncomingMessages(session) {
             const mediaContent = msg.message[messageType];
             caption = mediaContent.caption || '';
             text = text || caption || `[Media: ${messageType}]`;
-            mediaType = messageType.replace('Message', '');
+            mediaType = messageType.replace('Message', '').replace('documentWithCaption', 'document').replace('ptv', 'video');
             mimeType = mediaContent.mimetype;
 
             const buffer = await downloadMediaMessage(
