@@ -59,20 +59,26 @@ export function handleIncomingMessages(session) {
     for (const msg of m.messages) {
       if (msg.messageStubType && msg.key?.remoteJid?.endsWith('@g.us')) {
         const groupId = msg.key.remoteJid;
-        const participants = (msg.messageStubParameters || []).length > 0
-          ? msg.messageStubParameters
-          : [msg.key.participant || msg.participant].filter(Boolean);
-        
+        const participants =
+          (msg.messageStubParameters || []).length > 0
+            ? msg.messageStubParameters
+            : [msg.key.participant || msg.participant].filter(Boolean);
+
         let action = null;
         // WAMessageStubType: 27=GROUP_PARTICIPANT_ADD, 28=GROUP_PARTICIPANT_REMOVE, 29=GROUP_PARTICIPANT_LEAVE, 30=GROUP_PARTICIPANT_INVITE
         if (msg.messageStubType === 27 || msg.messageStubType === 30) action = 'add';
         else if (msg.messageStubType === 28 || msg.messageStubType === 29) action = 'remove';
 
         if (action && participants.length > 0) {
-          logger.info({ groupId, action, stubType: msg.messageStubType, participants }, '👥 Participant update detected via messageStubType');
-          handleModerationParticipantUpdate(session, { id: groupId, action, participants }).catch((err) => {
-            logger.error({ error: err.message }, 'Error handling stubType participant update');
-          });
+          logger.info(
+            { groupId, action, stubType: msg.messageStubType, participants },
+            '👥 Participant update detected via messageStubType'
+          );
+          handleModerationParticipantUpdate(session, { id: groupId, action, participants }).catch(
+            (err) => {
+              logger.error({ error: err.message }, 'Error handling stubType participant update');
+            }
+          );
         }
       }
     }
