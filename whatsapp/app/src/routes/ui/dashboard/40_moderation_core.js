@@ -318,29 +318,16 @@ function selectModerationGroup(groupId) {
 
   // Federation Select & Shared Blacklist Tags
   const fedSelect = document.getElementById('mod-fed-select');
-  if (fedSelect) fedSelect.value = config.federation_id || 'fed_global_default';
-
-  const fedTags = document.getElementById('mod-fed-blacklist-tags');
-  if (fedTags && modStoreCache?.federations) {
-    const fedId = config.federation_id || 'fed_global_default';
-    const fed =
-      modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
-    const words = fed?.shared_blacklist || [];
-    if (!words.length) {
-      fedTags.innerHTML =
-        '<span style="color:var(--text-muted);font-size:12px;">No shared federation patterns configured</span>';
-    } else {
-      fedTags.innerHTML = words
-        .map(
-          (w, idx) => `
-        <span class="mod-tag" style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);padding:4px 10px;border-radius:16px;font-size:12px;margin:3px;">
-          <span>${escapeHtml(w)}</span>
-          <button style="background:none;border:none;color:#3498db;cursor:pointer;padding:0;font-size:14px;line-height:1;" onclick="removeFedBlacklistWord(${idx})">&times;</button>
-        </span>`
-        )
-        .join('');
-    }
+  if (fedSelect && modStoreCache?.federations) {
+    const activeFedId = config.federation_id || 'fed_global_default';
+    let opts = '<option value="">No Federation Joined</option>';
+    modStoreCache.federations.forEach((f) => {
+      opts += `<option value="${f.id}"${f.id === activeFedId ? ' selected' : ''}>${escapeHtml(f.name || f.id)}</option>`;
+    });
+    fedSelect.innerHTML = opts;
+    fedSelect.value = activeFedId;
   }
+  updateFedBlacklistTagsInUi();
 }
 
 async function toggleGroupModeration(enabled) {

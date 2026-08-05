@@ -115,3 +115,93 @@ async function importGroupModerationConfig() {
     showToast('Invalid JSON format', 'danger');
   }
 }
+
+function updateFedBlacklistTagsInUi() {
+  const fedSelect = document.getElementById('mod-fed-select');
+  const fedTags = document.getElementById('mod-fed-blacklist-tags');
+  if (!fedTags || !modStoreCache?.federations) return;
+
+  const fedId = fedSelect?.value || 'fed_global_default';
+  const fed =
+    modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  const words = fed?.shared_blacklist || [];
+
+  if (!words.length) {
+    fedTags.innerHTML =
+      '<span style="color:var(--text-muted);font-size:12px;">No shared federation patterns configured</span>';
+  } else {
+    fedTags.innerHTML = words
+      .map(
+        (w, idx) => `
+      <span class="mod-tag" style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);padding:4px 10px;border-radius:16px;font-size:12px;margin:3px;">
+        <span>${escapeHtml(w)}</span>
+        <button style="background:none;border:none;color:#3498db;cursor:pointer;padding:0;font-size:14px;line-height:1;" onclick="removeFedBlacklistWord(${idx})">&times;</button>
+      </span>`
+      )
+      .join('');
+  }
+}
+
+function openCreateFederationModal() {
+  const modal = document.getElementById('create-federation-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeCreateFederationModal() {
+  const modal = document.getElementById('create-federation-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveNewCustomFederation() {
+  const name = document.getElementById('mod-new-fed-name')?.value.trim();
+  const desc =
+    document.getElementById('mod-new-fed-desc')?.value.trim() ||
+    'Custom local security federation';
+  if (!name) return showToast('Please enter a federation name', 'warning');
+
+  const newFed = {
+    id: `fed_local_${Date.now()}`,
+    name: name,
+    description: desc,
+    auto_kick_spammers: true,
+    block_mass_invites: true,
+    shared_blacklist_enabled: true,
+    banned_users: [],
+    shared_blacklist: [
+      't.me/',
+      'telegram.me/',
+      'chat.whatsapp.com/',
+      'whatsapp.com/channel/',
+      'wa.me/',
+      'crypto-airdrop',
+      'crypto',
+    ],
+  };
+
+  modStoreCache.federations = modStoreCache.federations || [];
+  modStoreCache.federations.push(newFed);
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    if (res.ok) {
+      showToast(`Custom Federation "${name}" created! 🛡️`, 'success');
+      closeCreateFederationModal();
+      const nameEl = document.getElementById('mod-new-fed-name');
+      if (nameEl) nameEl.value = '';
+      const descEl = document.getElementById('mod-new-fed-desc');
+      if (descEl) descEl.value = '';
+      await loadModerationConfig();
+      const fedSelect = document.getElementById('mod-fed-select');
+      if (fedSelect) {
+        fedSelect.value = newFed.id;
+        updateFedBlacklistTagsInUi();
+      }
+    }
+  } catch (e) {
+    showToast('Failed to create custom federation', 'danger');
+  }
+}

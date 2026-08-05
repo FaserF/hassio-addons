@@ -1,10 +1,6 @@
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
-window._latestReleaseData = data;
 window.loadLogs = loadLogs;
-window.URL.revokeObjectURL(url);
-window.history.replaceState({}, '', url);
-window.updateRawLogsLink();
 window.saveGlobalRulesInline = saveGlobalRulesInline;
 window.removeBlacklistWord = removeBlacklistWord;
 window.removeFilterRule = removeFilterRule;
@@ -44,3 +40,7 @@ window.saveGlobalRulesFromModal = saveGlobalRulesFromModal;
 window.exportGroupModerationConfig = exportGroupModerationConfig;
 window.importGroupModerationConfig = importGroupModerationConfig;
 window.clearUserWarnInUi = clearUserWarnInUi;
+window.updateFedBlacklistTagsInUi = updateFedBlacklistTagsInUi;
+window.openCreateFederationModal = openCreateFederationModal;
+window.closeCreateFederationModal = closeCreateFederationModal;
+window.saveNewCustomFederation = saveNewCustomFederation;
