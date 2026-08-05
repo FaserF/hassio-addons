@@ -115,3 +115,152 @@ export function isAdmin(jid, session = null) {
 export function generateMessageID() {
   return 'APP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
+
+/**
+ * Checks if two JIDs/User IDs represent the exact same person,
+ * resolving LID <-> PN aliases via contactCache and session data.
+ */
+export function isSameUser(jidA, jidB, session = null) {
+  if (!jidA || !jidB) return false;
+
+  const normA = String(jidA).replace(/:.*@/, '@').trim();
+  const normB = String(jidB).replace(/:.*@/, '@').trim();
+
+  if (normA === normB) return true;
+
+  const userA = normA.split('@')[0];
+  const userB = normB.split('@')[0];
+  if (userA === userB) return true;
+
+  const digitsA = userA.replace(/\D/g, '');
+  const digitsB = userB.replace(/\D/g, '');
+
+  if (digitsA && digitsB && digitsA === digitsB) return true;
+
+  // 1. Check self user matching against session.sock.user & stats
+  if (session?.sock?.user) {
+    const myUser = session.sock.user;
+    const myId = myUser.id ? myUser.id.replace(/:.*@/, '@').split('@')[0] : '';
+    const myLid = myUser.lid ? myUser.lid.replace(/:.*@/, '@').split('@')[0] : '';
+    const myNum = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
+
+    const selfDigits = [myId, myLid, myNum].map((x) => x.replace(/\D/g, '')).filter(Boolean);
+
+    const matchA = selfDigits.some(
+      (d) => d && (d === digitsA || (d.length >= 7 && digitsA.endsWith(d)))
+    );
+    const matchB = selfDigits.some(
+      (d) => d && (d === digitsB || (d.length >= 7 && digitsB.endsWith(d)))
+    );
+
+    if (matchA && matchB) return true;
+  }
+
+  // 2. Check contactCache for LID <-> PN association
+  if (session?.contactCache) {
+    for (const contact of session.contactCache.values()) {
+      const cIdDigits = contact.id
+        ? contact.id.replace(/:.*@/, '@').split('@')[0].replace(/\D/g, '')
+        : '';
+      const cLidDigits = contact.lid
+        ? contact.lid.replace(/:.*@/, '@').split('@')[0].replace(/\D/g, '')
+        : '';
+      const cNumDigits = contact.phoneNumber ? contact.phoneNumber.replace(/\D/g, '') : '';
+
+      const known = [cIdDigits, cLidDigits, cNumDigits].filter(Boolean);
+
+      const hasA = known.includes(digitsA);
+      const hasB = known.includes(digitsB);
+
+      if (hasA && hasB) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Resolves a raw User ID or LID into the canonical phone number (PN) string,
+ * avoiding LID duplication (e.g. mapping 157608354779256 -> 4917647365403).
+ */
+export function resolveCanonicalUserKey(rawUserId, session = null) {
+  if (!rawUserId) return '';
+  const rawStr = String(rawUserId).replace(/:.*@/, '@').trim();
+  const rawUser = rawStr.split('@')[0];
+  const digits = rawUser.replace(/\D/g, '');
+
+  if (!digits) return rawUser;
+
+  // Check if this digits string matches our own bot account first
+  if (session?.sock?.user) {
+    const myUser = session.sock.user;
+    const myIdDigits = myUser.id ? myUser.id.split('@')[0].replace(/\D/g, '') : '';
+    const myLidDigits = myUser.lid ? myUser.lid.split('@')[0].replace(/\D/g, '') : '';
+    const myNumDigits = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
+
+    const selfPN = myNumDigits || (myIdDigits && !myIdDigits.startsWith('1576') ? myIdDigits : '');
+    if (selfPN) {
+      if (digits === myIdDigits || digits === myLidDigits || digits === myNumDigits) {
+        return selfPN;
+      }
+    }
+  }
+
+  // Check contactCache for LID <-> PN mapping
+  if (session?.contactCache) {
+    // Direct JID / LID lookup
+    let cached =
+      session.contactCache.get(rawStr) || session.contactCache.get(`${digits}@s.whatsapp.net`);
+
+    if (!cached) {
+      // Fuzzy search across contactCache values
+      for (const contact of session.contactCache.values()) {
+        const cId = contact.id ? contact.id.split('@')[0].replace(/\D/g, '') : '';
+        const cLid = contact.lid ? contact.lid.split('@')[0].replace(/\D/g, '') : '';
+        if (digits === cId || digits === cLid) {
+          cached = contact;
+          break;
+        }
+      }
+    }
+
+    if (cached) {
+      // Prefer PN over LID
+      const pnJid =
+        cached.id && !cached.id.includes('@lid') ? cached.id.split('@')[0].replace(/\D/g, '') : '';
+      const pnField = cached.phoneNumber ? cached.phoneNumber.replace(/\D/g, '') : '';
+      const canonical = pnJid || pnField;
+      if (canonical && !canonical.startsWith('1576')) {
+        return canonical;
+      }
+    }
+  }
+
+  return digits;
+}
+
+/**
+ * Resolves a User ID into a clean display label for WhatsApp messages (e.g. "Fabian Seitz (@49176...)" or "@49176...").
+ */
+export function resolveUserDisplayName(rawUserId, session = null) {
+  const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
+  if (!session?.contactCache) return `@${canonicalKey}`;
+
+  let cached = session.contactCache.get(`${canonicalKey}@s.whatsapp.net`);
+  if (!cached) {
+    for (const contact of session.contactCache.values()) {
+      const cIdDigits = contact.id ? contact.id.split('@')[0].replace(/\D/g, '') : '';
+      const cLidDigits = contact.lid ? contact.lid.split('@')[0].replace(/\D/g, '') : '';
+      if (canonicalKey === cIdDigits || canonicalKey === cLidDigits) {
+        cached = contact;
+        break;
+      }
+    }
+  }
+
+  const name = cached?.name || cached?.notify || cached?.verifiedName;
+  if (name) {
+    return `${name} (@${canonicalKey})`;
+  }
+  return `@${canonicalKey}`;
+}

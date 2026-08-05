@@ -3,6 +3,7 @@ import { executePenalty, issueUserWarning, sendMissingAdminWarning } from './eng
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
+import { isSameUser, isAdmin } from '../../utils/security.js';
 
 class CommandRegistry {
   constructor() {
@@ -570,13 +571,19 @@ registry.register(
     const reason = cleanedArgs.join(' ').trim() || 'No reason provided';
 
     for (const targetJid of targetMatches) {
-      const targetId = targetJid.split('@')[0];
-      if (targetId === userId) {
+      if (isSameUser(targetJid, userId, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot issue a warning to yourself.`,
         });
         continue;
       }
+      if (isAdmin(targetJid, session)) {
+        await reply(session, groupId, {
+          text: `⚠️ Cannot issue warnings to group administrators.`,
+        });
+        continue;
+      }
+      const targetId = targetJid.split('@')[0];
       await issueUserWarning(session, groupId, targetId, reason);
     }
   },

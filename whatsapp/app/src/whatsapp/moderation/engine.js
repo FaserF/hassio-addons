@@ -2,6 +2,7 @@ import { loadModerationStore, getGroupModerationConfig, saveModerationStore } fr
 import { processAiModeration } from './ai.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
+import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/security.js';
 
 // In-memory sliding window trackers
 const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps
@@ -193,19 +194,26 @@ export async function issueUserWarning(session, groupId, rawUserId, reason) {
   const config = getGroupModerationConfig(groupId);
   const warnConfig = config.warnings || { max_warnings: 3, action: 'mute' };
 
-  // Normalize userId (strip non-digits to resolve format mismatches like +1... vs 1...)
-  const userId = (rawUserId || '').replace(/\D/g, '') || rawUserId;
+  // Resolve canonical PN key to unify LIDs and phone numbers into a single record
+  const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
+  const userKey = canonicalKey || (rawUserId || '').replace(/\D/g, '') || rawUserId;
+  const userDisplay = resolveUserDisplayName(userKey, session);
 
   if (!config.warnings.user_warns) {
     config.warnings.user_warns = {};
   }
 
-  // Check if warnings exist under another equivalent key (e.g. with leading +)
-  let userKey = userId;
+  // Merge any existing warning entries under LID or legacy format keys into canonical userKey
   for (const existingKey of Object.keys(config.warnings.user_warns)) {
-    if (existingKey.replace(/\D/g, '') === userId) {
-      userKey = existingKey;
-      break;
+    const existingCanonical = resolveCanonicalUserKey(existingKey, session);
+    if (
+      existingKey !== userKey &&
+      (existingCanonical === userKey || existingKey.replace(/\D/g, '') === userKey)
+    ) {
+      const legacyWarns = config.warnings.user_warns[existingKey] || [];
+      delete config.warnings.user_warns[existingKey];
+      if (!config.warnings.user_warns[userKey]) config.warnings.user_warns[userKey] = [];
+      config.warnings.user_warns[userKey].push(...legacyWarns);
     }
   }
 
@@ -235,7 +243,7 @@ export async function issueUserWarning(session, groupId, rawUserId, reason) {
     const penaltyAction = warnConfig.action || 'mute';
     await reply(session, groupId, {
       text:
-        `⚠️ *Warning Issued to @${userKey}* (${warnCount}/${maxWarns})\n` +
+        `⚠️ *Warning Issued to ${userDisplay}* (${warnCount}/${maxWarns})\n` +
         `Reason: ${reason}\n\n` +
         `🚨 *Maximum warnings (${maxWarns}) reached! Executing penalty: ${penaltyAction.toUpperCase()}*`,
       mentions: [`${userKey}@s.whatsapp.net`],
@@ -250,22 +258,29 @@ export async function issueUserWarning(session, groupId, rawUserId, reason) {
     );
   } else {
     await reply(session, groupId, {
-      text: `⚠️ *Warning Issued to @${userKey}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
+      text: `⚠️ *Warning Issued to ${userDisplay}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
       mentions: [`${userKey}@s.whatsapp.net`],
     });
   }
 }
 
-export function clearUserWarnings(groupId, rawUserId) {
+export function clearUserWarnings(groupId, rawUserId, session = null) {
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId);
-  const cleanId = (rawUserId || '').replace(/\D/g, '');
+  const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
+  const cleanId = canonicalKey || (rawUserId || '').replace(/\D/g, '');
   let cleared = false;
 
   if (config.warnings?.user_warns) {
     for (const key of Object.keys(config.warnings.user_warns)) {
-      if (key === rawUserId || key.replace(/\D/g, '') === cleanId) {
-        config.warnings.user_warns[key] = [];
+      const keyCanonical = resolveCanonicalUserKey(key, session);
+      if (
+        key === rawUserId ||
+        key === cleanId ||
+        keyCanonical === cleanId ||
+        key.replace(/\D/g, '') === cleanId
+      ) {
+        delete config.warnings.user_warns[key];
         cleared = true;
       }
     }

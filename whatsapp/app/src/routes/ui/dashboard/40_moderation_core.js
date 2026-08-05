@@ -414,13 +414,22 @@ function selectModerationGroup(groupId) {
   const warnList = document.getElementById('mod-warns-list');
   if (warnList) {
     const userWarns = config.warnings?.user_warns || {};
-    const entries = Object.keys(userWarns).filter((u) => userWarns[u]?.length);
+    // Merge entries that share the same cleaned digits (resolves LID vs PN split)
+    const mergedWarns = {};
+    for (const key of Object.keys(userWarns)) {
+      const cleanKey = key.replace(/\D/g, '') || key;
+      if (!userWarns[key]?.length) continue;
+      if (!mergedWarns[cleanKey]) mergedWarns[cleanKey] = [];
+      mergedWarns[cleanKey].push(...userWarns[key]);
+    }
+
+    const entries = Object.keys(mergedWarns).filter((u) => mergedWarns[u]?.length);
     if (!entries.length) {
       warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
     } else {
       warnList.innerHTML = entries
         .map((u) => {
-          const warns = userWarns[u];
+          const warns = mergedWarns[u];
           const items = warns
             .map(
               (w, i) =>

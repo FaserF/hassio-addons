@@ -14,6 +14,11 @@ import {
   isSelfParticipant,
   generateBotWelcomeMessage,
 } from '../src/whatsapp/moderation/engine.js';
+import {
+  isSameUser,
+  resolveCanonicalUserKey,
+  resolveUserDisplayName,
+} from '../src/utils/security.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
 
@@ -256,7 +261,26 @@ try {
     botWelcomeText.includes('🔴 DISABLED') || botWelcomeText.includes('🟢 ENABLED'),
     'Should state moderation status'
   );
-  console.log('✅ PASSED: Bot group join welcome message verified successfully');
+  // Test 11: isSameUser and LID <-> PN Resolution
+  assert.strictEqual(
+    isSameUser('157608354779256@lid', '491761234567@s.whatsapp.net', mockSession),
+    true,
+    'LID and PN for self account should match'
+  );
+  assert.strictEqual(
+    isSameUser('491761234567@s.whatsapp.net', '491761234567@s.whatsapp.net', mockSession),
+    true,
+    'Identical JIDs should match'
+  );
+  assert.strictEqual(
+    isSameUser('491761234567@s.whatsapp.net', '491769999999@s.whatsapp.net', mockSession),
+    false,
+    'Different users should not match'
+  );
+
+  const resolvedPn = resolveCanonicalUserKey('157608354779256', mockSession);
+  assert.strictEqual(resolvedPn, '491761234567', 'Self LID should resolve to canonical PN');
+  console.log('✅ PASSED: isSameUser and LID resolution verified successfully');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());
