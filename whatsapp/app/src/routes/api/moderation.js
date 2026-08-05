@@ -27,14 +27,12 @@ export function registerModerationRoutes(app) {
       store.global_enabled = Boolean(global_enabled);
     }
     if (gemini_api_key !== undefined) {
-      store.gemini_api_key = String(gemini_api_key);
+      store.gemini_api_key = String(gemini_api_key).trim();
     }
-
     if (group_id && group_config) {
-      setGroupModerationConfig(group_id, group_config);
-    } else {
-      saveModerationStore(store);
+      store.groups[group_id] = group_config;
     }
+    saveModerationStore(store);
 
     res.json({ success: true, data: loadModerationStore() });
   });

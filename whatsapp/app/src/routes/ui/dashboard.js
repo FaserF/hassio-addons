@@ -739,6 +739,10 @@ async function loadModerationConfig() {
         modStoreCache = json.data;
         const globalToggle = document.getElementById('mod-global-toggle');
         if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+        const aiKeyEl = document.getElementById('mod-ai-key');
+        if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
+          aiKeyEl.value = modStoreCache.gemini_api_key;
+        }
       }
     }
 
@@ -866,6 +870,20 @@ function selectModerationGroup(groupId) {
   if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
   const cmdsMute = document.getElementById('mod-cmds-mute-action');
   if (cmdsMute) cmdsMute.value = config.commands?.mute_action || 'delete';
+
+  // AI & Translation
+  const aiEnabled = document.getElementById('mod-ai-enabled');
+  if (aiEnabled) aiEnabled.checked = Boolean(config.ai?.enabled);
+  const aiFaq = document.getElementById('mod-ai-faq');
+  if (aiFaq) aiFaq.checked = Boolean(config.ai?.faq_auto_reply);
+  const aiSentiment = document.getElementById('mod-ai-sentiment');
+  if (aiSentiment) aiSentiment.checked = Boolean(config.ai?.sentiment_moderation);
+  const aiPrompt = document.getElementById('mod-ai-prompt');
+  if (aiPrompt) aiPrompt.value = config.ai?.system_prompt || 'You are a helpful group moderator AI assistant.';
+  const transLang = document.getElementById('mod-trans-lang');
+  if (transLang) transLang.value = config.translation?.target_lang || 'en';
+  const transMode = document.getElementById('mod-trans-mode');
+  if (transMode) transMode.value = config.translation?.mode || 'manual';
 
   // Locks
   const lockKeys = [
@@ -1057,17 +1075,41 @@ async function saveGroupFederation() {
 }
 
 async function saveGroupAiConfig() {
-  if (!currentModGroup) return;
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.ai = {
     enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
     faq_auto_reply: Boolean(document.getElementById('mod-ai-faq')?.checked),
+    sentiment_moderation: Boolean(document.getElementById('mod-ai-sentiment')?.checked),
     system_prompt:
       document.getElementById('mod-ai-prompt')?.value ||
       'You are a helpful group moderator AI assistant.',
   };
-  await saveGroupConfig(groupConfig);
-  showToast('AI Config saved!', 'success');
+  groupConfig.translation = {
+    enabled: true,
+    target_lang: document.getElementById('mod-trans-lang')?.value || 'en',
+    mode: document.getElementById('mod-trans-mode')?.value || 'manual',
+  };
+
+  const apiKey = document.getElementById('mod-ai-key')?.value || '';
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        group_id: currentModGroup,
+        group_config: groupConfig,
+        gemini_api_key: apiKey,
+      }),
+    });
+    if (res.ok) {
+      showToast('AI & Translation Settings Saved!', 'success');
+      loadModerationConfig();
+    }
+  } catch (e) {
+    showToast('Failed to save AI settings', 'danger');
+  }
 }
 
 async function saveGroupConfig(groupConfig) {

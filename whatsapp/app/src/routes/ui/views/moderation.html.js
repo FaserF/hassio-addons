@@ -208,12 +208,38 @@ export default () => `
                     <div id="mod-subpanel-ai" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap" style="background:linear-gradient(135deg,rgba(0,168,132,0.2),rgba(52,152,219,0.2));color:var(--primary);"><i class="fas fa-brain"></i></div>
-                            <div><div class="mod-feature-title">Gemini AI Assistant</div><div class="mod-feature-desc">Let AI help moderate the group and answer member questions.</div></div>
+                            <div><div class="mod-feature-title">Gemini AI Assistant &amp; Translation</div><div class="mod-feature-desc">Configure Gemini API Key, FAQ auto-responder, toxicity moderation, and language translation.</div></div>
                         </div>
-                        <div class="mod-option-row" style="margin-bottom:10px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable Gemini AI assistance</span></div>
-                        <div class="mod-option-row" style="margin-bottom:16px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-faq"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Auto-reply to group FAQs</span></div>
-                        <div class="mod-field-group"><label class="mod-field-label">AI System Prompt</label><textarea id="mod-ai-prompt" class="mod-textarea" style="height:100px;" placeholder="You are a helpful group moderator AI assistant."></textarea></div>
-                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> Save AI Config</button></div>
+                        <div class="mod-field-group" style="max-width:450px; margin-bottom:16px;">
+                            <label class="mod-field-label"><i class="fas fa-key"></i> Gemini API Key (Global)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="password" id="mod-ai-key" class="mod-input" placeholder="AIzaSy..." autocomplete="off">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="const k=document.getElementById('mod-ai-key'); k.type=k.type==='password'?'text':'password';"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Get your free API key from Google AI Studio (aip.google.dev).</p>
+                        </div>
+                        <div class="mod-divider"></div>
+                        <div class="mod-option-row" style="margin-bottom:10px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable Gemini AI assistance for this group</span></div>
+                        <div class="mod-option-row" style="margin-bottom:10px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-faq"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Auto-reply to group FAQs</span></div>
+                        <div class="mod-option-row" style="margin-bottom:16px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-sentiment"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Automated Toxicity &amp; Sentiment Moderation</span></div>
+                        <div class="mod-field-group" style="margin-bottom:16px;"><label class="mod-field-label">AI System Persona Prompt</label><textarea id="mod-ai-prompt" class="mod-textarea" style="height:80px;" placeholder="You are a helpful group moderator AI assistant."></textarea></div>
+                        
+                        <div class="mod-divider"></div>
+                        <p class="mod-section-label"><i class="fas fa-language"></i> Translation Settings</p>
+                        <div class="mod-inline-controls" style="margin-bottom:16px;">
+                            <div class="mod-field-group">
+                                <label class="mod-field-label">Target Language</label>
+                                <input type="text" id="mod-trans-lang" class="mod-input mod-input-sm" value="en" style="width:80px;" placeholder="en, de...">
+                            </div>
+                            <div class="mod-field-group">
+                                <label class="mod-field-label">Translation Mode</label>
+                                <select id="mod-trans-mode" class="mod-select mod-select-sm">
+                                    <option value="manual">Manual (via !translate command)</option>
+                                    <option value="auto">Auto (Translate all incoming messages)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> Save AI &amp; Translation Settings</button></div>
                     </div>
 
                     <!-- COMMANDS -->
