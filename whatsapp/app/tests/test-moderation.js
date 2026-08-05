@@ -280,6 +280,9 @@ try {
 
   const resolvedPn = resolveCanonicalUserKey('157608354779256', mockSession);
   assert.strictEqual(resolvedPn, '491761234567', 'Self LID should resolve to canonical PN');
+
+  const displayName = resolveUserDisplayName('491761234567', mockSession);
+  assert(displayName.includes('491761234567'), 'Display name should include canonical PN');
   console.log('✅ PASSED: isSameUser and LID resolution verified successfully');
 
   // Reset store

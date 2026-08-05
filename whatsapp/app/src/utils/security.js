@@ -191,7 +191,11 @@ export function resolveCanonicalUserKey(rawUserId, session = null) {
 
   if (!digits) return rawUser;
 
-  // Check if this digits string matches our own bot account first
+  // If it is already a regular phone number (not starting with LID prefix 1576 or 15-digit LID), return as is
+  const isLid = rawStr.includes('@lid') || (digits.length >= 14 && digits.startsWith('1576'));
+  if (!isLid) return digits;
+
+  // Check if this LID matches our own bot account first
   if (session?.sock?.user) {
     const myUser = session.sock.user;
     const myIdDigits = myUser.id ? myUser.id.split('@')[0].replace(/\D/g, '') : '';
