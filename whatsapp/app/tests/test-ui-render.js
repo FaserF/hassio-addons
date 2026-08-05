@@ -20,7 +20,6 @@ async function runTests() {
 
     if (htmlOutput.includes('ReferenceError:') || htmlOutput.includes('SyntaxError:')) {
       console.error('❌ FAILED: Rendered output contains error stack traces');
-      console.error(htmlOutput.substring(0, 500) + '...');
       process.exit(1);
     }
 

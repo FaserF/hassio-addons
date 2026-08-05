@@ -360,6 +360,7 @@ async function updateDashboard() {
   }
 }
 
+
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -523,6 +524,7 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
 
 // Update & Dependency Modals
 
@@ -723,6 +725,7 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
+
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
 let modStoreCache = null;
@@ -883,7 +886,7 @@ function selectModerationGroup(groupId) {
     const groupSelect = document.getElementById('mod-group-select');
     const selectedOpt = groupSelect ? groupSelect.options[groupSelect.selectedIndex] : null;
     const name = selectedOpt ? selectedOpt.text : groupId;
-    titleEl.innerHTML = `<i class="fas fa-users-cog"></i> ${name}`;
+    titleEl.innerHTML = `<i class="fas fa-users-cog"></i> ${escapeHtml(name)}`;
   }
 
   const toggle = document.getElementById('mod-group-toggle');
@@ -1301,6 +1304,7 @@ async function clearUserWarnInUi(userId) {
   }
 }
 
+
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
@@ -1386,6 +1390,7 @@ async function saveGroupAntispam() {
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }
 
+
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
@@ -1463,6 +1468,7 @@ async function saveGroupAiConfig() {
     showToast('Failed to save AI settings', 'danger');
   }
 }
+
 
 // Moderation Federation & Import/Export
 
@@ -1669,6 +1675,7 @@ async function saveNewCustomFederation() {
     showToast('Failed to create custom federation', 'danger');
   }
 }
+
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;

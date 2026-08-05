@@ -243,7 +243,10 @@ export async function handleModerationMessage(session, event) {
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
-  if (locks.invite?.enabled && (text.includes('chat.whatsapp.com/') || text.includes('wa.me/'))) {
+  if (
+    locks.invite?.enabled &&
+    (/(https?:\/\/)?(chat\.whatsapp\.com\/|wa\.me\/)/i.test(text))
+  ) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
   if (

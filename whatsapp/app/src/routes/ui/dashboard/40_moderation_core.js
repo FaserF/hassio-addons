@@ -158,7 +158,7 @@ function selectModerationGroup(groupId) {
     const groupSelect = document.getElementById('mod-group-select');
     const selectedOpt = groupSelect ? groupSelect.options[groupSelect.selectedIndex] : null;
     const name = selectedOpt ? selectedOpt.text : groupId;
-    titleEl.innerHTML = `<i class="fas fa-users-cog"></i> ${name}`;
+    titleEl.innerHTML = `<i class="fas fa-users-cog"></i> ${escapeHtml(name)}`;
   }
 
   const toggle = document.getElementById('mod-group-toggle');
