@@ -136,6 +136,7 @@ export function getDefaultModerationStore() {
   return {
     global_enabled: false,
     gemini_api_key: '',
+    global_rules: '',
     federations: [
       {
         id: 'fed_global_default',
@@ -150,15 +151,18 @@ export function getDefaultModerationStore() {
 export function getGroupModerationConfig(groupId) {
   const store = loadModerationStore();
   if (!store.groups[groupId]) {
-    return getDefaultGroupConfig();
+    const def = getDefaultGroupConfig();
+    def.rules.text = store.global_rules || '';
+    return def;
   }
   const def = getDefaultGroupConfig();
   const existing = store.groups[groupId];
+  const rulesText = existing.rules?.text !== undefined ? existing.rules.text : (store.global_rules || '');
 
   return {
     ...def,
     ...existing,
-    rules: { ...def.rules, ...(existing.rules || {}) },
+    rules: { ...def.rules, ...(existing.rules || {}), text: rulesText },
     greetings: { ...def.greetings, ...(existing.greetings || {}) },
     warnings: { ...def.warnings, ...(existing.warnings || {}) },
     locks: { ...def.locks, ...(existing.locks || {}) },

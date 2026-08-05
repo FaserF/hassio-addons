@@ -11,8 +11,9 @@ export default () => `
                         </div>
                     </div>
                     <div class="mod-hero-controls">
+                        <button class="btn btn-secondary btn-sm" onclick="openGlobalRulesModal()" style="margin-right:8px;"><i class="fas fa-globe"></i> Global Rules</button>
                         <div class="mod-toggle-row">
-                            <span class="mod-toggle-label"><i class="fas fa-globe"></i> Global</span>
+                            <span class="mod-toggle-label"><i class="fas fa-power-off"></i> Global</span>
                             <label class="mod-toggle-switch">
                                 <input type="checkbox" id="mod-global-toggle" onchange="toggleGlobalModeration(this.checked)">
                                 <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
@@ -27,8 +28,23 @@ export default () => `
                     </div>
                 </div>
 
-                <!-- Group Settings Card -->
-                <div id="mod-group-content" class="card mod-settings-card">
+                <!-- No Group Selected Placeholder -->
+                <div id="mod-no-group-placeholder" class="card mod-settings-card" style="text-align:center; padding: 48px 24px; margin-top: 16px;">
+                    <div style="font-size: 42px; color: var(--primary); margin-bottom: 16px; opacity:0.8;"><i class="fas fa-layer-group"></i></div>
+                    <h3 style="margin-bottom: 8px; font-weight: 600; font-size:18px;">No Group Selected</h3>
+                    <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 24px; font-size: 13px; line-height: 1.5;">
+                        Please select a WhatsApp group from the dropdown menu above to configure its specific moderation rules, greetings, captchas, content locks, and bot commands.
+                    </p>
+                    <div style="display:inline-flex; gap:12px; align-items:center; background: rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.2); padding:12px 18px; border-radius:10px; font-size:12px; color:var(--text-main); max-width:550px; text-align:left; margin:0 auto;">
+                        <i class="fas fa-globe" style="color:var(--primary); font-size:18px; flex-shrink:0;"></i>
+                        <div>
+                            <strong>Master Switch &amp; Global Rules:</strong> The <em>Global</em> toggle turns the moderation engine on/off across all chats. Click <strong>Global Rules</strong> above to set fallback rules for all groups.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Settings Card (Hidden until group selected) -->
+                <div id="mod-group-content" class="card mod-settings-card" style="display:none;">
                     <!-- Card Header -->
                     <div class="mod-card-header">
                         <div class="mod-card-title-row">
@@ -281,6 +297,32 @@ export default () => `
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="importGroupModerationConfig()"><i class="fas fa-upload"></i> Import Config</button></div>
                     </div>
 
+                    </div>
+
                 </div>
+
+                <!-- Global Rules Modal -->
+                <div id="global-rules-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+                    <div class="modal-content card" style="max-width:550px; width:90%; padding:24px;">
+                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                            <h3 class="modal-title" style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-globe" style="color:var(--primary);"></i> Global Default Rules &amp; Settings</h3>
+                            <button class="modal-close btn btn-sm btn-secondary" onclick="closeGlobalRulesModal()" style="padding:2px 8px;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
+                                Configure fallback rules for all WhatsApp groups. Groups that do not have custom rules set will automatically inherit these global default rules.
+                            </p>
+                            <div class="mod-field-group" style="margin-bottom:16px;">
+                                <label class="mod-field-label">Global Default Rules</label>
+                                <textarea id="mod-global-rules-input" class="mod-textarea" style="height:120px;" placeholder="1. Be respectful to all members.&#10;2. No spam or unauthorized links.&#10;3. Follow group topic."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="closeGlobalRulesModal()">Cancel</button>
+                            <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesFromModal()"><i class="fas fa-save"></i> Save Global Settings</button>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 `;

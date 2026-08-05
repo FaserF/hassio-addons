@@ -3,19 +3,40 @@ import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
 
 export function registerUiApiRoutes(app) {
-  app.get('/api/chats', uiAuthMiddleware, (req, res) => {
-    try {
-      const sessionId = sanitizeSessionId(req.query.session_id || 'default');
-      let session = getSession(sessionId);
-      if (!session || !session.messageStore || session.messageStore.size === 0) {
-        const activeWithMessages = Array.from(sessions.values()).find(
-          (s) => s.messageStore && s.messageStore.size > 0
-        );
-        if (activeWithMessages) {
-          session = activeWithMessages;
+  app.get(
+    '/api/chats',
+    uiAuthMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const sessionId = sanitizeSessionId(req.query.session_id || 'default');
+        let session = getSession(sessionId);
+        if (!session || !session.messageStore || session.messageStore.size === 0) {
+          const activeWithMessages = Array.from(sessions.values()).find(
+            (s) => s.messageStore && s.messageStore.size > 0
+          );
+          if (activeWithMessages) {
+            session = activeWithMessages;
+          }
         }
-      }
-      if (!session || !session.messageStore) return res.json([]);
+        if (!session || !session.messageStore) return res.json([]);
+
+        // Ensure groupCache has participating group subjects
+        if (
+          session.sock &&
+          session.sock.groupFetchAllParticipating &&
+          (!session.groupCache || session.groupCache.size === 0)
+        ) {
+          try {
+            const groups = await session.sock.groupFetchAllParticipating();
+            for (const [gId, g] of Object.entries(groups)) {
+              if (g && g.subject) {
+                session.groupCache?.set(gId, g.subject);
+              }
+            }
+          } catch (e) {
+            /* ignore fetch error */
+          }
+        }
 
       const messages = Array.from(session.messageStore.values());
       const JidMap = {};
@@ -107,7 +128,8 @@ export function registerUiApiRoutes(app) {
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
-  });
+  })
+  );
 
   app.get('/api/messages', uiAuthMiddleware, (req, res) => {
     try {

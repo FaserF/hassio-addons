@@ -21,13 +21,16 @@ export function registerModerationRoutes(app) {
   // POST /api/moderation/config
   app.post('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();
-    const { global_enabled, gemini_api_key, group_id, group_config } = req.body || {};
+    const { global_enabled, gemini_api_key, global_rules, group_id, group_config } = req.body || {};
 
     if (global_enabled !== undefined) {
       store.global_enabled = Boolean(global_enabled);
     }
     if (gemini_api_key !== undefined) {
       store.gemini_api_key = String(gemini_api_key).trim();
+    }
+    if (global_rules !== undefined) {
+      store.global_rules = String(global_rules);
     }
     if (group_id && group_config) {
       store.groups[group_id] = group_config;

@@ -417,6 +417,20 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.firstFailureTime = null;
       session.qrGenerated = false;
       session.currentQR = null;
+
+      // Populate groupCache with all participating group subjects (names)
+      if (sock.groupFetchAllParticipating) {
+        sock.groupFetchAllParticipating().then((groups) => {
+          for (const [gId, g] of Object.entries(groups)) {
+            if (g && g.subject) {
+              session.groupCache?.set(gId, g.subject);
+            }
+          }
+          logger.info({ sessionId, groupCount: Object.keys(groups).length }, '👥 Populated group subjects in groupCache');
+        }).catch((err) => {
+          logger.debug({ sessionId, error: err.message }, 'Failed to fetch participating groups on connect');
+        });
+      }
       // Reset cached status so it's re-fetched with fresh data
       session._myStatusText = null;
       session._fetchingStatus = false;

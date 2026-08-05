@@ -743,6 +743,10 @@ async function loadModerationConfig() {
         if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
           aiKeyEl.value = modStoreCache.gemini_api_key;
         }
+        const globalRulesInp = document.getElementById('mod-global-rules-input');
+        if (globalRulesInp && modStoreCache.global_rules !== undefined) {
+          globalRulesInp.value = modStoreCache.global_rules;
+        }
       }
     }
 
@@ -765,7 +769,8 @@ async function loadModerationConfig() {
       if (modStoreCache && modStoreCache.groups) {
         Object.keys(modStoreCache.groups).forEach((gId) => {
           if (gId.endsWith('@g.us') && !groupMap.has(gId)) {
-            groupMap.set(gId, { id: gId, name: `Group (${gId.split('@')[0]})` });
+            const fallbackName = `Group (${gId.split('@')[0]})`;
+            groupMap.set(gId, { id: gId, name: fallbackName });
           }
         });
       }
@@ -780,9 +785,44 @@ async function loadModerationConfig() {
       if (preserved && groupMap.has(preserved)) {
         select.value = preserved;
       }
+      selectModerationGroup(select.value);
     }
   } catch (e) {
     console.error('Failed to load moderation config:', e);
+  }
+}
+
+function openGlobalRulesModal() {
+  const modal = document.getElementById('global-rules-modal');
+  if (modal) {
+    const globalRulesInp = document.getElementById('mod-global-rules-input');
+    if (globalRulesInp && modStoreCache) {
+      globalRulesInp.value = modStoreCache.global_rules || '';
+    }
+    modal.style.display = 'flex';
+  }
+}
+
+function closeGlobalRulesModal() {
+  const modal = document.getElementById('global-rules-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveGlobalRulesFromModal() {
+  const rules = document.getElementById('mod-global-rules-input')?.value || '';
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ global_rules: rules }),
+    });
+    if (res.ok) {
+      showToast('Global rules saved successfully! 🌐', 'success');
+      closeGlobalRulesModal();
+      loadModerationConfig();
+    }
+  } catch (e) {
+    showToast('Failed to save global rules', 'danger');
   }
 }
 
@@ -804,11 +844,28 @@ async function toggleGlobalModeration(enabled) {
 
 function selectModerationGroup(groupId) {
   currentModGroup = groupId;
-  if (!groupId || !modStoreCache) return;
+  const contentCard = document.getElementById('mod-group-content');
+  const placeholderCard = document.getElementById('mod-no-group-placeholder');
+
+  if (!groupId) {
+    if (contentCard) contentCard.style.display = 'none';
+    if (placeholderCard) placeholderCard.style.display = 'block';
+    return;
+  }
+
+  if (contentCard) contentCard.style.display = 'block';
+  if (placeholderCard) placeholderCard.style.display = 'none';
+
+  if (!modStoreCache) return;
   const config = modStoreCache.groups?.[groupId] || {};
 
   const titleEl = document.getElementById('mod-active-group-title');
-  if (titleEl) titleEl.textContent = `Group: ${groupId}`;
+  if (titleEl) {
+    const groupSelect = document.getElementById('mod-group-select');
+    const selectedOpt = groupSelect ? groupSelect.options[groupSelect.selectedIndex] : null;
+    const name = selectedOpt ? selectedOpt.text : groupId;
+    titleEl.innerHTML = `<i class="fas fa-users-cog"></i> ${name}`;
+  }
 
   const toggle = document.getElementById('mod-group-toggle');
   if (toggle) toggle.checked = Boolean(config.enabled);
@@ -1248,6 +1305,9 @@ async function saveGroupCommands() {
 }
 window.saveGroupCommands = saveGroupCommands;
 
+window.openGlobalRulesModal = openGlobalRulesModal;
+window.closeGlobalRulesModal = closeGlobalRulesModal;
+window.saveGlobalRulesFromModal = saveGlobalRulesFromModal;
 window.exportGroupModerationConfig = exportGroupModerationConfig;
 window.importGroupModerationConfig = importGroupModerationConfig;
 window.clearUserWarnInUi = clearUserWarnInUi;
