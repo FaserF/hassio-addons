@@ -67,7 +67,7 @@ export default () => `
                         <!-- Subtab Pills -->
                         <div class="mod-subtab-bar">
                             <button class="mod-pill active" data-subtab="rules" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
-                            <button class="mod-pill" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-hand-wave"></i> Greetings</button>
+                            <button class="mod-pill" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-user-plus"></i> Greetings</button>
                             <button class="mod-pill" data-subtab="warnings" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
                             <button class="mod-pill" data-subtab="locks" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
                             <button class="mod-pill" data-subtab="blacklist" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
@@ -97,7 +97,7 @@ export default () => `
                     <!-- GREETINGS -->
                     <div id="mod-subpanel-greetings" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
-                            <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-hand-wave"></i></div>
+                            <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-user-plus"></i></div>
                             <div><div class="mod-feature-title">Greetings &amp; Captcha</div><div class="mod-feature-desc">Welcome and farewell messages plus join verification.</div></div>
                         </div>
                         <div class="mod-two-col">
@@ -112,7 +112,7 @@ export default () => `
                         </div>
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">
-                            <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-shield-check"></i></div>
+                            <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-user-shield"></i></div>
                             <div><div class="mod-feature-title">Join Captcha Verification</div><div class="mod-feature-desc">Challenge new members before they can post.</div></div>
                         </div>
                         <div class="mod-inline-controls">
