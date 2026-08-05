@@ -762,7 +762,10 @@ export function registerMessagingRoutes(app) {
 
         if (session.messageStore) {
           for (const msg of session.messageStore.values()) {
-            if (msg.key?.remoteJid === jid || msg.key?.remoteJid?.split('@')[0] === jid.split('@')[0]) {
+            if (
+              msg.key?.remoteJid === jid ||
+              msg.key?.remoteJid?.split('@')[0] === jid.split('@')[0]
+            ) {
               messages.push(msg);
               if (messages.length >= limit) break;
             }
@@ -775,4 +778,3 @@ export function registerMessagingRoutes(app) {
     })
   );
 }
-

@@ -879,7 +879,8 @@ function selectModerationGroup(groupId) {
   const aiSentiment = document.getElementById('mod-ai-sentiment');
   if (aiSentiment) aiSentiment.checked = Boolean(config.ai?.sentiment_moderation);
   const aiPrompt = document.getElementById('mod-ai-prompt');
-  if (aiPrompt) aiPrompt.value = config.ai?.system_prompt || 'You are a helpful group moderator AI assistant.';
+  if (aiPrompt)
+    aiPrompt.value = config.ai?.system_prompt || 'You are a helpful group moderator AI assistant.';
   const transLang = document.getElementById('mod-trans-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');

@@ -101,45 +101,45 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 
 The bot command engine supports configurable prefixes per group (default `!`) and Role-Based Access Control (RBAC).
 
-| Command | Admin Only | Description |
-| :--- | :---: | :--- |
-| `!help` | No | Show contextual command list (hides admin commands for non-admins) |
-| `!ping` | No | Check bot responsiveness |
-| `!id` | No | Display chat and sender JIDs |
-| `!rules [question]` | No | Show group rules or ask a question about rules (AI interpretation) |
-| `!info [@user]` | No | View user information, warning history, and whitelist status |
-| `!adminlist` / `!admins` | No | List all group administrators with superadmin/admin roles |
-| `!locktypes` | No | List all available content lock types |
-| `!report` | No | Tag all group admins with optional reason and quoted message |
-| `!get <note>` | No | Retrieve content of a saved note |
-| `!notes` | No | List all saved group notes |
-| `!filters` | No | List active auto-responder filters |
-| `!welcome` | Yes | View current welcome message |
-| `!goodbye` | Yes | View current goodbye message |
-| `!locks` | Yes | List currently active content locks |
-| `!translate [text]` | No | Translate replied-to message or text using Gemini AI |
-| `!setrules <text>` | Yes | Update group rules |
-| `!setwelcome <text>` | Yes | Configure welcome message (`{mention}`, `{name}`, `{group}`) |
-| `!setgoodbye <text>` | Yes | Configure goodbye message (`{mention}`, `{name}`, `{group}`) |
-| `!warn [@user] [reason]` | Yes | Issue a warning to a user (mention or reply) |
-| `!unwarn [@user]` | Yes | Clear all warnings for a user |
-| `!warns [@user]` | Yes | View warning history for a user |
-| `!kick` / `!ban [@user]` | Yes | Remove a user from the group |
-| `!tban <duration> [@user]` | Yes | Temporarily ban a user (e.g. `1d`, `12h`, `30m`) |
-| `!mute [@user]` | Yes | Mute a user indefinitely (auto-deletes their messages) |
-| `!tmute <duration> [@user]` | Yes | Temporarily mute a user for a specific duration |
-| `!unmute [@user]` | Yes | Unmute a muted user |
-| `!del` / `!delete` | Yes | Delete a replied-to message |
-| `!promote [@user]` | Yes | Promote a user to group admin |
-| `!demote [@user]` | Yes | Demote an admin to standard user |
-| `!approve [@user]` | Yes | Whitelist a user to bypass moderation locks and anti-spam |
-| `!unapprove [@user]` | Yes | Remove user from whitelist |
-| `!lock <type>` | Yes | Enable a content lock (`image`, `video`, `url`, `invite`, `rtl`, etc.) |
-| `!unlock <type>` | Yes | Disable a content lock |
-| `!save <name> <text>` | Yes | Save a reusable group note (trigger via `#name`) |
-| `!filter <trigger> <reply>` | Yes | Create an auto-responder filter |
-| `!stop <trigger>` | Yes | Delete an auto-responder filter |
-| `!setlang <code>` | Yes | Set target language for translation |
+| Command                     | Admin Only | Description                                                            |
+| :-------------------------- | :--------: | :--------------------------------------------------------------------- |
+| `!help`                     |     No     | Show contextual command list (hides admin commands for non-admins)     |
+| `!ping`                     |     No     | Check bot responsiveness                                               |
+| `!id`                       |     No     | Display chat and sender JIDs                                           |
+| `!rules [question]`         |     No     | Show group rules or ask a question about rules (AI interpretation)     |
+| `!info [@user]`             |     No     | View user information, warning history, and whitelist status           |
+| `!adminlist` / `!admins`    |     No     | List all group administrators with superadmin/admin roles              |
+| `!locktypes`                |     No     | List all available content lock types                                  |
+| `!report`                   |     No     | Tag all group admins with optional reason and quoted message           |
+| `!get <note>`               |     No     | Retrieve content of a saved note                                       |
+| `!notes`                    |     No     | List all saved group notes                                             |
+| `!filters`                  |     No     | List active auto-responder filters                                     |
+| `!welcome`                  |    Yes     | View current welcome message                                           |
+| `!goodbye`                  |    Yes     | View current goodbye message                                           |
+| `!locks`                    |    Yes     | List currently active content locks                                    |
+| `!translate [text]`         |     No     | Translate replied-to message or text using Gemini AI                   |
+| `!setrules <text>`          |    Yes     | Update group rules                                                     |
+| `!setwelcome <text>`        |    Yes     | Configure welcome message (`{mention}`, `{name}`, `{group}`)           |
+| `!setgoodbye <text>`        |    Yes     | Configure goodbye message (`{mention}`, `{name}`, `{group}`)           |
+| `!warn [@user] [reason]`    |    Yes     | Issue a warning to a user (mention or reply)                           |
+| `!unwarn [@user]`           |    Yes     | Clear all warnings for a user                                          |
+| `!warns [@user]`            |    Yes     | View warning history for a user                                        |
+| `!kick` / `!ban [@user]`    |    Yes     | Remove a user from the group                                           |
+| `!tban <duration> [@user]`  |    Yes     | Temporarily ban a user (e.g. `1d`, `12h`, `30m`)                       |
+| `!mute [@user]`             |    Yes     | Mute a user indefinitely (auto-deletes their messages)                 |
+| `!tmute <duration> [@user]` |    Yes     | Temporarily mute a user for a specific duration                        |
+| `!unmute [@user]`           |    Yes     | Unmute a muted user                                                    |
+| `!del` / `!delete`          |    Yes     | Delete a replied-to message                                            |
+| `!promote [@user]`          |    Yes     | Promote a user to group admin                                          |
+| `!demote [@user]`           |    Yes     | Demote an admin to standard user                                       |
+| `!approve [@user]`          |    Yes     | Whitelist a user to bypass moderation locks and anti-spam              |
+| `!unapprove [@user]`        |    Yes     | Remove user from whitelist                                             |
+| `!lock <type>`              |    Yes     | Enable a content lock (`image`, `video`, `url`, `invite`, `rtl`, etc.) |
+| `!unlock <type>`            |    Yes     | Disable a content lock                                                 |
+| `!save <name> <text>`       |    Yes     | Save a reusable group note (trigger via `#name`)                       |
+| `!filter <trigger> <reply>` |    Yes     | Create an auto-responder filter                                        |
+| `!stop <trigger>`           |    Yes     | Delete an auto-responder filter                                        |
+| `!setlang <code>`           |    Yes     | Set target language for translation                                    |
 
 ---
 

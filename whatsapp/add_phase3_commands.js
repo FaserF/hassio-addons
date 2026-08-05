@@ -370,7 +370,8 @@ registry.register('translate', async (session, groupId, userId, args, config, is
 // Insert before the Engine Hook section
 content = content.replace(
   '// ---------------------------------------------------------\n// Engine Hook\n// ---------------------------------------------------------',
-  phase3Code + '\n// ---------------------------------------------------------\n// Engine Hook\n// ---------------------------------------------------------'
+  phase3Code +
+    '\n// ---------------------------------------------------------\n// Engine Hook\n// ---------------------------------------------------------'
 );
 
 fs.writeFileSync(path, content);

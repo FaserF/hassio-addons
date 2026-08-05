@@ -236,10 +236,12 @@ export async function handleModerationMessage(session, event) {
   if (event.media_type === 'location' && (await triggerLock('location', 'Locations'))) return true;
 
   // Forwarded message lock check
-  if (rawMsg?.message?.extendedTextMessage?.contextInfo?.isForwarded ||
-      rawMsg?.message?.imageMessage?.contextInfo?.isForwarded ||
-      rawMsg?.message?.videoMessage?.contextInfo?.isForwarded ||
-      rawMsg?.message?.documentMessage?.contextInfo?.isForwarded) {
+  if (
+    rawMsg?.message?.extendedTextMessage?.contextInfo?.isForwarded ||
+    rawMsg?.message?.imageMessage?.contextInfo?.isForwarded ||
+    rawMsg?.message?.videoMessage?.contextInfo?.isForwarded ||
+    rawMsg?.message?.documentMessage?.contextInfo?.isForwarded
+  ) {
     if (await triggerLock('forwarded', 'Forwarded messages')) return true;
   }
 
@@ -327,10 +329,18 @@ export async function handleModerationMessage(session, event) {
             if (rawMsg?.key?.id) {
               try {
                 await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-              } catch (e) { /* ignore */ }
+              } catch (e) {
+                /* ignore */
+              }
             }
             if (filter.action !== 'delete') {
-              await executePenalty(session, groupId, userId, filter.action, `Filter match: "${filter.trigger}"`);
+              await executePenalty(
+                session,
+                groupId,
+                userId,
+                filter.action,
+                `Filter match: "${filter.trigger}"`
+              );
             }
           }
           return true;
@@ -369,7 +379,8 @@ export async function handleModerationMessage(session, event) {
     const apiKey = store.gemini_api_key || process.env.GEMINI_API_KEY;
     if (apiKey) {
       const sentimentConfig = {
-        system_prompt: 'You are a toxicity detector. Analyze the message and reply ONLY with "TOXIC" if it is hateful, threatening, harassing, or extremely offensive. Reply "SAFE" otherwise. No other text.',
+        system_prompt:
+          'You are a toxicity detector. Analyze the message and reply ONLY with "TOXIC" if it is hateful, threatening, harassing, or extremely offensive. Reply "SAFE" otherwise. No other text.',
         faq_auto_reply: true,
       };
       const result = await processAiModeration(text, sentimentConfig, apiKey);
@@ -377,7 +388,9 @@ export async function handleModerationMessage(session, event) {
         if (rawMsg?.key?.id) {
           try {
             await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
         }
         await reply(session, groupId, {
           text: `🛡️ Message removed: Detected as potentially harmful content.`,
