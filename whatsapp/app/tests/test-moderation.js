@@ -174,6 +174,25 @@ try {
   });
   console.log('✅ PASSED: Participant leave event correctly processed for goodbye message');
 
+  // Test 8: Warning normalization and self-warn prevention
+  await issueUserWarning(mockSession, '1203630123456789@g.us', '+491761234567', 'Warn with plus');
+  await issueUserWarning(mockSession, '1203630123456789@g.us', '491761234567', 'Warn without plus');
+  const normConfig = getGroupModerationConfig('1203630123456789@g.us');
+  const userWarnKeys = Object.keys(normConfig.warnings.user_warns).filter(
+    (k) => normConfig.warnings.user_warns[k]?.length > 0
+  );
+  assert.strictEqual(
+    userWarnKeys.length,
+    1,
+    'Warnings with and without plus should merge into single key'
+  );
+  assert.strictEqual(
+    normConfig.warnings.user_warns[userWarnKeys[0]].length,
+    2,
+    'Should have 2 merged warnings'
+  );
+  console.log('✅ PASSED: Warning ID normalization correctly merged +49... and 49...');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');

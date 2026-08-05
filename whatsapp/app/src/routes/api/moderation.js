@@ -87,6 +87,22 @@ export function registerModerationRoutes(app) {
     res.json({ success: true, cleared, data: config.warnings });
   });
 
+  // POST /api/moderation/groups/:groupId/reports/:reportId/resolve
+  app.post('/api/moderation/groups/:groupId/reports/:reportId/resolve', (req, res) => {
+    const { groupId, reportId } = req.params;
+    const store = loadModerationStore();
+    const config = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (Array.isArray(config.reports)) {
+      const rep = config.reports.find((r) => r.id === reportId);
+      if (rep) {
+        rep.status = 'resolved';
+        store.groups[groupId] = config;
+        saveModerationStore(store);
+      }
+    }
+    res.json({ success: true, data: config.reports });
+  });
+
   // POST /api/moderation/groups/:groupId/export
   app.post('/api/moderation/groups/:groupId/export', (req, res) => {
     const { groupId } = req.params;

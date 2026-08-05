@@ -106,6 +106,7 @@ export function getDefaultGroupConfig() {
       action: 'delete', // 'delete' | 'warn' | 'mute' | 'kick' | 'ban'
     },
     filters: [], // [{ trigger, response, is_regex, action }]
+    reports: [], // [{ id, reporter_id, target_id, reason, timestamp, status }]
     notes: {}, // noteName -> content
     muted_users: {}, // userId -> { until (timestamp or null), reason }
     translation: {
@@ -187,6 +188,7 @@ export function getGroupModerationConfig(groupId) {
     warnings: { ...def.warnings, ...(existing.warnings || {}) },
     locks: { ...def.locks, ...(existing.locks || {}) },
     blacklist: { ...def.blacklist, ...(existing.blacklist || {}) },
+    reports: Array.isArray(existing.reports) ? existing.reports : def.reports,
     filters: Array.isArray(existing.filters) ? existing.filters : def.filters,
     notes: { ...def.notes, ...(existing.notes || {}) },
     antispam: {

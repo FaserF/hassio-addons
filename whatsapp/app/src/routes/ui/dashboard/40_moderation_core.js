@@ -206,11 +206,62 @@ function selectModerationGroup(groupId) {
       warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
     } else {
       warnList.innerHTML = entries
+        .map((u) => {
+          const warns = userWarns[u];
+          const items = warns
+            .map(
+              (w, i) =>
+                `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">` +
+                `${i + 1}. ${escapeHtml(w.reason)} <span style="font-size:10px;opacity:0.8;">(${new Date(w.timestamp).toLocaleString()})</span>` +
+                `</div>`
+            )
+            .join('');
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div><strong style="color:var(--primary);">@${escapeHtml(u)}</strong> <span class="badge badge-warning" style="font-size:11px;padding:2px 6px;">${warns.length} warning(s)</span></div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">Clear All</button>
+          </div>
+          <div style="border-top:1px solid var(--border-color);padding-top:4px;">
+            ${items}
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
+  // Reports List UI
+  const reportsList = document.getElementById('mod-reports-list');
+  if (reportsList) {
+    const reports = config.reports || [];
+    if (!reports.length) {
+      reportsList.innerHTML = '<div class="empty-state">No reports submitted yet</div>';
+    } else {
+      reportsList.innerHTML = reports
+        .slice()
+        .reverse()
         .map(
-          (u) => `
-        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;">
-          <div><strong>@${u}</strong>: ${userWarns[u].length} warning(s)</div>
-          <button class="btn btn-secondary btn-sm" onclick="clearUserWarnInUi('${u}')">Clear</button>
+          (r) => `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div>
+              <span class="badge ${r.status === 'resolved' ? 'badge-success' : 'badge-danger'}" style="font-size:10px;padding:2px 6px;text-transform:uppercase;">${r.status || 'open'}</span>
+              <strong style="color:var(--text-main);margin-left:6px;">Reporter: @${escapeHtml(r.reporter_id)}</strong>
+              ${r.target_id ? ` &rarr; <span style="color:#e74c3c;">Target: @${escapeHtml(r.target_id)}</span>` : ''}
+            </div>
+            ${
+              r.status !== 'resolved'
+                ? `<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="resolveReportInUi('${escapeHtml(r.id)}')"><i class="fas fa-check"></i> Resolve</button>`
+                : `<span style="font-size:11px;color:var(--text-muted);"><i class="fas fa-check-circle" style="color:#2ecc71;"></i> Resolved</span>`
+            }
+          </div>
+          <div style="font-size:12px;color:var(--text-main);margin-top:4px;">
+            <strong>Reason:</strong> ${escapeHtml(r.reason)}
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">
+            <i class="far fa-clock"></i> ${new Date(r.timestamp).toLocaleString()}
+          </div>
         </div>`
         )
         .join('');
@@ -574,5 +625,25 @@ async function clearUserWarnInUi(userId) {
     }
   } catch (e) {
     showToast('Failed to clear warnings', 'danger');
+  }
+}
+
+async function resolveReportInUi(reportId) {
+  if (!currentModGroup || !reportId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/reports/${encodeURIComponent(reportId)}/resolve`,
+      {
+        method: 'POST',
+      }
+    );
+    if (res.ok) {
+      showToast('Report marked as resolved', 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to resolve report', 'danger');
   }
 }

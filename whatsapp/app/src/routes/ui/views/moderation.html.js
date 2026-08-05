@@ -69,6 +69,7 @@ export default () => `
                             <button class="mod-pill active" data-subtab="rules" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
                             <button class="mod-pill" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-user-plus"></i> Greetings</button>
                             <button class="mod-pill" data-subtab="warnings" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
+                            <button class="mod-pill" data-subtab="reports" onclick="switchModSubTab('reports')"><i class="fas fa-flag"></i> Reports</button>
                             <button class="mod-pill" data-subtab="locks" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
                             <button class="mod-pill" data-subtab="blacklist" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
                             <button class="mod-pill" data-subtab="filters" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters</button>
@@ -138,6 +139,15 @@ export default () => `
                         <div class="mod-divider"></div>
                         <p class="mod-section-label"><i class="fas fa-list-ul"></i> Active Warnings</p>
                         <div id="mod-warns-list" class="mod-list-container"><div class="empty-state">No active user warnings</div></div>
+                    </div>
+
+                    <!-- REPORTS -->
+                    <div id="mod-subpanel-reports" class="mod-subpanel" style="display:none;">
+                        <div class="mod-feature-header">
+                            <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-flag"></i></div>
+                            <div><div class="mod-feature-title">Group Reports Log</div><div class="mod-feature-desc">View all reported messages, reporter details, target users, and timestamps.</div></div>
+                        </div>
+                        <div id="mod-reports-list" class="mod-list-container"><div class="empty-state">No reports submitted yet</div></div>
                     </div>
 
                     <!-- LOCKS -->

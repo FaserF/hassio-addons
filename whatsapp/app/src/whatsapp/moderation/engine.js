@@ -85,16 +85,29 @@ export async function executePenalty(session, groupId, userId, action, reason = 
   }
 }
 
-export async function issueUserWarning(session, groupId, userId, reason) {
+export async function issueUserWarning(session, groupId, rawUserId, reason) {
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId);
   const warnConfig = config.warnings || { max_warnings: 3, action: 'mute' };
 
+  // Normalize userId (strip non-digits to resolve format mismatches like +1... vs 1...)
+  const userId = (rawUserId || '').replace(/\D/g, '') || rawUserId;
+
   if (!config.warnings.user_warns) {
     config.warnings.user_warns = {};
   }
-  if (!config.warnings.user_warns[userId]) {
-    config.warnings.user_warns[userId] = [];
+
+  // Check if warnings exist under another equivalent key (e.g. with leading +)
+  let userKey = userId;
+  for (const existingKey of Object.keys(config.warnings.user_warns)) {
+    if (existingKey.replace(/\D/g, '') === userId) {
+      userKey = existingKey;
+      break;
+    }
+  }
+
+  if (!config.warnings.user_warns[userKey]) {
+    config.warnings.user_warns[userKey] = [];
   }
 
   const now = Date.now();
@@ -103,52 +116,62 @@ export async function issueUserWarning(session, groupId, userId, reason) {
   const decayHours = warnConfig.decay_hours || 0;
   if (decayHours > 0) {
     const decayMs = decayHours * 3600 * 1000;
-    config.warnings.user_warns[userId] = config.warnings.user_warns[userId].filter(
+    config.warnings.user_warns[userKey] = config.warnings.user_warns[userKey].filter(
       (w) => now - w.timestamp < decayMs
     );
   }
 
-  config.warnings.user_warns[userId].push({ reason, timestamp: now });
+  config.warnings.user_warns[userKey].push({ reason, timestamp: now });
   store.groups[groupId] = config;
   saveModerationStore(store);
 
-  const warnCount = config.warnings.user_warns[userId].length;
+  const warnCount = config.warnings.user_warns[userKey].length;
   const maxWarns = warnConfig.max_warnings || 3;
 
-  await reply(session, groupId, {
-    text: `⚠️ *Warning Issued to @${userId}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
-    mentions: [`${userId}@s.whatsapp.net`],
-  });
-
   if (warnCount >= maxWarns) {
+    const penaltyAction = warnConfig.action || 'mute';
     await reply(session, groupId, {
-      text: `🚨 @${userId} reached maximum warnings (${maxWarns})! Executing penalty: *${warnConfig.action}*`,
-      mentions: [`${userId}@s.whatsapp.net`],
+      text:
+        `⚠️ *Warning Issued to @${userKey}* (${warnCount}/${maxWarns})\n` +
+        `Reason: ${reason}\n\n` +
+        `🚨 *Maximum warnings (${maxWarns}) reached! Executing penalty: ${penaltyAction.toUpperCase()}*`,
+      mentions: [`${userKey}@s.whatsapp.net`],
     });
+
     await executePenalty(
       session,
       groupId,
-      userId,
-      warnConfig.action,
+      userKey,
+      penaltyAction,
       `Exceeded max warnings (${maxWarns})`
     );
-    // Reset warnings after penalty
-    config.warnings.user_warns[userId] = [];
-    store.groups[groupId] = config;
-    saveModerationStore(store);
+  } else {
+    await reply(session, groupId, {
+      text: `⚠️ *Warning Issued to @${userKey}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
+      mentions: [`${userKey}@s.whatsapp.net`],
+    });
   }
 }
 
-export function clearUserWarnings(groupId, userId) {
+export function clearUserWarnings(groupId, rawUserId) {
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId);
-  if (config.warnings?.user_warns?.[userId]) {
-    config.warnings.user_warns[userId] = [];
-    store.groups[groupId] = config;
-    saveModerationStore(store);
-    return true;
+  const cleanId = (rawUserId || '').replace(/\D/g, '');
+  let cleared = false;
+
+  if (config.warnings?.user_warns) {
+    for (const key of Object.keys(config.warnings.user_warns)) {
+      if (key === rawUserId || key.replace(/\D/g, '') === cleanId) {
+        config.warnings.user_warns[key] = [];
+        cleared = true;
+      }
+    }
+    if (cleared) {
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+    }
   }
-  return false;
+  return cleared;
 }
 
 export async function handleModerationMessage(session, event) {

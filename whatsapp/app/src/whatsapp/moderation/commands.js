@@ -116,35 +116,111 @@ registry.register(
 registry.register(
   'report',
   async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-    const groupMeta = await session.sock.groupMetadata(groupId);
-    const admins = groupMeta.participants
-      .filter((p) => p.admin === 'admin' || p.admin === 'superadmin')
-      .map((p) => p.id);
+    let groupMeta;
+    try {
+      groupMeta = await session.sock.groupMetadata(groupId);
+    } catch (e) {
+      logger.error(
+        { error: e.message, groupId },
+        'Failed to fetch group metadata for report command'
+      );
+    }
 
-    if (admins.length === 0) {
-      await reply(session, groupId, { text: `⚠️ No admins found in this group to report to.` });
+    const adminParticipants = (groupMeta?.participants || []).filter(
+      (p) => p.admin === 'admin' || p.admin === 'superadmin'
+    );
+    const admins = adminParticipants.map((p) => p.id);
+
+    // Identify target user if mentioned or replied
+    const targetMatches = [
+      ...(rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []),
+    ];
+    if (
+      targetMatches.length === 0 &&
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant
+    ) {
+      targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
+    }
+
+    const targetJid = targetMatches.length > 0 ? targetMatches[0] : null;
+    const targetId = targetJid ? targetJid.split('@')[0] : null;
+
+    if (targetId && targetId === userId) {
+      await reply(session, groupId, {
+        text: `⚠️ You cannot report yourself.`,
+      });
       return;
     }
 
-    const text = args.join(' ');
-    const reasonText = text ? `\nReason: ${text}` : '';
+    // Filter out args that are mention tokens (e.g. @4917647365403)
+    const cleanedArgs = args.filter((a) => !a.startsWith('@'));
+    const text = cleanedArgs.join(' ').trim();
+    const reasonText = text ? text : 'No reason provided';
 
+    // Store report in moderation store
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!Array.isArray(c.reports)) c.reports = [];
+
+    const reportItem = {
+      id: `rep_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      reporter_id: userId,
+      target_id: targetId || null,
+      reason: reasonText,
+      timestamp: Date.now(),
+      status: 'open',
+    };
+    c.reports.push(reportItem);
+    store.groups[groupId] = c;
+    saveModerationStore(store);
+
+    // 1. Group response
     let quotedMsg = undefined;
     if (rawMsg.message?.extendedTextMessage?.contextInfo?.stanzaId) {
-      quotedMsg = rawMsg; // Provide the message context to quote it
+      quotedMsg = rawMsg;
     }
 
+    const targetMentionStr = targetId ? ` against @${targetId}` : '';
     await reply(
       session,
       groupId,
       {
-        text: `🚨 *Report from @${userId}*\nAdmins requested.${reasonText}`,
-        mentions: [userId + '@s.whatsapp.net', ...admins],
+        text: `🚨 *Report from @${userId}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
+        mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : []), ...admins],
       },
       quotedMsg
     );
+
+    // 2. Private direct message to admins
+    const groupSubject = groupMeta?.subject || groupId.split('@')[0];
+    const dmText =
+      `🚨 *NEW REPORT IN GROUP: ${groupSubject}*\n\n` +
+      `👤 *Reporter:* @${userId}\n` +
+      `${targetId ? `🎯 *Target User:* @${targetId}\n` : ''}` +
+      `📝 *Reason:* ${reasonText}\n` +
+      `⏰ *Timestamp:* ${new Date(reportItem.timestamp).toLocaleString()}\n` +
+      `👥 *Group ID:* \`${groupId}\``;
+
+    for (const adminJid of admins) {
+      // Don't DM the bot itself
+      const selfPn = session.stats?.my_number || session.sock?.user?.id?.split(':')[0];
+      const adminPn = adminJid.split('@')[0];
+      if (selfPn && adminPn === selfPn) continue;
+
+      try {
+        await reply(session, adminJid, {
+          text: dmText,
+          mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : [])],
+        });
+      } catch (err) {
+        logger.warn(
+          { error: err.message, adminJid },
+          'Failed to send direct report message to admin'
+        );
+      }
+    }
   },
-  { adminOnly: false, help: 'Report a message to group admins' }
+  { adminOnly: false, help: 'Report a message or user to group admins' }
 );
 
 registry.register(
@@ -489,9 +565,18 @@ registry.register(
       return;
     }
 
-    const reason = args.join(' ') || 'No reason provided';
+    // Filter out mention tokens from args for the reason string (e.g., remove "@4917647365403")
+    const cleanedArgs = args.filter((a) => !a.startsWith('@'));
+    const reason = cleanedArgs.join(' ').trim() || 'No reason provided';
+
     for (const targetJid of targetMatches) {
       const targetId = targetJid.split('@')[0];
+      if (targetId === userId) {
+        await reply(session, groupId, {
+          text: `⚠️ You cannot issue a warning to yourself.`,
+        });
+        continue;
+      }
       await issueUserWarning(session, groupId, targetId, reason);
     }
   },
@@ -767,14 +852,22 @@ registry.register(
         return;
       }
 
+      const botUserJid = session.sock?.user?.id ? session.sock.user.id.replace(/:.*@/, '@') : null;
+      const botPn = session.stats?.my_number || (botUserJid ? botUserJid.split('@')[0] : null);
+
       let text = `👮 *Group Admins (${admins.length}):*\n\n`;
       for (const admin of admins) {
         const fullJid = admin.id;
         const phoneNum = fullJid.split('@')[0];
+        const isBot = (botUserJid && fullJid === botUserJid) || (botPn && phoneNum === botPn);
         const cachedName =
           session.contactCache?.get(fullJid)?.name ||
           session.contactCache?.get(`${phoneNum}@s.whatsapp.net`)?.name;
-        const displayName = cachedName ? `${cachedName} (@${phoneNum})` : `@${phoneNum}`;
+
+        let displayName = cachedName ? `${cachedName} (@${phoneNum})` : `@${phoneNum}`;
+        if (isBot) {
+          displayName += ' 🤖 (Bot)';
+        }
         const icon = admin.admin === 'superadmin' ? '👑' : '👮';
         text += `${icon} ${displayName}\n`;
       }

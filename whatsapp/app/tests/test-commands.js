@@ -160,6 +160,25 @@ async function runTests() {
   );
   console.log('✅ PASSED: Formatted command input (!ping) handled successfully');
 
+  // Test Report Command (saves to store and DMs admins)
+  mockSession.sock.groupMetadata = async () => ({
+    subject: 'Test Group',
+    participants: [{ id: '491769999999@s.whatsapp.net', admin: 'admin' }],
+  });
+  const reportHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    '!report @491760000000 Test report reason',
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(reportHandled === true, 'Report command should execute successfully');
+  const repConfig = getGroupModerationConfig('1203630123456789@g.us');
+  assert(repConfig.reports.length === 1, 'Report should be saved to group config');
+  assert(repConfig.reports[0].reason === 'Test report reason', 'Report reason should be parsed');
+  console.log('✅ PASSED: Report command saves report item to store and DMs admins');
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;
