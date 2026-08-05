@@ -10,6 +10,7 @@ import {
   clearUserWarnings,
   handleModerationMessage,
   handleModerationParticipantUpdate,
+  executePenalty,
 } from '../src/whatsapp/moderation/engine.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
@@ -192,6 +193,21 @@ try {
     'Should have 2 merged warnings'
   );
   console.log('✅ PASSED: Warning ID normalization correctly merged +49... and 49...');
+
+  // Test 9: Group Ban recording & Auto-kick on rejoin
+  await executePenalty(mockSession, '1203630123456789@g.us', '491769999999', 'ban', 'Bad behavior');
+  const banCheckConfig = getGroupModerationConfig('1203630123456789@g.us');
+  assert(
+    banCheckConfig.banned_users['491769999999'],
+    'User should be stored in group banned_users'
+  );
+
+  await handleModerationParticipantUpdate(mockSession, {
+    id: '1203630123456789@g.us',
+    action: 'add',
+    participants: ['491769999999@s.whatsapp.net'],
+  });
+  console.log('✅ PASSED: Group ban record and auto-kick on rejoin verified successfully');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

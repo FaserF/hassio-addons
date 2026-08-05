@@ -107,6 +107,7 @@ export function getDefaultGroupConfig() {
     },
     filters: [], // [{ trigger, response, is_regex, action }]
     reports: [], // [{ id, reporter_id, target_id, reason, timestamp, status }]
+    banned_users: {}, // userId -> { timestamp, reason }
     notes: {}, // noteName -> content
     muted_users: {}, // userId -> { until (timestamp or null), reason }
     translation: {
@@ -189,6 +190,7 @@ export function getGroupModerationConfig(groupId) {
     locks: { ...def.locks, ...(existing.locks || {}) },
     blacklist: { ...def.blacklist, ...(existing.blacklist || {}) },
     reports: Array.isArray(existing.reports) ? existing.reports : def.reports,
+    banned_users: { ...def.banned_users, ...(existing.banned_users || {}) },
     filters: Array.isArray(existing.filters) ? existing.filters : def.filters,
     notes: { ...def.notes, ...(existing.notes || {}) },
     antispam: {

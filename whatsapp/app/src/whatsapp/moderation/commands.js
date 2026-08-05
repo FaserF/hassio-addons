@@ -697,7 +697,36 @@ registry.register(
       await executePenalty(session, groupId, targetId, 'kick', reason);
     }
   },
-  { adminOnly: true, aliases: ['ban'], help: 'Remove a user from the group' }
+  { adminOnly: true, help: 'Kick a user from the group (they can rejoin via invite link)' }
+);
+
+registry.register(
+  'ban',
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+    const targetMatches = [
+      ...(rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []),
+    ];
+    if (
+      targetMatches.length === 0 &&
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant
+    ) {
+      targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
+    }
+
+    if (targetMatches.length === 0) {
+      await reply(session, groupId, {
+        text: `⚠️ You must mention a user or reply to their message to ban them.`,
+      });
+      return;
+    }
+
+    const reason = args.join(' ') || 'Admin requested ban';
+    for (const targetJid of targetMatches) {
+      const targetId = targetJid.split('@')[0];
+      await executePenalty(session, groupId, targetId, 'ban', reason);
+    }
+  },
+  { adminOnly: true, help: 'Permanently ban a user (they will be auto-kicked if they rejoin)' }
 );
 
 registry.register(
@@ -1265,16 +1294,24 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   const prefix = config.commands.prefix || '!';
 
-  // Sanitize formatting wrappers (e.g. '!locktypes' -> !locktypes, `!help` -> !help)
-  const cleanText = (text || '').trim().replace(/^['"`\s]+|['"`\s]+$/g, '');
+  // Sanitize formatting wrappers e.g. `!locktypes`, '!locktypes', "`!help`", ```!rules```
+  let cleanText = (text || '').trim();
+  // Strip code block fence wrappers (e.g. ```!locktypes```)
+  cleanText = cleanText
+    .replace(/^```[a-z]*\n?/i, '')
+    .replace(/\n?```$/i, '')
+    .trim();
+  // Strip leading and trailing inline formatting wrappers (`...`, '...', "...")
+  cleanText = cleanText.replace(/^['"`\s]+|['"`\s]+$/g, '').trim();
 
   if (!cleanText.startsWith(prefix)) return false;
 
   const parts = cleanText.slice(prefix.length).trim().split(/\s+/);
   if (parts.length === 0 || parts[0] === '') return false;
 
-  const cmdStr = parts[0].toLowerCase();
-  const args = parts.slice(1);
+  // Clean trailing inline code markers from command name (e.g. `locktypes` -> locktypes)
+  const cmdStr = parts[0].replace(/[`'"]/g, '').toLowerCase();
+  const args = parts.slice(1).map((a) => a.replace(/^[`'"]+|[`'"]+$/g, ''));
 
   const command = registry.getCommand(cmdStr);
   if (!command) {

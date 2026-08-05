@@ -142,7 +142,7 @@ async function runTests() {
   );
   console.log('✅ PASSED: Disabled built-in command !ping handled and notified user successfully');
 
-  // Test Formatted Text Input (e.g. '!locktypes' or `!help`)
+  // Test Formatted Text Input (e.g. '!locktypes', `!help`, ```!rules```)
   groupConfig.commands.disabled_commands = [];
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
 
@@ -158,7 +158,35 @@ async function runTests() {
     formattedHandled === true,
     'Formatted command input (!ping) should be sanitized and handled'
   );
-  console.log('✅ PASSED: Formatted command input (!ping) handled successfully');
+
+  const backtickHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    '`!locktypes`',
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(
+    backtickHandled === true,
+    'Backtick wrapped command (`!locktypes`) should be sanitized and handled'
+  );
+
+  const codeblockHandled = await processCommand(
+    mockSession,
+    mockMsg,
+    '```\n!ping\n```',
+    '491761234567@s.whatsapp.net',
+    false,
+    '1203630123456789@g.us'
+  );
+  assert(
+    codeblockHandled === true,
+    'Codeblock wrapped command (```!ping```) should be sanitized and handled'
+  );
+  console.log(
+    "✅ PASSED: Formatted command inputs ('!ping', `!locktypes`, ```!ping```) handled successfully"
+  );
 
   // Test Report Command (saves to store and DMs admins)
   mockSession.sock.groupMetadata = async () => ({

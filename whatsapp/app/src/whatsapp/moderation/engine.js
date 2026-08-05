@@ -68,11 +68,39 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         mentions: [`${userId}@s.whatsapp.net`],
       });
     } else if (action === 'kick' || action === 'ban') {
-      const userJid = userId.includes('@') ? userId : `${userId}@s.whatsapp.net`;
+      const cleanDigits = userId.replace(/\D/g, '');
+      const userJid = cleanDigits
+        ? `${cleanDigits}@s.whatsapp.net`
+        : userId.includes('@')
+          ? userId
+          : `${userId}@s.whatsapp.net`;
+      const targetDisplayId = cleanDigits || userId.split('@')[0];
+
+      if (action === 'ban') {
+        const store = loadModerationStore();
+        const config = getGroupModerationConfig(groupId);
+        config.banned_users = config.banned_users || {};
+        config.banned_users[targetDisplayId] = {
+          timestamp: Date.now(),
+          reason: reason || 'Banned by group moderation',
+        };
+        store.groups[groupId] = config;
+        saveModerationStore(store);
+
+        // Send private chat notification with explanation before kicking
+        try {
+          await session.sock.sendMessage(userJid, {
+            text: `🚫 *Banned from Group*\n\nYou have been permanently banned from the group \`${groupId.split('@')[0]}\`.\n\n*Reason:* ${reason || 'Violation of group rules'}\n\nIf you attempt to rejoin, you will be automatically removed.`,
+          });
+        } catch (dmErr) {
+          logger.warn({ error: dmErr.message }, `Failed to send DM ban notification to ${userJid}`);
+        }
+      }
+
       try {
         await session.sock.groupParticipantsUpdate(groupId, [userJid], 'remove');
         await reply(session, groupId, {
-          text: `🚫 User @${userId} was ${action === 'ban' ? 'banned' : 'kicked'} from group.`,
+          text: `🚫 User @${targetDisplayId} was ${action === 'ban' ? 'banned' : 'kicked'} from group.`,
           mentions: [userJid],
         });
       } catch (e) {
@@ -528,14 +556,48 @@ export async function handleModerationParticipantUpdate(session, update) {
       }
     }
 
-    // 2. Check participants against Global Ban Federation & Greetings
+    // 2. Check participants against Group Ban & Global Ban Federation & Greetings
     for (const participantJid of participants) {
       const userId = participantJid.split('@')[0];
+      const cleanDigits = userId.replace(/\D/g, '');
+
+      // Local Group Ban Check
+      const bannedUsersMap = config.banned_users || {};
+      const banInfo = bannedUsersMap[userId] || (cleanDigits ? bannedUsersMap[cleanDigits] : null);
+
+      if (banInfo) {
+        // User was banned from this group -> notify via private DM and auto-kick
+        try {
+          await session.sock.sendMessage(participantJid, {
+            text: `🚫 *Group Ban Enforced*\n\nYou attempted to join \`${groupId.split('@')[0]}\`, but you are banned from this group.\n\n*Reason:* ${banInfo.reason || 'Banned by group moderation'}\n\nYou have been automatically removed.`,
+          });
+        } catch (dmErr) {
+          logger.warn({ error: dmErr.message }, `Failed to send join ban DM to ${participantJid}`);
+        }
+
+        try {
+          await session.sock.groupParticipantsUpdate(groupId, [participantJid], 'remove');
+          await reply(session, groupId, {
+            text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
+            mentions: [participantJid],
+          });
+        } catch (kickErr) {
+          logger.warn(
+            { error: kickErr.message },
+            `Failed to auto-remove banned user ${participantJid}`
+          );
+        }
+        continue;
+      }
 
       // Global Ban Federation check
       if (config.federation_id) {
         const fed = store.federations.find((f) => f.id === config.federation_id);
-        if (fed && fed.banned_users.includes(userId)) {
+        if (
+          fed &&
+          (fed.banned_users.includes(userId) ||
+            (cleanDigits && fed.banned_users.includes(cleanDigits)))
+        ) {
           await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation');
           continue;
         }
