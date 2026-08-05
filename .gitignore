@@ -88,3 +88,4 @@ validate_json.py
 /whatsapp/app/sessions/
 data/
 .data/
+/whatsapp/app/scratch

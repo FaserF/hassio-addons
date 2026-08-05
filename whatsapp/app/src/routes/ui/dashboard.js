@@ -1,6 +1,5 @@
-// Dashboard logic & polling
+// Dashboard Overview & Status Polling
 
-// Semantic version comparison (returns true if latest > curr)
 function isNewerVersion(curr, latest) {
   if (!curr || !latest) return false;
   const cleanC = curr.replace(/^v/, '').trim();
@@ -25,7 +24,6 @@ function isNewerVersion(curr, latest) {
   }
   return false;
 }
-window.isNewerVersion = isNewerVersion;
 
 async function updateDashboard() {
   try {
@@ -362,6 +360,8 @@ async function updateDashboard() {
   }
 }
 
+// System Logs, Session Management & Backups
+
 async function loadLogs() {
   try {
     const response = await fetch(basePath + 'logs?session_id=' + currentSession);
@@ -389,7 +389,6 @@ async function loadLogs() {
     console.error(err);
   }
 }
-window.loadLogs = loadLogs;
 
 async function downloadDebugInfo() {
   try {
@@ -524,6 +523,8 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
+// Update & Dependency Modals
 
 function openUpdateModal(type) {
   const data = window._latestReleaseData || {};
@@ -722,9 +723,10 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
-// --- Group Moderation UI Handlers ---
+// Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
+
 let modStoreCache = null;
-let currentModGroup = '';
+let currentModGroup = "";
 
 async function loadModerationConfig() {
   try {
@@ -808,7 +810,6 @@ async function saveGlobalRulesInline() {
     showToast('Failed to save global rules', 'danger');
   }
 }
-window.saveGlobalRulesInline = saveGlobalRulesInline;
 
 function openGlobalRulesModal() {
   const modal = document.getElementById('global-rules-modal');
@@ -1140,6 +1141,42 @@ async function saveGroupWarnings() {
   showToast('Warnings config saved!', 'success');
 }
 
+async function saveGroupCommands() {
+  if (!currentModGroup) return showToast('Please select a group', 'warning');
+
+  const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
+  const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
+  const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
+
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.commands = { enabled, prefix, mute_action };
+
+  await saveGroupConfig(groupConfig);
+  showToast('Commands configuration saved!', 'success');
+}
+
+async function clearUserWarnInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/warn/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Warnings cleared for @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to clear warnings', 'danger');
+  }
+}
+
+// Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
+
 async function saveGroupLocks() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
@@ -1185,34 +1222,6 @@ async function addBlacklistWord() {
   }, 50);
 }
 
-async function saveGroupBlacklist() {
-  if (!currentModGroup) return;
-  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  await saveGroupConfig(groupConfig);
-  showToast('Blacklist saved!', 'success');
-}
-
-async function addFilterRule() {
-  const trig = document.getElementById('mod-filter-trigger')?.value.trim();
-  const resp = document.getElementById('mod-filter-response')?.value.trim();
-  if (!trig || !resp || !currentModGroup) return;
-
-  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.filters = groupConfig.filters || [];
-  groupConfig.filters.push({ trigger: trig, response: resp, is_regex: false });
-
-  document.getElementById('mod-filter-trigger').value = '';
-  document.getElementById('mod-filter-response').value = '';
-
-  await saveGroupConfig(groupConfig);
-  showToast('Filter added!', 'success');
-  selectModerationGroup(currentModGroup);
-  setTimeout(() => {
-    const el = document.getElementById('mod-filter-trigger');
-    if (el) el.focus();
-  }, 50);
-}
-
 async function removeBlacklistWord(idx) {
   if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
   const groupConfig = modStoreCache.groups[currentModGroup];
@@ -1222,24 +1231,12 @@ async function removeBlacklistWord(idx) {
     selectModerationGroup(currentModGroup);
   }
 }
-window.removeBlacklistWord = removeBlacklistWord;
 
-async function removeFilterRule(idx) {
-  if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
-  const groupConfig = modStoreCache.groups[currentModGroup];
-  if (groupConfig.filters) {
-    groupConfig.filters.splice(idx, 1);
-    await saveGroupConfig(groupConfig);
-    selectModerationGroup(currentModGroup);
-  }
-}
-window.removeFilterRule = removeFilterRule;
-
-async function saveGroupFilters() {
+async function saveGroupBlacklist() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
-  showToast('Filters saved!', 'success');
+  showToast('Blacklist saved!', 'success');
 }
 
 async function saveGroupAntispam() {
@@ -1263,58 +1260,45 @@ async function saveGroupAntispam() {
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }
 
-async function saveGroupFederation() {
-  if (!currentModGroup) return;
-  const fedId = document.getElementById('mod-fed-select')?.value || '';
+// Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
+
+async function addFilterRule() {
+  const trig = document.getElementById('mod-filter-trigger')?.value.trim();
+  const resp = document.getElementById('mod-filter-response')?.value.trim();
+  if (!trig || !resp || !currentModGroup) return;
+
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.federation_id = fedId;
+  groupConfig.filters = groupConfig.filters || [];
+  groupConfig.filters.push({ trigger: trig, response: resp, is_regex: false });
+
+  document.getElementById('mod-filter-trigger').value = '';
+  document.getElementById('mod-filter-response').value = '';
+
   await saveGroupConfig(groupConfig);
-  showToast('Federation settings saved!', 'success');
+  showToast('Filter added!', 'success');
+  selectModerationGroup(currentModGroup);
+  setTimeout(() => {
+    const el = document.getElementById('mod-filter-trigger');
+    if (el) el.focus();
+  }, 50);
 }
 
-async function addFedBlacklistWord() {
-  const inp = document.getElementById('mod-fed-blacklist-new');
-  if (!inp || !inp.value.trim() || !modStoreCache?.federations) return;
-  const word = inp.value.trim();
-  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
-  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
-  if (fed) {
-    fed.shared_blacklist = fed.shared_blacklist || [];
-    if (!fed.shared_blacklist.includes(word)) {
-      fed.shared_blacklist.push(word);
-    }
-    inp.value = '';
-    await fetch(basePath + 'api/moderation/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ federations: modStoreCache.federations }),
-    });
-    showToast('Federation pattern added!', 'success');
-    loadModerationConfig();
-    setTimeout(() => {
-      const el = document.getElementById('mod-fed-blacklist-new');
-      if (el) el.focus();
-    }, 50);
+async function removeFilterRule(idx) {
+  if (!currentModGroup || !modStoreCache?.groups?.[currentModGroup]) return;
+  const groupConfig = modStoreCache.groups[currentModGroup];
+  if (groupConfig.filters) {
+    groupConfig.filters.splice(idx, 1);
+    await saveGroupConfig(groupConfig);
+    selectModerationGroup(currentModGroup);
   }
 }
-window.addFedBlacklistWord = addFedBlacklistWord;
 
-async function removeFedBlacklistWord(idx) {
-  if (!modStoreCache?.federations) return;
-  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
-  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
-  if (fed && fed.shared_blacklist) {
-    fed.shared_blacklist.splice(idx, 1);
-    await fetch(basePath + 'api/moderation/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ federations: modStoreCache.federations }),
-    });
-    showToast('Federation pattern removed', 'info');
-    loadModerationConfig();
-  }
+async function saveGroupFilters() {
+  if (!currentModGroup) return;
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  await saveGroupConfig(groupConfig);
+  showToast('Filters saved!', 'success');
 }
-window.removeFedBlacklistWord = removeFedBlacklistWord;
 
 async function saveGroupAiConfig() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
@@ -1351,6 +1335,59 @@ async function saveGroupAiConfig() {
     }
   } catch (e) {
     showToast('Failed to save AI settings', 'danger');
+  }
+}
+
+// Moderation Federation & Import/Export
+
+async function saveGroupFederation() {
+  if (!currentModGroup) return;
+  const fedId = document.getElementById('mod-fed-select')?.value || '';
+  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.federation_id = fedId;
+  await saveGroupConfig(groupConfig);
+  showToast('Federation settings saved!', 'success');
+}
+
+async function addFedBlacklistWord() {
+  const inp = document.getElementById('mod-fed-blacklist-new');
+  if (!inp || !inp.value.trim() || !modStoreCache?.federations) return;
+  const word = inp.value.trim();
+  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  if (fed) {
+    fed.shared_blacklist = fed.shared_blacklist || [];
+    if (!fed.shared_blacklist.includes(word)) {
+      fed.shared_blacklist.push(word);
+    }
+    inp.value = '';
+    await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    showToast('Federation pattern added!', 'success');
+    loadModerationConfig();
+    setTimeout(() => {
+      const el = document.getElementById('mod-fed-blacklist-new');
+      if (el) el.focus();
+    }, 50);
+  }
+}
+
+async function removeFedBlacklistWord(idx) {
+  if (!modStoreCache?.federations) return;
+  const fedId = document.getElementById('mod-fed-select')?.value || 'fed_global_default';
+  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  if (fed && fed.shared_blacklist) {
+    fed.shared_blacklist.splice(idx, 1);
+    await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    showToast('Federation pattern removed', 'info');
+    loadModerationConfig();
   }
 }
 
@@ -1419,26 +1456,18 @@ async function importGroupModerationConfig() {
   }
 }
 
-async function clearUserWarnInUi(userId) {
-  if (!currentModGroup || !userId) return;
-  try {
-    const res = await fetch(
-      basePath +
-        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/warn/${encodeURIComponent(userId)}`,
-      {
-        method: 'DELETE',
-      }
-    );
-    if (res.ok) {
-      showToast(`Warnings cleared for @${userId}`, 'success');
-      loadModerationConfig();
-      setTimeout(() => selectModerationGroup(currentModGroup), 200);
-    }
-  } catch (e) {
-    showToast('Failed to clear warnings', 'danger');
-  }
-}
-
+// Global Window Exports
+window.isNewerVersion = isNewerVersion;
+    window._latestReleaseData = data;
+window.loadLogs = loadLogs;
+    window.URL.revokeObjectURL(url);
+  window.history.replaceState({}, '', url);
+    window.updateRawLogsLink();
+window.saveGlobalRulesInline = saveGlobalRulesInline;
+window.removeBlacklistWord = removeBlacklistWord;
+window.removeFilterRule = removeFilterRule;
+window.addFedBlacklistWord = addFedBlacklistWord;
+window.removeFedBlacklistWord = removeFedBlacklistWord;
 window.updateDashboard = updateDashboard;
 window.downloadDebugInfo = downloadDebugInfo;
 window.restartSession = restartSession;
@@ -1450,7 +1479,6 @@ window.openUpdateModal = openUpdateModal;
 window.closeUpdateModal = closeUpdateModal;
 window.openDependencyModal = openDependencyModal;
 window.closeDependencyModal = closeDependencyModal;
-
 window.loadModerationConfig = loadModerationConfig;
 window.toggleGlobalModeration = toggleGlobalModeration;
 window.selectModerationGroup = selectModerationGroup;
@@ -1467,22 +1495,7 @@ window.saveGroupFilters = saveGroupFilters;
 window.saveGroupAntispam = saveGroupAntispam;
 window.saveGroupFederation = saveGroupFederation;
 window.saveGroupAiConfig = saveGroupAiConfig;
-
-async function saveGroupCommands() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
-
-  const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
-  const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
-  const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
-
-  const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
-  groupConfig.commands = { enabled, prefix, mute_action };
-
-  await saveGroupConfig(groupConfig);
-  showToast('Commands configuration saved!', 'success');
-}
 window.saveGroupCommands = saveGroupCommands;
-
 window.openGlobalRulesModal = openGlobalRulesModal;
 window.closeGlobalRulesModal = closeGlobalRulesModal;
 window.saveGlobalRulesFromModal = saveGlobalRulesFromModal;

@@ -466,7 +466,12 @@ export function renderDashboard(sessionId) {
     var basePath = getBasePath();
 
     ${fs.readFileSync(path.join(uiDir, 'helpers.js'), 'utf8')}
-    ${fs.readFileSync(path.join(uiDir, 'dashboard.js'), 'utf8')}
+    ${fs
+      .readdirSync(path.join(uiDir, 'dashboard'))
+      .filter((f) => f.endsWith('.js'))
+      .sort()
+      .map((f) => fs.readFileSync(path.join(uiDir, 'dashboard', f), 'utf8'))
+      .join('\n\n')}
     ${fs.readFileSync(path.join(uiDir, 'chat.js'), 'utf8')}
 
     const navItems = document.querySelectorAll('.nav-item');
