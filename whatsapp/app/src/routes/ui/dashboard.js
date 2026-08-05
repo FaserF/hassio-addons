@@ -742,24 +742,38 @@ async function loadModerationConfig() {
       }
     }
 
-    // Populate group select dropdown from live chat list
+    // Populate group select dropdown from live chat list and moderation store
     const select = document.getElementById('mod-group-select');
     if (select) {
-      let groups = [];
+      const groupMap = new Map();
       if (chatsRes.ok) {
         const chats = await chatsRes.json();
         if (Array.isArray(chats)) {
-          groups = chats.filter((c) => c.id && c.id.endsWith('@g.us'));
+          chats.forEach((c) => {
+            const jid = c.jid || c.id;
+            if (jid && jid.endsWith('@g.us')) {
+              groupMap.set(jid, { id: jid, name: c.name || jid });
+            }
+          });
         }
       }
+      // Also include any groups already saved in the moderation store
+      if (modStoreCache && modStoreCache.groups) {
+        Object.keys(modStoreCache.groups).forEach((gId) => {
+          if (gId.endsWith('@g.us') && !groupMap.has(gId)) {
+            groupMap.set(gId, { id: gId, name: `Group (${gId.split('@')[0]})` });
+          }
+        });
+      }
+
+      const groups = Array.from(groupMap.values());
       const preserved = select.value;
       let opts = '<option value="">Select a group...</option>';
       groups.forEach((g) => {
-        const label = g.name || g.id;
-        opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${label}</option>`;
+        opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${g.name}</option>`;
       });
       select.innerHTML = opts;
-      if (preserved && groups.some((g) => g.id === preserved)) {
+      if (preserved && groupMap.has(preserved)) {
         select.value = preserved;
       }
     }
