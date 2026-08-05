@@ -11,6 +11,8 @@ import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
   executePenalty,
+  isSelfParticipant,
+  generateBotWelcomeMessage,
 } from '../src/whatsapp/moderation/engine.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
@@ -49,11 +51,12 @@ try {
   // Mock session object
   const mockSession = {
     sock: {
+      user: { id: '491761234567@s.whatsapp.net' },
       sendMessage: async () => ({ key: { id: 'test' } }),
       sendMessageAck: async () => {},
       groupParticipantsUpdate: async () => {},
     },
-    stats: { sent: 0, received: 0, failed: 0 },
+    stats: { my_number: '491761234567', sent: 0, received: 0, failed: 0 },
     recentSent: [],
     recentReceived: [],
     recentFailures: [],
@@ -208,6 +211,52 @@ try {
     participants: ['491769999999@s.whatsapp.net'],
   });
   console.log('✅ PASSED: Group ban record and auto-kick on rejoin verified successfully');
+
+  // Test 10: Bot Join Welcome Message & Self Participant Detection
+  assert.strictEqual(
+    isSelfParticipant('491761234567@s.whatsapp.net', mockSession),
+    true,
+    'Bot self JID should be recognized'
+  );
+
+  const directGenText = generateBotWelcomeMessage(groupConfig);
+  assert(directGenText.includes('Home Assistant WhatsApp Bot Connected!'), 'Direct generator test');
+
+  let botWelcomeSent = false;
+  let botWelcomeText = '';
+  const mockSessionBotJoin = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        botWelcomeSent = true;
+        botWelcomeText = content.text;
+        return { key: { id: 'botWelcomeMsg1' } };
+      },
+    },
+  };
+
+  await handleModerationParticipantUpdate(mockSessionBotJoin, {
+    id: '1203630123456789@g.us',
+    action: 'add',
+    participants: ['491761234567@s.whatsapp.net'],
+  });
+
+  assert.strictEqual(
+    botWelcomeSent,
+    true,
+    'Bot welcome message should be sent when bot joins group'
+  );
+  assert(botWelcomeText.includes('Home Assistant WhatsApp Bot Connected!'), 'Should contain title');
+  assert(
+    botWelcomeText.includes('https://github.com/FaserF/ha-whatsapp'),
+    'Should contain docs link'
+  );
+  assert(
+    botWelcomeText.includes('🔴 DISABLED') || botWelcomeText.includes('🟢 ENABLED'),
+    'Should state moderation status'
+  );
+  console.log('✅ PASSED: Bot group join welcome message verified successfully');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

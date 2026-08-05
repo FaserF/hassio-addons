@@ -12,6 +12,67 @@ function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;
 }
 
+export function isSelfParticipant(participantJid, session) {
+  if (!participantJid || !session?.sock?.user) return false;
+  const targetNorm = participantJid.replace(/:.*@/, '@');
+  const targetUser = targetNorm.split('@')[0];
+  const targetDigits = targetUser.replace(/\D/g, '');
+
+  const myUser = session.sock.user;
+  const myId = myUser.id ? myUser.id.replace(/:.*@/, '@') : '';
+  const myLid = myUser.lid ? myUser.lid.replace(/:.*@/, '@') : '';
+
+  if (targetNorm === myId || (myLid && targetNorm === myLid)) return true;
+  if (myId && targetUser === myId.split('@')[0]) return true;
+  if (myLid && targetUser === myLid.split('@')[0]) return true;
+
+  if (session.stats?.my_number) {
+    const myNumDigits = session.stats.my_number.replace(/\D/g, '');
+    if (
+      myNumDigits &&
+      targetDigits &&
+      (myNumDigits.endsWith(targetDigits) || targetDigits.endsWith(myNumDigits))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function generateBotWelcomeMessage(config, _store) {
+  const isModEnabled = Boolean(config.enabled);
+  const prefix = config.commands?.prefix || '!';
+
+  return (
+    `🤖 *Home Assistant WhatsApp Bot Connected!*\n\n` +
+    `Hello everyone! 👋 I am the WhatsApp Gateway & Group Moderation Bot for Home Assistant.\n\n` +
+    `ℹ️ *About Me:*\n` +
+    `I connect your WhatsApp group to Home Assistant automations, while protecting this group with automated security & moderation tools.\n\n` +
+    `🛡️ *Group Moderation Status:*\n` +
+    `Moderation for this group is: *${isModEnabled ? '🟢 ENABLED' : '🔴 DISABLED'}*\n\n` +
+    `${
+      isModEnabled
+        ? `✅ *Active features in this group:*\n` +
+          `• 📜 Rules enforcement & Auto-welcome\n` +
+          `• 🛡️ Anti-Raid & Flood protection against spam bots\n` +
+          `• 🔒 Content locks (Media, Links, Invites, RTL text)\n` +
+          `• ⚠️ Warning system (\`${prefix}warn\`, \`${prefix}unwarn\`, \`${prefix}warns\`) & Penalties (Mute/Kick/Ban)\n` +
+          `• 🚫 Local & Cross-Group Ban Federation (\`${prefix}ban\`, \`${prefix}unban\`)\n` +
+          `• 🤖 Auto-responder filters & Custom commands (e.g. \`${prefix}wifi\`)\n` +
+          `• 🧠 Gemini AI Assistant & Auto-Translation`
+        : `💡 *Moderation is currently disabled for this group.*\n` +
+          `Administrators can enable and configure moderation features anytime via the Web Dashboard or by turning on group moderation.`
+    }\n\n` +
+    `⚙️ *Useful Commands:*\n` +
+    `• Type \`${prefix}help\` to see available group commands\n` +
+    `• Type \`${prefix}rules\` to view group rules\n` +
+    `• Type \`${prefix}admins\` to see group administrators\n` +
+    `• Type \`${prefix}report <reason>\` to report bad behavior to group admins\n\n` +
+    `📖 *Documentation & Setup:*\n` +
+    `https://github.com/FaserF/ha-whatsapp`
+  );
+}
+
 export async function sendMissingAdminWarning(session, groupId, attemptedAction = '') {
   const text =
     `⚠️ *Bot Missing Admin Permissions!*\n\n` +
@@ -574,6 +635,13 @@ export async function handleModerationParticipantUpdate(session, update) {
 
     // 2. Check participants against Group Ban & Global Ban Federation & Greetings
     for (const participantJid of participants) {
+      // If the bot itself joined the group, post the Bot Welcome & Capability message
+      if (isSelfParticipant(participantJid, session)) {
+        const botWelcomeText = generateBotWelcomeMessage(config, store);
+        await reply(session, groupId, { text: botWelcomeText });
+        continue;
+      }
+
       const userId = participantJid.split('@')[0];
       const cleanDigits = userId.replace(/\D/g, '');
 
