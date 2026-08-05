@@ -963,6 +963,21 @@ function selectModerationGroup(groupId) {
   const transMode = document.getElementById('mod-trans-mode');
   if (transMode) transMode.value = config.translation?.mode || 'manual';
 
+  // Anti-Spam & Anti-Raid
+  const floodE = document.getElementById('mod-flood-enabled');
+  if (floodE) floodE.checked = Boolean(config.antispam?.flood_protection?.enabled);
+  const floodMax = document.getElementById('mod-flood-max');
+  if (floodMax) floodMax.value = config.antispam?.flood_protection?.max_messages || 5;
+  const floodWin = document.getElementById('mod-flood-win');
+  if (floodWin) floodWin.value = config.antispam?.flood_protection?.window_seconds || 5;
+
+  const raidE = document.getElementById('mod-antiraid-enabled');
+  if (raidE) raidE.checked = Boolean(config.antispam?.anti_raid?.enabled);
+  const raidMax = document.getElementById('mod-antiraid-max');
+  if (raidMax) raidMax.value = config.antispam?.anti_raid?.max_joins || 5;
+  const raidWin = document.getElementById('mod-antiraid-win');
+  if (raidWin) raidWin.value = config.antispam?.anti_raid?.window_seconds || 10;
+
   // Locks
   const lockKeys = [
     'image',
