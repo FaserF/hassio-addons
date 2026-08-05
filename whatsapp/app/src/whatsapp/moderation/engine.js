@@ -121,6 +121,9 @@ export async function handleModerationMessage(session, event) {
   const store = loadModerationStore();
   if (!store.global_enabled) return false;
 
+  // Never moderate or auto-respond to outgoing bot messages (prevents self-loop)
+  if (event.raw?.key?.fromMe) return false;
+
   const groupId = event.sender;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 

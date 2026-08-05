@@ -112,6 +112,17 @@ try {
   assert.strictEqual(filterHandled, true, 'Auto-responder filter should handle trigger word');
   console.log('✅ PASSED: Auto-responder filter correctly matched trigger');
 
+  // Verify fromMe loop prevention
+  const eventSelfMsg = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491761234567',
+    content: 'Test response containing trigger Test',
+    raw: { key: { id: 'msgSelf', fromMe: true } },
+  };
+  const selfHandled = await handleModerationMessage(mockSession, eventSelfMsg);
+  assert.strictEqual(selfHandled, false, 'Self message (fromMe) should be ignored to prevent loop');
+  console.log('✅ PASSED: Outgoing bot message (fromMe) correctly ignored to prevent loop');
+
   const eventNote = {
     sender: '1203630123456789@g.us',
     sender_number: '491761234567',
