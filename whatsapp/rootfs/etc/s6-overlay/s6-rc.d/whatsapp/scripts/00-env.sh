@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bashio
 
+# shellcheck shell=bash
+
 # Load build-time env vars (BAILEYS_VERSION, FASTAPI_VERSION, etc.) into this shell
+
 # shellcheck disable=SC1091
 if [ -f /etc/environment ]; then
 	source /etc/environment 2>/dev/null || true

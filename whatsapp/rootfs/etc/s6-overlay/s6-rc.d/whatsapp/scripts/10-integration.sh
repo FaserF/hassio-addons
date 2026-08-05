@@ -1,5 +1,7 @@
 #!/usr/bin/with-contenv bashio
 
+# shellcheck shell=bash
+
 # Function to compare semantic versions
 version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
@@ -132,7 +134,7 @@ else
 	# Determine Latest Versions based on channel
 	TARGET_TAG=""
 	if [ "$RELEASES_JSON" != "[]" ]; then
-		if [ "$CHANNEL" == "edge" ]; then
+		if [ "$CHANNEL" = "edge" ]; then
 			# Edge: Latest release (whether stable or beta)
 			TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
 		else
@@ -141,7 +143,7 @@ else
 		fi
 
 		# Fallback: If stable search failed but we have releases, ensure we dont leave TARGET_TAG empty if possible
-		if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" == "stable" ]; then
+		if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" = "stable" ]; then
 			if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
 				fallback=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name')
 				bashio::log.info "No stable release found, falling back to latest tag: $fallback"
@@ -211,7 +213,7 @@ else
 				bashio::log.warning "Could not determine target tag from GitHub releases."
 			fi
 
-			if [ "$UPDATE_NEEDED" == "true" ]; then
+			if [ "$UPDATE_NEEDED" = "true" ]; then
 				bashio::log.info "⬆️  Auto-updating to $TARGET_TAG..."
 				install_integration "$TARGET_TAG" "true"
 			else
@@ -220,3 +222,4 @@ else
 		fi
 	fi
 fi
+

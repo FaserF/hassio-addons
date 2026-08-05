@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bashio
 
+# shellcheck shell=bash
+
 cd /opt/whatsapp
+
 bashio::log.info "Running pre-flight diagnostics..."
 
 THROTTLE_FILE="/data/infra_failure_throttle"
