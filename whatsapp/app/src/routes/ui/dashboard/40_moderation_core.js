@@ -134,14 +134,14 @@ function markDirty(panelId) {
   _updateDirtyIndicator(panelId);
 }
 
-/** Call this after a successful save to clear dirty state. */
+/** Call this after a successful save or discard to clear dirty state. */
 function markClean() {
   _dirty.isDirty = false;
   _dirty.panelId = null;
   _dirty.panelLabel = null;
   _dirty.saveFn = null;
   _dirty.onProceed = null;
-  _formSnapshot = null;
+  _captureSnapshot();
   document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
 }
 
@@ -191,6 +191,18 @@ function unsavedModalCancel() {
 // Called by modal button "Discard"
 function unsavedModalDiscard() {
   const proceed = _dirty.onProceed;
+  // Revert UI fields back to the last saved snapshot values
+  if (_formSnapshot) {
+    for (const id of TRACKED_FIELD_IDS) {
+      const el = document.getElementById(id);
+      if (!el || _formSnapshot[id] === undefined) continue;
+      if (el.type === 'checkbox') {
+        el.checked = Boolean(_formSnapshot[id]);
+      } else {
+        el.value = _formSnapshot[id];
+      }
+    }
+  }
   markClean();
   _closeUnsavedModal();
   if (proceed) proceed();
