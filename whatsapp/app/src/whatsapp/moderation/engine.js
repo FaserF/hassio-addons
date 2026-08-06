@@ -1018,7 +1018,10 @@ export async function handleModerationParticipantUpdate(session, update) {
                     userIsAdmin = true;
                   }
                 } catch (metaErr) {
-                  logger.debug({ error: metaErr.message }, 'Failed to fetch live group metadata for captcha admin check');
+                  logger.debug(
+                    { error: metaErr.message },
+                    'Failed to fetch live group metadata for captcha admin check'
+                  );
                 }
               }
 
