@@ -222,8 +222,97 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await reply(session, targetJid, { delete: toDeleteMsg.key });
       await delay(1000);
       await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [7/7]*: Cleanup (Delete) verified. All tests finished!',
+        text: '🧪 *Diagnostic Test [7/7]*: Cleanup (Delete) verified. All basic tests finished!',
       });
+    }
+
+    // 9. Moderation Feature Diagnostic Summary for all Groups with Moderation Enabled
+    try {
+      const { loadModerationStore } = await import('./moderation/store.js');
+      const store = loadModerationStore();
+
+      if (store && store.global_enabled && store.groups) {
+        const modGroupEntries = Object.entries(store.groups).filter(
+          ([_, cfg]) => cfg && cfg.enabled
+        );
+
+        if (modGroupEntries.length === 0) {
+          await reply(session, targetJid, {
+            text: '🛡️ *Moderation Diagnostic:* Global Moderation Engine is Active, but no specific group has moderation enabled.',
+          });
+        } else {
+          for (const [groupId, cfg] of modGroupEntries) {
+            const prefix = cfg.commands?.prefix || '!';
+            const disabledCmds = new Set(cfg.commands?.disabled_commands || []);
+            const customCmds = cfg.commands?.custom_commands || [];
+
+            // Built-in commands list
+            const allBuiltins = [
+              'ping', 'help', 'id', 'rules', 'warn', 'warns', 'unwarn', 'kick', 'ban',
+              'mute', 'unmute', 'lock', 'unlock', 'locks', 'setrules', 'promote', 'demote',
+              'approve', 'unapprove', 'report', 'setwelcome', 'welcome', 'setgoodbye', 'goodbye',
+              'save', 'get', 'notes', 'filter', 'stop', 'filters', 'info', 'adminlist', 'locktypes',
+              'del', 'tban', 'tmute', 'setlang', 'translate'
+            ];
+
+            const activeBuiltins = allBuiltins.filter((c) => !disabledCmds.has(c));
+
+            let groupTestMsg = `🛡️ *Moderation Test Suite for Group \`${groupId}\`*\n\n`;
+            groupTestMsg += `Copy any line below and send it into group \`${groupId}\` to test:\n\n`;
+
+            // Active Built-in Commands Test
+            if (activeBuiltins.length > 0) {
+              groupTestMsg += `🟢 *Allowed Commands:*\n`;
+              groupTestMsg += activeBuiltins.map((c) => `${prefix}${c}`).join('\n') + `\n\n`;
+            }
+
+            // Disabled Commands Test
+            if (disabledCmds.size > 0) {
+              groupTestMsg += `🔴 *Disabled Commands (Test restriction message):*\n`;
+              groupTestMsg += Array.from(disabledCmds).map((c) => `${prefix}${c}`).join('\n') + `\n\n`;
+            }
+
+            // Custom Mapped Commands Test
+            if (customCmds.length > 0) {
+              groupTestMsg += `⚡ *Custom Commands:*\n`;
+              groupTestMsg += customCmds.map((c) => `${c.command}`).join('\n') + `\n\n`;
+            }
+
+            // Auto-Responder Filters Test
+            if (cfg.filters && cfg.filters.length > 0) {
+              groupTestMsg += `💬 *Auto-Responder Filter Triggers:*\n`;
+              groupTestMsg += cfg.filters.map((f) => `${f.trigger}`).join('\n') + `\n\n`;
+            }
+
+            // Saved Notes Test
+            if (cfg.notes && Object.keys(cfg.notes).length > 0) {
+              groupTestMsg += `📌 *Saved Notes Triggers:*\n`;
+              groupTestMsg += Object.keys(cfg.notes).map((n) => `${prefix}get #${n}`).join('\n') + `\n\n`;
+            }
+
+            // Blacklist Word Triggers
+            if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
+              groupTestMsg += `⚠️ *Blacklist Word Triggers (Tests ${cfg.blacklist.action}):*\n`;
+              groupTestMsg += cfg.blacklist.words.join('\n') + `\n\n`;
+            }
+
+            // Content Locks Test Instructions
+            if (cfg.locks) {
+              const activeLocks = Object.entries(cfg.locks).filter(([_, lock]) => lock && lock.enabled);
+              if (activeLocks.length > 0) {
+                groupTestMsg += `🔒 *Active Content Locks (Test by sending these media types):*\n`;
+                groupTestMsg += activeLocks.map(([type, lock]) => `• ${type} (${lock.action})`).join('\n') + `\n\n`;
+              }
+            }
+
+            // Send test block directly to the diagnostic target chat (admin number / self chat)
+            await delay(1000);
+            await reply(session, targetJid, { text: groupTestMsg });
+          }
+        }
+      }
+    } catch (modErr) {
+      logger.warn({ error: modErr.message }, 'Failed to append moderation diagnostic report');
     }
 
     addLogFn(
