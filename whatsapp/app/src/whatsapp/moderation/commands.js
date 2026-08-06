@@ -1,5 +1,5 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from './store.js';
-import { executePenalty, issueUserWarning, sendMissingAdminWarning } from './engine.js';
+import { executePenalty, issueUserWarning, sendMissingAdminWarning, isSelfParticipant } from './engine.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
@@ -273,12 +273,16 @@ registry.register(
         : '';
     const targetMentionStr = targetLabel ? ` against ${targetLabel}` : '';
 
+    // Filter out the bot itself from group admin notifications/DMs unless the bot is the only admin
+    const nonBotAdmins = admins.filter((a) => !isSelfParticipant(a, session));
+    const targetAdmins = nonBotAdmins.length > 0 ? nonBotAdmins : admins;
+
     await reply(
       session,
       groupId,
       {
         text: `🚨 *Report from ${reporterLabel}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
-        mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : []), ...admins],
+        mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : []), ...targetAdmins],
       },
       quotedMsg
     );
@@ -293,11 +297,9 @@ registry.register(
       `⏰ *Timestamp:* ${new Date(reportItem.timestamp).toLocaleString()}\n` +
       `👥 *Group ID:* \`${groupId}\``;
 
-    for (const adminJid of admins) {
-      // Don't DM the bot itself
-      const selfPn = session.stats?.my_number || session.sock?.user?.id?.split(':')[0];
-      const adminPn = adminJid.split('@')[0];
-      if (selfPn && adminPn === selfPn) continue;
+    for (const adminJid of targetAdmins) {
+      // Don't DM the bot itself if there are other human admins
+      if (nonBotAdmins.length > 0 && isSelfParticipant(adminJid, session)) continue;
 
       try {
         await reply(session, adminJid, {

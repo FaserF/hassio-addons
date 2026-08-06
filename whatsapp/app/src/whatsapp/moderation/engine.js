@@ -12,6 +12,7 @@ import {
   resolveUserDisplayName,
   normalizeJid,
   isAdmin,
+  isSameUser,
 } from '../../utils/security.js';
 
 // In-memory sliding window trackers
@@ -309,32 +310,15 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       if (session?.sock?.groupMetadata) {
         try {
           const meta = await session.sock.groupMetadata(groupId);
-          const myUser = session.sock.user;
-          const myId = myUser?.id ? normalizeJid(myUser.id) : '';
-          const myLid = myUser?.lid ? normalizeJid(myUser.lid) : '';
-          const myDigits = myId.split('@')[0].replace(/\D/g, '');
-          const targetDigits = userId.replace(/\D/g, '');
-
           for (const p of meta?.participants || []) {
-            const pId = p.id ? normalizeJid(p.id) : '';
-            const pDigits = pId.split('@')[0].replace(/\D/g, '');
-
             const isAdminRole = p.admin === 'admin' || p.admin === 'superadmin';
 
-            // Check bot status
-            if (
-              (myDigits && pDigits && pDigits === myDigits) ||
-              (myId && pId === myId) ||
-              (myLid && pId === myLid)
-            ) {
+            // Check bot status using isSelfParticipant (handles LID, PN, stats.my_number)
+            if (isSelfParticipant(p.id, session)) {
               if (isAdminRole) isBotAdmin = true;
             }
             // Check target user status
-            if (
-              (targetDigits && pDigits && pDigits === targetDigits) ||
-              (userJid && pId === userJid) ||
-              (userId && pId.split('@')[0] === userId)
-            ) {
+            if (isSameUser(p.id, userId, session)) {
               if (isAdminRole) isTargetAdmin = true;
             }
           }
