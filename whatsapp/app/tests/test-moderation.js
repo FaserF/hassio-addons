@@ -307,9 +307,18 @@ try {
     directGenText.includes('Hello! I am your Moderation & Assistant Bot.'),
     'Direct generator test text'
   );
-  assert(
-    directGenText.includes('https://faserf.github.io/ha-whatsapp/'),
-    'Direct generator documentation link'
+  const directGenUrlMatch = directGenText.match(/https?:\/\/[^\s]+/);
+  assert(directGenUrlMatch, 'Direct generator should contain a URL');
+  const directGenUrl = new URL(directGenUrlMatch[0]);
+  assert.strictEqual(
+    directGenUrl.hostname,
+    'faserf.github.io',
+    'Direct generator documentation link hostname'
+  );
+  assert.strictEqual(
+    directGenUrl.pathname,
+    '/ha-whatsapp/',
+    'Direct generator documentation link path'
   );
 
   let botWelcomeSent = false;
@@ -333,14 +342,18 @@ try {
   });
 
   assert.strictEqual(botWelcomeSent, true, 'Bot welcome message should be sent on bot join');
-  assert(
-    botWelcomeText.includes('https://faserf.github.io/ha-whatsapp/'),
-    'Bot welcome message should include documentation link'
+  const botWelcomeUrlMatch = botWelcomeText.match(/https?:\/\/[^\s]+/);
+  assert(botWelcomeUrlMatch, 'Bot welcome message should include a URL');
+  const botWelcomeUrl = new URL(botWelcomeUrlMatch[0]);
+  assert.strictEqual(
+    botWelcomeUrl.hostname,
+    'faserf.github.io',
+    'Bot welcome message documentation link hostname'
   );
-  assert(
-    new URL(botWelcomeText.match(/https?:\/\/[^\s]+/)?.[0] || 'http://localhost').hostname ===
-      'faserf.github.io',
-    'Should contain valid docs link'
+  assert.strictEqual(
+    botWelcomeUrl.pathname,
+    '/ha-whatsapp/',
+    'Bot welcome message documentation link path'
   );
   console.log('✅ PASSED: Bot Welcome message on join verified successfully');
   // Test 11: isSameUser and LID <-> PN Resolution
