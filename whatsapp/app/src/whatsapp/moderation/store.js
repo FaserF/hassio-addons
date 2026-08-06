@@ -117,7 +117,8 @@ export function getDefaultGroupConfig() {
       goodbye_enabled: false,
       goodbye_message: 'Goodbye {user}!',
       captcha_enabled: false,
-      captcha_mode: 'button', // 'button' | 'math' | 'text'
+      captcha_mode: 'math', // 'math' | 'code' | 'button'
+      captcha_target: 'private', // 'private' | 'group'
       captcha_timeout_seconds: 120,
       clean_welcome: false,
     },

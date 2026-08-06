@@ -1119,27 +1119,31 @@ export async function handleModerationParticipantUpdate(session, update) {
         const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         const mentionJid = targetPrivateJid;
 
+        const captchaTargetMode = config.greetings?.captcha_target || 'private';
         let sendResult = null;
         let sentViaDM = false;
 
-        // Attempt sending Welcome & Captcha via Private Direct Message first
-        try {
-          sendResult = await session.sock.sendMessage(targetPrivateJid, {
-            text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
-          });
-          if (sendResult) sentViaDM = true;
-        } catch (dmErr) {
-          logger.info(
-            { error: dmErr.message, targetPrivateJid },
-            'Private DM delivery failed, falling back to group message'
-          );
+        // Attempt sending Welcome & Captcha via Private DM if configured as 'private' (default)
+        if (captchaTargetMode === 'private') {
+          try {
+            sendResult = await session.sock.sendMessage(targetPrivateJid, {
+              text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
+            });
+            if (sendResult) sentViaDM = true;
+          } catch (dmErr) {
+            logger.info(
+              { error: dmErr.message, targetPrivateJid },
+              'Private DM delivery failed, falling back to group message'
+            );
+          }
         }
 
-        // Fallback to Group Message if Private Chat was unavailable
+        // Send into Group if captcha_target is 'group' OR if Private DM delivery failed (fallback)
         if (!sentViaDM) {
-          const groupNotice = isCaptchaEnabled
-            ? `⚠️ _Direct message to ${resolveUserDisplayName(userId, session)} could not be delivered. Please verify here in the group:_\n\n${fullText}`
-            : fullText;
+          const groupNotice =
+            captchaTargetMode === 'private' && isCaptchaEnabled
+              ? `⚠️ _Direct message to ${resolveUserDisplayName(userId, session)} could not be delivered. Please verify here in the group:_\n\n${fullText}`
+              : fullText;
 
           sendResult = await reply(
             session,
