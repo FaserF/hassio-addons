@@ -263,11 +263,44 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
             // Built-in commands list
             const allBuiltins = [
-              'ping', 'help', 'id', 'rules', 'warn', 'warns', 'unwarn', 'kick', 'ban',
-              'mute', 'unmute', 'lock', 'unlock', 'locks', 'setrules', 'promote', 'demote',
-              'approve', 'unapprove', 'report', 'setwelcome', 'welcome', 'setgoodbye', 'goodbye',
-              'save', 'get', 'notes', 'filter', 'stop', 'filters', 'info', 'adminlist', 'locktypes',
-              'del', 'tban', 'tmute', 'setlang', 'translate',
+              'ping',
+              'help',
+              'id',
+              'rules',
+              'warn',
+              'warns',
+              'unwarn',
+              'kick',
+              'ban',
+              'mute',
+              'unmute',
+              'lock',
+              'unlock',
+              'locks',
+              'setrules',
+              'promote',
+              'demote',
+              'approve',
+              'unapprove',
+              'report',
+              'setwelcome',
+              'welcome',
+              'setgoodbye',
+              'goodbye',
+              'save',
+              'get',
+              'notes',
+              'filter',
+              'stop',
+              'filters',
+              'info',
+              'adminlist',
+              'locktypes',
+              'del',
+              'tban',
+              'tmute',
+              'setlang',
+              'translate',
             ];
 
             const activeBuiltins = allBuiltins.filter((c) => !disabledCmds.has(c));
@@ -276,7 +309,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 1. Individual Allowed Commands
             if (activeBuiltins.length > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*`,
+              });
               for (const cmd of activeBuiltins.slice(0, 15)) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${prefix}${cmd}` });
@@ -286,7 +321,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 2. Individual Disabled Commands
             if (disabledCmds.size > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*`,
+              });
               for (const cmd of Array.from(disabledCmds)) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${prefix}${cmd}` });
@@ -296,7 +333,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 3. Individual Custom Commands
             if (customCmds.length > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*`,
+              });
               for (const c of customCmds) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${c.command}` });
@@ -306,7 +345,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 4. Individual Auto-Responder Filters
             if (cfg.filters && cfg.filters.length > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*`,
+              });
               for (const f of cfg.filters) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${f.trigger}` });
@@ -316,7 +357,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 5. Individual Saved Notes
             if (cfg.notes && Object.keys(cfg.notes).length > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*`,
+              });
               for (const n of Object.keys(cfg.notes)) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${prefix}get #${n}` });
@@ -326,7 +369,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // 6. Individual Blacklist Words
             if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
               await delay(500);
-              await reply(session, targetJid, { text: `⚠️ *[TEST PACK 6/6] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*` });
+              await reply(session, targetJid, {
+                text: `⚠️ *[TEST PACK 6/6] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*`,
+              });
               for (const w of cfg.blacklist.words) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${w}` });
@@ -335,10 +380,18 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
             // 7. Active Content Locks Instructions
             if (cfg.locks) {
-              const activeLocks = Object.entries(cfg.locks).filter(([_, lock]) => lock && lock.enabled);
+              const activeLocks = Object.entries(cfg.locks).filter(
+                ([_, lock]) => lock && lock.enabled
+              );
               if (activeLocks.length > 0) {
                 await delay(500);
-                await reply(session, targetJid, { text: `🔒 *Active Content Locks for "${groupName}":*\n` + activeLocks.map(([type, lock]) => `• Send a ${type} -> Action: ${lock.action}`).join('\n') });
+                await reply(session, targetJid, {
+                  text:
+                    `🔒 *Active Content Locks for "${groupName}":*\n` +
+                    activeLocks
+                      .map(([type, lock]) => `• Send a ${type} -> Action: ${lock.action}`)
+                      .join('\n'),
+                });
               }
             }
           }

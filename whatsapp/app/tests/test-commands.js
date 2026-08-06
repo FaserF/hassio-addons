@@ -231,7 +231,7 @@ async function runTests() {
   );
   assert(
     formattedHandled && backtickHandled && codeblockHandled,
-    'Formatted command inputs (\'!ping\', `!locktypes`, ```!ping```) handled successfully'
+    "Formatted command inputs ('!ping', `!locktypes`, ```!ping```) handled successfully"
   );
 
   // Multi-line batch processing & safety conflict test
@@ -272,8 +272,13 @@ async function runTests() {
   );
   const alertMsg = batchOutputMessages.find((m) => m && m.includes('Batch Command Safety Alert'));
   assert(alertMsg, 'Conflicting destructive commands in batch should trigger safety alert');
-  assert(alertMsg.includes('!kick') && alertMsg.includes('!ban'), 'Alert should list conflicting commands');
-  console.log('✅ PASSED: Conflicting destructive batch commands correctly intercepted with safety warning');
+  assert(
+    alertMsg.includes('!kick') && alertMsg.includes('!ban'),
+    'Alert should list conflicting commands'
+  );
+  console.log(
+    '✅ PASSED: Conflicting destructive batch commands correctly intercepted with safety warning'
+  );
 
   // Test Report Command (saves to store and DMs admins)
   mockSession.sock.groupMetadata = async () => ({
