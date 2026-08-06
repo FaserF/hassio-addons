@@ -98,7 +98,9 @@ registry.register(
         em.includes('not-authorized') ||
         em.includes('forbidden') ||
         em.includes('admin') ||
-        em.includes('permission')
+        em.includes('permission') ||
+        em.includes('500') ||
+        em.includes('internal-server-error')
       ) {
         await sendMissingAdminWarning(session, groupId, 'Promote users', rawMsg);
       } else {
@@ -155,7 +157,9 @@ registry.register(
         em.includes('not-authorized') ||
         em.includes('forbidden') ||
         em.includes('admin') ||
-        em.includes('permission')
+        em.includes('permission') ||
+        em.includes('500') ||
+        em.includes('internal-server-error')
       ) {
         await sendMissingAdminWarning(session, groupId, 'Demote users', rawMsg);
       } else {

@@ -76,6 +76,20 @@ export function registerGroupRoutes(app) {
           formattedParticipants,
           'add'
         );
+        // Baileys returns [{ jid, status: '200'|'403'|'408'|'500'|... }]
+        const failed = Array.isArray(result)
+          ? result.filter((r) => !['200', '201'].includes(String(r?.status || '')))
+          : [];
+        if (failed.length > 0) {
+          const statusCode = String(failed[0]?.status || '');
+          if (statusCode === '403' || statusCode === '500') {
+            return res.status(403).json({
+              detail: 'Bot is not a group admin or WhatsApp rejected the action. Make the bot a group admin first.',
+              result,
+            });
+          }
+          return res.status(400).json({ detail: `WhatsApp returned status ${statusCode}`, result });
+        }
         res.json({ status: 'updated', result });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -104,6 +118,19 @@ export function registerGroupRoutes(app) {
           formattedParticipants,
           'remove'
         );
+        const failed = Array.isArray(result)
+          ? result.filter((r) => !['200', '201'].includes(String(r?.status || '')))
+          : [];
+        if (failed.length > 0) {
+          const statusCode = String(failed[0]?.status || '');
+          if (statusCode === '403' || statusCode === '500') {
+            return res.status(403).json({
+              detail: 'Bot is not a group admin or WhatsApp rejected the removal. Make the bot a group admin first.',
+              result,
+            });
+          }
+          return res.status(400).json({ detail: `WhatsApp returned status ${statusCode}`, result });
+        }
         res.json({ status: 'updated', result });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -132,6 +159,19 @@ export function registerGroupRoutes(app) {
           formattedParticipants,
           'promote'
         );
+        const failed = Array.isArray(result)
+          ? result.filter((r) => !['200', '201'].includes(String(r?.status || '')))
+          : [];
+        if (failed.length > 0) {
+          const statusCode = String(failed[0]?.status || '');
+          if (statusCode === '403' || statusCode === '500') {
+            return res.status(403).json({
+              detail: 'Bot is not a group admin or WhatsApp rejected the promotion. Make the bot a group admin first.',
+              result,
+            });
+          }
+          return res.status(400).json({ detail: `WhatsApp returned status ${statusCode}`, result });
+        }
         res.json({ status: 'promoted', result });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -160,6 +200,19 @@ export function registerGroupRoutes(app) {
           formattedParticipants,
           'demote'
         );
+        const failed = Array.isArray(result)
+          ? result.filter((r) => !['200', '201'].includes(String(r?.status || '')))
+          : [];
+        if (failed.length > 0) {
+          const statusCode = String(failed[0]?.status || '');
+          if (statusCode === '403' || statusCode === '500') {
+            return res.status(403).json({
+              detail: 'Bot is not a group admin or WhatsApp rejected the demotion. Make the bot a group admin first.',
+              result,
+            });
+          }
+          return res.status(400).json({ detail: `WhatsApp returned status ${statusCode}`, result });
+        }
         res.json({ status: 'demoted', result });
       } catch (err) {
         res.status(500).json({ detail: err.message });

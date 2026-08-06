@@ -410,13 +410,30 @@ function selectModerationGroup(groupId) {
 
   // Captcha
   const capE = document.getElementById('mod-captcha-enabled');
-  if (capE) capE.checked = Boolean(config.greetings?.captcha_enabled);
+  if (capE) {
+    capE.checked = Boolean(config.greetings?.captcha_enabled);
+    capE.onchange = () => {
+      if (capE.checked) {
+        loadCaptchaUsers();
+      } else {
+        const container = document.getElementById('mod-captcha-users-container');
+        if (container) container.style.display = 'none';
+      }
+    };
+  }
   const capMode = document.getElementById('mod-captcha-mode');
   if (capMode) capMode.value = config.greetings?.captcha_mode || 'math';
   const capTarget = document.getElementById('mod-captcha-target');
   if (capTarget) capTarget.value = config.greetings?.captcha_target || 'private';
   const capTime = document.getElementById('mod-captcha-timeout');
   if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+
+  if (capE && capE.checked) {
+    loadCaptchaUsers();
+  } else {
+    const container = document.getElementById('mod-captcha-users-container');
+    if (container) container.style.display = 'none';
+  }
 
   // Warnings
   const maxW = document.getElementById('mod-max-warns');
@@ -864,6 +881,110 @@ async function saveGroupGreetings() {
   await saveGroupConfig(groupConfig);
   markClean();
   showToast('Greetings & Captcha saved!', 'success');
+  loadCaptchaUsers();
+}
+
+async function loadCaptchaUsers() {
+  const container = document.getElementById('mod-captcha-users-container');
+  const listEl = document.getElementById('mod-captcha-users-list');
+  const capE = document.getElementById('mod-captcha-enabled');
+
+  if (!container || !listEl) return;
+
+  const isCaptchaOn = Boolean(capE?.checked);
+  if (!isCaptchaOn || !currentModGroup) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+  listEl.innerHTML =
+    '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading captcha user status...</div>';
+
+  try {
+    const res = await fetch(
+      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/users`
+    );
+    const json = await res.json();
+    const users = json.data || [];
+
+    if (!Array.isArray(users) || users.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">No group users found</div>';
+      return;
+    }
+
+    listEl.innerHTML = users
+      .map((u) => {
+        let badgeHtml;
+        if (u.verified) {
+          badgeHtml =
+            '<span class="badge badge-success" style="background:#00a884; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600;"><i class="fas fa-check-circle"></i> Verified</span>';
+        } else if (u.pending) {
+          badgeHtml =
+            '<span class="badge badge-warning" style="background:#ffbc00; color:#000; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600;"><i class="fas fa-hourglass-half"></i> Pending</span>';
+        } else {
+          badgeHtml =
+            '<span class="badge badge-danger" style="background:#ea0038; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600;"><i class="fas fa-times-circle"></i> Unverified</span>';
+        }
+
+        const modeLabel = u.mode
+          ? `<span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${u.mode})</span>`
+          : '';
+        const adminLabel = u.isAdmin
+          ? '<span style="font-size:11px; color:var(--primary); font-weight:600; margin-left:6px;">[Admin]</span>'
+          : '';
+
+        const actionBtn = u.verified
+          ? `<button class="btn btn-outline-warning btn-sm" onclick="toggleUserCaptchaVerification('${escapeHtml(u.userId)}', false)"><i class="fas fa-user-slash"></i> Set Unverified</button>`
+          : `<button class="btn btn-success btn-sm" onclick="toggleUserCaptchaVerification('${escapeHtml(u.userId)}', true)"><i class="fas fa-user-check"></i> Verify User</button>`;
+
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border-color); gap:12px;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:600; color:var(--text-main); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+                ${escapeHtml(u.name || u.userId)} ${adminLabel}
+              </div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+                ID: <code>${escapeHtml(u.userId)}</code> ${modeLabel}
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${badgeHtml}
+              ${actionBtn}
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+  } catch (err) {
+    listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);">Failed to load captcha users: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function toggleUserCaptchaVerification(userId, verified) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/verify`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, verified: Boolean(verified) }),
+      }
+    );
+    const json = await res.json();
+    if (json.success) {
+      showToast(
+        `User ${userId} set to ${verified ? 'Verified' : 'Unverified'}`,
+        'success'
+      );
+      loadCaptchaUsers();
+    } else {
+      showToast(json.error || 'Failed to update user captcha verification', 'error');
+    }
+  } catch (err) {
+    showToast(`Error updating verification: ${err.message}`, 'error');
+  }
 }
 
 async function saveGroupWarnings() {

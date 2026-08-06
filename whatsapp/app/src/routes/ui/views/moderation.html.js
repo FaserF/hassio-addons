@@ -140,6 +140,14 @@ export default () => `
                             <div class="mod-number-group"><input type="number" id="mod-captcha-timeout" class="mod-number-input" value="240" min="30" max="600"><span class="mod-number-unit">s timeout</span></div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupGreetings()"><i class="fas fa-save"></i> Save Greetings &amp; Captcha</button></div>
+
+                        <div id="mod-captcha-users-container" style="display:none; margin-top:20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <p class="mod-section-label" style="margin-bottom:0;"><i class="fas fa-user-check"></i> Captcha Verification Overview</p>
+                                <button class="btn btn-secondary btn-sm" onclick="loadCaptchaUsers()"><i class="fas fa-sync"></i> Refresh Users</button>
+                            </div>
+                            <div id="mod-captcha-users-list" class="mod-list-container"><div class="empty-state">Select a group to load captcha verification status</div></div>
+                        </div>
                     </div>
 
                     <!-- WARNINGS -->

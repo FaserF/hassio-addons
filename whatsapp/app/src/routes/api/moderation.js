@@ -4,7 +4,12 @@ import {
   getGroupModerationConfig,
   setGroupModerationConfig,
 } from '../../whatsapp/moderation/store.js';
-import { issueUserWarning, clearUserWarnings } from '../../whatsapp/moderation/engine.js';
+import {
+  issueUserWarning,
+  clearUserWarnings,
+  setUserCaptchaVerification,
+  getGroupCaptchaUsers,
+} from '../../whatsapp/moderation/engine.js';
 import {
   exportGroupModeration,
   importGroupModeration,
@@ -96,6 +101,26 @@ export function registerModerationRoutes(app) {
     const cleared = clearUserWarnings(groupId, userId);
     const config = getGroupModerationConfig(groupId);
     res.json({ success: true, cleared, data: config.warnings });
+  });
+
+  // GET /api/moderation/groups/:groupId/captcha/users
+  app.get('/api/moderation/groups/:groupId/captcha/users', async (req, res) => {
+    const { groupId } = req.params;
+    const session = Array.from(sessions.values()).find((s) => s.isConnected);
+    const users = await getGroupCaptchaUsers(groupId, session);
+    res.json({ success: true, data: users });
+  });
+
+  // POST /api/moderation/groups/:groupId/captcha/verify
+  app.post('/api/moderation/groups/:groupId/captcha/verify', (req, res) => {
+    const { groupId } = req.params;
+    const { user_id, verified } = req.body || {};
+    if (!user_id) {
+      return res.status(400).json({ success: false, error: 'Missing user_id parameter' });
+    }
+    const session = Array.from(sessions.values()).find((s) => s.isConnected);
+    const record = setUserCaptchaVerification(groupId, user_id, Boolean(verified), session);
+    res.json({ success: true, data: record });
   });
 
   // POST /api/moderation/groups/:groupId/reports/:reportId/resolve

@@ -23,6 +23,117 @@ function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;
 }
 
+/**
+ * Normalizes input string for Captcha comparisons by removing surrounding WhatsApp formatting
+ * (*, _, ~, `, ', ", whitespace, emojis/symbols like 👉, etc.) and trailing punctuation.
+ */
+export function cleanCaptchaInput(text) {
+  if (!text) return '';
+  let str = String(text).trim();
+  str = str.replace(/^[*_~`'"\s:👉]+|[*_~`'"\s:!.]+$|/gu, '');
+  const alphanumericOnly = str.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+  if (alphanumericOnly) {
+    return alphanumericOnly.toLowerCase();
+  }
+  return str.toLowerCase();
+}
+
+/**
+ * Finds a pending captcha entry matching the given groupId and user identifiers (PN, LID, canonical key, alt JIDs).
+ */
+export function findPendingCaptcha(groupId, userId, session = null, rawMsg = null) {
+  if (!groupId || !userId) return null;
+
+  // 1. Direct lookup
+  const key1 = getWindowKey(groupId, userId);
+  if (pendingCaptchas.has(key1)) {
+    return { key: key1, captchaObj: pendingCaptchas.get(key1) };
+  }
+
+  // 2. Lookup by clean digits
+  const cleanDigits = userId.replace(/\D/g, '');
+  if (cleanDigits && cleanDigits !== userId) {
+    const key2 = getWindowKey(groupId, cleanDigits);
+    if (pendingCaptchas.has(key2)) {
+      return { key: key2, captchaObj: pendingCaptchas.get(key2) };
+    }
+  }
+
+  // 3. Lookup by canonical user key (LID <-> PN mapping)
+  const canonicalKey = resolveCanonicalUserKey(userId, session);
+  if (canonicalKey && canonicalKey !== userId && canonicalKey !== cleanDigits) {
+    const key3 = getWindowKey(groupId, canonicalKey);
+    if (pendingCaptchas.has(key3)) {
+      return { key: key3, captchaObj: pendingCaptchas.get(key3) };
+    }
+  }
+
+  // 4. Lookup using participant / participantAlt from raw message
+  const rawParticipant = rawMsg?.key?.participant || rawMsg?.participant;
+  if (rawParticipant) {
+    const pUser = rawParticipant.split('@')[0];
+    const pKey = getWindowKey(groupId, pUser);
+    if (pendingCaptchas.has(pKey)) {
+      return { key: pKey, captchaObj: pendingCaptchas.get(pKey) };
+    }
+  }
+  const participantAlt = rawMsg?.key?.participantAlt;
+  if (participantAlt) {
+    const altUser = participantAlt.split('@')[0];
+    const altKey = getWindowKey(groupId, altUser);
+    if (pendingCaptchas.has(altKey)) {
+      return { key: altKey, captchaObj: pendingCaptchas.get(altKey) };
+    }
+  }
+
+  // 5. Fallback scan entries for this groupId
+  const prefix = `${groupId}:`;
+  for (const [key, captchaObj] of pendingCaptchas.entries()) {
+    if (key.startsWith(prefix)) {
+      const storedUserId = key.slice(prefix.length);
+      const storedClean = storedUserId.replace(/\D/g, '');
+      if (
+        storedUserId === userId ||
+        (cleanDigits && storedClean === cleanDigits) ||
+        (canonicalKey && resolveCanonicalUserKey(storedUserId, session) === canonicalKey)
+      ) {
+        return { key, captchaObj };
+      }
+    }
+  }
+
+  return null;
+}
+
+export function isUserVerified(groupId, userId, session = null, rawMsg = null) {
+  if (!groupId || !userId) return false;
+  const config = getGroupModerationConfig(groupId);
+  const verifiedUsers = config.verified_users || {};
+
+  // Helper: check a single id against the verified_users map
+  const checkId = (id) => {
+    if (!id) return false;
+    if (verifiedUsers[id]?.verified === true) return true;
+    const digits = id.replace(/\D/g, '');
+    if (digits && verifiedUsers[digits]?.verified === true) return true;
+    return false;
+  };
+
+  if (checkId(userId)) return true;
+
+  // Canonical key (LID <-> PN mapping)
+  const canonicalKey = resolveCanonicalUserKey(userId, session);
+  if (canonicalKey && checkId(canonicalKey)) return true;
+
+  // Raw message participant fields
+  const rawParticipant = rawMsg?.key?.participant || rawMsg?.participant;
+  if (rawParticipant && checkId(rawParticipant.split('@')[0])) return true;
+  const participantAlt = rawMsg?.key?.participantAlt;
+  if (participantAlt && checkId(participantAlt.split('@')[0])) return true;
+
+  return false;
+}
+
 export function isSelfParticipant(participantJid, session) {
   if (!participantJid || !session?.sock?.user) return false;
   const targetNorm = normalizeJid(participantJid);
@@ -210,11 +321,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             const isAdminRole = p.admin === 'admin' || p.admin === 'superadmin';
 
             // Check bot status
-            if (pDigits === myDigits || pId === myId || (myLid && pId === myLid)) {
+            if ((myDigits && pDigits && pDigits === myDigits) || (myId && pId === myId) || (myLid && pId === myLid)) {
               if (isAdminRole) isBotAdmin = true;
             }
             // Check target user status
-            if (pDigits === targetDigits || pId === userJid || pId.split('@')[0] === userId) {
+            if ((targetDigits && pDigits && pDigits === targetDigits) || (userJid && pId === userJid) || (userId && pId.split('@')[0] === userId)) {
               if (isAdminRole) isTargetAdmin = true;
             }
           }
@@ -250,7 +361,25 @@ export async function executePenalty(session, groupId, userId, action, reason = 
 
         // Build array of candidate JIDs (phone JID and LID JID) to ensure WhatsApp multi-device accepts removal
         const candidateJids = [];
-        if (cleanDigits) {
+        if (session?.sock?.groupMetadata) {
+          try {
+            const meta = await session.sock.groupMetadata(groupId);
+            const targetDigits = userId.replace(/\D/g, '');
+            const foundPart = meta?.participants?.find((p) => {
+              const pId = p.id ? normalizeJid(p.id) : '';
+              const pDigits = pId.split('@')[0].replace(/\D/g, '');
+              return (
+                (targetDigits && pDigits && pDigits === targetDigits) ||
+                (userJid && pId === userJid) ||
+                pId.split('@')[0] === userId
+              );
+            });
+            if (foundPart?.id) {
+              candidateJids.push(foundPart.id);
+            }
+          } catch (_err) {}
+        }
+        if (cleanDigits && !candidateJids.includes(`${cleanDigits}@s.whatsapp.net`)) {
           candidateJids.push(`${cleanDigits}@s.whatsapp.net`);
         }
         if (userJid && !candidateJids.includes(userJid)) {
@@ -303,9 +432,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           errMsg.includes('forbidden') ||
           errMsg.includes('not authorized') ||
           errMsg.includes('permission') ||
-          errMsg.includes('403')
+          errMsg.includes('403') ||
+          errMsg.includes('500') ||
+          errMsg.includes('internal-server-error')
         ) {
-          // Bot is not an admin in this group
+          // Bot is not an admin in this group or WhatsApp protocol rejected action due to insufficient bot rights
           await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
         } else if (
           errMsg.includes('not-participant') ||
@@ -546,28 +677,84 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 2. Pending Captcha verification check
-  const captchaKey = getWindowKey(groupId, userId);
-  if (pendingCaptchas.has(captchaKey)) {
-    const captchaObj = pendingCaptchas.get(captchaKey);
-    const cleanInput = text.trim().toLowerCase();
-    const cleanAnswer = String(captchaObj.answer || '')
-      .trim()
-      .toLowerCase();
+  // 2. Pending Captcha & Verification check
+  const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
+  if (isCaptchaEnabled) {
+    const verified = isUserVerified(groupId, userId, session, rawMsg);
+    if (!verified) {
+      const captchaEntry = findPendingCaptcha(groupId, userId, session, rawMsg);
+      let expectedUpper = '';
 
-    if (cleanInput === cleanAnswer) {
-      clearTimeout(captchaObj.timeoutHandle);
-      pendingCaptchas.delete(captchaKey);
+      if (captchaEntry) {
+        const { key: captchaKey, captchaObj } = captchaEntry;
+        const cleanAnswer = String(captchaObj.answer || '').trim().toLowerCase();
+        expectedUpper = String(captchaObj.answer || '').toUpperCase();
+
+        const rawInput = text.trim().toLowerCase();
+        const cleanInput = cleanCaptchaInput(text);
+        const words = text.split(/\s+/).map((w) => cleanCaptchaInput(w));
+        const noFormatText = text.toLowerCase().replace(/[*_~`'"\s]/g, '');
+
+        const isMatch =
+          rawInput === cleanAnswer ||
+          cleanInput === cleanAnswer ||
+          words.includes(cleanAnswer) ||
+          noFormatText === cleanAnswer;
+
+        if (isMatch) {
+          clearTimeout(captchaObj.timeoutHandle);
+          pendingCaptchas.delete(captchaKey);
+
+          try {
+            const verRecord = { verified: true, timestamp: Date.now(), mode: 'auto' };
+            config.verified_users = config.verified_users || {};
+            config.verified_users[userId] = verRecord;
+            const cleanId = userId.replace(/\D/g, '');
+            if (cleanId) config.verified_users[cleanId] = verRecord;
+            store.groups[groupId] = config;
+            saveModerationStore(store);
+          } catch (storeErr) {
+            logger.warn({ error: storeErr.message }, 'Failed to record captcha verification');
+          }
+
+          await reply(
+            session,
+            groupId,
+            {
+              text: `✅ Captcha verified! Welcome @${userId}.`,
+              mentions: [`${userId}@s.whatsapp.net`],
+            },
+            rawMsg
+          );
+          return true;
+        }
+      }
+
+      // Delete message from unverified user
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {
+          /* ignore delete failure */
+        }
+      }
+
+      logger.info({ groupId, userId, text }, 'Blocked message from unverified user');
+      const reminderText = expectedUpper
+        ? `🔒 *Message Deleted: Captcha Verification Pending*\n\n@${userId}, your message was deleted because you have not completed captcha verification yet.\n👉 Please reply with the exact security code: *${expectedUpper}*`
+        : `🔒 *Message Deleted: Captcha Verification Required*\n\n@${userId}, your message was deleted because you must complete captcha verification before posting.`;
+
       await reply(
         session,
         groupId,
         {
-          text: `✅ Captcha verified! Welcome @${userId}.`,
+          text: reminderText,
           mentions: [`${userId}@s.whatsapp.net`],
         },
         rawMsg
       );
-      return true;
+
+      return true; // Consume message completely so no command or auto-responder executes
     }
   }
 
@@ -1037,21 +1224,54 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
 
         try {
-          await session.sock.groupParticipantsUpdate(groupId, [participantJid], 'remove');
-          await reply(
-            session,
+          const kickRes = await session.sock.groupParticipantsUpdate(
             groupId,
-            {
-              text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
-              mentions: [participantJid],
-            },
-            rawMsg
+            [participantJid],
+            'remove'
           );
+          // Evaluate Baileys status response
+          const kickStatus =
+            Array.isArray(kickRes) && kickRes.length > 0
+              ? String(kickRes[0]?.status || '')
+              : '200';
+          if (kickStatus === '403' || kickStatus === '500') {
+            await sendMissingAdminWarning(
+              session,
+              groupId,
+              'Auto-remove banned user on rejoin',
+              rawMsg
+            );
+          } else {
+            await reply(
+              session,
+              groupId,
+              {
+                text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
+                mentions: [participantJid],
+              },
+              rawMsg
+            );
+          }
         } catch (kickErr) {
+          const kickErrMsg = (kickErr.message || '').toLowerCase();
           logger.warn(
             { error: kickErr.message },
             `Failed to auto-remove banned user ${participantJid}`
           );
+          if (
+            kickErrMsg.includes('not-authorized') ||
+            kickErrMsg.includes('forbidden') ||
+            kickErrMsg.includes('403') ||
+            kickErrMsg.includes('500') ||
+            kickErrMsg.includes('internal-server-error')
+          ) {
+            await sendMissingAdminWarning(
+              session,
+              groupId,
+              'Auto-remove banned user on rejoin',
+              rawMsg
+            );
+          }
         }
         continue;
       }
@@ -1262,7 +1482,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               ? `⚠️ _Direct message to ${resolveUserDisplayName(userId, session)} could not be delivered. Please verify here in the group:_\n\n${fullText}`
               : fullText;
 
-          sendResult = await reply(
+          await reply(
             session,
             groupId,
             {
@@ -1344,4 +1564,101 @@ export async function handleModerationParticipantUpdate(session, update) {
       }
     }
   }
+}
+
+export function setUserCaptchaVerification(groupId, userId, verified, session = null) {
+  const store = loadModerationStore();
+  const config = getGroupModerationConfig(groupId);
+  config.verified_users = config.verified_users || {};
+
+  const cleanId = (userId || '').replace(/\D/g, '');
+  const canonicalKey = resolveCanonicalUserKey(userId, session);
+
+  const record = {
+    verified: Boolean(verified),
+    timestamp: Date.now(),
+    mode: 'manual',
+  };
+
+  config.verified_users[userId] = record;
+  if (cleanId) config.verified_users[cleanId] = record;
+  if (canonicalKey) config.verified_users[canonicalKey] = record;
+
+  if (verified) {
+    const entry = findPendingCaptcha(groupId, userId, session);
+    if (entry) {
+      clearTimeout(entry.captchaObj.timeoutHandle);
+      pendingCaptchas.delete(entry.key);
+    }
+  }
+
+  store.groups[groupId] = config;
+  saveModerationStore(store);
+  return record;
+}
+
+export async function getGroupCaptchaUsers(groupId, session = null) {
+  const config = getGroupModerationConfig(groupId);
+  const verifiedMap = config.verified_users || {};
+
+  let participants = [];
+  if (session?.sock?.groupMetadata) {
+    try {
+      const meta = await session.sock.groupMetadata(groupId);
+      participants = meta?.participants || [];
+    } catch (e) {
+      logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for captcha users');
+    }
+  }
+
+  const result = [];
+  const processedUserIds = new Set();
+
+  for (const p of participants) {
+    const pJid = p.id ? normalizeJid(p.id) : '';
+    const pUser = pJid.split('@')[0];
+    const cleanDigits = pUser.replace(/\D/g, '');
+    const canonicalKey = resolveCanonicalUserKey(pJid, session);
+
+    processedUserIds.add(pUser);
+    if (cleanDigits) processedUserIds.add(cleanDigits);
+    if (canonicalKey) processedUserIds.add(canonicalKey);
+
+    const pending = findPendingCaptcha(groupId, pUser, session);
+    const verRecord =
+      verifiedMap[pUser] ||
+      (cleanDigits ? verifiedMap[cleanDigits] : null) ||
+      (canonicalKey ? verifiedMap[canonicalKey] : null);
+
+    const isVerified = verRecord ? Boolean(verRecord.verified) : !pending;
+
+    result.push({
+      userId: pUser,
+      jid: pJid,
+      name: resolveUserDisplayName(pUser, session) || pUser,
+      verified: isVerified,
+      pending: Boolean(pending),
+      timestamp: verRecord?.timestamp || pending?.captchaObj?.timestamp || null,
+      mode: verRecord?.mode || (pending ? 'pending' : 'auto'),
+      isAdmin: p.admin === 'admin' || p.admin === 'superadmin',
+    });
+  }
+
+  for (const [uId, verRecord] of Object.entries(verifiedMap)) {
+    if (!processedUserIds.has(uId)) {
+      processedUserIds.add(uId);
+      result.push({
+        userId: uId,
+        jid: uId.includes('@') ? uId : `${uId}@s.whatsapp.net`,
+        name: resolveUserDisplayName(uId, session) || uId,
+        verified: Boolean(verRecord?.verified),
+        pending: false,
+        timestamp: verRecord?.timestamp || null,
+        mode: verRecord?.mode || 'manual',
+        isAdmin: false,
+      });
+    }
+  }
+
+  return result;
 }

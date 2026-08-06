@@ -122,6 +122,7 @@ export function getDefaultGroupConfig() {
       captcha_timeout_seconds: 240,
       clean_welcome: false,
     },
+    verified_users: {}, // userId -> { verified: boolean, timestamp: number, mode: 'auto' | 'manual' }
     warnings: {
       max_warnings: 3,
       action: 'mute', // 'mute' | 'kick' | 'ban'

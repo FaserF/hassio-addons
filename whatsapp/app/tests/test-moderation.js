@@ -15,6 +15,8 @@ import {
   isSelfParticipant,
   generateBotWelcomeMessage,
   formatMessageTemplate,
+  cleanCaptchaInput,
+  findPendingCaptcha,
 } from '../src/whatsapp/moderation/engine.js';
 import {
   isSameUser,
@@ -453,6 +455,78 @@ try {
     'Store should contain filter_subscriptions default list'
   );
   console.log('✅ PASSED: Default filter subscriptions verified');
+
+  // Test 13: Captcha normalization and formatting flexibility (*Code*, 'Code', "Code", etc.)
+  assert.strictEqual(cleanCaptchaInput('NWLWR'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('*NWLWR*'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput("'NWLWR'"), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('"NWLWR"'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('`NWLWR`'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('_NWLWR_'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('👉 NWLWR'), 'nwlwr');
+  assert.strictEqual(cleanCaptchaInput('*NWLWR* '), 'nwlwr');
+
+  // Test Captcha verification matching in handleModerationMessage
+  const captchaGroupConfig = getGroupModerationConfig('1203630999999999@g.us');
+  captchaGroupConfig.enabled = true;
+  captchaGroupConfig.greetings.captcha_enabled = true;
+  captchaGroupConfig.greetings.captcha_mode = 'text';
+  setGroupModerationConfig('1203630999999999@g.us', captchaGroupConfig);
+
+  let captchaReplies = [];
+  const mockSessionCaptchaTest = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        captchaReplies.push(content);
+        return { key: { id: 'captchaReply' } };
+      },
+    },
+  };
+
+  // Add participant to trigger pending captcha
+  await handleModerationParticipantUpdate(mockSessionCaptchaTest, {
+    id: '1203630999999999@g.us',
+    action: 'add',
+    participants: ['4917647365403@s.whatsapp.net'],
+  });
+
+  // Verify pending captcha exists
+  const pendingCap = findPendingCaptcha('1203630999999999@g.us', '4917647365403', mockSessionCaptchaTest);
+  assert(pendingCap, 'Pending captcha entry should exist after participant update');
+  const actualCode = pendingCap.captchaObj.answer;
+
+  // Test wrong code -> sends invalid code feedback
+  captchaReplies = [];
+  const wrongHandled = await handleModerationMessage(mockSessionCaptchaTest, {
+    sender: '1203630999999999@g.us',
+    sender_number: '4917647365403',
+    content: 'WRONGCODE',
+    raw: { key: { id: 'msgWrong' } },
+  });
+  assert.strictEqual(wrongHandled, true, 'Wrong code should be handled');
+  const wrongTextReply = captchaReplies.find((r) => r.text);
+  assert(
+    wrongTextReply?.text.includes('Captcha Verification Pending') ||
+    wrongTextReply?.text.includes('security code'),
+    'Wrong code must delete message and send verification reminder'
+  );
+
+  // Test formatted correct code (e.g. *CODE*) -> successfully verifies captcha
+  captchaReplies = [];
+  const validHandled = await handleModerationMessage(mockSessionCaptchaTest, {
+    sender: '1203630999999999@g.us',
+    sender_number: '4917647365403',
+    content: `*${actualCode}*`,
+    raw: { key: { id: 'msgValid' } },
+  });
+  assert.strictEqual(validHandled, true, 'Formatted code must be recognized as valid');
+  assert(captchaReplies[0]?.text.includes('Captcha verified'), 'Correct code must reply with Captcha verified');
+  const pendingCapAfter = findPendingCaptcha('1203630999999999@g.us', '4917647365403', mockSessionCaptchaTest);
+  assert.strictEqual(pendingCapAfter, null, 'Pending captcha should be cleared after valid code');
+
+  console.log('✅ PASSED: Captcha formatting flexibility (*Code*, \'Code\', "Code", etc.) and feedback verified');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());
