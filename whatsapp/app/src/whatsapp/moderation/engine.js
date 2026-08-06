@@ -1241,12 +1241,14 @@ export async function handleModerationParticipantUpdate(session, update) {
         const fullText = messageParts.join('\n\n');
         const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
         const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
-        const phoneJid = !isLidDigits && canonicalPhoneKey
-          ? `${canonicalPhoneKey}@s.whatsapp.net`
-          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        const targetPrivateJid = phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
-          ? null
-          : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
+        const phoneJid =
+          !isLidDigits && canonicalPhoneKey
+            ? `${canonicalPhoneKey}@s.whatsapp.net`
+            : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const targetPrivateJid =
+          phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
+            ? null
+            : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
         const mentionJid = targetPrivateJid || normalizeJid(participantJid);
 
         const captchaTargetMode = config.greetings?.captcha_target || 'private';
@@ -1340,12 +1342,14 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
         const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
-        const phoneJid = !isLidDigits && canonicalPhoneKey
-          ? `${canonicalPhoneKey}@s.whatsapp.net`
-          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        const targetPrivateJid = phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
-          ? null
-          : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
+        const phoneJid =
+          !isLidDigits && canonicalPhoneKey
+            ? `${canonicalPhoneKey}@s.whatsapp.net`
+            : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const targetPrivateJid =
+          phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
+            ? null
+            : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
         let sentViaDM = false;
 
         // Try Private DM delivery first if target is a valid phone JID
@@ -1356,7 +1360,10 @@ export async function handleModerationParticipantUpdate(session, update) {
             });
             if (res) sentViaDM = true;
           } catch (dmErr) {
-            logger.info({ error: dmErr.message }, 'Goodbye DM failed, falling back to group message');
+            logger.info(
+              { error: dmErr.message },
+              'Goodbye DM failed, falling back to group message'
+            );
           }
         }
 

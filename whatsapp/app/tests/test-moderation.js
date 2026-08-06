@@ -303,8 +303,14 @@ try {
   );
 
   const directGenText = generateBotWelcomeMessage(false);
-  assert(directGenText.includes('Hello! I am your Moderation & Assistant Bot.'), 'Direct generator test text');
-  assert(directGenText.includes('https://faserf.github.io/ha-whatsapp/'), 'Direct generator documentation link');
+  assert(
+    directGenText.includes('Hello! I am your Moderation & Assistant Bot.'),
+    'Direct generator test text'
+  );
+  assert(
+    directGenText.includes('https://faserf.github.io/ha-whatsapp/'),
+    'Direct generator documentation link'
+  );
 
   let botWelcomeSent = false;
   let botWelcomeText = '';
