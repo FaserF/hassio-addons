@@ -1006,7 +1006,7 @@ export async function handleModerationMessage(session, event) {
         if (isMatch) {
           const isFaq = filter.type === 'faq';
           const replyText = isFaq
-            ? `💡 *FAQ Hint / Automatische Hilfe:*\n_Folgende Information aus unseren FAQ kann eventuell dabei helfen, deine Frage zu beantworten:_\n\n${filter.response}`
+            ? `💡 *FAQ Hint / Automated Help:*\n_The following information from our FAQ might help answer your question:_\n\n${filter.response}`
             : filter.response;
 
           await reply(session, groupId, { text: replyText }, rawMsg);
@@ -1215,7 +1215,11 @@ export function formatMessageTemplate(
     ? String(groupMeta.participants.length)
     : 'N/A';
 
-  const userLabel = resolveUserDisplayName(userId || participantJid, session);
+  const userLabel = resolveUserDisplayName(
+    userId || participantJid,
+    session,
+    config?.greetings
+  );
   const canonicalKey = resolveCanonicalUserKey(userId || participantJid, session);
   const mentionText =
     canonicalKey && !canonicalKey.startsWith('1576') ? `@${canonicalKey}` : userLabel;
@@ -1756,37 +1760,8 @@ export async function handleModerationParticipantUpdate(session, update) {
           goodbyeMsg += `\n\n📋 *Reason:* ${departureReason}`;
         }
 
-        const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
-        const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
-        const phoneJid =
-          !isLidDigits && canonicalPhoneKey
-            ? `${canonicalPhoneKey}@s.whatsapp.net`
-            : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        const targetPrivateJid =
-          phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
-            ? null
-            : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
-        let sentViaDM = false;
-
-        // Try Private DM delivery first if target is a valid phone JID
-        if (targetPrivateJid) {
-          try {
-            const res = await reply(session, targetPrivateJid, {
-              text: `👋 *${groupMeta?.subject || 'Group'}*\n\n${goodbyeMsg}`,
-            });
-            if (res) sentViaDM = true;
-          } catch (dmErr) {
-            logger.info(
-              { error: dmErr.message },
-              'Goodbye DM failed, falling back to group message'
-            );
-          }
-        }
-
-        // Fallback to Group Message if Private DM was unavailable
-        if (!sentViaDM) {
-          await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
-        }
+        // Send Goodbye message to Group
+        await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
       }
     }
   }

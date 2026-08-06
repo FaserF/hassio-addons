@@ -919,7 +919,7 @@ async function loadCaptchaUsers() {
 
   try {
     const res = await fetch(
-      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/users`
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/users`
     );
     const json = await res.json();
     const users = json.data || [];
@@ -981,7 +981,7 @@ async function toggleUserCaptchaVerification(userId, verified) {
   if (!currentModGroup || !userId) return;
   try {
     const res = await fetch(
-      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/verify`,
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/verify`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

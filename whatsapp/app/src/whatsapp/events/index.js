@@ -124,21 +124,22 @@ export function handleIncomingMessages(session) {
         const stNum = Number(st);
         const stStr = String(st).toUpperCase();
 
-        const action =
+        let action = 'add';
+        if (st === 32 || stNum === 32 || stStr.includes('LEAVE')) {
+          action = 'leave';
+        } else if (
           st === 28 ||
           st === 29 ||
-          st === 32 ||
           st === 33 ||
           st === 144 ||
           stNum === 28 ||
           stNum === 29 ||
-          stNum === 32 ||
           stNum === 33 ||
           stNum === 144 ||
-          stStr.includes('REMOVE') ||
-          stStr.includes('LEAVE')
-            ? 'remove'
-            : 'add';
+          stStr.includes('REMOVE')
+        ) {
+          action = 'remove';
+        }
 
         // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
         const normalizedParticipants = rawParticipants
