@@ -103,7 +103,13 @@ export function handleIncomingMessages(session) {
 
         if (action && normalizedParticipants.length > 0) {
           logger.info(
-            { groupId, action, stubType: msg.messageStubType, rawParticipants: participants, normalizedParticipants },
+            {
+              groupId,
+              action,
+              stubType: msg.messageStubType,
+              rawParticipants: participants,
+              normalizedParticipants,
+            },
             '👥 Participant update detected via messageStubType'
           );
           handleModerationParticipantUpdate(session, {
