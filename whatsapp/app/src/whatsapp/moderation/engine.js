@@ -1157,10 +1157,16 @@ export async function handlePrivateCaptchaMessage(session, event) {
 
     config.verified_users = config.verified_users || {};
     config.verified_users[userId] = verRecord;
+    const storedUserVal = targetKey.slice(targetKey.indexOf(':') + 1);
+    if (storedUserVal) config.verified_users[storedUserVal] = verRecord;
     const cleanId = userId.replace(/\D/g, '');
     if (cleanId) config.verified_users[cleanId] = verRecord;
     const canonical = resolveCanonicalUserKey(userId, session);
     if (canonical) config.verified_users[canonical] = verRecord;
+    if (foundMatch.participantJid) {
+      const pUser = foundMatch.participantJid.split('@')[0];
+      if (pUser) config.verified_users[pUser] = verRecord;
+    }
 
     store.groups[targetGroupId] = config;
     saveModerationStore(store);
@@ -1585,11 +1591,14 @@ export async function handleModerationParticipantUpdate(session, update) {
               const userLabel = resolveUserDisplayName(userId, session);
 
               // Record kick reason so goodbye message can display it
-              const kickReasonKey = getWindowKey(groupId, userId);
-              recentKickReasons.set(kickReasonKey, {
+              const recObj = {
                 reason: '⏱️ Removed — Captcha verification timed out',
                 expires: Date.now() + 30000,
-              });
+              };
+              recentKickReasons.set(getWindowKey(groupId, userId), recObj);
+              if (cleanDigits) recentKickReasons.set(getWindowKey(groupId, cleanDigits), recObj);
+              const recCanonical = resolveCanonicalUserKey(userId, session);
+              if (recCanonical) recentKickReasons.set(getWindowKey(groupId, recCanonical), recObj);
 
               await reply(
                 session,
@@ -1616,6 +1625,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             timeoutHandle,
             timestamp: Date.now(),
             delivered: false,
+            participantJid,
           });
         }
 
@@ -1702,11 +1712,20 @@ export async function handleModerationParticipantUpdate(session, update) {
           departureReason = '🚶 Left voluntarily';
         } else if (action === 'remove') {
           // Check recent kick reason registry (e.g. captcha timeout)
-          const kickReasonKey = getWindowKey(groupId, userId);
-          const recentKick = recentKickReasons.get(kickReasonKey);
-          if (recentKick && recentKick.expires > Date.now()) {
-            departureReason = recentKick.reason;
-            recentKickReasons.delete(kickReasonKey);
+          const canonicalUser = resolveCanonicalUserKey(userId, session);
+          const kickKeys = [
+            getWindowKey(groupId, userId),
+            cleanDigits ? getWindowKey(groupId, cleanDigits) : null,
+            canonicalUser ? getWindowKey(groupId, canonicalUser) : null,
+          ].filter(Boolean);
+
+          for (const kKey of kickKeys) {
+            const recentKick = recentKickReasons.get(kKey);
+            if (recentKick && recentKick.expires > Date.now()) {
+              departureReason = recentKick.reason;
+              recentKickReasons.delete(kKey);
+              break;
+            }
           }
 
           if (!departureReason) {
