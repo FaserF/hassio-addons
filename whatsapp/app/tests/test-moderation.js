@@ -297,7 +297,8 @@ try {
   console.log('✅ PASSED: normalizeJid ReDoS protection and JID normalization verified');
 
   // Test formatMessageTemplate with extended placeholders
-  const sampleTemplate = 'Welcome {pushname} ({user}) to {title}! Member #{count} of {group}. Rules: {rules}. Date: {date} {time}';
+  const sampleTemplate =
+    'Welcome {pushname} ({user}) to {title}! Member #{count} of {group}. Rules: {rules}. Date: {date} {time}';
   const formatted = formatMessageTemplate(sampleTemplate, {
     userId: '491701234567',
     participantJid: '491701234567@s.whatsapp.net',

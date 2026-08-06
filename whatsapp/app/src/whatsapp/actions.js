@@ -248,11 +248,44 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
             // Built-in commands list
             const allBuiltins = [
-              'ping', 'help', 'id', 'rules', 'warn', 'warns', 'unwarn', 'kick', 'ban',
-              'mute', 'unmute', 'lock', 'unlock', 'locks', 'setrules', 'promote', 'demote',
-              'approve', 'unapprove', 'report', 'setwelcome', 'welcome', 'setgoodbye', 'goodbye',
-              'save', 'get', 'notes', 'filter', 'stop', 'filters', 'info', 'adminlist', 'locktypes',
-              'del', 'tban', 'tmute', 'setlang', 'translate'
+              'ping',
+              'help',
+              'id',
+              'rules',
+              'warn',
+              'warns',
+              'unwarn',
+              'kick',
+              'ban',
+              'mute',
+              'unmute',
+              'lock',
+              'unlock',
+              'locks',
+              'setrules',
+              'promote',
+              'demote',
+              'approve',
+              'unapprove',
+              'report',
+              'setwelcome',
+              'welcome',
+              'setgoodbye',
+              'goodbye',
+              'save',
+              'get',
+              'notes',
+              'filter',
+              'stop',
+              'filters',
+              'info',
+              'adminlist',
+              'locktypes',
+              'del',
+              'tban',
+              'tmute',
+              'setlang',
+              'translate',
             ];
 
             const activeBuiltins = allBuiltins.filter((c) => !disabledCmds.has(c));
@@ -269,7 +302,10 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // Disabled Commands Test
             if (disabledCmds.size > 0) {
               groupTestMsg += `🔴 *Disabled Commands (Test restriction message):*\n`;
-              groupTestMsg += Array.from(disabledCmds).map((c) => `${prefix}${c}`).join('\n') + `\n\n`;
+              groupTestMsg +=
+                Array.from(disabledCmds)
+                  .map((c) => `${prefix}${c}`)
+                  .join('\n') + `\n\n`;
             }
 
             // Custom Mapped Commands Test
@@ -287,7 +323,10 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // Saved Notes Test
             if (cfg.notes && Object.keys(cfg.notes).length > 0) {
               groupTestMsg += `📌 *Saved Notes Triggers:*\n`;
-              groupTestMsg += Object.keys(cfg.notes).map((n) => `${prefix}get #${n}`).join('\n') + `\n\n`;
+              groupTestMsg +=
+                Object.keys(cfg.notes)
+                  .map((n) => `${prefix}get #${n}`)
+                  .join('\n') + `\n\n`;
             }
 
             // Blacklist Word Triggers
@@ -298,10 +337,14 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
             // Content Locks Test Instructions
             if (cfg.locks) {
-              const activeLocks = Object.entries(cfg.locks).filter(([_, lock]) => lock && lock.enabled);
+              const activeLocks = Object.entries(cfg.locks).filter(
+                ([_, lock]) => lock && lock.enabled
+              );
               if (activeLocks.length > 0) {
                 groupTestMsg += `🔒 *Active Content Locks (Test by sending these media types):*\n`;
-                groupTestMsg += activeLocks.map(([type, lock]) => `• ${type} (${lock.action})`).join('\n') + `\n\n`;
+                groupTestMsg +=
+                  activeLocks.map(([type, lock]) => `• ${type} (${lock.action})`).join('\n') +
+                  `\n\n`;
               }
             }
 

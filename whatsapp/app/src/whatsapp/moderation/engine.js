@@ -616,14 +616,23 @@ export async function handleModerationMessage(session, event) {
   return false;
 }
 
-export function formatMessageTemplate(template, { userId, participantJid, groupId, groupMeta, config, session } = {}) {
+export function formatMessageTemplate(
+  template,
+  { userId, participantJid, groupId, groupMeta, config, session } = {}
+) {
   if (!template) return '';
   const now = new Date();
-  const dateStr = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const dateStr = now.toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
   const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
   const groupTitle = groupMeta?.subject || (groupId ? groupId.split('@')[0] : '');
-  const memberCount = groupMeta?.participants?.length ? String(groupMeta.participants.length) : 'N/A';
+  const memberCount = groupMeta?.participants?.length
+    ? String(groupMeta.participants.length)
+    : 'N/A';
   const pushname =
     (participantJid && session?.sock?.contacts?.[participantJid]?.notify) ||
     (participantJid && session?.sock?.contacts?.[participantJid]?.name) ||
@@ -751,7 +760,10 @@ export async function handleModerationParticipantUpdate(session, update) {
           try {
             groupMeta = await session.sock.groupMetadata(groupId);
           } catch (e) {
-            logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for welcome greeting');
+            logger.debug(
+              { error: e.message, groupId },
+              'Failed to fetch group metadata for welcome greeting'
+            );
           }
         }
 
@@ -824,7 +836,10 @@ export async function handleModerationParticipantUpdate(session, update) {
         try {
           groupMeta = await session.sock.groupMetadata(groupId);
         } catch (e) {
-          logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for goodbye greeting');
+          logger.debug(
+            { error: e.message, groupId },
+            'Failed to fetch group metadata for goodbye greeting'
+          );
         }
       }
 
