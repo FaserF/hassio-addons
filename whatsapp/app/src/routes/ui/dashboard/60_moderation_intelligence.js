@@ -48,7 +48,7 @@ async function saveGroupAiConfig() {
     sentiment_moderation: Boolean(document.getElementById('mod-ai-sentiment')?.checked),
     system_prompt:
       document.getElementById('mod-ai-prompt')?.value ||
-      'You are a helpful group moderator AI assistant.',
+      'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
   groupConfig.translation = {
     enabled: true,

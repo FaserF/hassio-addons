@@ -970,7 +970,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             session,
           });
           messageParts.push(welcomeMsg);
-        } else {
+        } else if (isRulesOnJoin || isCaptchaEnabled) {
           messageParts.push(`👋 Welcome @${userId}!`);
         }
 
@@ -1003,7 +1003,26 @@ export async function handleModerationParticipantUpdate(session, update) {
               pendingCaptchas.delete(captchaKey);
 
               // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
-              if (isAdmin(participantJid, session)) {
+              let userIsAdmin = isAdmin(participantJid, session);
+
+              // Live check against Baileys group metadata if available
+              if (!userIsAdmin && session?.sock?.groupMetadata) {
+                try {
+                  const meta = await session.sock.groupMetadata(groupId);
+                  const p = meta?.participants?.find((part) => {
+                    const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
+                    const tid = participantJid.split('@')[0].replace(/\D/g, '');
+                    return pid === tid || part.id === participantJid;
+                  });
+                  if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
+                    userIsAdmin = true;
+                  }
+                } catch (metaErr) {
+                  logger.debug({ error: metaErr.message }, 'Failed to fetch live group metadata for captcha admin check');
+                }
+              }
+
+              if (userIsAdmin) {
                 logger.info(
                   { groupId, userId },
                   '🛡️ User is an admin, skipping Captcha timeout kick'

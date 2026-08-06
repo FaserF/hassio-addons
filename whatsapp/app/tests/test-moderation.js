@@ -4,6 +4,7 @@ import {
   getGroupModerationConfig,
   setGroupModerationConfig,
   saveModerationStore,
+  clearModerationStoreCache,
 } from '../src/whatsapp/moderation/store.js';
 import {
   issueUserWarning,
@@ -362,6 +363,43 @@ try {
   assert(/\d{2}\.\d{2}\.\d{4}/.test(formatted), 'date should match DD.MM.YYYY');
   assert(/\d{2}:\d{2}/.test(formatted), 'time should match HH:MM');
   console.log('✅ PASSED: formatMessageTemplate with all extended placeholders verified');
+
+  // Test 12: WAMessageStubType Invite Link Join & Self-Leave Handling
+  clearModerationStoreCache();
+  const stubConfig = getGroupModerationConfig('1203630123456789@g.us');
+  stubConfig.enabled = true;
+  stubConfig.greetings.welcome_enabled = true;
+  stubConfig.greetings.welcome_message = 'Welcome {mention} to {group}!';
+  setGroupModerationConfig('1203630123456789@g.us', stubConfig);
+
+  let stubMessagesSent = [];
+  const mockSessionStubTest = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        stubMessagesSent.push(content);
+        return { key: { id: 'stubJoin1' } };
+      },
+    },
+  };
+
+  await handleModerationParticipantUpdate(mockSessionStubTest, {
+    id: '1203630123456789@g.us',
+    action: 'add',
+    participants: ['491768888888@s.whatsapp.net'],
+  });
+
+  assert.strictEqual(
+    stubMessagesSent.length,
+    1,
+    'Invite-link join via stubType must send consolidated welcome message'
+  );
+  assert(
+    stubMessagesSent[0].text.includes('Welcome'),
+    'Consolidated stub join message must contain Welcome'
+  );
+  console.log('✅ PASSED: WAMessageStubType invite-link join processing verified');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

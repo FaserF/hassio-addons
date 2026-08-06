@@ -1033,7 +1033,9 @@ function selectModerationGroup(groupId) {
   if (aiSentiment) aiSentiment.checked = Boolean(config.ai?.sentiment_moderation);
   const aiPrompt = document.getElementById('mod-ai-prompt');
   if (aiPrompt)
-    aiPrompt.value = config.ai?.system_prompt || 'You are a helpful group moderator AI assistant.';
+    aiPrompt.value =
+      config.ai?.system_prompt ||
+      'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.';
   const transLang = document.getElementById('mod-trans-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');
@@ -1446,7 +1448,7 @@ async function saveGroupAiConfig() {
     sentiment_moderation: Boolean(document.getElementById('mod-ai-sentiment')?.checked),
     system_prompt:
       document.getElementById('mod-ai-prompt')?.value ||
-      'You are a helpful group moderator AI assistant.',
+      'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
   groupConfig.translation = {
     enabled: true,

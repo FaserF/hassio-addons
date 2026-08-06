@@ -165,7 +165,8 @@ export function getDefaultGroupConfig() {
       enabled: false,
       faq_auto_reply: false,
       sentiment_moderation: false,
-      system_prompt: 'You are a helpful group moderator AI assistant.',
+      system_prompt:
+        'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
     },
     commands: {
       enabled: true,

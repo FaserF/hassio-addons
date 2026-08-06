@@ -72,11 +72,20 @@ export function handleIncomingMessages(session) {
         let rawParticipants =
           (msg.messageStubParameters || []).length > 0
             ? msg.messageStubParameters
-            : [msg.key?.participant || msg.participant || msg.key?.participantAlt].filter(Boolean);
+            : [
+                msg.key?.participant,
+                msg.participant,
+                msg.key?.participantAlt,
+                msg.key?.remoteJidAlt,
+              ].filter(Boolean);
 
-        // If participants array is still empty (e.g. self-leave/join), fallback to session user
-        if (rawParticipants.length === 0 && session.sock?.user?.id) {
-          rawParticipants = [session.sock.user.id];
+        // If participants array is still empty (e.g. self-leave/join via link), fallback to message key or session user
+        if (rawParticipants.length === 0) {
+          if (msg.key?.participant || msg.key?.participantAlt) {
+            rawParticipants = [msg.key.participant || msg.key.participantAlt];
+          } else if (session.sock?.user?.id) {
+            rawParticipants = [session.sock.user.id];
+          }
         }
 
         let action = null;
