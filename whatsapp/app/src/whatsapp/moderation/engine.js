@@ -808,7 +808,8 @@ export function formatMessageTemplate(
 
   const userLabel = resolveUserDisplayName(userId || participantJid, session);
   const canonicalKey = resolveCanonicalUserKey(userId || participantJid, session);
-  const mentionText = canonicalKey && !canonicalKey.startsWith('1576') ? `@${canonicalKey}` : userLabel;
+  const mentionText =
+    canonicalKey && !canonicalKey.startsWith('1576') ? `@${canonicalKey}` : userLabel;
 
   const pushname =
     (participantJid && session?.sock?.contacts?.[participantJid]?.notify) ||
@@ -854,7 +855,10 @@ export async function handleModerationParticipantUpdate(session, update) {
   });
 
   if (filteredParticipants.length === 0) {
-    logger.debug({ groupId, action }, '👥 Skipping duplicate participant update event within window');
+    logger.debug(
+      { groupId, action },
+      '👥 Skipping duplicate participant update event within window'
+    );
     return;
   }
 
