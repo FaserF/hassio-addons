@@ -52,7 +52,6 @@ export function registerModerationRoutes(app) {
       saveModerationStore(store);
     }
 
-
     res.json({ success: true, data: loadModerationStore() });
   });
 

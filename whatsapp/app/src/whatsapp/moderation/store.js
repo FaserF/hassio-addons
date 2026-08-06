@@ -220,7 +220,6 @@ export function getDefaultModerationStore() {
   };
 }
 
-
 export function getGroupModerationConfig(groupId) {
   const store = loadModerationStore();
   if (!store.groups[groupId]) {

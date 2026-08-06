@@ -1,9 +1,18 @@
 import { logger } from '../../logger.js';
 
-export async function processAiModeration(text, groupAiConfig, storeGeminiKey, mode = 'reply', extraContext = {}) {
-
+export async function processAiModeration(
+  text,
+  groupAiConfig,
+  storeGeminiKey,
+  mode = 'reply',
+  extraContext = {}
+) {
   const provider = groupAiConfig.provider || process.env.AI_PROVIDER || 'gemini';
-  const apiKey = storeGeminiKey || groupAiConfig.api_key || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey =
+    storeGeminiKey ||
+    groupAiConfig.api_key ||
+    process.env.OPENAI_API_KEY ||
+    process.env.GEMINI_API_KEY;
 
   if (!apiKey || (!groupAiConfig.enabled && mode !== 'rules_question')) {
     return null;
@@ -73,4 +82,3 @@ export async function processAiModeration(text, groupAiConfig, storeGeminiKey, m
     return null;
   }
 }
-
