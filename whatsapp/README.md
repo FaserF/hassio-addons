@@ -37,9 +37,9 @@ Control your addon via WhatsApp!
 
 Full-featured group moderation, anti-raid shield, and bot command engine (Rose & AegisBot style).
 
-- **Prefix-based Commands**: Configure prefix per group (default `!`). Includes 37 group commands (`!help`, `!warn`, `!kick`, `!tban`, `!mute`, `!tmute`, `!promote`, `!demote`, `!approve`, `!save`, `!filter`, `!translate`, etc.).
+- **Prefix-based Commands**: Configure prefix per group (default `!`). Includes 37 group commands (`!help`, `!warn`, `!kick`, `!tban`, `!mute`, `!tmute`, `!promote`, `!demote`, `!approve`, `!save`, `!filter`, `!translate`, etc.). Supports custom command modes (Auto Reply, HA/Webhook forwarding, Command Aliases).
 - **Content Locks**: Lock images, videos, voice, docs, stickers, URLs, invites, polls, contacts, locations, forwarded messages, or RTL text (`!lock`, `!unlock`).
-- **Automation & AI**: Captchas, welcome/goodbye greetings, word blacklists, anti-flood, anti-raid, Multi-AI provider support (OpenAI & Gemini), AI FAQ responder, AI Intent & Scam Detection (phishing/crypto protection), AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
+- **Automation & AI**: Captchas (Private DM / Group resolution & Web UI status overview), welcome/goodbye greetings with departure reasons, configurable user name addressing priorities, word blacklists, anti-flood, anti-raid, Multi-AI provider support (OpenAI & Gemini), AI FAQ responder, AI Intent & Scam Detection (phishing/crypto protection), AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
 
 > [!TIP]
 > **First Contact:** The bot automatically sends a welcome message to new users on their first direct message, identifying their role (Admin/Standard).

@@ -427,6 +427,10 @@ function selectModerationGroup(groupId) {
   if (capTarget) capTarget.value = config.greetings?.captcha_target || 'private';
   const capTime = document.getElementById('mod-captcha-timeout');
   if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+  const namePrio = document.getElementById('mod-name-priority');
+  if (namePrio) namePrio.value = config.greetings?.name_priority || 'name_push_phone';
+  const nameFall = document.getElementById('mod-name-fallback');
+  if (nameFall) nameFall.value = config.greetings?.name_fallback || 'phone';
 
   if (capE && capE.checked) {
     loadCaptchaUsers();
@@ -887,6 +891,8 @@ async function saveGroupGreetings() {
     captcha_target: document.getElementById('mod-captcha-target')?.value || 'private',
     captcha_timeout_seconds:
       parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+    name_priority: document.getElementById('mod-name-priority')?.value || 'name_push_phone',
+    name_fallback: document.getElementById('mod-name-fallback')?.value || 'phone',
   };
   await saveGroupConfig(groupConfig);
   markClean();

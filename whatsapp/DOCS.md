@@ -85,7 +85,13 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 
 - **Disabled by Default**: The moderation engine is globally disabled by default. Enable it per-group or globally via the Addon Web UI.
 - **Group Rules & Agreement**: Define rules, automatically present rules on member joins (`!setrules`, `!rules <question>` AI interpretation).
-- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{subject}`, `{title}`, `{count}`, `{members}`, `{rules}`, `{date}`, `{time}`), verification captchas (button/math), clean welcome.
+- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{subject}`, `{title}`, `{count}`, `{members}`, `{rules}`, `{date}`, `{time}`), verification captchas (button/math/code), delivery target (group vs. private DM chat), and automated farewell messages with detailed kick/leave reasons (voluntary leave, captcha timeout, group ban, federation ban, warning threshold, admin removal).
+- **Captcha Verification Dashboard & DM Resolution**: Web UI Overview panel to view pending/verified users per group and manually toggle verification status. Full support for solving captchas via Private Chat (DM) with automatic confirmation and group notifications.
+- **Configurable User Addressing**: Configurable name resolution order (`Contact Name > Pushname > Phone Number`, `Pushname > Contact Name > Phone Number`, or `Phone Number Only`) and fallback preferences (`Phone Number` vs `@User`).
+- **Custom Command Handler Modes**: Define custom group commands (`!wifi`, `!faq`, etc.) with 3 flexible execution modes:
+  - 🤖 **Auto Reply**: Bot sends an automated text response.
+  - 🏠 **HA / Webhook**: Event is forwarded to Home Assistant/Webhooks with no auto-reply (appears in `!help`).
+  - 🔗 **Alias**: Redirects execution to any built-in or custom command target.
 - **Warnings System**: Configurable warning thresholds, warn decay (`decay_hours`), and automated penalties (`!warn`, `!unwarn`, `!warns`).
 - **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, contact cards, location shares, forwarded messages, and RTL text (`!lock`, `!unlock`, `!locks`, `!locktypes`).
 - **Blacklist & Word Filters**: Match prohibited words or regex patterns with automated penalties.

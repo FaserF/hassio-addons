@@ -139,6 +139,25 @@ export default () => `
                             <select id="mod-captcha-target" class="mod-select mod-select-sm"><option value="private">Private Chat (DM)</option><option value="group">Group Chat</option></select>
                             <div class="mod-number-group"><input type="number" id="mod-captcha-timeout" class="mod-number-input" value="240" min="30" max="600"><span class="mod-number-unit">s timeout</span></div>
                         </div>
+                        <div class="mod-divider"></div>
+                        <div class="mod-feature-header">
+                            <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-id-card"></i></div>
+                            <div><div class="mod-feature-title">User Addressing &amp; Name Format</div><div class="mod-feature-desc">Configure name resolution order and fallback when mentioning users in messages.</div></div>
+                        </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-field-label" style="margin:0; white-space:nowrap;">Name Priority:</label>
+                            <select id="mod-name-priority" class="mod-select mod-select-sm">
+                                <option value="name_push_phone">Contact Name &gt; Pushname &gt; Phone Number</option>
+                                <option value="push_name_phone">Pushname &gt; Contact Name &gt; Phone Number</option>
+                                <option value="phone_only">Phone Number Only (+49...)</option>
+                            </select>
+                            <label class="mod-field-label" style="margin:0; margin-left:12px; white-space:nowrap;">Fallback:</label>
+                            <select id="mod-name-fallback" class="mod-select mod-select-sm">
+                                <option value="phone">Phone Number (+49...)</option>
+                                <option value="user">Generic (@User)</option>
+                            </select>
+                        </div>
+
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupGreetings()"><i class="fas fa-save"></i> Save Greetings &amp; Captcha</button></div>
 
                         <div id="mod-captcha-users-container" style="display:none; margin-top:20px;">

@@ -617,6 +617,13 @@ export async function handleModerationMessage(session, event) {
   // Never moderate or auto-respond to outgoing bot messages (prevents self-loop)
   if (event.raw?.key?.fromMe) return false;
 
+  const isGroup = event.is_group ?? event.sender?.endsWith('@g.us');
+
+  // Handle Private Chat (DM) messages for pending Captchas
+  if (!isGroup) {
+    return await handlePrivateCaptchaMessage(session, event);
+  }
+
   const groupId = event.sender;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
@@ -733,6 +740,9 @@ export async function handleModerationMessage(session, event) {
             config.verified_users[userId] = verRecord;
             const cleanId = userId.replace(/\D/g, '');
             if (cleanId) config.verified_users[cleanId] = verRecord;
+            // Also store canonical key if resolved
+            const canonical = resolveCanonicalUserKey(userId, session);
+            if (canonical) config.verified_users[canonical] = verRecord;
             store.groups[groupId] = config;
             saveModerationStore(store);
           } catch (storeErr) {
@@ -1102,6 +1112,107 @@ export async function handleModerationMessage(session, event) {
   return false;
 }
 
+/**
+ * Handles incoming private (DM) messages to check if the sender is trying to resolve a pending Captcha
+ * for any group where private captcha verification is enabled.
+ */
+export async function handlePrivateCaptchaMessage(session, event) {
+  const userId = event.sender_number;
+  const text = (event.content || '').trim();
+  if (!userId || !text) return false;
+
+  // Scan all pending captchas for an entry matching this user (by PN, LID, canonical key)
+  let foundMatch = null;
+  let targetGroupId = null;
+  let targetKey = null;
+
+  for (const [key, captchaObj] of pendingCaptchas.entries()) {
+    const colonIdx = key.indexOf(':');
+    if (colonIdx === -1) continue;
+    const gId = key.slice(0, colonIdx);
+    const storedUserId = key.slice(colonIdx + 1);
+
+    const matchUser =
+      storedUserId === userId ||
+      storedUserId.replace(/\D/g, '') === userId.replace(/\D/g, '') ||
+      resolveCanonicalUserKey(storedUserId, session) === resolveCanonicalUserKey(userId, session);
+
+    if (matchUser) {
+      foundMatch = captchaObj;
+      targetGroupId = gId;
+      targetKey = key;
+      break;
+    }
+  }
+
+  if (!foundMatch || !targetGroupId) return false;
+
+  const cleanAnswer = String(foundMatch.answer || '').trim().toLowerCase();
+  const rawInput = text.trim().toLowerCase();
+  const cleanInput = cleanCaptchaInput(text);
+  const words = text.split(/\s+/).map((w) => cleanCaptchaInput(w));
+  const noFormatText = text.toLowerCase().replace(/[*_~`'"\s]/g, '');
+
+  const isMatch =
+    rawInput === cleanAnswer ||
+    cleanInput === cleanAnswer ||
+    words.includes(cleanAnswer) ||
+    noFormatText === cleanAnswer;
+
+  if (isMatch) {
+    clearTimeout(foundMatch.timeoutHandle);
+    pendingCaptchas.delete(targetKey);
+
+    const store = loadModerationStore();
+    const config = getGroupModerationConfig(targetGroupId);
+    const verRecord = { verified: true, timestamp: Date.now(), mode: 'auto' };
+
+    config.verified_users = config.verified_users || {};
+    config.verified_users[userId] = verRecord;
+    const cleanId = userId.replace(/\D/g, '');
+    if (cleanId) config.verified_users[cleanId] = verRecord;
+    const canonical = resolveCanonicalUserKey(userId, session);
+    if (canonical) config.verified_users[canonical] = verRecord;
+
+    store.groups[targetGroupId] = config;
+    saveModerationStore(store);
+
+    let groupSubject = targetGroupId.split('@')[0];
+    if (session?.sock?.groupMetadata) {
+      try {
+        const meta = await session.sock.groupMetadata(targetGroupId);
+        if (meta?.subject) groupSubject = meta.subject;
+      } catch (_e) {
+        /* ignore */
+      }
+    }
+
+    const confirmText = `✅ *Captcha Verified!*\n\nYou have been successfully verified for *${groupSubject}*. You can now post messages in the group.`;
+    const dmJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
+    try {
+      await session.sock.sendMessage(dmJid, { text: confirmText });
+    } catch (_e) {
+      /* ignore */
+    }
+
+    // Also send brief notification into group
+    try {
+      const userLabel = resolveUserDisplayName(userId, session, config.greetings);
+      await reply(session, targetGroupId, {
+        text: `✅ ${userLabel} has completed Captcha verification via DM. Welcome!`,
+        mentions: [`${userId.replace(/\D/g, '')}@s.whatsapp.net`],
+      });
+    } catch (_e) {
+      /* ignore */
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+
 export function formatMessageTemplate(
   template,
   { userId, participantJid, groupId, groupMeta, config, session } = {}
@@ -1430,6 +1541,12 @@ export async function handleModerationParticipantUpdate(session, update) {
 
           const timeoutHandle = setTimeout(async () => {
             if (pendingCaptchas.has(captchaKey)) {
+              // Double check if user has already been verified
+              if (isUserVerified(groupId, userId, session)) {
+                pendingCaptchas.delete(captchaKey);
+                return;
+              }
+
               // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
               let userIsAdmin = isAdmin(participantJid, session);
 

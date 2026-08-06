@@ -2,11 +2,25 @@ import { MASK_SENSITIVE_DATA, ADMIN_NUMBERS, refreshAdminNumbers } from '../conf
 import { logger } from '../logger.js';
 
 /**
- * Masks sensitive data if configured.
+ * Ensures strings are well-formed UTF-8 without lone surrogates.
+ */
+export function sanitizeUnicode(str) {
+  if (!str) return str;
+  if (typeof str !== 'string') str = String(str);
+  if (typeof str.toWellFormed === 'function') {
+    return str.toWellFormed();
+  }
+  return str.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '\uFFFD');
+}
+
+/**
+ * Masks sensitive data if configured and sanitizes invalid Unicode surrogates.
  */
 export function maskData(str) {
-  if (!MASK_SENSITIVE_DATA || !str) return str;
+  if (!str) return str;
   if (typeof str !== 'string') str = String(str);
+  str = sanitizeUnicode(str);
+  if (!MASK_SENSITIVE_DATA) return str;
   if (str.length <= 4) return '****';
   return str.substring(0, 3) + '****' + str.substring(str.length - 2);
 }
@@ -259,15 +273,17 @@ export function resolveCanonicalUserKey(rawUserId, session = null) {
 }
 
 /**
- * Resolves a User ID into a clean display label following a strict 5-tier priority:
- * Priority 1: WhatsApp Contact Name (contact.name / verifiedName)
- * Priority 2: WhatsApp Username / Pushname (contact.notify)
- * Priority 3: Formatted Phone Number (+49176...)
- * Priority 4: Generic Fallback (@User)
- * Priority 5: WhatsApp JID Key / Clean Digits
+ * Resolves a User ID into a clean display label following configurable priority and fallback settings.
+ * @param {string} rawUserId
+ * @param {object} session
+ * @param {object|string} options Config object { name_priority, name_fallback } or priority mode string
  */
-export function resolveUserDisplayName(rawUserId, session = null) {
+export function resolveUserDisplayName(rawUserId, session = null, options = {}) {
   if (!rawUserId) return '@User';
+  const opts = typeof options === 'string' ? { name_priority: options } : options || {};
+  const priorityMode = opts.name_priority || 'name_push_phone'; // 'name_push_phone' | 'push_name_phone' | 'phone_only'
+  const fallbackMode = opts.name_fallback || 'phone'; // 'phone' | 'user'
+
   const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
 
   let cached = null;
@@ -287,24 +303,24 @@ export function resolveUserDisplayName(rawUserId, session = null) {
     }
   }
 
-  // Prio 1: WhatsApp Name (contact.name || contact.verifiedName)
-  const contactName = cached?.name || cached?.verifiedName;
-  if (contactName) {
-    return contactName;
-  }
-
-  // Prio 2: WhatsApp Username / Pushname (contact.notify)
-  const pushname = cached?.notify;
-  if (pushname) {
-    return pushname;
-  }
-
-  // Prio 3: Phone Number (+49...)
+  const contactName = cached?.name || cached?.verifiedName || '';
+  const pushname = cached?.notify || '';
   const isLid = String(rawUserId).includes('@lid') || (canonicalKey || '').startsWith('1576');
-  if (canonicalKey && !isLid && /^\d+$/.test(canonicalKey)) {
-    return `+${canonicalKey}`;
+  const phoneNumber = canonicalKey && !isLid && /^\d+$/.test(canonicalKey) ? `+${canonicalKey}` : '';
+
+  if (priorityMode === 'phone_only') {
+    if (phoneNumber) return phoneNumber;
+  } else if (priorityMode === 'push_name_phone') {
+    if (pushname) return pushname;
+    if (contactName) return contactName;
+  } else {
+    // Default: 'name_push_phone'
+    if (contactName) return contactName;
+    if (pushname) return pushname;
   }
 
-  // Prio 4 & 5: Generic Fallback / Clean ID
+  // Fallback step
+  if (phoneNumber) return phoneNumber;
+  if (fallbackMode === 'user') return '@User';
   return isLid ? '@User' : canonicalKey || String(rawUserId);
 }
