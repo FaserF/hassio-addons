@@ -116,10 +116,14 @@ export default () => `
                         <div style="margin-top:12px; padding:10px 12px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
                             <strong style="color:var(--primary);"><i class="fas fa-code"></i> Available Message Variables:</strong>
                             <div style="display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:6px; color:var(--text-main);">
-                                <div><code>{user}</code> or <code>{mention}</code> &ndash; <span style="color:var(--text-muted);">Mentions the user (@phone)</span></div>
+                                <div><code>{user}</code> / <code>{mention}</code> &ndash; <span style="color:var(--text-muted);">Mentions the user (@phone)</span></div>
                                 <div><code>{name}</code> &ndash; <span style="color:var(--text-muted);">User phone number / ID</span></div>
-                                <div><code>{group}</code> &ndash; <span style="color:var(--text-muted);">Group name / ID</span></div>
+                                <div><code>{pushname}</code> &ndash; <span style="color:var(--text-muted);">User profile name</span></div>
+                                <div><code>{group}</code> / <code>{subject}</code> / <code>{title}</code> &ndash; <span style="color:var(--text-muted);">Group name</span></div>
+                                <div><code>{count}</code> / <code>{members}</code> &ndash; <span style="color:var(--text-muted);">Member count</span></div>
                                 <div><code>{rules}</code> &ndash; <span style="color:var(--text-muted);">Group rules text</span></div>
+                                <div><code>{date}</code> &ndash; <span style="color:var(--text-muted);">Current date (e.g. 06.08.2026)</span></div>
+                                <div><code>{time}</code> &ndash; <span style="color:var(--text-muted);">Current time (e.g. 10:15)</span></div>
                             </div>
                         </div>
 

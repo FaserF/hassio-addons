@@ -304,7 +304,7 @@ registry.register(
     const text = args.join(' ');
     if (!text) {
       await reply(session, groupId, {
-        text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {group}`,
+        text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
       });
       return;
     }
@@ -338,7 +338,7 @@ registry.register(
     const text = args.join(' ');
     if (!text) {
       await reply(session, groupId, {
-        text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {group}`,
+        text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
       });
       return;
     }

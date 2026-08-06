@@ -85,7 +85,7 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 
 - **Disabled by Default**: The moderation engine is globally disabled by default. Enable it per-group or globally via the Addon Web UI.
 - **Group Rules & Agreement**: Define rules, automatically present rules on member joins (`!setrules`, `!rules <question>` AI interpretation).
-- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{group}`), verification captchas (button/math), clean welcome.
+- **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{subject}`, `{title}`, `{count}`, `{members}`, `{rules}`, `{date}`, `{time}`), verification captchas (button/math), clean welcome.
 - **Warnings System**: Configurable warning thresholds, warn decay (`decay_hours`), and automated penalties (`!warn`, `!unwarn`, `!warns`).
 - **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, contact cards, location shares, forwarded messages, and RTL text (`!lock`, `!unlock`, `!locks`, `!locktypes`).
 - **Blacklist & Word Filters**: Match prohibited words or regex patterns with automated penalties.
@@ -119,8 +119,8 @@ The bot command engine supports configurable prefixes per group (default `!`) an
 | `!locks`                    |    Yes     | List currently active content locks                                    |
 | `!translate [text]`         |     No     | Translate replied-to message or text using Gemini AI                   |
 | `!setrules <text>`          |    Yes     | Update group rules                                                     |
-| `!setwelcome <text>`        |    Yes     | Configure welcome message (`{mention}`, `{name}`, `{group}`)           |
-| `!setgoodbye <text>`        |    Yes     | Configure goodbye message (`{mention}`, `{name}`, `{group}`)           |
+| `!setwelcome <text>`        |    Yes     | Configure welcome message (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{count}`, `{rules}`, `{date}`, `{time}`) |
+| `!setgoodbye <text>`        |    Yes     | Configure goodbye message (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{count}`, `{rules}`, `{date}`, `{time}`) |
 | `!warn [@user] [reason]`    |    Yes     | Issue a warning to a user (mention or reply)                           |
 | `!unwarn [@user]`           |    Yes     | Clear all warnings for a user                                          |
 | `!warns [@user]`            |    Yes     | View warning history for a user                                        |

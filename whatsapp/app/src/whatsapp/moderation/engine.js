@@ -616,6 +616,35 @@ export async function handleModerationMessage(session, event) {
   return false;
 }
 
+export function formatMessageTemplate(template, { userId, participantJid, groupId, groupMeta, config, session } = {}) {
+  if (!template) return '';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+  const groupTitle = groupMeta?.subject || (groupId ? groupId.split('@')[0] : '');
+  const memberCount = groupMeta?.participants?.length ? String(groupMeta.participants.length) : 'N/A';
+  const pushname =
+    (participantJid && session?.sock?.contacts?.[participantJid]?.notify) ||
+    (participantJid && session?.sock?.contacts?.[participantJid]?.name) ||
+    userId ||
+    '';
+
+  return template
+    .replace(/{mention}/g, userId ? `@${userId}` : '')
+    .replace(/{user}/g, userId ? `@${userId}` : '')
+    .replace(/{name}/g, userId || '')
+    .replace(/{pushname}/g, pushname)
+    .replace(/{group}/g, groupTitle)
+    .replace(/{subject}/g, groupTitle)
+    .replace(/{title}/g, groupTitle)
+    .replace(/{count}/g, memberCount)
+    .replace(/{members}/g, memberCount)
+    .replace(/{rules}/g, config?.rules?.text || 'Be respectful')
+    .replace(/{date}/g, dateStr)
+    .replace(/{time}/g, timeStr);
+}
+
 export async function handleModerationParticipantUpdate(session, update) {
   const store = loadModerationStore();
   if (!store.global_enabled) return;
@@ -717,16 +746,27 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       // Greetings & Welcome message
       if (config.greetings?.welcome_enabled) {
+        let groupMeta = null;
+        if (session?.sock?.groupMetadata) {
+          try {
+            groupMeta = await session.sock.groupMetadata(groupId);
+          } catch (e) {
+            logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for welcome greeting');
+          }
+        }
+
         let welcomeMsg =
           config.greetings.welcome_text ||
           config.greetings.welcome_message ||
           'Welcome {mention} to {group}!';
-        welcomeMsg = welcomeMsg
-          .replace(/{mention}/g, `@${userId}`)
-          .replace(/{name}/g, userId)
-          .replace(/{user}/g, `@${userId}`)
-          .replace(/{group}/g, groupId.split('@')[0])
-          .replace(/{rules}/g, config.rules?.text || 'Be respectful');
+        welcomeMsg = formatMessageTemplate(welcomeMsg, {
+          userId,
+          participantJid,
+          groupId,
+          groupMeta,
+          config,
+          session,
+        });
 
         await reply(session, groupId, {
           text: welcomeMsg,
@@ -779,15 +819,27 @@ export async function handleModerationParticipantUpdate(session, update) {
   } else if (action === 'remove' || action === 'leave') {
     // Goodbye message
     if (config.greetings?.goodbye_enabled) {
+      let groupMeta = null;
+      if (session?.sock?.groupMetadata) {
+        try {
+          groupMeta = await session.sock.groupMetadata(groupId);
+        } catch (e) {
+          logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for goodbye greeting');
+        }
+      }
+
       for (const participantJid of participants) {
         const userId = participantJid.split('@')[0];
         let goodbyeMsg =
           config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
-        goodbyeMsg = goodbyeMsg
-          .replace(/{mention}/g, `@${userId}`)
-          .replace(/{name}/g, userId)
-          .replace(/{user}/g, `@${userId}`)
-          .replace(/{group}/g, groupId.split('@')[0]);
+        goodbyeMsg = formatMessageTemplate(goodbyeMsg, {
+          userId,
+          participantJid,
+          groupId,
+          groupMeta,
+          config,
+          session,
+        });
 
         await reply(session, groupId, { text: goodbyeMsg });
       }

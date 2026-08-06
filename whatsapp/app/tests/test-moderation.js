@@ -13,6 +13,7 @@ import {
   executePenalty,
   isSelfParticipant,
   generateBotWelcomeMessage,
+  formatMessageTemplate,
 } from '../src/whatsapp/moderation/engine.js';
 import {
   isSameUser,
@@ -294,6 +295,25 @@ try {
   assert.strictEqual(normalizeJid(':'.repeat(1000) + '@s.whatsapp.net'), '@s.whatsapp.net');
   assert.strictEqual(normalizeJid(':'.repeat(1000)), ':'.repeat(1000));
   console.log('✅ PASSED: normalizeJid ReDoS protection and JID normalization verified');
+
+  // Test formatMessageTemplate with extended placeholders
+  const sampleTemplate = 'Welcome {pushname} ({user}) to {title}! Member #{count} of {group}. Rules: {rules}. Date: {date} {time}';
+  const formatted = formatMessageTemplate(sampleTemplate, {
+    userId: '491701234567',
+    participantJid: '491701234567@s.whatsapp.net',
+    groupId: '1203630123456789@g.us',
+    groupMeta: { subject: 'Test Group', participants: [1, 2, 3, 4, 5] },
+    config: { rules: { text: 'Rule 1: Be polite' } },
+    session: { sock: { contacts: { '491701234567@s.whatsapp.net': { notify: 'Alex' } } } },
+  });
+  assert(formatted.includes('Alex'), 'pushname should be Alex');
+  assert(formatted.includes('@491701234567'), 'user tag should be @491701234567');
+  assert(formatted.includes('Test Group'), 'group title should be Test Group');
+  assert(formatted.includes('Member #5'), 'member count should be 5');
+  assert(formatted.includes('Rule 1: Be polite'), 'rules text should match');
+  assert(/\d{2}\.\d{2}\.\d{4}/.test(formatted), 'date should match DD.MM.YYYY');
+  assert(/\d{2}:\d{2}/.test(formatted), 'time should match HH:MM');
+  console.log('✅ PASSED: formatMessageTemplate with all extended placeholders verified');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());
