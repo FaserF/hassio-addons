@@ -37,9 +37,10 @@ export function registerModerationRoutes(app) {
       store.federations = federations;
     }
     if (group_id && group_config) {
-      store.groups[group_id] = group_config;
+      setGroupModerationConfig(group_id, group_config);
+    } else {
+      saveModerationStore(store);
     }
-    saveModerationStore(store);
 
     res.json({ success: true, data: loadModerationStore() });
   });
