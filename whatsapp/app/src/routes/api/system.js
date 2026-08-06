@@ -245,10 +245,12 @@ export function registerSystemRoutes(app) {
     '/api/diagnostics/run',
     authMiddleware,
     asyncHandler(async (req, res) => {
-      const sessionId = sanitizeSessionId(req.query.session_id || req.body?.session_id || 'default');
+      const sessionId = sanitizeSessionId(
+        req.query.session_id || req.body?.session_id || 'default'
+      );
       const session = getSession(sessionId);
       const { runDiagnostic } = await import('../../whatsapp/actions.js');
-      
+
       // Trigger diagnostic in background so HTTP response returns fast
       runDiagnostic(session, session.stats.my_number || 'me', addLog).catch((err) => {
         logger.error({ error: err.message }, 'Failed background diagnostic run');
