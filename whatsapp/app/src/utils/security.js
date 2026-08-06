@@ -12,20 +12,37 @@ export function maskData(str) {
 }
 
 /**
+ * Normalizes a WhatsApp JID by removing device/agent suffix before '@'
+ * (e.g. "123456:0@s.whatsapp.net" -> "123456@s.whatsapp.net").
+ * Avoids regular expressions to prevent ReDoS (CWE-1333 / js/polynomial-redos).
+ */
+export function normalizeJid(jid) {
+  if (!jid) return '';
+  const str = String(jid).trim();
+  const atIndex = str.indexOf('@');
+  if (atIndex === -1) return str;
+  const colonIndex = str.indexOf(':');
+  if (colonIndex !== -1 && colonIndex < atIndex) {
+    return str.slice(0, colonIndex) + str.slice(atIndex);
+  }
+  return str;
+}
+
+/**
  * Checks if a JID belongs to an administrator.
  */
 export function isAdmin(jid, session = null) {
   if (!jid) return false;
 
-  const targetNormalizedJid = jid.replace(/:[^@]*@/, '@');
+  const targetNormalizedJid = normalizeJid(jid);
   const targetUser = targetNormalizedJid.split('@')[0];
   const targetDigits = targetUser.replace(/\D/g, '');
 
   // 0. Implicit Admin: If it's our own JID / account, we are always an admin
   if (session?.sock?.user) {
     const myUser = session.sock.user;
-    const myId = myUser.id ? myUser.id.replace(/:[^@]*@/, '@') : '';
-    const myLid = myUser.lid ? myUser.lid.replace(/:[^@]*@/, '@') : '';
+    const myId = myUser.id ? normalizeJid(myUser.id) : '';
+    const myLid = myUser.lid ? normalizeJid(myUser.lid) : '';
 
     // Direct match against user.id or user.lid
     if (targetNormalizedJid === myId || (myLid && targetNormalizedJid === myLid)) {
@@ -56,8 +73,8 @@ export function isAdmin(jid, session = null) {
     // Check contactCache for LID <-> PN mapping for our own account or target
     if (session.contactCache) {
       for (const contact of session.contactCache.values()) {
-        const cId = contact.id ? contact.id.replace(/:[^@]*@/, '@') : '';
-        const cLid = contact.lid ? contact.lid.replace(/:[^@]*@/, '@') : '';
+        const cId = contact.id ? normalizeJid(contact.id) : '';
+        const cLid = contact.lid ? normalizeJid(contact.lid) : '';
 
         const isSelfContact =
           (myId && (cId === myId || cLid === myId)) || (myLid && (cId === myLid || cLid === myLid));
@@ -123,12 +140,8 @@ export function generateMessageID() {
 export function isSameUser(jidA, jidB, session = null) {
   if (!jidA || !jidB) return false;
 
-  const normA = String(jidA)
-    .replace(/:[^@]*@/, '@')
-    .trim();
-  const normB = String(jidB)
-    .replace(/:[^@]*@/, '@')
-    .trim();
+  const normA = normalizeJid(jidA);
+  const normB = normalizeJid(jidB);
 
   if (normA === normB) return true;
 
@@ -144,8 +157,8 @@ export function isSameUser(jidA, jidB, session = null) {
   // 1. Check self user matching against session.sock.user & stats
   if (session?.sock?.user) {
     const myUser = session.sock.user;
-    const myId = myUser.id ? myUser.id.replace(/:[^@]*@/, '@').split('@')[0] : '';
-    const myLid = myUser.lid ? myUser.lid.replace(/:[^@]*@/, '@').split('@')[0] : '';
+    const myId = myUser.id ? normalizeJid(myUser.id).split('@')[0] : '';
+    const myLid = myUser.lid ? normalizeJid(myUser.lid).split('@')[0] : '';
     const myNum = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
 
     const selfDigits = [myId, myLid, myNum].map((x) => x.replace(/\D/g, '')).filter(Boolean);
@@ -164,14 +177,12 @@ export function isSameUser(jidA, jidB, session = null) {
   if (session?.contactCache) {
     for (const contact of session.contactCache.values()) {
       const cIdDigits = contact.id
-        ? contact.id
-            .replace(/:[^@]*@/, '@')
+        ? normalizeJid(contact.id)
             .split('@')[0]
             .replace(/\D/g, '')
         : '';
       const cLidDigits = contact.lid
-        ? contact.lid
-            .replace(/:[^@]*@/, '@')
+        ? normalizeJid(contact.lid)
             .split('@')[0]
             .replace(/\D/g, '')
         : '';
@@ -195,9 +206,7 @@ export function isSameUser(jidA, jidB, session = null) {
  */
 export function resolveCanonicalUserKey(rawUserId, session = null) {
   if (!rawUserId) return '';
-  const rawStr = String(rawUserId)
-    .replace(/:[^@]*@/, '@')
-    .trim();
+  const rawStr = normalizeJid(rawUserId);
   const rawUser = rawStr.split('@')[0];
   const digits = rawUser.replace(/\D/g, '');
 

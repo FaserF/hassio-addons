@@ -2,7 +2,7 @@ import { loadModerationStore, getGroupModerationConfig, saveModerationStore } fr
 import { processAiModeration } from './ai.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
-import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/security.js';
+import { resolveCanonicalUserKey, resolveUserDisplayName, normalizeJid } from '../../utils/security.js';
 
 // In-memory sliding window trackers
 const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps
@@ -15,13 +15,13 @@ function getWindowKey(groupId, userId) {
 
 export function isSelfParticipant(participantJid, session) {
   if (!participantJid || !session?.sock?.user) return false;
-  const targetNorm = participantJid.replace(/:.*@/, '@');
+  const targetNorm = normalizeJid(participantJid);
   const targetUser = targetNorm.split('@')[0];
   const targetDigits = targetUser.replace(/\D/g, '');
 
   const myUser = session.sock.user;
-  const myId = myUser.id ? myUser.id.replace(/:.*@/, '@') : '';
-  const myLid = myUser.lid ? myUser.lid.replace(/:.*@/, '@') : '';
+  const myId = myUser.id ? normalizeJid(myUser.id) : '';
+  const myLid = myUser.lid ? normalizeJid(myUser.lid) : '';
 
   if (targetNorm === myId || (myLid && targetNorm === myLid)) return true;
   if (myId && targetUser === myId.split('@')[0]) return true;

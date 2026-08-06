@@ -3,7 +3,7 @@ import { executePenalty, issueUserWarning, sendMissingAdminWarning } from './eng
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
-import { isSameUser, isAdmin } from '../../utils/security.js';
+import { isSameUser, isAdmin, normalizeJid } from '../../utils/security.js';
 
 class CommandRegistry {
   constructor() {
@@ -1033,7 +1033,7 @@ registry.register(
         return;
       }
 
-      const botUserJid = session.sock?.user?.id ? session.sock.user.id.replace(/:.*@/, '@') : null;
+      const botUserJid = session.sock?.user?.id ? normalizeJid(session.sock.user.id) : null;
       const botPn = session.stats?.my_number || (botUserJid ? botUserJid.split('@')[0] : null);
 
       let text = `👮 *Group Admins (${admins.length}):*\n\n`;

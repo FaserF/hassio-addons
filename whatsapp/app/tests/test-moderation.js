@@ -18,6 +18,7 @@ import {
   isSameUser,
   resolveCanonicalUserKey,
   resolveUserDisplayName,
+  normalizeJid,
 } from '../src/utils/security.js';
 
 console.log('\n🧪 Running WhatsApp Moderation Engine Unit Tests\n' + '='.repeat(50));
@@ -285,6 +286,14 @@ try {
   const displayName = resolveUserDisplayName('491761234567', mockSession);
   assert(displayName.includes('491761234567'), 'Display name should include canonical PN');
   console.log('✅ PASSED: isSameUser and LID resolution verified successfully');
+
+  // Test normalizeJid and ReDoS safety
+  assert.strictEqual(normalizeJid('491761234567:0@s.whatsapp.net'), '491761234567@s.whatsapp.net');
+  assert.strictEqual(normalizeJid('157608354779256:12@lid'), '157608354779256@lid');
+  assert.strictEqual(normalizeJid('491761234567@s.whatsapp.net'), '491761234567@s.whatsapp.net');
+  assert.strictEqual(normalizeJid(':'.repeat(1000) + '@s.whatsapp.net'), '@s.whatsapp.net');
+  assert.strictEqual(normalizeJid(':'.repeat(1000)), ':'.repeat(1000));
+  console.log('✅ PASSED: normalizeJid ReDoS protection and JID normalization verified');
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());
