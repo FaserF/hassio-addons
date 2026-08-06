@@ -130,20 +130,39 @@ export function registerMessagingRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const { number, name, description, startTime, endTime, location } = req.body;
+        // Accept both 'startTime' (direct API) and 'date' (stable integration v1.7.5)
+        const {
+          number,
+          name,
+          description,
+          startTime,
+          date,
+          endTime,
+          location,
+          joinLink,
+          isCanceled,
+          expiration,
+        } = req.body;
         if (!number || !name) return res.status(400).json({ detail: 'Missing number or name' });
 
         const connected = await ensureConnected(session);
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        // Normalise the start timestamp: prefer startTime, fall back to date
+        const rawStart = startTime ?? date;
+        const rawEnd = endTime;
 
         const jid = getJid(number);
         const sentMsg = await session.sock.sendMessage(jid, {
           event: {
             name,
             description: description || '',
-            startTime: startTime ? Math.floor(new Date(startTime).getTime() / 1000) : undefined,
-            endTime: endTime ? Math.floor(new Date(endTime).getTime() / 1000) : undefined,
-            location: location ? { name: location } : undefined,
+            startTime: rawStart ? Math.floor(new Date(rawStart).getTime() / 1000) : undefined,
+            endTime: rawEnd ? Math.floor(new Date(rawEnd).getTime() / 1000) : undefined,
+            location: location ? (typeof location === 'string' ? { name: location } : location) : undefined,
+            joinLink: joinLink || undefined,
+            isCanceled: isCanceled ?? undefined,
+            expiration: expiration ?? undefined,
           },
         });
         trackSent(session, number, `[Event] ${name}`);
