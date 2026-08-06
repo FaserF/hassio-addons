@@ -200,13 +200,25 @@ try {
     participants: ['491769999111@s.whatsapp.net'],
   });
 
-  assert.strictEqual(joinSentMessages.length, 1, 'Join event MUST send exactly 1 consolidated message');
+  assert.strictEqual(
+    joinSentMessages.length,
+    1,
+    'Join event MUST send exactly 1 consolidated message'
+  );
   const consolidatedText = joinSentMessages[0].text;
   assert(consolidatedText.includes('Welcome @491769999111'), 'Single message must contain Welcome');
-  assert(consolidatedText.includes('📜 *Group Rules:*'), 'Single message must contain inline Rules');
+  assert(
+    consolidatedText.includes('📜 *Group Rules:*'),
+    'Single message must contain inline Rules'
+  );
   assert(consolidatedText.includes('1. Be polite'), 'Single message must contain rule text');
-  assert(consolidatedText.includes('🤖 *Captcha Verification*'), 'Single message must contain Captcha');
-  console.log('✅ PASSED: Consolidated Welcome + Rules + Captcha single-message join flow verified');
+  assert(
+    consolidatedText.includes('🤖 *Captcha Verification*'),
+    'Single message must contain Captcha'
+  );
+  console.log(
+    '✅ PASSED: Consolidated Welcome + Rules + Captcha single-message join flow verified'
+  );
 
   // Test 7b: Participant Leave & Goodbye Message
   groupConfig.greetings.goodbye_enabled = true;
