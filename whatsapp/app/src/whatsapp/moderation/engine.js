@@ -18,6 +18,7 @@ import {
 const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps
 const groupJoinMap = new Map(); // key: groupId -> array of timestamps
 const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp }
+const recentKickReasons = new Map(); // key: groupId:userId -> { reason, expires }
 
 function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;
@@ -626,6 +627,14 @@ export async function handleModerationMessage(session, event) {
   const text = (event.content || '').trim();
   const rawMsg = event.raw;
 
+  // Guard: userId must be a valid sender number, not empty or the group JID digits
+  if (!userId || userId.includes('@')) return false;
+  const groupDigits = groupId.split('@')[0];
+  if (userId === groupDigits) {
+    logger.debug({ groupId, userId }, 'Skipping moderation: sender_number matches group JID (no participant JID resolved)');
+    return false;
+  }
+
   if (config.approved && config.approved.includes(userId)) {
     return false; // User is whitelisted, skip moderation
   }
@@ -727,15 +736,45 @@ export async function handleModerationMessage(session, event) {
             logger.warn({ error: storeErr.message }, 'Failed to record captcha verification');
           }
 
-          await reply(
-            session,
-            groupId,
-            {
-              text: `✅ Captcha verified! Welcome @${userId}.`,
-              mentions: [`${userId}@s.whatsapp.net`],
-            },
-            rawMsg
-          );
+          // Send confirmation — DM if captcha was sent via DM, otherwise group
+          const captchaTargetMode = config.greetings?.captcha_target || 'private';
+          const userPhoneJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
+          const confirmText = `\u2705 *Captcha Verified!*\n\nYou have been successfully verified in *${groupId.split('@')[0]}*. You can now participate in the group.`;
+
+          if (captchaTargetMode === 'private') {
+            // Try DM first
+            let dmSent = false;
+            try {
+              await session.sock.sendMessage(userPhoneJid, { text: confirmText });
+              dmSent = true;
+            } catch (_err) { /* fall through to group */ }
+
+            // Also post a brief notice in the group so members see the verification
+            await reply(
+              session,
+              groupId,
+              {
+                text: `\u2705 @${userId} has been successfully verified.`,
+                mentions: [`${userId}@s.whatsapp.net`],
+              },
+              rawMsg
+            );
+
+            if (!dmSent) {
+              // DM failed — send full confirmation in group as fallback
+              await reply(session, groupId, { text: `@${userId} ${confirmText}`, mentions: [`${userId}@s.whatsapp.net`] }, rawMsg);
+            }
+          } else {
+            await reply(
+              session,
+              groupId,
+              {
+                text: `\u2705 Captcha verified! Welcome @${userId}.`,
+                mentions: [`${userId}@s.whatsapp.net`],
+              },
+              rawMsg
+            );
+          }
           return true;
         }
       }
@@ -1426,6 +1465,14 @@ export async function handleModerationParticipantUpdate(session, update) {
 
               pendingCaptchas.delete(captchaKey);
               const userLabel = resolveUserDisplayName(userId, session);
+
+              // Record kick reason so goodbye message can display it
+              const kickReasonKey = getWindowKey(groupId, userId);
+              recentKickReasons.set(kickReasonKey, {
+                reason: '⏱️ Removed — Captcha verification timed out',
+                expires: Date.now() + 30000,
+              });
+
               await reply(
                 session,
                 groupId,
@@ -1473,13 +1520,13 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         // Attempt sending Welcome & Captcha via Private DM if configured as 'private'
         if (captchaTargetMode === 'private' && targetPrivateJid) {
-          sentViaDM = true;
           try {
             await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
             });
+            sentViaDM = true; // Only mark as sent if the DM actually succeeded
           } catch (dmErr) {
-            logger.info({ error: dmErr.message, targetPrivateJid }, 'Private DM delivery failed');
+            logger.info({ error: dmErr.message, targetPrivateJid }, 'Private DM delivery failed, falling back to group');
           }
         }
 
@@ -1527,6 +1574,55 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       for (const participantJid of filteredParticipants) {
         const userId = participantJid.split('@')[0];
+        const cleanDigits = userId.replace(/\D/g, '');
+
+        // --- Determine departure reason ---
+        let departureReason = '';
+        if (action === 'leave') {
+          departureReason = '🚶 Left voluntarily';
+        } else if (action === 'remove') {
+          // Check recent kick reason registry (e.g. captcha timeout)
+          const kickReasonKey = getWindowKey(groupId, userId) ;
+          const recentKick = recentKickReasons.get(kickReasonKey);
+          if (recentKick && recentKick.expires > Date.now()) {
+            departureReason = recentKick.reason;
+            recentKickReasons.delete(kickReasonKey);
+          }
+
+          if (!departureReason) {
+            // Check group ban
+            const bannedMap = config.banned_users || {};
+            const banInfo = bannedMap[userId] || (cleanDigits ? bannedMap[cleanDigits] : null);
+            if (banInfo) {
+              departureReason = `🚫 Banned${banInfo.reason ? ` — _${banInfo.reason}_` : ''}`;
+            }
+          }
+
+          if (!departureReason) {
+            // Check federation ban
+            const fedId = config.federation_id;
+            if (fedId) {
+              const fed = store.federations?.find((f) => f.id === fedId);
+              if (fed && (fed.banned_users?.includes(userId) || (cleanDigits && fed.banned_users?.includes(cleanDigits)))) {
+                departureReason = '🌐 Banned via Global Security Federation';
+              }
+            }
+          }
+
+          if (!departureReason) {
+            const warningsMap = config.warnings?.user_warns || {};
+            const warnings = warningsMap[userId] || (cleanDigits ? warningsMap[cleanDigits] : null);
+            const warnCount = Array.isArray(warnings) ? warnings.length : (warnings ? 1 : 0);
+            if (warnCount > 0) {
+              departureReason = `⚠️ Removed after ${warnCount} warning${warnCount !== 1 ? 's' : ''}`;
+            }
+          }
+
+          if (!departureReason) {
+            departureReason = '🔇 Removed by an admin';
+          }
+        }
+
         let goodbyeMsg =
           config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
         goodbyeMsg = formatMessageTemplate(goodbyeMsg, {
@@ -1537,6 +1633,10 @@ export async function handleModerationParticipantUpdate(session, update) {
           config,
           session,
         });
+
+        if (departureReason) {
+          goodbyeMsg += `\n\n📋 *Reason:* ${departureReason}`;
+        }
 
         const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
         const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');

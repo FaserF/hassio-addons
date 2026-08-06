@@ -105,10 +105,16 @@ export function registerModerationRoutes(app) {
 
   // GET /api/moderation/groups/:groupId/captcha/users
   app.get('/api/moderation/groups/:groupId/captcha/users', async (req, res) => {
-    const { groupId } = req.params;
-    const session = Array.from(sessions.values()).find((s) => s.isConnected);
-    const users = await getGroupCaptchaUsers(groupId, session);
-    res.json({ success: true, data: users });
+    try {
+      const { groupId } = req.params;
+      const session = Array.from(sessions.values()).find((s) => s.isConnected);
+      const users = await getGroupCaptchaUsers(groupId, session);
+      // Sanitize to ensure JSON-serializable output (remove undefined/function values)
+      const sanitized = JSON.parse(JSON.stringify(users));
+      res.json({ success: true, data: sanitized });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
   });
 
   // POST /api/moderation/groups/:groupId/captcha/verify

@@ -526,15 +526,12 @@ try {
     raw: { key: { id: 'msgValid' } },
   });
   assert.strictEqual(validHandled, true, 'Formatted code must be recognized as valid');
+  const validTextReply = captchaReplies.find((r) => r.text);
   assert(
-    captchaReplies[0]?.text.includes('Captcha verified'),
-    'Correct code must reply with Captcha verified'
+    validTextReply?.text.toLowerCase().includes('verified'),
+    'Correct code must reply with a verified confirmation'
   );
-  const pendingCapAfter = findPendingCaptcha(
-    '1203630999999999@g.us',
-    '4917647365403',
-    mockSessionCaptchaTest
-  );
+  const pendingCapAfter = findPendingCaptcha('1203630999999999@g.us', '4917647365403', mockSessionCaptchaTest);
   assert.strictEqual(pendingCapAfter, null, 'Pending captcha should be cleared after valid code');
 
   console.log(

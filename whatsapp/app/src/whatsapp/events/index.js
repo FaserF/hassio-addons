@@ -367,8 +367,16 @@ export function handleIncomingMessages(session) {
         } else if (msg.key.fromMe) {
           const selfPn = session.stats.my_number || session.sock?.user?.id?.split(':')[0];
           if (selfPn) effectiveSenderJid = `${selfPn}@s.whatsapp.net`;
+        } else if (isGroup) {
+          // Group message with no valid participant JID — sender unknown, skip to avoid
+          // using the group JID as the sender_number which causes moderation false-positives
+          logger.debug(
+            { msgId: msg.key.id, groupId: senderJid },
+            'Group message with no participant JID — sender_number will be empty'
+          );
+          effectiveSenderJid = '';
         }
-        const effectiveSenderNumber = effectiveSenderJid.split('@')[0];
+        const effectiveSenderNumber = effectiveSenderJid ? effectiveSenderJid.split('@')[0] : '';
 
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
 
