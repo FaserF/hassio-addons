@@ -277,7 +277,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             },
             rawMsg
           );
-        } else if (errMsg.includes('rate-limit') || errMsg.includes('429') || errMsg.includes('too many')) {
+        } else if (
+          errMsg.includes('rate-limit') ||
+          errMsg.includes('429') ||
+          errMsg.includes('too many')
+        ) {
           await reply(
             session,
             groupId,
