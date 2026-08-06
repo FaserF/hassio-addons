@@ -1146,7 +1146,7 @@ async function toggleGroupModeration(enabled) {
   }
 }
 
-function switchModSubTab(subTab) {
+function _doSwitchModSubTab(subTab) {
   // Hide all panels
   const panels = document.querySelectorAll('.mod-subpanel');
   panels.forEach((p) => (p.style.display = 'none'));
@@ -1160,6 +1160,12 @@ function switchModSubTab(subTab) {
     const activeBtn = subTabBar.querySelector(`[data-subtab="${subTab}"]`);
     if (activeBtn) activeBtn.classList.add('active');
   }
+}
+
+function switchModSubTab(subTab) {
+  const guardFn = typeof _guardDirty === 'function' ? _guardDirty : null;
+  if (guardFn && !guardFn(() => _doSwitchModSubTab(subTab))) return;
+  _doSwitchModSubTab(subTab);
 }
 
 async function saveGroupRules() {

@@ -69,10 +69,15 @@ export function handleIncomingMessages(session) {
     for (const msg of m.messages) {
       if (msg.messageStubType && msg.key?.remoteJid?.endsWith('@g.us')) {
         const groupId = msg.key.remoteJid;
-        const participants =
+        let rawParticipants =
           (msg.messageStubParameters || []).length > 0
             ? msg.messageStubParameters
-            : [msg.key.participant || msg.participant].filter(Boolean);
+            : [msg.key?.participant || msg.participant || msg.key?.participantAlt].filter(Boolean);
+
+        // If participants array is still empty (e.g. self-leave/join), fallback to session user
+        if (rawParticipants.length === 0 && session.sock?.user?.id) {
+          rawParticipants = [session.sock.user.id];
+        }
 
         let action = null;
         const st = msg.messageStubType;
@@ -97,7 +102,7 @@ export function handleIncomingMessages(session) {
         }
 
         // Normalize participants array to ensure full JIDs (e.g. "49123456789" -> "49123456789@s.whatsapp.net")
-        const normalizedParticipants = participants.map((p) =>
+        const normalizedParticipants = rawParticipants.map((p) =>
           typeof p === 'string' && !p.includes('@') ? `${p}@s.whatsapp.net` : p
         );
 
@@ -107,7 +112,7 @@ export function handleIncomingMessages(session) {
               groupId,
               action,
               stubType: msg.messageStubType,
-              rawParticipants: participants,
+              rawParticipants,
               normalizedParticipants,
             },
             '👥 Participant update detected via messageStubType'
@@ -119,6 +124,15 @@ export function handleIncomingMessages(session) {
           }).catch((err) => {
             logger.error({ error: err.message }, 'Error handling stubType participant update');
           });
+        } else {
+          logger.debug(
+            {
+              groupId,
+              stubType: msg.messageStubType,
+              stubParams: msg.messageStubParameters,
+            },
+            'ℹ️ Group messageStubType received (not mapped to add/remove action)'
+          );
         }
       }
     }

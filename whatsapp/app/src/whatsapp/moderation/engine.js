@@ -229,25 +229,52 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         } else if (
           errMsg.includes('not-participant') ||
           errMsg.includes('not in group') ||
-          errMsg.includes('participant')
+          errMsg.includes('participant') ||
+          errMsg.includes('404')
         ) {
           // Target user is no longer in the group
           await reply(
             session,
             groupId,
             {
-              text: `ℹ️ ${displayName} is no longer in this group.`,
+              text: `ℹ️ ${displayName} is no longer a member of this group.`,
+              mentions: [userJid],
+            },
+            rawMsg
+          );
+        } else if (
+          errMsg.includes('internal-server-error') ||
+          errMsg.includes('500') ||
+          errMsg.includes('admin') ||
+          errMsg.includes('owner')
+        ) {
+          // Internal Server Error usually means WhatsApp rejected removing an admin/owner or LID format mismatch
+          await reply(
+            session,
+            groupId,
+            {
+              text: `⚠️ Cannot ${action} ${displayName}.\n\n*Reason:* WhatsApp server rejected the request. This occurs if the target user is a Group Admin/Owner or if the user account is protected by WhatsApp privacy rules.`,
+              mentions: [userJid],
+            },
+            rawMsg
+          );
+        } else if (errMsg.includes('rate-limit') || errMsg.includes('429') || errMsg.includes('too many')) {
+          await reply(
+            session,
+            groupId,
+            {
+              text: `⏳ Action ${action} for ${displayName} failed due to WhatsApp rate limiting. Please try again in a few moments.`,
               mentions: [userJid],
             },
             rawMsg
           );
         } else {
-          // Failure (e.g. target is an Admin or WhatsApp internal error)
+          // General clean error notice
           await reply(
             session,
             groupId,
             {
-              text: `❌ Could not ${action} ${displayName}.\n\n*Reason:* ${e.message}\n\n_Note: Group Admins cannot be kicked by the bot unless the bot is the group owner._`,
+              text: `❌ Could not ${action} ${displayName}.\n\n*Reason:* ${e.message || 'Unknown WhatsApp protocol error'}`,
               mentions: [userJid],
             },
             rawMsg
@@ -988,7 +1015,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         const fullText = messageParts.join('\n\n');
         const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
 
-        await reply(
+        const sendResult = await reply(
           session,
           groupId,
           {
@@ -997,6 +1024,21 @@ export async function handleModerationParticipantUpdate(session, update) {
           },
           rawMsg
         );
+
+        // If sending the welcome/captcha message failed, cancel the captcha timeout
+        // so no timeout kick is executed for a challenge the user never saw!
+        if (!sendResult && isCaptchaEnabled) {
+          const captchaKey = getWindowKey(groupId, userId);
+          const pending = pendingCaptchas.get(captchaKey);
+          if (pending?.timeoutHandle) {
+            clearTimeout(pending.timeoutHandle);
+          }
+          pendingCaptchas.delete(captchaKey);
+          logger.warn(
+            { groupId, userId },
+            '⚠️ Cancelled captcha timeout kick because welcome/captcha message failed to send.'
+          );
+        }
       }
     }
   } else if (action === 'remove' || action === 'leave') {
