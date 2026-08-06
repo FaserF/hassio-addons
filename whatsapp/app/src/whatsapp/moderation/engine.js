@@ -190,8 +190,61 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         saveModerationStore(store);
       }
 
-      try {
+      // Perform pre-checks on group metadata before attempting kick/ban
+      let isBotAdmin = false;
+      let isTargetAdmin = false;
+
+      if (session?.sock?.groupMetadata) {
+        try {
+          const meta = await session.sock.groupMetadata(groupId);
+          const myUser = session.sock.user;
+          const myId = myUser?.id ? normalizeJid(myUser.id) : '';
+          const myLid = myUser?.lid ? normalizeJid(myUser.lid) : '';
+          const myDigits = myId.split('@')[0].replace(/\D/g, '');
+          const targetDigits = userId.replace(/\D/g, '');
+
+          for (const p of meta?.participants || []) {
+            const pId = p.id ? normalizeJid(p.id) : '';
+            const pDigits = pId.split('@')[0].replace(/\D/g, '');
+
+            const isAdminRole = p.admin === 'admin' || p.admin === 'superadmin';
+
+            // Check bot status
+            if (pDigits === myDigits || pId === myId || (myLid && pId === myLid)) {
+              if (isAdminRole) isBotAdmin = true;
+            }
+            // Check target user status
+            if (
+              pDigits === targetDigits ||
+              pId === userJid ||
+              pId.split('@')[0] === userId
+            ) {
+              if (isAdminRole) isTargetAdmin = true;
+            }
+          }
+        } catch (metaErr) {
+          logger.debug({ error: metaErr.message, groupId }, 'Failed to fetch metadata in executePenalty');
+        }
+      }
+
+      if (!isBotAdmin && session?.sock?.groupMetadata) {
+        await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
+        return false;
+      }
+
+      if (isTargetAdmin) {
         const displayName = resolveUserDisplayName(userId, session);
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ Cannot ${action} ${displayName}.\n\n*Reason:* Target user is a Group Administrator or Superadmin. WhatsApp does not allow bots to kick group admins.`,
+            mentions: [userJid],
+          },
+          rawMsg
+        );
+        return false;
+      }
 
         // Build array of candidate JIDs (phone JID and LID JID) to ensure WhatsApp multi-device accepts removal
         const candidateJids = [];
@@ -512,7 +565,10 @@ export async function handleModerationMessage(session, event) {
   const captchaKey = getWindowKey(groupId, userId);
   if (pendingCaptchas.has(captchaKey)) {
     const captchaObj = pendingCaptchas.get(captchaKey);
-    if (text === captchaObj.answer) {
+    const cleanInput = text.trim().toLowerCase();
+    const cleanAnswer = String(captchaObj.answer || '').trim().toLowerCase();
+
+    if (cleanInput === cleanAnswer) {
       clearTimeout(captchaObj.timeoutHandle);
       pendingCaptchas.delete(captchaKey);
       await reply(
