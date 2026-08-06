@@ -302,12 +302,7 @@
     {
       "description": "PHP Version Update - update docs",
       "matchDepNames": ["php/php-src"],
-      "extractVersion": "^php-(?<version>\\d+\\.\\d+)",
-      "postUpgradeTasks": {
-        "commands": ["python3 .scripts/update_php_info.py"],
-        "fileFilters": ["**/DOCS.md"],
-        "executionMode": "branch"
-      }
+      "extractVersion": "^php-(?<version>\\d+\\.\\d+)"
     },
     {
       "matchManagers": ["github-actions"],
@@ -386,60 +381,27 @@
       "ignoreUnstable": false
     },
     {
-      "description": "NGINX - auto-update Alpine package version and bump addon version",
+      "description": "NGINX - auto-update Alpine package version",
       "matchDepNames": ["alpine_edge/nginx"],
       "matchFileNames": ["nginx/Dockerfile"],
       "automerge": true,
-      "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py nginx patch --message \"Automatic release after NGINX update to {{{newVersion}}}\""
-        ],
-        "fileFilters": ["nginx/config.yaml", "nginx/CHANGELOG.md"],
-        "executionMode": "branch"
-      }
+      "ignoreTests": false
     },
     {
-      "description": "Apache2 - auto-update Alpine package version and bump addon version",
+      "description": "Apache2 - auto-update Alpine package version",
       "matchDepNames": ["alpine_3_21/apache2"],
       "automerge": true,
-      "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py apache2 patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
-          "python3 .scripts/bump_version.py apache2-minimal patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\"",
-          "python3 .scripts/bump_version.py apache2-minimal-mariadb patch --message \"Automatic release after Apache2 update to {{{newVersion}}}\""
-        ],
-        "fileFilters": [
-          "apache2/config.yaml",
-          "apache2/CHANGELOG.md",
-          "apache2-minimal/config.yaml",
-          "apache2-minimal/CHANGELOG.md",
-          "apache2-minimal-mariadb/config.yaml",
-          "apache2-minimal-mariadb/CHANGELOG.md"
-        ],
-        "executionMode": "branch"
-      }
+      "ignoreTests": false
     },
     {
-      "description": "Home Assistant - auto-update Home Assistant version and bump addon version",
+      "description": "Home Assistant - auto-update Home Assistant version",
       "matchDepNames": ["ghcr.io/home-assistant/home-assistant"],
       "matchFileNames": [
         "homeassistant-test-instance/Dockerfile",
         "homeassistant-test-instance/build.yaml"
       ],
       "automerge": true,
-      "ignoreTests": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "python3 .scripts/bump_version.py homeassistant-test-instance patch --message \"Automatic release after Home Assistant update to {{{newVersion}}}\""
-        ],
-        "fileFilters": [
-          "homeassistant-test-instance/config.yaml",
-          "homeassistant-test-instance/CHANGELOG.md"
-        ],
-        "executionMode": "branch"
-      }
+      "ignoreTests": false
     },
     {
       "matchManagers": ["pip_requirements"],
