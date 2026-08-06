@@ -11,6 +11,7 @@ import {
   resolveCanonicalUserKey,
   resolveUserDisplayName,
   normalizeJid,
+  isAdmin,
 } from '../../utils/security.js';
 
 // In-memory sliding window trackers
@@ -154,7 +155,8 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         rawMsg
       );
     } else if (action === 'kick' || action === 'ban') {
-      const cleanDigits = userId.replace(/\D/g, '');
+      const canonicalKey = resolveCanonicalUserKey(userId, session);
+      const cleanDigits = (canonicalKey || userId).replace(/\D/g, '');
       const userJid = cleanDigits
         ? `${cleanDigits}@s.whatsapp.net`
         : userId.includes('@')
@@ -198,38 +200,58 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       }
 
       try {
+        const displayName = resolveUserDisplayName(userId, session);
+
         await session.sock.groupParticipantsUpdate(groupId, [userJid], 'remove');
         await reply(
           session,
           groupId,
           {
-            text: `🚫 User @${targetDisplayId} was ${action === 'ban' ? 'banned' : 'kicked'} from group.`,
+            text: `🚫 ${displayName} was ${action === 'ban' ? 'banned' : 'kicked'} from the group.`,
             mentions: [userJid],
           },
           rawMsg
         );
       } catch (e) {
         const errMsg = (e.message || '').toLowerCase();
+        const displayName = resolveUserDisplayName(userId, session);
         logger.warn({ error: e.message, action, userJid, groupId }, `Failed to ${action} user`);
 
-        if (errMsg.includes('not-authorized') || errMsg.includes('forbidden') ||
-            errMsg.includes('not authorized') || errMsg.includes('admin') ||
-            errMsg.includes('403') || errMsg.includes('permission')) {
+        if (
+          errMsg.includes('not-authorized') ||
+          errMsg.includes('forbidden') ||
+          errMsg.includes('not authorized') ||
+          errMsg.includes('403') ||
+          errMsg.includes('permission')
+        ) {
           // Bot is not an admin in this group
           await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
-        } else if (errMsg.includes('not-participant') || errMsg.includes('not in group') ||
-                   errMsg.includes('participant')) {
+        } else if (
+          errMsg.includes('not-participant') ||
+          errMsg.includes('not in group') ||
+          errMsg.includes('participant')
+        ) {
           // Target user is no longer in the group
-          await reply(session, groupId, {
-            text: `⚠️ Could not ${action} @${targetDisplayId}: user is no longer in this group.`,
-            mentions: [userJid],
-          }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            {
+              text: `ℹ️ ${displayName} is no longer in this group.`,
+              mentions: [userJid],
+            },
+            rawMsg
+          );
         } else {
-          // Unknown error — show generic failure (bot IS admin, something else went wrong)
-          await reply(session, groupId, {
-            text: `❌ Failed to ${action} @${targetDisplayId}.\n\n*Reason:* ${e.message}\n\n_Note: If the target user is also a group admin, they cannot be kicked by another admin — only the group owner can remove admins._`,
-            mentions: [userJid],
-          }, rawMsg);
+          // Failure (e.g. target is an Admin or WhatsApp internal error)
+          await reply(
+            session,
+            groupId,
+            {
+              text: `❌ Could not ${action} ${displayName}.\n\n*Reason:* ${e.message}\n\n_Note: Group Admins cannot be kicked by the bot unless the bot is the group owner._`,
+              mentions: [userJid],
+            },
+            rawMsg
+          );
         }
       }
     }
@@ -929,11 +951,22 @@ export async function handleModerationParticipantUpdate(session, update) {
           const timeoutHandle = setTimeout(async () => {
             if (pendingCaptchas.has(captchaKey)) {
               pendingCaptchas.delete(captchaKey);
+
+              // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
+              if (isAdmin(participantJid, session)) {
+                logger.info(
+                  { groupId, userId },
+                  '🛡️ User is an admin, skipping Captcha timeout kick'
+                );
+                return;
+              }
+
+              const userLabel = resolveUserDisplayName(userId, session);
               await reply(
                 session,
                 groupId,
                 {
-                  text: `❌ Captcha timeout for @${userId}. Executing kick.`,
+                  text: `⏳ Captcha verification timed out for ${userLabel}. Executing removal.`,
                   mentions: [mentionJid],
                 },
                 rawMsg

@@ -263,7 +263,10 @@ export function resolveCanonicalUserKey(rawUserId, session = null) {
  */
 export function resolveUserDisplayName(rawUserId, session = null) {
   const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
-  if (!session?.contactCache) return `@${canonicalKey}`;
+  if (!session?.contactCache) {
+    const isLid = (rawUserId || '').includes('@lid') || (canonicalKey || '').startsWith('1576');
+    return isLid ? `@User` : `+${canonicalKey}`;
+  }
 
   let cached = session.contactCache.get(`${canonicalKey}@s.whatsapp.net`);
   if (!cached) {
@@ -278,8 +281,9 @@ export function resolveUserDisplayName(rawUserId, session = null) {
   }
 
   const name = cached?.name || cached?.notify || cached?.verifiedName;
+  const isLid = (rawUserId || '').includes('@lid') || (canonicalKey || '').startsWith('1576');
   if (name) {
-    return `${name} (@${canonicalKey})`;
+    return isLid ? name : `${name} (+${canonicalKey})`;
   }
-  return `@${canonicalKey}`;
+  return isLid ? `@User` : `+${canonicalKey}`;
 }

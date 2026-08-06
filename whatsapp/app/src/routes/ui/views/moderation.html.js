@@ -85,12 +85,12 @@ export default () => `
                     <div id="mod-subpanel-rules" class="mod-subpanel">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-scroll"></i></div>
-                            <div><div class="mod-feature-title">Group Rules</div><div class="mod-feature-desc">Define and auto-post rules when new members join.</div></div>
+                            <div><div class="mod-feature-title">Group Rules</div><div class="mod-feature-desc">Define group rules for <code>!rules</code> and optionally append them to the welcome message on join.</div></div>
                         </div>
                         <textarea id="mod-rules-text" class="mod-textarea" placeholder="1. Be respectful&#10;2. No spam&#10;3. No NSFW content"></textarea>
                         <div class="mod-option-row">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-rules-show-on-join"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
-                            <span class="mod-option-label">Auto-post rules when a new member joins</span>
+                            <span class="mod-option-label">Include group rules inside the welcome message when a new member joins</span>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> Save Rules</button></div>
                     </div>
