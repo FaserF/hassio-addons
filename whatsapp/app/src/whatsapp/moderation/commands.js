@@ -3,7 +3,7 @@ import { executePenalty, issueUserWarning, sendMissingAdminWarning } from './eng
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
-import { isSameUser, isAdmin, normalizeJid } from '../../utils/security.js';
+import { isSameUser, isAdmin, normalizeJid, resolveUserDisplayName } from '../../utils/security.js';
 
 class CommandRegistry {
   constructor() {
@@ -204,12 +204,13 @@ registry.register(
     const targetId = targetJid ? targetJid.split('@')[0].replace(/\D/g, '') : null;
     const cleanUserId = userId ? userId.split('@')[0].replace(/\D/g, '') : null;
 
-    if (targetId && cleanUserId && targetId === cleanUserId) {
+    // Disallow self-reporting (if target matches reporter OR if no target is provided)
+    if (!targetJid || (targetId && cleanUserId && targetId === cleanUserId) || isSameUser(userId, targetJid, session)) {
       await reply(
         session,
         groupId,
         {
-          text: `⚠️ You cannot report yourself.`,
+          text: `⚠️ You cannot report yourself. Please mention (@user) or reply to the user you want to report.`,
         },
         rawMsg
       );
@@ -256,12 +257,15 @@ registry.register(
       quotedMsg = rawMsg;
     }
 
-    const targetMentionStr = targetId ? ` against @${targetId}` : '';
+    const reporterLabel = resolveUserDisplayName(userId, session);
+    const targetLabel = targetJid ? resolveUserDisplayName(targetJid, session) : (targetId ? `@${targetId}` : '');
+    const targetMentionStr = targetLabel ? ` against ${targetLabel}` : '';
+
     await reply(
       session,
       groupId,
       {
-        text: `🚨 *Report from @${userId}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
+        text: `🚨 *Report from ${reporterLabel}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
         mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : []), ...admins],
       },
       quotedMsg

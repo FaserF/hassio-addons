@@ -259,31 +259,50 @@ export function resolveCanonicalUserKey(rawUserId, session = null) {
 }
 
 /**
- * Resolves a User ID into a clean display label for WhatsApp messages (e.g. "Fabian Seitz (@49176...)" or "@49176...").
+ * Resolves a User ID into a clean display label following a strict 5-tier priority:
+ * Priority 1: WhatsApp Contact Name (contact.name / verifiedName)
+ * Priority 2: WhatsApp Username / Pushname (contact.notify)
+ * Priority 3: Formatted Phone Number (+49176...)
+ * Priority 4: Generic Fallback (@User)
+ * Priority 5: WhatsApp JID Key / Clean Digits
  */
 export function resolveUserDisplayName(rawUserId, session = null) {
+  if (!rawUserId) return '@User';
   const canonicalKey = resolveCanonicalUserKey(rawUserId, session);
-  if (!session?.contactCache) {
-    const isLid = (rawUserId || '').includes('@lid') || (canonicalKey || '').startsWith('1576');
-    return isLid ? `@User` : `+${canonicalKey}`;
-  }
 
-  let cached = session.contactCache.get(`${canonicalKey}@s.whatsapp.net`);
-  if (!cached) {
-    for (const contact of session.contactCache.values()) {
-      const cIdDigits = contact.id ? contact.id.split('@')[0].replace(/\D/g, '') : '';
-      const cLidDigits = contact.lid ? contact.lid.split('@')[0].replace(/\D/g, '') : '';
-      if (canonicalKey === cIdDigits || canonicalKey === cLidDigits) {
-        cached = contact;
-        break;
+  let cached = null;
+  if (session?.contactCache) {
+    cached = session.contactCache.get(`${canonicalKey}@s.whatsapp.net`) || session.contactCache.get(String(rawUserId));
+    if (!cached) {
+      for (const contact of session.contactCache.values()) {
+        const cIdDigits = contact.id ? contact.id.split('@')[0].replace(/\D/g, '') : '';
+        const cLidDigits = contact.lid ? contact.lid.split('@')[0].replace(/\D/g, '') : '';
+        if (canonicalKey === cIdDigits || canonicalKey === cLidDigits) {
+          cached = contact;
+          break;
+        }
       }
     }
   }
 
-  const name = cached?.name || cached?.notify || cached?.verifiedName;
-  const isLid = (rawUserId || '').includes('@lid') || (canonicalKey || '').startsWith('1576');
-  if (name) {
-    return isLid ? name : `${name} (+${canonicalKey})`;
+  // Prio 1: WhatsApp Name (contact.name || contact.verifiedName)
+  const contactName = cached?.name || cached?.verifiedName;
+  if (contactName) {
+    return contactName;
   }
-  return isLid ? `@User` : `+${canonicalKey}`;
+
+  // Prio 2: WhatsApp Username / Pushname (contact.notify)
+  const pushname = cached?.notify;
+  if (pushname) {
+    return pushname;
+  }
+
+  // Prio 3: Phone Number (+49...)
+  const isLid = String(rawUserId).includes('@lid') || (canonicalKey || '').startsWith('1576');
+  if (canonicalKey && !isLid && /^\d+$/.test(canonicalKey)) {
+    return `+${canonicalKey}`;
+  }
+
+  // Prio 4 & 5: Generic Fallback / Clean ID
+  return isLid ? '@User' : (canonicalKey || String(rawUserId));
 }

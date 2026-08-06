@@ -285,9 +285,20 @@ async function runTests() {
     subject: 'Test Group',
     participants: [{ id: '491769999999@s.whatsapp.net', admin: 'admin' }],
   });
+  const mockReportMsg = {
+    ...mockMsg,
+    message: {
+      extendedTextMessage: {
+        text: '!report @491760000000 Test report reason',
+        contextInfo: {
+          mentionedJid: ['491760000000@s.whatsapp.net'],
+        },
+      },
+    },
+  };
   const reportHandled = await processCommand(
     mockSession,
-    mockMsg,
+    mockReportMsg,
     '!report @491760000000 Test report reason',
     '491761234567@s.whatsapp.net',
     false,
