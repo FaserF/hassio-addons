@@ -50,38 +50,29 @@ export function isSelfParticipant(participantJid, session) {
   return false;
 }
 
-export function generateBotWelcomeMessage(config, _store) {
-  const isModEnabled = Boolean(config.enabled);
-  const prefix = config.commands?.prefix || '!';
+export function generateBotWelcomeMessage(isBotAdmin = false) {
+  let adminNotice = '';
+  if (!isBotAdmin) {
+    adminNotice = `⚠️ *Notice:* The bot currently *does not have Admin permissions* in this group.\nWithout Admin rights, the following features *will not* be available:\n• Captcha Verification (Automatic kick on failure/timeout)\n• Moderation Penalties (Kick, Ban, Mute, Temp-Ban)\n• Anti-Raid / Group Lockdown\n• Automatic message deletion on rule violations\n\n👉 *Please grant Admin permissions to the bot to enable full protection!*\n\n`;
+  }
 
-  return (
-    `🤖 *Home Assistant WhatsApp Bot Connected!*\n\n` +
-    `Hello everyone! 👋 I am the WhatsApp Gateway & Group Moderation Bot for Home Assistant.\n\n` +
-    `ℹ️ *About Me:*\n` +
-    `I connect your WhatsApp group to Home Assistant automations, while protecting this group with automated security & moderation tools.\n\n` +
-    `🛡️ *Group Moderation Status:*\n` +
-    `Moderation for this group is: *${isModEnabled ? '🟢 ENABLED' : '🔴 DISABLED'}*\n\n` +
-    `${
-      isModEnabled
-        ? `✅ *Active features in this group:*\n` +
-          `• 📜 Rules enforcement & Auto-welcome\n` +
-          `• 🛡️ Anti-Raid & Flood protection against spam bots\n` +
-          `• 🔒 Content locks (Media, Links, Invites, RTL text)\n` +
-          `• ⚠️ Warning system (\`${prefix}warn\`, \`${prefix}unwarn\`, \`${prefix}warns\`) & Penalties (Mute/Kick/Ban)\n` +
-          `• 🚫 Local & Cross-Group Ban Federation (\`${prefix}ban\`, \`${prefix}unban\`)\n` +
-          `• 🤖 Auto-responder filters & Custom commands (e.g. \`${prefix}wifi\`)\n` +
-          `• 🧠 Gemini AI Assistant & Auto-Translation`
-        : `💡 *Moderation is currently disabled for this group.*\n` +
-          `Administrators can enable and configure moderation features anytime via the Web Dashboard or by turning on group moderation.`
-    }\n\n` +
-    `⚙️ *Useful Commands:*\n` +
-    `• Type \`${prefix}help\` to see available group commands\n` +
-    `• Type \`${prefix}rules\` to view group rules\n` +
-    `• Type \`${prefix}admins\` to see group administrators\n` +
-    `• Type \`${prefix}report <reason>\` to report bad behavior to group admins\n\n` +
-    `📖 *Documentation & Setup:*\n` +
-    `https://github.com/FaserF/ha-whatsapp`
-  );
+  return `🤖 *Hello! I am your Moderation & Assistant Bot.*
+
+${adminNotice}⚡ *What I can do:*
+• *Welcome & Captcha:* Greet new members, display group rules & intercept spam bots via Captcha
+• *Auto-Responder & FAQ:* Automatic responses to predefined keywords or help hints from FAQ
+• *Content Protection & Moderation:* Word filters, link locks, flood protection, mute & warnings (!warn, !mute, !kick, !ban)
+• *Notes & Commands:* Group rules (!rules), notes (!note / #note) & user reports (!report)
+• *Home Assistant Integration:* Control messages & notifications directly via Home Assistant
+
+⚙️ *Useful Commands:*
+• Type \`!help\` to see available group commands
+• Type \`!rules\` to view group rules
+• Type \`!admins\` to see group administrators
+• Type \`!report <reason>\` to report bad behavior to group admins
+
+📚 *Documentation & Guide:*
+https://faserf.github.io/ha-whatsapp/`;
 }
 
 export async function sendMissingAdminWarning(
@@ -957,7 +948,28 @@ export async function handleModerationParticipantUpdate(session, update) {
     for (const participantJid of filteredParticipants) {
       // If the bot itself joined the group, post the Bot Welcome & Capability message
       if (isSelfParticipant(participantJid, session)) {
-        const botWelcomeText = generateBotWelcomeMessage(config, store);
+        let isBotAdmin = false;
+        if (session?.sock?.groupMetadata) {
+          try {
+            const meta = await session.sock.groupMetadata(groupId);
+            const myUser = session.sock.user;
+            const myId = myUser?.id ? normalizeJid(myUser.id) : '';
+            const myLid = myUser?.lid ? normalizeJid(myUser.lid) : '';
+            const myUserDigits = myId.split('@')[0].replace(/\D/g, '');
+
+            const p = meta?.participants?.find((part) => {
+              const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
+              return pid === myUserDigits || part.id === myId || (myLid && part.id === myLid);
+            });
+            if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
+              isBotAdmin = true;
+            }
+          } catch (e) {
+            logger.debug({ error: e.message, groupId }, 'Failed to check bot admin status on join');
+          }
+        }
+
+        const botWelcomeText = generateBotWelcomeMessage(isBotAdmin);
         await reply(session, groupId, { text: botWelcomeText }, rawMsg);
         continue;
       }
@@ -1173,18 +1185,20 @@ export async function handleModerationParticipantUpdate(session, update) {
         const fullText = messageParts.join('\n\n');
         const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
         const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
-        const targetPrivateJid =
-          !isLidDigits && canonicalPhoneKey
-            ? `${canonicalPhoneKey}@s.whatsapp.net`
-            : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        const mentionJid = targetPrivateJid;
+        const phoneJid = !isLidDigits && canonicalPhoneKey
+          ? `${canonicalPhoneKey}@s.whatsapp.net`
+          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const targetPrivateJid = phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
+          ? null
+          : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
+        const mentionJid = targetPrivateJid || normalizeJid(participantJid);
 
         const captchaTargetMode = config.greetings?.captcha_target || 'private';
         let sendResult = null;
         let sentViaDM = false;
 
-        // Attempt sending Welcome & Captcha via Private DM if configured as 'private' (default)
-        if (captchaTargetMode === 'private') {
+        // Attempt sending Welcome & Captcha via Private DM if configured as 'private'
+        if (captchaTargetMode === 'private' && targetPrivateJid) {
           try {
             sendResult = await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
@@ -1270,20 +1284,24 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
         const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
-        const targetPrivateJid =
-          !isLidDigits && canonicalPhoneKey
-            ? `${canonicalPhoneKey}@s.whatsapp.net`
-            : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const phoneJid = !isLidDigits && canonicalPhoneKey
+          ? `${canonicalPhoneKey}@s.whatsapp.net`
+          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const targetPrivateJid = phoneJid.includes('1576') && !phoneJid.includes('@s.whatsapp.net')
+          ? null
+          : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
         let sentViaDM = false;
 
-        // Try Private DM delivery first (using reply helper for outbound queue tracking)
-        try {
-          const res = await reply(session, targetPrivateJid, {
-            text: `👋 *${groupMeta?.subject || 'Group'}*\n\n${goodbyeMsg}`,
-          });
-          if (res) sentViaDM = true;
-        } catch (dmErr) {
-          logger.info({ error: dmErr.message }, 'Goodbye DM failed, falling back to group message');
+        // Try Private DM delivery first if target is a valid phone JID
+        if (targetPrivateJid) {
+          try {
+            const res = await reply(session, targetPrivateJid, {
+              text: `👋 *${groupMeta?.subject || 'Group'}*\n\n${goodbyeMsg}`,
+            });
+            if (res) sentViaDM = true;
+          } catch (dmErr) {
+            logger.info({ error: dmErr.message }, 'Goodbye DM failed, falling back to group message');
+          }
         }
 
         // Fallback to Group Message if Private DM was unavailable

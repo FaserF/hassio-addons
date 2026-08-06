@@ -302,8 +302,9 @@ try {
     'Bot self JID should be recognized'
   );
 
-  const directGenText = generateBotWelcomeMessage(groupConfig);
-  assert(directGenText.includes('Home Assistant WhatsApp Bot Connected!'), 'Direct generator test');
+  const directGenText = generateBotWelcomeMessage(false);
+  assert(directGenText.includes('Hello! I am your Moderation & Assistant Bot.'), 'Direct generator test text');
+  assert(directGenText.includes('https://faserf.github.io/ha-whatsapp/'), 'Direct generator documentation link');
 
   let botWelcomeSent = false;
   let botWelcomeText = '';
@@ -314,7 +315,7 @@ try {
       sendMessage: async (jid, content) => {
         botWelcomeSent = true;
         botWelcomeText = content.text;
-        return { key: { id: 'botWelcomeMsg1' } };
+        return { key: { id: 'bot_welcome_msg_id' } };
       },
     },
   };
@@ -325,21 +326,17 @@ try {
     participants: ['491761234567@s.whatsapp.net'],
   });
 
-  assert.strictEqual(
-    botWelcomeSent,
-    true,
-    'Bot welcome message should be sent when bot joins group'
+  assert.strictEqual(botWelcomeSent, true, 'Bot welcome message should be sent on bot join');
+  assert(
+    botWelcomeText.includes('https://faserf.github.io/ha-whatsapp/'),
+    'Bot welcome message should include documentation link'
   );
-  assert(botWelcomeText.includes('Home Assistant WhatsApp Bot Connected!'), 'Should contain title');
   assert(
     new URL(botWelcomeText.match(/https?:\/\/[^\s]+/)?.[0] || 'http://localhost').hostname ===
-      'github.com',
+      'faserf.github.io',
     'Should contain valid docs link'
   );
-  assert(
-    botWelcomeText.includes('🔴 DISABLED') || botWelcomeText.includes('🟢 ENABLED'),
-    'Should state moderation status'
-  );
+  console.log('✅ PASSED: Bot Welcome message on join verified successfully');
   // Test 11: isSameUser and LID <-> PN Resolution
   assert.strictEqual(
     isSameUser('157608354779256@lid', '491761234567@s.whatsapp.net', mockSession),
