@@ -183,6 +183,13 @@ export function getDefaultModerationStore() {
     global_enabled: true,
     gemini_api_key: '',
     global_rules: '',
+    filter_subscriptions: [
+      {
+        url: 'https://raw.githubusercontent.com/FaserF/AegisBot/main/filters/default.yaml',
+        enabled: true,
+        auto_sync: true,
+      },
+    ],
     federations: [
       {
         id: 'fed_global_default',
@@ -212,6 +219,7 @@ export function getDefaultModerationStore() {
     groups: {},
   };
 }
+
 
 export function getGroupModerationConfig(groupId) {
   const store = loadModerationStore();

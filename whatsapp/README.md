@@ -39,7 +39,8 @@ Full-featured group moderation, anti-raid shield, and bot command engine (Rose &
 
 - **Prefix-based Commands**: Configure prefix per group (default `!`). Includes 37 group commands (`!help`, `!warn`, `!kick`, `!tban`, `!mute`, `!tmute`, `!promote`, `!demote`, `!approve`, `!save`, `!filter`, `!translate`, etc.).
 - **Content Locks**: Lock images, videos, voice, docs, stickers, URLs, invites, polls, contacts, locations, forwarded messages, or RTL text (`!lock`, `!unlock`).
-- **Automation & AI**: Captchas, welcome/goodbye greetings, word blacklists, anti-flood, anti-raid, AI FAQ responder, AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
+- **Automation & AI**: Captchas, welcome/goodbye greetings, word blacklists, anti-flood, anti-raid, Multi-AI provider support (OpenAI & Gemini), AI FAQ responder, AI Intent & Scam Detection (phishing/crypto protection), AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
+
 
 > [!TIP]
 > **First Contact:** The bot automatically sends a welcome message to new users on their first direct message, identifying their role (Admin/Standard).

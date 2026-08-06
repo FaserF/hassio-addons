@@ -21,8 +21,15 @@ export function registerModerationRoutes(app) {
   // POST /api/moderation/config
   app.post('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();
-    const { global_enabled, gemini_api_key, global_rules, federations, group_id, group_config } =
-      req.body || {};
+    const {
+      global_enabled,
+      gemini_api_key,
+      global_rules,
+      federations,
+      filter_subscriptions,
+      group_id,
+      group_config,
+    } = req.body || {};
 
     if (global_enabled !== undefined) {
       store.global_enabled = Boolean(global_enabled);
@@ -36,11 +43,15 @@ export function registerModerationRoutes(app) {
     if (Array.isArray(federations)) {
       store.federations = federations;
     }
+    if (Array.isArray(filter_subscriptions)) {
+      store.filter_subscriptions = filter_subscriptions;
+    }
     if (group_id && group_config) {
       setGroupModerationConfig(group_id, group_config);
     } else {
       saveModerationStore(store);
     }
+
 
     res.json({ success: true, data: loadModerationStore() });
   });

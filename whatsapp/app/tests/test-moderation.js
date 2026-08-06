@@ -430,10 +430,19 @@ try {
   );
   console.log('✅ PASSED: WAMessageStubType invite-link join processing verified');
 
+  // Test Filter Subscriptions Default
+  const finalStore = getDefaultModerationStore();
+  assert(
+    Array.isArray(finalStore.filter_subscriptions) && finalStore.filter_subscriptions.length > 0,
+    'Store should contain filter_subscriptions default list'
+  );
+  console.log('✅ PASSED: Default filter subscriptions verified');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');
 } catch (err) {
   console.error('❌ MODERATION TEST FAILED:', err);
+
   process.exit(1);
 }
