@@ -659,7 +659,36 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
+  // 4b. AI Intent & Scam Detection (for long or suspicious messages)
+  if (config.ai?.enabled && text.length > 30) {
+    const storeGeminiKey = store.gemini_api_key;
+    const intentResult = await processAiModeration(text, config.ai, storeGeminiKey, 'intent_scan');
+    if (intentResult === 'SPAM') {
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {}
+      }
+      await reply(
+        session,
+        groupId,
+        { text: `🛡️ *AI Guard Alert:* Message deleted due to detected scam/phishing intent.` },
+        rawMsg
+      );
+      await executePenalty(
+        session,
+        groupId,
+        userId,
+        'warn',
+        'AI detected fraudulent/scam intent in message',
+        rawMsg
+      );
+      return true;
+    }
+  }
+
   // 5. Flood Protection check
+
   const floodConfig = config.antispam?.flood_protection;
   if (floodConfig?.enabled) {
     const key = getWindowKey(groupId, userId);

@@ -1,40 +1,76 @@
 import { logger } from '../../logger.js';
 
-export async function processAiModeration(text, groupAiConfig, storeGeminiKey) {
-  const apiKey = storeGeminiKey || process.env.GEMINI_API_KEY;
-  if (!apiKey || !groupAiConfig.enabled) {
+export async function processAiModeration(text, groupAiConfig, storeGeminiKey, mode = 'reply', extraContext = {}) {
+
+  const provider = groupAiConfig.provider || process.env.AI_PROVIDER || 'gemini';
+  const apiKey = storeGeminiKey || groupAiConfig.api_key || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+
+  if (!apiKey || (!groupAiConfig.enabled && mode !== 'rules_question')) {
     return null;
+  }
+
+  let prompt;
+  if (mode === 'intent_scan') {
+    prompt = `Analyze the following message for scam, phishing, fraudulent crypto/airdrop claims, or malicious spam intent.\nMessage: "${text}"\nRespond ONLY with "SPAM" if it is malicious/scam, or "CLEAN" if it is safe.`;
+  } else if (mode === 'rules_question') {
+    const rulesText = extraContext.rules || 'No rules configured.';
+    prompt = `You are a helpful group moderator assistant.\nGroup Rules:\n"${rulesText}"\n\nUser Question: "${text}"\nAnswer the user's question concisely based on the group rules.`;
+  } else {
+    prompt = `${groupAiConfig.system_prompt || 'You are an intelligent group moderator assistant.'}\n\nUser message: "${text}"\nProvide a concise auto-reply if relevant, otherwise reply "NO_REPLY".`;
   }
 
   try {
-    const prompt = `${groupAiConfig.system_prompt || 'You are a helpful group moderator assistant.'}\n\nUser message: "${text}"\nProvide a concise auto-reply if relevant, otherwise reply "NO_REPLY".`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
+    if (provider === 'openai' || groupAiConfig.openai_api_key) {
+      const oaKey = groupAiConfig.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
+      const model = groupAiConfig.model || 'gpt-4o-mini';
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${oaKey}`,
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: mode === 'intent_scan' ? 10 : 300,
         }),
+      });
+
+      if (!response.ok) {
+        logger.warn({ status: response.status }, 'OpenAI API call failed');
+        return null;
       }
-    );
+      const data = await response.json();
+      const replyText = data.choices?.[0]?.message?.content?.trim();
+      if (!replyText || (mode === 'reply' && replyText.includes('NO_REPLY'))) return null;
+      return replyText;
+    } else {
+      // Default: Gemini API
+      const geminiModel = groupAiConfig.model || 'gemini-1.5-flash';
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        }
+      );
 
-    if (!response.ok) {
-      logger.warn({ status: response.status }, 'Gemini API call failed for moderation AI');
-      return null;
+      if (!response.ok) {
+        logger.warn({ status: response.status }, 'Gemini API call failed');
+        return null;
+      }
+
+      const data = await response.json();
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (!replyText || (mode === 'reply' && replyText.includes('NO_REPLY'))) return null;
+      return replyText;
     }
-
-    const data = await response.json();
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-    if (!replyText || replyText.includes('NO_REPLY')) {
-      return null;
-    }
-
-    return replyText;
   } catch (err) {
-    logger.error({ error: err.message }, 'Error calling Gemini AI moderation provider');
+    logger.error({ error: err.message }, 'Error calling AI moderation provider');
     return null;
   }
 }
+
