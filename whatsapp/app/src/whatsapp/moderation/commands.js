@@ -94,10 +94,20 @@ registry.register(
     } catch (e) {
       const em = (e.message || '').toLowerCase();
       logger.warn({ error: e.message, groupId }, 'Failed to promote users');
-      if (em.includes('not-authorized') || em.includes('forbidden') || em.includes('admin') || em.includes('permission')) {
+      if (
+        em.includes('not-authorized') ||
+        em.includes('forbidden') ||
+        em.includes('admin') ||
+        em.includes('permission')
+      ) {
         await sendMissingAdminWarning(session, groupId, 'Promote users', rawMsg);
       } else {
-        await reply(session, groupId, { text: `❌ Failed to promote user(s): ${e.message}` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `❌ Failed to promote user(s): ${e.message}` },
+          rawMsg
+        );
       }
     }
   },
@@ -141,10 +151,20 @@ registry.register(
     } catch (e) {
       const em = (e.message || '').toLowerCase();
       logger.warn({ error: e.message, groupId }, 'Failed to demote users');
-      if (em.includes('not-authorized') || em.includes('forbidden') || em.includes('admin') || em.includes('permission')) {
+      if (
+        em.includes('not-authorized') ||
+        em.includes('forbidden') ||
+        em.includes('admin') ||
+        em.includes('permission')
+      ) {
         await sendMissingAdminWarning(session, groupId, 'Demote users', rawMsg);
       } else {
-        await reply(session, groupId, { text: `❌ Failed to demote user(s): ${e.message}` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `❌ Failed to demote user(s): ${e.message}` },
+          rawMsg
+        );
       }
     }
   },
@@ -1332,10 +1352,20 @@ registry.register(
     } catch (e) {
       const em = (e.message || '').toLowerCase();
       logger.warn({ error: e.message, groupId }, 'Failed to delete message');
-      if (em.includes('not-authorized') || em.includes('forbidden') || em.includes('admin') || em.includes('permission')) {
+      if (
+        em.includes('not-authorized') ||
+        em.includes('forbidden') ||
+        em.includes('admin') ||
+        em.includes('permission')
+      ) {
         await sendMissingAdminWarning(session, groupId, 'Delete message', rawMsg);
       } else {
-        await reply(session, groupId, { text: `❌ Failed to delete message: ${e.message}` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `❌ Failed to delete message: ${e.message}` },
+          rawMsg
+        );
       }
     }
   },
