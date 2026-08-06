@@ -362,6 +362,7 @@ try {
   assert(formatted.includes('Rule 1: Be polite'), 'rules text should match');
   assert(/\d{2}\.\d{2}\.\d{4}/.test(formatted), 'date should match DD.MM.YYYY');
   assert(/\d{2}:\d{2}/.test(formatted), 'time should match HH:MM');
+  assert(!formatted.includes('{"id"'), 'formatted text MUST NOT contain unparsed raw JSON objects');
   console.log('✅ PASSED: formatMessageTemplate with all extended placeholders verified');
 
   // Test 12: WAMessageStubType Invite Link Join & Self-Leave Handling

@@ -220,9 +220,20 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         let success = false;
         for (const targetJid of candidateJids) {
           try {
-            await session.sock.groupParticipantsUpdate(groupId, [targetJid], 'remove');
-            success = true;
-            break;
+            const res = await session.sock.groupParticipantsUpdate(groupId, [targetJid], 'remove');
+            // Baileys returns array like [{ jid, status: "200" | "403" | "404" | "408" | "500" }]
+            if (Array.isArray(res) && res.length > 0) {
+              const resStatus = String(res[0]?.status || '');
+              if (resStatus === '200' || resStatus === '201') {
+                success = true;
+                break;
+              } else {
+                lastErr = new Error(`WhatsApp server returned status code ${resStatus}`);
+              }
+            } else {
+              success = true;
+              break;
+            }
           } catch (kickAttemptErr) {
             lastErr = kickAttemptErr;
           }

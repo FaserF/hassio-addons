@@ -47,9 +47,21 @@ export function registerAllListeners(session) {
           { updateId: update?.id, action: update?.action, participants: update?.participants },
           '👥 Received group-participants.update event from Baileys'
         );
-        const normalizedParticipants = (update?.participants || []).map((p) =>
-          typeof p === 'string' && !p.includes('@') ? `${p}@s.whatsapp.net` : p
-        );
+        const normalizedParticipants = (update?.participants || [])
+          .map((p) => {
+            let str = typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+            if (str.startsWith('{') || str.includes('id')) {
+              try {
+                const parsed = JSON.parse(str);
+                str = parsed.id || parsed.jid || str;
+              } catch (e) {
+                /* ignore */
+              }
+            }
+            if (!str) return null;
+            return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
+          })
+          .filter(Boolean);
         await handleModerationParticipantUpdate(session, {
           ...update,
           participants: normalizedParticipants,
@@ -117,10 +129,22 @@ export function handleIncomingMessages(session) {
             ? 'remove'
             : 'add';
 
-        // Normalize participants array to ensure full JIDs (e.g. "49123456789" -> "49123456789@s.whatsapp.net")
-        const normalizedParticipants = rawParticipants.map((p) =>
-          typeof p === 'string' && !p.includes('@') ? `${p}@s.whatsapp.net` : p
-        );
+        // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
+        const normalizedParticipants = rawParticipants
+          .map((p) => {
+            let str = typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+            if (str.startsWith('{') || str.includes('id')) {
+              try {
+                const parsed = JSON.parse(str);
+                str = parsed.id || parsed.jid || str;
+              } catch (e) {
+                /* ignore */
+              }
+            }
+            if (!str) return null;
+            return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
+          })
+          .filter(Boolean);
 
         if (action && normalizedParticipants.length > 0) {
           logger.info(
