@@ -386,16 +386,49 @@ export default () => `
                         <!-- Custom Mapped Commands -->
                         <div class="mod-field-group" style="margin-top:20px; margin-bottom:20px;">
                             <label class="mod-field-label"><i class="fas fa-terminal"></i> Custom Group Commands &amp; Mappings</label>
-                            <p class="mod-field-desc">Create custom commands (e.g. <code>!wifi</code>, <code>!faq</code>, <code>!socials</code>) that trigger automated text responses or information cards.</p>
+                            <p class="mod-field-desc">Create custom commands (e.g. <code>!wifi</code>, <code>!faq</code>) with three handler types:
+                              <strong>Auto Reply</strong> — bot sends an instant text response;
+                              <strong>HA / Webhook</strong> — forwarded to Home Assistant or Webhook (no auto-reply, still appears in <code>!help</code>);
+                              <strong>Alias</strong> — executes another existing command.
+                            </p>
                             <div id="mod-custom-cmds-list" style="margin-bottom:12px;"></div>
-                            <div class="mod-add-row" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <input type="text" id="mod-cmd-name" class="mod-input" style="max-width:130px;" placeholder="Command (e.g. wifi)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
-                                <input type="text" id="mod-cmd-response" class="mod-input mod-input-flex" placeholder="Response text (e.g. SSID: GuestWifi | Pass: 12345)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
-                                <input type="text" id="mod-cmd-description" class="mod-input" style="max-width:180px;" placeholder="Help description (optional)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
-                                <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; white-space:nowrap; cursor:pointer;">
-                                    <input type="checkbox" id="mod-cmd-admin-only"> Admin Only
-                                </label>
-                                <button class="btn btn-secondary btn-sm" onclick="addCustomCommandRule()"><i class="fas fa-plus"></i> Add Command</button>
+                            <div class="mod-add-row" style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; padding:12px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px;">
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <label style="font-size:11px; color:var(--text-muted);">Command name</label>
+                                    <input type="text" id="mod-cmd-name" class="mod-input" style="max-width:140px;" placeholder="e.g. wifi" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <label style="font-size:11px; color:var(--text-muted);">Handler type</label>
+                                    <select id="mod-cmd-type" class="mod-select mod-select-sm" onchange="onCustomCmdTypeChange()" style="min-width:150px;">
+                                        <option value="auto_reply">🤖 A: Auto Reply</option>
+                                        <option value="webhook">🏠 B: HA / Webhook</option>
+                                        <option value="alias">🔗 C: Alias of Command</option>
+                                    </select>
+                                </div>
+                                <div id="mod-cmd-response-wrap" style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:180px;">
+                                    <label style="font-size:11px; color:var(--text-muted);">Response text</label>
+                                    <input type="text" id="mod-cmd-response" class="mod-input mod-input-flex" placeholder="e.g. SSID: GuestWifi | Pass: 12345" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                </div>
+                                <div id="mod-cmd-alias-wrap" style="display:none; flex-direction:column; gap:4px; min-width:160px;">
+                                    <label style="font-size:11px; color:var(--text-muted);">Target command</label>
+                                    <select id="mod-cmd-alias-target" class="mod-select mod-select-sm">
+                                        <option value="">— select target —</option>
+                                    </select>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:4px; min-width:160px;">
+                                    <label style="font-size:11px; color:var(--text-muted);">Help description (optional)</label>
+                                    <input type="text" id="mod-cmd-description" class="mod-input" style="min-width:160px;" placeholder="Shown in !help" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCommandRule();}">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:4px; justify-content:flex-end;">
+                                    <label style="font-size:11px; color:transparent;">.</label>
+                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; white-space:nowrap; cursor:pointer; padding:6px 8px; background:var(--bg); border:1px solid var(--border-color); border-radius:6px;">
+                                        <input type="checkbox" id="mod-cmd-admin-only"> Admin Only
+                                    </label>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:4px; justify-content:flex-end;">
+                                    <label style="font-size:11px; color:transparent;">.</label>
+                                    <button class="btn btn-secondary btn-sm" onclick="addCustomCommandRule()"><i class="fas fa-plus"></i> Add</button>
+                                </div>
                             </div>
                         </div>
 

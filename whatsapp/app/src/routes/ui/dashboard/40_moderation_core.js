@@ -643,14 +643,22 @@ function selectModerationGroup(groupId) {
       customCmdsList.innerHTML =
         '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
     } else {
+      const typeLabel = (t) => {
+        if (t === 'webhook') return '<span style="font-size:10px;background:rgba(41,182,246,0.15);color:#29b6f6;padding:2px 6px;border-radius:4px;">🏠 HA/Webhook</span>';
+        if (t === 'alias') return '<span style="font-size:10px;background:rgba(156,39,176,0.15);color:#ce93d8;padding:2px 6px;border-radius:4px;">🔗 Alias</span>';
+        return '<span style="font-size:10px;background:rgba(76,175,80,0.15);color:#81c784;padding:2px 6px;border-radius:4px;">🤖 Auto Reply</span>';
+      };
       customCmdsList.innerHTML = customCmds
         .map(
           (c, idx) => `
         <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div>
-            <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong> 
+            <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong>
+            ${typeLabel(c.type)}
             ${c.admin_only ? '<span style="font-size:10px;background:rgba(231,76,60,0.15);color:#e74c3c;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin Only</span>' : ''}
-            &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>
+            ${c.type === 'alias' && c.alias_of ? ` &rarr; <span style="color:var(--text-main);">runs <code>${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.alias_of)}</code></span>` : ''}
+            ${c.type === 'auto_reply' && c.response ? ` &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>` : ''}
+            ${c.type === 'webhook' ? ` <span style="color:var(--text-muted);font-size:11px;">— forwarded to HA/Webhook</span>` : ''}
             ${c.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;"><em>Help: ${escapeHtml(c.description)}</em></div>` : ''}
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeCustomCommandRule(${idx})"><i class="fas fa-trash"></i></button>
@@ -658,6 +666,8 @@ function selectModerationGroup(groupId) {
         )
         .join('');
     }
+    // Populate alias target dropdown with built-in + existing custom commands
+    _refreshAliasDropdown(config);
   }
 
   // AI & Translation
@@ -1032,16 +1042,25 @@ function toggleAllDefaultCommands(enable) {
 
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');
+  const typeInp = document.getElementById('mod-cmd-type');
   const respInp = document.getElementById('mod-cmd-response');
+  const aliasInp = document.getElementById('mod-cmd-alias-target');
   const descInp = document.getElementById('mod-cmd-description');
   const adminOnlyInp = document.getElementById('mod-cmd-admin-only');
 
   const name = nameInp?.value.trim().replace(/^[!/#]+/, '');
+  const cmdType = typeInp?.value || 'auto_reply';
   const resp = respInp?.value.trim();
+  const aliasTarget = aliasInp?.value.trim();
   const desc = descInp?.value.trim();
   const adminOnly = Boolean(adminOnlyInp?.checked);
 
-  if (!name || !resp || !currentModGroup) return;
+  if (!name || !currentModGroup) return;
+  if (cmdType === 'auto_reply' && !resp) return;
+  if (cmdType === 'alias' && !aliasTarget) {
+    showToast('Please select a target command for the alias.', 'error');
+    return;
+  }
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.commands = groupConfig.commands || {
@@ -1050,15 +1069,17 @@ async function addCustomCommandRule() {
     mute_action: 'delete',
   };
   groupConfig.commands.custom_commands = groupConfig.commands.custom_commands || [];
-  groupConfig.commands.custom_commands.push({
-    command: name,
-    response: resp,
-    description: desc || undefined,
-    admin_only: adminOnly,
-  });
+
+  const entry = { command: name, type: cmdType, admin_only: adminOnly };
+  if (cmdType === 'auto_reply') entry.response = resp;
+  if (cmdType === 'alias') entry.alias_of = aliasTarget;
+  if (desc) entry.description = desc;
+
+  groupConfig.commands.custom_commands.push(entry);
 
   if (nameInp) nameInp.value = '';
   if (respInp) respInp.value = '';
+  if (aliasInp) aliasInp.value = '';
   if (descInp) descInp.value = '';
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
@@ -1068,6 +1089,38 @@ async function addCustomCommandRule() {
   setTimeout(() => {
     if (nameInp) nameInp.focus();
   }, 50);
+}
+
+function onCustomCmdTypeChange() {
+  const type = document.getElementById('mod-cmd-type')?.value;
+  const respWrap = document.getElementById('mod-cmd-response-wrap');
+  const aliasWrap = document.getElementById('mod-cmd-alias-wrap');
+  if (!respWrap || !aliasWrap) return;
+  if (type === 'alias') {
+    respWrap.style.display = 'none';
+    aliasWrap.style.display = 'flex';
+  } else if (type === 'webhook') {
+    respWrap.style.display = 'none';
+    aliasWrap.style.display = 'none';
+  } else {
+    respWrap.style.display = 'flex';
+    aliasWrap.style.display = 'none';
+  }
+}
+
+function _refreshAliasDropdown(config) {
+  const aliasSelect = document.getElementById('mod-cmd-alias-target');
+  if (!aliasSelect) return;
+  const builtins = [
+    'ping','help','id','rules','warn','warns','unwarn','kick','ban','mute','unmute',
+    'promote','demote','clear','report','notes','note','captcha','test'
+  ];
+  const prefix = config.commands?.prefix || '!';
+  const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
+  const allTargets = [...new Set([...builtins, ...customCmds])];
+  aliasSelect.innerHTML =
+    '<option value="">— select target —</option>' +
+    allTargets.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`).join('');
 }
 
 async function removeCustomCommandRule(idx) {

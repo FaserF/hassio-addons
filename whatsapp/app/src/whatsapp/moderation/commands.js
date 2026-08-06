@@ -682,11 +682,24 @@ registry.register(
 
     // Append Custom Group Commands if configured
     const customCmds = config.commands?.custom_commands || [];
+    const prefix = config.commands?.prefix || '!';
     for (const c of customCmds) {
       const cleanCmdName = (c.command || '').replace(/^[!/#]+/, '');
       if (!cleanCmdName) continue;
-      const desc = c.description ? c.description.trim() : c.response || 'Custom command';
-      const line = `• \`${config.commands.prefix}${cleanCmdName}\`: ${desc}`;
+      const cmdType = c.type || 'auto_reply';
+      let secondary;
+      if (c.description) {
+        secondary = c.description.trim();
+      } else if (cmdType === 'auto_reply' && c.response) {
+        secondary = c.response.length > 50 ? c.response.slice(0, 47) + '…' : c.response;
+      } else if (cmdType === 'webhook') {
+        secondary = '(handled by Home Assistant / Webhook)';
+      } else if (cmdType === 'alias' && c.alias_of) {
+        secondary = `→ runs ${prefix}${c.alias_of}`;
+      } else {
+        secondary = 'Custom command';
+      }
+      const line = `• \`${prefix}${cleanCmdName}\`: ${secondary}`;
       if (c.admin_only) {
         adminCmds.push(line);
       } else {
@@ -2014,7 +2027,47 @@ async function executeSingleCommandLine(
         );
         return true;
       }
-      await reply(session, groupId, { text: customMatch.response }, msg);
+
+      const cmdType = customMatch.type || 'auto_reply'; // legacy entries default to auto_reply
+
+      if (cmdType === 'auto_reply') {
+        // A: Send the configured response text
+        await reply(session, groupId, { text: customMatch.response }, msg);
+        return true;
+      }
+
+      if (cmdType === 'webhook') {
+        // B: Fire webhook event but send NO auto-reply — HA/Node-RED handles the response
+        logger.info(
+          { groupId, cmdStr, userId: senderJid },
+          '🏠 Custom webhook command triggered — forwarding to HA/Webhook handler, no auto-reply'
+        );
+        // The existing webhook/HA pipeline will pick this up via the normal event flow
+        return false; // return false so the event still propagates to HA
+      }
+
+      if (cmdType === 'alias') {
+        // C: Execute the target command as if the user typed it
+        const aliasTarget = (customMatch.alias_of || '').toLowerCase().replace(/^[!/#]+/, '');
+        if (aliasTarget) {
+          logger.info({ groupId, cmdStr, aliasTarget }, '🔗 Custom alias command — redirecting to target');
+          const aliasCmd = registry.getCommand(aliasTarget);
+          if (aliasCmd) {
+            return aliasCmd.handler({ session, msg, groupId, args, personJid: senderJid, isAdminUser, config, prefix });
+          }
+          // Target might itself be another custom command — recurse once
+          const aliasCmds = config.commands?.custom_commands || [];
+          const aliasCustomMatch = aliasCmds.find(
+            (c) => c.command.toLowerCase().replace(/^[!/#]+/, '') === aliasTarget && c.command !== customMatch.command
+          );
+          if (aliasCustomMatch && (aliasCustomMatch.type || 'auto_reply') === 'auto_reply') {
+            await reply(session, groupId, { text: aliasCustomMatch.response }, msg);
+            return true;
+          }
+        }
+        return true;
+      }
+
       return true;
     }
     return false;

@@ -53,6 +53,7 @@ window.submitImportFederation = submitImportFederation;
 window.addCustomCommandRule = addCustomCommandRule;
 window.removeCustomCommandRule = removeCustomCommandRule;
 window.toggleAllDefaultCommands = toggleAllDefaultCommands;
+window.onCustomCmdTypeChange = onCustomCmdTypeChange;
 window.unsavedModalCancel = unsavedModalCancel;
 window.unsavedModalDiscard = unsavedModalDiscard;
 window.unsavedModalSaveAndSwitch = unsavedModalSaveAndSwitch;
