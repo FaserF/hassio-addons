@@ -113,7 +113,7 @@ The bot command engine supports configurable prefixes per group (default `!`) an
 | `!ping`                     |     No     | Check bot responsiveness                                                                                             |
 | `!id`                       |     No     | Display chat and sender JIDs                                                                                         |
 | `!rules [question]`         |     No     | Show group rules or ask a question about rules (AI interpretation)                                                   |
-| `!info [@user]`             |     No     | View user information, warning history, Captcha status, and Whitelist approval status               |
+| `!info [@user]`             |     No     | View user information, warning history, Captcha status, and Whitelist approval status                                |
 | `!adminlist` / `!admins`    |     No     | List all group administrators with superadmin/admin roles                                                            |
 | `!locktypes`                |     No     | List all available content lock types                                                                                |
 | `!report`                   |     No     | Tag all group admins with optional reason and quoted message                                                         |

@@ -1,5 +1,11 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from './store.js';
-import { executePenalty, issueUserWarning, sendMissingAdminWarning, isSelfParticipant, isUserVerified } from './engine.js';
+import {
+  executePenalty,
+  issueUserWarning,
+  sendMissingAdminWarning,
+  isSelfParticipant,
+  isUserVerified,
+} from './engine.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
@@ -2117,15 +2123,29 @@ async function executeSingleCommandLine(
         // C: Execute the target command as if the user typed it
         const aliasTarget = (customMatch.alias_of || '').toLowerCase().replace(/^[!/#]+/, '');
         if (aliasTarget) {
-          logger.info({ groupId, cmdStr, aliasTarget }, '🔗 Custom alias command — redirecting to target');
+          logger.info(
+            { groupId, cmdStr, aliasTarget },
+            '🔗 Custom alias command — redirecting to target'
+          );
           const aliasCmd = registry.getCommand(aliasTarget);
           if (aliasCmd) {
-            return aliasCmd.handler({ session, msg, groupId, args, personJid: senderJid, isAdminUser, config, prefix });
+            return aliasCmd.handler({
+              session,
+              msg,
+              groupId,
+              args,
+              personJid: senderJid,
+              isAdminUser,
+              config,
+              prefix,
+            });
           }
           // Target might itself be another custom command — recurse once
           const aliasCmds = config.commands?.custom_commands || [];
           const aliasCustomMatch = aliasCmds.find(
-            (c) => c.command.toLowerCase().replace(/^[!/#]+/, '') === aliasTarget && c.command !== customMatch.command
+            (c) =>
+              c.command.toLowerCase().replace(/^[!/#]+/, '') === aliasTarget &&
+              c.command !== customMatch.command
           );
           if (aliasCustomMatch && (aliasCustomMatch.type || 'auto_reply') === 'auto_reply') {
             await reply(session, groupId, { text: aliasCustomMatch.response }, msg);

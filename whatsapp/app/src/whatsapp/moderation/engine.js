@@ -1131,7 +1131,9 @@ export async function handlePrivateCaptchaMessage(session, event) {
 
   if (!foundMatch || !targetGroupId) return false;
 
-  const cleanAnswer = String(foundMatch.answer || '').trim().toLowerCase();
+  const cleanAnswer = String(foundMatch.answer || '')
+    .trim()
+    .toLowerCase();
   const rawInput = text.trim().toLowerCase();
   const cleanInput = cleanCaptchaInput(text);
   const words = text.split(/\s+/).map((w) => cleanCaptchaInput(w));
@@ -1206,7 +1208,6 @@ export async function handlePrivateCaptchaMessage(session, event) {
   return false;
 }
 
-
 export function formatMessageTemplate(
   template,
   { userId, participantJid, groupId, groupMeta, config, session } = {}
@@ -1225,11 +1226,7 @@ export function formatMessageTemplate(
     ? String(groupMeta.participants.length)
     : 'N/A';
 
-  const userLabel = resolveUserDisplayName(
-    userId || participantJid,
-    session,
-    config?.greetings
-  );
+  const userLabel = resolveUserDisplayName(userId || participantJid, session, config?.greetings);
   const canonicalKey = resolveCanonicalUserKey(userId || participantJid, session);
   const mentionText =
     canonicalKey && !canonicalKey.startsWith('1576') ? `@${canonicalKey}` : userLabel;
@@ -1548,84 +1545,90 @@ export async function handleModerationParticipantUpdate(session, update) {
 
           const timeoutHandle = setTimeout(async () => {
             // Check if user is verified before executing removal
-            if (!pendingCaptchas.has(captchaKey) || isUserVerified(groupId, userId, session) || isUserVerified(groupId, participantJid, session)) {
+            if (
+              !pendingCaptchas.has(captchaKey) ||
+              isUserVerified(groupId, userId, session) ||
+              isUserVerified(groupId, participantJid, session)
+            ) {
               pendingCaptchas.delete(captchaKey);
               return;
             }
 
-              // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
-              let userIsAdmin = isAdmin(participantJid, session);
+            // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
+            let userIsAdmin = isAdmin(participantJid, session);
 
-              // Live check against Baileys group metadata if available
-              if (!userIsAdmin && session?.sock?.groupMetadata) {
-                try {
-                  const meta = await session.sock.groupMetadata(groupId);
-                  const p = meta?.participants?.find((part) => {
-                    const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
-                    const tid = participantJid.split('@')[0].replace(/\D/g, '');
-                    return pid === tid || part.id === participantJid;
-                  });
-                  if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
-                    userIsAdmin = true;
-                  }
-                } catch (metaErr) {
-                  logger.debug(
-                    { error: metaErr.message },
-                    'Failed to fetch live group metadata for captcha admin check'
-                  );
+            // Live check against Baileys group metadata if available
+            if (!userIsAdmin && session?.sock?.groupMetadata) {
+              try {
+                const meta = await session.sock.groupMetadata(groupId);
+                const p = meta?.participants?.find((part) => {
+                  const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
+                  const tid = participantJid.split('@')[0].replace(/\D/g, '');
+                  return pid === tid || part.id === participantJid;
+                });
+                if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
+                  userIsAdmin = true;
                 }
-              }
-
-              if (userIsAdmin) {
-                pendingCaptchas.delete(captchaKey);
-                logger.info(
-                  { groupId, userId },
-                  '🛡️ User is an admin, skipping Captcha timeout kick'
+              } catch (metaErr) {
+                logger.debug(
+                  { error: metaErr.message },
+                  'Failed to fetch live group metadata for captcha admin check'
                 );
-                return;
               }
+            }
 
-              // Retrieve pending challenge info to verify if challenge was delivered
-              const pendingEntry = findPendingCaptcha(groupId, userId, session) || findPendingCaptcha(groupId, participantJid, session);
-              if (!pendingEntry?.captchaObj?.delivered) {
-                pendingCaptchas.delete(captchaKey);
-                logger.warn(
-                  { groupId, userId },
-                  '⚠️ Skipping Captcha timeout kick because challenge message delivery was not confirmed.'
-                );
-                return;
-              }
-
+            if (userIsAdmin) {
               pendingCaptchas.delete(captchaKey);
-              const userLabel = resolveUserDisplayName(userId, session);
-
-              // Record kick reason so goodbye message can display it
-              const recObj = {
-                reason: '⏱️ Removed — Captcha verification timed out',
-                expires: Date.now() + 30000,
-              };
-              recentKickReasons.set(getWindowKey(groupId, userId), recObj);
-              if (cleanDigits) recentKickReasons.set(getWindowKey(groupId, cleanDigits), recObj);
-              const recCanonical = resolveCanonicalUserKey(userId, session);
-              if (recCanonical) recentKickReasons.set(getWindowKey(groupId, recCanonical), recObj);
-
-              await reply(
-                session,
-                groupId,
-                {
-                  text: `⏳ Captcha verification timed out for ${userLabel}. Executing removal.`,
-                  mentions: [mentionJid],
-                },
-                rawMsg
+              logger.info(
+                { groupId, userId },
+                '🛡️ User is an admin, skipping Captcha timeout kick'
               );
-              await executePenalty(
-                session,
-                groupId,
-                userId,
-                'kick',
-                'Captcha verification timeout',
-                rawMsg
+              return;
+            }
+
+            // Retrieve pending challenge info to verify if challenge was delivered
+            const pendingEntry =
+              findPendingCaptcha(groupId, userId, session) ||
+              findPendingCaptcha(groupId, participantJid, session);
+            if (!pendingEntry?.captchaObj?.delivered) {
+              pendingCaptchas.delete(captchaKey);
+              logger.warn(
+                { groupId, userId },
+                '⚠️ Skipping Captcha timeout kick because challenge message delivery was not confirmed.'
               );
+              return;
+            }
+
+            pendingCaptchas.delete(captchaKey);
+            const userLabel = resolveUserDisplayName(userId, session);
+
+            // Record kick reason so goodbye message can display it
+            const recObj = {
+              reason: '⏱️ Removed — Captcha verification timed out',
+              expires: Date.now() + 30000,
+            };
+            recentKickReasons.set(getWindowKey(groupId, userId), recObj);
+            if (cleanDigits) recentKickReasons.set(getWindowKey(groupId, cleanDigits), recObj);
+            const recCanonical = resolveCanonicalUserKey(userId, session);
+            if (recCanonical) recentKickReasons.set(getWindowKey(groupId, recCanonical), recObj);
+
+            await reply(
+              session,
+              groupId,
+              {
+                text: `⏳ Captcha verification timed out for ${userLabel}. Executing removal.`,
+                mentions: [mentionJid],
+              },
+              rawMsg
+            );
+            await executePenalty(
+              session,
+              groupId,
+              userId,
+              'kick',
+              'Captcha verification timeout',
+              rawMsg
+            );
           }, timeoutSec * 1000);
 
           const captchaObj = {
@@ -1639,9 +1642,11 @@ export async function handleModerationParticipantUpdate(session, update) {
           pendingCaptchas.set(captchaKey, captchaObj);
           if (cleanDigits) pendingCaptchas.set(getWindowKey(groupId, cleanDigits), captchaObj);
           const participantUser = participantJid.split('@')[0];
-          if (participantUser) pendingCaptchas.set(getWindowKey(groupId, participantUser), captchaObj);
+          if (participantUser)
+            pendingCaptchas.set(getWindowKey(groupId, participantUser), captchaObj);
           const canonicalPhoneKeyVal = resolveCanonicalUserKey(participantJid, session);
-          if (canonicalPhoneKeyVal) pendingCaptchas.set(getWindowKey(groupId, canonicalPhoneKeyVal), captchaObj);
+          if (canonicalPhoneKeyVal)
+            pendingCaptchas.set(getWindowKey(groupId, canonicalPhoneKeyVal), captchaObj);
         }
 
         const fullText = messageParts.join('\n\n');

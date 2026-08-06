@@ -648,8 +648,10 @@ function selectModerationGroup(groupId) {
         '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
     } else {
       const typeLabel = (t) => {
-        if (t === 'webhook') return '<span style="font-size:10px;background:rgba(41,182,246,0.15);color:#29b6f6;padding:2px 6px;border-radius:4px;">🏠 HA/Webhook</span>';
-        if (t === 'alias') return '<span style="font-size:10px;background:rgba(156,39,176,0.15);color:#ce93d8;padding:2px 6px;border-radius:4px;">🔗 Alias</span>';
+        if (t === 'webhook')
+          return '<span style="font-size:10px;background:rgba(41,182,246,0.15);color:#29b6f6;padding:2px 6px;border-radius:4px;">🏠 HA/Webhook</span>';
+        if (t === 'alias')
+          return '<span style="font-size:10px;background:rgba(156,39,176,0.15);color:#ce93d8;padding:2px 6px;border-radius:4px;">🔗 Alias</span>';
         return '<span style="font-size:10px;background:rgba(76,175,80,0.15);color:#81c784;padding:2px 6px;border-radius:4px;">🤖 Auto Reply</span>';
       };
       customCmdsList.innerHTML = customCmds
@@ -1118,15 +1120,34 @@ function _refreshAliasDropdown(config) {
   const aliasSelect = document.getElementById('mod-cmd-alias-target');
   if (!aliasSelect) return;
   const builtins = [
-    'ping','help','id','rules','warn','warns','unwarn','kick','ban','mute','unmute',
-    'promote','demote','clear','report','notes','note','captcha','test'
+    'ping',
+    'help',
+    'id',
+    'rules',
+    'warn',
+    'warns',
+    'unwarn',
+    'kick',
+    'ban',
+    'mute',
+    'unmute',
+    'promote',
+    'demote',
+    'clear',
+    'report',
+    'notes',
+    'note',
+    'captcha',
+    'test',
   ];
   const prefix = config.commands?.prefix || '!';
   const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
   const allTargets = [...new Set([...builtins, ...customCmds])];
   aliasSelect.innerHTML =
     '<option value="">— select target —</option>' +
-    allTargets.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`).join('');
+    allTargets
+      .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`)
+      .join('');
 }
 
 async function removeCustomCommandRule(idx) {

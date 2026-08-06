@@ -10,7 +10,10 @@ export function sanitizeUnicode(str) {
   if (typeof str.toWellFormed === 'function') {
     return str.toWellFormed();
   }
-  return str.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '\uFFFD');
+  return str.replace(
+    /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,
+    '\uFFFD'
+  );
 }
 
 /**
@@ -306,7 +309,8 @@ export function resolveUserDisplayName(rawUserId, session = null, options = {}) 
   const contactName = cached?.name || cached?.verifiedName || '';
   const pushname = cached?.notify || '';
   const isLid = String(rawUserId).includes('@lid') || (canonicalKey || '').startsWith('1576');
-  const phoneNumber = canonicalKey && !isLid && /^\d+$/.test(canonicalKey) ? `+${canonicalKey}` : '';
+  const phoneNumber =
+    canonicalKey && !isLid && /^\d+$/.test(canonicalKey) ? `+${canonicalKey}` : '';
 
   if (priorityMode === 'phone_only') {
     if (phoneNumber) return phoneNumber;

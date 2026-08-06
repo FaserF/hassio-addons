@@ -79,8 +79,14 @@ export function registerAllListeners(session) {
         if (update?.id && update?.action && normalizedParticipants.length > 0) {
           const updateWindowKey = `part_upd:${update.id}:${update.action}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
-          if (processedParticipantEvents.has(updateWindowKey) && now - processedParticipantEvents.get(updateWindowKey) < 15000) {
-            logger.debug({ groupId: update.id, action: update.action }, '⏩ Skipping duplicate participant update from ev event');
+          if (
+            processedParticipantEvents.has(updateWindowKey) &&
+            now - processedParticipantEvents.get(updateWindowKey) < 15000
+          ) {
+            logger.debug(
+              { groupId: update.id, action: update.action },
+              '⏩ Skipping duplicate participant update from ev event'
+            );
             return;
           }
           processedParticipantEvents.set(updateWindowKey, now);
@@ -199,8 +205,14 @@ export function handleIncomingMessages(session) {
           // Deduplicate events to prevent double processing (since Baileys emits both group-participants.update and messageStubType for the same change)
           const updateWindowKey = `part_upd:${groupId}:${action}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
-          if (processedParticipantEvents.has(updateWindowKey) && now - processedParticipantEvents.get(updateWindowKey) < 15000) {
-            logger.debug({ groupId, action }, '⏩ Skipping duplicate participant update from messageStubType');
+          if (
+            processedParticipantEvents.has(updateWindowKey) &&
+            now - processedParticipantEvents.get(updateWindowKey) < 15000
+          ) {
+            logger.debug(
+              { groupId, action },
+              '⏩ Skipping duplicate participant update from messageStubType'
+            );
             continue;
           }
           processedParticipantEvents.set(updateWindowKey, now);
