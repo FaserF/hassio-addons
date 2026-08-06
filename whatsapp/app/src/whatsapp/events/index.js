@@ -7,7 +7,7 @@ import { logger } from '../../logger.js';
 import { ADDON_VERSION, INTEGRATION_VERSION, BAILEYS_VERSION } from '../../config.js';
 import { fetchHAVersions } from '../../ha.js';
 import { formatDuration } from '../../utils/format.js';
-import { maskData, isAdmin } from '../../utils/security.js';
+import { maskData, isAdmin, normalizeJid } from '../../utils/security.js';
 import { triggerWebhook } from '../../webhook.js';
 import {
   trackReceived,
@@ -136,8 +136,21 @@ export function handleIncomingMessages(session) {
         const stNum = Number(st);
         const stStr = String(st).toUpperCase();
 
-        let action = 'add';
-        if (st === 32 || stNum === 32 || stStr.includes('LEAVE')) {
+        let action = null;
+        if (
+          st === 27 ||
+          st === 31 ||
+          st === 71 ||
+          st === 143 ||
+          stNum === 27 ||
+          stNum === 31 ||
+          stNum === 71 ||
+          stNum === 143 ||
+          stStr.includes('ADD') ||
+          stStr.includes('JOIN')
+        ) {
+          action = 'add';
+        } else if (st === 32 || stNum === 32 || stStr.includes('LEAVE')) {
           action = 'leave';
         } else if (
           st === 28 ||
@@ -429,7 +442,28 @@ export function handleIncomingMessages(session) {
         };
 
         const personJid = effectiveSenderJid;
-        const isAdminUser = Boolean(msg.key.fromMe || isAdmin(personJid, session));
+        let isAdminUser = Boolean(msg.key.fromMe || isAdmin(personJid, session));
+
+        // In group chats, also verify if user is a WhatsApp Group Admin via groupMetadata
+        if (!isAdminUser && isGroup && session?.sock?.groupMetadata) {
+          try {
+            const meta = await session.sock.groupMetadata(senderJid);
+            const targetDigits = (personJid || '').split('@')[0].replace(/\D/g, '');
+            const part = meta?.participants?.find((p) => {
+              const pId = p.id ? normalizeJid(p.id) : '';
+              const pDigits = pId.split('@')[0].replace(/\D/g, '');
+              return (
+                (targetDigits && pDigits && targetDigits === pDigits) ||
+                (personJid && pId === normalizeJid(personJid))
+              );
+            });
+            if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
+              isAdminUser = true;
+            }
+          } catch (_metaErr) {
+            /* ignore metadata fetch failure */
+          }
+        }
 
         triggerWebhook(event);
         handleFirstContact(session, event);

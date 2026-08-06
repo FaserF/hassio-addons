@@ -80,14 +80,43 @@ registry.register(
       );
       return;
     }
+    const validTargets = [];
+    for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ *Security Restriction:* You cannot promote yourself. Only existing Group Admins can promote other members.`,
+          },
+          rawMsg
+        );
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ *Security Restriction:* The bot account cannot be promoted or demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
+          },
+          rawMsg
+        );
+        continue;
+      }
+      validTargets.push(targetJid);
+    }
+
+    if (validTargets.length === 0) return;
+
     try {
-      await session.sock.groupParticipantsUpdate(groupId, targetMatches, 'promote');
+      await session.sock.groupParticipantsUpdate(groupId, validTargets, 'promote');
       await reply(
         session,
         groupId,
         {
-          text: `✅ Promoted ${targetMatches.length} user(s) to Admin.`,
-          mentions: targetMatches,
+          text: `✅ Promoted ${validTargets.length} user(s) to Admin.`,
+          mentions: validTargets,
         },
         rawMsg
       );
@@ -139,14 +168,44 @@ registry.register(
       );
       return;
     }
+
+    const validTargets = [];
+    for (const targetJid of targetMatches) {
+      if (isSameUser(targetJid, userId, session)) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ *Security Restriction:* You cannot demote yourself.`,
+          },
+          rawMsg
+        );
+        continue;
+      }
+      if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ *Security Restriction:* The bot account cannot be demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
+          },
+          rawMsg
+        );
+        continue;
+      }
+      validTargets.push(targetJid);
+    }
+
+    if (validTargets.length === 0) return;
+
     try {
-      await session.sock.groupParticipantsUpdate(groupId, targetMatches, 'demote');
+      await session.sock.groupParticipantsUpdate(groupId, validTargets, 'demote');
       await reply(
         session,
         groupId,
         {
-          text: `✅ Demoted ${targetMatches.length} user(s) from Admin.`,
-          mentions: targetMatches,
+          text: `✅ Demoted ${validTargets.length} user(s) from Admin.`,
+          mentions: validTargets,
         },
         rawMsg
       );
