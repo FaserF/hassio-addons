@@ -1,5 +1,5 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from './store.js';
-import { executePenalty, issueUserWarning, sendMissingAdminWarning, isSelfParticipant } from './engine.js';
+import { executePenalty, issueUserWarning, sendMissingAdminWarning, isSelfParticipant, isUserVerified } from './engine.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
@@ -1296,15 +1296,21 @@ registry.register(
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     const warns = c.warnings?.user_warns?.[targetId] || [];
     const maxWarns = c.warnings?.max_warnings || 3;
-    const isApproved = (c.approved || []).includes(targetId);
+    const isApproved =
+      (c.approved || []).includes(targetId) ||
+      (c.approved || []).includes(targetJid) ||
+      (c.approved || []).some((a) => isSameUser(a, targetJid, session));
     const isMuted =
       c.muted_users?.[targetId] &&
       (!c.muted_users[targetId].until || c.muted_users[targetId].until > Date.now());
+    const isVerified = isUserVerified(groupId, targetJid, session, rawMsg);
 
-    let infoText = `📋 *User Info: @${targetId}*\n\n`;
+    const displayName = resolveUserDisplayName(targetJid, session, c.greetings);
+    let infoText = `📋 *User Info: ${displayName}*\n\n`;
     infoText += `🆔 ID: \`${targetId}\`\n`;
     infoText += `⚠️ Warnings: ${warns.length}/${maxWarns}\n`;
-    infoText += `✅ Approved: ${isApproved ? 'Yes' : 'No'}\n`;
+    infoText += `🤖 Captcha Verified: ${isVerified ? 'Yes' : 'No'}\n`;
+    infoText += `✅ Approved (Whitelist): ${isApproved ? 'Yes' : 'No'}\n`;
     infoText += `🔇 Muted: ${isMuted ? 'Yes' : 'No'}\n`;
 
     if (warns.length > 0) {

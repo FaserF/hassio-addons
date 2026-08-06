@@ -1146,6 +1146,10 @@ export async function handlePrivateCaptchaMessage(session, event) {
   if (isMatch) {
     clearTimeout(foundMatch.timeoutHandle);
     pendingCaptchas.delete(targetKey);
+    const cleanUserDigits = userId.replace(/\D/g, '');
+    if (cleanUserDigits) pendingCaptchas.delete(`${targetGroupId}:${cleanUserDigits}`);
+    const userCanonical = resolveCanonicalUserKey(userId, session);
+    if (userCanonical) pendingCaptchas.delete(`${targetGroupId}:${userCanonical}`);
 
     const store = loadModerationStore();
     const config = getGroupModerationConfig(targetGroupId);
@@ -1528,12 +1532,11 @@ export async function handleModerationParticipantUpdate(session, update) {
           const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
 
           const timeoutHandle = setTimeout(async () => {
-            if (pendingCaptchas.has(captchaKey)) {
-              // Double check if user has already been verified
-              if (isUserVerified(groupId, userId, session)) {
-                pendingCaptchas.delete(captchaKey);
-                return;
-              }
+            // Check if user is verified before executing removal
+            if (!pendingCaptchas.has(captchaKey) || isUserVerified(groupId, userId, session) || isUserVerified(groupId, participantJid, session)) {
+              pendingCaptchas.delete(captchaKey);
+              return;
+            }
 
               // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
               let userIsAdmin = isAdmin(participantJid, session);
@@ -1605,7 +1608,6 @@ export async function handleModerationParticipantUpdate(session, update) {
                 'Captcha verification timeout',
                 rawMsg
               );
-            }
           }, timeoutSec * 1000);
 
           pendingCaptchas.set(captchaKey, {

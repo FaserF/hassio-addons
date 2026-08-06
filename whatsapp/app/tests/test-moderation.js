@@ -153,7 +153,7 @@ try {
   const faqHandled = await handleModerationMessage(mockFaqSession, eventFaq);
   assert.strictEqual(faqHandled, true, 'FAQ filter should handle trigger word');
   assert(
-    sentFaqText.includes('FAQ Hint / Automatische Hilfe'),
+    sentFaqText.includes('FAQ Hint / Automated Help'),
     'FAQ response should contain FAQ hint header'
   );
   console.log('✅ PASSED: FAQ filter correctly matched trigger and formatted hint header');
