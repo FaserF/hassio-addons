@@ -49,7 +49,8 @@ export function registerAllListeners(session) {
         );
         const normalizedParticipants = (update?.participants || [])
           .map((p) => {
-            let str = typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+            let str =
+              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
             if (str.startsWith('{') || str.includes('id')) {
               try {
                 const parsed = JSON.parse(str);
@@ -132,7 +133,8 @@ export function handleIncomingMessages(session) {
         // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
         const normalizedParticipants = rawParticipants
           .map((p) => {
-            let str = typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+            let str =
+              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
             if (str.startsWith('{') || str.includes('id')) {
               try {
                 const parsed = JSON.parse(str);
