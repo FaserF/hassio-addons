@@ -203,11 +203,17 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         const displayName = resolveUserDisplayName(userId, session);
 
         // Build array of candidate JIDs (phone JID and LID JID) to ensure WhatsApp multi-device accepts removal
-        const candidateJids = [userJid];
-        if (userId.includes('@lid') && !candidateJids.includes(userId)) {
-          candidateJids.push(userId);
-        } else if (userId.includes('@s.whatsapp.net') && !candidateJids.includes(userId)) {
-          candidateJids.push(userId);
+        const candidateJids = [];
+        const cleanDigits = userId.replace(/\D/g, '');
+        if (cleanDigits) {
+          candidateJids.push(`${cleanDigits}@s.whatsapp.net`);
+        }
+        if (userJid && !candidateJids.includes(userJid)) {
+          candidateJids.push(userJid);
+        }
+        if (userId && !candidateJids.includes(userId)) {
+          const formatted = userId.includes('@') ? userId : `${userId}@s.whatsapp.net`;
+          if (!candidateJids.includes(formatted)) candidateJids.push(formatted);
         }
 
         let lastErr = null;

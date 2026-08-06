@@ -26,6 +26,7 @@ import { registerPresenceListener } from './presence.js';
 import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
+  isSelfParticipant,
 } from '../moderation/engine.js';
 import { processCommand } from '../moderation/commands.js';
 
@@ -69,46 +70,42 @@ export function handleIncomingMessages(session) {
     for (const msg of m.messages) {
       if (msg.messageStubType && msg.key?.remoteJid?.endsWith('@g.us')) {
         const groupId = msg.key.remoteJid;
-        let rawParticipants =
-          (msg.messageStubParameters || []).length > 0
-            ? msg.messageStubParameters
-            : [
-                msg.key?.participant,
-                msg.participant,
-                msg.key?.participantAlt,
-                msg.key?.remoteJidAlt,
-              ].filter(Boolean);
+        logger.info(
+          {
+            groupId,
+            stubType: msg.messageStubType,
+            stubParams: msg.messageStubParameters,
+            participant: msg.participant,
+            keyParticipant: msg.key?.participant,
+            keyParticipantAlt: msg.key?.participantAlt,
+          },
+          '📩 Received group messageStubType notification'
+        );
+        let rawParticipants = (msg.messageStubParameters || []).filter(Boolean);
 
-        // If participants array is still empty (e.g. self-leave/join via link), fallback to message key or session user
         if (rawParticipants.length === 0) {
-          if (msg.key?.participant || msg.key?.participantAlt) {
-            rawParticipants = [msg.key.participant || msg.key.participantAlt];
-          } else if (session.sock?.user?.id) {
-            rawParticipants = [session.sock.user.id];
-          }
+          const candidates = [
+            msg.participant,
+            msg.key?.participantAlt,
+            msg.key?.remoteJidAlt,
+            msg.key?.participant,
+          ].filter(Boolean);
+
+          // Exclude self bot ID if other candidates exist (so we identify the joining user, not the bot key)
+          const nonSelfCandidates = candidates.filter((c) => !isSelfParticipant(c, session));
+          rawParticipants = nonSelfCandidates.length > 0 ? nonSelfCandidates : candidates;
         }
 
-        let action = null;
+        // If participants array is still empty (e.g. self-leave/join via link), fallback to session user
+        if (rawParticipants.length === 0 && session.sock?.user?.id) {
+          rawParticipants = [session.sock.user.id];
+        }
+
         const st = msg.messageStubType;
         const stNum = Number(st);
         const stStr = String(st).toUpperCase();
 
-        if (
-          st === 27 ||
-          st === 30 ||
-          st === 31 ||
-          st === 32 ||
-          st === 143 ||
-          st === 144 ||
-          st === 145 ||
-          st === 172 ||
-          st === 173 ||
-          stStr.includes('ADD') ||
-          stStr.includes('JOIN') ||
-          stStr.includes('INVITE')
-        ) {
-          action = 'add';
-        } else if (
+        const action =
           st === 28 ||
           st === 29 ||
           st === 33 ||
@@ -117,12 +114,8 @@ export function handleIncomingMessages(session) {
           stNum === 33 ||
           stStr.includes('REMOVE') ||
           stStr.includes('LEAVE')
-        ) {
-          action = 'remove';
-        } else {
-          // Any other messageStubType on a @g.us group (joins, invites, adds, links, approvals) maps to 'add'
-          action = 'add';
-        }
+            ? 'remove'
+            : 'add';
 
         // Normalize participants array to ensure full JIDs (e.g. "49123456789" -> "49123456789@s.whatsapp.net")
         const normalizedParticipants = rawParticipants.map((p) =>
