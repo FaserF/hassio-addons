@@ -1498,19 +1498,43 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   // Split into lines to support multi-line command blocks
   const rawLines = rawText
     .split('\n')
-    .map((l) => l.trim().replace(/^['"`\s]+|['"`\s]+$/g, '').trim())
+    .map((l) =>
+      l
+        .trim()
+        .replace(/^['"`\s]+|['"`\s]+$/g, '')
+        .trim()
+    )
     .filter((l) => l.length > 0 && l.startsWith(prefix));
 
   if (rawLines.length === 0) return false;
 
   // Single command fast path
   if (rawLines.length === 1) {
-    return await executeSingleCommandLine(session, msg, rawLines[0], prefix, senderJid, isAdminUser, groupId, config);
+    return await executeSingleCommandLine(
+      session,
+      msg,
+      rawLines[0],
+      prefix,
+      senderJid,
+      isAdminUser,
+      groupId,
+      config
+    );
   }
 
   // Multi-line batch processing with Conflict Detection & Safety Checks
   const CONFLICTING_COMMANDS = new Set([
-    'kick', 'ban', 'unban', 'mute', 'unmute', 'promote', 'demote', 'lock', 'unlock', 'del', 'delete'
+    'kick',
+    'ban',
+    'unban',
+    'mute',
+    'unmute',
+    'promote',
+    'demote',
+    'lock',
+    'unlock',
+    'del',
+    'delete',
   ]);
 
   const commandLinesToExecute = [];
@@ -1538,14 +1562,32 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   // Execute non-conflicting safe commands sequentially
   let executedAny = false;
   for (const line of commandLinesToExecute) {
-    const ok = await executeSingleCommandLine(session, msg, line, prefix, senderJid, isAdminUser, groupId, config);
+    const ok = await executeSingleCommandLine(
+      session,
+      msg,
+      line,
+      prefix,
+      senderJid,
+      isAdminUser,
+      groupId,
+      config
+    );
     if (ok) executedAny = true;
   }
 
   return executedAny || detectedConflicts.length > 0;
 }
 
-async function executeSingleCommandLine(session, msg, lineText, prefix, senderJid, isAdminUser, groupId, config) {
+async function executeSingleCommandLine(
+  session,
+  msg,
+  lineText,
+  prefix,
+  senderJid,
+  isAdminUser,
+  groupId,
+  config
+) {
   const parts = lineText.slice(prefix.length).trim().split(/\s+/);
   if (parts.length === 0 || parts[0] === '') return false;
 
