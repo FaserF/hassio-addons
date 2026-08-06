@@ -36,9 +36,10 @@ export async function reply(session, jid, content, quotedMsg = null) {
     trackSent(session, target, text);
     return result;
   } catch (err) {
-    const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
-    trackFailure(session, jid, text, err.message);
-    logger.error({ error: err.message, jid }, 'Failed to send reply');
+    const text = typeof content === 'string' ? content : content?.text || '[Mixed Content]';
+    const reasonText = err?.message || String(err || 'Unknown sending error');
+    trackFailure(session, jid, text, reasonText);
+    logger.error({ error: reasonText, jid }, 'Failed to send reply');
     session.stats.failed += 1;
     logger.debug({ sessionId: session.id, jid: maskData(jid) }, '📉 Stat: Failed incremented');
     return null;

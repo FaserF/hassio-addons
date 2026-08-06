@@ -34,6 +34,7 @@ export { bindStore } from './store.js';
 export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
 
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
+const processedParticipantEvents = new Map();
 
 export function registerAllListeners(session) {
   registerAckListener(session);
@@ -74,6 +75,17 @@ export function registerAllListeners(session) {
             return `${digits}@s.whatsapp.net`;
           })
           .filter(Boolean);
+
+        if (update?.id && update?.action && normalizedParticipants.length > 0) {
+          const updateWindowKey = `part_upd:${update.id}:${update.action}:${normalizedParticipants.sort().join(',')}`;
+          const now = Date.now();
+          if (processedParticipantEvents.has(updateWindowKey) && now - processedParticipantEvents.get(updateWindowKey) < 15000) {
+            logger.debug({ groupId: update.id, action: update.action }, '⏩ Skipping duplicate participant update from ev event');
+            return;
+          }
+          processedParticipantEvents.set(updateWindowKey, now);
+        }
+
         await handleModerationParticipantUpdate(session, {
           ...update,
           participants: normalizedParticipants,
@@ -171,6 +183,21 @@ export function handleIncomingMessages(session) {
           .filter(Boolean);
 
         if (action && normalizedParticipants.length > 0) {
+          // Deduplicate events to prevent double processing (since Baileys emits both group-participants.update and messageStubType for the same change)
+          const updateWindowKey = `part_upd:${groupId}:${action}:${normalizedParticipants.sort().join(',')}`;
+          const now = Date.now();
+          if (processedParticipantEvents.has(updateWindowKey) && now - processedParticipantEvents.get(updateWindowKey) < 15000) {
+            logger.debug({ groupId, action }, '⏩ Skipping duplicate participant update from messageStubType');
+            continue;
+          }
+          processedParticipantEvents.set(updateWindowKey, now);
+          // Cleanup old keys
+          if (processedParticipantEvents.size > 100) {
+            for (const [k, ts] of processedParticipantEvents.entries()) {
+              if (now - ts > 30000) processedParticipantEvents.delete(k);
+            }
+          }
+
           logger.info(
             {
               groupId,

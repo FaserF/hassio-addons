@@ -1468,6 +1468,15 @@ export async function handleModerationParticipantUpdate(session, update) {
       const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
 
       if (isWelcomeEnabled || isRulesOnJoin || isCaptchaEnabled) {
+        // Reset old Captcha verification status on rejoin if Captcha is enabled so user must verify again
+        if (isCaptchaEnabled && config.verified_users) {
+          delete config.verified_users[userId];
+          if (cleanDigits) delete config.verified_users[cleanDigits];
+          const canonicalRejoin = resolveCanonicalUserKey(participantJid, session);
+          if (canonicalRejoin) delete config.verified_users[canonicalRejoin];
+          store.groups[groupId] = config;
+          saveModerationStore(store);
+        }
         let groupMeta = null;
         if (session?.sock?.groupMetadata) {
           try {
