@@ -214,16 +214,15 @@ export async function executePenalty(session, groupId, userId, action, reason = 
               if (isAdminRole) isBotAdmin = true;
             }
             // Check target user status
-            if (
-              pDigits === targetDigits ||
-              pId === userJid ||
-              pId.split('@')[0] === userId
-            ) {
+            if (pDigits === targetDigits || pId === userJid || pId.split('@')[0] === userId) {
               if (isAdminRole) isTargetAdmin = true;
             }
           }
         } catch (metaErr) {
-          logger.debug({ error: metaErr.message, groupId }, 'Failed to fetch metadata in executePenalty');
+          logger.debug(
+            { error: metaErr.message, groupId },
+            'Failed to fetch metadata in executePenalty'
+          );
         }
       }
 
@@ -246,9 +245,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         return false;
       }
 
+      try {
+        const displayName = resolveUserDisplayName(userId, session);
+
         // Build array of candidate JIDs (phone JID and LID JID) to ensure WhatsApp multi-device accepts removal
         const candidateJids = [];
-        const cleanDigits = userId.replace(/\D/g, '');
         if (cleanDigits) {
           candidateJids.push(`${cleanDigits}@s.whatsapp.net`);
         }
@@ -566,7 +567,9 @@ export async function handleModerationMessage(session, event) {
   if (pendingCaptchas.has(captchaKey)) {
     const captchaObj = pendingCaptchas.get(captchaKey);
     const cleanInput = text.trim().toLowerCase();
-    const cleanAnswer = String(captchaObj.answer || '').trim().toLowerCase();
+    const cleanAnswer = String(captchaObj.answer || '')
+      .trim()
+      .toLowerCase();
 
     if (cleanInput === cleanAnswer) {
       clearTimeout(captchaObj.timeoutHandle);
