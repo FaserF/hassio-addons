@@ -272,7 +272,9 @@ export function resolveUserDisplayName(rawUserId, session = null) {
 
   let cached = null;
   if (session?.contactCache) {
-    cached = session.contactCache.get(`${canonicalKey}@s.whatsapp.net`) || session.contactCache.get(String(rawUserId));
+    cached =
+      session.contactCache.get(`${canonicalKey}@s.whatsapp.net`) ||
+      session.contactCache.get(String(rawUserId));
     if (!cached) {
       for (const contact of session.contactCache.values()) {
         const cIdDigits = contact.id ? contact.id.split('@')[0].replace(/\D/g, '') : '';
@@ -304,5 +306,5 @@ export function resolveUserDisplayName(rawUserId, session = null) {
   }
 
   // Prio 4 & 5: Generic Fallback / Clean ID
-  return isLid ? '@User' : (canonicalKey || String(rawUserId));
+  return isLid ? '@User' : canonicalKey || String(rawUserId);
 }

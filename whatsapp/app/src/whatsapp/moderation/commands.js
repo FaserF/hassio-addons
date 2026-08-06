@@ -205,7 +205,11 @@ registry.register(
     const cleanUserId = userId ? userId.split('@')[0].replace(/\D/g, '') : null;
 
     // Disallow self-reporting (if target matches reporter OR if no target is provided)
-    if (!targetJid || (targetId && cleanUserId && targetId === cleanUserId) || isSameUser(userId, targetJid, session)) {
+    if (
+      !targetJid ||
+      (targetId && cleanUserId && targetId === cleanUserId) ||
+      isSameUser(userId, targetJid, session)
+    ) {
       await reply(
         session,
         groupId,
@@ -258,7 +262,11 @@ registry.register(
     }
 
     const reporterLabel = resolveUserDisplayName(userId, session);
-    const targetLabel = targetJid ? resolveUserDisplayName(targetJid, session) : (targetId ? `@${targetId}` : '');
+    const targetLabel = targetJid
+      ? resolveUserDisplayName(targetJid, session)
+      : targetId
+        ? `@${targetId}`
+        : '';
     const targetMentionStr = targetLabel ? ` against ${targetLabel}` : '';
 
     await reply(
