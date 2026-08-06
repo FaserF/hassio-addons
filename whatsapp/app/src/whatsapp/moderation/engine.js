@@ -1,4 +1,4 @@
-import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from './store.js';
+import { loadModerationStore, getGroupModerationConfig, saveModerationStore, clearModerationStoreCache } from './store.js';
 import { processAiModeration } from './ai.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
@@ -661,26 +661,36 @@ export function formatMessageTemplate(
 }
 
 export async function handleModerationParticipantUpdate(session, update) {
-  const store = loadModerationStore();
-  if (!store.global_enabled) return;
-
   const groupId = update.id;
   if (!groupId || !groupId.endsWith('@g.us')) return;
 
+  // Force a fresh disk-read for every join/leave event so stale in-memory
+  // cache can never suppress greeting/captcha messages.
+  clearModerationStoreCache();
+  const store = loadModerationStore();
+  if (!store.global_enabled) {
+    logger.debug({ groupId }, '🔇 Participant update: global moderation disabled, skipping');
+    return;
+  }
+
   // No triggering message for join/leave events — quoting disabled for these
   const rawMsg = null;
+  const action = update.action;
+  const participants = update.participants || [];
 
   const config = getGroupModerationConfig(groupId);
   // Note: We intentionally do NOT gate on config.enabled here.
   // Greetings, captcha, and ban enforcement are per-feature flags
   // and should work regardless of whether the full moderation engine is enabled.
-
-  const action = update.action;
-  const participants = update.participants || [];
-
   logger.info(
-    { groupId, action, participantsCount: participants.length },
-    `👥 Group participant update event received: ${action}`
+    {
+      groupId,
+      action,
+      participantsCount: participants.length,
+      greetings: config.greetings,
+      rulesShowOnJoin: config.rules?.show_on_join,
+    },
+    '👥 Participant update — loaded config'
   );
 
   if (action === 'add' || action === 'invite' || action === 'join') {
@@ -764,6 +774,7 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       // Greetings & Welcome message
       if (config.greetings?.welcome_enabled) {
+        logger.info({ groupId, userId }, '🎉 Sending welcome message');
         let groupMeta = null;
         if (session?.sock?.groupMetadata) {
           try {
@@ -789,10 +800,17 @@ export async function handleModerationParticipantUpdate(session, update) {
           session,
         });
 
+        // Normalize JID for mention — strip device-ID suffix, ensure @s.whatsapp.net
+        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         await reply(session, groupId, {
           text: welcomeMsg,
-          mentions: [participantJid],
+          mentions: [mentionJid],
         }, rawMsg);
+      } else {
+        logger.debug(
+          { groupId, userId, welcome_enabled: config.greetings?.welcome_enabled },
+          '⏭️ Welcome message skipped (not enabled)'
+        );
       }
 
       // Show rules on join if enabled
@@ -804,6 +822,7 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       // Captcha Challenge
       if (config.greetings?.captcha_enabled) {
+        logger.info({ groupId, userId }, '🤖 Starting captcha challenge');
         const mode = config.greetings.captcha_mode || 'button';
         let answer = 'pass';
         let challengeText = `🤖 *Captcha Verification for @${userId}*\nType *pass* to verify.`;
@@ -818,12 +837,13 @@ export async function handleModerationParticipantUpdate(session, update) {
         const captchaKey = getWindowKey(groupId, userId);
         const timeoutSec = config.greetings.captcha_timeout_seconds || 120;
 
+        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         const timeoutHandle = setTimeout(async () => {
           if (pendingCaptchas.has(captchaKey)) {
             pendingCaptchas.delete(captchaKey);
             await reply(session, groupId, {
               text: `❌ Captcha timeout for @${userId}. Executing kick.`,
-              mentions: [participantJid],
+              mentions: [mentionJid],
             }, rawMsg);
             await executePenalty(session, groupId, userId, 'kick', 'Captcha verification timeout', rawMsg);
           }
@@ -833,13 +853,19 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         await reply(session, groupId, {
           text: challengeText,
-          mentions: [participantJid],
+          mentions: [mentionJid],
         }, rawMsg);
+      } else {
+        logger.debug(
+          { groupId, userId, captcha_enabled: config.greetings?.captcha_enabled },
+          '⏭️ Captcha skipped (not enabled)'
+        );
       }
     }
   } else if (action === 'remove' || action === 'leave') {
     // Goodbye message
     if (config.greetings?.goodbye_enabled) {
+      logger.info({ groupId, action }, '👋 Sending goodbye message');
       let groupMeta = null;
       if (session?.sock?.groupMetadata) {
         try {

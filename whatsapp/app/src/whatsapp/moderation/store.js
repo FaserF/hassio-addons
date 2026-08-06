@@ -23,6 +23,11 @@ export function getModerationFilePath() {
 
 let storeMemory = null;
 
+/** Clears the in-memory cache so the next loadModerationStore() reads from disk. */
+export function clearModerationStoreCache() {
+  storeMemory = null;
+}
+
 /**
  * Ensures the fed_global_default federation always contains all built-in
  * default patterns. Called every time the store is loaded, even from cache,
