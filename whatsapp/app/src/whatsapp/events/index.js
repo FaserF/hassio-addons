@@ -113,12 +113,7 @@ export function handleIncomingMessages(session) {
 
           // Exclude self bot ID if other candidates exist (so we identify the joining user, not the bot key)
           const nonSelfCandidates = candidates.filter((c) => !isSelfParticipant(c, session));
-          rawParticipants = nonSelfCandidates.length > 0 ? nonSelfCandidates : candidates;
-        }
-
-        // If participants array is still empty (e.g. self-leave/join via link), fallback to session user
-        if (rawParticipants.length === 0 && session.sock?.user?.id) {
-          rawParticipants = [session.sock.user.id];
+          rawParticipants = nonSelfCandidates;
         }
 
         const st = msg.messageStubType;

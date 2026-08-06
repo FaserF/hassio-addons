@@ -135,9 +135,9 @@ export default () => `
                         <div class="mod-inline-controls">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-captcha-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label">Require captcha on join</span>
-                            <select id="mod-captcha-mode" class="mod-select mod-select-sm"><option value="math">Math problem</option><option value="code">Security Code</option><option value="button">Button challenge</option></select>
+                            <select id="mod-captcha-mode" class="mod-select mod-select-sm"><option value="code">Security Code</option><option value="math">Math problem</option><option value="button">Button challenge</option></select>
                             <select id="mod-captcha-target" class="mod-select mod-select-sm"><option value="private">Private Chat (DM)</option><option value="group">Group Chat</option></select>
-                            <div class="mod-number-group"><input type="number" id="mod-captcha-timeout" class="mod-number-input" value="120" min="30" max="600"><span class="mod-number-unit">s timeout</span></div>
+                            <div class="mod-number-group"><input type="number" id="mod-captcha-timeout" class="mod-number-input" value="240" min="30" max="600"><span class="mod-number-unit">s timeout</span></div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupGreetings()"><i class="fas fa-save"></i> Save Greetings &amp; Captcha</button></div>
                     </div>

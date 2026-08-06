@@ -1171,7 +1171,11 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
 
         const fullText = messageParts.join('\n\n');
-        const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
+        const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
+        const targetPrivateJid = !isLidDigits && canonicalPhoneKey
+          ? `${canonicalPhoneKey}@s.whatsapp.net`
+          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         const mentionJid = targetPrivateJid;
 
         const captchaTargetMode = config.greetings?.captcha_target || 'private';
@@ -1263,7 +1267,11 @@ export async function handleModerationParticipantUpdate(session, update) {
           session,
         });
 
-        const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const canonicalPhoneKey = resolveCanonicalUserKey(participantJid, session);
+        const isLidDigits = (canonicalPhoneKey || '').startsWith('1576');
+        const targetPrivateJid = !isLidDigits && canonicalPhoneKey
+          ? `${canonicalPhoneKey}@s.whatsapp.net`
+          : normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         let sentViaDM = false;
 
         // Try Private DM delivery first (using reply helper for outbound queue tracking)
