@@ -173,7 +173,42 @@ try {
   assert.strictEqual(fedHandled, true, 'Federation shared blacklist should delete prohibited link');
   console.log('✅ PASSED: Federation shared blacklist pattern correctly deleted');
 
-  // Test 7: Participant Leave & Goodbye Message
+  // Test 7: Consolidated Join Message (Welcome + Rules + Captcha in ONE single message)
+  groupConfig.greetings.welcome_enabled = true;
+  groupConfig.greetings.welcome_message = 'Welcome {mention} to {group}!';
+  groupConfig.rules.show_on_join = true;
+  groupConfig.rules.text = '1. Be polite\n2. No spam';
+  groupConfig.greetings.captcha_enabled = true;
+  groupConfig.greetings.captcha_mode = 'button';
+  setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+
+  let joinSentMessages = [];
+  const mockSessionJoinTest = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        joinSentMessages.push(content);
+        return { key: { id: 'joinMsg1' } };
+      },
+    },
+  };
+
+  await handleModerationParticipantUpdate(mockSessionJoinTest, {
+    id: '1203630123456789@g.us',
+    action: 'add',
+    participants: ['491769999111@s.whatsapp.net'],
+  });
+
+  assert.strictEqual(joinSentMessages.length, 1, 'Join event MUST send exactly 1 consolidated message');
+  const consolidatedText = joinSentMessages[0].text;
+  assert(consolidatedText.includes('Welcome @491769999111'), 'Single message must contain Welcome');
+  assert(consolidatedText.includes('📜 *Group Rules:*'), 'Single message must contain inline Rules');
+  assert(consolidatedText.includes('1. Be polite'), 'Single message must contain rule text');
+  assert(consolidatedText.includes('🤖 *Captcha Verification*'), 'Single message must contain Captcha');
+  console.log('✅ PASSED: Consolidated Welcome + Rules + Captcha single-message join flow verified');
+
+  // Test 7b: Participant Leave & Goodbye Message
   groupConfig.greetings.goodbye_enabled = true;
   groupConfig.greetings.goodbye_message = 'Goodbye {name}!';
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);

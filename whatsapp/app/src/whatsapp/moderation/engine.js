@@ -866,120 +866,103 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
       }
 
-      // Greetings & Welcome message
-      if (config.greetings?.welcome_enabled) {
-        logger.info({ groupId, userId }, '🎉 Sending welcome message');
+      // Build consolidated Welcome + Rules + Captcha message (Single message to reduce spam)
+      const isWelcomeEnabled = Boolean(config.greetings?.welcome_enabled);
+      const isRulesOnJoin = Boolean(config.rules?.show_on_join && config.rules?.text);
+      const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
+
+      if (isWelcomeEnabled || isRulesOnJoin || isCaptchaEnabled) {
         let groupMeta = null;
         if (session?.sock?.groupMetadata) {
           try {
             groupMeta = await session.sock.groupMetadata(groupId);
           } catch (e) {
-            logger.debug(
-              { error: e.message, groupId },
-              'Failed to fetch group metadata for welcome greeting'
-            );
+            logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata');
           }
         }
 
-        let welcomeMsg =
-          config.greetings.welcome_text ||
-          config.greetings.welcome_message ||
-          'Welcome {mention} to {group}!';
-        welcomeMsg = formatMessageTemplate(welcomeMsg, {
-          userId,
-          participantJid,
-          groupId,
-          groupMeta,
-          config,
-          session,
-        });
+        const messageParts = [];
 
-        // Normalize JID for mention — strip device-ID suffix, ensure @s.whatsapp.net
-        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        await reply(
-          session,
-          groupId,
-          {
-            text: welcomeMsg,
-            mentions: [mentionJid],
-          },
-          rawMsg
-        );
-      } else {
-        logger.debug(
-          { groupId, userId, welcome_enabled: config.greetings?.welcome_enabled },
-          '⏭️ Welcome message skipped (not enabled)'
-        );
-      }
-
-      // Show rules on join if enabled
-      if (config.rules?.show_on_join && config.rules?.text) {
-        await reply(
-          session,
-          groupId,
-          {
-            text: `📜 *Group Rules:*\n${config.rules.text}`,
-          },
-          rawMsg
-        );
-      }
-
-      // Captcha Challenge
-      if (config.greetings?.captcha_enabled) {
-        logger.info({ groupId, userId }, '🤖 Starting captcha challenge');
-        const mode = config.greetings.captcha_mode || 'button';
-        let answer = 'pass';
-        let challengeText = `🤖 *Captcha Verification for @${userId}*\nType *pass* to verify.`;
-
-        if (mode === 'math') {
-          const num1 = Math.floor(Math.random() * 9) + 1;
-          const num2 = Math.floor(Math.random() * 9) + 1;
-          answer = String(num1 + num2);
-          challengeText = `🤖 *Captcha Verification for @${userId}*\nSolve math problem: ${num1} + ${num2} = ?`;
+        // 1. Welcome Message Header
+        if (isWelcomeEnabled) {
+          let welcomeMsg =
+            config.greetings.welcome_text ||
+            config.greetings.welcome_message ||
+            'Welcome {mention} to {group}!';
+          welcomeMsg = formatMessageTemplate(welcomeMsg, {
+            userId,
+            participantJid,
+            groupId,
+            groupMeta,
+            config,
+            session,
+          });
+          messageParts.push(welcomeMsg);
+        } else {
+          messageParts.push(`👋 Welcome @${userId}!`);
         }
 
-        const captchaKey = getWindowKey(groupId, userId);
-        const timeoutSec = config.greetings.captcha_timeout_seconds || 120;
+        // 2. Inline Group Rules (Appended if show_on_join is active)
+        if (isRulesOnJoin) {
+          messageParts.push(`📜 *Group Rules:*\n${config.rules.text}`);
+        }
 
-        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
-        const timeoutHandle = setTimeout(async () => {
-          if (pendingCaptchas.has(captchaKey)) {
-            pendingCaptchas.delete(captchaKey);
-            await reply(
-              session,
-              groupId,
-              {
-                text: `❌ Captcha timeout for @${userId}. Executing kick.`,
-                mentions: [mentionJid],
-              },
-              rawMsg
-            );
-            await executePenalty(
-              session,
-              groupId,
-              userId,
-              'kick',
-              'Captcha verification timeout',
-              rawMsg
-            );
+        // 3. Inline Captcha Challenge
+        if (isCaptchaEnabled) {
+          const mode = config.greetings.captcha_mode || 'button';
+          let answer = 'pass';
+          let captchaSection = `🤖 *Captcha Verification*\nType *pass* to verify.`;
+
+          if (mode === 'math') {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            answer = String(num1 + num2);
+            captchaSection = `🤖 *Captcha Verification*\nSolve math problem: ${num1} + ${num2} = ?`;
           }
-        }, timeoutSec * 1000);
 
-        pendingCaptchas.set(captchaKey, { answer, mode, timeoutHandle, timestamp: Date.now() });
+          messageParts.push(captchaSection);
+
+          const captchaKey = getWindowKey(groupId, userId);
+          const timeoutSec = config.greetings.captcha_timeout_seconds || 120;
+          const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+
+          const timeoutHandle = setTimeout(async () => {
+            if (pendingCaptchas.has(captchaKey)) {
+              pendingCaptchas.delete(captchaKey);
+              await reply(
+                session,
+                groupId,
+                {
+                  text: `❌ Captcha timeout for @${userId}. Executing kick.`,
+                  mentions: [mentionJid],
+                },
+                rawMsg
+              );
+              await executePenalty(
+                session,
+                groupId,
+                userId,
+                'kick',
+                'Captcha verification timeout',
+                rawMsg
+              );
+            }
+          }, timeoutSec * 1000);
+
+          pendingCaptchas.set(captchaKey, { answer, mode, timeoutHandle, timestamp: Date.now() });
+        }
+
+        const fullText = messageParts.join('\n\n');
+        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
 
         await reply(
           session,
           groupId,
           {
-            text: challengeText,
+            text: fullText,
             mentions: [mentionJid],
           },
           rawMsg
-        );
-      } else {
-        logger.debug(
-          { groupId, userId, captcha_enabled: config.greetings?.captcha_enabled },
-          '⏭️ Captcha skipped (not enabled)'
         );
       }
     }
