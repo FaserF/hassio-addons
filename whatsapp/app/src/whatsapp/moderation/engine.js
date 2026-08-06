@@ -202,7 +202,26 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       try {
         const displayName = resolveUserDisplayName(userId, session);
 
-        await session.sock.groupParticipantsUpdate(groupId, [userJid], 'remove');
+        // Build array of candidate JIDs (phone JID and LID JID) to ensure WhatsApp multi-device accepts removal
+        const candidateJids = [userJid];
+        if (userId.includes('@lid') && !candidateJids.includes(userId)) {
+          candidateJids.push(userId);
+        } else if (userId.includes('@s.whatsapp.net') && !candidateJids.includes(userId)) {
+          candidateJids.push(userId);
+        }
+
+        let lastErr = null;
+        let success = false;
+        for (const targetJid of candidateJids) {
+          try {
+            await session.sock.groupParticipantsUpdate(groupId, [targetJid], 'remove');
+            success = true;
+            break;
+          } catch (kickAttemptErr) {
+            lastErr = kickAttemptErr;
+          }
+        }
+        if (!success && lastErr) throw lastErr;
         await reply(
           session,
           groupId,

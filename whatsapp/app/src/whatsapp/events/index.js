@@ -81,22 +81,28 @@ export function handleIncomingMessages(session) {
 
         let action = null;
         const st = msg.messageStubType;
-        // WAMessageStubType handles string names (protobuf enum) or numbers:
-        // 27 / GROUP_PARTICIPANT_ADD, 30 / GROUP_PARTICIPANT_INVITE, 31 / GROUP_PARTICIPANT_LEAVE_INVITE, 143 / GROUP_PARTICIPANT_JOINED_GROUP_AND_SHARE_MY_LOCATION_WHEN_SUBMITTING
+        const stStr = String(st).toUpperCase();
         if (
           st === 27 ||
           st === 30 ||
           st === 31 ||
-          st === 'GROUP_PARTICIPANT_ADD' ||
-          st === 'GROUP_PARTICIPANT_INVITE' ||
-          st === 'GROUP_PARTICIPANT_ADD_REQUEST_JOIN'
+          st === 32 ||
+          st === 143 ||
+          st === 144 ||
+          st === 145 ||
+          st === 172 ||
+          st === 173 ||
+          stStr.includes('ADD') ||
+          stStr.includes('JOIN') ||
+          stStr.includes('INVITE')
         ) {
           action = 'add';
         } else if (
           st === 28 ||
           st === 29 ||
-          st === 'GROUP_PARTICIPANT_REMOVE' ||
-          st === 'GROUP_PARTICIPANT_LEAVE'
+          st === 33 ||
+          stStr.includes('REMOVE') ||
+          stStr.includes('LEAVE')
         ) {
           action = 'remove';
         }
