@@ -1241,14 +1241,13 @@ export async function handleModerationParticipantUpdate(session, update) {
         const mentionJid = targetPrivateJid || normalizeJid(participantJid);
 
         const captchaTargetMode = config.greetings?.captcha_target || 'private';
-        let sendResult = null;
         let sentViaDM = false;
 
         // Attempt sending Welcome & Captcha via Private DM if configured as 'private'
         if (captchaTargetMode === 'private' && targetPrivateJid) {
           sentViaDM = true;
           try {
-            sendResult = await reply(session, targetPrivateJid, {
+            await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
             });
           } catch (dmErr) {
