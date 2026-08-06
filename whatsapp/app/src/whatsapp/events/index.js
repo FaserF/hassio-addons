@@ -50,31 +50,26 @@ export function registerAllListeners(session) {
         const normalizedParticipants = (update?.participants || [])
           .map((p) => {
             let str =
-              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || p.phoneNumber || '' : String(p || '');
+            if (typeof p === 'object' && p !== null && p.phoneNumber) {
+              const cleanPn = String(p.phoneNumber).replace(/\D/g, '');
+              if (cleanPn) return `${cleanPn}@s.whatsapp.net`;
+            }
             if (str.startsWith('{') || str.includes('id')) {
               try {
                 const parsed = JSON.parse(str);
-                str = parsed.id || parsed.jid || str;
+                str = parsed.id || parsed.jid || parsed.user || str;
               } catch (e) {
                 /* ignore */
               }
             }
             if (!str) return null;
-            if (str.includes('@')) {
-              const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
-              if (jidMatch) str = jidMatch[1];
-            }
-            if (str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) {
-              const digitMatch = str.match(/\d{8,}/);
-              if (digitMatch) {
-                str = `${digitMatch[0]}@s.whatsapp.net`;
-              } else {
-                return null;
-              }
-            }
+            // Extract clean phone JID or LID if embedded in error/log text
+            const jidMatch = str.match(/(\d{8,}@(s\.whatsapp\.net|lid))/i);
+            if (jidMatch) return jidMatch[1].toLowerCase();
             const digits = str.split('@')[0].replace(/\D/g, '');
-            if (!digits && !str.includes('@lid')) return null;
-            return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
+            if (!digits) return null;
+            return `${digits}@s.whatsapp.net`;
           })
           .filter(Boolean);
         await handleModerationParticipantUpdate(session, {
@@ -147,31 +142,26 @@ export function handleIncomingMessages(session) {
         const normalizedParticipants = rawParticipants
           .map((p) => {
             let str =
-              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || '' : String(p || '');
+              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || p.phoneNumber || '' : String(p || '');
+            if (typeof p === 'object' && p !== null && p.phoneNumber) {
+              const cleanPn = String(p.phoneNumber).replace(/\D/g, '');
+              if (cleanPn) return `${cleanPn}@s.whatsapp.net`;
+            }
             if (str.startsWith('{') || str.includes('id')) {
               try {
                 const parsed = JSON.parse(str);
-                str = parsed.id || parsed.jid || str;
+                str = parsed.id || parsed.jid || parsed.user || str;
               } catch (e) {
                 /* ignore */
               }
             }
             if (!str) return null;
-            if (str.includes('@')) {
-              const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
-              if (jidMatch) str = jidMatch[1];
-            }
-            if (str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) {
-              const digitMatch = str.match(/\d{8,}/);
-              if (digitMatch) {
-                str = `${digitMatch[0]}@s.whatsapp.net`;
-              } else {
-                return null;
-              }
-            }
+            // Extract clean phone JID or LID if embedded in error/log text
+            const jidMatch = str.match(/(\d{8,}@(s\.whatsapp\.net|lid))/i);
+            if (jidMatch) return jidMatch[1].toLowerCase();
             const digits = str.split('@')[0].replace(/\D/g, '');
-            if (!digits && !str.includes('@lid')) return null;
-            return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
+            if (!digits) return null;
+            return `${digits}@s.whatsapp.net`;
           })
           .filter(Boolean);
 

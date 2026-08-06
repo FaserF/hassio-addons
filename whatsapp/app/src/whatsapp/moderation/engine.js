@@ -910,12 +910,14 @@ export async function handleModerationParticipantUpdate(session, update) {
   const participants = update.participants || [];
   const now = Date.now();
 
-  // Deduplicate identical participant events firing within 3 seconds
+  // Deduplicate identical participant events firing within 10 seconds
+  // (Baileys fires both group-participants.update AND messageStubType for the exact same event)
   const filteredParticipants = participants.filter((p) => {
     const pStr = typeof p === 'string' ? p : p?.id || p?.jid || '';
-    const key = `${groupId}:${action}:${pStr}`;
+    const cleanUser = pStr.split('@')[0].replace(/\D/g, '') || pStr;
+    const key = `${groupId}:${action}:${cleanUser}`;
     const lastTime = participantEventDeduper.get(key) || 0;
-    if (now - lastTime < 3000) {
+    if (now - lastTime < 10000) {
       return false; // Skip duplicate event
     }
     participantEventDeduper.set(key, now);
@@ -1244,15 +1246,15 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         // Attempt sending Welcome & Captcha via Private DM if configured as 'private'
         if (captchaTargetMode === 'private' && targetPrivateJid) {
+          sentViaDM = true;
           try {
             sendResult = await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
             });
-            if (sendResult) sentViaDM = true;
           } catch (dmErr) {
             logger.info(
               { error: dmErr.message, targetPrivateJid },
-              'Private DM delivery failed, falling back to group message'
+              'Private DM delivery failed'
             );
           }
         }
@@ -1275,27 +1277,13 @@ export async function handleModerationParticipantUpdate(session, update) {
           );
         }
 
-        // Update pending captcha delivered state if message sending succeeded
-        if (sendResult && isCaptchaEnabled) {
+        // Update pending captcha delivered state
+        if (isCaptchaEnabled) {
           const captchaKey = getWindowKey(groupId, userId);
           const pending = pendingCaptchas.get(captchaKey);
           if (pending) pending.delivered = true;
         }
 
-        // If sending the welcome/captcha message failed, cancel the captcha timeout
-        // so no timeout kick is executed for a challenge the user never saw!
-        if (!sendResult && isCaptchaEnabled) {
-          const captchaKey = getWindowKey(groupId, userId);
-          const pending = pendingCaptchas.get(captchaKey);
-          if (pending?.timeoutHandle) {
-            clearTimeout(pending.timeoutHandle);
-          }
-          pendingCaptchas.delete(captchaKey);
-          logger.warn(
-            { groupId, userId },
-            '⚠️ Cancelled captcha timeout kick because welcome/captcha message failed to send.'
-          );
-        }
       }
     }
   } else if (action === 'remove' || action === 'leave') {
