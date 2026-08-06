@@ -2,7 +2,11 @@ import { loadModerationStore, getGroupModerationConfig, saveModerationStore } fr
 import { processAiModeration } from './ai.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
-import { resolveCanonicalUserKey, resolveUserDisplayName, normalizeJid } from '../../utils/security.js';
+import {
+  resolveCanonicalUserKey,
+  resolveUserDisplayName,
+  normalizeJid,
+} from '../../utils/security.js';
 
 // In-memory sliding window trackers
 const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps

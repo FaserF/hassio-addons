@@ -176,15 +176,9 @@ export function isSameUser(jidA, jidB, session = null) {
   // 2. Check contactCache for LID <-> PN association
   if (session?.contactCache) {
     for (const contact of session.contactCache.values()) {
-      const cIdDigits = contact.id
-        ? normalizeJid(contact.id)
-            .split('@')[0]
-            .replace(/\D/g, '')
-        : '';
+      const cIdDigits = contact.id ? normalizeJid(contact.id).split('@')[0].replace(/\D/g, '') : '';
       const cLidDigits = contact.lid
-        ? normalizeJid(contact.lid)
-            .split('@')[0]
-            .replace(/\D/g, '')
+        ? normalizeJid(contact.lid).split('@')[0].replace(/\D/g, '')
         : '';
       const cNumDigits = contact.phoneNumber ? contact.phoneNumber.replace(/\D/g, '') : '';
 
