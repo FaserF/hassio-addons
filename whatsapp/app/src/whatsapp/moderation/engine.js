@@ -1251,10 +1251,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
             });
           } catch (dmErr) {
-            logger.info(
-              { error: dmErr.message, targetPrivateJid },
-              'Private DM delivery failed'
-            );
+            logger.info({ error: dmErr.message, targetPrivateJid }, 'Private DM delivery failed');
           }
         }
 
@@ -1282,7 +1279,6 @@ export async function handleModerationParticipantUpdate(session, update) {
           const pending = pendingCaptchas.get(captchaKey);
           if (pending) pending.delivered = true;
         }
-
       }
     }
   } else if (action === 'remove' || action === 'leave') {

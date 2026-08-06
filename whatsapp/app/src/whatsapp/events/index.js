@@ -50,7 +50,9 @@ export function registerAllListeners(session) {
         const normalizedParticipants = (update?.participants || [])
           .map((p) => {
             let str =
-              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || p.phoneNumber || '' : String(p || '');
+              typeof p === 'object' && p !== null
+                ? p.id || p.jid || p.user || p.phoneNumber || ''
+                : String(p || '');
             if (typeof p === 'object' && p !== null && p.phoneNumber) {
               const cleanPn = String(p.phoneNumber).replace(/\D/g, '');
               if (cleanPn) return `${cleanPn}@s.whatsapp.net`;
@@ -142,7 +144,9 @@ export function handleIncomingMessages(session) {
         const normalizedParticipants = rawParticipants
           .map((p) => {
             let str =
-              typeof p === 'object' && p !== null ? p.id || p.jid || p.user || p.phoneNumber || '' : String(p || '');
+              typeof p === 'object' && p !== null
+                ? p.id || p.jid || p.user || p.phoneNumber || ''
+                : String(p || '');
             if (typeof p === 'object' && p !== null && p.phoneNumber) {
               const cleanPn = String(p.phoneNumber).replace(/\D/g, '');
               if (cleanPn) return `${cleanPn}@s.whatsapp.net`;
