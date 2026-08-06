@@ -216,13 +216,19 @@ export default () => `
                     <div id="mod-subpanel-filters" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-robot"></i></div>
-                            <div><div class="mod-feature-title">Auto-Responder Filters</div><div class="mod-feature-desc">Trigger automatic replies on specific keywords.</div></div>
+                            <div><div class="mod-feature-title">Auto-Responder & FAQ Filters</div><div class="mod-feature-desc">Trigger automatic replies or FAQ hints on specific keywords.</div></div>
                         </div>
                         <div class="mod-two-col mod-two-col-tight">
-                            <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. !help)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
-                            <input type="text" id="mod-filter-response" class="mod-input" placeholder="Response text" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
+                            <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. wlan, !help)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
+                            <select id="mod-filter-type" class="mod-select" style="max-width:140px;">
+                                <option value="reply">Direct Reply</option>
+                                <option value="faq">FAQ Hint 💡</option>
+                            </select>
                         </div>
-                        <div class="mod-actions mod-actions-split">
+                        <div style="margin-top:8px;">
+                            <input type="text" id="mod-filter-response" class="mod-input" placeholder="Response text or FAQ answer" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
+                        </div>
+                        <div class="mod-actions mod-actions-split" style="margin-top:10px;">
                             <button class="btn btn-secondary btn-sm" onclick="addFilterRule()"><i class="fas fa-plus"></i> Add Rule</button>
                             <button class="btn btn-primary btn-sm" onclick="saveGroupFilters()"><i class="fas fa-save"></i> Save Filters</button>
                         </div>

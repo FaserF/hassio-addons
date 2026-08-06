@@ -701,7 +701,12 @@ export async function handleModerationMessage(session, event) {
         }
 
         if (isMatch) {
-          await reply(session, groupId, { text: filter.response }, rawMsg);
+          const isFaq = filter.type === 'faq';
+          const replyText = isFaq
+            ? `💡 *FAQ Hint / Automatische Hilfe:*\n_Folgende Information aus unseren FAQ kann eventuell dabei helfen, deine Frage zu beantworten:_\n\n${filter.response}`
+            : filter.response;
+
+          await reply(session, groupId, { text: replyText }, rawMsg);
           // Execute filter action if defined (warn, kick, ban, mute)
           if (filter.action && filter.action !== 'reply') {
             if (rawMsg?.key?.id) {

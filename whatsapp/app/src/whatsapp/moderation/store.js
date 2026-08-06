@@ -147,7 +147,7 @@ export function getDefaultGroupConfig() {
       words: [],
       action: 'delete', // 'delete' | 'warn' | 'mute' | 'kick' | 'ban'
     },
-    filters: [], // [{ trigger, response, is_regex, action }]
+    filters: [], // [{ trigger, response, is_regex, action, type: 'reply' | 'faq' }]
     reports: [], // [{ id, reporter_id, target_id, reason, timestamp, status }]
     banned_users: {}, // userId -> { timestamp, reason }
     kick_log: [], // [{ userId, reason, timestamp, by }]

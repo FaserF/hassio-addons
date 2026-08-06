@@ -114,7 +114,10 @@ try {
   console.log('✅ PASSED: Content lock correctly detected locked Contact card');
 
   // Test 5: Auto-Responder Filters & Custom Notes
-  groupConfig.filters = [{ trigger: 'Test', response: 'Auto response works!', is_regex: false }];
+  groupConfig.filters = [
+    { trigger: 'Test', response: 'Auto response works!', is_regex: false, type: 'reply' },
+    { trigger: 'WLAN', response: 'WLAN Password is 1234', is_regex: false, type: 'faq' },
+  ];
   groupConfig.notes = { info: 'Here is the requested note' };
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
 
@@ -127,6 +130,28 @@ try {
   const filterHandled = await handleModerationMessage(mockSession, eventFilter);
   assert.strictEqual(filterHandled, true, 'Auto-responder filter should handle trigger word');
   console.log('✅ PASSED: Auto-responder filter correctly matched trigger');
+
+  let sentFaqText = null;
+  const mockFaqSession = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        sentFaqText = content?.text;
+        return { key: { id: 'faq_test' } };
+      },
+    },
+  };
+  const eventFaq = {
+    sender: '1203630123456789@g.us',
+    sender_number: '491761234567',
+    content: 'Wie lautet das WLAN?',
+    raw: { key: { id: 'msgFaq' } },
+  };
+  const faqHandled = await handleModerationMessage(mockFaqSession, eventFaq);
+  assert.strictEqual(faqHandled, true, 'FAQ filter should handle trigger word');
+  assert(sentFaqText.includes('FAQ Hint / Automatische Hilfe'), 'FAQ response should contain FAQ hint header');
+  console.log('✅ PASSED: FAQ filter correctly matched trigger and formatted hint header');
 
   // Verify fromMe loop prevention
   const eventSelfMsg = {

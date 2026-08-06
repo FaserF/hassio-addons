@@ -546,14 +546,33 @@ registry.register(
         session,
         groupId,
         {
-          text: `⚠️ Usage: \`${config.commands.prefix}filter <trigger> <reply>\``,
+          text: `⚠️ Usage: \`${config.commands.prefix}filter <trigger> [faq|reply] <reply_text>\``,
         },
         rawMsg
       );
       return;
     }
-    const trigger = args[0].toLowerCase();
-    const response = args.slice(1).join(' ');
+    let type = 'reply';
+    let trigger = args[0].toLowerCase();
+    let responseWords = args.slice(1);
+
+    if (['faq', 'reply'].includes(responseWords[0]?.toLowerCase())) {
+      type = responseWords[0].toLowerCase();
+      responseWords = responseWords.slice(1);
+    }
+    const response = responseWords.join(' ');
+
+    if (!response) {
+      await reply(
+        session,
+        groupId,
+        {
+          text: `⚠️ Please provide response text. Usage: \`${config.commands.prefix}filter <trigger> [faq|reply] <text>\``,
+        },
+        rawMsg
+      );
+      return;
+    }
 
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
@@ -561,12 +580,17 @@ registry.register(
 
     // Remove existing if same trigger
     c.filters = c.filters.filter((f) => f.trigger.toLowerCase() !== trigger);
-    c.filters.push({ trigger, response, is_regex: false });
+    c.filters.push({ trigger, response, type, is_regex: false });
 
     saveModerationStore(store);
-    await reply(session, groupId, { text: `✅ Added filter for \`${trigger}\`` }, rawMsg);
+    await reply(
+      session,
+      groupId,
+      { text: `✅ Added ${type.toUpperCase()} filter for \`${trigger}\`` },
+      rawMsg
+    );
   },
-  { adminOnly: true, help: 'Add an auto-responder filter' }
+  { adminOnly: true, help: 'Add an auto-responder or FAQ filter' }
 );
 
 registry.register(
@@ -610,7 +634,10 @@ registry.register(
       return;
     }
     const list = config.filters
-      .map((f) => `• \`${f.trigger}\` -> ${f.response}${f.is_regex ? ' _(Regex)_' : ''}`)
+      .map(
+        (f) =>
+          `• \`${f.trigger}\` [${(f.type || 'reply').toUpperCase()}] -> ${f.response}${f.is_regex ? ' _(Regex)_' : ''}`
+      )
       .join('\n');
     await reply(session, groupId, { text: `🤖 *Active Filters:*\n${list}` }, rawMsg);
   },

@@ -763,7 +763,9 @@ function selectModerationGroup(groupId) {
           (f, idx) => `
         <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div>
-            <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong> &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>
+            <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong>
+            ${f.type === 'faq' ? '<span style="font-size:10px;background:rgba(52,152,219,0.15);color:#3498db;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">💡 FAQ</span>' : '<span style="font-size:10px;background:rgba(46,204,113,0.15);color:#2ecc71;padding:2px 6px;border-radius:4px;margin-left:6px;">Reply</span>'}
+            &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeFilterRule(${idx})"><i class="fas fa-trash"></i></button>
         </div>`

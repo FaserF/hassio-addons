@@ -3,17 +3,18 @@
 async function addFilterRule() {
   const trig = document.getElementById('mod-filter-trigger')?.value.trim();
   const resp = document.getElementById('mod-filter-response')?.value.trim();
+  const type = document.getElementById('mod-filter-type')?.value || 'reply';
   if (!trig || !resp || !currentModGroup) return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.filters = groupConfig.filters || [];
-  groupConfig.filters.push({ trigger: trig, response: resp, is_regex: false });
+  groupConfig.filters.push({ trigger: trig, response: resp, type: type, is_regex: false });
 
   document.getElementById('mod-filter-trigger').value = '';
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast('Filter added!', 'success');
+  showToast(`${type === 'faq' ? 'FAQ' : 'Auto-reply'} filter rule added!`, 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');
