@@ -59,7 +59,9 @@ export function registerAllListeners(session) {
                 /* ignore */
               }
             }
-            if (!str) return null;
+            if (!str || str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) return null;
+            const digits = str.split('@')[0].replace(/\D/g, '');
+            if (!digits && !str.includes('@lid')) return null;
             return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
           })
           .filter(Boolean);
@@ -121,10 +123,14 @@ export function handleIncomingMessages(session) {
         const action =
           st === 28 ||
           st === 29 ||
+          st === 32 ||
           st === 33 ||
+          st === 144 ||
           stNum === 28 ||
           stNum === 29 ||
+          stNum === 32 ||
           stNum === 33 ||
+          stNum === 144 ||
           stStr.includes('REMOVE') ||
           stStr.includes('LEAVE')
             ? 'remove'
@@ -143,7 +149,9 @@ export function handleIncomingMessages(session) {
                 /* ignore */
               }
             }
-            if (!str) return null;
+            if (!str || str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) return null;
+            const digits = str.split('@')[0].replace(/\D/g, '');
+            if (!digits && !str.includes('@lid')) return null;
             return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
           })
           .filter(Boolean);

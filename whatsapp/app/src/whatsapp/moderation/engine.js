@@ -1062,8 +1062,6 @@ export async function handleModerationParticipantUpdate(session, update) {
 
           const timeoutHandle = setTimeout(async () => {
             if (pendingCaptchas.has(captchaKey)) {
-              pendingCaptchas.delete(captchaKey);
-
               // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
               let userIsAdmin = isAdmin(participantJid, session);
 
@@ -1088,6 +1086,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               }
 
               if (userIsAdmin) {
+                pendingCaptchas.delete(captchaKey);
                 logger.info(
                   { groupId, userId },
                   '🛡️ User is an admin, skipping Captcha timeout kick'
@@ -1095,6 +1094,18 @@ export async function handleModerationParticipantUpdate(session, update) {
                 return;
               }
 
+              // Retrieve pending challenge info to verify if challenge was delivered
+              const pending = pendingCaptchas.get(captchaKey);
+              if (!pending?.delivered) {
+                pendingCaptchas.delete(captchaKey);
+                logger.warn(
+                  { groupId, userId },
+                  '⚠️ Skipping Captcha timeout kick because challenge message delivery was not confirmed.'
+                );
+                return;
+              }
+
+              pendingCaptchas.delete(captchaKey);
               const userLabel = resolveUserDisplayName(userId, session);
               await reply(
                 session,
@@ -1116,7 +1127,13 @@ export async function handleModerationParticipantUpdate(session, update) {
             }
           }, timeoutSec * 1000);
 
-          pendingCaptchas.set(captchaKey, { answer, mode, timeoutHandle, timestamp: Date.now() });
+          pendingCaptchas.set(captchaKey, {
+            answer,
+            mode,
+            timeoutHandle,
+            timestamp: Date.now(),
+            delivered: false,
+          });
         }
 
         const fullText = messageParts.join('\n\n');
@@ -1130,7 +1147,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         // Attempt sending Welcome & Captcha via Private DM if configured as 'private' (default)
         if (captchaTargetMode === 'private') {
           try {
-            sendResult = await session.sock.sendMessage(targetPrivateJid, {
+            sendResult = await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
             });
             if (sendResult) sentViaDM = true;
@@ -1158,6 +1175,13 @@ export async function handleModerationParticipantUpdate(session, update) {
             },
             rawMsg
           );
+        }
+
+        // Update pending captcha delivered state if message sending succeeded
+        if (sendResult && isCaptchaEnabled) {
+          const captchaKey = getWindowKey(groupId, userId);
+          const pending = pendingCaptchas.get(captchaKey);
+          if (pending) pending.delivered = true;
         }
 
         // If sending the welcome/captcha message failed, cancel the captcha timeout
@@ -1208,9 +1232,9 @@ export async function handleModerationParticipantUpdate(session, update) {
         const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
         let sentViaDM = false;
 
-        // Try Private DM delivery first
+        // Try Private DM delivery first (using reply helper for outbound queue tracking)
         try {
-          const res = await session.sock.sendMessage(targetPrivateJid, {
+          const res = await reply(session, targetPrivateJid, {
             text: `👋 *${groupMeta?.subject || 'Group'}*\n\n${goodbyeMsg}`,
           });
           if (res) sentViaDM = true;
