@@ -11,7 +11,7 @@ import { sendHANotification } from '../ha.js';
 /**
  * Sends a relative-path reply and tracks it in stats.
  */
-export async function reply(session, jid, content) {
+export async function reply(session, jid, content, quotedMsg = null) {
   if (!session.sock) {
     logger.warn(
       { sessionId: session.id, jid: maskData(jid) },
@@ -20,8 +20,13 @@ export async function reply(session, jid, content) {
     return null;
   }
   try {
-    const result = await enqueue(session, () => session.sock.sendMessage(jid, content));
-    const text = typeof content === 'string' ? content : content.text || '[Mixed Content]';
+    // Build sendMessage options — attach quoted for context in busy groups
+    const sendOptions = quotedMsg ? { quoted: quotedMsg } : {};
+    const contentObj = typeof content === 'string' ? { text: content } : content;
+    const result = await enqueue(session, () =>
+      session.sock.sendMessage(jid, contentObj, sendOptions)
+    );
+    const text = contentObj.text || '[Mixed Content]';
     const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
 
     session.stats.sent += 1;

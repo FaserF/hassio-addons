@@ -34,12 +34,12 @@ export const registry = new CommandRegistry();
 
 registry.register(
   'setrules',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const text = args.join(' ');
     if (!text) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}setrules <text>\``,
-      });
+      }, rawMsg);
       return;
     }
     const store = loadModerationStore();
@@ -47,7 +47,7 @@ registry.register(
     if (!c.rules) c.rules = {};
     c.rules.text = text;
     saveModerationStore(store);
-    await reply(session, groupId, { text: '✅ Group rules updated.' });
+    await reply(session, groupId, { text: '✅ Group rules updated.' }, rawMsg);
   },
   { adminOnly: true, help: 'Set the group rules' }
 );
@@ -67,7 +67,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to promote them.`,
-      });
+      }, rawMsg);
       return;
     }
     try {
@@ -75,9 +75,9 @@ registry.register(
       await reply(session, groupId, {
         text: `✅ Promoted ${targetMatches.length} user(s) to Admin.`,
         mentions: targetMatches,
-      });
+      }, rawMsg);
     } catch (e) {
-      await sendMissingAdminWarning(session, groupId, 'Promote users');
+      await sendMissingAdminWarning(session, groupId, 'Promote users', rawMsg);
     }
   },
   { adminOnly: true, help: 'Promote a user to Admin' }
@@ -98,7 +98,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to demote them.`,
-      });
+      }, rawMsg);
       return;
     }
     try {
@@ -106,9 +106,9 @@ registry.register(
       await reply(session, groupId, {
         text: `✅ Demoted ${targetMatches.length} user(s) from Admin.`,
         mentions: targetMatches,
-      });
+      }, rawMsg);
     } catch (e) {
-      await sendMissingAdminWarning(session, groupId, 'Demote users');
+      await sendMissingAdminWarning(session, groupId, 'Demote users', rawMsg);
     }
   },
   { adminOnly: true, help: 'Demote an Admin to regular user' }
@@ -150,14 +150,14 @@ registry.register(
     if (targetId && cleanUserId && targetId === cleanUserId) {
       await reply(session, groupId, {
         text: `⚠️ You cannot report yourself.`,
-      });
+      }, rawMsg);
       return;
     }
 
     if (targetJid && isSameUser(targetJid, session?.sock?.user?.id, session)) {
       await reply(session, groupId, {
         text: `⚠️ You cannot report the bot account.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -245,7 +245,7 @@ registry.register(
       targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
     }
     if (targetMatches.length === 0) {
-      await reply(session, groupId, { text: `⚠️ You must mention a user to approve them.` });
+      await reply(session, groupId, { text: `⚠️ You must mention a user to approve them.` }, rawMsg);
       return;
     }
     const store = loadModerationStore();
@@ -260,7 +260,7 @@ registry.register(
     await reply(session, groupId, {
       text: `✅ Approved ${targetMatches.length} user(s). They will bypass moderation locks.`,
       mentions: targetMatches,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Whitelist a user from moderation locks' }
 );
@@ -278,7 +278,7 @@ registry.register(
       targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
     }
     if (targetMatches.length === 0) {
-      await reply(session, groupId, { text: `⚠️ You must mention a user to unapprove them.` });
+      await reply(session, groupId, { text: `⚠️ You must mention a user to unapprove them.` }, rawMsg);
       return;
     }
     const store = loadModerationStore();
@@ -293,19 +293,19 @@ registry.register(
     await reply(session, groupId, {
       text: `✅ Removed approval for ${targetMatches.length} user(s).`,
       mentions: targetMatches,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Remove user from whitelist' }
 );
 
 registry.register(
   'setwelcome',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const text = args.join(' ');
     if (!text) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
-      });
+      }, rawMsg);
       return;
     }
     const store = loadModerationStore();
@@ -315,31 +315,31 @@ registry.register(
     c.greetings.welcome_message = text;
     c.greetings.welcome_enabled = true;
     saveModerationStore(store);
-    await reply(session, groupId, { text: '✅ Welcome message updated and enabled.' });
+    await reply(session, groupId, { text: '✅ Welcome message updated and enabled.' }, rawMsg);
   },
   { adminOnly: true, help: 'Set the welcome message' }
 );
 
 registry.register(
   'welcome',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const text =
       config.greetings?.welcome_text ||
       config.greetings?.welcome_message ||
       'Welcome {user} to {group}!';
-    await reply(session, groupId, { text: `Current welcome message:\n\n${text}` });
+    await reply(session, groupId, { text: `Current welcome message:\n\n${text}` }, rawMsg);
   },
   { adminOnly: true, help: 'View the welcome message' }
 );
 
 registry.register(
   'setgoodbye',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const text = args.join(' ');
     if (!text) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
-      });
+      }, rawMsg);
       return;
     }
     const store = loadModerationStore();
@@ -349,28 +349,28 @@ registry.register(
     c.greetings.goodbye_message = text;
     c.greetings.goodbye_enabled = true;
     saveModerationStore(store);
-    await reply(session, groupId, { text: '✅ Goodbye message updated and enabled.' });
+    await reply(session, groupId, { text: '✅ Goodbye message updated and enabled.' }, rawMsg);
   },
   { adminOnly: true, help: 'Set the goodbye message' }
 );
 
 registry.register(
   'goodbye',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const text =
       config.greetings?.goodbye_text || config.greetings?.goodbye_message || 'Goodbye {user}!';
-    await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` });
+    await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` }, rawMsg);
   },
   { adminOnly: true, help: 'View the goodbye message' }
 );
 
 registry.register(
   'save',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length < 2) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}save <notename> <content>\``,
-      });
+      }, rawMsg);
       return;
     }
     const name = args[0].toLowerCase();
@@ -383,25 +383,25 @@ registry.register(
     saveModerationStore(store);
     await reply(session, groupId, {
       text: `✅ Saved note \`${name}\`\nRetrieve it with \`${config.commands.prefix}get ${name}\` or \`#${name}\``,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Save a text note' }
 );
 
 registry.register(
   'get',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length < 1) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}get <notename>\``,
-      });
+      }, rawMsg);
       return;
     }
     const name = args[0].toLowerCase();
     if (config.notes && config.notes[name]) {
-      await reply(session, groupId, { text: config.notes[name] });
+      await reply(session, groupId, { text: config.notes[name] }, rawMsg);
     } else {
-      await reply(session, groupId, { text: `❌ Note \`${name}\` not found.` });
+      await reply(session, groupId, { text: `❌ Note \`${name}\` not found.` }, rawMsg);
     }
   },
   { adminOnly: false, help: 'Retrieve a text note' }
@@ -409,26 +409,26 @@ registry.register(
 
 registry.register(
   'notes',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (!config.notes || Object.keys(config.notes).length === 0) {
-      await reply(session, groupId, { text: `📝 No notes saved.` });
+      await reply(session, groupId, { text: `📝 No notes saved.` }, rawMsg);
       return;
     }
     const list = Object.keys(config.notes)
       .map((n) => `• #${n}`)
       .join('\n');
-    await reply(session, groupId, { text: `📝 *Saved Notes:*\n${list}` });
+    await reply(session, groupId, { text: `📝 *Saved Notes:*\n${list}` }, rawMsg);
   },
   { adminOnly: false, help: 'List all saved notes' }
 );
 
 registry.register(
   'filter',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length < 2) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}filter <trigger> <reply>\``,
-      });
+      }, rawMsg);
       return;
     }
     const trigger = args[0].toLowerCase();
@@ -443,18 +443,18 @@ registry.register(
     c.filters.push({ trigger, response, is_regex: false });
 
     saveModerationStore(store);
-    await reply(session, groupId, { text: `✅ Added filter for \`${trigger}\`` });
+    await reply(session, groupId, { text: `✅ Added filter for \`${trigger}\`` }, rawMsg);
   },
   { adminOnly: true, help: 'Add an auto-responder filter' }
 );
 
 registry.register(
   'stop',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length < 1) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}stop <trigger>\``,
-      });
+      }, rawMsg);
       return;
     }
     const trigger = args[0].toLowerCase();
@@ -468,9 +468,9 @@ registry.register(
 
     if (c.filters.length < initialLen) {
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Stopped filter for \`${trigger}\`` });
+      await reply(session, groupId, { text: `✅ Stopped filter for \`${trigger}\`` }, rawMsg);
     } else {
-      await reply(session, groupId, { text: `❌ No filter found for \`${trigger}\`` });
+      await reply(session, groupId, { text: `❌ No filter found for \`${trigger}\`` }, rawMsg);
     }
   },
   { adminOnly: true, help: 'Stop a specific filter' }
@@ -478,15 +478,15 @@ registry.register(
 
 registry.register(
   'filters',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (!config.filters || config.filters.length === 0) {
-      await reply(session, groupId, { text: `No filters configured.` });
+      await reply(session, groupId, { text: `No filters configured.` }, rawMsg);
       return;
     }
     const list = config.filters
       .map((f) => `• \`${f.trigger}\` -> ${f.response}${f.is_regex ? ' _(Regex)_' : ''}`)
       .join('\n');
-    await reply(session, groupId, { text: `🤖 *Active Filters:*\n${list}` });
+    await reply(session, groupId, { text: `🤖 *Active Filters:*\n${list}` }, rawMsg);
   },
   { adminOnly: false, help: 'List active filters' }
 );
@@ -497,7 +497,7 @@ registry.register(
 
 registry.register(
   'help',
-  async (session, groupId, userId, args, config, isAdminUser) => {
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
     let helpText = `📖 *Group Commands Help*\n_Prefix: ${config.commands.prefix}_\n\n*User Commands:*\n`;
     const userCmds = [];
     const adminCmds = [];
@@ -537,36 +537,36 @@ registry.register(
       helpText += `_(Admin commands hidden for regular users)_`;
     }
 
-    await reply(session, groupId, { text: helpText });
+    await reply(session, groupId, { text: helpText }, rawMsg);
   },
   { help: 'Shows this help message' }
 );
 
 registry.register(
   'ping',
-  async (session, groupId) => {
-    await reply(session, groupId, { text: '🏓 Pong!' });
+  async (session, groupId, _u, _a, _c, _ia, rawMsg) => {
+    await reply(session, groupId, { text: '🏓 Pong!' }, rawMsg);
   },
   { help: 'Check if the bot is responsive' }
 );
 
 registry.register(
   'id',
-  async (session, groupId, userId) => {
+  async (session, groupId, userId, _a, _c, _ia, rawMsg) => {
     const cleanGroupId = groupId.split('@')[0] + '@g.us';
     const cleanUserId = userId.split('@')[0];
     await reply(session, groupId, {
       text: `Group ID: \`${cleanGroupId}\`\nYour ID: \`${cleanUserId}\``,
-    });
+    }, rawMsg);
   },
   { help: 'Get the group and your user ID' }
 );
 
 registry.register(
   'rules',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const rulesText = config.rules?.text || 'No rules configured for this group.';
-    await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` });
+    await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
   },
   { help: 'View the group rules' }
 );
@@ -590,7 +590,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to warn them.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -602,17 +602,17 @@ registry.register(
       if (isSameUser(targetJid, userId, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot issue a warning to yourself.`,
-        });
+        }, rawMsg);
         continue;
       }
       if (isAdmin(targetJid, session)) {
         await reply(session, groupId, {
           text: `⚠️ Cannot issue warnings to group administrators.`,
-        });
+        }, rawMsg);
         continue;
       }
       const targetId = targetJid.split('@')[0];
-      await issueUserWarning(session, groupId, targetId, reason);
+      await issueUserWarning(session, groupId, targetId, reason, rawMsg);
     }
   },
   { adminOnly: true, help: 'Issue a warning to a user (mention or reply)' }
@@ -634,7 +634,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to unwarn them.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -648,12 +648,12 @@ registry.register(
         await reply(session, groupId, {
           text: `✅ Cleared warnings for @${targetId}`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       } else {
         await reply(session, groupId, {
           text: `ℹ️ User @${targetId} has no warnings.`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       }
     }
     saveModerationStore(store);
@@ -677,7 +677,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to check their warnings.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -694,12 +694,12 @@ registry.register(
         await reply(session, groupId, {
           text: `⚠️ @${targetId} has ${warns.length} warning(s):\n${wList}`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       } else {
         await reply(session, groupId, {
           text: `✅ User @${targetId} has 0 warnings.`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       }
     }
   },
@@ -722,7 +722,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to kick them.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -731,17 +731,17 @@ registry.register(
       if (isSameUser(targetJid, userId, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot kick yourself.`,
-        });
+        }, rawMsg);
         continue;
       }
       if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot kick the bot account.`,
-        });
+        }, rawMsg);
         continue;
       }
       const targetId = targetJid.split('@')[0];
-      await executePenalty(session, groupId, targetId, 'kick', reason);
+      await executePenalty(session, groupId, targetId, 'kick', reason, rawMsg);
     }
   },
   { adminOnly: true, help: 'Kick a user from the group (they can rejoin via invite link)' }
@@ -763,7 +763,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user or reply to their message to ban them.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -772,17 +772,17 @@ registry.register(
       if (isSameUser(targetJid, userId, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot ban yourself.`,
-        });
+        }, rawMsg);
         continue;
       }
       if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
         await reply(session, groupId, {
           text: `⚠️ You cannot ban the bot account.`,
-        });
+        }, rawMsg);
         continue;
       }
       const targetId = targetJid.split('@')[0];
-      await executePenalty(session, groupId, targetId, 'ban', reason);
+      await executePenalty(session, groupId, targetId, 'ban', reason, rawMsg);
     }
   },
   { adminOnly: true, help: 'Permanently ban a user (they will be auto-kicked if they rejoin)' }
@@ -810,7 +810,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user, reply to their message, or specify their number (e.g. \`${config.commands.prefix}unban 49176...\`) to unban them.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -824,12 +824,12 @@ registry.register(
         await reply(session, groupId, {
           text: `✅ Unbanned @${targetId}. They may now rejoin the group.`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       } else {
         await reply(session, groupId, {
           text: `⚠️ User @${targetId} is not banned in this group.`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       }
     }
     store.groups[groupId] = c;
@@ -858,7 +858,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ You must mention a user, reply to their message, or specify their number to clear kick log.`,
-      });
+      }, rawMsg);
       return;
     }
 
@@ -873,7 +873,7 @@ registry.register(
       await reply(session, groupId, {
         text: `✅ Cleared kick log entries for @${targetId}.`,
         mentions: [targetJid],
-      });
+      }, rawMsg);
     }
     store.groups[groupId] = c;
     saveModerationStore(store);
@@ -883,11 +883,11 @@ registry.register(
 
 registry.register(
   'lock',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}lock <type>\`\nTypes: image, video, audio, document, sticker, url, invite, poll, rtl`,
-      });
+      }, rawMsg);
       return;
     }
     const type = args[0].toLowerCase();
@@ -897,9 +897,9 @@ registry.register(
     if (c.locks && typeof c.locks[type] !== 'undefined') {
       c.locks[type].enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `🔒 Locked \`${type}\`` });
+      await reply(session, groupId, { text: `🔒 Locked \`${type}\`` }, rawMsg);
     } else {
-      await reply(session, groupId, { text: `❌ Unknown lock type \`${type}\`` });
+      await reply(session, groupId, { text: `❌ Unknown lock type \`${type}\`` }, rawMsg);
     }
   },
   { adminOnly: true, help: 'Lock a specific content type' }
@@ -907,11 +907,11 @@ registry.register(
 
 registry.register(
   'unlock',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}unlock <type>\``,
-      });
+      }, rawMsg);
       return;
     }
     const type = args[0].toLowerCase();
@@ -921,9 +921,9 @@ registry.register(
     if (c.locks && typeof c.locks[type] !== 'undefined') {
       c.locks[type].enabled = false;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `🔓 Unlocked \`${type}\`` });
+      await reply(session, groupId, { text: `🔓 Unlocked \`${type}\`` }, rawMsg);
     } else {
-      await reply(session, groupId, { text: `❌ Unknown lock type \`${type}\`` });
+      await reply(session, groupId, { text: `❌ Unknown lock type \`${type}\`` }, rawMsg);
     }
   },
   { adminOnly: true, help: 'Unlock a specific content type' }
@@ -931,18 +931,18 @@ registry.register(
 
 registry.register(
   'locks',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (!config.locks) {
-      await reply(session, groupId, { text: `No locks configured.` });
+      await reply(session, groupId, { text: `No locks configured.` }, rawMsg);
       return;
     }
     const activeLocks = Object.keys(config.locks).filter((k) => config.locks[k].enabled);
     if (activeLocks.length === 0) {
-      await reply(session, groupId, { text: `🔓 All locks are currently disabled.` });
+      await reply(session, groupId, { text: `🔓 All locks are currently disabled.` }, rawMsg);
     } else {
       await reply(session, groupId, {
         text: `🔒 *Active Locks:*\n` + activeLocks.map((l) => `• ${l}`).join('\n'),
-      });
+      }, rawMsg);
     }
   },
   { adminOnly: true, help: 'List active content locks' }
@@ -1014,14 +1014,14 @@ registry.register(
       });
     }
 
-    await reply(session, groupId, { text: infoText, mentions: [targetJid] });
+    await reply(session, groupId, { text: infoText, mentions: [targetJid] }, rawMsg);
   },
   { adminOnly: false, help: 'View user information and warning history' }
 );
 
 registry.register(
   'adminlist',
-  async (session, groupId) => {
+  async (session, groupId, _u, _a, _c, _ia, rawMsg) => {
     try {
       const groupMeta = await session.sock.groupMetadata(groupId);
       const admins = groupMeta.participants.filter(
@@ -1029,7 +1029,7 @@ registry.register(
       );
 
       if (admins.length === 0) {
-        await reply(session, groupId, { text: '❌ No admins found.' });
+        await reply(session, groupId, { text: '❌ No admins found.' }, rawMsg);
         return;
       }
 
@@ -1053,9 +1053,9 @@ registry.register(
         text += `${icon} ${displayName}\n`;
       }
 
-      await reply(session, groupId, { text, mentions: admins.map((a) => a.id) });
+      await reply(session, groupId, { text, mentions: admins.map((a) => a.id) }, rawMsg);
     } catch (e) {
-      await reply(session, groupId, { text: '❌ Failed to fetch admin list.' });
+      await reply(session, groupId, { text: '❌ Failed to fetch admin list.' }, rawMsg);
     }
   },
   { adminOnly: false, aliases: ['admins'], help: 'List all group administrators' }
@@ -1078,9 +1078,9 @@ const LOCK_TYPES = [
 
 registry.register(
   'locktypes',
-  async (session, groupId) => {
+  async (session, groupId, _u, _a, _c, _ia, rawMsg) => {
     const list = LOCK_TYPES.map((t) => `• \`${t}\``).join('\n');
-    await reply(session, groupId, { text: `🔒 *Available Lock Types:*\n${list}` });
+    await reply(session, groupId, { text: `🔒 *Available Lock Types:*\n${list}` }, rawMsg);
   },
   { adminOnly: false, help: 'List all available content lock types' }
 );
@@ -1090,7 +1090,7 @@ registry.register(
   async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
     const quotedMsg = rawMsg.message?.extendedTextMessage?.contextInfo;
     if (!quotedMsg?.stanzaId) {
-      await reply(session, groupId, { text: '⚠️ Reply to a message to delete it.' });
+      await reply(session, groupId, { text: '⚠️ Reply to a message to delete it.' }, rawMsg);
       return;
     }
 
@@ -1108,7 +1108,7 @@ registry.register(
         await session.sock.sendMessage(groupId, { delete: rawMsg.key });
       }
     } catch (e) {
-      await sendMissingAdminWarning(session, groupId, 'Delete message');
+      await sendMissingAdminWarning(session, groupId, 'Delete message', rawMsg);
     }
   },
   { adminOnly: true, aliases: ['delete'], help: 'Delete a replied-to message' }
@@ -1129,7 +1129,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: '⚠️ You must mention a user or reply to their message to mute them.',
-      });
+      }, rawMsg);
       return;
     }
 
@@ -1141,11 +1141,11 @@ registry.register(
     const validTargets = [];
     for (const jid of targetMatches) {
       if (isSameUser(jid, userId, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` });
+        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` }, rawMsg);
         continue;
       }
       if (isSameUser(jid, session?.sock?.user?.id, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` });
+        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` }, rawMsg);
         continue;
       }
       validTargets.push(jid);
@@ -1161,7 +1161,7 @@ registry.register(
     await reply(session, groupId, {
       text: `🔇 Muted ${validTargets.length} user(s) indefinitely.\nReason: ${reason}\n\n_Their messages will be automatically deleted._`,
       mentions: validTargets,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Mute a user (their messages will be deleted)' }
 );
@@ -1181,7 +1181,7 @@ registry.register(
     if (targetMatches.length === 0) {
       await reply(session, groupId, {
         text: '⚠️ You must mention a user or reply to their message to unmute them.',
-      });
+      }, rawMsg);
       return;
     }
 
@@ -1203,9 +1203,9 @@ registry.register(
       await reply(session, groupId, {
         text: `🔊 Unmuted ${unmutedCount} user(s).`,
         mentions: targetMatches,
-      });
+      }, rawMsg);
     } else {
-      await reply(session, groupId, { text: '❌ None of those users are muted.' });
+      await reply(session, groupId, { text: '❌ None of those users are muted.' }, rawMsg);
     }
   },
   { adminOnly: true, help: 'Unmute a muted user' }
@@ -1226,13 +1226,13 @@ registry.register(
     if (targetMatches.length === 0 || args.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}tban <duration> [@user]\`\nExample: \`${config.commands.prefix}tban 1d @user\`\nDurations: 10s, 30m, 12h, 1d`,
-      });
+      }, rawMsg);
       return;
     }
 
     const durationMs = parseDuration(args[0]);
     if (!durationMs) {
-      await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' });
+      await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' }, rawMsg);
       return;
     }
 
@@ -1241,11 +1241,11 @@ registry.register(
     const validTargets = [];
     for (const targetJid of targetMatches) {
       if (isSameUser(targetJid, userId, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot ban yourself.` });
+        await reply(session, groupId, { text: `⚠️ You cannot ban yourself.` }, rawMsg);
         continue;
       }
       if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot ban the bot account.` });
+        await reply(session, groupId, { text: `⚠️ You cannot ban the bot account.` }, rawMsg);
         continue;
       }
       validTargets.push(targetJid);
@@ -1256,7 +1256,7 @@ registry.register(
       const targetId = targetJid.split('@')[0];
 
       // Kick the user
-      await executePenalty(session, groupId, targetId, 'kick', reason);
+      await executePenalty(session, groupId, targetId, 'kick', reason, rawMsg);
 
       // Schedule auto-unban (re-add) — note: WhatsApp can't re-add automatically,
       // but we track the ban expiry so admins know when it expires
@@ -1268,7 +1268,7 @@ registry.register(
         await reply(session, groupId, {
           text: `⏰ Temporary ban for @${targetId} has expired (${formatDuration(durationMs)}). They may rejoin the group.`,
           mentions: [targetJid],
-        });
+        }, rawMsg);
       }, durationMs);
       pendingTempActions.set(key, timeout);
     }
@@ -1276,7 +1276,7 @@ registry.register(
     await reply(session, groupId, {
       text: `⏱️ Temporarily banned for ${formatDuration(durationMs)}.\nReason: ${reason}`,
       mentions: validTargets,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Temporarily ban a user for a specific duration' }
 );
@@ -1296,13 +1296,13 @@ registry.register(
     if (targetMatches.length === 0 || args.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}tmute <duration> [@user]\`\nExample: \`${config.commands.prefix}tmute 1h @user\``,
-      });
+      }, rawMsg);
       return;
     }
 
     const durationMs = parseDuration(args[0]);
     if (!durationMs) {
-      await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' });
+      await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' }, rawMsg);
       return;
     }
 
@@ -1314,11 +1314,11 @@ registry.register(
     const validTargets = [];
     for (const targetJid of targetMatches) {
       if (isSameUser(targetJid, userId, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` });
+        await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` }, rawMsg);
         continue;
       }
       if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` });
+        await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` }, rawMsg);
         continue;
       }
       validTargets.push(targetJid);
@@ -1349,7 +1349,7 @@ registry.register(
         reply(session, groupId, {
           text: `🔊 Temporary mute for @${id} has expired.`,
           mentions: [jid],
-        });
+        }, rawMsg);
       }, durationMs);
       pendingTempActions.set(key, timeout);
     }
@@ -1357,7 +1357,7 @@ registry.register(
     await reply(session, groupId, {
       text: `🔇 Temporarily muted for ${formatDuration(durationMs)}.\nReason: ${reason}\n\n_Their messages will be automatically deleted until the mute expires._`,
       mentions: targetMatches,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Temporarily mute a user for a specific duration' }
 );
@@ -1369,7 +1369,7 @@ registry.register(
 // Override the original !rules to support AI queries
 registry.register(
   'rules',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const rulesText = config.rules?.text || 'No rules configured for this group.';
 
     if (args.length > 0 && config.ai?.enabled) {
@@ -1385,15 +1385,15 @@ registry.register(
         };
         const aiReply = await processAiModeration(question, aiConfig, apiKey);
         if (aiReply) {
-          await reply(session, groupId, { text: `📜 *Rules Interpretation:*\n\n${aiReply}` });
+          await reply(session, groupId, { text: `📜 *Rules Interpretation:*\n\n${aiReply}` }, rawMsg);
           return;
         }
       }
       await reply(session, groupId, {
         text: `📜 *Group Rules:*\n\n${rulesText}\n\n_(AI interpretation not available)_`,
-      });
+      }, rawMsg);
     } else {
-      await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` });
+      await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
     }
   },
   { help: 'View group rules or ask a question about them' }
@@ -1405,11 +1405,11 @@ registry.register(
 
 registry.register(
   'setlang',
-  async (session, groupId, userId, args, config) => {
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     if (args.length === 0) {
       await reply(session, groupId, {
         text: `⚠️ Usage: \`${config.commands.prefix}setlang <language_code>\`\nExamples: en, de, es, fr, ar, zh, ja`,
-      });
+      }, rawMsg);
       return;
     }
     const lang = args[0].toLowerCase();
@@ -1421,7 +1421,7 @@ registry.register(
     saveModerationStore(store);
     await reply(session, groupId, {
       text: `🌐 Translation language set to \`${lang}\` and enabled.`,
-    });
+    }, rawMsg);
   },
   { adminOnly: true, help: 'Set the translation target language' }
 );
@@ -1435,7 +1435,7 @@ registry.register(
     if (!apiKey) {
       await reply(session, groupId, {
         text: '❌ Gemini API key not configured. Set it in the Addon UI.',
-      });
+      }, rawMsg);
       return;
     }
 
@@ -1455,7 +1455,7 @@ registry.register(
     if (!textToTranslate) {
       await reply(session, groupId, {
         text: '⚠️ Reply to a message or provide text to translate.',
-      });
+      }, rawMsg);
       return;
     }
 
@@ -1467,9 +1467,9 @@ registry.register(
 
     const translated = await processAiModeration(textToTranslate, aiConfig, apiKey);
     if (translated) {
-      await reply(session, groupId, { text: `🌐 *Translation (${targetLang}):*\n\n${translated}` });
+      await reply(session, groupId, { text: `🌐 *Translation (${targetLang}):*\n\n${translated}` }, rawMsg);
     } else {
-      await reply(session, groupId, { text: '❌ Translation failed.' });
+      await reply(session, groupId, { text: '❌ Translation failed.' }, rawMsg);
     }
   },
   { adminOnly: false, help: 'Translate a message or text' }
@@ -1532,7 +1532,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   if (detectedConflicts.length > 0) {
     await reply(session, groupId, {
       text: `⚠️ *Batch Command Safety Alert:*\nThe following destructive/conflicting commands were skipped from the batch for security reasons and must be sent individually:\n${detectedConflicts.map((c) => `• ${c}`).join('\n')}`,
-    });
+    }, msg);
   }
 
   // Execute non-conflicting safe commands sequentially
@@ -1563,10 +1563,10 @@ async function executeSingleCommandLine(session, msg, lineText, prefix, senderJi
       if (customMatch.admin_only && !isAdminUser) {
         await reply(session, groupId, {
           text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
-        });
+        }, msg);
         return true;
       }
-      await reply(session, groupId, { text: customMatch.response });
+      await reply(session, groupId, { text: customMatch.response }, msg);
       return true;
     }
     return false;
@@ -1577,7 +1577,7 @@ async function executeSingleCommandLine(session, msg, lineText, prefix, senderJi
   if (disabledCmds.includes(cmdStr)) {
     await reply(session, groupId, {
       text: `⚠️ *Command Disabled:*\nThe command \`${prefix}${cmdStr}\` is disabled in this group and will be ignored.`,
-    });
+    }, msg);
     return true;
   }
 
@@ -1586,7 +1586,7 @@ async function executeSingleCommandLine(session, msg, lineText, prefix, senderJi
   if (command.adminOnly && !isAdminUser) {
     await reply(session, groupId, {
       text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
-    });
+    }, msg);
     return true;
   }
 
@@ -1595,7 +1595,7 @@ async function executeSingleCommandLine(session, msg, lineText, prefix, senderJi
     await command.handler(session, groupId, userId, args, config, isAdminUser, msg);
   } catch (err) {
     logger.error({ error: err.message }, `Error executing command ${cmdStr}`);
-    await reply(session, groupId, { text: `❌ An error occurred while executing the command.` });
+    await reply(session, groupId, { text: `❌ An error occurred while executing the command.` }, msg);
   }
 
   return true;

@@ -78,7 +78,7 @@ export function generateBotWelcomeMessage(config, _store) {
   );
 }
 
-export async function sendMissingAdminWarning(session, groupId, attemptedAction = '') {
+export async function sendMissingAdminWarning(session, groupId, attemptedAction = '', rawMsg = null) {
   const text =
     `⚠️ *Bot Missing Admin Permissions!*\n\n` +
     `I attempted to execute an action requiring Admin rights (${attemptedAction || 'Moderation/Admin command'}), but I am currently NOT a group administrator.\n\n` +
@@ -99,13 +99,13 @@ export async function sendMissingAdminWarning(session, groupId, attemptedAction 
     `• Cannot change group settings or enforce lock restrictions`;
 
   try {
-    await reply(session, groupId, { text });
+    await reply(session, groupId, { text }, rawMsg);
   } catch (err) {
     logger.error({ error: err.message }, 'Failed to send missing admin warning');
   }
 }
 
-export async function executePenalty(session, groupId, userId, action, reason = '') {
+export async function executePenalty(session, groupId, userId, action, reason = '', rawMsg = null) {
   logger.info(
     `🛡️ Executing moderation penalty [${action}] on ${userId} in ${groupId}. Reason: ${reason}`
   );
@@ -119,7 +119,8 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         session,
         groupId,
         userId,
-        reason || 'Violation of group moderation rules'
+        reason || 'Violation of group moderation rules',
+        rawMsg
       );
     } else if (action === 'mute') {
       const store = loadModerationStore();
@@ -136,7 +137,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       await reply(session, groupId, {
         text: `⚠️ @${userId} has been muted. Reason: ${reason || 'Moderation penalty'}`,
         mentions: [`${userId}@s.whatsapp.net`],
-      });
+      }, rawMsg);
     } else if (action === 'kick' || action === 'ban') {
       const cleanDigits = userId.replace(/\D/g, '');
       const userJid = cleanDigits
@@ -186,10 +187,10 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         await reply(session, groupId, {
           text: `🚫 User @${targetDisplayId} was ${action === 'ban' ? 'banned' : 'kicked'} from group.`,
           mentions: [userJid],
-        });
+        }, rawMsg);
       } catch (e) {
         logger.warn({ error: e.message }, `Failed to ${action} user ${userId}`);
-        await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`);
+        await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
       }
     }
   } catch (err) {
@@ -197,7 +198,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
   }
 }
 
-export async function issueUserWarning(session, groupId, rawUserId, reason) {
+export async function issueUserWarning(session, groupId, rawUserId, reason, rawMsg = null) {
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId);
   const warnConfig = config.warnings || { max_warnings: 3, action: 'mute' };
@@ -255,20 +256,21 @@ export async function issueUserWarning(session, groupId, rawUserId, reason) {
         `Reason: ${reason}\n\n` +
         `🚨 *Maximum warnings (${maxWarns}) reached! Executing penalty: ${penaltyAction.toUpperCase()}*`,
       mentions: [`${userKey}@s.whatsapp.net`],
-    });
+    }, rawMsg);
 
     await executePenalty(
       session,
       groupId,
       userKey,
       penaltyAction,
-      `Exceeded max warnings (${maxWarns})`
+      `Exceeded max warnings (${maxWarns})`,
+      rawMsg
     );
   } else {
     await reply(session, groupId, {
       text: `⚠️ *Warning Issued to ${userDisplay}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
       mentions: [`${userKey}@s.whatsapp.net`],
-    });
+    }, rawMsg);
   }
 }
 
@@ -352,7 +354,8 @@ export async function handleModerationMessage(session, event) {
           groupId,
           userId,
           'ban',
-          'Banned in Global Security Federation'
+          'Banned in Global Security Federation',
+          rawMsg
         );
         return true;
       }
@@ -365,7 +368,8 @@ export async function handleModerationMessage(session, event) {
               groupId,
               userId,
               'delete',
-              `Prohibited link/pattern from Global Federation (${pat})`
+              `Prohibited link/pattern from Global Federation (${pat})`,
+              rawMsg
             );
             return true;
           }
@@ -384,7 +388,7 @@ export async function handleModerationMessage(session, event) {
       await reply(session, groupId, {
         text: `✅ Captcha verified! Welcome @${userId}.`,
         mentions: [`${userId}@s.whatsapp.net`],
-      });
+      }, rawMsg);
       return true;
     }
   }
@@ -405,9 +409,9 @@ export async function handleModerationMessage(session, event) {
       }
       await reply(session, groupId, {
         text: `🔒 Message deleted: ${lockTitle} are locked in this group.`,
-      });
+      }, rawMsg);
       if (lock.action && lock.action !== 'delete') {
-        await executePenalty(session, groupId, userId, lock.action, `${lockTitle} locked`);
+        await executePenalty(session, groupId, userId, lock.action, `${lockTitle} locked`, rawMsg);
       }
       return true;
     }
@@ -485,9 +489,9 @@ export async function handleModerationMessage(session, event) {
         const blAction = config.blacklist.action || 'delete';
         await reply(session, groupId, {
           text: `🚫 Message deleted: Blacklisted word detected.`,
-        });
+        }, rawMsg);
         if (blAction !== 'delete') {
-          await executePenalty(session, groupId, userId, blAction, `Blacklist match: "${word}"`);
+          await executePenalty(session, groupId, userId, blAction, `Blacklist match: "${word}"`, rawMsg);
         }
         return true;
       }
@@ -510,7 +514,8 @@ export async function handleModerationMessage(session, event) {
         groupId,
         userId,
         floodConfig.action || 'mute',
-        'Message flood rate exceeded'
+        'Message flood rate exceeded',
+        rawMsg
       );
       userFloodMap.set(key, []);
       return true;
@@ -535,7 +540,7 @@ export async function handleModerationMessage(session, event) {
         }
 
         if (isMatch) {
-          await reply(session, groupId, { text: filter.response });
+          await reply(session, groupId, { text: filter.response }, rawMsg);
           // Execute filter action if defined (warn, kick, ban, mute)
           if (filter.action && filter.action !== 'reply') {
             if (rawMsg?.key?.id) {
@@ -551,7 +556,8 @@ export async function handleModerationMessage(session, event) {
                 groupId,
                 userId,
                 filter.action,
-                `Filter match: "${filter.trigger}"`
+                `Filter match: "${filter.trigger}"`,
+                rawMsg
               );
             }
           }
@@ -564,7 +570,7 @@ export async function handleModerationMessage(session, event) {
     if (config.notes && typeof config.notes === 'object') {
       const cleanText = text.replace(/^[#!]/, '').trim().toLowerCase();
       if (config.notes[cleanText]) {
-        await reply(session, groupId, { text: config.notes[cleanText] });
+        await reply(session, groupId, { text: config.notes[cleanText] }, rawMsg);
         return true;
       }
     }
@@ -572,7 +578,7 @@ export async function handleModerationMessage(session, event) {
     // Check Rules trigger
     if (text.toLowerCase() === '!rules' || text.toLowerCase() === '#rules') {
       const rulesText = config.rules?.text || 'No rules configured for this group.';
-      await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` });
+      await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
       return true;
     }
   }
@@ -581,7 +587,7 @@ export async function handleModerationMessage(session, event) {
   if (config.ai?.enabled && config.ai?.faq_auto_reply && text) {
     const aiReply = await processAiModeration(text, config.ai, store.gemini_api_key);
     if (aiReply) {
-      await reply(session, groupId, { text: `🤖 *AI Assistant:*\n${aiReply}` });
+      await reply(session, groupId, { text: `🤖 *AI Assistant:*\n${aiReply}` }, rawMsg);
       return true;
     }
   }
@@ -606,8 +612,8 @@ export async function handleModerationMessage(session, event) {
         }
         await reply(session, groupId, {
           text: `🛡️ Message removed: Detected as potentially harmful content.`,
-        });
-        await issueUserWarning(session, groupId, userId, 'AI detected toxic content');
+        }, rawMsg);
+        await issueUserWarning(session, groupId, userId, 'AI detected toxic content', rawMsg);
         return true;
       }
     }
@@ -661,6 +667,9 @@ export async function handleModerationParticipantUpdate(session, update) {
   const groupId = update.id;
   if (!groupId || !groupId.endsWith('@g.us')) return;
 
+  // No triggering message for join/leave events — quoting disabled for these
+  const rawMsg = null;
+
   const config = getGroupModerationConfig(groupId);
   // Note: We intentionally do NOT gate on config.enabled here.
   // Greetings, captcha, and ban enforcement are per-feature flags
@@ -689,7 +698,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         logger.warn(`🛡️ Anti-Raid triggered for group ${groupId}! ${joins.length} joins detected.`);
         await reply(session, groupId, {
           text: `🚨 *ANTI-RAID SHIELD ACTIVATED!* High-velocity join detection triggered.`,
-        });
+        }, rawMsg);
         // Lockdown group send permissions via Baileys if possible
         try {
           await session.sock.groupSettingUpdate(groupId, 'announcement');
@@ -704,7 +713,7 @@ export async function handleModerationParticipantUpdate(session, update) {
       // If the bot itself joined the group, post the Bot Welcome & Capability message
       if (isSelfParticipant(participantJid, session)) {
         const botWelcomeText = generateBotWelcomeMessage(config, store);
-        await reply(session, groupId, { text: botWelcomeText });
+        await reply(session, groupId, { text: botWelcomeText }, rawMsg);
         continue;
       }
 
@@ -730,7 +739,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           await reply(session, groupId, {
             text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
             mentions: [participantJid],
-          });
+          }, rawMsg);
         } catch (kickErr) {
           logger.warn(
             { error: kickErr.message },
@@ -748,7 +757,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           (fed.banned_users.includes(userId) ||
             (cleanDigits && fed.banned_users.includes(cleanDigits)))
         ) {
-          await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation');
+          await executePenalty(session, groupId, userId, 'ban', 'Banned in Global Ban Federation', rawMsg);
           continue;
         }
       }
@@ -783,14 +792,14 @@ export async function handleModerationParticipantUpdate(session, update) {
         await reply(session, groupId, {
           text: welcomeMsg,
           mentions: [participantJid],
-        });
+        }, rawMsg);
       }
 
       // Show rules on join if enabled
       if (config.rules?.show_on_join && config.rules?.text) {
         await reply(session, groupId, {
           text: `📜 *Group Rules:*\n${config.rules.text}`,
-        });
+        }, rawMsg);
       }
 
       // Captcha Challenge
@@ -815,8 +824,8 @@ export async function handleModerationParticipantUpdate(session, update) {
             await reply(session, groupId, {
               text: `❌ Captcha timeout for @${userId}. Executing kick.`,
               mentions: [participantJid],
-            });
-            await executePenalty(session, groupId, userId, 'kick', 'Captcha verification timeout');
+            }, rawMsg);
+            await executePenalty(session, groupId, userId, 'kick', 'Captcha verification timeout', rawMsg);
           }
         }, timeoutSec * 1000);
 
@@ -825,7 +834,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         await reply(session, groupId, {
           text: challengeText,
           mentions: [participantJid],
-        });
+        }, rawMsg);
       }
     }
   } else if (action === 'remove' || action === 'leave') {
@@ -856,7 +865,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           session,
         });
 
-        await reply(session, groupId, { text: goodbyeMsg });
+        await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
       }
     }
   }
