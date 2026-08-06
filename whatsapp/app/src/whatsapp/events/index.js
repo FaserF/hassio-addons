@@ -90,7 +90,9 @@ export function handleIncomingMessages(session) {
 
         let action = null;
         const st = msg.messageStubType;
+        const stNum = Number(st);
         const stStr = String(st).toUpperCase();
+
         if (
           st === 27 ||
           st === 30 ||
@@ -110,10 +112,16 @@ export function handleIncomingMessages(session) {
           st === 28 ||
           st === 29 ||
           st === 33 ||
+          stNum === 28 ||
+          stNum === 29 ||
+          stNum === 33 ||
           stStr.includes('REMOVE') ||
           stStr.includes('LEAVE')
         ) {
           action = 'remove';
+        } else {
+          // Any other messageStubType on a @g.us group (joins, invites, adds, links, approvals) maps to 'add'
+          action = 'add';
         }
 
         // Normalize participants array to ensure full JIDs (e.g. "49123456789" -> "49123456789@s.whatsapp.net")
