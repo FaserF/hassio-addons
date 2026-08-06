@@ -302,8 +302,8 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           errMsg.includes('not-authorized') ||
           errMsg.includes('forbidden') ||
           errMsg.includes('not authorized') ||
-          errMsg.includes('403') ||
-          errMsg.includes('permission')
+          errMsg.includes('permission') ||
+          errMsg.includes('403')
         ) {
           // Bot is not an admin in this group
           await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
@@ -319,22 +319,6 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             groupId,
             {
               text: `ℹ️ ${displayName} is no longer a member of this group.`,
-              mentions: [userJid],
-            },
-            rawMsg
-          );
-        } else if (
-          errMsg.includes('internal-server-error') ||
-          errMsg.includes('500') ||
-          errMsg.includes('admin') ||
-          errMsg.includes('owner')
-        ) {
-          // Internal Server Error usually means WhatsApp rejected removing an admin/owner or LID format mismatch
-          await reply(
-            session,
-            groupId,
-            {
-              text: `⚠️ Cannot ${action} ${displayName}.\n\n*Reason:* WhatsApp server rejected the request. This occurs if the target user is a Group Admin/Owner or if the user account is protected by WhatsApp privacy rules.`,
               mentions: [userJid],
             },
             rawMsg

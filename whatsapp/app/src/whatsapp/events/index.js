@@ -59,12 +59,22 @@ export function registerAllListeners(session) {
                 /* ignore */
               }
             }
+            if (!str) return null;
+            if (str.includes('@')) {
+              const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
+              if (jidMatch) str = jidMatch[1];
+            }
             if (
-              !str ||
               str.toLowerCase().includes('decrypt') ||
               str.toLowerCase().includes('session')
-            )
-              return null;
+            ) {
+              const digitMatch = str.match(/\d{8,}/);
+              if (digitMatch) {
+                str = `${digitMatch[0]}@s.whatsapp.net`;
+              } else {
+                return null;
+              }
+            }
             const digits = str.split('@')[0].replace(/\D/g, '');
             if (!digits && !str.includes('@lid')) return null;
             return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
@@ -149,12 +159,22 @@ export function handleIncomingMessages(session) {
                 /* ignore */
               }
             }
+            if (!str) return null;
+            if (str.includes('@')) {
+              const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
+              if (jidMatch) str = jidMatch[1];
+            }
             if (
-              !str ||
               str.toLowerCase().includes('decrypt') ||
               str.toLowerCase().includes('session')
-            )
-              return null;
+            ) {
+              const digitMatch = str.match(/\d{8,}/);
+              if (digitMatch) {
+                str = `${digitMatch[0]}@s.whatsapp.net`;
+              } else {
+                return null;
+              }
+            }
             const digits = str.split('@')[0].replace(/\D/g, '');
             if (!digits && !str.includes('@lid')) return null;
             return !str.includes('@') ? `${str}@s.whatsapp.net` : str;
