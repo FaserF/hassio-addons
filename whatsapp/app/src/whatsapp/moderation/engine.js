@@ -805,16 +805,21 @@ export function formatMessageTemplate(
   const memberCount = groupMeta?.participants?.length
     ? String(groupMeta.participants.length)
     : 'N/A';
+
+  const userLabel = resolveUserDisplayName(userId || participantJid, session);
+  const canonicalKey = resolveCanonicalUserKey(userId || participantJid, session);
+  const mentionText = canonicalKey && !canonicalKey.startsWith('1576') ? `@${canonicalKey}` : userLabel;
+
   const pushname =
     (participantJid && session?.sock?.contacts?.[participantJid]?.notify) ||
     (participantJid && session?.sock?.contacts?.[participantJid]?.name) ||
-    userId ||
+    userLabel ||
     '';
 
   return template
-    .replace(/{mention}/g, userId ? `@${userId}` : '')
-    .replace(/{user}/g, userId ? `@${userId}` : '')
-    .replace(/{name}/g, userId || '')
+    .replace(/{mention}/g, mentionText)
+    .replace(/{user}/g, mentionText)
+    .replace(/{name}/g, userLabel)
     .replace(/{pushname}/g, pushname)
     .replace(/{group}/g, groupTitle)
     .replace(/{subject}/g, groupTitle)
@@ -826,9 +831,32 @@ export function formatMessageTemplate(
     .replace(/{time}/g, timeStr);
 }
 
+const participantEventDeduper = new Map(); // key -> timestamp
+
 export async function handleModerationParticipantUpdate(session, update) {
   const groupId = update.id;
   if (!groupId || !groupId.endsWith('@g.us')) return;
+
+  const action = update.action || 'add';
+  const participants = update.participants || [];
+  const now = Date.now();
+
+  // Deduplicate identical participant events firing within 3 seconds
+  const filteredParticipants = participants.filter((p) => {
+    const pStr = typeof p === 'string' ? p : p?.id || p?.jid || '';
+    const key = `${groupId}:${action}:${pStr}`;
+    const lastTime = participantEventDeduper.get(key) || 0;
+    if (now - lastTime < 3000) {
+      return false; // Skip duplicate event
+    }
+    participantEventDeduper.set(key, now);
+    return true;
+  });
+
+  if (filteredParticipants.length === 0) {
+    logger.debug({ groupId, action }, '👥 Skipping duplicate participant update event within window');
+    return;
+  }
 
   // Force a fresh disk-read for every join/leave event so stale in-memory
   // cache can never suppress greeting/captcha messages.
@@ -841,8 +869,6 @@ export async function handleModerationParticipantUpdate(session, update) {
 
   // No triggering message for join/leave events — quoting disabled for these
   const rawMsg = null;
-  const action = update.action;
-  const participants = update.participants || [];
 
   const config = getGroupModerationConfig(groupId);
   // Note: We intentionally do NOT gate on config.enabled here.
@@ -890,7 +916,7 @@ export async function handleModerationParticipantUpdate(session, update) {
     }
 
     // 2. Check participants against Group Ban & Global Ban Federation & Greetings
-    for (const participantJid of participants) {
+    for (const participantJid of filteredParticipants) {
       // If the bot itself joined the group, post the Bot Welcome & Capability message
       if (isSelfParticipant(participantJid, session)) {
         const botWelcomeText = generateBotWelcomeMessage(config, store);
@@ -998,15 +1024,30 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         // 3. Inline Captcha Challenge
         if (isCaptchaEnabled) {
-          const mode = config.greetings.captcha_mode || 'button';
-          let answer = 'pass';
-          let captchaSection = `🤖 *Captcha Verification*\nType *pass* to verify.`;
+          const mode = config.greetings.captcha_mode || 'math';
+          let answer;
+          let captchaSection;
 
           if (mode === 'math') {
-            const num1 = Math.floor(Math.random() * 9) + 1;
-            const num2 = Math.floor(Math.random() * 9) + 1;
-            answer = String(num1 + num2);
-            captchaSection = `🤖 *Captcha Verification*\nSolve math problem: ${num1} + ${num2} = ?`;
+            const n1 = Math.floor(Math.random() * 12) + 1;
+            const n2 = Math.floor(Math.random() * 12) + 1;
+            const op = Math.random() > 0.5 ? '+' : '*';
+            answer = op === '+' ? String(n1 + n2) : String(n1 * n2);
+            captchaSection = `🤖 *Captcha Verification*\nSolve the security challenge to verify:\n👉 *${n1} ${op} ${n2} = ?*\n\nReply with the correct number to gain access.`;
+          } else if (mode === 'text' || mode === 'code') {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+              code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            answer = code.toLowerCase();
+            captchaSection = `🤖 *Captcha Verification*\nType the following security code to verify:\n👉 *${code}*`;
+          } else {
+            // Default / Button fallback
+            const n1 = Math.floor(Math.random() * 9) + 1;
+            const n2 = Math.floor(Math.random() * 9) + 1;
+            answer = String(n1 + n2);
+            captchaSection = `🤖 *Captcha Verification*\nSolve math problem to verify:\n👉 *${n1} + ${n2} = ?*`;
           }
 
           messageParts.push(captchaSection);
@@ -1075,17 +1116,41 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
 
         const fullText = messageParts.join('\n\n');
-        const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        const mentionJid = targetPrivateJid;
 
-        const sendResult = await reply(
-          session,
-          groupId,
-          {
-            text: fullText,
-            mentions: [mentionJid],
-          },
-          rawMsg
-        );
+        let sendResult = null;
+        let sentViaDM = false;
+
+        // Attempt sending Welcome & Captcha via Private Direct Message first
+        try {
+          sendResult = await session.sock.sendMessage(targetPrivateJid, {
+            text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
+          });
+          if (sendResult) sentViaDM = true;
+        } catch (dmErr) {
+          logger.info(
+            { error: dmErr.message, targetPrivateJid },
+            'Private DM delivery failed, falling back to group message'
+          );
+        }
+
+        // Fallback to Group Message if Private Chat was unavailable
+        if (!sentViaDM) {
+          const groupNotice = isCaptchaEnabled
+            ? `⚠️ _Direct message to ${resolveUserDisplayName(userId, session)} could not be delivered. Please verify here in the group:_\n\n${fullText}`
+            : fullText;
+
+          sendResult = await reply(
+            session,
+            groupId,
+            {
+              text: groupNotice,
+              mentions: [mentionJid],
+            },
+            rawMsg
+          );
+        }
 
         // If sending the welcome/captcha message failed, cancel the captcha timeout
         // so no timeout kick is executed for a challenge the user never saw!
@@ -1119,7 +1184,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
       }
 
-      for (const participantJid of participants) {
+      for (const participantJid of filteredParticipants) {
         const userId = participantJid.split('@')[0];
         let goodbyeMsg =
           config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
@@ -1132,7 +1197,23 @@ export async function handleModerationParticipantUpdate(session, update) {
           session,
         });
 
-        await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
+        const targetPrivateJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
+        let sentViaDM = false;
+
+        // Try Private DM delivery first
+        try {
+          const res = await session.sock.sendMessage(targetPrivateJid, {
+            text: `👋 *${groupMeta?.subject || 'Group'}*\n\n${goodbyeMsg}`,
+          });
+          if (res) sentViaDM = true;
+        } catch (dmErr) {
+          logger.info({ error: dmErr.message }, 'Goodbye DM failed, falling back to group message');
+        }
+
+        // Fallback to Group Message if Private DM was unavailable
+        if (!sentViaDM) {
+          await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
+        }
       }
     }
   }
