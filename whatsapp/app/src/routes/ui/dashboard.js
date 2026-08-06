@@ -1307,10 +1307,7 @@ async function toggleUserCaptchaVerification(userId, verified) {
     );
     const json = await res.json();
     if (json.success) {
-      showToast(
-        `User ${userId} set to ${verified ? 'Verified' : 'Unverified'}`,
-        'success'
-      );
+      showToast(`User ${userId} set to ${verified ? 'Verified' : 'Unverified'}`, 'success');
       loadCaptchaUsers();
     } else {
       showToast(json.error || 'Failed to update user captcha verification', 'error');

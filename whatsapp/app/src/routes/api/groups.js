@@ -84,7 +84,8 @@ export function registerGroupRoutes(app) {
           const statusCode = String(failed[0]?.status || '');
           if (statusCode === '403' || statusCode === '500') {
             return res.status(403).json({
-              detail: 'Bot is not a group admin or WhatsApp rejected the action. Make the bot a group admin first.',
+              detail:
+                'Bot is not a group admin or WhatsApp rejected the action. Make the bot a group admin first.',
               result,
             });
           }
@@ -125,7 +126,8 @@ export function registerGroupRoutes(app) {
           const statusCode = String(failed[0]?.status || '');
           if (statusCode === '403' || statusCode === '500') {
             return res.status(403).json({
-              detail: 'Bot is not a group admin or WhatsApp rejected the removal. Make the bot a group admin first.',
+              detail:
+                'Bot is not a group admin or WhatsApp rejected the removal. Make the bot a group admin first.',
               result,
             });
           }
@@ -166,7 +168,8 @@ export function registerGroupRoutes(app) {
           const statusCode = String(failed[0]?.status || '');
           if (statusCode === '403' || statusCode === '500') {
             return res.status(403).json({
-              detail: 'Bot is not a group admin or WhatsApp rejected the promotion. Make the bot a group admin first.',
+              detail:
+                'Bot is not a group admin or WhatsApp rejected the promotion. Make the bot a group admin first.',
               result,
             });
           }
@@ -207,7 +210,8 @@ export function registerGroupRoutes(app) {
           const statusCode = String(failed[0]?.status || '');
           if (statusCode === '403' || statusCode === '500') {
             return res.status(403).json({
-              detail: 'Bot is not a group admin or WhatsApp rejected the demotion. Make the bot a group admin first.',
+              detail:
+                'Bot is not a group admin or WhatsApp rejected the demotion. Make the bot a group admin first.',
               result,
             });
           }

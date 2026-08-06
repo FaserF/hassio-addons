@@ -321,11 +321,19 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             const isAdminRole = p.admin === 'admin' || p.admin === 'superadmin';
 
             // Check bot status
-            if ((myDigits && pDigits && pDigits === myDigits) || (myId && pId === myId) || (myLid && pId === myLid)) {
+            if (
+              (myDigits && pDigits && pDigits === myDigits) ||
+              (myId && pId === myId) ||
+              (myLid && pId === myLid)
+            ) {
               if (isAdminRole) isBotAdmin = true;
             }
             // Check target user status
-            if ((targetDigits && pDigits && pDigits === targetDigits) || (userJid && pId === userJid) || (userId && pId.split('@')[0] === userId)) {
+            if (
+              (targetDigits && pDigits && pDigits === targetDigits) ||
+              (userJid && pId === userJid) ||
+              (userId && pId.split('@')[0] === userId)
+            ) {
               if (isAdminRole) isTargetAdmin = true;
             }
           }
@@ -687,7 +695,9 @@ export async function handleModerationMessage(session, event) {
 
       if (captchaEntry) {
         const { key: captchaKey, captchaObj } = captchaEntry;
-        const cleanAnswer = String(captchaObj.answer || '').trim().toLowerCase();
+        const cleanAnswer = String(captchaObj.answer || '')
+          .trim()
+          .toLowerCase();
         expectedUpper = String(captchaObj.answer || '').toUpperCase();
 
         const rawInput = text.trim().toLowerCase();
@@ -1231,9 +1241,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           );
           // Evaluate Baileys status response
           const kickStatus =
-            Array.isArray(kickRes) && kickRes.length > 0
-              ? String(kickRes[0]?.status || '')
-              : '200';
+            Array.isArray(kickRes) && kickRes.length > 0 ? String(kickRes[0]?.status || '') : '200';
           if (kickStatus === '403' || kickStatus === '500') {
             await sendMissingAdminWarning(
               session,
@@ -1607,7 +1615,10 @@ export async function getGroupCaptchaUsers(groupId, session = null) {
       const meta = await session.sock.groupMetadata(groupId);
       participants = meta?.participants || [];
     } catch (e) {
-      logger.debug({ error: e.message, groupId }, 'Failed to fetch group metadata for captcha users');
+      logger.debug(
+        { error: e.message, groupId },
+        'Failed to fetch group metadata for captcha users'
+      );
     }
   }
 
