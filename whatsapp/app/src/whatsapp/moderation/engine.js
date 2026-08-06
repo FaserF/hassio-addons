@@ -1577,8 +1577,8 @@ export async function handleModerationParticipantUpdate(session, update) {
               }
 
               // Retrieve pending challenge info to verify if challenge was delivered
-              const pending = pendingCaptchas.get(captchaKey);
-              if (!pending?.delivered) {
+              const pendingEntry = findPendingCaptcha(groupId, userId, session) || findPendingCaptcha(groupId, participantJid, session);
+              if (!pendingEntry?.captchaObj?.delivered) {
                 pendingCaptchas.delete(captchaKey);
                 logger.warn(
                   { groupId, userId },
@@ -1619,14 +1619,20 @@ export async function handleModerationParticipantUpdate(session, update) {
               );
           }, timeoutSec * 1000);
 
-          pendingCaptchas.set(captchaKey, {
+          const captchaObj = {
             answer,
             mode,
             timeoutHandle,
             timestamp: Date.now(),
             delivered: false,
             participantJid,
-          });
+          };
+          pendingCaptchas.set(captchaKey, captchaObj);
+          if (cleanDigits) pendingCaptchas.set(getWindowKey(groupId, cleanDigits), captchaObj);
+          const participantUser = participantJid.split('@')[0];
+          if (participantUser) pendingCaptchas.set(getWindowKey(groupId, participantUser), captchaObj);
+          const canonicalPhoneKeyVal = resolveCanonicalUserKey(participantJid, session);
+          if (canonicalPhoneKeyVal) pendingCaptchas.set(getWindowKey(groupId, canonicalPhoneKeyVal), captchaObj);
         }
 
         const fullText = messageParts.join('\n\n');
@@ -1678,11 +1684,10 @@ export async function handleModerationParticipantUpdate(session, update) {
           );
         }
 
-        // Update pending captcha delivered state
+        // Update pending captcha delivered state for all variant keys
         if (isCaptchaEnabled) {
-          const captchaKey = getWindowKey(groupId, userId);
-          const pending = pendingCaptchas.get(captchaKey);
-          if (pending) pending.delivered = true;
+          const entry = findPendingCaptcha(groupId, userId, session);
+          if (entry?.captchaObj) entry.captchaObj.delivered = true;
         }
       }
     }
