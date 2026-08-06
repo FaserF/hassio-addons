@@ -246,111 +246,101 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             const disabledCmds = new Set(cfg.commands?.disabled_commands || []);
             const customCmds = cfg.commands?.custom_commands || [];
 
+            // Fetch real group metadata / subject if available
+            let groupName = groupId.split('@')[0];
+            if (session?.sock?.groupMetadata) {
+              try {
+                const gMeta = await session.sock.groupMetadata(groupId);
+                if (gMeta?.subject) groupName = gMeta.subject;
+              } catch (e) {}
+            }
+
+            // Intro Header Message for this Group
+            await delay(1000);
+            await reply(session, targetJid, {
+              text: `🛡️ *WhatsApp Moderation Tests for Group: "${groupName}"*\n📌 *Group ID:* \`${groupId}\`\n⚙️ *Prefix:* \`${prefix}\`\n\n_Below are separate copy & paste ready test messages for each category. You can copy an entire block or single lines to test in "${groupName}":_`,
+            });
+
             // Built-in commands list
             const allBuiltins = [
-              'ping',
-              'help',
-              'id',
-              'rules',
-              'warn',
-              'warns',
-              'unwarn',
-              'kick',
-              'ban',
-              'mute',
-              'unmute',
-              'lock',
-              'unlock',
-              'locks',
-              'setrules',
-              'promote',
-              'demote',
-              'approve',
-              'unapprove',
-              'report',
-              'setwelcome',
-              'welcome',
-              'setgoodbye',
-              'goodbye',
-              'save',
-              'get',
-              'notes',
-              'filter',
-              'stop',
-              'filters',
-              'info',
-              'adminlist',
-              'locktypes',
-              'del',
-              'tban',
-              'tmute',
-              'setlang',
-              'translate',
+              'ping', 'help', 'id', 'rules', 'warn', 'warns', 'unwarn', 'kick', 'ban',
+              'mute', 'unmute', 'lock', 'unlock', 'locks', 'setrules', 'promote', 'demote',
+              'approve', 'unapprove', 'report', 'setwelcome', 'welcome', 'setgoodbye', 'goodbye',
+              'save', 'get', 'notes', 'filter', 'stop', 'filters', 'info', 'adminlist', 'locktypes',
+              'del', 'tban', 'tmute', 'setlang', 'translate',
             ];
 
             const activeBuiltins = allBuiltins.filter((c) => !disabledCmds.has(c));
 
-            let groupTestMsg = `🛡️ *Moderation Test Suite for Group \`${groupId}\`*\n\n`;
-            groupTestMsg += `Copy any line below and send it into group \`${groupId}\` to test:\n\n`;
-
-            // Active Built-in Commands Test
+            // Send separate copyable messages per item
+            // 1. Individual Allowed Commands
             if (activeBuiltins.length > 0) {
-              groupTestMsg += `🟢 *Allowed Commands:*\n`;
-              groupTestMsg += activeBuiltins.map((c) => `${prefix}${c}`).join('\n') + `\n\n`;
-            }
-
-            // Disabled Commands Test
-            if (disabledCmds.size > 0) {
-              groupTestMsg += `🔴 *Disabled Commands (Test restriction message):*\n`;
-              groupTestMsg +=
-                Array.from(disabledCmds)
-                  .map((c) => `${prefix}${c}`)
-                  .join('\n') + `\n\n`;
-            }
-
-            // Custom Mapped Commands Test
-            if (customCmds.length > 0) {
-              groupTestMsg += `⚡ *Custom Commands:*\n`;
-              groupTestMsg += customCmds.map((c) => `${c.command}`).join('\n') + `\n\n`;
-            }
-
-            // Auto-Responder Filters Test
-            if (cfg.filters && cfg.filters.length > 0) {
-              groupTestMsg += `💬 *Auto-Responder Filter Triggers:*\n`;
-              groupTestMsg += cfg.filters.map((f) => `${f.trigger}`).join('\n') + `\n\n`;
-            }
-
-            // Saved Notes Test
-            if (cfg.notes && Object.keys(cfg.notes).length > 0) {
-              groupTestMsg += `📌 *Saved Notes Triggers:*\n`;
-              groupTestMsg +=
-                Object.keys(cfg.notes)
-                  .map((n) => `${prefix}get #${n}`)
-                  .join('\n') + `\n\n`;
-            }
-
-            // Blacklist Word Triggers
-            if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
-              groupTestMsg += `⚠️ *Blacklist Word Triggers (Tests ${cfg.blacklist.action}):*\n`;
-              groupTestMsg += cfg.blacklist.words.join('\n') + `\n\n`;
-            }
-
-            // Content Locks Test Instructions
-            if (cfg.locks) {
-              const activeLocks = Object.entries(cfg.locks).filter(
-                ([_, lock]) => lock && lock.enabled
-              );
-              if (activeLocks.length > 0) {
-                groupTestMsg += `🔒 *Active Content Locks (Test by sending these media types):*\n`;
-                groupTestMsg +=
-                  activeLocks.map(([type, lock]) => `• ${type} (${lock.action})`).join('\n') +
-                  `\n\n`;
+              await delay(500);
+              await reply(session, targetJid, { text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*` });
+              for (const cmd of activeBuiltins.slice(0, 15)) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${prefix}${cmd}` });
               }
             }
 
-            // Send test block directly to the diagnostic target chat (admin number / self chat)
-            await delay(1000);
-            await reply(session, targetJid, { text: groupTestMsg });
+            // 2. Individual Disabled Commands
+            if (disabledCmds.size > 0) {
+              await delay(500);
+              await reply(session, targetJid, { text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*` });
+              for (const cmd of Array.from(disabledCmds)) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${prefix}${cmd}` });
+              }
+            }
+
+            // 3. Individual Custom Commands
+            if (customCmds.length > 0) {
+              await delay(500);
+              await reply(session, targetJid, { text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*` });
+              for (const c of customCmds) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${c.command}` });
+              }
+            }
+
+            // 4. Individual Auto-Responder Filters
+            if (cfg.filters && cfg.filters.length > 0) {
+              await delay(500);
+              await reply(session, targetJid, { text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*` });
+              for (const f of cfg.filters) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${f.trigger}` });
+              }
+            }
+
+            // 5. Individual Saved Notes
+            if (cfg.notes && Object.keys(cfg.notes).length > 0) {
+              await delay(500);
+              await reply(session, targetJid, { text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*` });
+              for (const n of Object.keys(cfg.notes)) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${prefix}get #${n}` });
+              }
+            }
+
+            // 6. Individual Blacklist Words
+            if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
+              await delay(500);
+              await reply(session, targetJid, { text: `⚠️ *[TEST PACK 6/6] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*` });
+              for (const w of cfg.blacklist.words) {
+                await delay(300);
+                await reply(session, targetJid, { text: `${w}` });
+              }
+            }
+
+            // 7. Active Content Locks Instructions
+            if (cfg.locks) {
+              const activeLocks = Object.entries(cfg.locks).filter(([_, lock]) => lock && lock.enabled);
+              if (activeLocks.length > 0) {
+                await delay(500);
+                await reply(session, targetJid, { text: `🔒 *Active Content Locks for "${groupName}":*\n` + activeLocks.map(([type, lock]) => `• Send a ${type} -> Action: ${lock.action}`).join('\n') });
+              }
+            }
           }
         }
       }

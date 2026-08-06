@@ -1488,22 +1488,67 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   const prefix = config.commands.prefix || '!';
 
-  // Sanitize formatting wrappers e.g. `!locktypes`, '!locktypes', "`!help`", ```!rules```
-  let cleanText = (text || '').trim();
+  let rawText = (text || '').trim();
   // Strip code block fence wrappers (e.g. ```!locktypes```)
-  cleanText = cleanText
+  rawText = rawText
     .replace(/^```[a-z]*\n?/i, '')
     .replace(/\n?```$/i, '')
     .trim();
-  // Strip leading and trailing inline formatting wrappers (`...`, '...', "...")
-  cleanText = cleanText.replace(/^['"`\s]+|['"`\s]+$/g, '').trim();
 
-  if (!cleanText.startsWith(prefix)) return false;
+  // Split into lines to support multi-line command blocks
+  const rawLines = rawText
+    .split('\n')
+    .map((l) => l.trim().replace(/^['"`\s]+|['"`\s]+$/g, '').trim())
+    .filter((l) => l.length > 0 && l.startsWith(prefix));
 
-  const parts = cleanText.slice(prefix.length).trim().split(/\s+/);
+  if (rawLines.length === 0) return false;
+
+  // Single command fast path
+  if (rawLines.length === 1) {
+    return await executeSingleCommandLine(session, msg, rawLines[0], prefix, senderJid, isAdminUser, groupId, config);
+  }
+
+  // Multi-line batch processing with Conflict Detection & Safety Checks
+  const CONFLICTING_COMMANDS = new Set([
+    'kick', 'ban', 'unban', 'mute', 'unmute', 'promote', 'demote', 'lock', 'unlock', 'del', 'delete'
+  ]);
+
+  const commandLinesToExecute = [];
+  const detectedConflicts = [];
+
+  for (const line of rawLines) {
+    const parts = line.slice(prefix.length).trim().split(/\s+/);
+    if (parts.length > 0 && parts[0]) {
+      const cmdStr = parts[0].replace(/[`'"]/g, '').toLowerCase();
+      if (CONFLICTING_COMMANDS.has(cmdStr)) {
+        detectedConflicts.push(`${prefix}${cmdStr}`);
+      } else {
+        commandLinesToExecute.push(line);
+      }
+    }
+  }
+
+  // If conflicting destructive commands were detected in a bulk message, issue a warning and skip them
+  if (detectedConflicts.length > 0) {
+    await reply(session, groupId, {
+      text: `⚠️ *Batch Command Safety Alert:*\nThe following destructive/conflicting commands were skipped from the batch for security reasons and must be sent individually:\n${detectedConflicts.map((c) => `• ${c}`).join('\n')}`,
+    });
+  }
+
+  // Execute non-conflicting safe commands sequentially
+  let executedAny = false;
+  for (const line of commandLinesToExecute) {
+    const ok = await executeSingleCommandLine(session, msg, line, prefix, senderJid, isAdminUser, groupId, config);
+    if (ok) executedAny = true;
+  }
+
+  return executedAny || detectedConflicts.length > 0;
+}
+
+async function executeSingleCommandLine(session, msg, lineText, prefix, senderJid, isAdminUser, groupId, config) {
+  const parts = lineText.slice(prefix.length).trim().split(/\s+/);
   if (parts.length === 0 || parts[0] === '') return false;
 
-  // Clean trailing inline code markers from command name (e.g. `locktypes` -> locktypes)
   const cmdStr = parts[0].replace(/[`'"]/g, '').toLowerCase();
   const args = parts.slice(1).map((a) => a.replace(/^[`'"]+|[`'"]+$/g, ''));
 
@@ -1542,7 +1587,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
     await reply(session, groupId, {
       text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
     });
-    return true; // We handled the command, stop propagation
+    return true;
   }
 
   try {
@@ -1553,5 +1598,5 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
     await reply(session, groupId, { text: `❌ An error occurred while executing the command.` });
   }
 
-  return true; // Command was processed
+  return true;
 }

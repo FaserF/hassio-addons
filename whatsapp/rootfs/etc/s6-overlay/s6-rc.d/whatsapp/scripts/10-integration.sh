@@ -15,12 +15,6 @@ install_integration() {
 	bashio::log.debug "install_integration details: TAG_NAME='${TAG_NAME}', IS_UPDATE='${IS_UPDATE}'"
 	bashio::log.info "Installing integration version: ${TAG_NAME:-Default Branch}..."
 
-	if [ -n "$TAG_NAME" ]; then
-		CLONE_ARGS=("--branch" "$TAG_NAME")
-	else
-		CLONE_ARGS=()
-	fi
-
 	mkdir -p "/tmp/ha-whatsapp_install"
 	rm -rf "/tmp/ha-whatsapp_install" # Ensure clean state
 	mkdir -p "/tmp/ha-whatsapp_install"
@@ -191,8 +185,8 @@ else
 
 			# Comparison Logic
 			if [ -n "$TARGET_TAG" ]; then
-				curr=$(echo "$CURRENT_VERSION" | sed 's/^v//')
-				targ=$(echo "$TARGET_TAG" | sed 's/^v//')
+				curr="${CURRENT_VERSION#v}"
+				targ="${TARGET_TAG#v}"
 				bashio::log.debug "Normalized versions - Current: ${curr}, Target: ${targ}"
 
 				if [ "$curr" != "$targ" ]; then

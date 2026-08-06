@@ -2,7 +2,7 @@
 
 # shellcheck shell=bash
 
-cd /opt/whatsapp
+cd /opt/whatsapp || exit 1
 
 bashio::log.info "Running pre-flight diagnostics..."
 

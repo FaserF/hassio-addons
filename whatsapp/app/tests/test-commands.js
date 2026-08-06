@@ -229,9 +229,51 @@ async function runTests() {
     codeblockHandled === true,
     'Codeblock wrapped command (```!ping```) should be sanitized and handled'
   );
-  console.log(
-    "✅ PASSED: Formatted command inputs ('!ping', `!locktypes`, ```!ping```) handled successfully"
+  assert(
+    formattedHandled && backtickHandled && codeblockHandled,
+    'Formatted command inputs (\'!ping\', `!locktypes`, ```!ping```) handled successfully'
   );
+
+  // Multi-line batch processing & safety conflict test
+  let batchOutputMessages = [];
+  const mockSessionBatch = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, msgObj) => {
+        batchOutputMessages.push(msgObj.text);
+        return { key: { id: 'test_batch' } };
+      },
+    },
+  };
+
+  const safeMultiLineText = '!ping\n!id\n!rules';
+  const batchHandled = await processCommand(
+    mockSessionBatch,
+    mockMsg,
+    safeMultiLineText,
+    '491761234567@s.whatsapp.net',
+    true,
+    '1203630123456789@g.us'
+  );
+  assert(batchHandled, 'Multi-line safe command batch should be handled');
+  console.log('✅ PASSED: Multi-line safe command block execution verified');
+
+  // Test conflicting command batch detection
+  batchOutputMessages = [];
+  const conflictingMultiLineText = '!ping\n!kick @user\n!ban @user\n!id';
+  await processCommand(
+    mockSessionBatch,
+    mockMsg,
+    conflictingMultiLineText,
+    '491761234567@s.whatsapp.net',
+    true,
+    '1203630123456789@g.us'
+  );
+  const alertMsg = batchOutputMessages.find((m) => m && m.includes('Batch Command Safety Alert'));
+  assert(alertMsg, 'Conflicting destructive commands in batch should trigger safety alert');
+  assert(alertMsg.includes('!kick') && alertMsg.includes('!ban'), 'Alert should list conflicting commands');
+  console.log('✅ PASSED: Conflicting destructive batch commands correctly intercepted with safety warning');
 
   // Test Report Command (saves to store and DMs admins)
   mockSession.sock.groupMetadata = async () => ({
