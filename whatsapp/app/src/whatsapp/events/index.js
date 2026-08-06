@@ -64,10 +64,7 @@ export function registerAllListeners(session) {
               const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
               if (jidMatch) str = jidMatch[1];
             }
-            if (
-              str.toLowerCase().includes('decrypt') ||
-              str.toLowerCase().includes('session')
-            ) {
+            if (str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) {
               const digitMatch = str.match(/\d{8,}/);
               if (digitMatch) {
                 str = `${digitMatch[0]}@s.whatsapp.net`;
@@ -164,10 +161,7 @@ export function handleIncomingMessages(session) {
               const jidMatch = str.match(/([0-9]+@(s\.whatsapp\.net|lid))/i);
               if (jidMatch) str = jidMatch[1];
             }
-            if (
-              str.toLowerCase().includes('decrypt') ||
-              str.toLowerCase().includes('session')
-            ) {
+            if (str.toLowerCase().includes('decrypt') || str.toLowerCase().includes('session')) {
               const digitMatch = str.match(/\d{8,}/);
               if (digitMatch) {
                 str = `${digitMatch[0]}@s.whatsapp.net`;
