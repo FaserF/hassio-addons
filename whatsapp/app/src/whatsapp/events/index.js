@@ -42,7 +42,17 @@ export function registerAllListeners(session) {
   if (session.sock?.ev) {
     session.sock.ev.on('group-participants.update', async (update) => {
       try {
-        await handleModerationParticipantUpdate(session, update);
+        logger.info(
+          { updateId: update?.id, action: update?.action, participants: update?.participants },
+          '👥 Received group-participants.update event from Baileys'
+        );
+        const normalizedParticipants = (update?.participants || []).map((p) =>
+          typeof p === 'string' && !p.includes('@') ? `${p}@s.whatsapp.net` : p
+        );
+        await handleModerationParticipantUpdate(session, {
+          ...update,
+          participants: normalizedParticipants,
+        });
       } catch (err) {
         logger.error({ error: err.message }, 'Error in moderation participant update handler');
       }
@@ -65,20 +75,44 @@ export function handleIncomingMessages(session) {
             : [msg.key.participant || msg.participant].filter(Boolean);
 
         let action = null;
-        // WAMessageStubType: 27=GROUP_PARTICIPANT_ADD, 28=GROUP_PARTICIPANT_REMOVE, 29=GROUP_PARTICIPANT_LEAVE, 30=GROUP_PARTICIPANT_INVITE
-        if (msg.messageStubType === 27 || msg.messageStubType === 30) action = 'add';
-        else if (msg.messageStubType === 28 || msg.messageStubType === 29) action = 'remove';
+        const st = msg.messageStubType;
+        // WAMessageStubType handles string names (protobuf enum) or numbers:
+        // 27 / GROUP_PARTICIPANT_ADD, 30 / GROUP_PARTICIPANT_INVITE, 31 / GROUP_PARTICIPANT_LEAVE_INVITE, 143 / GROUP_PARTICIPANT_JOINED_GROUP_AND_SHARE_MY_LOCATION_WHEN_SUBMITTING
+        if (
+          st === 27 ||
+          st === 30 ||
+          st === 31 ||
+          st === 'GROUP_PARTICIPANT_ADD' ||
+          st === 'GROUP_PARTICIPANT_INVITE' ||
+          st === 'GROUP_PARTICIPANT_ADD_REQUEST_JOIN'
+        ) {
+          action = 'add';
+        } else if (
+          st === 28 ||
+          st === 29 ||
+          st === 'GROUP_PARTICIPANT_REMOVE' ||
+          st === 'GROUP_PARTICIPANT_LEAVE'
+        ) {
+          action = 'remove';
+        }
 
-        if (action && participants.length > 0) {
+        // Normalize participants array to ensure full JIDs (e.g. "49123456789" -> "49123456789@s.whatsapp.net")
+        const normalizedParticipants = participants.map((p) =>
+          typeof p === 'string' && !p.includes('@') ? `${p}@s.whatsapp.net` : p
+        );
+
+        if (action && normalizedParticipants.length > 0) {
           logger.info(
-            { groupId, action, stubType: msg.messageStubType, participants },
+            { groupId, action, stubType: msg.messageStubType, rawParticipants: participants, normalizedParticipants },
             '👥 Participant update detected via messageStubType'
           );
-          handleModerationParticipantUpdate(session, { id: groupId, action, participants }).catch(
-            (err) => {
-              logger.error({ error: err.message }, 'Error handling stubType participant update');
-            }
-          );
+          handleModerationParticipantUpdate(session, {
+            id: groupId,
+            action,
+            participants: normalizedParticipants,
+          }).catch((err) => {
+            logger.error({ error: err.message }, 'Error handling stubType participant update');
+          });
         }
       }
     }

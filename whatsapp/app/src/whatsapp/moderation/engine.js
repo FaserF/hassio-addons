@@ -209,8 +209,28 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           rawMsg
         );
       } catch (e) {
-        logger.warn({ error: e.message }, `Failed to ${action} user ${userId}`);
-        await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
+        const errMsg = (e.message || '').toLowerCase();
+        logger.warn({ error: e.message, action, userJid, groupId }, `Failed to ${action} user`);
+
+        if (errMsg.includes('not-authorized') || errMsg.includes('forbidden') ||
+            errMsg.includes('not authorized') || errMsg.includes('admin') ||
+            errMsg.includes('403') || errMsg.includes('permission')) {
+          // Bot is not an admin in this group
+          await sendMissingAdminWarning(session, groupId, `Execute action: ${action}`, rawMsg);
+        } else if (errMsg.includes('not-participant') || errMsg.includes('not in group') ||
+                   errMsg.includes('participant')) {
+          // Target user is no longer in the group
+          await reply(session, groupId, {
+            text: `⚠️ Could not ${action} @${targetDisplayId}: user is no longer in this group.`,
+            mentions: [userJid],
+          }, rawMsg);
+        } else {
+          // Unknown error — show generic failure (bot IS admin, something else went wrong)
+          await reply(session, groupId, {
+            text: `❌ Failed to ${action} @${targetDisplayId}.\n\n*Reason:* ${e.message}\n\n_Note: If the target user is also a group admin, they cannot be kicked by another admin — only the group owner can remove admins._`,
+            mentions: [userJid],
+          }, rawMsg);
+        }
       }
     }
   } catch (err) {
