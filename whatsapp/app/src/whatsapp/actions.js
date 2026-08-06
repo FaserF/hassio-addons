@@ -299,7 +299,8 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               await reply(session, targetJid, { text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*` });
               for (const c of customCmds) {
                 await delay(300);
-                await reply(session, targetJid, { text: `${c.command}` });
+                const formattedCmd = c.command.replace(/^[!/#]+/, '');
+                await reply(session, targetJid, { text: `${prefix}${formattedCmd}` });
               }
             }
 
