@@ -631,7 +631,10 @@ export async function handleModerationMessage(session, event) {
   if (!userId || userId.includes('@')) return false;
   const groupDigits = groupId.split('@')[0];
   if (userId === groupDigits) {
-    logger.debug({ groupId, userId }, 'Skipping moderation: sender_number matches group JID (no participant JID resolved)');
+    logger.debug(
+      { groupId, userId },
+      'Skipping moderation: sender_number matches group JID (no participant JID resolved)'
+    );
     return false;
   }
 
@@ -747,7 +750,9 @@ export async function handleModerationMessage(session, event) {
             try {
               await session.sock.sendMessage(userPhoneJid, { text: confirmText });
               dmSent = true;
-            } catch (_err) { /* fall through to group */ }
+            } catch (_err) {
+              /* fall through to group */
+            }
 
             // Also post a brief notice in the group so members see the verification
             await reply(
@@ -762,7 +767,12 @@ export async function handleModerationMessage(session, event) {
 
             if (!dmSent) {
               // DM failed — send full confirmation in group as fallback
-              await reply(session, groupId, { text: `@${userId} ${confirmText}`, mentions: [`${userId}@s.whatsapp.net`] }, rawMsg);
+              await reply(
+                session,
+                groupId,
+                { text: `@${userId} ${confirmText}`, mentions: [`${userId}@s.whatsapp.net`] },
+                rawMsg
+              );
             }
           } else {
             await reply(
@@ -1526,7 +1536,10 @@ export async function handleModerationParticipantUpdate(session, update) {
             });
             sentViaDM = true; // Only mark as sent if the DM actually succeeded
           } catch (dmErr) {
-            logger.info({ error: dmErr.message, targetPrivateJid }, 'Private DM delivery failed, falling back to group');
+            logger.info(
+              { error: dmErr.message, targetPrivateJid },
+              'Private DM delivery failed, falling back to group'
+            );
           }
         }
 
@@ -1582,7 +1595,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           departureReason = '🚶 Left voluntarily';
         } else if (action === 'remove') {
           // Check recent kick reason registry (e.g. captcha timeout)
-          const kickReasonKey = getWindowKey(groupId, userId) ;
+          const kickReasonKey = getWindowKey(groupId, userId);
           const recentKick = recentKickReasons.get(kickReasonKey);
           if (recentKick && recentKick.expires > Date.now()) {
             departureReason = recentKick.reason;
@@ -1603,7 +1616,11 @@ export async function handleModerationParticipantUpdate(session, update) {
             const fedId = config.federation_id;
             if (fedId) {
               const fed = store.federations?.find((f) => f.id === fedId);
-              if (fed && (fed.banned_users?.includes(userId) || (cleanDigits && fed.banned_users?.includes(cleanDigits)))) {
+              if (
+                fed &&
+                (fed.banned_users?.includes(userId) ||
+                  (cleanDigits && fed.banned_users?.includes(cleanDigits)))
+              ) {
                 departureReason = '🌐 Banned via Global Security Federation';
               }
             }
@@ -1612,7 +1629,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           if (!departureReason) {
             const warningsMap = config.warnings?.user_warns || {};
             const warnings = warningsMap[userId] || (cleanDigits ? warningsMap[cleanDigits] : null);
-            const warnCount = Array.isArray(warnings) ? warnings.length : (warnings ? 1 : 0);
+            const warnCount = Array.isArray(warnings) ? warnings.length : warnings ? 1 : 0;
             if (warnCount > 0) {
               departureReason = `⚠️ Removed after ${warnCount} warning${warnCount !== 1 ? 's' : ''}`;
             }

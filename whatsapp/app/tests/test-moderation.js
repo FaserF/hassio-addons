@@ -531,7 +531,11 @@ try {
     validTextReply?.text.toLowerCase().includes('verified'),
     'Correct code must reply with a verified confirmation'
   );
-  const pendingCapAfter = findPendingCaptcha('1203630999999999@g.us', '4917647365403', mockSessionCaptchaTest);
+  const pendingCapAfter = findPendingCaptcha(
+    '1203630999999999@g.us',
+    '4917647365403',
+    mockSessionCaptchaTest
+  );
   assert.strictEqual(pendingCapAfter, null, 'Pending captcha should be cleared after valid code');
 
   console.log(
