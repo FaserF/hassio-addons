@@ -70,8 +70,13 @@ export function trackReceived(session, sender, message) {
 
 export function trackFailure(session, target, message, reason) {
   const timestamp = formatHATime(new Date());
-  const displayTarget = target ? (target.includes('@g.us') ? target : target.split('@')[0]) : 'unknown';
-  const cleanReason = typeof reason === 'string' ? reason : (reason?.message || String(reason || 'Unknown error'));
+  const displayTarget = target
+    ? target.includes('@g.us')
+      ? target
+      : target.split('@')[0]
+    : 'unknown';
+  const cleanReason =
+    typeof reason === 'string' ? reason : reason?.message || String(reason || 'Unknown error');
   session.recentFailures.unshift({
     timestamp,
     target: maskData(displayTarget),
