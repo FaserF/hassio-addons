@@ -159,7 +159,11 @@ export function registerMessagingRoutes(app) {
             description: description || '',
             startTime: rawStart ? Math.floor(new Date(rawStart).getTime() / 1000) : undefined,
             endTime: rawEnd ? Math.floor(new Date(rawEnd).getTime() / 1000) : undefined,
-            location: location ? (typeof location === 'string' ? { name: location } : location) : undefined,
+            location: location
+              ? typeof location === 'string'
+                ? { name: location }
+                : location
+              : undefined,
             joinLink: joinLink || undefined,
             isCanceled: isCanceled ?? undefined,
             expiration: expiration ?? undefined,
