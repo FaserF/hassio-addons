@@ -275,9 +275,15 @@ export function handleIncomingMessages(session) {
         return true;
       })
       .map(async (msg) => {
+        // matchedText is the canonical URL WhatsApp resolves for link-preview messages.
+        // When a user sends a bare link, .text equals the typed URL but matchedText holds
+        // the fully-resolved/canonical form. We include it in the searchable text so that
+        // anti-spam and blacklist checks always see the actual URL regardless of format.
+        const extMsg = msg.message?.extendedTextMessage;
+        const matchedText = extMsg?.matchedText || '';
         let text =
           msg.message?.conversation ||
-          msg.message?.extendedTextMessage?.text ||
+          extMsg?.text ||
           msg.message?.buttonsResponseMessage?.selectedDisplayText ||
           msg.message?.templateButtonReplyMessage?.selectedId ||
           msg.message?.imageMessage?.caption ||
@@ -285,6 +291,10 @@ export function handleIncomingMessages(session) {
           msg.message?.documentMessage?.caption ||
           msg.message?.audioMessage?.caption ||
           '';
+        // Append matchedText if it contains a URL not already present in text
+        if (matchedText && !text.includes(matchedText)) {
+          text = text ? `${text} ${matchedText}` : matchedText;
+        }
         const remoteJidAlt = msg.key.remoteJidAlt;
         let senderJid = msg.key.remoteJid;
 

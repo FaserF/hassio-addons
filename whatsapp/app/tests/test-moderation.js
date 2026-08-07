@@ -204,6 +204,127 @@ try {
   assert.strictEqual(fedHandled, true, 'Federation shared blacklist should delete prohibited link');
   console.log('✅ PASSED: Federation shared blacklist pattern correctly deleted');
 
+  // Test 6.5: Anti-Spam Invite Links check (anti_spam_links_enabled)
+  {
+    // Use a separate group to avoid federation/mute side-effects
+    const antiSpamGroup = '1203630999888@g.us';
+    const antiSpamCfg = getGroupModerationConfig(antiSpamGroup);
+    antiSpamCfg.enabled = true;
+    antiSpamCfg.anti_spam_links_enabled = true;
+    antiSpamCfg.federation_id = null; // no federation — test anti_spam_links_enabled path in isolation
+    setGroupModerationConfig(antiSpamGroup, antiSpamCfg);
+
+    let antiSpamDeleteCalled = false;
+    let antiSpamReplySent = null;
+    const mockSessionAntiSpam = {
+      ...mockSession,
+      sock: {
+        ...mockSession.sock,
+        sendMessage: async (_jid, content) => {
+          if (content?.delete) antiSpamDeleteCalled = true;
+          if (content?.text) antiSpamReplySent = content.text;
+          return { key: { id: 'as_test' } };
+        },
+      },
+    };
+
+    // 6.5a: Telegram link (the main reported bug)
+    antiSpamDeleteCalled = false;
+    antiSpamReplySent = null;
+    const eventTgLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'https://t.me/joinchat/SPAMMER123',
+      raw: { key: { id: 'as_tg' } },
+    };
+    const tgHandled = await handleModerationMessage(mockSessionAntiSpam, eventTgLink);
+    assert.strictEqual(tgHandled, true, 'Anti-spam: Telegram invite link should be handled');
+    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: Telegram link message should be deleted');
+    assert(antiSpamReplySent?.includes('Anti-Spam Link'), 'Anti-spam: reply should mention Anti-Spam Link');
+    console.log('✅ PASSED: Anti-spam correctly blocks Telegram invite link (https://t.me/joinchat/...)');
+
+    // 6.5b: WhatsApp group link
+    antiSpamDeleteCalled = false;
+    const eventWaLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'Join here: https://chat.whatsapp.com/AbCdEfGhIjKlMnOpQrStUv',
+      raw: { key: { id: 'as_wa' } },
+    };
+    const waHandled = await handleModerationMessage(mockSessionAntiSpam, eventWaLink);
+    assert.strictEqual(waHandled, true, 'Anti-spam: WhatsApp group link should be handled');
+    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: WhatsApp group link message should be deleted');
+    console.log('✅ PASSED: Anti-spam correctly blocks WhatsApp group invite link');
+
+    // 6.5c: wa.me user link
+    antiSpamDeleteCalled = false;
+    const eventWaMeLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'https://wa.me/491761234567',
+      raw: { key: { id: 'as_wame' } },
+    };
+    const waMeHandled = await handleModerationMessage(mockSessionAntiSpam, eventWaMeLink);
+    assert.strictEqual(waMeHandled, true, 'Anti-spam: wa.me link should be handled');
+    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: wa.me link message should be deleted');
+    console.log('✅ PASSED: Anti-spam correctly blocks wa.me user link');
+
+    // 6.5d: Normal message should NOT be blocked
+    antiSpamDeleteCalled = false;
+    const eventNormal = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'Hello everyone, how are you?',
+      raw: { key: { id: 'as_normal' } },
+    };
+    await handleModerationMessage(mockSessionAntiSpam, eventNormal);
+    assert.strictEqual(antiSpamDeleteCalled, false, 'Anti-spam: normal message should NOT be deleted');
+    console.log('✅ PASSED: Anti-spam correctly ignores normal messages');
+
+    // 6.5e: Group admin sending a link should NOT be blocked
+    antiSpamDeleteCalled = false;
+    const eventAdminLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: true, // admin bypass
+      content: 'https://t.me/joinchat/ADMIN_POSTED_THIS',
+      raw: { key: { id: 'as_admin' } },
+    };
+    await handleModerationMessage(mockSessionAntiSpam, eventAdminLink);
+    assert.strictEqual(antiSpamDeleteCalled, false, 'Anti-spam: group admin invite link should NOT be deleted');
+    console.log('✅ PASSED: Anti-spam correctly bypasses group admins');
+
+    // 6.5f: matchedText fallback (link-preview style where text == matchedText)
+    antiSpamDeleteCalled = false;
+    const eventMatchedText = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      // Simulate what events/index.js produces after appending matchedText
+      content: 'https://t.me/joinchat/PREVIEW_ONLY',
+      raw: { key: { id: 'as_preview' } },
+    };
+    const previewHandled = await handleModerationMessage(mockSessionAntiSpam, eventMatchedText);
+    assert.strictEqual(previewHandled, true, 'Anti-spam: link-preview style message should be handled');
+    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: link-preview message should be deleted');
+    console.log('✅ PASSED: Anti-spam correctly handles link-preview style messages');
+
+    // Cleanup
+    antiSpamCfg.anti_spam_links_enabled = false;
+    setGroupModerationConfig(antiSpamGroup, antiSpamCfg);
+  }
+
+
   // Test 7: Consolidated Join Message (Welcome + Rules + Captcha in ONE single message)
   groupConfig.greetings.welcome_enabled = true;
   groupConfig.greetings.welcome_message = 'Welcome {mention} to {group}!';

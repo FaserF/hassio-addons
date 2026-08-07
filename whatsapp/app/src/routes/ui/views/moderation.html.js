@@ -429,7 +429,11 @@ export default () => `
                                 </div>
                             </div>
                             <p class="mod-field-desc">Control which built-in commands are permitted in this group. When a disabled command is triggered, the bot will notify members that the command is disabled.</p>
-                            <div id="mod-default-cmds-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:8px; margin-top:10px; max-height:220px; overflow-y:auto; padding:8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(0,0,0,0.1);"></div>
+                            <div style="position:relative; margin-bottom:8px; margin-top:10px;">
+                                <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px; pointer-events:none;"></i>
+                                <input type="text" id="mod-default-cmds-search" class="mod-input" placeholder="Search commands…" oninput="filterDefaultCommands(this.value)" style="padding-left:30px; font-size:12px; width:100%; box-sizing:border-box;">
+                            </div>
+                            <div id="mod-default-cmds-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px; padding:8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(0,0,0,0.1);"></div>
                         </div>
 
                         <!-- Custom Mapped Commands -->

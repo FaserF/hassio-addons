@@ -629,20 +629,53 @@ async function selectModerationGroup(groupId) {
   if (defaultCmdsGrid) {
     const disabledCmds = config.commands?.disabled_commands || [];
     const prefix = config.commands?.prefix || '!';
+
+    // Base docs URL – moderation page on GitHub Pages
+    const DOCS_BASE = 'https://FaserF.github.io/ha-whatsapp/moderation';
+
+    // Map command name → docs anchor (generated from heading text in moderation.md)
+    // Format: "#### N. `!cmd`" → anchor "#n-cmd" (GitHub Pages / just-the-docs convention)
+    const CMD_DOC_ANCHORS = {
+      help: '#1-help', ping: '#2-ping', id: '#3-id', rules: '#4-rules',
+      info: '#5-info', adminlist: '#6-adminlist-alias-admins', admins: '#6-adminlist-alias-admins',
+      approved: '#7-approved', locktypes: '#7-locktypes', report: '#8-report',
+      get: '#9-get', notes: '#10-notes', filters: '#11-filters',
+      translate: '#12-translate', tr: '#12-translate',
+      warn: '#13-warn', unwarn: '#14-unwarn', warns: '#15-warns',
+      kick: '#16-kick-alias-ban', ban: '#16-kick-alias-ban',
+      tban: '#17-tban', mute: '#18-mute', tmute: '#19-tmute',
+      unmute: '#20-unmute', del: '#21-del-alias-delete', delete: '#21-del-alias-delete',
+      approve: '#22-approve', unapprove: '#23-unapprove',
+      setrules: '#24-setrules', promote: '#25-promote', demote: '#26-demote',
+      setwelcome: '#27-setwelcome', welcome: '#28-welcome',
+      setgoodbye: '#29-setgoodbye', goodbye: '#30-goodbye',
+      lock: '#31-lock', unlock: '#32-unlock', locks: '#33-locks',
+      save: '#34-save', filter: '#35-filter', stop: '#36-stop',
+      setlang: '#37-setlang',
+    };
+
     if (builtinCommands.length > 0) {
       defaultCmdsGrid.innerHTML = builtinCommands
-        .map(
-          (c) => `
-        <label title="${escapeHtml(c.help || '')}" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
-          <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${escapeHtml(c.cmd)}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
-          <span><code>${escapeHtml(prefix)}${escapeHtml(c.cmd)}</code> ${c.adminOnly ? '<span style="font-size:9px;color:#e74c3c;">(admin)</span>' : ''}</span>
-        </label>`
-        )
+        .map((c) => {
+          const docAnchor = CMD_DOC_ANCHORS[c.cmd] || '';
+          const docHref = DOCS_BASE + (docAnchor || '');
+          const infoBtn = `<a href="${docHref}" target="_blank" rel="noopener" title="View docs for !${escapeHtml(c.cmd)}" style="margin-left:auto; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:rgba(var(--primary-rgb,37,211,102),0.15); color:var(--primary,#25d366); font-size:10px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(var(--primary-rgb,37,211,102),0.35)'" onmouseout="this.style.background='rgba(var(--primary-rgb,37,211,102),0.15)'"><i class="fas fa-info"></i></a>`;
+          return `<label data-cmd="${escapeHtml(c.cmd)}" data-help="${escapeHtml(c.help || '')}" title="${escapeHtml(c.help || '')}" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
+            <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${escapeHtml(c.cmd)}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><code>${escapeHtml(prefix)}${escapeHtml(c.cmd)}</code>${c.adminOnly ? ' <span style="font-size:9px;color:#e74c3c;">(admin)</span>' : ''}</span>
+            ${infoBtn}
+          </label>`;
+        })
         .join('');
     } else {
       defaultCmdsGrid.innerHTML = '<div class="empty-state">No commands registered</div>';
     }
+
+    // Clear search box when group changes
+    const searchBox = document.getElementById('mod-default-cmds-search');
+    if (searchBox) searchBox.value = '';
   }
+
 
   // Custom Commands List UI
   const customCmdsList = document.getElementById('mod-custom-cmds-list');
@@ -1056,10 +1089,44 @@ async function saveGroupCommands() {
 }
 
 function toggleAllDefaultCommands(enable) {
+  // Only toggle visible commands (respects active search filter)
   document.querySelectorAll('.mod-default-cmd-toggle').forEach((cb) => {
+    const label = cb.closest('label');
+    if (!label || label.style.display === 'none') return;
     cb.checked = Boolean(enable);
   });
 }
+
+window.filterDefaultCommands = function filterDefaultCommands(query) {
+  const q = (query || '').trim().toLowerCase();
+  const grid = document.getElementById('mod-default-cmds-grid');
+  if (!grid) return;
+  let visibleCount = 0;
+  grid.querySelectorAll('label[data-cmd]').forEach((label) => {
+    const cmd = (label.getAttribute('data-cmd') || '').toLowerCase();
+    const help = (label.getAttribute('data-help') || '').toLowerCase();
+    const matches = !q || cmd.includes(q) || help.includes(q);
+    label.style.display = matches ? '' : 'none';
+    if (matches) visibleCount++;
+  });
+
+  // Show/hide empty state
+  let emptyEl = grid.querySelector('.cmd-search-empty');
+  if (visibleCount === 0 && q) {
+    if (!emptyEl) {
+      emptyEl = document.createElement('div');
+      emptyEl.className = 'cmd-search-empty empty-state';
+      emptyEl.style.cssText = 'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
+      grid.appendChild(emptyEl);
+    }
+    emptyEl.textContent = `No commands matching "${query}"`;
+    emptyEl.style.display = '';
+  } else if (emptyEl) {
+    emptyEl.style.display = 'none';
+  }
+};
+window.toggleAllDefaultCommands = toggleAllDefaultCommands;
+
 
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');

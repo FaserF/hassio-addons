@@ -908,7 +908,7 @@ export async function handleModerationMessage(session, event) {
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
-  if (locks.invite?.enabled && /(https?:\/\/)?(chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)) {
+  if (locks.invite?.enabled && /(https?:\/\/)?(t\.me|telegram\.me|chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
   if (
@@ -940,12 +940,19 @@ export async function handleModerationMessage(session, event) {
   // 3.5 Anti-Spam Invite Links Check (Standalone Anti-Spam Feature)
   if (config.anti_spam_links_enabled && text) {
     const invitePattern =
-      /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+]+/i;
-    if (invitePattern.test(text)) {
+      /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+/]+/i;
+    const inviteMatch = invitePattern.test(text);
+    logger.debug(
+      { groupId, userId, anti_spam_links_enabled: true, textSnippet: text.slice(0, 80), inviteMatch },
+      '🔗 Anti-spam link check'
+    );
+    if (inviteMatch) {
       if (rawMsg?.key?.id) {
         try {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (e) {}
+        } catch (e) {
+          logger.warn({ groupId, userId, err: e?.message }, 'Anti-spam: message delete failed (bot may not be admin)');
+        }
       }
 
       await reply(
