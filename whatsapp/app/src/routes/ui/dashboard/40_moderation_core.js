@@ -644,6 +644,7 @@ async function selectModerationGroup(groupId) {
       info: '#5-info',
       adminlist: '#6-adminlist-alias-admins',
       admins: '#6-adminlist-alias-admins',
+      admin: '#6-adminlist-alias-admins',
       approved: '#7-approved',
       locktypes: '#7-locktypes',
       report: '#8-report',
@@ -679,13 +680,49 @@ async function selectModerationGroup(groupId) {
       filter: '#35-filter',
       stop: '#36-stop',
       setlang: '#37-setlang',
+      resetwarn: '#38-resetwarn-alias-rmwarn',
+      rmwarn: '#38-resetwarn-alias-rmwarn',
+      setwarnlimit: '#39-setwarnlimit',
+      setwarnaction: '#40-setwarnaction',
+      whitelist: '#41-whitelist--approve',
+      unwhitelist: '#42-unwhitelist--unapprove',
+      whitelisted: '#43-whitelisted',
+      scan: '#44-scan',
+      autotranslate: '#45-autotranslate',
+      flood: '#46-flood',
+      newfed: '#47-newfed',
+      joinfed: '#48-joinfed',
+      leavefed: '#49-leavefed',
+      fban: '#50-fban',
+      unfban: '#51-unfban',
+      fedinfo: '#52-fedinfo',
+      fbanlist: '#53-fbanlist',
+      fedadmins: '#54-fedadmins',
+      removespamlinks: '#55-removespamlinks',
+      pin: '#56-pin',
+      unpin: '#57-unpin',
+      unpinall: '#58-unpinall',
+      pinned: '#59-pinned',
+      blacklist: '#60-blacklist',
+      rmblacklist: '#61-rmblacklist--unblacklist',
+      unblacklist: '#61-rmblacklist--unblacklist',
+      setblacklistaction: '#62-setblacklistaction',
+      setlog: '#63-setlog',
+      unsetlog: '#64-unsetlog',
+      slowmode: '#65-slowmode',
+      settitle: '#66-settitle',
+      setdescription: '#67-setdescription',
+      setphoto: '#68-setphoto',
+      mode: '#69-mode',
+      unapproveall: '#70-unapproveall',
+      reports: '#71-reports',
     };
 
     if (builtinCommands.length > 0) {
       defaultCmdsGrid.innerHTML = builtinCommands
         .map((c) => {
-          const docAnchor = CMD_DOC_ANCHORS[c.cmd] || '';
-          const docHref = DOCS_BASE + (docAnchor || '');
+          const docAnchor = CMD_DOC_ANCHORS[c.cmd] || `#${encodeURIComponent(c.cmd)}`;
+          const docHref = DOCS_BASE + docAnchor;
           const infoBtn = `<a href="${docHref}" target="_blank" rel="noopener" title="View docs for !${escapeHtml(c.cmd)}" style="margin-left:auto; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:rgba(var(--primary-rgb,37,211,102),0.15); color:var(--primary,#25d366); font-size:10px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(var(--primary-rgb,37,211,102),0.35)'" onmouseout="this.style.background='rgba(var(--primary-rgb,37,211,102),0.15)'"><i class="fas fa-info"></i></a>`;
           return `<label data-cmd="${escapeHtml(c.cmd)}" data-help="${escapeHtml(c.help || '')}" title="${escapeHtml(c.help || '')}" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
             <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${escapeHtml(c.cmd)}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>

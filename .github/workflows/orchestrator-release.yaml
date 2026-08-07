@@ -180,6 +180,15 @@ jobs:
               for App in "${INPUT_AppS_ARRAY[@]}"; do
                   App=$(echo "$App" | xargs) # trim whitespace
 
+                  # Resolve directory name case-insensitively if exact match doesn't exist
+                  if [ ! -d "$App" ]; then
+                      REAL_DIR=$(find . -maxdepth 1 -mindepth 1 -type d -iname "$App" -exec basename {} \; | head -n 1)
+                      if [ -n "$REAL_DIR" ]; then
+                          echo "ℹ️ Resolved '$App' to actual directory '$REAL_DIR'"
+                          App="$REAL_DIR"
+                      fi
+                  fi
+
                   # Check if it exists (basic check, though dynamic check happens later too)
                   if [ ! -d "$App" ]; then
                       echo "⚠️ Warning: App directory '$App' does not exist. Skipping."

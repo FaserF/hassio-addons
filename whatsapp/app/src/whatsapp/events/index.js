@@ -281,6 +281,7 @@ export function handleIncomingMessages(session) {
     const events = m.messages
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
+        if (msg.messageStubType) return false; // Skip system notifications (member join/leave/promotions) from moderation processing
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
@@ -456,6 +457,9 @@ export function handleIncomingMessages(session) {
           msg.key?.participantAlt,
           msg.participant,
           msg.key?.remoteJidAlt,
+          // In group chats where msg.key.participant might be absent in non-standard protocol nodes,
+          // use remoteJid if it's a user JID or fallback
+          !msg.key?.remoteJid?.endsWith('@g.us') ? msg.key?.remoteJid : null,
         ].filter(
           (c) => typeof c === 'string' && (c.endsWith('@s.whatsapp.net') || c.endsWith('@lid'))
         );
@@ -494,8 +498,14 @@ export function handleIncomingMessages(session) {
             if (effectiveSenderNumber && !effectiveSenderNumber.startsWith('1576')) break;
           }
         }
-        if (!effectiveSenderNumber && msg.key?.participant) {
-          effectiveSenderNumber = String(msg.key.participant).split('@')[0].replace(/\D/g, '');
+        if (!effectiveSenderNumber) {
+          for (const cand of senderCandidates) {
+            const d = String(cand).split('@')[0].replace(/\D/g, '');
+            if (d) {
+              effectiveSenderNumber = d;
+              break;
+            }
+          }
         }
 
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
