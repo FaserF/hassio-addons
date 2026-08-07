@@ -14,9 +14,26 @@ import {
   exportGroupModeration,
   importGroupModeration,
 } from '../../whatsapp/moderation/migration.js';
+import { registry } from '../../whatsapp/moderation/commands.js';
 import { sessions } from '../../session.js';
 
 export function registerModerationRoutes(app) {
+  // GET /api/moderation/commands — Dynamically list all registered built-in commands
+  app.get('/api/moderation/commands', (req, res) => {
+    const list = [];
+    const seen = new Set();
+    for (const [cmd, details] of Object.entries(registry.commands)) {
+      if (seen.has(details)) continue;
+      seen.add(details);
+      list.push({
+        cmd,
+        adminOnly: details.adminOnly,
+        help: details.help,
+        aliases: details.aliases || [],
+      });
+    }
+    res.json({ success: true, data: list });
+  });
   // GET /api/moderation/config
   app.get('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();

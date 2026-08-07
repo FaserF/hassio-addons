@@ -360,7 +360,7 @@ async function toggleGlobalModeration(enabled) {
   }
 }
 
-function selectModerationGroup(groupId) {
+async function selectModerationGroup(groupId) {
   currentModGroup = groupId;
   const contentCard = document.getElementById('mod-group-content');
   const placeholderCard = document.getElementById('mod-no-group-placeholder');
@@ -582,97 +582,36 @@ function selectModerationGroup(groupId) {
     }
   }
 
-  const BUILTIN_COMMANDS_LIST = [
-    { cmd: 'help', label: '!help' },
-    { cmd: 'ping', label: '!ping' },
-    { cmd: 'id', label: '!id' },
-    { cmd: 'rules', label: '!rules' },
-    { cmd: 'info', label: '!info' },
-    { cmd: 'adminlist', label: '!adminlist' },
-    { cmd: 'locktypes', label: '!locktypes' },
-    { cmd: 'translate', label: '!translate' },
-    { cmd: 'warn', label: '!warn' },
-    { cmd: 'warns', label: '!warns' },
-    { cmd: 'unwarn', label: '!unwarn' },
-    { cmd: 'resetwarn', label: '!resetwarn' },
-    { cmd: 'setwarnlimit', label: '!setwarnlimit' },
-    { cmd: 'setwarnaction', label: '!setwarnaction' },
-    { cmd: 'kick', label: '!kick' },
-    { cmd: 'ban', label: '!ban' },
-    { cmd: 'mute', label: '!mute' },
-    { cmd: 'unmute', label: '!unmute' },
-    { cmd: 'tban', label: '!tban' },
-    { cmd: 'tmute', label: '!tmute' },
-    { cmd: 'promote', label: '!promote' },
-    { cmd: 'demote', label: '!demote' },
-    { cmd: 'approve', label: '!approve' },
-    { cmd: 'unapprove', label: '!unapprove' },
-    { cmd: 'approved', label: '!approved' },
-    { cmd: 'unapproveall', label: '!unapproveall' },
-    { cmd: 'setrules', label: '!setrules' },
-    { cmd: 'lock', label: '!lock' },
-    { cmd: 'unlock', label: '!unlock' },
-    { cmd: 'locks', label: '!locks' },
-    { cmd: 'report', label: '!report' },
-    { cmd: 'reports', label: '!reports' },
-    { cmd: 'notes', label: '!notes' },
-    { cmd: 'save', label: '!save' },
-    { cmd: 'get', label: '!get' },
-    { cmd: 'filter', label: '!filter' },
-    { cmd: 'filters', label: '!filters' },
-    { cmd: 'stop', label: '!stop' },
-    { cmd: 'setwelcome', label: '!setwelcome' },
-    { cmd: 'welcome', label: '!welcome' },
-    { cmd: 'setgoodbye', label: '!setgoodbye' },
-    { cmd: 'goodbye', label: '!goodbye' },
-    { cmd: 'del', label: '!del' },
-    { cmd: 'setlang', label: '!setlang' },
-    { cmd: 'autotranslate', label: '!autotranslate' },
-    { cmd: 'removespamlinks', label: '!removespamlinks' },
-    { cmd: 'flood', label: '!flood' },
-    { cmd: 'mode', label: '!mode' },
-    { cmd: 'blacklist', label: '!blacklist' },
-    { cmd: 'rmblacklist', label: '!rmblacklist' },
-    { cmd: 'setblacklistaction', label: '!setblacklistaction' },
-    { cmd: 'pin', label: '!pin' },
-    { cmd: 'unpin', label: '!unpin' },
-    { cmd: 'unpinall', label: '!unpinall' },
-    { cmd: 'pinned', label: '!pinned' },
-    { cmd: 'slowmode', label: '!slowmode' },
-    { cmd: 'setlog', label: '!setlog' },
-    { cmd: 'unsetlog', label: '!unsetlog' },
-    { cmd: 'settitle', label: '!settitle' },
-    { cmd: 'setdescription', label: '!setdescription' },
-    { cmd: 'setphoto', label: '!setphoto' },
-    { cmd: 'newfed', label: '!newfed' },
-    { cmd: 'joinfed', label: '!joinfed' },
-    { cmd: 'leavefed', label: '!leavefed' },
-    { cmd: 'fban', label: '!fban' },
-    { cmd: 'unfban', label: '!unfban' },
-    { cmd: 'fedinfo', label: '!fedinfo' },
-    { cmd: 'fbanlist', label: '!fbanlist' },
-    { cmd: 'fedadmins', label: '!fedadmins' },
-  ];
-
-  // Commands
-  const cmdsEnabled = document.getElementById('mod-cmds-enabled');
-  if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled);
-  const cmdsPrefix = document.getElementById('mod-cmds-prefix');
-  if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
-  const cmdsMute = document.getElementById('mod-cmds-mute-action');
-  if (cmdsMute) cmdsMute.value = config.commands?.mute_action || 'delete';
+  // Dynamically load registered built-in commands from backend endpoint
+  let builtinCommands = [];
+  try {
+    const res = await fetch('/api/moderation/commands');
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      builtinCommands = json.data;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch dynamic commands list, falling back to local list:', err);
+  }
 
   // Default Commands Grid UI
   const defaultCmdsGrid = document.getElementById('mod-default-cmds-grid');
   if (defaultCmdsGrid) {
     const disabledCmds = config.commands?.disabled_commands || [];
-    defaultCmdsGrid.innerHTML = BUILTIN_COMMANDS_LIST.map(
-      (c) => `
-      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
-        <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${c.cmd}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
-        <span><code>${escapeHtml(config.commands?.prefix || '!')}${c.cmd}</code></span>
-      </label>`
-    ).join('');
+    const prefix = config.commands?.prefix || '!';
+    if (builtinCommands.length > 0) {
+      defaultCmdsGrid.innerHTML = builtinCommands
+        .map(
+          (c) => `
+        <label title="${escapeHtml(c.help || '')}" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
+          <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${escapeHtml(c.cmd)}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
+          <span><code>${escapeHtml(prefix)}${escapeHtml(c.cmd)}</code> ${c.adminOnly ? '<span style="font-size:9px;color:#e74c3c;">(admin)</span>' : ''}</span>
+        </label>`
+        )
+        .join('');
+    } else {
+      defaultCmdsGrid.innerHTML = '<div class="empty-state">No commands registered</div>';
+    }
   }
 
   // Custom Commands List UI
