@@ -451,6 +451,7 @@ export function handleIncomingMessages(session) {
           caption: caption,
           raw: msg,
           session_id: session.id,
+          is_admin: isAdminUser,
         };
 
         const personJid = effectiveSenderJid;

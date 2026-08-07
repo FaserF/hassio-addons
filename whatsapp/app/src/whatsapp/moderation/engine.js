@@ -633,6 +633,13 @@ export async function handleModerationMessage(session, event) {
     return false; // User is whitelisted, skip moderation
   }
 
+  // Admins & Bot itself bypass content moderation rules (anti-spam, locks, blacklist)
+  const isAdminUser = Boolean(event.is_admin || rawMsg?.key?.fromMe);
+  if (isAdminUser) {
+    logger.debug({ groupId, userId }, 'Skipping content moderation for admin/bot user');
+    return false;
+  }
+
   // 0. Muted Users check — delete messages from muted users
   if (config.muted_users && config.muted_users[userId]) {
     const muteEntry = config.muted_users[userId];
