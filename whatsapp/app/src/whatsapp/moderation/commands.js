@@ -2428,17 +2428,19 @@ registry.register(
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
+    const currentConfig = getGroupModerationConfig(groupId);
     if (!store.groups[groupId]) {
-      store.groups[groupId] = getGroupModerationConfig(groupId);
+      store.groups[groupId] = currentConfig;
     }
     const c = store.groups[groupId];
+    const currentVal = Boolean(config?.anti_spam_links_enabled ?? currentConfig.anti_spam_links_enabled);
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.anti_spam_links_enabled = true;
     } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
       c.anti_spam_links_enabled = false;
     } else {
       // No argument or unknown argument -> TOGGLE current state
-      c.anti_spam_links_enabled = !c.anti_spam_links_enabled;
+      c.anti_spam_links_enabled = !currentVal;
     }
     saveModerationStore(store);
     await reply(
@@ -2948,7 +2950,8 @@ async function executeSingleCommandLine(
 
   try {
     logger.info(`⚡ Executing command: ${prefix}${cmdStr} by ${userId} in ${groupId}`);
-    await command.handler(session, groupId, userId, args, config, isAdminUser, msg);
+    const freshConfig = getGroupModerationConfig(groupId);
+    await command.handler(session, groupId, userId, args, freshConfig, isAdminUser, msg);
   } catch (err) {
     logger.error({ error: err.message }, `Error executing command ${cmdStr}`);
     await reply(
