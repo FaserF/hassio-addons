@@ -310,8 +310,10 @@ export function handleIncomingMessages(session) {
           if (m.ephemeralMessage?.message) return unwrapMessage(m.ephemeralMessage.message);
           if (m.viewOnceMessage?.message) return unwrapMessage(m.viewOnceMessage.message);
           if (m.viewOnceMessageV2?.message) return unwrapMessage(m.viewOnceMessageV2.message);
-          if (m.viewOnceMessageV2Extension?.message) return unwrapMessage(m.viewOnceMessageV2Extension.message);
-          if (m.documentWithCaptionMessage?.message) return unwrapMessage(m.documentWithCaptionMessage.message);
+          if (m.viewOnceMessageV2Extension?.message)
+            return unwrapMessage(m.viewOnceMessageV2Extension.message);
+          if (m.documentWithCaptionMessage?.message)
+            return unwrapMessage(m.documentWithCaptionMessage.message);
           return m;
         };
         const realMsgObj = unwrapMessage(msg.message);
