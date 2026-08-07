@@ -21,6 +21,29 @@ const groupJoinMap = new Map(); // key: groupId -> array of timestamps
 const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp }
 const recentKickReasons = new Map(); // key: groupId:userId -> { reason, expires }
 
+const PLATFORM_DOMAINS = {
+  whatsapp: ['chat\\.whatsapp\\.com', 'wa\\.me', 'wa\\.link', 'whatsapp\\.com\\/channel'],
+  telegram: ['t\\.me', 'telegram\\.me', 'telegram\\.dog'],
+  signal: ['signal\\.group', 'signal\\.me'],
+  instagram: ['instagram\\.com\\/j', 'ig\\.me\\/j'],
+  discord: ['discord\\.(gg|com\\/invite)'],
+  other: ['line\\.me\\/ti\\/g', 'viber\\.com\\/g', 'snapchat\\.com\\/add', 'matrix\\.to\\/#', 'element\\.io'],
+};
+
+// Centralized Regex definitions per Messenger platform for Invite Link Detection
+export const SPAM_INVITE_LINK_PATTERNS = {
+  whatsapp: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.whatsapp.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  telegram: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.telegram.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  signal: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.signal.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  instagram: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.instagram.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  discord: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.discord.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  other: new RegExp(`(https?:\\/\\/)?(${PLATFORM_DOMAINS.other.join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`, 'i'),
+  all: new RegExp(
+    `(https?:\\/\\/)?(${Object.values(PLATFORM_DOMAINS).flat().join('|')})\\/[a-zA-Z0-9_\\-+#/=+]+`,
+    'i'
+  ),
+};
+
 function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;
 }
@@ -910,7 +933,7 @@ export async function handleModerationMessage(session, event) {
   }
   if (
     locks.invite?.enabled &&
-    /(https?:\/\/)?(t\.me|telegram\.me|chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)
+    SPAM_INVITE_LINK_PATTERNS.all.test(text)
   ) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
@@ -942,9 +965,15 @@ export async function handleModerationMessage(session, event) {
 
   // 3.5 Anti-Spam Invite Links Check (Standalone Anti-Spam Feature)
   if (config.anti_spam_links_enabled && text) {
-    const invitePattern =
-      /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+/]+/i;
-    const inviteMatch = invitePattern.test(text);
+    const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
+    let inviteMatch = false;
+    for (const [platKey, pattern] of Object.entries(SPAM_INVITE_LINK_PATTERNS)) {
+      if (platKey === 'all') continue;
+      if (blockedPlatforms[platKey] !== false && pattern.test(text)) {
+        inviteMatch = true;
+        break;
+      }
+    }
     logger.debug(
       {
         groupId,

@@ -774,6 +774,13 @@ async function selectModerationGroup(groupId) {
   const antispamLinksE = document.getElementById('mod-antispam-links-enabled');
   if (antispamLinksE) antispamLinksE.checked = Boolean(config.anti_spam_links_enabled);
 
+  const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
+  const platforms = ['whatsapp', 'telegram', 'signal', 'instagram', 'discord', 'other'];
+  for (const plat of platforms) {
+    const el = document.getElementById(`mod-invite-platform-${plat}`);
+    if (el) el.checked = blockedPlatforms[plat] !== false; // Default true if undefined
+  }
+
   // Muted Users List UI
   const mutedList = document.getElementById('mod-muted-users-list');
   if (mutedList) {

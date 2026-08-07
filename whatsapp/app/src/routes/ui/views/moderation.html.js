@@ -301,13 +301,14 @@ export default () => `
                                 </div>
                                 <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
                                 <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; padding:10px; font-size:12px;">
-                                    <div style="font-weight:600; color:var(--text-muted); margin-bottom:6px;"><i class="fas fa-filter"></i> Automatically Monitored &amp; Filtered Link Patterns:</div>
-                                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">t.me/*</span>
-                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">telegram.me/*</span>
-                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">wa.me/*</span>
-                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">wa.link/*</span>
-                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">chat.whatsapp.com/*</span>
+                                    <div style="font-weight:600; color:var(--text-muted); margin-bottom:8px;"><i class="fas fa-filter"></i> Blocked Invite Link Platforms (Default: All Enabled):</div>
+                                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:8px;">
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-whatsapp" checked> <span><i class="fab fa-whatsapp"></i> WhatsApp</span></label>
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-telegram" checked> <span><i class="fab fa-telegram"></i> Telegram</span></label>
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-signal" checked> <span><i class="fas fa-comment-dots"></i> Signal</span></label>
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-instagram" checked> <span><i class="fab fa-instagram"></i> Instagram</span></label>
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-discord" checked> <span><i class="fab fa-discord"></i> Discord</span></label>
+                                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="mod-invite-platform-other" checked> <span><i class="fas fa-share-alt"></i> Others (Line, Snapchat, Viber, Matrix)</span></label>
                                     </div>
                                 </div>
                             </div>

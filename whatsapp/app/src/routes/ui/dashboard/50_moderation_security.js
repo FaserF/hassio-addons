@@ -83,6 +83,14 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    blocked_invite_platforms: {
+      whatsapp: Boolean(document.getElementById('mod-invite-platform-whatsapp')?.checked),
+      telegram: Boolean(document.getElementById('mod-invite-platform-telegram')?.checked),
+      signal: Boolean(document.getElementById('mod-invite-platform-signal')?.checked),
+      instagram: Boolean(document.getElementById('mod-invite-platform-instagram')?.checked),
+      discord: Boolean(document.getElementById('mod-invite-platform-discord')?.checked),
+      other: Boolean(document.getElementById('mod-invite-platform-other')?.checked),
+    },
   };
   groupConfig.anti_spam_links_enabled = Boolean(
     document.getElementById('mod-antispam-links-enabled')?.checked

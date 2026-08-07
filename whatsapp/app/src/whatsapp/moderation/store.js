@@ -162,6 +162,14 @@ export function getDefaultGroupConfig() {
     antispam: {
       flood_protection: { enabled: false, max_messages: 5, window_seconds: 5, action: 'mute' },
       anti_raid: { enabled: false, max_joins: 5, window_seconds: 10, action: 'lockdown' },
+      blocked_invite_platforms: {
+        whatsapp: true,
+        telegram: true,
+        signal: true,
+        instagram: true,
+        discord: true,
+        other: true,
+      },
     },
     ai: {
       enabled: false,
@@ -208,6 +216,14 @@ export function getDefaultModerationStore() {
           'chat.whatsapp.com/',
           'whatsapp.com/channel/',
           'wa.me/',
+          'signal.group/',
+          'signal.me/',
+          'instagram.com/j/',
+          'ig.me/j/',
+          'discord.gg/',
+          'discord.com/invite/',
+          'line.me/ti/g/',
+          'snapchat.com/add/',
           'crypto-airdrop',
           'crypto',
           'free-money-now',
@@ -254,6 +270,10 @@ export function getGroupModerationConfig(groupId) {
       anti_raid: {
         ...def.antispam.anti_raid,
         ...(existing.antispam?.anti_raid || {}),
+      },
+      blocked_invite_platforms: {
+        ...def.antispam.blocked_invite_platforms,
+        ...(existing.antispam?.blocked_invite_platforms || {}),
       },
     },
     ai: { ...def.ai, ...(existing.ai || {}) },

@@ -292,6 +292,34 @@ try {
     );
     console.log('✅ PASSED: Anti-spam correctly blocks wa.me user link');
 
+    // 6.5c2: Signal invite link
+    antiSpamDeleteCalled = false;
+    const eventSignalLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'https://signal.group/#CjQKIG12345',
+      raw: { key: { id: 'as_signal' } },
+    };
+    const signalHandled = await handleModerationMessage(mockSessionAntiSpam, eventSignalLink);
+    assert.strictEqual(signalHandled, true, 'Anti-spam: Signal group link should be handled');
+    console.log('✅ PASSED: Anti-spam correctly blocks Signal group invite link');
+
+    // 6.5c3: Instagram chat invite link
+    antiSpamDeleteCalled = false;
+    const eventIgLink = {
+      sender: antiSpamGroup,
+      sender_number: '491761234560',
+      is_group: true,
+      is_group_admin: false,
+      content: 'Join my IG group: https://instagram.com/j/AbCdEfGh123',
+      raw: { key: { id: 'as_ig' } },
+    };
+    const igHandled = await handleModerationMessage(mockSessionAntiSpam, eventIgLink);
+    assert.strictEqual(igHandled, true, 'Anti-spam: Instagram group link should be handled');
+    console.log('✅ PASSED: Anti-spam correctly blocks Instagram group invite link');
+
     // 6.5d: Normal message should NOT be blocked
     antiSpamDeleteCalled = false;
     const eventNormal = {

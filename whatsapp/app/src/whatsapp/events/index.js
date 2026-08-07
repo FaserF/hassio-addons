@@ -92,6 +92,15 @@ export function registerAllListeners(session) {
           processedParticipantEvents.set(updateWindowKey, now);
         }
 
+        if (update?.id && session?.sock?.groupMetadata) {
+          try {
+            // Evict Baileys group metadata cache so fresh admin rights take effect immediately
+            if (typeof session.sock.groupMetadata.delete === 'function') {
+              session.sock.groupMetadata.delete(update.id);
+            }
+          } catch (_e) {}
+        }
+
         await handleModerationParticipantUpdate(session, {
           ...update,
           participants: normalizedParticipants,
@@ -170,6 +179,14 @@ export function handleIncomingMessages(session) {
           stStr.includes('REMOVE')
         ) {
           action = 'remove';
+        } else if (
+          st === 30 ||
+          st === 31 ||
+          stNum === 30 ||
+          stStr.includes('PROMOTE') ||
+          stStr.includes('DEMOTE')
+        ) {
+          action = stStr.includes('DEMOTE') ? 'demote' : 'promote';
         }
 
         // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
@@ -233,6 +250,14 @@ export function handleIncomingMessages(session) {
             },
             '👥 Participant update detected via messageStubType'
           );
+          if (groupId && session?.sock?.groupMetadata) {
+            try {
+              if (typeof session.sock.groupMetadata.delete === 'function') {
+                session.sock.groupMetadata.delete(groupId);
+              }
+            } catch (_e) {}
+          }
+
           handleModerationParticipantUpdate(session, {
             id: groupId,
             action,
