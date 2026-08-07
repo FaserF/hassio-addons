@@ -1972,11 +1972,15 @@ export async function handleModerationParticipantUpdate(session, update) {
             : phoneJid.replace(/@lid$/, '@s.whatsapp.net');
         const mentionJid = targetPrivateJid || normalizeJid(participantJid);
 
-        const captchaTargetMode = config.greetings?.captcha_target || 'private';
+        const welcomeTargetMode =
+          config.greetings?.welcome_target || config.greetings?.captcha_target || 'private';
+        const targetMode = isCaptchaEnabled
+          ? config.greetings?.captcha_target || 'private'
+          : welcomeTargetMode;
         let sentViaDM = false;
 
         // Attempt sending Welcome & Captcha via Private DM if configured as 'private'
-        if (captchaTargetMode === 'private' && targetPrivateJid) {
+        if (targetMode === 'private' && targetPrivateJid) {
           try {
             await reply(session, targetPrivateJid, {
               text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
@@ -1990,10 +1994,10 @@ export async function handleModerationParticipantUpdate(session, update) {
           }
         }
 
-        // Send into Group if captcha_target is 'group' OR if Private DM delivery failed (fallback)
+        // Send into Group if targetMode is 'group' OR if Private DM delivery failed (fallback)
         if (!sentViaDM) {
           const groupNotice =
-            captchaTargetMode === 'private' && isCaptchaEnabled
+            targetMode === 'private' && isCaptchaEnabled
               ? `⚠️ _Direct message to ${resolveUserDisplayName(userId, session)} could not be delivered. Please verify here in the group:_\n\n${fullText}`
               : fullText;
 

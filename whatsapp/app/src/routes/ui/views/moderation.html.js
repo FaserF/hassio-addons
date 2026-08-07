@@ -105,7 +105,14 @@ export default () => `
                         <div class="mod-two-col">
                             <div class="mod-feature-block">
                                 <div class="mod-block-label"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-welcome-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span>Welcome Message</span></div>
-                                <input type="text" id="mod-welcome-msg" class="mod-input" placeholder="Welcome {user} to {group}!">
+                                <input type="text" id="mod-welcome-msg" class="mod-input" placeholder="Welcome {user} to {group}!" style="margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <label class="mod-field-label" style="margin:0; font-size:11px; white-space:nowrap;">Destination:</label>
+                                    <select id="mod-welcome-target" class="mod-select mod-select-sm">
+                                        <option value="private" selected>Private Chat (DM to joining user)</option>
+                                        <option value="group">Group Chat</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="mod-feature-block">
                                 <div class="mod-block-label"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-goodbye-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span>Goodbye Message</span></div>

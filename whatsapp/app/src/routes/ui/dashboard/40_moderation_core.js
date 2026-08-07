@@ -50,6 +50,7 @@ const TRACKED_FIELD_IDS = [
   'mod-rules-show-on-join',
   'mod-welcome-enabled',
   'mod-welcome-msg',
+  'mod-welcome-target',
   'mod-goodbye-enabled',
   'mod-goodbye-msg',
   'mod-goodbye-target',
@@ -421,6 +422,8 @@ async function selectModerationGroup(groupId) {
   if (welcE) welcE.checked = Boolean(config.greetings?.welcome_enabled);
   const welcM = document.getElementById('mod-welcome-msg');
   if (welcM) welcM.value = config.greetings?.welcome_message || '';
+  const welcT = document.getElementById('mod-welcome-target');
+  if (welcT) welcT.value = config.greetings?.welcome_target || 'private';
   const goodE = document.getElementById('mod-goodbye-enabled');
   if (goodE) goodE.checked = Boolean(config.greetings?.goodbye_enabled);
   const goodM =
@@ -1010,6 +1013,7 @@ async function saveGroupGreetings() {
   groupConfig.greetings = {
     welcome_enabled: Boolean(document.getElementById('mod-welcome-enabled')?.checked),
     welcome_message: document.getElementById('mod-welcome-msg')?.value || '',
+    welcome_target: document.getElementById('mod-welcome-target')?.value || 'private',
     goodbye_enabled: Boolean(document.getElementById('mod-goodbye-enabled')?.checked),
     goodbye_message: document.getElementById('mod-goodbye-msg')?.value || '',
     goodbye_target: document.getElementById('mod-goodbye-target')?.value || 'private',
