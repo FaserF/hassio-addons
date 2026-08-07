@@ -52,6 +52,7 @@ const TRACKED_FIELD_IDS = [
   'mod-welcome-msg',
   'mod-goodbye-enabled',
   'mod-goodbye-msg',
+  'mod-goodbye-target',
   'mod-captcha-enabled',
   'mod-captcha-mode',
   'mod-captcha-timeout',
@@ -426,6 +427,8 @@ async function selectModerationGroup(groupId) {
     document.getElementById('mod-goodbye-msg') || document.getElementById('mod-goodbye-message');
   if (goodM)
     goodM.value = config.greetings?.goodbye_message || config.greetings?.goodbye_text || '';
+  const goodT = document.getElementById('mod-goodbye-target');
+  if (goodT) goodT.value = config.greetings?.goodbye_target || 'private';
 
   // Captcha
   const capE = document.getElementById('mod-captcha-enabled');
@@ -1009,6 +1012,7 @@ async function saveGroupGreetings() {
     welcome_message: document.getElementById('mod-welcome-msg')?.value || '',
     goodbye_enabled: Boolean(document.getElementById('mod-goodbye-enabled')?.checked),
     goodbye_message: document.getElementById('mod-goodbye-msg')?.value || '',
+    goodbye_target: document.getElementById('mod-goodbye-target')?.value || 'private',
     captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
     captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'math',
     captcha_target: document.getElementById('mod-captcha-target')?.value || 'private',

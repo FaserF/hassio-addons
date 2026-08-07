@@ -927,6 +927,17 @@ export async function handleModerationMessage(session, event) {
               `Prohibited link/pattern from Global Federation (${pat})`,
               rawMsg
             );
+            if (config.antispam?.notify_deleted_action !== false) {
+              await reply(
+                session,
+                groupId,
+                {
+                  text: `🚫 *Security Federation:* Prohibited pattern from @${userId} was automatically deleted.\n\n📋 *Reason:* Blacklisted pattern "${pat}" detected.`,
+                  mentions: [`${userId}@s.whatsapp.net`],
+                },
+                rawMsg
+              );
+            }
             return true;
           }
         }
@@ -979,10 +990,19 @@ export async function handleModerationMessage(session, event) {
             logger.warn({ error: storeErr.message }, 'Failed to record captcha verification');
           }
 
+          // Fetch group title for human readable group name
+          let groupName = groupId.split('@')[0];
+          if (session?.sock?.groupMetadata) {
+            try {
+              const meta = await session.sock.groupMetadata(groupId);
+              if (meta?.subject) groupName = meta.subject;
+            } catch (_e) {}
+          }
+
           // Send confirmation — DM if captcha was sent via DM, otherwise group
           const captchaTargetMode = config.greetings?.captcha_target || 'private';
           const userPhoneJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
-          const confirmText = `\u2705 *Captcha Verified!*\n\nYou have been successfully verified in *${groupId.split('@')[0]}*. You can now participate in the group.`;
+          const confirmText = `✅ *Captcha Verified!*\n\nYou have been successfully verified in *${groupName}*. You can now participate in the group.`;
 
           if (captchaTargetMode === 'private') {
             // Try DM first
@@ -1644,9 +1664,17 @@ export async function handleModerationParticipantUpdate(session, update) {
 
       if (banInfo) {
         // User was banned from this group -> notify via private DM and auto-kick
+        // Fetch group title for human readable group name
+        let groupTitle = groupId.split('@')[0];
+        if (session?.sock?.groupMetadata) {
+          try {
+            const meta = await session.sock.groupMetadata(groupId);
+            if (meta?.subject) groupTitle = meta.subject;
+          } catch (_e) {}
+        }
         try {
           await session.sock.sendMessage(participantJid, {
-            text: `🚫 *Group Ban Enforced*\n\nYou attempted to join \`${groupId.split('@')[0]}\`, but you are banned from this group.\n\n*Reason:* ${banInfo.reason || 'Banned by group moderation'}\n\nYou have been automatically removed.`,
+            text: `🚫 *Group Ban Enforced*\n\nYou attempted to join *${groupTitle}*, but you are banned from this group.\n\n*Reason:* ${banInfo.reason || 'Banned by group moderation'}\n\nYou have been automatically removed.`,
           });
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send join ban DM to ${participantJid}`);
@@ -2082,8 +2110,18 @@ export async function handleModerationParticipantUpdate(session, update) {
           goodbyeMsg += `\n\n📋 *Reason:* ${departureReason}`;
         }
 
-        // Send Goodbye message to Group
-        await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
+        const goodbyeTarget = config.greetings.goodbye_target || 'private';
+        if (goodbyeTarget === 'private') {
+          // Attempt Private DM delivery to leaving user first
+          const sentDM = await reply(session, participantJid, { text: goodbyeMsg });
+          if (!sentDM) {
+            // Fallback to group if DM fails
+            await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
+          }
+        } else {
+          // Send Goodbye message directly to Group
+          await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
+        }
       }
     }
   }

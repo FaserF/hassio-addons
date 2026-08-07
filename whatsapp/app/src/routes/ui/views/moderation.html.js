@@ -109,7 +109,14 @@ export default () => `
                             </div>
                             <div class="mod-feature-block">
                                 <div class="mod-block-label"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-goodbye-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span>Goodbye Message</span></div>
-                                <input type="text" id="mod-goodbye-msg" class="mod-input" placeholder="Goodbye {user}!">
+                                <input type="text" id="mod-goodbye-msg" class="mod-input" placeholder="Goodbye {user}!" style="margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <label class="mod-field-label" style="margin:0; font-size:11px; white-space:nowrap;">Destination:</label>
+                                    <select id="mod-goodbye-target" class="mod-select mod-select-sm">
+                                        <option value="private" selected>Private Chat (DM to leaving user)</option>
+                                        <option value="group">Group Chat</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
