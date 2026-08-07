@@ -2433,7 +2433,9 @@ registry.register(
       store.groups[groupId] = currentConfig;
     }
     const c = store.groups[groupId];
-    const currentVal = Boolean(config?.anti_spam_links_enabled ?? currentConfig.anti_spam_links_enabled);
+    const currentVal = Boolean(
+      config?.anti_spam_links_enabled ?? currentConfig.anti_spam_links_enabled
+    );
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.anti_spam_links_enabled = true;
     } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
