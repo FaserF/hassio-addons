@@ -633,10 +633,58 @@ export async function handleModerationMessage(session, event) {
     return false; // User is whitelisted, skip moderation
   }
 
-  // Admins & Bot itself bypass content moderation rules (anti-spam, locks, blacklist)
-  const isAdminUser = Boolean(event.is_admin || rawMsg?.key?.fromMe);
-  if (isAdminUser) {
-    logger.debug({ groupId, userId }, 'Skipping content moderation for admin/bot user');
+  // In group chats, ONLY actual WhatsApp Group Admins or the bot itself bypass destructive moderation rules (blacklist, locks, anti-spam).
+  const isGroupAdminUser = Boolean(
+    (event.is_group ? event.is_group_admin : event.is_admin) || rawMsg?.key?.fromMe
+  );
+
+  // 0. Auto-Responder / Custom Filters & FAQ triggers check (runs for everyone including admins)
+  if (text && Array.isArray(config.filters)) {
+    for (const filter of config.filters) {
+      if (!filter.trigger) continue;
+      let isMatch = false;
+      if (filter.is_regex) {
+        try {
+          isMatch = new RegExp(filter.trigger, 'i').test(text);
+        } catch (e) {}
+      } else {
+        isMatch =
+          text.toLowerCase() === filter.trigger.toLowerCase() ||
+          text.toLowerCase().includes(filter.trigger.toLowerCase());
+      }
+
+      if (isMatch) {
+        const isFaq = filter.type === 'faq';
+        const replyText = isFaq
+          ? `💡 *FAQ Hint / Automated Help:*\n_The following information from our FAQ might help answer your question:_\n\n${filter.response}`
+          : filter.response;
+
+        await reply(session, groupId, { text: replyText }, rawMsg);
+        // Execute filter action if defined & user is not admin
+        if (filter.action && filter.action !== 'reply' && !isGroupAdminUser) {
+          if (rawMsg?.key?.id) {
+            try {
+              await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+            } catch (e) {}
+          }
+          if (filter.action !== 'delete') {
+            await executePenalty(
+              session,
+              groupId,
+              userId,
+              filter.action,
+              `Filter match: "${filter.trigger}"`,
+              rawMsg
+            );
+          }
+        }
+        return true;
+      }
+    }
+  }
+
+  if (isGroupAdminUser) {
+    logger.debug({ groupId, userId }, 'Skipping destructive content moderation for admin/bot user');
     return false;
   }
 
@@ -1014,54 +1062,8 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 6. Custom Filters & Notes matching
+  // 6. Notes & Rules trigger matching
   if (text) {
-    // Check Filters
-    if (Array.isArray(config.filters)) {
-      for (const filter of config.filters) {
-        if (!filter.trigger) continue;
-        let isMatch = false;
-        if (filter.is_regex) {
-          try {
-            isMatch = new RegExp(filter.trigger, 'i').test(text);
-          } catch (e) {}
-        } else {
-          isMatch =
-            text.toLowerCase() === filter.trigger.toLowerCase() ||
-            text.toLowerCase().includes(filter.trigger.toLowerCase());
-        }
-
-        if (isMatch) {
-          const isFaq = filter.type === 'faq';
-          const replyText = isFaq
-            ? `💡 *FAQ Hint / Automated Help:*\n_The following information from our FAQ might help answer your question:_\n\n${filter.response}`
-            : filter.response;
-
-          await reply(session, groupId, { text: replyText }, rawMsg);
-          // Execute filter action if defined (warn, kick, ban, mute)
-          if (filter.action && filter.action !== 'reply') {
-            if (rawMsg?.key?.id) {
-              try {
-                await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-              } catch (e) {
-                /* ignore */
-              }
-            }
-            if (filter.action !== 'delete') {
-              await executePenalty(
-                session,
-                groupId,
-                userId,
-                filter.action,
-                `Filter match: "${filter.trigger}"`,
-                rawMsg
-              );
-            }
-          }
-          return true;
-        }
-      }
-    }
 
     // Check Notes (trigger via #notename or !notename or exact name)
     if (config.notes && typeof config.notes === 'object') {

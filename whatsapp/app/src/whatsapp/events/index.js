@@ -434,10 +434,11 @@ export function handleIncomingMessages(session) {
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
 
         const personJid = effectiveSenderJid;
-        let isAdminUser = Boolean(msg.key.fromMe || isAdmin(personJid, session));
+        let isGlobalAdmin = Boolean(msg.key.fromMe || isAdmin(personJid, session));
+        let isGroupAdmin = false;
 
-        // In group chats, also verify if user is a WhatsApp Group Admin via groupMetadata
-        if (!isAdminUser && isGroup && session?.sock?.groupMetadata) {
+        // In group chats, check if user is a real WhatsApp Group Admin via groupMetadata
+        if (isGroup && session?.sock?.groupMetadata) {
           try {
             const meta = await session.sock.groupMetadata(senderJid);
             const targetDigits = (personJid || '').split('@')[0].replace(/\D/g, '');
@@ -450,12 +451,14 @@ export function handleIncomingMessages(session) {
               );
             });
             if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
-              isAdminUser = true;
+              isGroupAdmin = true;
             }
           } catch (_metaErr) {
             /* ignore metadata fetch failure */
           }
         }
+
+        const isAdminUser = Boolean(isGlobalAdmin || isGroupAdmin);
 
         const event = {
           id: msg.key.id,
@@ -476,6 +479,7 @@ export function handleIncomingMessages(session) {
           raw: msg,
           session_id: session.id,
           is_admin: isAdminUser,
+          is_group_admin: isGroupAdmin,
         };
 
         triggerWebhook(event);
