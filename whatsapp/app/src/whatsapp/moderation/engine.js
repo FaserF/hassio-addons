@@ -1600,10 +1600,25 @@ export async function handleModerationParticipantUpdate(session, update) {
             if (!userIsAdmin && session?.sock?.groupMetadata) {
               try {
                 const meta = await session.sock.groupMetadata(groupId);
+                const tid = participantJid.split('@')[0].replace(/\D/g, '');
+                let resolvedTid = tid;
+                if (participantJid.endsWith('@lid') && session.contactCache) {
+                  for (const c of session.contactCache.values()) {
+                    const cLid = c.lid ? normalizeJid(c.lid) : '';
+                    const cId = c.id ? normalizeJid(c.id) : '';
+                    if (cLid === normalizeJid(participantJid) || cId === normalizeJid(participantJid)) {
+                      const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
+                      if (pnDigits) {
+                        resolvedTid = pnDigits;
+                        break;
+                      }
+                    }
+                  }
+                }
+
                 const p = meta?.participants?.find((part) => {
                   const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
-                  const tid = participantJid.split('@')[0].replace(/\D/g, '');
-                  return pid === tid || part.id === participantJid;
+                  return pid === tid || pid === resolvedTid || part.id === participantJid;
                 });
                 if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
                   userIsAdmin = true;

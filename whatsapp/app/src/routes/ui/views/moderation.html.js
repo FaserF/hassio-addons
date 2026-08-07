@@ -235,8 +235,8 @@ export default () => `
                         <div class="mod-field-group" style="max-width:320px; margin-bottom:12px;">
                             <label class="mod-field-label">Matching Mode</label>
                             <select id="mod-blacklist-mode" class="mod-select mod-select-sm">
-                                <option value="exact">Exact Word Match (default - e.g. "Schimpfwort")</option>
-                                <option value="contains">Substring / Contains Match (e.g. "Großschimpfworttext")</option>
+                                <option value="exact">Exact Word Match (default - e.g. "badword")</option>
+                                <option value="contains">Substring / Contains Match (e.g. "verybadwordtext")</option>
                             </select>
                             <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Exact match checks standalone words. Substring match checks if the word appears anywhere in the message.</p>
                         </div>

@@ -503,7 +503,7 @@ export function handleIncomingMessages(session) {
         triggerWebhook(event);
         handleFirstContact(session, event);
 
-        // 1. Process as group command (ignoring bot's own outgoing messages)
+        // 1. Process as group command (requiring actual WhatsApp Group Admin status for admin commands)
         let handledAsCommand = false;
         if (text && isGroup && !msg.key?.fromMe) {
           handledAsCommand = await processCommand(
@@ -511,7 +511,7 @@ export function handleIncomingMessages(session) {
             msg,
             text,
             personJid,
-            isAdminUser,
+            isGroupAdmin,
             senderJid
           );
         }
