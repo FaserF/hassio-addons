@@ -982,7 +982,10 @@ export async function handleModerationMessage(session, event) {
       } else {
         // Exact word match (matches standalone word with word boundaries or punctuation)
         const escapedWord = lowerWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const wordBoundaryRegex = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${escapedWord}(?:$|[^\\p{L}\\p{N}_])`, 'ui');
+        const wordBoundaryRegex = new RegExp(
+          `(?:^|[^\\p{L}\\p{N}_])${escapedWord}(?:$|[^\\p{L}\\p{N}_])`,
+          'ui'
+        );
         matched = wordBoundaryRegex.test(lowerText);
       }
 
