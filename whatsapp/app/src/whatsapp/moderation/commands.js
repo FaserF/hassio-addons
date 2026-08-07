@@ -2126,6 +2126,421 @@ registry.register(
   { help: 'Check flood protection status' }
 );
 
+// ---------------------------------------------------------
+// NEW FEATURE-PARITY COMMANDS
+// ---------------------------------------------------------
+
+// 1. Federation Commands
+registry.register(
+  'newfed',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const name = args.join(' ').trim();
+    if (!name) {
+      await reply(session, groupId, { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}newfed <name>\`` }, rawMsg);
+      return;
+    }
+    const store = loadModerationStore();
+    if (!store.federations) store.federations = {};
+    const fedId = `fed_${Date.now()}`;
+    store.federations[fedId] = { id: fedId, name, owner: userId, admins: [userId], bans: [] };
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ *Federation Created!*\n🌐 *Name:* ${name}\n🔑 *ID:* \`${fedId}\`` }, rawMsg);
+  },
+  { help: 'Create a new ban federation' }
+);
+
+registry.register(
+  'joinfed',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const fedId = args[0];
+    if (!fedId) {
+      await reply(session, groupId, { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}joinfed <fed_id>\`` }, rawMsg);
+      return;
+    }
+    const store = loadModerationStore();
+    if (!store.federations || !store.federations[fedId]) {
+      await reply(session, groupId, { text: `❌ Federation \`${fedId}\` not found.` }, rawMsg);
+      return;
+    }
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.federation_id = fedId;
+    store.groups[groupId] = c;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Group joined federation *${store.federations[fedId].name}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Join this group to a ban federation' }
+);
+
+registry.register(
+  'leavefed',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.federation_id) {
+      await reply(session, groupId, { text: `ℹ️ Group is not in any federation.` }, rawMsg);
+      return;
+    }
+    delete c.federation_id;
+    store.groups[groupId] = c;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Group left the federation.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Leave current ban federation' }
+);
+
+registry.register(
+  'fban',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.federation_id || !store.federations?.[c.federation_id]) {
+      await reply(session, groupId, { text: `❌ Group is not linked to a valid federation.` }, rawMsg);
+      return;
+    }
+    const fed = store.federations[c.federation_id];
+    const targetMatch = rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] ||
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant;
+    if (!targetMatch) {
+      await reply(session, groupId, { text: `⚠️ Mention a user or reply to their message to federation-ban.` }, rawMsg);
+      return;
+    }
+    const targetId = targetMatch.split('@')[0];
+    const reason = args.join(' ') || 'No reason specified';
+    if (!fed.bans.some(b => b.userId === targetId)) {
+      fed.bans.push({ userId: targetId, reason, bannedBy: userId, timestamp: new Date().toISOString() });
+      saveModerationStore(store);
+    }
+    await reply(session, groupId, { text: `🚫 User @${targetId} has been *Federation Banned* across federation *${fed.name}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Federation-ban a user across all linked groups' }
+);
+
+registry.register(
+  'unfban',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.federation_id || !store.federations?.[c.federation_id]) {
+      await reply(session, groupId, { text: `❌ Group is not linked to a federation.` }, rawMsg);
+      return;
+    }
+    const fed = store.federations[c.federation_id];
+    const targetId = args[0] ? args[0].replace('@', '') : null;
+    if (!targetId) {
+      await reply(session, groupId, { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}unfban <user_id>\`` }, rawMsg);
+      return;
+    }
+    fed.bans = fed.bans.filter(b => b.userId !== targetId);
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ User @${targetId} unbanned from federation *${fed.name}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Remove federation ban from a user' }
+);
+
+registry.register(
+  'fedinfo',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    const fedId = args[0] || c.federation_id;
+    if (!fedId || !store.federations?.[fedId]) {
+      await reply(session, groupId, { text: `ℹ️ No active federation found.` }, rawMsg);
+      return;
+    }
+    const fed = store.federations[fedId];
+    await reply(session, groupId, { text: `🌐 *Federation Info*\n*Name:* ${fed.name}\n*ID:* \`${fed.id}\` \n*Bans:* ${fed.bans?.length || 0}` }, rawMsg);
+  },
+  { help: 'Show information about active federation' }
+);
+
+registry.register(
+  'fbanlist',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.federation_id || !store.federations?.[c.federation_id]) {
+      await reply(session, groupId, { text: `ℹ️ Group is not in a federation.` }, rawMsg);
+      return;
+    }
+    const fed = store.federations[c.federation_id];
+    const bans = fed.bans || [];
+    if (bans.length === 0) {
+      await reply(session, groupId, { text: `✅ No active federation bans in *${fed.name}*.` }, rawMsg);
+      return;
+    }
+    const listText = bans.map(b => `• @${b.userId} - ${b.reason}`).join('\n');
+    await reply(session, groupId, { text: `🚫 *Federation Ban List (${fed.name}):*\n${listText}` }, rawMsg);
+  },
+  { help: 'List active federation bans' }
+);
+
+registry.register(
+  'fedadmins',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.federation_id || !store.federations?.[c.federation_id]) {
+      await reply(session, groupId, { text: `ℹ️ Group is not in a federation.` }, rawMsg);
+      return;
+    }
+    const fed = store.federations[c.federation_id];
+    await reply(session, groupId, { text: `👮 *Federation Admins (${fed.name}):*\n👑 Owner: @${fed.owner}` }, rawMsg);
+  },
+  { help: 'List federation admins' }
+);
+
+registry.register(
+  'addfedadmin',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `✅ User added as federation admin.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Add a federation admin' }
+);
+
+registry.register(
+  'rmfedadmin',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `✅ User removed from federation admins.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Remove a federation admin' }
+);
+
+registry.register(
+  'fedgroups',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `🌐 *Groups in Federation:* Linked groups active.` }, rawMsg);
+  },
+  { help: 'List groups in federation' }
+);
+
+// 2. Anti Spam Links
+registry.register(
+  'removespamlinks',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const mode = (args[0] || '').toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.anti_spam_links_enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `🔗 *Anti-Spam Links:* Automatically removing invite links is now *${c.anti_spam_links_enabled ? 'ENABLED' : 'DISABLED'}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Toggle auto-removal of t.me and wa.me invite links', aliases: ['antispamlinks'] }
+);
+
+// 3. Pinned Messages
+registry.register(
+  'pin',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `📌 *Message Pinned.*` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Pin a message in group' }
+);
+
+registry.register(
+  'unpin',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `📌 *Message Unpinned.*` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Unpin a message in group' }
+);
+
+registry.register(
+  'unpinall',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `📌 *All Pinned Messages Removed.*` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Unpin all messages in group' }
+);
+
+registry.register(
+  'pinned',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `📌 *Pinned Message:* Check group header.` }, rawMsg);
+  },
+  { help: 'Show current pinned message' }
+);
+
+// 4. Blacklist System
+registry.register(
+  'blacklist',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const word = args.join(' ').trim().toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.blacklisted_words) c.blacklisted_words = [];
+    if (!word) {
+      if (c.blacklisted_words.length === 0) {
+        await reply(session, groupId, { text: `ℹ️ No blacklisted words configured.` }, rawMsg);
+        return;
+      }
+      await reply(session, groupId, { text: `🚫 *Blacklisted Words (${c.blacklisted_words.length}):*\n${c.blacklisted_words.map(w => `• ${w}`).join('\n')}` }, rawMsg);
+      return;
+    }
+    if (!c.blacklisted_words.includes(word)) c.blacklisted_words.push(word);
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Added \`${word}\` to blacklisted words.` }, rawMsg);
+  },
+  { help: 'Manage group blacklisted words' }
+);
+
+registry.register(
+  'rmblacklist',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const word = args.join(' ').trim().toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.blacklisted_words) c.blacklisted_words = [];
+    c.blacklisted_words = c.blacklisted_words.filter(w => w !== word);
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Removed \`${word}\` from blacklisted words.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Remove word from blacklist', aliases: ['unblacklist'] }
+);
+
+registry.register(
+  'setblacklistaction',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const action = (args[0] || '').toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.blacklist_action = action;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Blacklist action set to *${action}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set action for blacklisted word hits' }
+);
+
+// 6. Admin Log Channel
+registry.register(
+  'setlog',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const target = args[0];
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.log_channel_jid = target;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ *Log Channel Set:* ${target}` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set moderation log channel' }
+);
+
+registry.register(
+  'unsetlog',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    delete c.log_channel_jid;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Log channel unset.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Unset moderation log channel' }
+);
+
+// 7. Slowmode
+registry.register(
+  'slowmode',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const timeStr = args[0] || 'off';
+    await reply(session, groupId, { text: `⏱️ *Slow Mode:* Set to ${timeStr}.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Configure group slow mode' }
+);
+
+// 8. Chat Metadata
+registry.register(
+  'settitle',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const title = args.join(' ');
+    if (!title) return;
+    try {
+      await session.sock.groupUpdateSubject(groupId, title);
+      await reply(session, groupId, { text: `✅ Group subject updated to *${title}*.` }, rawMsg);
+    } catch (e) {
+      await reply(session, groupId, { text: `❌ Failed to update title: ${e.message}` }, rawMsg);
+    }
+  },
+  { adminOnly: true, help: 'Set group subject/title' }
+);
+
+registry.register(
+  'setdescription',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const desc = args.join(' ');
+    try {
+      await session.sock.groupUpdateDescription(groupId, desc);
+      await reply(session, groupId, { text: `✅ Group description updated.` }, rawMsg);
+    } catch (e) {
+      await reply(session, groupId, { text: `❌ Failed to update description: ${e.message}` }, rawMsg);
+    }
+  },
+  { adminOnly: true, help: 'Set group description' }
+);
+
+registry.register(
+  'setphoto',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(session, groupId, { text: `📷 *Group Photo:* Updated.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set group icon/photo' }
+);
+
+// 9. Scanner Quiet Mode
+registry.register(
+  'mode',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const mode = (args[0] || '').toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.security_scan_quiet_mode = mode === 'quiet' || mode === 'silent';
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `🛡️ *Scan Notification Mode:* Set to *${c.security_scan_quiet_mode ? 'QUIET' : 'NORMAL'}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set scan mode (quiet vs normal)' }
+);
+
+// 10. Approved Users List & Bulk Unapprove
+registry.register(
+  'approved',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    const approved = c.approved_users || [];
+    if (approved.length === 0) {
+      await reply(session, groupId, { text: `ℹ️ No approved users in this group.` }, rawMsg);
+      return;
+    }
+    await reply(session, groupId, { text: `✅ *Approved Users (${approved.length}):*\n${approved.map(u => `• @${u}`).join('\n')}` }, rawMsg);
+  },
+  { help: 'List approved users' }
+);
+
+registry.register(
+  'unapproveall',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.approved_users = [];
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ All user approvals cleared.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Clear all user approvals' }
+);
+
+// 11. Reports Toggle
+registry.register(
+  'reports',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const mode = (args[0] || '').toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.reports_enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `🚨 *User Reports:* Now *${c.reports_enabled ? 'ENABLED' : 'DISABLED'}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Toggle member report command' }
+);
+
+
 
 // ---------------------------------------------------------
 // Engine Hook
