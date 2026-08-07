@@ -83,6 +83,9 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    notify_bypassed_actions: Boolean(
+      document.getElementById('mod-notify-bypassed-actions')?.checked
+    ),
     blocked_invite_platforms: {
       whatsapp: Boolean(document.getElementById('mod-invite-platform-whatsapp')?.checked),
       telegram: Boolean(document.getElementById('mod-invite-platform-telegram')?.checked),

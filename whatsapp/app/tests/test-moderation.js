@@ -356,6 +356,27 @@ try {
     );
     console.log('✅ PASSED: Anti-spam correctly bypasses group admins');
 
+    // 6.5e2: Group admin sending a link with notify_bypassed_actions enabled
+    antiSpamCfg.antispam.notify_bypassed_actions = true;
+    setGroupModerationConfig(antiSpamGroup, antiSpamCfg);
+    let notifiedMessage = null;
+    const mockSessionNotify = {
+      ...mockSessionAntiSpam,
+      sock: {
+        ...mockSessionAntiSpam.sock,
+        sendMessage: async (_jid, content) => {
+          if (content?.text) notifiedMessage = content.text;
+          return { key: { id: 'notify_test' } };
+        },
+      },
+    };
+    await handleModerationMessage(mockSessionNotify, eventAdminLink);
+    assert(
+      notifiedMessage?.includes('Moderation Bypassed'),
+      'Anti-spam: should send notification when admin bypasses moderation with notify_bypassed_actions enabled'
+    );
+    console.log('✅ PASSED: Anti-spam correctly sends notification when admin bypasses moderation with notify_bypassed_actions enabled');
+
     // 6.5f: matchedText fallback (link-preview style where text == matchedText)
     antiSpamDeleteCalled = false;
     const eventMatchedText = {

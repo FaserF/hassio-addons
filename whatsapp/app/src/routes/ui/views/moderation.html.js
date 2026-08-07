@@ -312,6 +312,13 @@ export default () => `
                                     </div>
                                 </div>
                             </div>
+                            <div class="mod-feature-block mod-feature-block-full" style="margin-top:16px;">
+                                <div class="mod-feature-header">
+                                    <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-comment-slash"></i></div>
+                                    <div><div class="mod-feature-title">Notify Bypassed Moderation Actions</div><div class="mod-feature-desc">Send an explanatory message in group when a moderation action (spam link, lock, blacklist) is intentionally skipped because the sender is a Group Admin.</div></div>
+                                </div>
+                                <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-bypassed-actions"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Notify in group when moderation is bypassed for admins</span></div>
+                            </div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> Save Anti-Spam Config</button></div>
                     </div>

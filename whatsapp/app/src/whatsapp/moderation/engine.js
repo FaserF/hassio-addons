@@ -659,8 +659,7 @@ export async function handleModerationMessage(session, event) {
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
   const config = getGroupModerationConfig(groupId);
-  // Note: Anti-spam invite links, greetings, and captcha are per-feature toggles and should work even if full moderation is disabled
-  if (!config.enabled && !config.anti_spam_links_enabled) return false;
+  if (!config.enabled) return false;
 
   const rawMsg = event.raw;
   let userId = event.sender_number;
@@ -684,6 +683,57 @@ export async function handleModerationMessage(session, event) {
   }
 
   if (config.approved && config.approved.includes(userId)) {
+    if (config.antispam?.notify_bypassed_actions && text && !rawMsg?.key?.fromMe) {
+      let bypassedReason = null;
+      if (config.anti_spam_links_enabled) {
+        const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
+        for (const [platKey, pattern] of Object.entries(SPAM_INVITE_LINK_PATTERNS)) {
+          if (platKey === 'all') continue;
+          if (blockedPlatforms[platKey] !== false && pattern.test(text)) {
+            bypassedReason = `Anti-Spam Invite Link (${platKey})`;
+            break;
+          }
+        }
+      }
+      if (!bypassedReason && config.locks) {
+        const locks = config.locks;
+        if (
+          locks.url?.enabled &&
+          /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|de|net|org|io|me|co|app|xyz))/i.test(text)
+        ) {
+          bypassedReason = 'URL Link Lock';
+        } else if (locks.rtl?.enabled && /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text)) {
+          bypassedReason = 'Right-To-Left (RTL) Lock';
+        } else if (locks.contact?.enabled && event.media_type === 'contact') {
+          bypassedReason = 'Contact Card Lock';
+        } else if (locks.location?.enabled && event.media_type === 'location') {
+          bypassedReason = 'Location Lock';
+        }
+      }
+      if (!bypassedReason && config.blacklist?.words && Array.isArray(config.blacklist.words)) {
+        for (const word of config.blacklist.words) {
+          if (!word) continue;
+          const isMatch =
+            config.blacklist.mode === 'wildcard'
+              ? text.toLowerCase().includes(word.toLowerCase())
+              : new RegExp(`\\b${word}\\b`, 'i').test(text);
+          if (isMatch) {
+            bypassedReason = `Blacklisted Word ("${word}")`;
+            break;
+          }
+        }
+      }
+      if (bypassedReason) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is on the Approved Users Whitelist.`,
+          },
+          rawMsg
+        );
+      }
+    }
     return false; // User is whitelisted, skip moderation
   }
 
@@ -739,6 +789,63 @@ export async function handleModerationMessage(session, event) {
 
   if (isGroupAdminUser) {
     logger.debug({ groupId, userId }, 'Skipping destructive content moderation for admin/bot user');
+    if (config.antispam?.notify_bypassed_actions && text && !rawMsg?.key?.fromMe) {
+      let bypassedReason = null;
+
+      // 1. Anti-spam invite links check
+      if (config.anti_spam_links_enabled) {
+        const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
+        for (const [platKey, pattern] of Object.entries(SPAM_INVITE_LINK_PATTERNS)) {
+          if (platKey === 'all') continue;
+          if (blockedPlatforms[platKey] !== false && pattern.test(text)) {
+            bypassedReason = `Anti-Spam Invite Link (${platKey})`;
+            break;
+          }
+        }
+      }
+
+      // 2. Content locks check if not matched
+      if (!bypassedReason && config.locks) {
+        const locks = config.locks;
+        if (
+          locks.url?.enabled &&
+          /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|de|net|org|io|me|co|app|xyz))/i.test(text)
+        ) {
+          bypassedReason = 'URL Link Lock';
+        } else if (locks.rtl?.enabled && /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text)) {
+          bypassedReason = 'Right-To-Left (RTL) Lock';
+        } else if (locks.contact?.enabled && event.media_type === 'contact') {
+          bypassedReason = 'Contact Card Lock';
+        } else if (locks.location?.enabled && event.media_type === 'location') {
+          bypassedReason = 'Location Lock';
+        }
+      }
+
+      // 3. Blacklist check if not matched
+      if (!bypassedReason && config.blacklist?.words && Array.isArray(config.blacklist.words)) {
+        for (const word of config.blacklist.words) {
+          if (!word) continue;
+          const isMatch = config.blacklist.mode === 'wildcard'
+            ? text.toLowerCase().includes(word.toLowerCase())
+            : new RegExp(`\\b${word}\\b`, 'i').test(text);
+          if (isMatch) {
+            bypassedReason = `Blacklisted Word ("${word}")`;
+            break;
+          }
+        }
+      }
+
+      if (bypassedReason) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is a Group Admin.`,
+          },
+          rawMsg
+        );
+      }
+    }
     return false;
   }
 

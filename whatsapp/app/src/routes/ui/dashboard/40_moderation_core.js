@@ -77,6 +77,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antiraid-max',
   'mod-antiraid-win',
   'mod-antispam-links-enabled',
+  'mod-notify-bypassed-actions',
   'mod-ai-enabled',
   'mod-ai-faq',
   'mod-ai-sentiment',
@@ -773,6 +774,9 @@ async function selectModerationGroup(groupId) {
 
   const antispamLinksE = document.getElementById('mod-antispam-links-enabled');
   if (antispamLinksE) antispamLinksE.checked = Boolean(config.anti_spam_links_enabled);
+
+  const notifyBypassedE = document.getElementById('mod-notify-bypassed-actions');
+  if (notifyBypassedE) notifyBypassedE.checked = Boolean(config.antispam?.notify_bypassed_actions);
 
   const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
   const platforms = ['whatsapp', 'telegram', 'signal', 'instagram', 'discord', 'other'];
