@@ -66,3 +66,4 @@ window.generateGroupTestCommandsModal = generateGroupTestCommandsModal;
 window.closeTestCommandsModal = closeTestCommandsModal;
 window.updateTestCommandsPrefill = updateTestCommandsPrefill;
 window.copyAllFromBlock = copyAllFromBlock;
+window.sendTestSuiteToGroup = sendTestSuiteToGroup;

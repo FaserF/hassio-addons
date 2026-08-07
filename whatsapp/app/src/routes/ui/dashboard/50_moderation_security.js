@@ -124,13 +124,18 @@ async function generateGroupTestCommandsModal() {
 
   let html = `<div style="font-size:12px;display:flex;flex-direction:column;gap:12px;">`;
 
-  // 1. Group Info Banner & Prefill Target Input
+  // 1. Group Info Banner, Prefill Target Input & Send-to-Group button
   html += `
     <div style="padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.3);border-radius:6px;display:flex;flex-direction:column;gap:8px;">
-      <div>
-        <strong>Target Group:</strong> <code>${escapeHtml(currentModGroup)}</code> &middot; 
-        <strong>Prefix:</strong> <code>${escapeHtml(prefix)}</code> &middot; 
-        <strong>Active Commands:</strong> ${activeCmds.length}/${commandsList.length}
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+        <div>
+          <strong>Target Group:</strong> <code>${escapeHtml(currentModGroup)}</code> &middot;
+          <strong>Prefix:</strong> <code>${escapeHtml(prefix)}</code> &middot;
+          <strong>Active Commands:</strong> ${activeCmds.length}/${commandsList.length}
+        </div>
+        <button class="btn btn-primary btn-sm" style="padding:4px 12px;font-size:11px;white-space:nowrap;" onclick="sendTestSuiteToGroup()" title="Send all active commands as a WhatsApp message to this group">
+          <i class="fas fa-paper-plane"></i> Send to Group
+        </button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg);padding:6px 10px;border-radius:4px;border:1px solid var(--border-color);">
         <label style="font-weight:600;white-space:nowrap;color:var(--text-main);"><i class="fas fa-user-tag" style="color:var(--primary);"></i> Prefill User / Phone:</label>
@@ -288,4 +293,54 @@ function copyAllFromBlock(btnBtn) {
 function closeTestCommandsModal() {
   const modal = document.getElementById('test-commands-modal');
   if (modal) modal.classList.remove('show');
+}
+
+async function sendTestSuiteToGroup() {
+  if (!currentModGroup) {
+    showToast('No group selected.', 'warning');
+    return;
+  }
+
+  // Collect all visible command codes from the modal
+  const modal = document.getElementById('test-commands-modal');
+  if (!modal) return;
+  const codes = modal.querySelectorAll('.copyable-block-items code');
+  if (!codes || codes.length === 0) {
+    showToast('No commands to send.', 'warning');
+    return;
+  }
+
+  const lines = Array.from(codes).map((c) => c.innerText.trim()).filter(Boolean);
+  if (lines.length === 0) {
+    showToast('No commands to send.', 'warning');
+    return;
+  }
+
+  const message = lines.join('\n');
+
+  try {
+    const resp = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'send_message',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+        },
+        body: JSON.stringify({
+          number: currentModGroup,
+          message,
+          session_id: typeof currentSession !== 'undefined' ? currentSession : undefined,
+        }),
+      }
+    );
+    if (resp.ok) {
+      showToast('✅ Test suite sent to group!', 'success');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showToast('Failed to send: ' + (err.detail || resp.status), 'danger');
+    }
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'danger');
+  }
 }

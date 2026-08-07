@@ -821,6 +821,64 @@ registry.register(
   { help: 'View the group rules' }
 );
 
+registry.register(
+  'testsuite',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const prefix = config.commands?.prefix || '!';
+    const disabledCmds = new Set(config.commands?.disabled_commands || []);
+    const seen = new Set();
+    const testLines = [];
+
+    for (const [cmd, details] of Object.entries(registry.commands)) {
+      if (seen.has(details)) continue;
+      seen.add(details);
+      if (disabledCmds.has(cmd)) continue;
+
+      let sample;
+      switch (cmd) {
+        case 'setrules':     sample = `${prefix}setrules 1. Be polite.\n2. No spam.`; break;
+        case 'warn':         sample = `${prefix}warn @user Violation of group rules`; break;
+        case 'unwarn':       sample = `${prefix}unwarn @user`; break;
+        case 'mute':         sample = `${prefix}mute @user 10m`; break;
+        case 'tmute':        sample = `${prefix}tmute @user 15m`; break;
+        case 'tban':         sample = `${prefix}tban @user 1h`; break;
+        case 'kick':         sample = `${prefix}kick @user`; break;
+        case 'ban':          sample = `${prefix}ban @user Rule violation`; break;
+        case 'promote':      sample = `${prefix}promote @user`; break;
+        case 'demote':       sample = `${prefix}demote @user`; break;
+        case 'approve':      sample = `${prefix}approve @user`; break;
+        case 'unapprove':    sample = `${prefix}unapprove @user`; break;
+        case 'lock':         sample = `${prefix}lock url`; break;
+        case 'unlock':       sample = `${prefix}unlock url`; break;
+        case 'setwelcome':   sample = `${prefix}setwelcome Welcome {mention} to {group}!`; break;
+        case 'setgoodbye':   sample = `${prefix}setgoodbye Goodbye {name}!`; break;
+        case 'report':       sample = `${prefix}report @user Inappropriate message`; break;
+        case 'notes':        sample = `${prefix}notes #wifi 12345678`; break;
+        case 'filter':       sample = `${prefix}filter wlan -> Password is 1234`; break;
+        case 'setlang':      sample = `${prefix}setlang de`; break;
+        case 'translate':    sample = `${prefix}translate de Hello world`; break;
+        case 'autotranslate':sample = `${prefix}autotranslate on`; break;
+        case 'slowmode':     sample = `${prefix}slowmode 10s`; break;
+        default:             sample = `${prefix}${cmd}`; break;
+      }
+      testLines.push(sample);
+    }
+
+    // Also add custom commands
+    const customCmds = config.commands?.custom_commands || [];
+    for (const c of customCmds) {
+      const cleanCmd = (c.command || '').replace(/^[!/#]+/, '');
+      if (cleanCmd) testLines.push(`${prefix}${cleanCmd}`);
+    }
+
+    const header = `🧪 *Test Suite — Active Commands (${testLines.length})*\n_Prefix: ${prefix}_\n\n`;
+    const body = testLines.join('\n');
+
+    await reply(session, groupId, { text: header + body }, rawMsg);
+  },
+  { adminOnly: true, help: 'Post all active bot commands as test payloads into this group' }
+);
+
 // Admin Commands
 registry.register(
   'warn',
