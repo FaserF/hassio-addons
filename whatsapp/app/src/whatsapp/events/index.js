@@ -442,7 +442,9 @@ export function handleIncomingMessages(session) {
           msg.key?.participantAlt,
           msg.participant,
           msg.key?.remoteJidAlt,
-        ].filter((c) => typeof c === 'string' && (c.endsWith('@s.whatsapp.net') || c.endsWith('@lid')));
+        ].filter(
+          (c) => typeof c === 'string' && (c.endsWith('@s.whatsapp.net') || c.endsWith('@lid'))
+        );
 
         let effectiveSenderJid = senderCandidates[0] || '';
         if (!effectiveSenderJid) {
@@ -486,7 +488,9 @@ export function handleIncomingMessages(session) {
         if (isGroup && session?.sock?.groupMetadata) {
           try {
             const meta = await session.sock.groupMetadata(senderJid);
-            const candidateDigitsList = senderCandidates.map((c) => c.split('@')[0].replace(/\D/g, '')).filter(Boolean);
+            const candidateDigitsList = senderCandidates
+              .map((c) => c.split('@')[0].replace(/\D/g, ''))
+              .filter(Boolean);
 
             // Also check contactCache for LID <-> PN resolution
             if (session.contactCache) {
