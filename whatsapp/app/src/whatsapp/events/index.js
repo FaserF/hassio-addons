@@ -457,18 +457,24 @@ export function handleIncomingMessages(session) {
           senderCandidates.push(effectiveSenderJid);
         }
         let effectiveSenderNumber = effectiveSenderJid ? effectiveSenderJid.split('@')[0].replace(/\D/g, '') : '';
-        if (effectiveSenderJid.endsWith('@lid') && session.contactCache) {
-          for (const c of session.contactCache.values()) {
-            const cLid = c.lid ? normalizeJid(c.lid) : '';
-            const cId = c.id ? normalizeJid(c.id) : '';
-            if (cLid === normalizeJid(effectiveSenderJid) || cId === normalizeJid(effectiveSenderJid)) {
-              const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
-              if (pnDigits) {
-                effectiveSenderNumber = pnDigits;
-                break;
+        if ((!effectiveSenderNumber || effectiveSenderJid.endsWith('@lid')) && session.contactCache) {
+          for (const cand of senderCandidates) {
+            for (const c of session.contactCache.values()) {
+              const cLid = c.lid ? normalizeJid(c.lid) : '';
+              const cId = c.id ? normalizeJid(c.id) : '';
+              if (cLid === normalizeJid(cand) || cId === normalizeJid(cand)) {
+                const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
+                if (pnDigits) {
+                  effectiveSenderNumber = pnDigits;
+                  break;
+                }
               }
             }
+            if (effectiveSenderNumber && !effectiveSenderNumber.startsWith('1576')) break;
           }
+        }
+        if (!effectiveSenderNumber && msg.key?.participant) {
+          effectiveSenderNumber = String(msg.key.participant).split('@')[0].replace(/\D/g, '');
         }
 
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
@@ -501,10 +507,16 @@ export function handleIncomingMessages(session) {
             const part = meta?.participants?.find((p) => {
               const pId = p.id ? normalizeJid(p.id) : '';
               const pDigits = pId.split('@')[0].replace(/\D/g, '');
-              return (
-                candidateDigitsList.includes(pDigits) ||
-                senderCandidates.some((candJid) => pId === normalizeJid(candJid))
-              );
+              if (!pDigits) return false;
+              if (senderCandidates.some((candJid) => pId === normalizeJid(candJid))) return true;
+              return candidateDigitsList.some((cd) => {
+                if (!cd) return false;
+                if (cd === pDigits) return true;
+                if (cd.length >= 7 && pDigits.length >= 7) {
+                  return cd.endsWith(pDigits) || pDigits.endsWith(cd);
+                }
+                return false;
+              });
             });
             if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
               isGroupAdmin = true;
@@ -514,7 +526,7 @@ export function handleIncomingMessages(session) {
           }
         }
 
-        const isAdminUser = Boolean(msg.key.fromMe || isGroupAdmin);
+        const isAdminUser = Boolean(msg.key.fromMe || isGroupAdmin || isAdmin(personJid, session));
 
         const event = {
           id: msg.key.id,

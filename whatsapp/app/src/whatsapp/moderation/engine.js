@@ -659,11 +659,18 @@ export async function handleModerationMessage(session, event) {
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
   const config = getGroupModerationConfig(groupId);
-  if (!config.enabled) return false;
+  // Note: Anti-spam invite links, greetings, and captcha are per-feature toggles and should work even if full moderation is disabled
+  if (!config.enabled && !config.anti_spam_links_enabled) return false;
 
-  const userId = event.sender_number;
-  const text = (event.content || '').trim();
   const rawMsg = event.raw;
+  let userId = event.sender_number;
+  if (!userId || userId === groupId.split('@')[0]) {
+    const rawParticipant = rawMsg?.key?.participant || rawMsg?.participant || rawMsg?.key?.participantAlt;
+    if (typeof rawParticipant === 'string') {
+      userId = rawParticipant.split('@')[0].replace(/\D/g, '');
+    }
+  }
+  const text = (event.content || '').trim();
 
   // Guard: userId must be a valid sender number, not empty or the group JID digits
   if (!userId || userId.includes('@')) return false;

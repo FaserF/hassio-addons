@@ -1535,7 +1535,7 @@ registry.register(
       await reply(session, groupId, { text: '❌ Failed to fetch admin list.' }, rawMsg);
     }
   },
-  { adminOnly: false, aliases: ['admins'], help: 'List all group administrators' }
+  { adminOnly: false, aliases: ['admins', 'admin'], help: 'List all group administrators' }
 );
 
 const LOCK_TYPES = [

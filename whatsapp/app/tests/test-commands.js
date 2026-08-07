@@ -57,6 +57,7 @@ async function runTests() {
   assert(registry.getCommand('info') !== undefined, 'info command is registered');
   assert(registry.getCommand('adminlist') !== undefined, 'adminlist command is registered');
   assert(registry.getCommand('admins') !== undefined, 'admins alias is registered');
+  assert(registry.getCommand('admin') !== undefined, 'admin alias is registered');
   assert(registry.getCommand('locktypes') !== undefined, 'locktypes command is registered');
   assert(registry.getCommand('del') !== undefined, 'del command is registered');
   assert(registry.getCommand('delete') !== undefined, 'delete alias is registered');

@@ -162,6 +162,7 @@ export function getDefaultGroupConfig() {
     antispam: {
       flood_protection: { enabled: false, max_messages: 5, window_seconds: 5, action: 'mute' },
       anti_raid: { enabled: false, max_joins: 5, window_seconds: 10, action: 'lockdown' },
+      notify_bypassed_actions: false, // Send explanation note in group when an admin bypasses a moderation action
       blocked_invite_platforms: {
         whatsapp: true,
         telegram: true,
@@ -263,6 +264,10 @@ export function getGroupModerationConfig(groupId) {
     filters: Array.isArray(existing.filters) ? existing.filters : def.filters,
     notes: { ...def.notes, ...(existing.notes || {}) },
     antispam: {
+      notify_bypassed_actions:
+        existing.antispam?.notify_bypassed_actions !== undefined
+          ? Boolean(existing.antispam.notify_bypassed_actions)
+          : def.antispam.notify_bypassed_actions,
       flood_protection: {
         ...def.antispam.flood_protection,
         ...(existing.antispam?.flood_protection || {}),
