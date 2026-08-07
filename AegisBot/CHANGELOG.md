@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.1 (2026-08-07)
+
+### ✨ Features
+- add contacts cache and check_number API (#902) ([`a44ab335`](https://github.com/FaserF/hassio-addons/commit/a44ab335378d65594085055d68c90994e1e9c998))
+- add supervisor discovery and auto-install/update ([`da8d4b48`](https://github.com/FaserF/hassio-addons/commit/da8d4b4828cbc22bd6a1bc65fd87e47bb0368a22))
+
+### 🐛 Bug Fixes
+- CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
+
+### 🔧 Configuration
+- align APP_VERSION in Dockerfiles with config.yaml version ([`a815262c`](https://github.com/FaserF/hassio-addons/commit/a815262c04aaee9b76412f34840022159dd446b2))
+
+
 ## 0.6.0 (2026-06-16)
 
 ### 🚀 Other
