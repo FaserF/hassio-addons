@@ -2,6 +2,7 @@
 
 let modStoreCache = null;
 let currentModGroup = '';
+let builtinCommandsCache = [];
 
 // ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────
 const _dirty = {
@@ -228,10 +229,23 @@ async function unsavedModalSaveAndSwitch() {
 
 async function loadModerationConfig() {
   try {
-    const [modRes, chatsRes] = await Promise.all([
+    const [modRes, chatsRes, cmdsRes] = await Promise.all([
       fetch(basePath + 'api/moderation/config'),
       fetch(basePath + 'api/chats?session_id=' + currentSession),
+      fetch(basePath + 'api/moderation/commands'),
     ]);
+
+    // Cache built-in commands once at load time
+    try {
+      if (cmdsRes.ok) {
+        const cmdsJson = await cmdsRes.json();
+        if (cmdsJson.success && Array.isArray(cmdsJson.data) && cmdsJson.data.length > 0) {
+          builtinCommandsCache = cmdsJson.data;
+        }
+      }
+    } catch (cmdsErr) {
+      console.warn('Failed to load built-in commands list:', cmdsErr);
+    }
 
     if (modRes.ok) {
       const json = await modRes.json();
@@ -582,16 +596,20 @@ async function selectModerationGroup(groupId) {
     }
   }
 
-  // Dynamically load registered built-in commands from backend endpoint
-  let builtinCommands = [];
-  try {
-    const res = await fetch('/api/moderation/commands');
-    const json = await res.json();
-    if (json.success && Array.isArray(json.data)) {
-      builtinCommands = json.data;
+  // Use cached built-in commands (loaded once at startup in loadModerationConfig)
+  // Fall back to a live fetch only if cache is still empty
+  let builtinCommands = builtinCommandsCache;
+  if (builtinCommands.length === 0) {
+    try {
+      const res = await fetch(basePath + 'api/moderation/commands');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        builtinCommandsCache = json.data;
+        builtinCommands = builtinCommandsCache;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch dynamic commands list:', err);
     }
-  } catch (err) {
-    console.warn('Failed to fetch dynamic commands list, falling back to local list:', err);
   }
 
   // Default Commands Grid UI

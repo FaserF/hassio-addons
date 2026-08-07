@@ -2428,14 +2428,12 @@ registry.register(
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
-    const currentConfig = getGroupModerationConfig(groupId);
     if (!store.groups[groupId]) {
-      store.groups[groupId] = currentConfig;
+      store.groups[groupId] = getGroupModerationConfig(groupId);
     }
     const c = store.groups[groupId];
-    const currentVal = Boolean(
-      config?.anti_spam_links_enabled ?? currentConfig.anti_spam_links_enabled
-    );
+    // Always read from the live store entry (not the stale config param snapshot)
+    const currentVal = Boolean(c.anti_spam_links_enabled);
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.anti_spam_links_enabled = true;
     } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
