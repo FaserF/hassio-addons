@@ -143,21 +143,27 @@ async function generateGroupTestCommandsModal() {
       </div>
     </div>`;
 
-  const userPlaceholder = testTargetUser ? (testTargetUser.startsWith('@') ? testTargetUser : '@' + testTargetUser) : '@user';
+  const userPlaceholder = testTargetUser
+    ? testTargetUser.startsWith('@')
+      ? testTargetUser
+      : '@' + testTargetUser
+    : '@user';
 
   // Helper for copyable block with per-item copy buttons
   const makeCopyableBlock = (title, items, icon = 'fas fa-terminal') => {
     if (!items || items.length === 0) return '';
     const rawText = items.join('\n');
-    
-    let itemsHtml = items.map((item) => {
-      const escapedItem = escapeHtml(item).replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
-      return `
+
+    let itemsHtml = items
+      .map((item) => {
+        const escapedItem = escapeHtml(item).replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
+        return `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--body-bg);border:1px solid var(--border-color);border-radius:4px;margin-bottom:4px;">
           <code style="font-size:11px;white-space:pre-wrap;word-break:break-all;color:var(--text-main);">${escapedItem}</code>
           <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast('Copied command!','success');" title="Copy command"><i class="fas fa-copy"></i></button>
         </div>`;
-    }).join('');
+      })
+      .join('');
 
     return `
       <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;padding:10px;">
@@ -285,7 +291,9 @@ function updateTestCommandsPrefill(val) {
 function copyAllFromBlock(btnBtn) {
   const block = btnBtn.closest('div').parentElement;
   const codes = block.querySelectorAll('.copyable-block-items code');
-  const text = Array.from(codes).map((c) => c.innerText).join('\n');
+  const text = Array.from(codes)
+    .map((c) => c.innerText)
+    .join('\n');
   navigator.clipboard.writeText(text);
   showToast('Copied all commands in block!', 'success');
 }
@@ -310,7 +318,9 @@ async function sendTestSuiteToGroup() {
     return;
   }
 
-  const lines = Array.from(codes).map((c) => c.innerText.trim()).filter(Boolean);
+  const lines = Array.from(codes)
+    .map((c) => c.innerText.trim())
+    .filter(Boolean);
   if (lines.length === 0) {
     showToast('No commands to send.', 'warning');
     return;
@@ -319,21 +329,18 @@ async function sendTestSuiteToGroup() {
   const message = lines.join('\n');
 
   try {
-    const resp = await fetch(
-      (typeof basePath !== 'undefined' ? basePath : '') + 'send_message',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
-        },
-        body: JSON.stringify({
-          number: currentModGroup,
-          message,
-          session_id: typeof currentSession !== 'undefined' ? currentSession : undefined,
-        }),
-      }
-    );
+    const resp = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'send_message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+      },
+      body: JSON.stringify({
+        number: currentModGroup,
+        message,
+        session_id: typeof currentSession !== 'undefined' ? currentSession : undefined,
+      }),
+    });
     if (resp.ok) {
       showToast('✅ Test suite sent to group!', 'success');
     } else {

@@ -102,8 +102,7 @@ export async function getLatestReleases(
     if (Array.isArray(addonReleaseList) && targetAddonVer) {
       const exactMatch = addonReleaseList.find(
         (r) =>
-          r.tag_name &&
-          r.tag_name.replace(/^v/, '').replace(/^whatsapp-/, '') === targetAddonVer
+          r.tag_name && r.tag_name.replace(/^v/, '').replace(/^whatsapp-/, '') === targetAddonVer
       );
       if (exactMatch) addonRelease = exactMatch;
     }

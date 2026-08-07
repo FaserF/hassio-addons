@@ -836,30 +836,78 @@ registry.register(
 
       let sample;
       switch (cmd) {
-        case 'setrules':     sample = `${prefix}setrules 1. Be polite.\n2. No spam.`; break;
-        case 'warn':         sample = `${prefix}warn @user Violation of group rules`; break;
-        case 'unwarn':       sample = `${prefix}unwarn @user`; break;
-        case 'mute':         sample = `${prefix}mute @user 10m`; break;
-        case 'tmute':        sample = `${prefix}tmute @user 15m`; break;
-        case 'tban':         sample = `${prefix}tban @user 1h`; break;
-        case 'kick':         sample = `${prefix}kick @user`; break;
-        case 'ban':          sample = `${prefix}ban @user Rule violation`; break;
-        case 'promote':      sample = `${prefix}promote @user`; break;
-        case 'demote':       sample = `${prefix}demote @user`; break;
-        case 'approve':      sample = `${prefix}approve @user`; break;
-        case 'unapprove':    sample = `${prefix}unapprove @user`; break;
-        case 'lock':         sample = `${prefix}lock url`; break;
-        case 'unlock':       sample = `${prefix}unlock url`; break;
-        case 'setwelcome':   sample = `${prefix}setwelcome Welcome {mention} to {group}!`; break;
-        case 'setgoodbye':   sample = `${prefix}setgoodbye Goodbye {name}!`; break;
-        case 'report':       sample = `${prefix}report @user Inappropriate message`; break;
-        case 'notes':        sample = `${prefix}notes #wifi 12345678`; break;
-        case 'filter':       sample = `${prefix}filter wlan -> Password is 1234`; break;
-        case 'setlang':      sample = `${prefix}setlang de`; break;
-        case 'translate':    sample = `${prefix}translate de Hello world`; break;
-        case 'autotranslate':sample = `${prefix}autotranslate on`; break;
-        case 'slowmode':     sample = `${prefix}slowmode 10s`; break;
-        default:             sample = `${prefix}${cmd}`; break;
+        case 'setrules':
+          sample = `${prefix}setrules 1. Be polite.\n2. No spam.`;
+          break;
+        case 'warn':
+          sample = `${prefix}warn @user Violation of group rules`;
+          break;
+        case 'unwarn':
+          sample = `${prefix}unwarn @user`;
+          break;
+        case 'mute':
+          sample = `${prefix}mute @user 10m`;
+          break;
+        case 'tmute':
+          sample = `${prefix}tmute @user 15m`;
+          break;
+        case 'tban':
+          sample = `${prefix}tban @user 1h`;
+          break;
+        case 'kick':
+          sample = `${prefix}kick @user`;
+          break;
+        case 'ban':
+          sample = `${prefix}ban @user Rule violation`;
+          break;
+        case 'promote':
+          sample = `${prefix}promote @user`;
+          break;
+        case 'demote':
+          sample = `${prefix}demote @user`;
+          break;
+        case 'approve':
+          sample = `${prefix}approve @user`;
+          break;
+        case 'unapprove':
+          sample = `${prefix}unapprove @user`;
+          break;
+        case 'lock':
+          sample = `${prefix}lock url`;
+          break;
+        case 'unlock':
+          sample = `${prefix}unlock url`;
+          break;
+        case 'setwelcome':
+          sample = `${prefix}setwelcome Welcome {mention} to {group}!`;
+          break;
+        case 'setgoodbye':
+          sample = `${prefix}setgoodbye Goodbye {name}!`;
+          break;
+        case 'report':
+          sample = `${prefix}report @user Inappropriate message`;
+          break;
+        case 'notes':
+          sample = `${prefix}notes #wifi 12345678`;
+          break;
+        case 'filter':
+          sample = `${prefix}filter wlan -> Password is 1234`;
+          break;
+        case 'setlang':
+          sample = `${prefix}setlang de`;
+          break;
+        case 'translate':
+          sample = `${prefix}translate de Hello world`;
+          break;
+        case 'autotranslate':
+          sample = `${prefix}autotranslate on`;
+          break;
+        case 'slowmode':
+          sample = `${prefix}slowmode 10s`;
+          break;
+        default:
+          sample = `${prefix}${cmd}`;
+          break;
       }
       testLines.push(sample);
     }
