@@ -61,7 +61,7 @@ jobs:
             if (!body) return;
 
             // 1. Label App based on form selection
-            const regex = /### .*(App|App).*\n\n([^\n]+)/i;
+            const regex = /### .*(App|App).*\r?\n\r?\n([^\r\n]+)/i;
             const match = body.match(regex);
             if (match && match[2] && match[2] !== 'Other' && match[2] !== '_No response_') {
                const start = match[2].trim();
@@ -98,7 +98,7 @@ jobs:
             // 2. Auto-label dev versions
             // Check both version fields in bug reports
             // Pattern matches: "### What version of the App has the issue?" followed by the version
-            const AppVersionRegex = /### .*What version of the App.*\n\n([^\n]+)/i;
+            const AppVersionRegex = /### .*What version of the App.*\r?\n\r?\n([^\r\n]+)/i;
             const AppVersionMatch = body.match(AppVersionRegex);
             if (AppVersionMatch && AppVersionMatch[1]) {
               const AppVersionText = AppVersionMatch[1].trim().toLowerCase();

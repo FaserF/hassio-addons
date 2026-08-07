@@ -699,6 +699,7 @@ async function sendFileMessage(input) {
           url: dataUrl,
           caption: file.name,
           fileName: file.name,
+          mimetype: mime,
           session_id: currentSession,
         }),
       });

@@ -1,3 +1,4 @@
+import mime from 'mime-types';
 import { authMiddleware } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
@@ -216,19 +217,29 @@ export function registerMessagingRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const { number, url, fileName, caption } = req.body;
+        const { number, url, fileName, caption, mimetype, mimeType, mime_type } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
         const connected = await ensureConnected(session);
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
+        const name = fileName || 'document';
+        const resolvedMime =
+          mimetype ||
+          mimeType ||
+          mime_type ||
+          mime.lookup(name) ||
+          mime.lookup(url) ||
+          'application/octet-stream';
+
         const sentMsg = await session.sock.sendMessage(jid, {
           document: { url },
-          fileName: fileName || 'document',
+          fileName: name,
+          mimetype: resolvedMime,
           caption: caption || '',
         });
-        trackSent(session, number, `[Document] ${fileName || 'document'}`);
+        trackSent(session, number, `[Document] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
         res.status(500).json({ detail: err.message });
