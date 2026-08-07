@@ -331,9 +331,30 @@ export function handleIncomingMessages(session) {
           realMsgObj?.documentMessage?.caption ||
           realMsgObj?.audioMessage?.caption ||
           '';
-        // Append matchedText if it contains a URL not already present in text
-        if (matchedText && !text.includes(matchedText)) {
-          text = text ? `${text} ${matchedText}` : matchedText;
+        // Fallback: If primary text extraction is empty or doesn't contain a link/domain,
+        // perform a deep recursive property search on the entire message node to extract any string content / URL.
+        if (!text || !/(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(text)) {
+          const extractStrings = (obj, depth = 0) => {
+            if (!obj || depth > 5) return [];
+            let found = [];
+            if (typeof obj === 'string') {
+              if (obj.trim()) found.push(obj.trim());
+            } else if (typeof obj === 'object') {
+              for (const key of Object.keys(obj)) {
+                // Skip keys that hold raw binary buffers, keys, or IDs
+                if (['mediaKey', 'fileSha256', 'fileEncSha256', 'directPath', 'jpegThumbnail', 'streamingSidecar', 'encApiKey'].includes(key)) continue;
+                found = found.concat(extractStrings(obj[key], depth + 1));
+              }
+            }
+            return found;
+          };
+          const allStrings = extractStrings(msg.message);
+          const urlMatch = allStrings.find((s) => /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s));
+          if (urlMatch && !text.includes(urlMatch)) {
+            text = text ? `${text} ${urlMatch}` : urlMatch;
+          } else if (!text && allStrings.length > 0) {
+            text = allStrings.join(' ');
+          }
         }
         const remoteJidAlt = msg.key.remoteJidAlt;
         let senderJid = msg.key.remoteJid;
@@ -559,7 +580,9 @@ export function handleIncomingMessages(session) {
           }
         }
 
-        const isAdminUser = Boolean(msg.key.fromMe || isGroupAdmin || isAdmin(personJid, session));
+        const isAdminUser = Boolean(
+          msg.key.fromMe || (isGroup ? isGroupAdmin : isAdmin(personJid, session))
+        );
 
         const event = {
           id: msg.key.id,

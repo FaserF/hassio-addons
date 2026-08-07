@@ -971,12 +971,27 @@ registry.register(
         );
         continue;
       }
-      if (isAdmin(targetJid, session)) {
+      // Check if target is a WhatsApp Group Admin via groupMetadata
+      let isTargetGroupAdmin = false;
+      if (session?.sock?.groupMetadata) {
+        try {
+          const meta = await session.sock.groupMetadata(groupId);
+          const tDigits = targetJid.split('@')[0].replace(/\D/g, '');
+          const p = meta?.participants?.find((part) => {
+            const pid = part.id ? part.id.split('@')[0].replace(/\D/g, '') : '';
+            return pid === tDigits || part.id === targetJid;
+          });
+          if (p && (p.admin === 'admin' || p.admin === 'superadmin')) {
+            isTargetGroupAdmin = true;
+          }
+        } catch (_e) {}
+      }
+      if (isTargetGroupAdmin) {
         await reply(
           session,
           groupId,
           {
-            text: `⚠️ Cannot issue warnings to group administrators.`,
+            text: `⚠️ Cannot issue warnings to WhatsApp group administrators.`,
           },
           rawMsg
         );

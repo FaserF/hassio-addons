@@ -1778,8 +1778,8 @@ export async function handleModerationParticipantUpdate(session, update) {
               return;
             }
 
-            // Check if user is an Admin — Admins are exempt from Captcha kick timeout!
-            let userIsAdmin = isAdmin(participantJid, session);
+            // Check if user is a WhatsApp Group Admin — Group Admins are exempt from Captcha kick timeout!
+            let userIsAdmin = false;
 
             // Live check against Baileys group metadata if available
             if (!userIsAdmin && session?.sock?.groupMetadata) {
