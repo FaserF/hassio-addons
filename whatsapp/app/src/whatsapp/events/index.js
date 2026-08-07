@@ -481,9 +481,9 @@ export function handleIncomingMessages(session) {
         triggerWebhook(event);
         handleFirstContact(session, event);
 
-        // 1. Process as group command
+        // 1. Process as group command (ignoring bot's own outgoing messages)
         let handledAsCommand = false;
-        if (text && isGroup) {
+        if (text && isGroup && !msg.key?.fromMe) {
           handledAsCommand = await processCommand(
             session,
             msg,

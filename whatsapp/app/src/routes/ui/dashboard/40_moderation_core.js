@@ -85,6 +85,7 @@ const TRACKED_FIELD_IDS = [
   'mod-trans-mode',
   'mod-fed-select',
   'mod-cmds-enabled',
+  'mod-cmds-multi-enabled',
   'mod-cmds-prefix',
   'mod-cmds-mute-action',
 ];
@@ -612,6 +613,16 @@ async function selectModerationGroup(groupId) {
     }
   }
 
+  // Commands Config UI
+  const cmdsEnabled = document.getElementById('mod-cmds-enabled');
+  if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled !== false);
+  const cmdsMultiEnabled = document.getElementById('mod-cmds-multi-enabled');
+  if (cmdsMultiEnabled) cmdsMultiEnabled.checked = Boolean(config.commands?.multi_command_enabled);
+  const cmdsPrefix = document.getElementById('mod-cmds-prefix');
+  if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
+  const cmdsMuteAct = document.getElementById('mod-cmds-mute-action');
+  if (cmdsMuteAct) cmdsMuteAct.value = config.commands?.mute_action || 'delete';
+
   // Default Commands Grid UI
   const defaultCmdsGrid = document.getElementById('mod-default-cmds-grid');
   if (defaultCmdsGrid) {
@@ -1015,6 +1026,7 @@ async function saveGroupCommands() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
 
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
+  const multi_command_enabled = Boolean(document.getElementById('mod-cmds-multi-enabled')?.checked);
   const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
   const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
 
@@ -1029,6 +1041,7 @@ async function saveGroupCommands() {
   groupConfig.commands = {
     ...(groupConfig.commands || {}),
     enabled,
+    multi_command_enabled,
     prefix,
     mute_action,
     disabled_commands: disabledCmds,

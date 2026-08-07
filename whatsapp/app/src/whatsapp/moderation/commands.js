@@ -2856,12 +2856,15 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   if (rawLines.length === 0) return false;
 
-  // Single command fast path
-  if (rawLines.length === 1) {
+  const multiCmdEnabled = Boolean(config.commands?.multi_command_enabled);
+  const linesToProcess = multiCmdEnabled ? rawLines : [rawLines[0]];
+
+  // Fast path for single command line
+  if (linesToProcess.length === 1) {
     return await executeSingleCommandLine(
       session,
       msg,
-      rawLines[0],
+      linesToProcess[0],
       prefix,
       senderJid,
       isAdminUser,
@@ -2888,7 +2891,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   const commandLinesToExecute = [];
   const detectedConflicts = [];
 
-  for (const line of rawLines) {
+  for (const line of linesToProcess) {
     const parts = line.slice(prefix.length).trim().split(/\s+/);
     if (parts.length > 0 && parts[0]) {
       const cmdStr = parts[0].replace(/[`'"]/g, '').toLowerCase();

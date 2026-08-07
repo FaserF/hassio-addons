@@ -395,6 +395,10 @@ export default () => `
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label">Enable group commands (!help, !warn, !ban, etc.)</span>
                         </div>
+                        <div class="mod-option-row" style="margin-bottom:10px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-multi-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label">Process multiple commands in a single message (default: execute 1st command only)</span>
+                        </div>
                         <div class="mod-field-group" style="max-width:200px; margin-bottom:12px;">
                             <label class="mod-field-label">Command Prefix</label>
                             <input type="text" id="mod-cmds-prefix" class="mod-input" value="!" maxlength="3">

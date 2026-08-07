@@ -283,7 +283,16 @@ async function runTests() {
     "Formatted command inputs ('!ping', `!locktypes`, ```!ping```) handled successfully"
   );
 
-  // Multi-line batch processing & safety conflict test
+  // Ensure mock group has multi_command_enabled set to true for multi-line batch tests
+  const currentCfg = getGroupModerationConfig('1203630123456789@g.us');
+  currentCfg.enabled = true;
+  currentCfg.commands = {
+    ...(currentCfg.commands || {}),
+    enabled: true,
+    prefix: '!',
+    multi_command_enabled: true,
+  };
+  setGroupModerationConfig('1203630123456789@g.us', currentCfg);
   let batchOutputMessages = [];
   const mockSessionBatch = {
     ...mockSession,
