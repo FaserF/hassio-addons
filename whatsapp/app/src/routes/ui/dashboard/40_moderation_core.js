@@ -636,21 +636,47 @@ async function selectModerationGroup(groupId) {
     // Map command name → docs anchor (generated from heading text in moderation.md)
     // Format: "#### N. `!cmd`" → anchor "#n-cmd" (GitHub Pages / just-the-docs convention)
     const CMD_DOC_ANCHORS = {
-      help: '#1-help', ping: '#2-ping', id: '#3-id', rules: '#4-rules',
-      info: '#5-info', adminlist: '#6-adminlist-alias-admins', admins: '#6-adminlist-alias-admins',
-      approved: '#7-approved', locktypes: '#7-locktypes', report: '#8-report',
-      get: '#9-get', notes: '#10-notes', filters: '#11-filters',
-      translate: '#12-translate', tr: '#12-translate',
-      warn: '#13-warn', unwarn: '#14-unwarn', warns: '#15-warns',
-      kick: '#16-kick-alias-ban', ban: '#16-kick-alias-ban',
-      tban: '#17-tban', mute: '#18-mute', tmute: '#19-tmute',
-      unmute: '#20-unmute', del: '#21-del-alias-delete', delete: '#21-del-alias-delete',
-      approve: '#22-approve', unapprove: '#23-unapprove',
-      setrules: '#24-setrules', promote: '#25-promote', demote: '#26-demote',
-      setwelcome: '#27-setwelcome', welcome: '#28-welcome',
-      setgoodbye: '#29-setgoodbye', goodbye: '#30-goodbye',
-      lock: '#31-lock', unlock: '#32-unlock', locks: '#33-locks',
-      save: '#34-save', filter: '#35-filter', stop: '#36-stop',
+      help: '#1-help',
+      ping: '#2-ping',
+      id: '#3-id',
+      rules: '#4-rules',
+      info: '#5-info',
+      adminlist: '#6-adminlist-alias-admins',
+      admins: '#6-adminlist-alias-admins',
+      approved: '#7-approved',
+      locktypes: '#7-locktypes',
+      report: '#8-report',
+      get: '#9-get',
+      notes: '#10-notes',
+      filters: '#11-filters',
+      translate: '#12-translate',
+      tr: '#12-translate',
+      warn: '#13-warn',
+      unwarn: '#14-unwarn',
+      warns: '#15-warns',
+      kick: '#16-kick-alias-ban',
+      ban: '#16-kick-alias-ban',
+      tban: '#17-tban',
+      mute: '#18-mute',
+      tmute: '#19-tmute',
+      unmute: '#20-unmute',
+      del: '#21-del-alias-delete',
+      delete: '#21-del-alias-delete',
+      approve: '#22-approve',
+      unapprove: '#23-unapprove',
+      setrules: '#24-setrules',
+      promote: '#25-promote',
+      demote: '#26-demote',
+      setwelcome: '#27-setwelcome',
+      welcome: '#28-welcome',
+      setgoodbye: '#29-setgoodbye',
+      goodbye: '#30-goodbye',
+      lock: '#31-lock',
+      unlock: '#32-unlock',
+      locks: '#33-locks',
+      save: '#34-save',
+      filter: '#35-filter',
+      stop: '#36-stop',
       setlang: '#37-setlang',
     };
 
@@ -675,7 +701,6 @@ async function selectModerationGroup(groupId) {
     const searchBox = document.getElementById('mod-default-cmds-search');
     if (searchBox) searchBox.value = '';
   }
-
 
   // Custom Commands List UI
   const customCmdsList = document.getElementById('mod-custom-cmds-list');
@@ -1116,7 +1141,8 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
     if (!emptyEl) {
       emptyEl = document.createElement('div');
       emptyEl.className = 'cmd-search-empty empty-state';
-      emptyEl.style.cssText = 'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
+      emptyEl.style.cssText =
+        'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
       grid.appendChild(emptyEl);
     }
     emptyEl.textContent = `No commands matching "${query}"`;
@@ -1126,7 +1152,6 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
   }
 };
 window.toggleAllDefaultCommands = toggleAllDefaultCommands;
-
 
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');

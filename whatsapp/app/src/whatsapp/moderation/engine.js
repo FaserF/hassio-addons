@@ -908,7 +908,10 @@ export async function handleModerationMessage(session, event) {
   ) {
     if (await triggerLock('url', 'Links / URLs')) return true;
   }
-  if (locks.invite?.enabled && /(https?:\/\/)?(t\.me|telegram\.me|chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)) {
+  if (
+    locks.invite?.enabled &&
+    /(https?:\/\/)?(t\.me|telegram\.me|chat\.whatsapp\.com\/|wa\.me\/)/i.test(text)
+  ) {
     if (await triggerLock('invite', 'Group Invite Links')) return true;
   }
   if (
@@ -943,7 +946,13 @@ export async function handleModerationMessage(session, event) {
       /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+/]+/i;
     const inviteMatch = invitePattern.test(text);
     logger.debug(
-      { groupId, userId, anti_spam_links_enabled: true, textSnippet: text.slice(0, 80), inviteMatch },
+      {
+        groupId,
+        userId,
+        anti_spam_links_enabled: true,
+        textSnippet: text.slice(0, 80),
+        inviteMatch,
+      },
       '🔗 Anti-spam link check'
     );
     if (inviteMatch) {
@@ -951,7 +960,10 @@ export async function handleModerationMessage(session, event) {
         try {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
         } catch (e) {
-          logger.warn({ groupId, userId, err: e?.message }, 'Anti-spam: message delete failed (bot may not be admin)');
+          logger.warn(
+            { groupId, userId, err: e?.message },
+            'Anti-spam: message delete failed (bot may not be admin)'
+          );
         }
       }
 
@@ -1613,7 +1625,10 @@ export async function handleModerationParticipantUpdate(session, update) {
                   for (const c of session.contactCache.values()) {
                     const cLid = c.lid ? normalizeJid(c.lid) : '';
                     const cId = c.id ? normalizeJid(c.id) : '';
-                    if (cLid === normalizeJid(participantJid) || cId === normalizeJid(participantJid)) {
+                    if (
+                      cLid === normalizeJid(participantJid) ||
+                      cId === normalizeJid(participantJid)
+                    ) {
                       const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
                       if (pnDigits) {
                         resolvedTid = pnDigits;

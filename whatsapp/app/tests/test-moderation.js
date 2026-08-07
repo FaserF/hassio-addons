@@ -241,9 +241,18 @@ try {
     };
     const tgHandled = await handleModerationMessage(mockSessionAntiSpam, eventTgLink);
     assert.strictEqual(tgHandled, true, 'Anti-spam: Telegram invite link should be handled');
-    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: Telegram link message should be deleted');
-    assert(antiSpamReplySent?.includes('Anti-Spam Link'), 'Anti-spam: reply should mention Anti-Spam Link');
-    console.log('✅ PASSED: Anti-spam correctly blocks Telegram invite link (https://t.me/joinchat/...)');
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      true,
+      'Anti-spam: Telegram link message should be deleted'
+    );
+    assert(
+      antiSpamReplySent?.includes('Anti-Spam Link'),
+      'Anti-spam: reply should mention Anti-Spam Link'
+    );
+    console.log(
+      '✅ PASSED: Anti-spam correctly blocks Telegram invite link (https://t.me/joinchat/...)'
+    );
 
     // 6.5b: WhatsApp group link
     antiSpamDeleteCalled = false;
@@ -257,7 +266,11 @@ try {
     };
     const waHandled = await handleModerationMessage(mockSessionAntiSpam, eventWaLink);
     assert.strictEqual(waHandled, true, 'Anti-spam: WhatsApp group link should be handled');
-    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: WhatsApp group link message should be deleted');
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      true,
+      'Anti-spam: WhatsApp group link message should be deleted'
+    );
     console.log('✅ PASSED: Anti-spam correctly blocks WhatsApp group invite link');
 
     // 6.5c: wa.me user link
@@ -272,7 +285,11 @@ try {
     };
     const waMeHandled = await handleModerationMessage(mockSessionAntiSpam, eventWaMeLink);
     assert.strictEqual(waMeHandled, true, 'Anti-spam: wa.me link should be handled');
-    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: wa.me link message should be deleted');
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      true,
+      'Anti-spam: wa.me link message should be deleted'
+    );
     console.log('✅ PASSED: Anti-spam correctly blocks wa.me user link');
 
     // 6.5d: Normal message should NOT be blocked
@@ -286,7 +303,11 @@ try {
       raw: { key: { id: 'as_normal' } },
     };
     await handleModerationMessage(mockSessionAntiSpam, eventNormal);
-    assert.strictEqual(antiSpamDeleteCalled, false, 'Anti-spam: normal message should NOT be deleted');
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      false,
+      'Anti-spam: normal message should NOT be deleted'
+    );
     console.log('✅ PASSED: Anti-spam correctly ignores normal messages');
 
     // 6.5e: Group admin sending a link should NOT be blocked
@@ -300,7 +321,11 @@ try {
       raw: { key: { id: 'as_admin' } },
     };
     await handleModerationMessage(mockSessionAntiSpam, eventAdminLink);
-    assert.strictEqual(antiSpamDeleteCalled, false, 'Anti-spam: group admin invite link should NOT be deleted');
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      false,
+      'Anti-spam: group admin invite link should NOT be deleted'
+    );
     console.log('✅ PASSED: Anti-spam correctly bypasses group admins');
 
     // 6.5f: matchedText fallback (link-preview style where text == matchedText)
@@ -315,15 +340,22 @@ try {
       raw: { key: { id: 'as_preview' } },
     };
     const previewHandled = await handleModerationMessage(mockSessionAntiSpam, eventMatchedText);
-    assert.strictEqual(previewHandled, true, 'Anti-spam: link-preview style message should be handled');
-    assert.strictEqual(antiSpamDeleteCalled, true, 'Anti-spam: link-preview message should be deleted');
+    assert.strictEqual(
+      previewHandled,
+      true,
+      'Anti-spam: link-preview style message should be handled'
+    );
+    assert.strictEqual(
+      antiSpamDeleteCalled,
+      true,
+      'Anti-spam: link-preview message should be deleted'
+    );
     console.log('✅ PASSED: Anti-spam correctly handles link-preview style messages');
 
     // Cleanup
     antiSpamCfg.anti_spam_links_enabled = false;
     setGroupModerationConfig(antiSpamGroup, antiSpamCfg);
   }
-
 
   // Test 7: Consolidated Join Message (Welcome + Rules + Captcha in ONE single message)
   groupConfig.greetings.welcome_enabled = true;
