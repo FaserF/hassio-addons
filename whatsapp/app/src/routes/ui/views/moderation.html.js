@@ -291,7 +291,17 @@ export default () => `
                                     <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-link"></i></div>
                                     <div><div class="mod-feature-title">Anti-Spam Invite Links Removal</div><div class="mod-feature-desc">Automatically delete t.me, wa.me, and unauthorized chat invite links.</div></div>
                                 </div>
-                                <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
+                                <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
+                                <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; padding:10px; font-size:12px;">
+                                    <div style="font-weight:600; color:var(--text-muted); margin-bottom:6px;"><i class="fas fa-filter"></i> Automatically Monitored &amp; Filtered Link Patterns:</div>
+                                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">t.me/*</span>
+                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">telegram.me/*</span>
+                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">wa.me/*</span>
+                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">wa.link/*</span>
+                                        <span class="badge badge-info" style="font-family:monospace; font-size:11px;">chat.whatsapp.com/*</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> Save Anti-Spam Config</button></div>

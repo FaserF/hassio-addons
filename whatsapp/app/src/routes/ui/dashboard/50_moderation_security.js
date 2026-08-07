@@ -101,16 +101,18 @@ async function generateGroupTestCommandsModal() {
   const config = modStoreCache?.groups?.[currentModGroup] || {};
   const prefix = config.commands?.prefix || '!';
 
-  // Fetch dynamic built-in commands
-  let commandsList = [];
-  try {
-    const res = await fetch('/api/moderation/commands');
-    const json = await res.json();
-    if (json.success && Array.isArray(json.data)) {
-      commandsList = json.data;
+  // Use cached commands or fetch with basePath
+  let commandsList = typeof builtinCommandsCache !== 'undefined' ? builtinCommandsCache : [];
+  if (!commandsList || commandsList.length === 0) {
+    try {
+      const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        commandsList = json.data;
+      }
+    } catch (_e) {
+      /* fallback */
     }
-  } catch (_e) {
-    /* fallback */
   }
 
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
@@ -143,64 +145,35 @@ async function generateGroupTestCommandsModal() {
   const activeTestPayloads = activeCmds.map((c) => {
     const p = prefix;
     switch (c.cmd) {
-      case 'setrules':
-        return `${p}setrules 1. Be polite and respectful.\\n2. No spam links allowed.`;
-      case 'warn':
-        return `${p}warn @user Violation of group rules`;
-      case 'unwarn':
-        return `${p}unwarn @user`;
-      case 'mute':
-        return `${p}mute @user 10m`;
-      case 'tmute':
-        return `${p}tmute @user 15m`;
-      case 'tban':
-        return `${p}tban @user 1h`;
-      case 'kick':
-        return `${p}kick @user`;
-      case 'ban':
-        return `${p}ban @user Rule violation`;
-      case 'promote':
-        return `${p}promote @user`;
-      case 'demote':
-        return `${p}demote @user`;
-      case 'approve':
-        return `${p}approve @user`;
-      case 'unapprove':
-        return `${p}unapprove @user`;
-      case 'lock':
-        return `${p}lock url`;
-      case 'unlock':
-        return `${p}unlock url`;
-      case 'setwelcome':
-        return `${p}setwelcome Welcome {mention} to {group}!`;
-      case 'setgoodbye':
-        return `${p}setgoodbye Goodbye {name}!`;
-      case 'report':
-        return `${p}report @user Inappropriate message content`;
-      case 'notes':
-        return `${p}notes #wifi 12345678`;
-      case 'filter':
-        return `${p}filter wlan -> Password is 1234`;
-      case 'setlang':
-        return `${p}setlang de`;
-      case 'translate':
-        return `${p}translate de Hello world`;
-      case 'removespamlinks':
-        return `${p}removespamlinks on`;
-      case 'autotranslate':
-        return `${p}autotranslate on`;
-      case 'slowmode':
-        return `${p}slowmode 10s`;
-      default:
-        return `${p}${c.cmd}`;
+      case 'setrules': return `${p}setrules 1. Be polite and respectful.\\n2. No spam links allowed.`;
+      case 'warn': return `${p}warn @user Violation of group rules`;
+      case 'unwarn': return `${p}unwarn @user`;
+      case 'mute': return `${p}mute @user 10m`;
+      case 'tmute': return `${p}tmute @user 15m`;
+      case 'tban': return `${p}tban @user 1h`;
+      case 'kick': return `${p}kick @user`;
+      case 'ban': return `${p}ban @user Rule violation`;
+      case 'promote': return `${p}promote @user`;
+      case 'demote': return `${p}demote @user`;
+      case 'approve': return `${p}approve @user`;
+      case 'unapprove': return `${p}unapprove @user`;
+      case 'lock': return `${p}lock url`;
+      case 'unlock': return `${p}unlock url`;
+      case 'setwelcome': return `${p}setwelcome Welcome {mention} to {group}!`;
+      case 'setgoodbye': return `${p}setgoodbye Goodbye {name}!`;
+      case 'report': return `${p}report @user Inappropriate message content`;
+      case 'notes': return `${p}notes #wifi 12345678`;
+      case 'filter': return `${p}filter wlan -> Password is 1234`;
+      case 'setlang': return `${p}setlang de`;
+      case 'translate': return `${p}translate de Hello world`;
+      case 'removespamlinks': return `${p}removespamlinks on`;
+      case 'autotranslate': return `${p}autotranslate on`;
+      case 'slowmode': return `${p}slowmode 10s`;
+      default: return `${p}${c.cmd}`;
     }
   });
 
-  html += makeCopyableBlock(
-    'Built-in Moderation Commands (Sample Payloads)',
-    activeTestPayloads,
-    'fas fa-terminal'
-  );
+  html += makeCopyableBlock('Built-in Moderation Commands (Sample Payloads)', activeTestPayloads, 'fas fa-terminal');
 
   // 3. Spam & Link Triggers (Telegram, WA, Chat Invites)
   const inviteTestPayloads = [
@@ -210,11 +183,7 @@ async function generateGroupTestCommandsModal() {
     'https://wa.me/491761234567',
     'https://wa.link/spamcode',
   ];
-  html += makeCopyableBlock(
-    'Fake Anti-Spam & Invite Link Triggers (t.me / wa.me / chat.whatsapp.com)',
-    inviteTestPayloads,
-    'fas fa-link'
-  );
+  html += makeCopyableBlock('Fake Anti-Spam & Invite Link Triggers (t.me / wa.me / chat.whatsapp.com)', inviteTestPayloads, 'fas fa-link');
 
   // 4. Custom Mapped Commands
   const customCmds = config.commands?.custom_commands || [];
@@ -238,10 +207,10 @@ async function generateGroupTestCommandsModal() {
 
   html += `</div>`;
   container.innerHTML = html;
-  modal.style.display = 'flex';
+  modal.classList.add('show');
 }
 
 function closeTestCommandsModal() {
   const modal = document.getElementById('test-commands-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
 }

@@ -433,27 +433,6 @@ export function handleIncomingMessages(session) {
 
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
 
-        const event = {
-          id: msg.key.id,
-          type: eventType,
-          content: text,
-          vote: vote,
-          sender: senderJid,
-          sender_name: senderName,
-          from: senderJid,
-          sender_number: effectiveSenderNumber,
-          is_group: isGroup,
-          is_forwarded: isForwarded,
-          media_url: mediaUrl,
-          media_path: mediaPath,
-          media_type: mediaType,
-          media_mimetype: mimeType,
-          caption: caption,
-          raw: msg,
-          session_id: session.id,
-          is_admin: isAdminUser,
-        };
-
         const personJid = effectiveSenderJid;
         let isAdminUser = Boolean(msg.key.fromMe || isAdmin(personJid, session));
 
@@ -477,6 +456,27 @@ export function handleIncomingMessages(session) {
             /* ignore metadata fetch failure */
           }
         }
+
+        const event = {
+          id: msg.key.id,
+          type: eventType,
+          content: text,
+          vote: vote,
+          sender: senderJid,
+          sender_name: senderName,
+          from: senderJid,
+          sender_number: effectiveSenderNumber,
+          is_group: isGroup,
+          is_forwarded: isForwarded,
+          media_url: mediaUrl,
+          media_path: mediaPath,
+          media_type: mediaType,
+          media_mimetype: mimeType,
+          caption: caption,
+          raw: msg,
+          session_id: session.id,
+          is_admin: isAdminUser,
+        };
 
         triggerWebhook(event);
         handleFirstContact(session, event);
