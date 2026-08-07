@@ -74,6 +74,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antiraid-enabled',
   'mod-antiraid-max',
   'mod-antiraid-win',
+  'mod-antispam-links-enabled',
   'mod-ai-enabled',
   'mod-ai-faq',
   'mod-ai-sentiment',
@@ -593,6 +594,9 @@ function selectModerationGroup(groupId) {
     { cmd: 'warn', label: '!warn' },
     { cmd: 'warns', label: '!warns' },
     { cmd: 'unwarn', label: '!unwarn' },
+    { cmd: 'resetwarn', label: '!resetwarn' },
+    { cmd: 'setwarnlimit', label: '!setwarnlimit' },
+    { cmd: 'setwarnaction', label: '!setwarnaction' },
     { cmd: 'kick', label: '!kick' },
     { cmd: 'ban', label: '!ban' },
     { cmd: 'mute', label: '!mute' },
@@ -601,21 +605,53 @@ function selectModerationGroup(groupId) {
     { cmd: 'tmute', label: '!tmute' },
     { cmd: 'promote', label: '!promote' },
     { cmd: 'demote', label: '!demote' },
+    { cmd: 'approve', label: '!approve' },
+    { cmd: 'unapprove', label: '!unapprove' },
+    { cmd: 'approved', label: '!approved' },
+    { cmd: 'unapproveall', label: '!unapproveall' },
     { cmd: 'setrules', label: '!setrules' },
     { cmd: 'lock', label: '!lock' },
     { cmd: 'unlock', label: '!unlock' },
     { cmd: 'locks', label: '!locks' },
     { cmd: 'report', label: '!report' },
+    { cmd: 'reports', label: '!reports' },
     { cmd: 'notes', label: '!notes' },
     { cmd: 'save', label: '!save' },
     { cmd: 'get', label: '!get' },
     { cmd: 'filter', label: '!filter' },
     { cmd: 'filters', label: '!filters' },
     { cmd: 'stop', label: '!stop' },
+    { cmd: 'setwelcome', label: '!setwelcome' },
     { cmd: 'welcome', label: '!welcome' },
+    { cmd: 'setgoodbye', label: '!setgoodbye' },
     { cmd: 'goodbye', label: '!goodbye' },
     { cmd: 'del', label: '!del' },
     { cmd: 'setlang', label: '!setlang' },
+    { cmd: 'autotranslate', label: '!autotranslate' },
+    { cmd: 'removespamlinks', label: '!removespamlinks' },
+    { cmd: 'flood', label: '!flood' },
+    { cmd: 'mode', label: '!mode' },
+    { cmd: 'blacklist', label: '!blacklist' },
+    { cmd: 'rmblacklist', label: '!rmblacklist' },
+    { cmd: 'setblacklistaction', label: '!setblacklistaction' },
+    { cmd: 'pin', label: '!pin' },
+    { cmd: 'unpin', label: '!unpin' },
+    { cmd: 'unpinall', label: '!unpinall' },
+    { cmd: 'pinned', label: '!pinned' },
+    { cmd: 'slowmode', label: '!slowmode' },
+    { cmd: 'setlog', label: '!setlog' },
+    { cmd: 'unsetlog', label: '!unsetlog' },
+    { cmd: 'settitle', label: '!settitle' },
+    { cmd: 'setdescription', label: '!setdescription' },
+    { cmd: 'setphoto', label: '!setphoto' },
+    { cmd: 'newfed', label: '!newfed' },
+    { cmd: 'joinfed', label: '!joinfed' },
+    { cmd: 'leavefed', label: '!leavefed' },
+    { cmd: 'fban', label: '!fban' },
+    { cmd: 'unfban', label: '!unfban' },
+    { cmd: 'fedinfo', label: '!fedinfo' },
+    { cmd: 'fbanlist', label: '!fbanlist' },
+    { cmd: 'fedadmins', label: '!fedadmins' },
   ];
 
   // Commands
@@ -707,6 +743,9 @@ function selectModerationGroup(groupId) {
   if (raidMax) raidMax.value = config.antispam?.anti_raid?.max_joins || 5;
   const raidWin = document.getElementById('mod-antiraid-win');
   if (raidWin) raidWin.value = config.antispam?.anti_raid?.window_seconds || 10;
+
+  const antispamLinksE = document.getElementById('mod-antispam-links-enabled');
+  if (antispamLinksE) antispamLinksE.checked = Boolean(config.anti_spam_links_enabled);
 
   // Muted Users List UI
   const mutedList = document.getElementById('mod-muted-users-list');

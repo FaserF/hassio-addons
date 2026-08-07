@@ -81,6 +81,9 @@ async function saveGroupAntispam() {
       action: 'lockdown',
     },
   };
+  groupConfig.anti_spam_links_enabled = Boolean(
+    document.getElementById('mod-antispam-links-enabled')?.checked
+  );
   await saveGroupConfig(groupConfig);
   markClean();
   showToast('Anti-Spam & Anti-Raid saved!', 'success');

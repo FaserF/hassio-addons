@@ -285,6 +285,13 @@ export default () => `
                                 <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antiraid-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable anti-raid shield</span></div>
                                 <div class="mod-rate-row"><span class="mod-rate-label">Max</span><input type="number" id="mod-antiraid-max" class="mod-number-input" value="5" min="1" max="100"><span class="mod-rate-label">joins in</span><input type="number" id="mod-antiraid-win" class="mod-number-input" value="10" min="1" max="300"><span class="mod-rate-label">seconds</span></div>
                             </div>
+                            <div class="mod-feature-block mod-feature-block-full" style="margin-top:16px;">
+                                <div class="mod-feature-header">
+                                    <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-link"></i></div>
+                                    <div><div class="mod-feature-title">Anti-Spam Invite Links Removal</div><div class="mod-feature-desc">Automatically delete t.me, wa.me, and unauthorized chat invite links.</div></div>
+                                </div>
+                                <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
+                            </div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> Save Anti-Spam Config</button></div>
                     </div>
