@@ -4,13 +4,7 @@ function isNewerVersion(curr, latest) {
   if (!curr || !latest) return false;
   const cleanC = curr.replace(/^v/, '').trim();
   const cleanL = latest.replace(/^v/, '').trim();
-  if (
-    !cleanL ||
-    cleanC === cleanL ||
-    cleanC === 'Unknown' ||
-    cleanC.includes('dev') ||
-    cleanC.includes('edge')
-  ) {
+  if (!cleanL || cleanC === cleanL || cleanC === 'Unknown') {
     return false;
   }
   const partsC = cleanC.split('.').map((p) => parseInt(p, 10) || 0);

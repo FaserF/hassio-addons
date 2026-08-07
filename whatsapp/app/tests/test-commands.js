@@ -381,8 +381,7 @@ async function runTests() {
     true,
     testGroupJid
   );
-  const cfgAfter1 =
-    loadModerationStore().groups[testGroupJid] || getGroupModerationConfig(testGroupJid);
+  const cfgAfter1 = getGroupModerationConfig(testGroupJid);
   assert(
     cfgAfter1.anti_spam_links_enabled === !initialState,
     '!removespamlinks without arguments correctly toggles state'
@@ -396,10 +395,9 @@ async function runTests() {
     true,
     testGroupJid
   );
-  const cfgAfter2 =
-    loadModerationStore().groups[testGroupJid] || getGroupModerationConfig(testGroupJid);
+  const cfgAfter2 = getGroupModerationConfig(testGroupJid);
   assert(
-    cfgAfter2.anti_spam_links_enabled === initialState,
+    cfgAfter2.anti_spam_links_enabled === Boolean(initialState),
     '!removespamlinks second invocation toggles state back'
   );
 

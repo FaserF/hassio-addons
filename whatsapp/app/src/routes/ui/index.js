@@ -581,6 +581,21 @@ export function renderDashboard(sessionId) {
         }
     });
 
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            var openModals = document.querySelectorAll('.modal-overlay.show, .modal-overlay[style*="display: block"], .modal-overlay[style*="display: flex"]');
+            openModals.forEach(function (m) {
+                if (m.id === 'confirm-modal' && typeof closeConfirm === 'function') {
+                    closeConfirm(false);
+                } else if (typeof m.style === 'object' && m.style.display && m.style.display !== 'none') {
+                    m.style.display = 'none';
+                } else {
+                    m.classList.remove('show');
+                }
+            });
+        }
+    });
+
     // Restore sidebar state from last visit (default: expanded)
     var sidebar = document.querySelector('.sidebar');
     try {

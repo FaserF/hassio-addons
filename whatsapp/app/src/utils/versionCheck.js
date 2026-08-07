@@ -59,9 +59,16 @@ export async function getLatestReleases(forceRefresh = false) {
 
   try {
     // 1. Fetch Integration latest release (FaserF/ha-whatsapp)
-    const intRelease = await fetchJson(
-      'https://api.github.com/repos/FaserF/ha-whatsapp/releases/latest'
+    let intReleaseList = await fetchJson(
+      'https://api.github.com/repos/FaserF/ha-whatsapp/releases'
     );
+    if (!Array.isArray(intReleaseList)) {
+      const single = await fetchJson(
+        'https://api.github.com/repos/FaserF/ha-whatsapp/releases/latest'
+      );
+      if (single) intReleaseList = [single];
+    }
+    const intRelease = Array.isArray(intReleaseList) ? intReleaseList[0] : null;
     if (intRelease && intRelease.tag_name) {
       cache.data.latestIntegrationVersion = intRelease.tag_name.replace(/^v/, '');
       cache.data.integrationChangelog = intRelease.body || 'No release notes available.';
@@ -70,9 +77,16 @@ export async function getLatestReleases(forceRefresh = false) {
     }
 
     // 2. Fetch Addon latest release (FaserF/hassio-addons)
-    const addonRelease = await fetchJson(
-      'https://api.github.com/repos/FaserF/hassio-addons/releases/latest'
+    let addonReleaseList = await fetchJson(
+      'https://api.github.com/repos/FaserF/hassio-addons/releases'
     );
+    if (!Array.isArray(addonReleaseList)) {
+      const single = await fetchJson(
+        'https://api.github.com/repos/FaserF/hassio-addons/releases/latest'
+      );
+      if (single) addonReleaseList = [single];
+    }
+    const addonRelease = Array.isArray(addonReleaseList) ? addonReleaseList[0] : null;
     if (addonRelease && addonRelease.tag_name) {
       cache.data.latestAddonVersion = addonRelease.tag_name
         .replace(/^v/, '')
