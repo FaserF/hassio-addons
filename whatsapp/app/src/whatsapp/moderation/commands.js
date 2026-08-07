@@ -2119,7 +2119,10 @@ registry.register(
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
-    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!store.groups[groupId]) {
+      store.groups[groupId] = getGroupModerationConfig(groupId);
+    }
+    const c = store.groups[groupId];
     if (!c.translation) c.translation = {};
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.translation.enabled = true;
@@ -2425,7 +2428,10 @@ registry.register(
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
-    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!store.groups[groupId]) {
+      store.groups[groupId] = getGroupModerationConfig(groupId);
+    }
+    const c = store.groups[groupId];
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.anti_spam_links_enabled = true;
     } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
@@ -2687,7 +2693,10 @@ registry.register(
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
-    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!store.groups[groupId]) {
+      store.groups[groupId] = getGroupModerationConfig(groupId);
+    }
+    const c = store.groups[groupId];
     if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
       c.reports_enabled = true;
     } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
