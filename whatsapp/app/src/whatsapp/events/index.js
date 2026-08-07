@@ -342,14 +342,27 @@ export function handleIncomingMessages(session) {
             } else if (typeof obj === 'object') {
               for (const key of Object.keys(obj)) {
                 // Skip keys that hold raw binary buffers, keys, or IDs
-                if (['mediaKey', 'fileSha256', 'fileEncSha256', 'directPath', 'jpegThumbnail', 'streamingSidecar', 'encApiKey'].includes(key)) continue;
+                if (
+                  [
+                    'mediaKey',
+                    'fileSha256',
+                    'fileEncSha256',
+                    'directPath',
+                    'jpegThumbnail',
+                    'streamingSidecar',
+                    'encApiKey',
+                  ].includes(key)
+                )
+                  continue;
                 found = found.concat(extractStrings(obj[key], depth + 1));
               }
             }
             return found;
           };
           const allStrings = extractStrings(msg.message);
-          const urlMatch = allStrings.find((s) => /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s));
+          const urlMatch = allStrings.find((s) =>
+            /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s)
+          );
           if (urlMatch && !text.includes(urlMatch)) {
             text = text ? `${text} ${urlMatch}` : urlMatch;
           } else if (!text && allStrings.length > 0) {
