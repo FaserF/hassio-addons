@@ -304,17 +304,29 @@ export function handleIncomingMessages(session) {
         // When a user sends a bare link, .text equals the typed URL but matchedText holds
         // the fully-resolved/canonical form. We include it in the searchable text so that
         // anti-spam and blacklist checks always see the actual URL regardless of format.
-        const extMsg = msg.message?.extendedTextMessage;
+        // Unwrap message wrappers (e.g. ephemeralMessage, viewOnceMessage, viewOnceMessageV2)
+        const unwrapMessage = (m) => {
+          if (!m) return {};
+          if (m.ephemeralMessage?.message) return unwrapMessage(m.ephemeralMessage.message);
+          if (m.viewOnceMessage?.message) return unwrapMessage(m.viewOnceMessage.message);
+          if (m.viewOnceMessageV2?.message) return unwrapMessage(m.viewOnceMessageV2.message);
+          if (m.viewOnceMessageV2Extension?.message) return unwrapMessage(m.viewOnceMessageV2Extension.message);
+          if (m.documentWithCaptionMessage?.message) return unwrapMessage(m.documentWithCaptionMessage.message);
+          return m;
+        };
+        const realMsgObj = unwrapMessage(msg.message);
+
+        const extMsg = realMsgObj?.extendedTextMessage;
         const matchedText = extMsg?.matchedText || '';
         let text =
-          msg.message?.conversation ||
+          realMsgObj?.conversation ||
           extMsg?.text ||
-          msg.message?.buttonsResponseMessage?.selectedDisplayText ||
-          msg.message?.templateButtonReplyMessage?.selectedId ||
-          msg.message?.imageMessage?.caption ||
-          msg.message?.videoMessage?.caption ||
-          msg.message?.documentMessage?.caption ||
-          msg.message?.audioMessage?.caption ||
+          realMsgObj?.buttonsResponseMessage?.selectedDisplayText ||
+          realMsgObj?.templateButtonReplyMessage?.selectedId ||
+          realMsgObj?.imageMessage?.caption ||
+          realMsgObj?.videoMessage?.caption ||
+          realMsgObj?.documentMessage?.caption ||
+          realMsgObj?.audioMessage?.caption ||
           '';
         // Append matchedText if it contains a URL not already present in text
         if (matchedText && !text.includes(matchedText)) {
@@ -332,7 +344,7 @@ export function handleIncomingMessages(session) {
         }
 
         const isGroup = senderJid.endsWith('@g.us');
-        const messageType = getContentType(msg.message);
+        const messageType = getContentType(realMsgObj);
         let mediaUrl = null,
           mediaPath = null,
           mediaType = null,
