@@ -1064,7 +1064,6 @@ export async function handleModerationMessage(session, event) {
 
   // 6. Notes & Rules trigger matching
   if (text) {
-
     // Check Notes (trigger via #notename or !notename or exact name)
     if (config.notes && typeof config.notes === 'object') {
       const cleanText = text.replace(/^[#!]/, '').trim().toLowerCase();
