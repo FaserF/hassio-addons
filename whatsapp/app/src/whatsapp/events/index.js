@@ -442,10 +442,28 @@ export function handleIncomingMessages(session) {
           try {
             const meta = await session.sock.groupMetadata(senderJid);
             const targetDigits = (personJid || '').split('@')[0].replace(/\D/g, '');
+
+            // Try to resolve LID to phone number via contactCache if personJid is LID
+            let resolvedDigits = targetDigits;
+            if (personJid.endsWith('@lid') && session.contactCache) {
+              for (const c of session.contactCache.values()) {
+                const cLid = c.lid ? normalizeJid(c.lid) : '';
+                const cId = c.id ? normalizeJid(c.id) : '';
+                if (cLid === normalizeJid(personJid) || cId === normalizeJid(personJid)) {
+                  const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
+                  if (pnDigits) {
+                    resolvedDigits = pnDigits;
+                    break;
+                  }
+                }
+              }
+            }
+
             const part = meta?.participants?.find((p) => {
               const pId = p.id ? normalizeJid(p.id) : '';
               const pDigits = pId.split('@')[0].replace(/\D/g, '');
               return (
+                (resolvedDigits && pDigits && resolvedDigits === pDigits) ||
                 (targetDigits && pDigits && targetDigits === pDigits) ||
                 (personJid && pId === normalizeJid(personJid))
               );
