@@ -56,7 +56,8 @@ export default () => `
                     <div class="mod-card-header">
                         <div class="mod-card-title-row">
                             <h3 id="mod-active-group-title" class="mod-card-title"><i class="fas fa-users-cog"></i> Group Settings</h3>
-                            <div class="mod-toggle-row">
+                            <div class="mod-toggle-row" style="display:flex;align-items:center;gap:12px;">
+                                <button class="btn btn-secondary btn-sm" onclick="generateGroupTestCommandsModal()"><i class="fas fa-vial"></i> Generate Test Commands 🧪</button>
                                 <span class="mod-toggle-label">Enable for this group</span>
                                 <label class="mod-toggle-switch">
                                     <input type="checkbox" id="mod-group-toggle" onchange="toggleGroupModeration(this.checked)">
@@ -562,6 +563,30 @@ export default () => `
                         <div class="modal-footer">
                             <button class="btn btn-secondary btn-sm" onclick="closeImportFederationModal()"><i class="fas fa-times"></i> Cancel</button>
                             <button class="btn btn-primary btn-sm" onclick="submitImportFederation()"><i class="fas fa-upload"></i> Import Federation</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Commands Generator Modal -->
+                <div id="test-commands-modal" class="modal-overlay">
+                    <div class="modal-card" style="max-width:650px;">
+                        <div class="modal-header">
+                            <h3 style="display:flex;align-items:center;gap:10px;">
+                                <span style="width:32px;height:32px;border-radius:8px;background:rgba(41,182,246,0.15);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="fas fa-vial" style="color:var(--info);font-size:14px;"></i>
+                                </span>
+                                Test Suite &amp; Commands Generator 🧪
+                            </h3>
+                            <button class="modal-close-btn" onclick="closeTestCommandsModal()"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="modal-body" style="max-height:480px; overflow-y:auto;">
+                            <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+                                Ready-to-use test commands and sample payload triggers customized specifically for the selected group. Copy and paste them into WhatsApp to test all features:
+                            </p>
+                            <div id="test-commands-modal-content"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" onclick="closeTestCommandsModal()">Close</button>
                         </div>
                     </div>
                 </div>

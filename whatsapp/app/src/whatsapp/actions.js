@@ -383,12 +383,20 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
               await delay(500);
               await reply(session, targetJid, {
-                text: `⚠️ *[TEST PACK 6/6] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*`,
+                text: `⚠️ *[TEST PACK 6/7] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*`,
               });
               for (const w of cfg.blacklist.words) {
                 await delay(300);
                 await reply(session, targetJid, { text: `${w}` });
               }
+            }
+
+            // 7. Anti-Spam Link Triggers (t.me, wa.me, etc.)
+            if (cfg.anti_spam_links_enabled) {
+              await delay(500);
+              await reply(session, targetJid, {
+                text: `🔗 *[TEST PACK 7/7] Anti-Spam Link Triggers for "${groupName}":*\nhttps://t.me/joinchat/SPAMMER123\nhttps://wa.me/491761234567\nhttps://chat.whatsapp.com/AbCdEfGhIjKlMnOpQrStUv`,
+              });
             }
 
             // 7. Active Content Locks Instructions

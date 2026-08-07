@@ -62,3 +62,5 @@ window.markDirty = markDirty;
 window.unbanUserInUi = unbanUserInUi;
 window.clearKickLogInUi = clearKickLogInUi;
 window.unmuteUserInUi = unmuteUserInUi;
+window.generateGroupTestCommandsModal = generateGroupTestCommandsModal;
+window.closeTestCommandsModal = closeTestCommandsModal;
