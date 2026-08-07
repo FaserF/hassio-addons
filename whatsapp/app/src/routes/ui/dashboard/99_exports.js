@@ -64,3 +64,5 @@ window.clearKickLogInUi = clearKickLogInUi;
 window.unmuteUserInUi = unmuteUserInUi;
 window.generateGroupTestCommandsModal = generateGroupTestCommandsModal;
 window.closeTestCommandsModal = closeTestCommandsModal;
+window.updateTestCommandsPrefill = updateTestCommandsPrefill;
+window.copyAllFromBlock = copyAllFromBlock;

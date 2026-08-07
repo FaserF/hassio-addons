@@ -112,7 +112,7 @@ export function registerSystemRoutes(app) {
 
       let releases = {};
       try {
-        releases = await getLatestReleases();
+        releases = await getLatestReleases(false, ADDON_VERSION, INTEGRATION_VERSION);
       } catch (e) {
         logger.error({ error: e.message }, 'Failed to get latest releases');
       }

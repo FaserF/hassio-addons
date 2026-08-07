@@ -89,6 +89,8 @@ async function saveGroupAntispam() {
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }
 
+let testTargetUser = '';
+
 async function generateGroupTestCommandsModal() {
   if (!currentModGroup) {
     showToast('Please select a group first.', 'warning');
@@ -122,55 +124,75 @@ async function generateGroupTestCommandsModal() {
 
   let html = `<div style="font-size:12px;display:flex;flex-direction:column;gap:12px;">`;
 
-  // 1. Group Info Banner
+  // 1. Group Info Banner & Prefill Target Input
   html += `
-    <div style="padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.3);border-radius:6px;">
-      <strong>Target Group:</strong> <code>${escapeHtml(currentModGroup)}</code><br>
-      <strong>Configured Prefix:</strong> <code>${escapeHtml(prefix)}</code> &middot; <strong>Active Commands:</strong> ${activeCmds.length}/${commandsList.length}
+    <div style="padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.3);border-radius:6px;display:flex;flex-direction:column;gap:8px;">
+      <div>
+        <strong>Target Group:</strong> <code>${escapeHtml(currentModGroup)}</code> &middot; 
+        <strong>Prefix:</strong> <code>${escapeHtml(prefix)}</code> &middot; 
+        <strong>Active Commands:</strong> ${activeCmds.length}/${commandsList.length}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg);padding:6px 10px;border-radius:4px;border:1px solid var(--border-color);">
+        <label style="font-weight:600;white-space:nowrap;color:var(--text-main);"><i class="fas fa-user-tag" style="color:var(--primary);"></i> Prefill User / Phone:</label>
+        <input type="text" id="test-target-user-input" class="mod-input" style="flex:1;padding:4px 8px;font-size:12px;" placeholder="e.g. @john, @491761234567 or 491761234567" value="${escapeHtml(testTargetUser)}" oninput="updateTestCommandsPrefill(this.value)">
+      </div>
     </div>`;
 
-  // Helper for copyable block
+  const userPlaceholder = testTargetUser ? (testTargetUser.startsWith('@') ? testTargetUser : '@' + testTargetUser) : '@user';
+
+  // Helper for copyable block with per-item copy buttons
   const makeCopyableBlock = (title, items, icon = 'fas fa-terminal') => {
     if (!items || items.length === 0) return '';
-    const textContent = items.join('\n');
+    const rawText = items.join('\n');
+    
+    let itemsHtml = items.map((item) => {
+      const escapedItem = escapeHtml(item).replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--body-bg);border:1px solid var(--border-color);border-radius:4px;margin-bottom:4px;">
+          <code style="font-size:11px;white-space:pre-wrap;word-break:break-all;color:var(--text-main);">${escapedItem}</code>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast('Copied command!','success');" title="Copy command"><i class="fas fa-copy"></i></button>
+        </div>`;
+    }).join('');
+
     return `
       <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;padding:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <strong style="color:var(--primary);font-size:13px;"><i class="${icon}"></i> ${escapeHtml(title)} (${items.length})</strong>
-          <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="navigator.clipboard.writeText(\`${escapeHtml(textContent).replace(/`/g, '\\`')}\`);showToast('Copied to clipboard!','success');"><i class="fas fa-copy"></i> Copy All</button>
+          <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="copyAllFromBlock(this);"><i class="fas fa-copy"></i> Copy All</button>
         </div>
-        <pre style="background:var(--body-bg);padding:8px;border-radius:4px;font-size:11px;max-height:140px;overflow-y:auto;white-space:pre-wrap;margin:0;user-select:all;">${escapeHtml(textContent)}</pre>
+        <div class="copyable-block-items" style="max-height:180px;overflow-y:auto;">${itemsHtml}</div>
       </div>`;
   };
 
   // 2. Active Built-in Commands (Sampled with realistic parameters)
   const activeTestPayloads = activeCmds.map((c) => {
     const p = prefix;
+    const u = userPlaceholder;
     switch (c.cmd) {
       case 'setrules':
-        return `${p}setrules 1. Be polite and respectful.\\n2. No spam links allowed.`;
+        return `${p}setrules 1. Be polite and respectful.\n2. No spam links allowed.`;
       case 'warn':
-        return `${p}warn @user Violation of group rules`;
+        return `${p}warn ${u} Violation of group rules`;
       case 'unwarn':
-        return `${p}unwarn @user`;
+        return `${p}unwarn ${u}`;
       case 'mute':
-        return `${p}mute @user 10m`;
+        return `${p}mute ${u} 10m`;
       case 'tmute':
-        return `${p}tmute @user 15m`;
+        return `${p}tmute ${u} 15m`;
       case 'tban':
-        return `${p}tban @user 1h`;
+        return `${p}tban ${u} 1h`;
       case 'kick':
-        return `${p}kick @user`;
+        return `${p}kick ${u}`;
       case 'ban':
-        return `${p}ban @user Rule violation`;
+        return `${p}ban ${u} Rule violation`;
       case 'promote':
-        return `${p}promote @user`;
+        return `${p}promote ${u}`;
       case 'demote':
-        return `${p}demote @user`;
+        return `${p}demote ${u}`;
       case 'approve':
-        return `${p}approve @user`;
+        return `${p}approve ${u}`;
       case 'unapprove':
-        return `${p}unapprove @user`;
+        return `${p}unapprove ${u}`;
       case 'lock':
         return `${p}lock url`;
       case 'unlock':
@@ -180,7 +202,7 @@ async function generateGroupTestCommandsModal() {
       case 'setgoodbye':
         return `${p}setgoodbye Goodbye {name}!`;
       case 'report':
-        return `${p}report @user Inappropriate message content`;
+        return `${p}report ${u} Inappropriate message content`;
       case 'notes':
         return `${p}notes #wifi 12345678`;
       case 'filter':
@@ -243,6 +265,24 @@ async function generateGroupTestCommandsModal() {
   html += `</div>`;
   container.innerHTML = html;
   modal.classList.add('show');
+}
+
+function updateTestCommandsPrefill(val) {
+  testTargetUser = val ? val.trim() : '';
+  generateGroupTestCommandsModal();
+  const inp = document.getElementById('test-target-user-input');
+  if (inp) {
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+  }
+}
+
+function copyAllFromBlock(btnBtn) {
+  const block = btnBtn.closest('div').parentElement;
+  const codes = block.querySelectorAll('.copyable-block-items code');
+  const text = Array.from(codes).map((c) => c.innerText).join('\n');
+  navigator.clipboard.writeText(text);
+  showToast('Copied all commands in block!', 'success');
 }
 
 function closeTestCommandsModal() {

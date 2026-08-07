@@ -51,14 +51,18 @@ function fetchJson(url) {
   });
 }
 
-export async function getLatestReleases(forceRefresh = false) {
+export async function getLatestReleases(
+  forceRefresh = false,
+  currentAddonVer = null,
+  currentIntVer = null
+) {
   const now = Date.now();
   if (!forceRefresh && now - cache.lastFetch < CACHE_TTL_MS && cache.data.latestAddonVersion) {
     return cache.data;
   }
 
   try {
-    // 1. Fetch Integration latest release (FaserF/ha-whatsapp)
+    // 1. Fetch Integration releases (FaserF/ha-whatsapp)
     let intReleaseList = await fetchJson(
       'https://api.github.com/repos/FaserF/ha-whatsapp/releases'
     );
@@ -68,7 +72,14 @@ export async function getLatestReleases(forceRefresh = false) {
       );
       if (single) intReleaseList = [single];
     }
-    const intRelease = Array.isArray(intReleaseList) ? intReleaseList[0] : null;
+    let intRelease = Array.isArray(intReleaseList) ? intReleaseList[0] : null;
+    const targetIntVer = currentIntVer || cache.data.integrationVersion;
+    if (Array.isArray(intReleaseList) && targetIntVer) {
+      const exactMatch = intReleaseList.find(
+        (r) => r.tag_name && r.tag_name.replace(/^v/, '') === targetIntVer
+      );
+      if (exactMatch) intRelease = exactMatch;
+    }
     if (intRelease && intRelease.tag_name) {
       cache.data.latestIntegrationVersion = intRelease.tag_name.replace(/^v/, '');
       cache.data.integrationChangelog = intRelease.body || 'No release notes available.';
@@ -76,7 +87,7 @@ export async function getLatestReleases(forceRefresh = false) {
         intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
     }
 
-    // 2. Fetch Addon latest release (FaserF/hassio-addons)
+    // 2. Fetch Addon releases (FaserF/hassio-addons)
     let addonReleaseList = await fetchJson(
       'https://api.github.com/repos/FaserF/hassio-addons/releases'
     );
@@ -86,7 +97,16 @@ export async function getLatestReleases(forceRefresh = false) {
       );
       if (single) addonReleaseList = [single];
     }
-    const addonRelease = Array.isArray(addonReleaseList) ? addonReleaseList[0] : null;
+    let addonRelease = Array.isArray(addonReleaseList) ? addonReleaseList[0] : null;
+    const targetAddonVer = currentAddonVer || cache.data.addonVersion;
+    if (Array.isArray(addonReleaseList) && targetAddonVer) {
+      const exactMatch = addonReleaseList.find(
+        (r) =>
+          r.tag_name &&
+          r.tag_name.replace(/^v/, '').replace(/^whatsapp-/, '') === targetAddonVer
+      );
+      if (exactMatch) addonRelease = exactMatch;
+    }
     if (addonRelease && addonRelease.tag_name) {
       cache.data.latestAddonVersion = addonRelease.tag_name
         .replace(/^v/, '')
