@@ -2121,7 +2121,13 @@ registry.register(
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     if (!c.translation) c.translation = {};
-    c.translation.enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
+      c.translation.enabled = true;
+    } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
+      c.translation.enabled = false;
+    } else {
+      c.translation.enabled = !c.translation.enabled;
+    }
     saveModerationStore(store);
     await reply(
       session,
@@ -2420,7 +2426,14 @@ registry.register(
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
-    c.anti_spam_links_enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
+      c.anti_spam_links_enabled = true;
+    } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
+      c.anti_spam_links_enabled = false;
+    } else {
+      // No argument or unknown argument -> TOGGLE current state
+      c.anti_spam_links_enabled = !c.anti_spam_links_enabled;
+    }
     saveModerationStore(store);
     await reply(
       session,
@@ -2675,7 +2688,13 @@ registry.register(
     const mode = (args[0] || '').toLowerCase();
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
-    c.reports_enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    if (mode === 'on' || mode === 'true' || mode === 'enable' || mode === '1') {
+      c.reports_enabled = true;
+    } else if (mode === 'off' || mode === 'false' || mode === 'disable' || mode === '0') {
+      c.reports_enabled = false;
+    } else {
+      c.reports_enabled = !c.reports_enabled;
+    }
     saveModerationStore(store);
     await reply(
       session,

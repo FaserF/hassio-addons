@@ -368,6 +368,39 @@ async function runTests() {
   );
   console.log('✅ PASSED: Report command saves report item to store and DMs admins');
 
+  // Test Toggle Commands (e.g. !removespamlinks without args toggles state)
+  const testGroupJid = '1203630123456789@g.us';
+  const cfgBefore = getGroupModerationConfig(testGroupJid);
+  const initialState = cfgBefore.anti_spam_links_enabled;
+
+  await processCommand(
+    mockSession,
+    mockMsg,
+    '!removespamlinks',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  const cfgAfter1 = loadModerationStore().groups[testGroupJid] || getGroupModerationConfig(testGroupJid);
+  assert(
+    cfgAfter1.anti_spam_links_enabled === !initialState,
+    '!removespamlinks without arguments correctly toggles state'
+  );
+
+  await processCommand(
+    mockSession,
+    mockMsg,
+    '!removespamlinks',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  const cfgAfter2 = loadModerationStore().groups[testGroupJid] || getGroupModerationConfig(testGroupJid);
+  assert(
+    cfgAfter2.anti_spam_links_enabled === initialState,
+    '!removespamlinks second invocation toggles state back'
+  );
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;
