@@ -274,7 +274,16 @@ export async function executePenalty(session, groupId, userId, action, reason = 
 
   try {
     if (action === 'delete') {
-      // Deletion is handled per message key in message handler
+      if (rawMsg?.key?.id && session?.sock) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {
+          logger.warn(
+            { groupId, userId, err: e?.message },
+            'executePenalty: message delete failed'
+          );
+        }
+      }
       return;
     } else if (action === 'warn') {
       await issueUserWarning(
@@ -900,6 +909,16 @@ export async function handleModerationMessage(session, event) {
         const lowerText = text.toLowerCase();
         for (const pat of fed.shared_blacklist) {
           if (pat && lowerText.includes(pat.toLowerCase())) {
+            if (rawMsg?.key?.id) {
+              try {
+                await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+              } catch (e) {
+                logger.warn(
+                  { groupId, userId, err: e?.message },
+                  'Federation blacklist: message delete failed'
+                );
+              }
+            }
             await executePenalty(
               session,
               groupId,
