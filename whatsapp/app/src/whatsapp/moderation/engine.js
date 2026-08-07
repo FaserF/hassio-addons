@@ -663,7 +663,10 @@ export async function handleModerationMessage(session, event) {
 
   const config = getGroupModerationConfig(groupId);
   if (!config.enabled) {
-    logger.info({ groupId }, '⚠️ Skipping moderation: group moderation config is not enabled for this group');
+    logger.info(
+      { groupId },
+      '⚠️ Skipping moderation: group moderation config is not enabled for this group'
+    );
     return false;
   }
 

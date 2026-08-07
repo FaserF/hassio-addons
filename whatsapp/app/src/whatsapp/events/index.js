@@ -631,7 +631,13 @@ export function handleIncomingMessages(session) {
         handleFirstContact(session, event);
 
         logger.info(
-          { senderJid, effectiveSenderNumber, isGroupAdmin, isAdminUser, textSnippet: text?.slice(0, 50) },
+          {
+            senderJid,
+            effectiveSenderNumber,
+            isGroupAdmin,
+            isAdminUser,
+            textSnippet: text?.slice(0, 50),
+          },
           '🛡️ Moderation evaluation for group message'
         );
 
