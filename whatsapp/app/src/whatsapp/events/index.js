@@ -491,8 +491,9 @@ export function handleIncomingMessages(session) {
           msg.key?.participantAlt,
           msg.participant,
           msg.key?.remoteJidAlt,
+          msg.verifiedBizName,
           // In group chats where msg.key.participant might be absent in non-standard protocol nodes,
-          // use remoteJid if it's a user JID or fallback
+          // check if remoteJid is a user JID or extract any JID string from msg.key
           !msg.key?.remoteJid?.endsWith('@g.us') ? msg.key?.remoteJid : null,
         ].filter(
           (c) => typeof c === 'string' && (c.endsWith('@s.whatsapp.net') || c.endsWith('@lid'))
@@ -588,8 +589,11 @@ export function handleIncomingMessages(session) {
             if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
               isGroupAdmin = true;
             }
-          } catch (_metaErr) {
-            /* ignore metadata fetch failure */
+          } catch (metaErr) {
+            logger.warn(
+              { groupId: senderJid, error: metaErr?.message },
+              '⚠️ Could not fetch groupMetadata to determine admin status'
+            );
           }
         }
 
