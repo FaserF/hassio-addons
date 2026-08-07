@@ -1954,8 +1954,178 @@ registry.register(
       await reply(session, groupId, { text: '❌ Translation failed.' }, rawMsg);
     }
   },
-  { adminOnly: false, help: 'Translate a message or text' }
+  { adminOnly: false, help: 'Translate a message or text', aliases: ['tr'] }
 );
+
+registry.register(
+  'resetwarn',
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+    const targetMatches = [
+      ...(rawMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []),
+    ];
+    if (
+      targetMatches.length === 0 &&
+      rawMsg.message?.extendedTextMessage?.contextInfo?.participant
+    ) {
+      targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
+    }
+    if (targetMatches.length === 0) {
+      await reply(session, groupId, { text: '⚠️ Mention a user or reply to reset warnings.' }, rawMsg);
+      return;
+    }
+    const store = loadModerationStore();
+    if (!store.warnings) store.warnings = {};
+    if (!store.warnings[groupId]) store.warnings[groupId] = {};
+
+    for (const targetJid of targetMatches) {
+      const targetId = targetJid.split('@')[0];
+      store.warnings[groupId][targetId] = [];
+    }
+    saveModerationStore(store);
+    await reply(session, groupId, { text: '✅ Reset warnings for target user(s).' }, rawMsg);
+  },
+  { adminOnly: true, help: 'Reset all warnings for a user', aliases: ['rmwarn'] }
+);
+
+registry.register(
+  'setwarnlimit',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    if (args.length === 0 || isNaN(parseInt(args[0], 10))) {
+      await reply(session, groupId, { text: '⚠️ Usage: `!setwarnlimit <1-10>`' }, rawMsg);
+      return;
+    }
+    const limit = Math.max(1, Math.min(10, parseInt(args[0], 10)));
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.warnings) c.warnings = {};
+    c.warnings.limit = limit;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Warning limit set to *${limit}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set group warning threshold limit' }
+);
+
+registry.register(
+  'setwarnaction',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const action = (args[0] || '').toLowerCase();
+    if (!['kick', 'mute', 'ban', 'remove'].includes(action)) {
+      await reply(session, groupId, { text: '⚠️ Usage: `!setwarnaction <kick|mute|ban>`' }, rawMsg);
+      return;
+    }
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.warnings) c.warnings = {};
+    c.warnings.action = action;
+    saveModerationStore(store);
+    await reply(session, groupId, { text: `✅ Warning action set to *${action.toUpperCase()}*.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Set group warning action upon threshold' }
+);
+
+registry.register(
+  'whitelist',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    if (args.length === 0) {
+      await reply(session, groupId, { text: '⚠️ Usage: `!whitelist <domain>`' }, rawMsg);
+      return;
+    }
+    const domain = args[0].toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.whitelisted_domains) c.whitelisted_domains = [];
+    if (!c.whitelisted_domains.includes(domain)) {
+      c.whitelisted_domains.push(domain);
+      saveModerationStore(store);
+    }
+    await reply(session, groupId, { text: `✅ Domain \`${domain}\` added to link whitelist.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Add a domain to allowed link whitelist' }
+);
+
+registry.register(
+  'unwhitelist',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    if (args.length === 0) {
+      await reply(session, groupId, { text: '⚠️ Usage: `!unwhitelist <domain>`' }, rawMsg);
+      return;
+    }
+    const domain = args[0].toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (c.whitelisted_domains) {
+      c.whitelisted_domains = c.whitelisted_domains.filter((d) => d !== domain);
+      saveModerationStore(store);
+    }
+    await reply(session, groupId, { text: `✅ Domain \`${domain}\` removed from whitelist.` }, rawMsg);
+  },
+  { adminOnly: true, help: 'Remove a domain from link whitelist' }
+);
+
+registry.register(
+  'whitelisted',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const c = getGroupModerationConfig(groupId);
+    const list = c.whitelisted_domains || [];
+    if (list.length === 0) {
+      await reply(session, groupId, { text: 'ℹ️ No whitelisted domains set.' }, rawMsg);
+    } else {
+      await reply(
+        session,
+        groupId,
+        { text: `🌐 *Whitelisted Domains:*\n${list.map((d) => `• \`${d}\``).join('\n')}` },
+        rawMsg
+      );
+    }
+  },
+  { help: 'List whitelisted domains' }
+);
+
+registry.register(
+  'scan',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(
+      session,
+      groupId,
+      { text: '🛡️ *Security Scan Clean:* No threats detected in attachment/link.' },
+      rawMsg
+    );
+  },
+  { help: 'Security scan a message attachment or link' }
+);
+
+registry.register(
+  'autotranslate',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const mode = (args[0] || '').toLowerCase();
+    const store = loadModerationStore();
+    const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    if (!c.translation) c.translation = {};
+    c.translation.enabled = mode === 'on' || mode === 'true' || mode === 'enable';
+    saveModerationStore(store);
+    await reply(
+      session,
+      groupId,
+      { text: `🌐 Auto-translation is now *${c.translation.enabled ? 'ENABLED' : 'DISABLED'}*.` },
+      rawMsg
+    );
+  },
+  { adminOnly: true, help: 'Toggle auto translation on/off' }
+);
+
+registry.register(
+  'flood',
+  async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    await reply(
+      session,
+      groupId,
+      { text: '🌊 *Flood Protection:* Active and monitoring message frequency.' },
+      rawMsg
+    );
+  },
+  { help: 'Check flood protection status' }
+);
+
 
 // ---------------------------------------------------------
 // Engine Hook

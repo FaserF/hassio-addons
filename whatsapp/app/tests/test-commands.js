@@ -67,6 +67,18 @@ async function runTests() {
   // Phase 3c Commands
   assert(registry.getCommand('setlang') !== undefined, 'setlang command is registered');
   assert(registry.getCommand('translate') !== undefined, 'translate command is registered');
+  assert(registry.getCommand('tr') !== undefined, 'tr command (alias) is registered');
+  assert(registry.getCommand('resetwarn') !== undefined, 'resetwarn command is registered');
+  assert(registry.getCommand('rmwarn') !== undefined, 'rmwarn command (alias) is registered');
+  assert(registry.getCommand('setwarnlimit') !== undefined, 'setwarnlimit command is registered');
+  assert(registry.getCommand('setwarnaction') !== undefined, 'setwarnaction command is registered');
+  assert(registry.getCommand('whitelist') !== undefined, 'whitelist command is registered');
+  assert(registry.getCommand('unwhitelist') !== undefined, 'unwhitelist command is registered');
+  assert(registry.getCommand('whitelisted') !== undefined, 'whitelisted command is registered');
+  assert(registry.getCommand('scan') !== undefined, 'scan command is registered');
+  assert(registry.getCommand('autotranslate') !== undefined, 'autotranslate command is registered');
+  assert(registry.getCommand('flood') !== undefined, 'flood command is registered');
+
 
   // Permission checks
   assert(registry.getCommand('warn').adminOnly === true, 'warn requires admin');
