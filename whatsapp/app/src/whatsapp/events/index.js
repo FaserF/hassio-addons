@@ -589,6 +589,10 @@ export function handleIncomingMessages(session) {
             if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
               isGroupAdmin = true;
             }
+            logger.info(
+              { senderJid, matchedPartId: part?.id, partAdminRole: part?.admin, isGroupAdmin },
+              '🔍 Group admin lookup resolved'
+            );
           } catch (metaErr) {
             logger.warn(
               { groupId: senderJid, error: metaErr?.message },
@@ -625,6 +629,11 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
+
+        logger.info(
+          { senderJid, effectiveSenderNumber, isGroupAdmin, isAdminUser, textSnippet: text?.slice(0, 50) },
+          '🛡️ Moderation evaluation for group message'
+        );
 
         // 1. Process as group command (requiring actual WhatsApp Group Admin status for admin commands)
         let handledAsCommand = false;

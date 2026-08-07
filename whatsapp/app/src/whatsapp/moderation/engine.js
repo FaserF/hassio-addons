@@ -643,7 +643,10 @@ export function clearUserWarnings(groupId, rawUserId, session = null) {
 
 export async function handleModerationMessage(session, event) {
   const store = loadModerationStore();
-  if (!store.global_enabled) return false;
+  if (!store.global_enabled) {
+    logger.debug('Skipping moderation: global_enabled is false');
+    return false;
+  }
 
   // Never moderate or auto-respond to outgoing bot messages (prevents self-loop)
   if (event.raw?.key?.fromMe) return false;
@@ -659,7 +662,10 @@ export async function handleModerationMessage(session, event) {
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
   const config = getGroupModerationConfig(groupId);
-  if (!config.enabled) return false;
+  if (!config.enabled) {
+    logger.info({ groupId }, '⚠️ Skipping moderation: group moderation config is not enabled for this group');
+    return false;
+  }
 
   const rawMsg = event.raw;
   let userId = event.sender_number;
