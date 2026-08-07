@@ -375,7 +375,9 @@ try {
       notifiedMessage?.includes('Moderation Bypassed'),
       'Anti-spam: should send notification when admin bypasses moderation with notify_bypassed_actions enabled'
     );
-    console.log('✅ PASSED: Anti-spam correctly sends notification when admin bypasses moderation with notify_bypassed_actions enabled');
+    console.log(
+      '✅ PASSED: Anti-spam correctly sends notification when admin bypasses moderation with notify_bypassed_actions enabled'
+    );
 
     // 6.5f: matchedText fallback (link-preview style where text == matchedText)
     antiSpamDeleteCalled = false;

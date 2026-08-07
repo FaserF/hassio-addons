@@ -458,8 +458,13 @@ export function handleIncomingMessages(session) {
         if (effectiveSenderJid && !senderCandidates.includes(effectiveSenderJid)) {
           senderCandidates.push(effectiveSenderJid);
         }
-        let effectiveSenderNumber = effectiveSenderJid ? effectiveSenderJid.split('@')[0].replace(/\D/g, '') : '';
-        if ((!effectiveSenderNumber || effectiveSenderJid.endsWith('@lid')) && session.contactCache) {
+        let effectiveSenderNumber = effectiveSenderJid
+          ? effectiveSenderJid.split('@')[0].replace(/\D/g, '')
+          : '';
+        if (
+          (!effectiveSenderNumber || effectiveSenderJid.endsWith('@lid')) &&
+          session.contactCache
+        ) {
           for (const cand of senderCandidates) {
             for (const c of session.contactCache.values()) {
               const cLid = c.lid ? normalizeJid(c.lid) : '';

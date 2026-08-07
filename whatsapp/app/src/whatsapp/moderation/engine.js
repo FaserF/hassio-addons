@@ -664,7 +664,8 @@ export async function handleModerationMessage(session, event) {
   const rawMsg = event.raw;
   let userId = event.sender_number;
   if (!userId || userId === groupId.split('@')[0]) {
-    const rawParticipant = rawMsg?.key?.participant || rawMsg?.participant || rawMsg?.key?.participantAlt;
+    const rawParticipant =
+      rawMsg?.key?.participant || rawMsg?.participant || rawMsg?.key?.participantAlt;
     if (typeof rawParticipant === 'string') {
       userId = rawParticipant.split('@')[0].replace(/\D/g, '');
     }
@@ -825,9 +826,10 @@ export async function handleModerationMessage(session, event) {
       if (!bypassedReason && config.blacklist?.words && Array.isArray(config.blacklist.words)) {
         for (const word of config.blacklist.words) {
           if (!word) continue;
-          const isMatch = config.blacklist.mode === 'wildcard'
-            ? text.toLowerCase().includes(word.toLowerCase())
-            : new RegExp(`\\b${word}\\b`, 'i').test(text);
+          const isMatch =
+            config.blacklist.mode === 'wildcard'
+              ? text.toLowerCase().includes(word.toLowerCase())
+              : new RegExp(`\\b${word}\\b`, 'i').test(text);
           if (isMatch) {
             bypassedReason = `Blacklisted Word ("${word}")`;
             break;
