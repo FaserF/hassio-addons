@@ -69,6 +69,7 @@ const TRACKED_FIELD_IDS = [
   'mod-lock-location',
   'mod-lock-forwarded',
   'mod-lock-rtl',
+  'mod-blacklist-mode',
   'mod-flood-enabled',
   'mod-flood-max',
   'mod-flood-win',
@@ -770,7 +771,10 @@ async function selectModerationGroup(groupId) {
     if (el) el.checked = Boolean(config.locks?.[key]?.enabled);
   });
 
-  // Blacklist Tag Cloud
+  // Blacklist Tag Cloud & Mode
+  const blMode = document.getElementById('mod-blacklist-mode');
+  if (blMode) blMode.value = config.blacklist?.matching_mode || 'exact';
+
   const blTags = document.getElementById('mod-blacklist-tags');
   if (blTags) {
     const words = config.blacklist?.words || [];

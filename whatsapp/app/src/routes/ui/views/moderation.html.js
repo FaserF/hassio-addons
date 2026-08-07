@@ -232,6 +232,14 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-ban"></i></div>
                             <div><div class="mod-feature-title">Word &amp; Pattern Blacklist</div><div class="mod-feature-desc">Auto-delete messages containing blocked words or regex patterns.</div></div>
                         </div>
+                        <div class="mod-field-group" style="max-width:320px; margin-bottom:12px;">
+                            <label class="mod-field-label">Matching Mode</label>
+                            <select id="mod-blacklist-mode" class="mod-select mod-select-sm">
+                                <option value="exact">Exact Word Match (default - e.g. "Schimpfwort")</option>
+                                <option value="contains">Substring / Contains Match (e.g. "Großschimpfworttext")</option>
+                            </select>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Exact match checks standalone words. Substring match checks if the word appears anywhere in the message.</p>
+                        </div>
                         <div class="mod-add-row">
                             <input type="text" id="mod-blacklist-new" class="mod-input mod-input-flex" placeholder="Add word or /regex/ pattern…" onkeydown="if(event.key==='Enter'){event.preventDefault();addBlacklistWord();}">
                             <button class="btn btn-secondary btn-sm" onclick="addBlacklistWord()"><i class="fas fa-plus"></i> Add</button>

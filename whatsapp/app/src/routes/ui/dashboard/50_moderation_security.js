@@ -59,6 +59,9 @@ async function removeBlacklistWord(idx) {
 async function saveGroupBlacklist() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.blacklist = groupConfig.blacklist || { enabled: true, words: [], action: 'delete' };
+  groupConfig.blacklist.matching_mode =
+    document.getElementById('mod-blacklist-mode')?.value || 'exact';
   await saveGroupConfig(groupConfig);
   markClean();
   showToast('Blacklist saved!', 'success');

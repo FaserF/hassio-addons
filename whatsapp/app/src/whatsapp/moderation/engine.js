@@ -961,6 +961,8 @@ export async function handleModerationMessage(session, event) {
   // 4. Blacklist / Prohibited Words check
   if (config.blacklist?.enabled && Array.isArray(config.blacklist.words)) {
     const lowerText = text.toLowerCase();
+    const matchingMode = config.blacklist.matching_mode || 'exact'; // default 'exact'
+
     for (const word of config.blacklist.words) {
       if (!word) continue;
       const lowerWord = word.toLowerCase();
@@ -975,8 +977,13 @@ export async function handleModerationMessage(session, event) {
       } else if (lowerWord.includes('*')) {
         const pattern = lowerWord.replace(/\*/g, '.*');
         matched = new RegExp(`^${pattern}$`, 'i').test(lowerText);
-      } else {
+      } else if (matchingMode === 'contains') {
         matched = lowerText.includes(lowerWord);
+      } else {
+        // Exact word match (matches standalone word with word boundaries or punctuation)
+        const escapedWord = lowerWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const wordBoundaryRegex = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${escapedWord}(?:$|[^\\p{L}\\p{N}_])`, 'ui');
+        matched = wordBoundaryRegex.test(lowerText);
       }
 
       if (matched) {
