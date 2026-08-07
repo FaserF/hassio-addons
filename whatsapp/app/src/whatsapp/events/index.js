@@ -437,58 +437,62 @@ export function handleIncomingMessages(session) {
           session.stats.last_received_time = Date.now();
         }
 
-        const participant = msg.key.participant || msg.participant;
-        const participantAlt = msg.key.participantAlt;
-        let effectiveSenderJid = senderJid;
-        if (
-          participantAlt &&
-          typeof participantAlt === 'string' &&
-          (participantAlt.endsWith('@s.whatsapp.net') || participantAlt.endsWith('@lid'))
-        ) {
-          effectiveSenderJid = participantAlt;
-        } else if (
-          participant &&
-          typeof participant === 'string' &&
-          (participant.endsWith('@s.whatsapp.net') || participant.endsWith('@lid'))
-        ) {
-          effectiveSenderJid = participant;
-        } else if (msg.key.fromMe) {
-          const selfPn = session.stats.my_number || session.sock?.user?.id?.split(':')[0];
-          if (selfPn) effectiveSenderJid = `${selfPn}@s.whatsapp.net`;
-        } else if (isGroup) {
-          // Group message with no valid participant JID — sender unknown, skip to avoid
-          // using the group JID as the sender_number which causes moderation false-positives
-          logger.debug(
-            { msgId: msg.key.id, groupId: senderJid },
-            'Group message with no participant JID — sender_number will be empty'
-          );
-          effectiveSenderJid = '';
+        const senderCandidates = [
+          msg.key?.participant,
+          msg.key?.participantAlt,
+          msg.participant,
+          msg.key?.remoteJidAlt,
+        ].filter((c) => typeof c === 'string' && (c.endsWith('@s.whatsapp.net') || c.endsWith('@lid')));
+
+        let effectiveSenderJid = senderCandidates[0] || '';
+        if (!effectiveSenderJid) {
+          if (msg.key.fromMe) {
+            const selfPn = session.stats.my_number || session.sock?.user?.id?.split(':')[0];
+            if (selfPn) effectiveSenderJid = `${selfPn}@s.whatsapp.net`;
+          } else if (msg.key?.remoteJidAlt && typeof msg.key.remoteJidAlt === 'string') {
+            effectiveSenderJid = msg.key.remoteJidAlt;
+          }
         }
-        const effectiveSenderNumber = effectiveSenderJid ? effectiveSenderJid.split('@')[0] : '';
+        if (effectiveSenderJid && !senderCandidates.includes(effectiveSenderJid)) {
+          senderCandidates.push(effectiveSenderJid);
+        }
+        let effectiveSenderNumber = effectiveSenderJid ? effectiveSenderJid.split('@')[0].replace(/\D/g, '') : '';
+        if (effectiveSenderJid.endsWith('@lid') && session.contactCache) {
+          for (const c of session.contactCache.values()) {
+            const cLid = c.lid ? normalizeJid(c.lid) : '';
+            const cId = c.id ? normalizeJid(c.id) : '';
+            if (cLid === normalizeJid(effectiveSenderJid) || cId === normalizeJid(effectiveSenderJid)) {
+              const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
+              if (pnDigits) {
+                effectiveSenderNumber = pnDigits;
+                break;
+              }
+            }
+          }
+        }
 
         const senderName = msg.pushName || session.contactCache.get(senderJid)?.name || '';
 
         const personJid = effectiveSenderJid;
-        let isGlobalAdmin = Boolean(msg.key.fromMe || isAdmin(personJid, session));
         let isGroupAdmin = false;
 
         // In group chats, check if user is a real WhatsApp Group Admin via groupMetadata
         if (isGroup && session?.sock?.groupMetadata) {
           try {
             const meta = await session.sock.groupMetadata(senderJid);
-            const targetDigits = (personJid || '').split('@')[0].replace(/\D/g, '');
+            const candidateDigitsList = senderCandidates.map((c) => c.split('@')[0].replace(/\D/g, '')).filter(Boolean);
 
-            // Try to resolve LID to phone number via contactCache if personJid is LID
-            let resolvedDigits = targetDigits;
-            if (personJid.endsWith('@lid') && session.contactCache) {
-              for (const c of session.contactCache.values()) {
-                const cLid = c.lid ? normalizeJid(c.lid) : '';
-                const cId = c.id ? normalizeJid(c.id) : '';
-                if (cLid === normalizeJid(personJid) || cId === normalizeJid(personJid)) {
-                  const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
-                  if (pnDigits) {
-                    resolvedDigits = pnDigits;
-                    break;
+            // Also check contactCache for LID <-> PN resolution
+            if (session.contactCache) {
+              for (const candJid of senderCandidates) {
+                for (const c of session.contactCache.values()) {
+                  const cLid = c.lid ? normalizeJid(c.lid) : '';
+                  const cId = c.id ? normalizeJid(c.id) : '';
+                  if (cLid === normalizeJid(candJid) || cId === normalizeJid(candJid)) {
+                    const pnDigits = (cId || cLid).split('@')[0].replace(/\D/g, '');
+                    if (pnDigits && !candidateDigitsList.includes(pnDigits)) {
+                      candidateDigitsList.push(pnDigits);
+                    }
                   }
                 }
               }
@@ -498,9 +502,8 @@ export function handleIncomingMessages(session) {
               const pId = p.id ? normalizeJid(p.id) : '';
               const pDigits = pId.split('@')[0].replace(/\D/g, '');
               return (
-                (resolvedDigits && pDigits && resolvedDigits === pDigits) ||
-                (targetDigits && pDigits && targetDigits === pDigits) ||
-                (personJid && pId === normalizeJid(personJid))
+                candidateDigitsList.includes(pDigits) ||
+                senderCandidates.some((candJid) => pId === normalizeJid(candJid))
               );
             });
             if (part && (part.admin === 'admin' || part.admin === 'superadmin')) {
@@ -511,7 +514,7 @@ export function handleIncomingMessages(session) {
           }
         }
 
-        const isAdminUser = Boolean(isGlobalAdmin || isGroupAdmin);
+        const isAdminUser = Boolean(msg.key.fromMe || isGroupAdmin);
 
         const event = {
           id: msg.key.id,
@@ -546,7 +549,7 @@ export function handleIncomingMessages(session) {
             msg,
             text,
             personJid,
-            isGroupAdmin,
+            isAdminUser,
             senderJid
           );
         }
