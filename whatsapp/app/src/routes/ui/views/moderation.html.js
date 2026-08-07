@@ -300,6 +300,7 @@ export default () => `
                                     <div><div class="mod-feature-title">Anti-Spam Invite Links Removal</div><div class="mod-feature-desc">Automatically delete t.me, wa.me, and unauthorized chat invite links.</div></div>
                                 </div>
                                 <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
+                                <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-deleted-action" checked><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Send notification message with quote when a prohibited message is deleted (Default: Enabled)</span></div>
                                 <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; padding:10px; font-size:12px;">
                                     <div style="font-weight:600; color:var(--text-muted); margin-bottom:8px;"><i class="fas fa-filter"></i> Blocked Invite Link Platforms (Default: All Enabled):</div>
                                     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:8px;">

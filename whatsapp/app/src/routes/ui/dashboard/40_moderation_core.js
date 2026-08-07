@@ -77,6 +77,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antiraid-max',
   'mod-antiraid-win',
   'mod-antispam-links-enabled',
+  'mod-notify-deleted-action',
   'mod-notify-bypassed-actions',
   'mod-ai-enabled',
   'mod-ai-faq',
@@ -811,6 +812,9 @@ async function selectModerationGroup(groupId) {
 
   const antispamLinksE = document.getElementById('mod-antispam-links-enabled');
   if (antispamLinksE) antispamLinksE.checked = Boolean(config.anti_spam_links_enabled);
+
+  const notifyDeletedE = document.getElementById('mod-notify-deleted-action');
+  if (notifyDeletedE) notifyDeletedE.checked = config.antispam?.notify_deleted_action !== false; // Default true
 
   const notifyBypassedE = document.getElementById('mod-notify-bypassed-actions');
   if (notifyBypassedE) notifyBypassedE.checked = Boolean(config.antispam?.notify_bypassed_actions);

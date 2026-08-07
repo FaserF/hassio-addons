@@ -1071,14 +1071,17 @@ export async function handleModerationMessage(session, event) {
           /* ignore delete failure */
         }
       }
-      await reply(
-        session,
-        groupId,
-        {
-          text: `🔒 Message deleted: ${lockTitle} are locked in this group.`,
-        },
-        rawMsg
-      );
+      if (config.antispam?.notify_deleted_action !== false) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `🔒 *Content Lock:* Message from @${userId} was deleted (${lockTitle} are locked).`,
+            mentions: [`${userId}@s.whatsapp.net`],
+          },
+          rawMsg
+        );
+      }
       if (lock.action && lock.action !== 'delete') {
         await executePenalty(session, groupId, userId, lock.action, `${lockTitle} locked`, rawMsg);
       }
@@ -1161,12 +1164,18 @@ export async function handleModerationMessage(session, event) {
         }
       }
 
-      await reply(
-        session,
-        groupId,
-        { text: `🚫 *Anti-Spam Link:* Invite link automatically removed.` },
-        rawMsg
-      );
+      const isNotifyEnabled = config.antispam?.notify_deleted_action !== false;
+      if (isNotifyEnabled) {
+        await reply(
+          session,
+          groupId,
+          {
+            text: `🚫 *Anti-Spam Link:* Invite link from @${userId} was automatically deleted.\n\n📋 *Reason:* Unauthorized invite link detected.`,
+            mentions: [`${userId}@s.whatsapp.net`],
+          },
+          rawMsg
+        );
+      }
       return true;
     }
   }
@@ -1209,14 +1218,17 @@ export async function handleModerationMessage(session, event) {
           } catch (e) {}
         }
         const blAction = config.blacklist.action || 'delete';
-        await reply(
-          session,
-          groupId,
-          {
-            text: `🚫 Message deleted: Blacklisted word detected.`,
-          },
-          rawMsg
-        );
+        if (config.antispam?.notify_deleted_action !== false) {
+          await reply(
+            session,
+            groupId,
+            {
+              text: `🚫 *Blacklist:* Message from @${userId} was deleted (Blacklisted word/pattern detected).`,
+              mentions: [`${userId}@s.whatsapp.net`],
+            },
+            rawMsg
+          );
+        }
         if (blAction !== 'delete') {
           await executePenalty(
             session,

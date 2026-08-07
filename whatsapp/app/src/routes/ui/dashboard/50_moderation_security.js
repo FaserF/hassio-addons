@@ -83,6 +83,9 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    notify_deleted_action: Boolean(
+      document.getElementById('mod-notify-deleted-action')?.checked
+    ),
     notify_bypassed_actions: Boolean(
       document.getElementById('mod-notify-bypassed-actions')?.checked
     ),
