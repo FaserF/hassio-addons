@@ -89,26 +89,33 @@ async function runTests() {
   assert(registry.getCommand('fedinfo') !== undefined, 'fedinfo command is registered');
   assert(registry.getCommand('fbanlist') !== undefined, 'fbanlist command is registered');
   assert(registry.getCommand('fedadmins') !== undefined, 'fedadmins command is registered');
-  assert(registry.getCommand('removespamlinks') !== undefined, 'removespamlinks command is registered');
+  assert(
+    registry.getCommand('removespamlinks') !== undefined,
+    'removespamlinks command is registered'
+  );
   assert(registry.getCommand('pin') !== undefined, 'pin command is registered');
   assert(registry.getCommand('unpin') !== undefined, 'unpin command is registered');
   assert(registry.getCommand('unpinall') !== undefined, 'unpinall command is registered');
   assert(registry.getCommand('pinned') !== undefined, 'pinned command is registered');
   assert(registry.getCommand('blacklist') !== undefined, 'blacklist command is registered');
   assert(registry.getCommand('rmblacklist') !== undefined, 'rmblacklist command is registered');
-  assert(registry.getCommand('setblacklistaction') !== undefined, 'setblacklistaction command is registered');
+  assert(
+    registry.getCommand('setblacklistaction') !== undefined,
+    'setblacklistaction command is registered'
+  );
   assert(registry.getCommand('setlog') !== undefined, 'setlog command is registered');
   assert(registry.getCommand('unsetlog') !== undefined, 'unsetlog command is registered');
   assert(registry.getCommand('slowmode') !== undefined, 'slowmode command is registered');
   assert(registry.getCommand('settitle') !== undefined, 'settitle command is registered');
-  assert(registry.getCommand('setdescription') !== undefined, 'setdescription command is registered');
+  assert(
+    registry.getCommand('setdescription') !== undefined,
+    'setdescription command is registered'
+  );
   assert(registry.getCommand('setphoto') !== undefined, 'setphoto command is registered');
   assert(registry.getCommand('mode') !== undefined, 'mode command is registered');
   assert(registry.getCommand('approved') !== undefined, 'approved command is registered');
   assert(registry.getCommand('unapproveall') !== undefined, 'unapproveall command is registered');
   assert(registry.getCommand('reports') !== undefined, 'reports command is registered');
-
-
 
   // Permission checks
   assert(registry.getCommand('warn').adminOnly === true, 'warn requires admin');
@@ -348,9 +355,17 @@ async function runTests() {
   );
   assert(reportHandled === true, 'Report command should execute successfully');
   const storeAfterReport = loadModerationStore();
-  const repConfig = storeAfterReport.groups['1203630123456789@g.us'] || getGroupModerationConfig('1203630123456789@g.us');
-  assert(repConfig.reports && repConfig.reports.length >= 1, 'Report should be saved to group config');
-  assert(repConfig.reports[repConfig.reports.length - 1].reason === 'Test report reason', 'Report reason should be parsed');
+  const repConfig =
+    storeAfterReport.groups['1203630123456789@g.us'] ||
+    getGroupModerationConfig('1203630123456789@g.us');
+  assert(
+    repConfig.reports && repConfig.reports.length >= 1,
+    'Report should be saved to group config'
+  );
+  assert(
+    repConfig.reports[repConfig.reports.length - 1].reason === 'Test report reason',
+    'Report reason should be parsed'
+  );
   console.log('✅ PASSED: Report command saves report item to store and DMs admins');
 
   // Count total commands (deduplicated)

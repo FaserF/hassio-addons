@@ -884,7 +884,8 @@ export async function handleModerationMessage(session, event) {
 
   // 3.5 Anti-Spam Invite Links Check (RemoveSpamLinkBot & Federation Synergy)
   if (config.anti_spam_links_enabled && text) {
-    const invitePattern = /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+]+/i;
+    const invitePattern =
+      /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|chat\.whatsapp\.com|wa\.link)\/[a-zA-Z0-9_+]+/i;
     if (invitePattern.test(text)) {
       if (rawMsg?.key?.id) {
         try {
@@ -896,7 +897,7 @@ export async function handleModerationMessage(session, event) {
       if (config.federation_id && store.federations?.[config.federation_id]) {
         const fed = store.federations[config.federation_id];
         if (!fed.bans) fed.bans = [];
-        if (!fed.bans.some(b => b.userId === userId)) {
+        if (!fed.bans.some((b) => b.userId === userId)) {
           fed.bans.push({
             userId,
             reason: 'Automatic Anti-Spam Invite Link Detection',
@@ -908,7 +909,12 @@ export async function handleModerationMessage(session, event) {
         fedNotice = ` & *Federation-Banned* across federation *${fed.name}*.`;
       }
 
-      await reply(session, groupId, { text: `🚫 *Anti-Spam Link:* Invite link removed from member${fedNotice}` }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: `🚫 *Anti-Spam Link:* Invite link removed from member${fedNotice}` },
+        rawMsg
+      );
       return true;
     }
   }
