@@ -436,6 +436,44 @@ function checkNoEsModuleKeywords() {
   info('No forbidden ES module keywords (export/import) found in inline UI client scripts');
 }
 
+
+// --------------------------------------------------------------------------
+// Test 6: HTML View Tag Balance & DOM Hierarchy Validation
+// --------------------------------------------------------------------------
+function checkHtmlViewTagBalance() {
+  const viewsDir = join(uiDir, 'views');
+  if (!existsSync(viewsDir)) return;
+
+  const viewFiles = readdirSync(viewsDir).filter((f) => f.endsWith('.html.js'));
+  for (const vf of viewFiles) {
+    const filePath = join(viewsDir, vf);
+    const fileContent = readFileSync(filePath, 'utf8');
+
+    const opens = (fileContent.match(/<div[\s>]/gi) || []).length;
+    const closes = (fileContent.match(/<\/div>/gi) || []).length;
+
+    if (opens !== closes) {
+      error(
+        join('views', vf),
+        0,
+        `Unbalanced <div> tags in view template! Found ${opens} open <div...> and ${closes} closing </div> (diff: ${opens - closes}). An extra or missing </div> will break the DOM layout and collapse scroll containers!`
+      );
+    }
+
+    const secOpens = (fileContent.match(/<section[\s>]/gi) || []).length;
+    const secCloses = (fileContent.match(/<\/section>/gi) || []).length;
+    if (secOpens !== secCloses) {
+      error(
+        join('views', vf),
+        0,
+        `Unbalanced <section> tags in view template! Found ${secOpens} open <section...> and ${secCloses} closing </section> (diff: ${secOpens - secCloses}).`
+      );
+    }
+  }
+
+  info(`HTML View Tag Balance check complete (${viewFiles.length} view templates validated)`);
+}
+
 // --------------------------------------------------------------------------
 // Run all checks
 // --------------------------------------------------------------------------
@@ -461,6 +499,9 @@ checkDuplicateRoutes();
 
 console.log('\n📋 Test 5: Home Assistant Integration Endpoint Validation\n');
 checkHAEndpoints();
+
+console.log('\n📋 Test 6: HTML View Tag Balance & DOM Structure Validation\n');
+checkHtmlViewTagBalance();
 
 console.log('\n' + '='.repeat(60));
 console.log(`\n📊 Results: ${errors} error(s), ${warnings} warning(s)\n`);

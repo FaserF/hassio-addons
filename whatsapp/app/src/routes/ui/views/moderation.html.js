@@ -525,7 +525,6 @@ export default () => `
 
                     </div>
 
-                </div>
 
                 <!-- Global Default Rules Modal -->
                 <div id="global-rules-modal" class="modal-overlay" style="display:none;">
