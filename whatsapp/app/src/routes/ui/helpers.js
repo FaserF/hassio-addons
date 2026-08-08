@@ -88,7 +88,13 @@ const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalClose = document.getElementById('modal-close');
 let modalResolver = null;
 
-function showConfirm(title, msg, confirmText = 'Confirm', cancelText = 'Cancel', btnType = 'danger') {
+function showConfirm(
+  title,
+  msg,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  btnType = 'danger'
+) {
   if (modalTitle) modalTitle.innerHTML = title;
   if (modalMessage) modalMessage.innerHTML = msg;
   if (modalConfirmBtn) {
