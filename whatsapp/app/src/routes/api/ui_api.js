@@ -96,7 +96,9 @@ export function registerUiApiRoutes(app) {
 
         // Identify self WhatsApp user JID
         const myJidRaw = session.sock?.user?.id || session.sock?.user?.jid;
-        const myJidClean = myJidRaw ? `${myJidRaw.split('@')[0].split(':')[0]}@s.whatsapp.net` : null;
+        const myJidClean = myJidRaw
+          ? `${myJidRaw.split('@')[0].split(':')[0]}@s.whatsapp.net`
+          : null;
 
         // Resolve final display names synchronously (with async background cache enrichment)
         const chats = Object.values(JidMap)
