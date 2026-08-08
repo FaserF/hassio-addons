@@ -30,7 +30,7 @@ export function getDefaultTelegramStore() {
     bot_username: '',
     bot_info: null,
     cached_chats: {}, // chatId -> { id, title, type, username, last_seen }
-    mappings: [], // [{ id, wa_jid, wa_name, tg_chat_id, tg_chat_title, tg_chat_type, sync_mode, include_group_name, include_sender_name, enabled }]
+    mappings: [], // [{ id, wa_jid, wa_name, tg_chat_id, tg_chat_title, tg_chat_type, sync_mode, include_group_name, include_sender_name, sync_self_messages, enabled }]
     message_maps: {}, // waMsgId -> { tgChatId, tgMsgId, waJid, timestamp }, tgMsgKey -> { waJid, waMsgId }
   };
 }

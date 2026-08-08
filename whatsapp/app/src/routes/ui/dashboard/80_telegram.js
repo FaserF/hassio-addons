@@ -54,7 +54,8 @@ export function renderTelegramMappings(mappings) {
       <td><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
       <td>
         <small style="color:var(--text-muted);">
-          Group: ${m.include_group_name ? 'Yes' : 'No'} | Sender: ${m.include_sender_name ? 'Yes' : 'No'}
+          Group: ${m.include_group_name ? 'Yes' : 'No'} | Sender: ${m.include_sender_name ? 'Yes' : 'No'}<br>
+          Sync Self Messages: <strong>${m.sync_self_messages ? 'Enabled' : 'Disabled (Off)'}</strong>
         </small>
       </td>
       <td>

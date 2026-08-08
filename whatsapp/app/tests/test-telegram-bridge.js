@@ -37,4 +37,13 @@ describe('Telegram Bridge Unit Tests', () => {
       await client.getMe();
     }, /Telegram Bot Token is not configured/);
   });
+
+  it('sync_self_messages default state is false in mapping creation', () => {
+    const mapping = {
+      wa_jid: '12345@g.us',
+      tg_chat_id: '98765',
+      sync_self_messages: false,
+    };
+    assert.strictEqual(mapping.sync_self_messages, false);
+  });
 });

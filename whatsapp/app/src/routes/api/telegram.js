@@ -60,6 +60,7 @@ export function registerTelegramRoutes(app) {
       sync_mode,
       include_group_name,
       include_sender_name,
+      sync_self_messages,
       enabled,
     } = req.body || {};
 
@@ -78,6 +79,7 @@ export function registerTelegramRoutes(app) {
       sync_mode: sync_mode || 'bidirectional',
       include_group_name: Boolean(include_group_name),
       include_sender_name: include_sender_name !== undefined ? Boolean(include_sender_name) : true,
+      sync_self_messages: Boolean(sync_self_messages),
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 

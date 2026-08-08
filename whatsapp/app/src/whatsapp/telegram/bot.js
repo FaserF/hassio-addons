@@ -1,4 +1,4 @@
-import { loadTelegramStore, saveTelegramStore, updateCachedChat } from './store.js';
+import { loadTelegramStore, updateCachedChat } from './store.js';
 import { logger } from '../../logger.js';
 
 export class TelegramBotClient {

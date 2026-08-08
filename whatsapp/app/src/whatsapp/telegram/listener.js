@@ -1,5 +1,5 @@
-import { loadTelegramStore, saveTelegramStore, updateCachedChat } from './store.js';
-import { TelegramBotClient, getTelegramBotClient } from './bot.js';
+import { loadTelegramStore, updateCachedChat } from './store.js';
+import { getTelegramBotClient } from './bot.js';
 import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './message_map.js';
 import { logger } from '../../logger.js';
 import { getSession } from '../../session.js';
@@ -41,7 +41,12 @@ export async function syncWhatsAppToTelegram(msg, waJid, groupName, senderName, 
     if (mapRecord) replyToTgMsgId = mapRecord.tgMsgId;
   }
 
+  const isFromMe = Boolean(msg.key?.fromMe);
+
   for (const mapping of mappings) {
+    if (isFromMe && !mapping.sync_self_messages) {
+      continue;
+    }
     try {
       const header = formatHeader(
         groupName,
