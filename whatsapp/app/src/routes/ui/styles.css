@@ -9,6 +9,8 @@
   --bg-app: #0b141a;
   --bg-sidebar: #111b21;
   --bg-card: #1e2a32;
+  --card-bg: #1e2a32;
+  --card-bg-hover: #26343d;
   --bg-main: #0b141a;
   --bg-input: #2a3942;
   --bg-input-focus: #313d45;
@@ -26,6 +28,7 @@
   --border-color: #222d34;
   --border-input: #2f3d45;
   --shadow-bubble: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
 
   /* Status */
@@ -51,6 +54,8 @@
   --bg-app: #f0f2f5;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f5f7f9;
   --bg-main: #f0f2f5;
   --bg-input: #f0f2f5;
   --bg-input-focus: #e6e9ec;
@@ -995,8 +1000,12 @@ html[data-theme='dark'] .banner-warning-icon {
   display: flex;
 }
 
-#tab-telegram.active {
-  padding-bottom: 60px;
+#tab-telegram.active,
+#tab-dashboard.active,
+#tab-logs.active,
+#tab-moderation.active {
+  min-height: min-content;
+  padding-bottom: 32px;
 }
 
 #tab-chats.active {
@@ -1570,7 +1579,7 @@ code {
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  background-color: var(--card-bg);
+  background-color: var(--bg-card);
 }
 .chat-list-panel {
   width: 320px;
