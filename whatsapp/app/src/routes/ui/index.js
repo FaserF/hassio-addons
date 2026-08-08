@@ -131,6 +131,7 @@ export function renderDashboard(sessionId) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="ui-assets/styles.css">
+    <link rel="stylesheet" href="ui-assets/styles/moderation.css">
 </head>
 <body>
   <div class="app-layout">
@@ -213,9 +214,9 @@ export function renderDashboard(sessionId) {
                 <h1 class="header-title" id="page-title">Dashboard</h1>
             </div>
             <div class="header-actions">
-                <div class="session-switcher">
-                    <span>Session:</span>
-                    <select id="session-select" onchange="switchSession(this.value)">
+                <div class="session-selector-container">
+                    <span class="session-label">Session:</span>
+                    <select id="session-select" class="session-select" onchange="switchSession(this.value)">
                         <option value="${escapeHtml(sessionId)}">${escapeHtml(sessionId)}</option>
                     </select>
                 </div>

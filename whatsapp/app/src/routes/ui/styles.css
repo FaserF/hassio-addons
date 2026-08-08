@@ -354,66 +354,7 @@ body {
   display: none;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
-  }
 
-  .sidebar {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    height: auto !important;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 !important;
-  }
-
-  .sidebar-header {
-    padding: 10px 16px !important;
-  }
-
-  .nav-menu {
-    flex-direction: row !important;
-    padding: 0 8px 8px 8px !important;
-    gap: 4px !important;
-    width: 100% !important;
-  }
-
-  .nav-item {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 4px !important;
-    font-size: 0.85rem !important;
-    gap: 6px !important;
-  }
-
-  .nav-item span {
-    display: none;
-  }
-
-  /* Hide toggle button on mobile — sidebar behaves as top nav bar */
-  .sidebar-toggle-btn {
-    display: none !important;
-  }
-
-  /* Never apply collapsed styles on mobile */
-  .sidebar.collapsed {
-    width: 100% !important;
-  }
-
-  .sidebar.collapsed .logo-text,
-  .sidebar.collapsed .nav-item > span {
-    opacity: 1 !important;
-    width: auto !important;
-    overflow: visible !important;
-  }
-
-  .sidebar.collapsed .nav-item::after {
-    display: none !important;
-  }
-}
 
 /* Chat Info Drawer Styles */
 .chat-info-drawer {
@@ -898,13 +839,15 @@ html[data-theme='dark'] .top-header {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  padding: 4px 10px;
+  padding: 6px 12px;
+  max-width: 320px;
 }
 
 .session-label {
   font-size: 12px;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .session-select {
@@ -913,8 +856,18 @@ html[data-theme='dark'] .top-header {
   color: var(--text-main);
   font-size: 13px;
   font-weight: 600;
+  font-family: inherit;
   outline: none;
   cursor: pointer;
+  max-width: 220px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.session-select option {
+  background-color: var(--bg-card);
+  color: var(--text-main);
 }
 
 .theme-toggle {
