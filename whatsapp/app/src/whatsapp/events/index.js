@@ -367,7 +367,12 @@ export function handleIncomingMessages(session) {
           '';
         // Fallback: If primary text extraction is empty or doesn't contain a link/domain,
         // perform a deep recursive property search on the entire message node to extract any string content / URL.
-        if (!text || !/(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(text)) {
+        // DO NOT perform fallback extraction on reactionMessage nodes!
+        if (
+          !text &&
+          !realMsgObj?.reactionMessage &&
+          !/(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(text || '')
+        ) {
           const extractStrings = (obj, depth = 0) => {
             if (!obj || depth > 5) return [];
             let found = [];

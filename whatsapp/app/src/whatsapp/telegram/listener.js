@@ -68,6 +68,25 @@ export async function syncWhatsAppToTelegram(
     if (mapRecord) replyToTgMsgId = mapRecord.tgMsgId;
   }
 
+  const reactionObj = msg.message?.reactionMessage;
+  if (reactionObj) {
+    const targetWaMsgId = reactionObj.key?.id;
+    const emoji = reactionObj.text || '';
+    if (targetWaMsgId) {
+      const mappedRecord = resolveTgMsgFromWa(targetWaMsgId);
+      if (mappedRecord && mappedRecord.tgMsgId) {
+        for (const mapping of mappings) {
+          if (mapping.sync_reactions !== false) {
+            bot.setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji).catch((err) => {
+              logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
+            });
+          }
+        }
+      }
+    }
+    return; // Reactions handled, do not send as a text message
+  }
+
   const isFromMe = Boolean(msg.key?.fromMe);
 
   for (const mapping of mappings) {
