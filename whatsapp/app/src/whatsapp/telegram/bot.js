@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { loadTelegramStore, updateCachedChat } from './store.js';
 
 const ALLOWED_METHODS = new Set([
@@ -15,6 +17,7 @@ const ALLOWED_METHODS = new Set([
   'sendAudio',
   'sendSticker',
   'sendLocation',
+  'sendPoll',
 ]);
 
 export class TelegramBotClient {
@@ -169,6 +172,65 @@ export class TelegramBotClient {
       text: text,
       parse_mode: 'HTML',
     });
+  }
+
+  
+  async sendMediaFile(method, chatId, filePathOrUrl, mediaField, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
+    if (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl)) {
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      if (caption) {
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'HTML');
+      }
+      if (replyToMessageId) formData.append('reply_to_message_id', String(replyToMessageId));
+      if (threadId) formData.append('message_thread_id', String(threadId));
+      if (disableNotification) formData.append('disable_notification', 'true');
+
+      const fileBuffer = fs.readFileSync(filePathOrUrl);
+      const filename = path.basename(filePathOrUrl);
+      const blob = new Blob([fileBuffer]);
+      formData.append(mediaField, blob, filename);
+
+      const url = `https://api.telegram.org/bot${this.token}/${encodeURIComponent(method)}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if (!data.ok) {
+        throw new Error(data.description || `Telegram API error on ${method}`);
+      }
+      return data.result;
+    } else {
+      const payload = {
+        chat_id: chatId,
+        [mediaField]: filePathOrUrl,
+        caption: caption,
+        parse_mode: 'HTML',
+        disable_notification: Boolean(disableNotification),
+      };
+      if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+      if (threadId) payload.message_thread_id = threadId;
+      return await this.request(method, payload);
+    }
+  }
+
+  async sendPoll(chatId, question, options = [], replyToMessageId = null, threadId = null, disableNotification = false) {
+    const payload = {
+      chat_id: chatId,
+      question: question,
+      options: JSON.stringify(options),
+      disable_notification: Boolean(disableNotification),
+    };
+    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
+    return await this.request('sendPoll', payload);
+  }
+
+  
+  async sendSticker(chatId, stickerUrlOrBuffer, replyToMessageId = null, threadId = null, disableNotification = false) {
+    return await this.sendMediaFile('sendSticker', chatId, stickerUrlOrBuffer, 'sticker', '', replyToMessageId, threadId, disableNotification);
   }
 
   async deleteMessage(chatId, messageId) {
