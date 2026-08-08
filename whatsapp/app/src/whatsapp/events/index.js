@@ -467,7 +467,9 @@ export function handleIncomingMessages(session) {
             contactObj?.displayName ||
             (contactObj?.vcard ? contactObj.vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
             'Contact Card';
-          const phoneMatch = contactObj?.vcard ? contactObj.vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : '';
+          const phoneMatch = contactObj?.vcard
+            ? contactObj.vcard.match(/TEL.*:(.*)/)?.[1]?.trim()
+            : '';
           const phoneInfo = phoneMatch ? ` (${phoneMatch})` : '';
           text = `👤 [Contact: ${displayName}${phoneInfo}]`;
         } else if (messageType === 'locationMessage' || messageType === 'liveLocationMessage') {
@@ -479,7 +481,10 @@ export function handleIncomingMessages(session) {
         } else if (messageType && messageType.startsWith('pollCreation')) {
           mediaType = 'poll';
           eventType = 'poll';
-          const pollObj = msg.message?.pollCreationMessage || msg.message?.pollCreationMessageV2 || msg.message?.pollCreationMessageV3;
+          const pollObj =
+            msg.message?.pollCreationMessage ||
+            msg.message?.pollCreationMessageV2 ||
+            msg.message?.pollCreationMessageV3;
           const question = pollObj?.name || '';
           const options = pollObj?.options?.map((o) => o.optionName).filter(Boolean) || [];
           const optStr = options.length > 0 ? ` Options: ${options.join(', ')}` : '';

@@ -448,11 +448,16 @@ async function runTests() {
   );
 
   // Test Fuzzy Search Suggestions & Unknown Command Response
-  const { levenshteinDistance, findCommandSuggestions } = await import(
-    '../src/whatsapp/moderation/commands.js'
+  const { levenshteinDistance, findCommandSuggestions } =
+    await import('../src/whatsapp/moderation/commands.js');
+  assert(
+    levenshteinDistance('cat', 'cut') === 1,
+    'levenshteinDistance calculates single edit correctly'
   );
-  assert(levenshteinDistance('cat', 'cut') === 1, 'levenshteinDistance calculates single edit correctly');
-  assert(levenshteinDistance('ping', 'pong') === 1, 'levenshteinDistance calculates single edit substitution');
+  assert(
+    levenshteinDistance('ping', 'pong') === 1,
+    'levenshteinDistance calculates single edit substitution'
+  );
   assert(levenshteinDistance('pin', 'ping') === 1, 'levenshteinDistance calculates single edit');
 
   const suggestions = findCommandSuggestions(

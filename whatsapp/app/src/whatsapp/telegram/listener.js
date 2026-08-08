@@ -248,7 +248,9 @@ export async function processTelegramUpdates() {
           const pa = update.poll_answer;
           const pollId = String(pa.poll_id);
           const voterName = pa.user
-            ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() || pa.user.username || 'Telegram User'
+            ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() ||
+              pa.user.username ||
+              'Telegram User'
             : 'Telegram User';
           const selectedOptionIds = pa.option_ids || [];
 
@@ -260,9 +262,10 @@ export async function processTelegramUpdates() {
             .map((idx) => pollOptions[idx] || `Option ${idx + 1}`)
             .join(', ');
 
-          const voteText = selectedOptionIds.length > 0
-            ? `📊 [Poll Vote: ${pollQuestion}]\n${voterName} voted for: ${selectedText}`
-            : `📊 [Poll Vote: ${pollQuestion}]\n${voterName} retracted vote`;
+          const voteText =
+            selectedOptionIds.length > 0
+              ? `📊 [Poll Vote: ${pollQuestion}]\n${voterName} voted for: ${selectedText}`
+              : `📊 [Poll Vote: ${pollQuestion}]\n${voterName} retracted vote`;
 
           const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
           const mappings = (store.mappings || []).filter(
@@ -287,7 +290,10 @@ export async function processTelegramUpdates() {
               try {
                 await session.sock.sendMessage(mapping.wa_jid, { text: voteText });
               } catch (e) {
-                logger.error({ error: e.message }, '❌ Failed to sync Telegram poll vote to WhatsApp');
+                logger.error(
+                  { error: e.message },
+                  '❌ Failed to sync Telegram poll vote to WhatsApp'
+                );
               }
             }
           }
@@ -464,7 +470,10 @@ export async function processTelegramUpdates() {
           } else if (msg.poll) {
             const p = msg.poll;
             const pollOptions = (p.options || []).map((o) => o.text);
-            const optStr = pollOptions.length > 0 ? `\nOptions:\n${pollOptions.map((o) => `• ${o}`).join('\n')}` : '';
+            const optStr =
+              pollOptions.length > 0
+                ? `\nOptions:\n${pollOptions.map((o) => `• ${o}`).join('\n')}`
+                : '';
             tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
             const pollId = String(p.id);
             if (!store.cached_polls) store.cached_polls = {};
