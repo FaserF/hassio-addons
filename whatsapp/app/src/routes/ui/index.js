@@ -248,6 +248,8 @@ export function renderDashboard(sessionId) {
 
             ${moderationView()}
 
+            ${telegramView()}
+
             <footer class="footer-info">
                 WhatsApp Gateway &bull; Session: <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)
             </footer>
@@ -511,6 +513,8 @@ export function renderDashboard(sessionId) {
             loadChats();
         } else if (tabId === 'moderation') {
             loadModerationConfig();
+        } else if (tabId === 'telegram') {
+            loadTelegramBridgeData();
         } else {
             document.body.classList.remove('chat-open');
         }

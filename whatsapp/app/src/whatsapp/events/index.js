@@ -171,24 +171,30 @@ export function handleIncomingMessages(session) {
           action = 'leave';
         } else if (
           st === 28 ||
-          st === 29 ||
           st === 33 ||
           st === 144 ||
           stNum === 28 ||
-          stNum === 29 ||
           stNum === 33 ||
           stNum === 144 ||
           stStr.includes('REMOVE')
         ) {
           action = 'remove';
         } else if (
+          st === 29 ||
           st === 30 ||
-          st === 31 ||
+          st === 145 ||
+          st === 146 ||
+          stNum === 29 ||
           stNum === 30 ||
+          stNum === 145 ||
+          stNum === 146 ||
           stStr.includes('PROMOTE') ||
           stStr.includes('DEMOTE')
         ) {
-          action = stStr.includes('DEMOTE') ? 'demote' : 'promote';
+          action =
+            st === 30 || stNum === 30 || st === 146 || stNum === 146 || stStr.includes('DEMOTE')
+              ? 'demote'
+              : 'promote';
         }
 
         // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
