@@ -7,10 +7,7 @@
  */
 export function waToTelegramHtml(text) {
   if (!text) return '';
-  let out = String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  let out = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Code blocks ```text```
   out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');

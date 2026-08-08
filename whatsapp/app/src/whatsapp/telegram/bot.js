@@ -46,7 +46,13 @@ export class TelegramBotClient {
     }
   }
 
-  async sendMessage(chatId, text, replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendMessage(
+    chatId,
+    text,
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     const payload = {
       chat_id: chatId,
       text: text,
@@ -59,7 +65,14 @@ export class TelegramBotClient {
     return await this.request('sendMessage', payload);
   }
 
-  async sendPhoto(chatId, photoUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendPhoto(
+    chatId,
+    photoUrlOrBuffer,
+    caption = '',
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     const payload = {
       chat_id: chatId,
       photo: photoUrlOrBuffer,
@@ -72,7 +85,14 @@ export class TelegramBotClient {
     return await this.request('sendPhoto', payload);
   }
 
-  async sendVoice(chatId, voiceUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendVoice(
+    chatId,
+    voiceUrlOrBuffer,
+    caption = '',
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     const payload = {
       chat_id: chatId,
       voice: voiceUrlOrBuffer,
@@ -85,7 +105,14 @@ export class TelegramBotClient {
     return await this.request('sendVoice', payload);
   }
 
-  async sendDocument(chatId, documentUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendDocument(
+    chatId,
+    documentUrlOrBuffer,
+    caption = '',
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     const payload = {
       chat_id: chatId,
       document: documentUrlOrBuffer,

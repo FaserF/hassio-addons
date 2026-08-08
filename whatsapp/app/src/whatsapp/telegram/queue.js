@@ -20,10 +20,16 @@ class DeadLetterQueue {
     } catch (err) {
       item.attempts += 1;
       if (item.attempts < item.retries) {
-        logger.warn({ attempt: item.attempts, error: err.message }, '⚠️ Retrying failed bridge task via Dead Letter Queue');
+        logger.warn(
+          { attempt: item.attempts, error: err.message },
+          '⚠️ Retrying failed bridge task via Dead Letter Queue'
+        );
         this.queue.push(item);
       } else {
-        logger.error({ error: err.message }, '❌ Bridge task failed permanently after maximum retries');
+        logger.error(
+          { error: err.message },
+          '❌ Bridge task failed permanently after maximum retries'
+        );
       }
     }
 

@@ -9,7 +9,13 @@ import { getSession } from '../../session.js';
 let pollingTimer = null;
 let lastUpdateId = 0;
 
-export function formatHeader(sourceGroup, senderName, includeGroup, includeSender, anonymizePhone = false) {
+export function formatHeader(
+  sourceGroup,
+  senderName,
+  includeGroup,
+  includeSender,
+  anonymizePhone = false
+) {
   const parts = [];
   if (includeGroup && sourceGroup) {
     parts.push(sourceGroup);
@@ -61,8 +67,10 @@ export async function syncWhatsAppToTelegram(
       continue;
     }
     if (mapping.ignore_command_prefixes && textContent) {
-      const prefixes = String(mapping.ignore_command_prefixes).split(',').map(s => s.trim());
-      if (prefixes.some(p => p && textContent.startsWith(p))) {
+      const prefixes = String(mapping.ignore_command_prefixes)
+        .split(',')
+        .map((s) => s.trim());
+      if (prefixes.some((p) => p && textContent.startsWith(p))) {
         continue;
       }
     }
@@ -76,7 +84,10 @@ export async function syncWhatsAppToTelegram(
       );
 
       let processedText = applyRegexReplacements(textContent, mapping.regex_replacements || []);
-      const formattedBody = mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : (processedText || '');
+      const formattedBody =
+        mapping.convert_formatting !== false
+          ? waToTelegramHtml(processedText)
+          : processedText || '';
       const fullText = `${header}${formattedBody}`;
 
       const silent = Boolean(mapping.silent_delivery);
@@ -87,10 +98,23 @@ export async function syncWhatsAppToTelegram(
         tgResult = await bot
           .sendPhoto(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId, threadId, silent)
           .catch(() => {
-            return bot.sendDocument(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId, threadId, silent);
+            return bot.sendDocument(
+              mapping.tg_chat_id,
+              mediaUrl,
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            );
           });
       } else {
-        tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+        tgResult = await bot.sendMessage(
+          mapping.tg_chat_id,
+          fullText,
+          replyToTgMsgId,
+          threadId,
+          silent
+        );
       }
 
       if (tgResult && tgResult.message_id && waMsgId) {

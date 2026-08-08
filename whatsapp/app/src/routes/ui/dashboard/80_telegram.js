@@ -131,8 +131,10 @@ export async function saveTelegramMappingModal() {
   const include_group_name = document.getElementById('tg-modal-inc-group')?.checked || false;
   const include_sender_name = document.getElementById('tg-modal-inc-sender')?.checked || false;
   const sync_self_messages = document.getElementById('tg-modal-sync-self')?.checked || false;
-  const convert_formatting = document.getElementById('tg-modal-convert-formatting')?.checked || false;
-  const anonymize_phone_numbers = document.getElementById('tg-modal-anonymize-phone')?.checked || false;
+  const convert_formatting =
+    document.getElementById('tg-modal-convert-formatting')?.checked || false;
+  const anonymize_phone_numbers =
+    document.getElementById('tg-modal-anonymize-phone')?.checked || false;
   const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {

@@ -9,15 +9,24 @@ import { applyRegexReplacements } from '../src/whatsapp/telegram/regex.js';
 describe('Telegram Bridge Unit Tests', () => {
   it('formatHeader respects group, sender and anonymize flags', () => {
     assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '[My Group | Alice]: ');
-    assert.strictEqual(formatHeader('My Group', '+491761234567', false, true, true), '[+49176***567]: ');
+    assert.strictEqual(
+      formatHeader('My Group', '+491761234567', false, true, true),
+      '[+49176***567]: '
+    );
     assert.strictEqual(formatHeader('My Group', 'Alice', false, true), '[Alice]: ');
     assert.strictEqual(formatHeader('My Group', 'Alice', true, false), '[My Group]: ');
     assert.strictEqual(formatHeader('My Group', 'Alice', false, false), '');
   });
 
   it('waToTelegramHtml converts WhatsApp formatting to HTML', () => {
-    assert.strictEqual(waToTelegramHtml('Hello *bold* and _italic_ world'), 'Hello <b>bold</b> and <i>italic</i> world');
-    assert.strictEqual(waToTelegramHtml('Check ~strike~ and ```code block```'), 'Check <s>strike</s> and <code>code block</code>');
+    assert.strictEqual(
+      waToTelegramHtml('Hello *bold* and _italic_ world'),
+      'Hello <b>bold</b> and <i>italic</i> world'
+    );
+    assert.strictEqual(
+      waToTelegramHtml('Check ~strike~ and ```code block```'),
+      'Check <s>strike</s> and <code>code block</code>'
+    );
   });
 
   it('anonymizePhoneNumber masks middle digits', () => {
@@ -53,6 +62,9 @@ describe('Telegram Bridge Unit Tests', () => {
       { search: 'http://\\S+', replace: '[LINK]', is_regex: true },
     ];
     assert.strictEqual(applyRegexReplacements('Hello FOO', replacements), 'Hello BAR');
-    assert.strictEqual(applyRegexReplacements('Visit http://example.com now', replacements), 'Visit [LINK] now');
+    assert.strictEqual(
+      applyRegexReplacements('Visit http://example.com now', replacements),
+      'Visit [LINK] now'
+    );
   });
 });
