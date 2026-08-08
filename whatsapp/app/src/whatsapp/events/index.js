@@ -23,6 +23,9 @@ import { resolvePollVotes } from './poll.js';
 import { registerAckListener } from './ack.js';
 import { registerReactionListener } from './reactions.js';
 import { registerPresenceListener } from './presence.js';
+import { syncWhatsAppToTelegram, startTelegramPolling } from '../telegram/listener.js';
+
+startTelegramPolling();
 import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
@@ -81,17 +84,23 @@ export function registerAllListeners(session) {
             update.action === 'remove' || update.action === 'leave' ? 'departure' : update.action;
           const updateWindowKey = `part_upd:${update.id}:${departureAction}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
-          if (
-            processedParticipantEvents.has(updateWindowKey) &&
-            now - processedParticipantEvents.get(updateWindowKey) < 15000
-          ) {
-            logger.debug(
-              { groupId: update.id, action: update.action },
-              '⏩ Skipping duplicate participant update from ev event'
-            );
-            return;
+          const existing = processedParticipantEvents.get(updateWindowKey);
+          if (existing && now - existing.ts < 15000) {
+            // Special case: If existing event was generic 'remove' and new event is explicit 'leave', allow 'leave' to override!
+            if (existing.action === 'remove' && update.action === 'leave') {
+              logger.info(
+                { groupId: update.id },
+                '🔄 Explicit voluntary leave event received after generic remove — upgrading action'
+              );
+            } else {
+              logger.debug(
+                { groupId: update.id, action: update.action },
+                '⏩ Skipping duplicate participant update from ev event'
+              );
+              return;
+            }
           }
-          processedParticipantEvents.set(updateWindowKey, now);
+          processedParticipantEvents.set(updateWindowKey, { ts: now, action: update.action });
         }
 
         if (update?.id && session?.sock?.groupMetadata) {
@@ -241,21 +250,27 @@ export function handleIncomingMessages(session) {
           const departureAction = action === 'remove' || action === 'leave' ? 'departure' : action;
           const updateWindowKey = `part_upd:${groupId}:${departureAction}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
-          if (
-            processedParticipantEvents.has(updateWindowKey) &&
-            now - processedParticipantEvents.get(updateWindowKey) < 15000
-          ) {
-            logger.debug(
-              { groupId, action },
-              '⏩ Skipping duplicate participant update from messageStubType'
-            );
-            continue;
+          const existing = processedParticipantEvents.get(updateWindowKey);
+          if (existing && now - existing.ts < 15000) {
+            // Special case: If existing event was generic 'remove' and new event is explicit 'leave', allow 'leave' to override!
+            if (existing.action === 'remove' && action === 'leave') {
+              logger.info(
+                { groupId },
+                '🔄 Explicit voluntary leave event received after generic remove — upgrading action'
+              );
+            } else {
+              logger.debug(
+                { groupId, action },
+                '⏩ Skipping duplicate participant update from messageStubType'
+              );
+              continue;
+            }
           }
-          processedParticipantEvents.set(updateWindowKey, now);
+          processedParticipantEvents.set(updateWindowKey, { ts: now, action });
           // Cleanup old keys
           if (processedParticipantEvents.size > 100) {
-            for (const [k, ts] of processedParticipantEvents.entries()) {
-              if (now - ts > 30000) processedParticipantEvents.delete(k);
+            for (const [k, obj] of processedParticipantEvents.entries()) {
+              if (now - (obj?.ts || 0) > 30000) processedParticipantEvents.delete(k);
             }
           }
 
@@ -648,6 +663,14 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
+        syncWhatsAppToTelegram(
+          msg,
+          senderJid,
+          isGroup ? (session.chatCache.get(senderJid)?.name || senderJid) : null,
+          senderName,
+          text,
+          mediaUrl
+        );
 
         logger.info(
           {

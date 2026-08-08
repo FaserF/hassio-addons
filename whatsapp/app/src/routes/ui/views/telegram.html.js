@@ -83,6 +83,7 @@ export default () => `
                 <thead>
                     <tr style="background:var(--bg-body); text-align:left;">
                         <th style="padding:12px 16px; width:70px;">Status</th>
+                        <th style="padding:12px 16px;">Mapping Name</th>
                         <th style="padding:12px 16px;"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Chat</th>
                         <th style="padding:12px 16px;"><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram Target</th>
                         <th style="padding:12px 16px;">Direction</th>
@@ -92,7 +93,7 @@ export default () => `
                 </thead>
                 <tbody id="tg-mappings-tbody">
                     <tr>
-                        <td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">
+                        <td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">
                             <i class="fas fa-link" style="font-size:32px; opacity:0.3; margin-bottom:8px; display:block;"></i>
                             No active chat mappings configured. Click "Add New Mapping" to start bridging.
                         </td>
@@ -107,7 +108,7 @@ export default () => `
         <div class="card" style="width:520px; max-width:90%; max-height:90vh; overflow-y:auto; background:var(--bg-card); padding:24px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <h3 style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-link"></i> Add Telegram Chat Mapping</h3>
+                    <h3 style="margin:0; font-size:16px; font-weight:600;" id="tg-modal-title"><i class="fas fa-link"></i> Add Telegram Chat Mapping</h3>
                     <a href="https://faserf.github.io/ha-whatsapp/telegram.html" target="_blank" style="color:var(--text-muted); font-size:14px;" title="View Telegram Bridge documentation">
                         <i class="fas fa-info-circle"></i>
                     </a>
@@ -116,6 +117,11 @@ export default () => `
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px;">
+                <input type="hidden" id="tg-modal-id">
+                <div>
+                    <label class="mod-field-label">Mapping Name (Optional)</label>
+                    <input type="text" id="tg-modal-mapping-name" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. Family Chat Bridge (Auto-generated if empty)">
+                </div>
                 <div>
                     <label class="mod-field-label">Select WhatsApp Chat / Group</label>
                     <select id="tg-modal-wa-select" class="mod-select" style="width:100%; margin-bottom:6px;" onchange="onTgWaSelectChange(this.value)">

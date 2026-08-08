@@ -35,13 +35,19 @@ function renderTelegramMappings(mappings) {
   if (!tbody) return;
 
   if (mappings.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">No active chat mappings configured. Click "Add New Mapping" to start bridging.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;"><i class="fas fa-link" style="font-size:32px; opacity:0.3; margin-bottom:8px; display:block;"></i>No active chat mappings configured. Click "Add New Mapping" to start bridging.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = mappings
-    .map(
-      (m) => `
+    .map((m) => {
+      const cleanWa = (m.wa_name && m.wa_name !== m.wa_jid) ? m.wa_name : m.wa_jid.split('@')[0];
+      const cleanTg = (m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ')) ? m.tg_chat_title : `TG ${m.tg_chat_id}`;
+      const threadLabel = m.tg_thread_id ? ` (Topic ${m.tg_thread_id})` : '';
+      const autoName = `${cleanWa} ↔ ${cleanTg}${threadLabel}`;
+      const displayName = m.name || autoName;
+
+      return `
     <tr>
       <td>
         <label class="mod-toggle-switch mod-toggle-sm">
@@ -49,6 +55,7 @@ function renderTelegramMappings(mappings) {
           <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
         </label>
       </td>
+      <td><strong>${escapeHtml(displayName)}</strong></td>
       <td><strong>${escapeHtml(m.wa_name || m.wa_jid)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.wa_jid)}</small></td>
       <td><strong>${escapeHtml(m.tg_chat_title || m.tg_chat_id)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.tg_chat_id)} (${m.tg_chat_type || 'chat'})</small></td>
       <td><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
@@ -58,12 +65,13 @@ function renderTelegramMappings(mappings) {
           Sync Self Messages: <strong>${m.sync_self_messages ? 'Enabled' : 'Disabled (Off)'}</strong>
         </small>
       </td>
-      <td>
-        <button class="btn btn-danger btn-sm" onclick="deleteTelegramMapping('${m.id}')"><i class="fas fa-trash"></i></button>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="btn btn-secondary btn-sm" style="margin-right:6px;" onclick="editTelegramMapping('${m.id}')" title="Edit mapping settings"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTelegramMapping('${m.id}')" title="Delete mapping"><i class="fas fa-trash"></i></button>
       </td>
     </tr>
-  `
-    )
+  `;
+    })
     .join('');
 }
 
@@ -193,9 +201,107 @@ function onTgTgSelectChange(val) {
 }
 
 function openAddTelegramMappingModal() {
+  const title = document.getElementById('tg-modal-title');
+  if (title) title.innerHTML = '<i class="fas fa-link"></i> Add Telegram Chat Mapping';
+  const idEl = document.getElementById('tg-modal-id');
+  if (idEl) idEl.value = '';
+
+  const nameEl = document.getElementById('tg-modal-mapping-name');
+  if (nameEl) nameEl.value = '';
+
+  const threadEl = document.getElementById('tg-modal-tg-thread-id');
+  if (threadEl) threadEl.value = '';
+
+  const prefixesEl = document.getElementById('tg-modal-ignore-prefixes');
+  if (prefixesEl) prefixesEl.value = '';
+
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
   populateTelegramModalDropdowns();
+}
+
+async function editTelegramMapping(id) {
+  try {
+    const res = await fetch('api/telegram/config');
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const mapping = (json.data.mappings || []).find((m) => m.id === id);
+    if (!mapping) return;
+
+    const title = document.getElementById('tg-modal-title');
+    if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Chat Mapping';
+
+    const idEl = document.getElementById('tg-modal-id');
+    if (idEl) idEl.value = mapping.id;
+
+    const nameEl = document.getElementById('tg-modal-mapping-name');
+    if (nameEl) nameEl.value = mapping.name || '';
+
+    const waJidEl = document.getElementById('tg-modal-wa-jid');
+    if (waJidEl) waJidEl.value = mapping.wa_jid || '';
+
+    const tgChatIdEl = document.getElementById('tg-modal-tg-chat-id');
+    if (tgChatIdEl) tgChatIdEl.value = mapping.tg_chat_id || '';
+
+    const threadEl = document.getElementById('tg-modal-tg-thread-id');
+    if (threadEl) threadEl.value = mapping.tg_thread_id || '';
+
+    const syncModeEl = document.getElementById('tg-modal-sync-mode');
+    if (syncModeEl) syncModeEl.value = mapping.sync_mode || 'bidirectional';
+
+    const prefixesEl = document.getElementById('tg-modal-ignore-prefixes');
+    if (prefixesEl) prefixesEl.value = mapping.ignore_command_prefixes || '';
+
+    const incGroupEl = document.getElementById('tg-modal-inc-group');
+    if (incGroupEl) incGroupEl.checked = Boolean(mapping.include_group_name);
+
+    const incSenderEl = document.getElementById('tg-modal-inc-sender');
+    if (incSenderEl) incSenderEl.checked = mapping.include_sender_name !== false;
+
+    const syncSelfEl = document.getElementById('tg-modal-sync-self');
+    if (syncSelfEl) syncSelfEl.checked = Boolean(mapping.sync_self_messages);
+
+    const convertFormatEl = document.getElementById('tg-modal-convert-formatting');
+    if (convertFormatEl) convertFormatEl.checked = mapping.convert_formatting !== false;
+
+    const anonymizePhoneEl = document.getElementById('tg-modal-anonymize-phone');
+    if (anonymizePhoneEl) anonymizePhoneEl.checked = Boolean(mapping.anonymize_phone_numbers);
+
+    const syncReactionsEl = document.getElementById('tg-modal-sync-reactions');
+    if (syncReactionsEl) syncReactionsEl.checked = mapping.sync_reactions !== false;
+
+    const modal = document.getElementById('tg-mapping-modal');
+    if (modal) modal.style.display = 'flex';
+
+    await populateTelegramModalDropdowns();
+
+    const waSelect = document.getElementById('tg-modal-wa-select');
+    if (waSelect) {
+      if (Array.from(waSelect.options).some((o) => o.value === mapping.wa_jid)) {
+        waSelect.value = mapping.wa_jid;
+        onTgWaSelectChange(mapping.wa_jid);
+      } else {
+        waSelect.value = '__custom__';
+        onTgWaSelectChange('__custom__');
+        if (waJidEl) waJidEl.value = mapping.wa_jid;
+      }
+    }
+
+    const tgSelect = document.getElementById('tg-modal-tg-select');
+    if (tgSelect) {
+      if (Array.from(tgSelect.options).some((o) => o.value === mapping.tg_chat_id)) {
+        tgSelect.value = mapping.tg_chat_id;
+        onTgTgSelectChange(mapping.tg_chat_id);
+      } else {
+        tgSelect.value = '__custom__';
+        onTgTgSelectChange('__custom__');
+        if (tgChatIdEl) tgChatIdEl.value = mapping.tg_chat_id;
+      }
+    }
+  } catch (e) {
+    showToast('Error opening mapping editor', 'danger');
+  }
 }
 
 function closeTelegramMappingModal() {
@@ -204,6 +310,9 @@ function closeTelegramMappingModal() {
 }
 
 async function saveTelegramMappingModal() {
+  const id = document.getElementById('tg-modal-id')?.value || '';
+  const mapping_name = document.getElementById('tg-modal-mapping-name')?.value || '';
+
   let wa_jid = document.getElementById('tg-modal-wa-select')?.value || '';
   if (wa_jid === '__custom__' || !wa_jid) {
     wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
@@ -237,6 +346,8 @@ async function saveTelegramMappingModal() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        id: id || undefined,
+        mapping_name,
         wa_jid,
         tg_chat_id,
         tg_thread_id,
@@ -278,6 +389,7 @@ window.saveTelegramBotToken = saveTelegramBotToken;
 window.toggleTelegramMapping = toggleTelegramMapping;
 window.deleteTelegramMapping = deleteTelegramMapping;
 window.openAddTelegramMappingModal = openAddTelegramMappingModal;
+window.editTelegramMapping = editTelegramMapping;
 window.closeTelegramMappingModal = closeTelegramMappingModal;
 window.saveTelegramMappingModal = saveTelegramMappingModal;
 window.onTgWaSelectChange = onTgWaSelectChange;
