@@ -15,7 +15,7 @@ export function waToTelegramHtml(text) {
   // Code blocks ```text```
   out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
   // Bold *text*
-  out = out.replace(/(^|\s|\W)\*([^\*\n]+)\*(\W|\s|$)/g, '$1<b>$2</b>$3');
+  out = out.replace(/(^|\s|\W)\*([^*\n]+)\*(\W|\s|$)/g, '$1<b>$2</b>$3');
   // Italic _text_
   out = out.replace(/(^|\s|\W)_([^_\n]+)_(\W|\s|$)/g, '$1<i>$2</i>$3');
   // Strikethrough ~text~
