@@ -96,9 +96,9 @@ export default () => `
     </div>
 
     <!-- Add/Edit Mapping Modal -->
-    <div id="tg-mapping-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
-        <div class="card" style="width:520px; max-width:90%; max-height:90vh; overflow-y:auto; background:var(--bg-card); padding:24px; border-radius:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+    <div id="tg-mapping-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+        <div class="card" style="width:520px; max-width:100%; max-height:calc(100vh - 40px); display:flex; flex-direction:column; overflow:hidden; background:var(--bg-card); padding:24px; border-radius:12px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px; flex-shrink:0;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <h3 style="margin:0; font-size:16px; font-weight:600;" id="tg-modal-title"><i class="fas fa-link"></i> Add Telegram Chat Mapping</h3>
                     <a href="https://faserf.github.io/ha-whatsapp/telegram.html" target="_blank" style="color:var(--text-muted); font-size:14px;" title="View Telegram Bridge documentation">
@@ -108,7 +108,7 @@ export default () => `
                 <button class="btn btn-secondary btn-sm" onclick="closeTelegramMappingModal()"><i class="fas fa-times"></i></button>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; flex-direction:column; gap:14px; overflow-y:auto; padding-right:4px;">
                 <input type="hidden" id="tg-modal-id">
                 <div>
                     <label class="mod-field-label"><i class="fas fa-robot"></i> Assigned Telegram Bot</label>
@@ -177,7 +177,7 @@ export default () => `
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--border-color); padding-top:12px;">
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px; border-top:1px solid var(--border-color); padding-top:12px; flex-shrink:0;">
                 <button class="btn btn-secondary btn-sm" onclick="closeTelegramMappingModal()">Cancel</button>
                 <button class="btn btn-primary btn-sm" onclick="saveTelegramMappingModal()"><i class="fas fa-save"></i> Save Mapping</button>
             </div>

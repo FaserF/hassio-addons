@@ -28,13 +28,25 @@ export function recordMessageMap(
   store.message_maps[waKey] = record;
   store.message_maps[tgKey] = record;
 
-  // Prune message maps older than 30 days to avoid unbounded growth
+  // LRU Pruning: Keep max 10,000 mapping pairs (20,000 keys) & remove entries older than 14 days
   const keys = Object.keys(store.message_maps);
-  if (keys.length > 5000) {
-    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  if (keys.length > 20000) {
+    const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const entries = [];
     for (const k of keys) {
-      if (store.message_maps[k].timestamp < cutoff) {
+      const item = store.message_maps[k];
+      if (item.timestamp < cutoff) {
         delete store.message_maps[k];
+      } else {
+        entries.push({ key: k, ts: item.timestamp });
+      }
+    }
+    // If still exceeds 20,000 keys after age cutoff, sort by oldest timestamp and prune excess
+    if (entries.length > 20000) {
+      entries.sort((a, b) => a.ts - b.ts);
+      const toRemove = entries.slice(0, entries.length - 20000);
+      for (const item of toRemove) {
+        delete store.message_maps[item.key];
       }
     }
   }

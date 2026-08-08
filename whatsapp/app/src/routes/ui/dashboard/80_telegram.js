@@ -332,6 +332,33 @@ function onTgTgSelectChange(val) {
   }
 }
 
+let tgMappingInitialState = null;
+
+function getTgMappingCurrentState() {
+  return {
+    bot_id: document.getElementById('tg-modal-bot-select')?.value || '',
+    mapping_name: document.getElementById('tg-modal-mapping-name')?.value || '',
+    wa_select: document.getElementById('tg-modal-wa-select')?.value || '',
+    wa_jid: document.getElementById('tg-modal-wa-jid')?.value || '',
+    tg_select: document.getElementById('tg-modal-tg-select')?.value || '',
+    tg_chat_id: document.getElementById('tg-modal-tg-chat-id')?.value || '',
+    tg_thread_id: document.getElementById('tg-modal-tg-thread-id')?.value || '',
+    sync_mode: document.getElementById('tg-modal-sync-mode')?.value || 'bidirectional',
+    ignore_prefixes: document.getElementById('tg-modal-ignore-prefixes')?.value || '',
+    inc_group: document.getElementById('tg-modal-inc-group')?.checked || false,
+    inc_sender: document.getElementById('tg-modal-inc-sender')?.checked || false,
+    sync_self: document.getElementById('tg-modal-sync-self')?.checked || false,
+    convert_formatting: document.getElementById('tg-modal-convert-formatting')?.checked || false,
+    anonymize_phone: document.getElementById('tg-modal-anonymize-phone')?.checked || false,
+    sync_reactions: document.getElementById('tg-modal-sync-reactions')?.checked || false,
+  };
+}
+
+function hasTgMappingUnsavedChanges() {
+  if (!tgMappingInitialState) return false;
+  return JSON.stringify(tgMappingInitialState) !== JSON.stringify(getTgMappingCurrentState());
+}
+
 function openAddTelegramMappingModal() {
   const title = document.getElementById('tg-modal-title');
   if (title) title.innerHTML = '<i class="fas fa-link"></i> Add Telegram Chat Mapping';
@@ -350,6 +377,9 @@ function openAddTelegramMappingModal() {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
   populateTelegramModalDropdowns();
+  setTimeout(() => {
+    tgMappingInitialState = getTgMappingCurrentState();
+  }, 100);
 }
 
 async function editTelegramMapping(id) {
@@ -431,14 +461,22 @@ async function editTelegramMapping(id) {
         if (tgChatIdEl) tgChatIdEl.value = mapping.tg_chat_id;
       }
     }
+
+    tgMappingInitialState = getTgMappingCurrentState();
   } catch (e) {
     showToast('Error opening mapping editor', 'danger');
   }
 }
 
-function closeTelegramMappingModal() {
+function closeTelegramMappingModal(force = false) {
+  if (!force && hasTgMappingUnsavedChanges()) {
+    if (!confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
+      return;
+    }
+  }
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'none';
+  tgMappingInitialState = null;
 }
 
 async function saveTelegramMappingModal() {
@@ -514,7 +552,7 @@ async function saveTelegramMappingModal() {
       showToast(data.error || 'Failed to save mapping', 'danger');
     } else {
       showToast('Telegram mapping saved successfully!', 'success');
-      closeTelegramMappingModal();
+      closeTelegramMappingModal(true);
       loadTelegramBridgeData();
     }
   } catch (e) {

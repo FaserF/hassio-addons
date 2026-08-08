@@ -581,9 +581,15 @@ export function renderDashboard(sessionId) {
         if (target && (target.id === 'sidebar-toggle-btn' || (target.closest && target.closest('#sidebar-toggle-btn')))) {
             toggleSidebar(e);
         }
-        if (target && target.classList && target.classList.contains('modal-overlay')) {
+        if (target && target.classList && (target.classList.contains('modal-overlay') || target.classList.contains('modal'))) {
             if (target.id === 'confirm-modal' && typeof closeConfirm === 'function') {
                 closeConfirm(false);
+            } else if (target.id === 'tg-mapping-modal' && typeof closeTelegramMappingModal === 'function') {
+                closeTelegramMappingModal();
+            } else if (target.id === 'tg-bot-modal' && typeof closeTelegramBotModal === 'function') {
+                closeTelegramBotModal();
+            } else if (typeof target.style === 'object' && target.style.display && target.style.display !== 'none') {
+                target.style.display = 'none';
             } else {
                 target.classList.remove('show');
             }
@@ -592,10 +598,14 @@ export function renderDashboard(sessionId) {
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
-            var openModals = document.querySelectorAll('.modal-overlay.show, .modal-overlay[style*="display: block"], .modal-overlay[style*="display: flex"]');
+            var openModals = document.querySelectorAll('.modal-overlay.show, .modal-overlay[style*="display: block"], .modal-overlay[style*="display: flex"], .modal[style*="display: flex"], .modal[style*="display: block"]');
             openModals.forEach(function (m) {
                 if (m.id === 'confirm-modal' && typeof closeConfirm === 'function') {
                     closeConfirm(false);
+                } else if (m.id === 'tg-mapping-modal' && typeof closeTelegramMappingModal === 'function') {
+                    closeTelegramMappingModal();
+                } else if (m.id === 'tg-bot-modal' && typeof closeTelegramBotModal === 'function') {
+                    closeTelegramBotModal();
                 } else if (typeof m.style === 'object' && m.style.display && m.style.display !== 'none') {
                     m.style.display = 'none';
                 } else {
