@@ -313,7 +313,11 @@ export async function processTelegramUpdates() {
             const fileId = msg.animation.file_id;
             const fileUrl = await bot.getFileUrl(fileId);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'video', mimetype: msg.animation.mime_type || 'video/mp4' };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: msg.animation.mime_type || 'video/mp4',
+              };
             }
           } else if (msg.photo && Array.isArray(msg.photo) && msg.photo.length > 0) {
             tgText = tgText || '[📷 Photo]';
@@ -326,25 +330,42 @@ export async function processTelegramUpdates() {
             tgText = tgText || '[🎥 Video]';
             const fileUrl = await bot.getFileUrl(msg.video.file_id);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'video', mimetype: msg.video.mime_type || 'video/mp4' };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: msg.video.mime_type || 'video/mp4',
+              };
             }
           } else if (msg.voice) {
             tgText = tgText || '[🎤 Voice Note]';
             const fileUrl = await bot.getFileUrl(msg.voice.file_id);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'audio', mimetype: msg.voice.mime_type || 'audio/ogg' };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'audio',
+                mimetype: msg.voice.mime_type || 'audio/ogg',
+              };
             }
           } else if (msg.audio) {
             tgText = tgText || '[🎵 Audio]';
             const fileUrl = await bot.getFileUrl(msg.audio.file_id);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'audio', mimetype: msg.audio.mime_type || 'audio/mp3' };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'audio',
+                mimetype: msg.audio.mime_type || 'audio/mp3',
+              };
             }
           } else if (msg.document) {
             tgText = tgText || `[📄 Document: ${msg.document.file_name || 'file'}]`;
             const fileUrl = await bot.getFileUrl(msg.document.file_id);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'document', mimetype: msg.document.mime_type || 'application/octet-stream', fileName: msg.document.file_name };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'document',
+                mimetype: msg.document.mime_type || 'application/octet-stream',
+                fileName: msg.document.file_name,
+              };
             }
           }
         } catch (mediaErr) {
@@ -392,11 +413,24 @@ export async function processTelegramUpdates() {
                 if (mediaPayload.type === 'image') {
                   waContent = { image: { url: mediaPayload.url }, caption: outboundWaText };
                 } else if (mediaPayload.type === 'video') {
-                  waContent = { video: { url: mediaPayload.url }, caption: outboundWaText, gifPlayback: Boolean(msg.animation) };
+                  waContent = {
+                    video: { url: mediaPayload.url },
+                    caption: outboundWaText,
+                    gifPlayback: Boolean(msg.animation),
+                  };
                 } else if (mediaPayload.type === 'audio') {
-                  waContent = { audio: { url: mediaPayload.url }, mimetype: mediaPayload.mimetype, ptt: Boolean(msg.voice) };
+                  waContent = {
+                    audio: { url: mediaPayload.url },
+                    mimetype: mediaPayload.mimetype,
+                    ptt: Boolean(msg.voice),
+                  };
                 } else if (mediaPayload.type === 'document') {
-                  waContent = { document: { url: mediaPayload.url }, mimetype: mediaPayload.mimetype, fileName: mediaPayload.fileName || 'file', caption: outboundWaText };
+                  waContent = {
+                    document: { url: mediaPayload.url },
+                    mimetype: mediaPayload.mimetype,
+                    fileName: mediaPayload.fileName || 'file',
+                    caption: outboundWaText,
+                  };
                 }
               }
 
