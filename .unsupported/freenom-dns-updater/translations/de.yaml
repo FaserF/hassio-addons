@@ -1,7 +1,0 @@
-configuration:
-  config_file:
-    name: "Konfigurationsdatei"
-    description: "Pfad zur Konfigurationsdatei."
-  update_time_in_seconds:
-    name: "Aktualisierungsintervall"
-    description: "Intervall für DNS-Aktualisierungen in Sekunden."
