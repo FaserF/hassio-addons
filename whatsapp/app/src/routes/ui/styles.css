@@ -891,9 +891,10 @@ html[data-theme='dark'] .top-header {
 
 .content-body {
   padding: 32px;
-  padding-bottom: 48px;
+  padding-bottom: 64px;
   overflow-y: auto;
-  flex: 1 1 auto;
+  overflow-x: hidden;
+  flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -947,6 +948,7 @@ html[data-theme='dark'] .banner-warning-icon {
   display: none;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
 }
 
 .tab-panel.active {
@@ -957,12 +959,13 @@ html[data-theme='dark'] .banner-warning-icon {
 #tab-dashboard.active,
 #tab-logs.active,
 #tab-moderation.active {
-  min-height: min-content;
+  flex: 0 0 auto;
+  min-height: max-content;
   padding-bottom: 32px;
 }
 
 #tab-chats.active {
-  flex: 1;
+  flex: 1 1 auto;
   height: 100%;
   min-height: 0;
 }
