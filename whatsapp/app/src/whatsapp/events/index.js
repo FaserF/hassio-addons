@@ -721,7 +721,16 @@ export function handleIncomingMessages(session) {
             session.chatCache?.get(senderJid)?.name ||
             senderJid
           : null;
-        syncWhatsAppToTelegram(msg, senderJid, resolvedGroupName, senderName, text, mediaUrl, mediaPath, mediaType);
+        syncWhatsAppToTelegram(
+          msg,
+          senderJid,
+          resolvedGroupName,
+          senderName,
+          text,
+          mediaUrl,
+          mediaPath,
+          mediaType
+        );
 
         logger.info(
           {

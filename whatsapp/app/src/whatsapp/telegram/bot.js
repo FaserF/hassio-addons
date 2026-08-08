@@ -174,8 +174,16 @@ export class TelegramBotClient {
     });
   }
 
-  
-  async sendMediaFile(method, chatId, filePathOrUrl, mediaField, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendMediaFile(
+    method,
+    chatId,
+    filePathOrUrl,
+    mediaField,
+    caption = '',
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     if (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl)) {
       const formData = new FormData();
       formData.append('chat_id', chatId);
@@ -216,7 +224,14 @@ export class TelegramBotClient {
     }
   }
 
-  async sendPoll(chatId, question, options = [], replyToMessageId = null, threadId = null, disableNotification = false) {
+  async sendPoll(
+    chatId,
+    question,
+    options = [],
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
     const payload = {
       chat_id: chatId,
       question: question,
@@ -228,9 +243,23 @@ export class TelegramBotClient {
     return await this.request('sendPoll', payload);
   }
 
-  
-  async sendSticker(chatId, stickerUrlOrBuffer, replyToMessageId = null, threadId = null, disableNotification = false) {
-    return await this.sendMediaFile('sendSticker', chatId, stickerUrlOrBuffer, 'sticker', '', replyToMessageId, threadId, disableNotification);
+  async sendSticker(
+    chatId,
+    stickerUrlOrBuffer,
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
+    return await this.sendMediaFile(
+      'sendSticker',
+      chatId,
+      stickerUrlOrBuffer,
+      'sticker',
+      '',
+      replyToMessageId,
+      threadId,
+      disableNotification
+    );
   }
 
   async deleteMessage(chatId, messageId) {

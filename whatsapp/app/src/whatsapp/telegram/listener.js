@@ -155,30 +155,118 @@ export async function syncWhatsAppToTelegram(
       const threadId = mapping.tg_thread_id || null;
 
       let tgResult = null;
-      const mediaSource = (mediaPath && fs.existsSync(mediaPath)) ? mediaPath : mediaUrl;
+      const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
       if (mediaSource) {
         if (mediaType === 'sticker') {
-          tgResult = await bot.sendMediaFile('sendSticker', mapping.tg_chat_id, mediaSource, 'sticker', '', replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendSticker',
+              mapping.tg_chat_id,
+              mediaSource,
+              'sticker',
+              '',
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
         } else if (mediaType === 'image') {
-          tgResult = await bot.sendMediaFile('sendPhoto', mapping.tg_chat_id, mediaSource, 'photo', fullText, replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendPhoto',
+              mapping.tg_chat_id,
+              mediaSource,
+              'photo',
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
         } else if (mediaType === 'video') {
-          tgResult = await bot.sendMediaFile('sendVideo', mapping.tg_chat_id, mediaSource, 'video', fullText, replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendVideo',
+              mapping.tg_chat_id,
+              mediaSource,
+              'video',
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
         } else if (mediaType === 'audio') {
-          tgResult = await bot.sendMediaFile('sendVoice', mapping.tg_chat_id, mediaSource, 'voice', fullText, replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendVoice',
+              mapping.tg_chat_id,
+              mediaSource,
+              'voice',
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
         } else if (mediaType === 'document') {
-          tgResult = await bot.sendMediaFile('sendDocument', mapping.tg_chat_id, mediaSource, 'document', fullText, replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendDocument',
+              mapping.tg_chat_id,
+              mediaSource,
+              'document',
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
         }
 
         if (!tgResult) {
-          tgResult = await bot.sendMediaFile('sendPhoto', mapping.tg_chat_id, mediaSource, 'photo', fullText, replyToTgMsgId, threadId, silent)
-            .catch(() => bot.sendMediaFile('sendDocument', mapping.tg_chat_id, mediaSource, 'document', fullText, replyToTgMsgId, threadId, silent))
+          tgResult = await bot
+            .sendMediaFile(
+              'sendPhoto',
+              mapping.tg_chat_id,
+              mediaSource,
+              'photo',
+              fullText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() =>
+              bot.sendMediaFile(
+                'sendDocument',
+                mapping.tg_chat_id,
+                mediaSource,
+                'document',
+                fullText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              )
+            )
             .catch(() => {
               const mediaFallbackText = `${fullText}\n<i>[Media File Attached]</i>`;
-              return bot.sendMessage(mapping.tg_chat_id, mediaFallbackText, replyToTgMsgId, threadId, silent);
+              return bot.sendMessage(
+                mapping.tg_chat_id,
+                mediaFallbackText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              );
             });
         }
       } else {
-        tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+        tgResult = await bot.sendMessage(
+          mapping.tg_chat_id,
+          fullText,
+          replyToTgMsgId,
+          threadId,
+          silent
+        );
       }
 
       if (tgResult && tgResult.message_id && waMsgId) {
