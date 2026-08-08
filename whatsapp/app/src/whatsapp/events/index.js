@@ -387,6 +387,9 @@ export function handleIncomingMessages(session) {
                     'fileSha256',
                     'fileEncSha256',
                     'directPath',
+                    'url',
+                    'clientUrl',
+                    'deprecatedMms3Url',
                     'jpegThumbnail',
                     'streamingSidecar',
                     'encApiKey',
@@ -400,7 +403,8 @@ export function handleIncomingMessages(session) {
           };
           const allStrings = extractStrings(msg.message);
           const urlMatch = allStrings.find((s) =>
-            /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s)
+            /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s) &&
+            !/(a\.whatsapp\.net|mmg\.whatsapp\.net)/i.test(s)
           );
           if (urlMatch && !text.includes(urlMatch)) {
             text = text ? `${text} ${urlMatch}` : urlMatch;
@@ -478,11 +482,20 @@ export function handleIncomingMessages(session) {
           try {
             const mediaContent = msg.message[messageType];
             caption = mediaContent.caption || '';
-            text = text || caption || `[Media: ${messageType}]`;
             mediaType = messageType
               .replace('Message', '')
               .replace('documentWithCaption', 'document')
               .replace('ptv', 'video');
+
+            const friendlyLabelMap = {
+              sticker: '🎨 [Sticker]',
+              image: '📷 [Image]',
+              video: '🎥 [GIF/Video]',
+              audio: '🎵 [Audio]',
+              document: '📄 [Document]',
+            };
+            const friendlyLabel = friendlyLabelMap[mediaType] || `[${mediaType}]`;
+            text = caption ? caption : friendlyLabel;
             mimeType = mediaContent.mimetype;
 
             const buffer = await downloadMediaMessage(

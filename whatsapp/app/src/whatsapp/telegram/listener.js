@@ -52,9 +52,6 @@ export async function syncWhatsAppToTelegram(
 
   if (mappings.length === 0) return;
 
-  const bot = getTelegramBotClient();
-  if (!bot) return;
-
   const waMsgId = msg.key?.id;
   if (waMsgId) {
     const isBotEcho = resolveTgMsgFromWa(waMsgId);
@@ -77,9 +74,12 @@ export async function syncWhatsAppToTelegram(
       if (mappedRecord && mappedRecord.tgMsgId) {
         for (const mapping of mappings) {
           if (mapping.sync_reactions !== false) {
-            bot.setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji).catch((err) => {
-              logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
-            });
+            const bot = getTelegramBotClient(mapping.bot_id);
+            if (bot) {
+              bot.setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji).catch((err) => {
+                logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
+              });
+            }
           }
         }
       }
@@ -93,6 +93,8 @@ export async function syncWhatsAppToTelegram(
     if (isFromMe && !mapping.sync_self_messages) {
       continue;
     }
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) continue;
     if (mapping.ignore_command_prefixes && textContent) {
       const cleanText = textContent.trim();
       const prefixes = String(mapping.ignore_command_prefixes)
@@ -177,98 +179,109 @@ export async function syncWhatsAppToTelegram(
   }
 }
 
+const lastUpdateIds = new Map();
+
 export async function processTelegramUpdates() {
   const store = loadTelegramStore();
-  if (!store.enabled || !store.bot_token) return;
+  if (!store.enabled) return;
 
-  const bot = getTelegramBotClient();
-  if (!bot) return;
+  const bots = (store.bots || []).filter((b) => b.enabled && b.token);
+  if (bots.length === 0) return;
 
-  try {
-    const updates = await bot.request('getUpdates', {
-      offset: lastUpdateId + 1,
-      limit: 50,
-      timeout: 0,
-      allowed_updates: [
-        'message',
-        'edited_message',
-        'channel_post',
-        'edited_channel_post',
-        'message_reaction',
-        'message_reaction_count',
-      ],
-    });
+  for (const botConfig of bots) {
+    const bot = getTelegramBotClient(botConfig.id);
+    if (!bot) continue;
 
-    if (!Array.isArray(updates) || updates.length === 0) return;
+    let lastUpdateId = lastUpdateIds.get(botConfig.id) || 0;
 
-    for (const update of updates) {
-      lastUpdateId = Math.max(lastUpdateId, update.update_id);
+    try {
+      const updates = await bot.request('getUpdates', {
+        offset: lastUpdateId + 1,
+        limit: 50,
+        timeout: 0,
+        allowed_updates: [
+          'message',
+          'edited_message',
+          'channel_post',
+          'edited_channel_post',
+          'message_reaction',
+          'message_reaction_count',
+        ],
+      });
 
-      // Handle Telegram Message Reactions (message_reaction updates)
-      if (update.message_reaction) {
-        const reactObj = update.message_reaction;
-        const tgChatId = String(reactObj.chat.id);
-        const tgMsgId = String(reactObj.message_id);
-        const newReactions = reactObj.new_reaction || [];
-        const latestEmoji =
-          newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
+      if (!Array.isArray(updates) || updates.length === 0) continue;
 
+      for (const update of updates) {
+        lastUpdateId = Math.max(lastUpdateId, update.update_id);
+        lastUpdateIds.set(botConfig.id, lastUpdateId);
+
+        // Handle Telegram Message Reactions (message_reaction updates)
+        if (update.message_reaction) {
+          const reactObj = update.message_reaction;
+          const tgChatId = String(reactObj.chat.id);
+          const tgMsgId = String(reactObj.message_id);
+          const newReactions = reactObj.new_reaction || [];
+          const latestEmoji =
+            newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
+
+          const mappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              String(m.tg_chat_id) === tgChatId &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          if (mappings.length > 0) {
+            const mapped = resolveWaMsgFromTg(tgChatId, tgMsgId);
+            if (mapped && mapped.waMsgId && mapped.waJid) {
+              let session = getSession('default');
+              if (!session || !session.sock || !session.isConnected) {
+                for (const s of sessions.values()) {
+                  if (s.sock && s.isConnected) {
+                    session = s;
+                    break;
+                  }
+                }
+              }
+              if (session && session.sock && session.isConnected) {
+                try {
+                  const reactionKey = {
+                    remoteJid: mapped.waJid,
+                    id: mapped.waMsgId,
+                    fromMe: mapped.fromMe !== undefined ? mapped.fromMe : false,
+                  };
+                  await session.sock.sendMessage(mapped.waJid, {
+                    react: {
+                      text: latestEmoji || '', // Empty string removes reaction in Baileys
+                      key: reactionKey,
+                    },
+                  });
+                } catch (reactErr) {
+                  logger.error(
+                    { error: reactErr.message },
+                    '❌ Failed to sync Telegram reaction to WhatsApp'
+                  );
+                }
+              }
+            }
+          }
+          continue;
+        }
+
+        const msg = update.message || update.channel_post;
+        if (!msg || !msg.chat) continue;
+
+        updateCachedChat(msg.chat, botConfig.id);
+
+        const tgChatId = String(msg.chat.id);
         const mappings = (store.mappings || []).filter(
           (m) =>
             m.enabled &&
             String(m.tg_chat_id) === tgChatId &&
+            (!m.bot_id || m.bot_id === botConfig.id) &&
             (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
         );
-
-        if (mappings.length > 0) {
-          const mapped = resolveWaMsgFromTg(tgChatId, tgMsgId);
-          if (mapped && mapped.waMsgId && mapped.waJid) {
-            let session = getSession('default');
-            if (!session || !session.sock || !session.isConnected) {
-              for (const s of sessions.values()) {
-                if (s.sock && s.isConnected) {
-                  session = s;
-                  break;
-                }
-              }
-            }
-            if (session && session.sock && session.isConnected) {
-              try {
-                const reactionKey = {
-                  remoteJid: mapped.waJid,
-                  id: mapped.waMsgId,
-                  fromMe: mapped.fromMe !== undefined ? mapped.fromMe : false,
-                };
-                await session.sock.sendMessage(mapped.waJid, {
-                  react: {
-                    text: latestEmoji || '', // Empty string removes reaction in Baileys
-                    key: reactionKey,
-                  },
-                });
-              } catch (reactErr) {
-                logger.error(
-                  { error: reactErr.message },
-                  '❌ Failed to sync Telegram reaction to WhatsApp'
-                );
-              }
-            }
-          }
-        }
-        continue;
-      }
-
-      const msg = update.message || update.channel_post;
-      if (!msg || !msg.chat) continue;
-
-      updateCachedChat(msg.chat);
-
-      const tgChatId = String(msg.chat.id);
-      const mappings = (store.mappings || []).filter(
-        (m) =>
-          m.enabled &&
-          String(m.tg_chat_id) === tgChatId &&
-          (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
-      );
 
       if (mappings.length === 0) continue;
 
@@ -343,10 +356,11 @@ export async function processTelegramUpdates() {
             );
           }
         }
+        }
       }
+    } catch (err) {
+      logger.warn({ error: err.message, botId: botConfig.id }, '⚠️ Error polling Telegram updates');
     }
-  } catch (err) {
-    logger.warn({ error: err.message }, '⚠️ Error polling Telegram updates');
   }
 }
 

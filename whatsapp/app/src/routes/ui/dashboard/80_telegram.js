@@ -1,5 +1,7 @@
 // Telegram Bridge Dashboard UI Logic
 
+let cachedTelegramBots = [];
+
 async function loadTelegramBridgeData() {
   try {
     const res = await fetch('api/telegram/config');
@@ -9,28 +11,55 @@ async function loadTelegramBridgeData() {
       const toggle = document.getElementById('tg-global-toggle');
       if (toggle) toggle.checked = Boolean(cfg.enabled);
 
-      const tokenInput = document.getElementById('tg-bot-token-input');
-      if (tokenInput && cfg.bot_token) tokenInput.value = cfg.bot_token;
-
-      const badge = document.getElementById('tg-bot-status-badge');
-      const badgeText = document.getElementById('tg-bot-status-text');
-      if (badge && badgeText) {
-        if (cfg.bot_username) {
-          badge.style.display = 'flex';
-          badgeText.innerText = `Connected Telegram Bot: @${cfg.bot_username}`;
-        } else {
-          badge.style.display = 'none';
-        }
-      }
-
-      renderTelegramMappings(cfg.mappings || []);
+      cachedTelegramBots = cfg.bots || [];
+      renderTelegramBots(cachedTelegramBots);
+      renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
   }
 }
 
-function renderTelegramMappings(mappings) {
+function renderTelegramBots(bots) {
+  const container = document.getElementById('tg-bots-list-container');
+  if (!container) return;
+
+  if (!bots || bots.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; color:var(--text-muted); padding:24px; border:1px dashed var(--border-color); border-radius:8px;">
+        <i class="fas fa-robot" style="font-size:28px; opacity:0.4; margin-bottom:8px; display:block;"></i>
+        No Telegram Bots configured. Click "Add Telegram Bot" to connect your first bot via Bot Token.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = bots
+    .map(
+      (b) => `
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:8px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:14px;">${escapeHtml(b.name || '@' + b.username)}</div>
+          <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+            Username: @${escapeHtml(b.username || 'unknown')} | Token: ${escapeHtml(b.token ? b.token.substring(0, 10) + '...' : 'none')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="editTelegramBot('${b.id}')" title="Edit Bot"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTelegramBot('${b.id}')" title="Delete Bot"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `
+    )
+    .join('');
+}
+
+function renderTelegramMappings(mappings, bots = []) {
   const tbody = document.getElementById('tg-mappings-tbody');
   if (!tbody) return;
 
@@ -41,6 +70,9 @@ function renderTelegramMappings(mappings) {
 
   tbody.innerHTML = mappings
     .map((m) => {
+      const assignedBot = bots.find((b) => b.id === m.bot_id);
+      const botLabel = assignedBot ? `@${assignedBot.username}` : 'Default Bot';
+
       const waTitle = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : '';
       const tgTitle =
         m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ') ? m.tg_chat_title : '';
@@ -67,7 +99,10 @@ function renderTelegramMappings(mappings) {
           <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
         </label>
       </td>
-      <td style="vertical-align:middle; padding:12px 14px;"><strong>${escapeHtml(displayName)}</strong></td>
+      <td style="vertical-align:middle; padding:12px 14px;">
+        <strong>${escapeHtml(displayName)}</strong><br>
+        <span class="badge" style="background:rgba(0,136,204,0.12); color:#0088cc; font-size:10px; padding:2px 6px; border-radius:4px;"><i class="fas fa-robot"></i> ${escapeHtml(botLabel)}</span>
+      </td>
       <td style="vertical-align:middle; padding:12px 14px;">${waDisplay}</td>
       <td style="vertical-align:middle; padding:12px 14px;">${tgDisplay}</td>
       <td style="vertical-align:middle; padding:12px 14px;"><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
@@ -101,23 +136,81 @@ async function toggleTelegramBridge(enabled) {
   }
 }
 
-async function saveTelegramBotToken() {
-  const token = document.getElementById('tg-bot-token-input')?.value || '';
+function openAddTelegramBotModal() {
+  const title = document.getElementById('tg-bot-modal-title');
+  if (title) title.innerHTML = '<i class="fas fa-robot"></i> Add Telegram Bot';
+
+  const idEl = document.getElementById('tg-bot-modal-id');
+  if (idEl) idEl.value = '';
+  const nameEl = document.getElementById('tg-bot-modal-name');
+  if (nameEl) nameEl.value = '';
+  const tokenEl = document.getElementById('tg-bot-modal-token');
+  if (tokenEl) tokenEl.value = '';
+
+  const modal = document.getElementById('tg-bot-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function editTelegramBot(botId) {
+  const bot = cachedTelegramBots.find((b) => b.id === botId);
+  if (!bot) return;
+
+  const title = document.getElementById('tg-bot-modal-title');
+  if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Bot';
+
+  const idEl = document.getElementById('tg-bot-modal-id');
+  if (idEl) idEl.value = bot.id;
+  const nameEl = document.getElementById('tg-bot-modal-name');
+  if (nameEl) nameEl.value = bot.name || '';
+  const tokenEl = document.getElementById('tg-bot-modal-token');
+  if (tokenEl) tokenEl.value = bot.token || '';
+
+  const modal = document.getElementById('tg-bot-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeTelegramBotModal() {
+  const modal = document.getElementById('tg-bot-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveTelegramBotModal() {
+  const id = document.getElementById('tg-bot-modal-id')?.value || '';
+  const name = document.getElementById('tg-bot-modal-name')?.value || '';
+  const token = document.getElementById('tg-bot-modal-token')?.value || '';
+
+  if (!token.trim()) {
+    showToast('Please enter a valid Bot Token', 'warning');
+    return;
+  }
+
   try {
-    const res = await fetch('api/telegram/config', {
+    const res = await fetch('api/telegram/bots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bot_token: token }),
+      body: JSON.stringify({ id: id || undefined, name, token }),
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to save bot token', 'danger');
+      showToast(data.error || 'Failed to save bot', 'danger');
     } else {
-      showToast('Bot token validated and saved successfully! 🤖', 'success');
+      showToast('Telegram Bot saved & connected successfully! 🤖', 'success');
+      closeTelegramBotModal();
       loadTelegramBridgeData();
     }
   } catch (e) {
-    showToast('Error connecting to server', 'danger');
+    showToast('Error saving Bot Token', 'danger');
+  }
+}
+
+async function deleteTelegramBot(botId) {
+  if (!confirm('Are you sure you want to remove this Telegram Bot and all associated mappings?')) return;
+  try {
+    await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
+    showToast('Telegram Bot removed', 'warning');
+    loadTelegramBridgeData();
+  } catch (e) {
+    showToast('Failed to delete bot', 'danger');
   }
 }
 
@@ -134,9 +227,28 @@ async function deleteTelegramMapping(id) {
   loadTelegramBridgeData();
 }
 
-async function populateTelegramModalDropdowns() {
+async function populateTelegramModalDropdowns(selectedBotId = '') {
+  const botSelect = document.getElementById('tg-modal-bot-select');
   const waSelect = document.getElementById('tg-modal-wa-select');
   const tgSelect = document.getElementById('tg-modal-tg-select');
+
+  // 0. Populate Bot Select
+  if (botSelect) {
+    let botOpts = '';
+    if (cachedTelegramBots.length === 0) {
+      botOpts = '<option value="">No bots configured - Add a bot first</option>';
+    } else {
+      cachedTelegramBots.forEach((b) => {
+        botOpts += `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || '@' + b.username)} (@${escapeHtml(b.username)})</option>`;
+      });
+    }
+    botSelect.innerHTML = botOpts;
+    if (selectedBotId && Array.from(botSelect.options).some((o) => o.value === selectedBotId)) {
+      botSelect.value = selectedBotId;
+    }
+  }
+
+  const activeBotId = botSelect?.value || selectedBotId || '';
 
   // 1. Populate WhatsApp Chats Dropdown
   if (waSelect) {
@@ -163,11 +275,12 @@ async function populateTelegramModalDropdowns() {
     waSelect.innerHTML = waOpts;
   }
 
-  // 2. Populate Telegram Cached Chats Dropdown
+  // 2. Populate Telegram Cached Chats Dropdown (filtered by activeBotId if set)
   if (tgSelect) {
     let tgOpts = '<option value="">-- Select Telegram Chat / Group --</option>';
     try {
-      const res = await fetch('api/telegram/chats');
+      const url = activeBotId ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}` : 'api/telegram/chats';
+      const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         const tgChats = json.data || [];
@@ -184,6 +297,10 @@ async function populateTelegramModalDropdowns() {
     tgOpts += '<option value="__custom__">✏️ Custom Chat ID (Manual Entry)</option>';
     tgSelect.innerHTML = tgOpts;
   }
+}
+
+function onTgBotSelectChange(botId) {
+  populateTelegramModalDropdowns(botId);
 }
 
 function onTgWaSelectChange(val) {
@@ -286,7 +403,7 @@ async function editTelegramMapping(id) {
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
 
-    await populateTelegramModalDropdowns();
+    await populateTelegramModalDropdowns(mapping.bot_id);
 
     const waSelect = document.getElementById('tg-modal-wa-select');
     if (waSelect) {
@@ -323,6 +440,7 @@ function closeTelegramMappingModal() {
 
 async function saveTelegramMappingModal() {
   const id = document.getElementById('tg-modal-id')?.value || '';
+  const bot_id = document.getElementById('tg-modal-bot-select')?.value || '';
   const mapping_name = document.getElementById('tg-modal-mapping-name')?.value || '';
 
   const waSelect = document.getElementById('tg-modal-wa-select');
@@ -371,6 +489,7 @@ async function saveTelegramMappingModal() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: id || undefined,
+        bot_id,
         mapping_name,
         wa_jid,
         wa_name: wa_name || undefined,
@@ -411,12 +530,17 @@ function escapeHtml(str) {
 
 window.loadTelegramBridgeData = loadTelegramBridgeData;
 window.toggleTelegramBridge = toggleTelegramBridge;
-window.saveTelegramBotToken = saveTelegramBotToken;
+window.openAddTelegramBotModal = openAddTelegramBotModal;
+window.editTelegramBot = editTelegramBot;
+window.closeTelegramBotModal = closeTelegramBotModal;
+window.saveTelegramBotModal = saveTelegramBotModal;
+window.deleteTelegramBot = deleteTelegramBot;
 window.toggleTelegramMapping = toggleTelegramMapping;
 window.deleteTelegramMapping = deleteTelegramMapping;
 window.openAddTelegramMappingModal = openAddTelegramMappingModal;
 window.editTelegramMapping = editTelegramMapping;
 window.closeTelegramMappingModal = closeTelegramMappingModal;
 window.saveTelegramMappingModal = saveTelegramMappingModal;
+window.onTgBotSelectChange = onTgBotSelectChange;
 window.onTgWaSelectChange = onTgWaSelectChange;
 window.onTgTgSelectChange = onTgTgSelectChange;

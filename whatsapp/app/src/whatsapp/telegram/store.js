@@ -26,11 +26,9 @@ let telegramStoreMemory = null;
 export function getDefaultTelegramStore() {
   return {
     enabled: true,
-    bot_token: '',
-    bot_username: '',
-    bot_info: null,
-    cached_chats: {}, // chatId -> { id, title, type, username, last_seen }
-    mappings: [], // [{ id, wa_jid, wa_name, tg_chat_id, tg_chat_title, tg_chat_type, sync_mode, include_group_name, include_sender_name, sync_self_messages, enabled }]
+    bots: [], // [{ id, name, token, username, info, enabled }]
+    cached_chats: {}, // chatId -> { id, title, type, username, bot_id, last_seen }
+    mappings: [], // [{ id, bot_id, wa_jid, wa_name, tg_chat_id, tg_chat_title, tg_chat_type, sync_mode, include_group_name, include_sender_name, sync_self_messages, enabled }]
     message_maps: {}, // waMsgId -> { tgChatId, tgMsgId, waJid, timestamp }, tgMsgKey -> { waJid, waMsgId }
   };
 }
@@ -45,6 +43,27 @@ export function loadTelegramStore() {
       const raw = fs.readFileSync(file, 'utf-8');
       const parsed = JSON.parse(raw);
       telegramStoreMemory = { ...getDefaultTelegramStore(), ...parsed };
+
+      // Migration: convert single legacy bot_token to bots array if present
+      if (parsed.bot_token && (!telegramStoreMemory.bots || telegramStoreMemory.bots.length === 0)) {
+        const botId = `bot_${Date.now()}`;
+        const legacyBot = {
+          id: botId,
+          name: parsed.bot_username ? `@${parsed.bot_username}` : 'Default Bot',
+          token: parsed.bot_token,
+          username: parsed.bot_username || '',
+          info: parsed.bot_info || null,
+          enabled: true,
+        };
+        telegramStoreMemory.bots = [legacyBot];
+        // Assign legacy mappings to this botId
+        if (Array.isArray(telegramStoreMemory.mappings)) {
+          telegramStoreMemory.mappings.forEach((m) => {
+            if (!m.bot_id) m.bot_id = botId;
+          });
+        }
+      }
+
       return telegramStoreMemory;
     }
   } catch (err) {
@@ -71,12 +90,13 @@ export function saveTelegramStore(data) {
   }
 }
 
-export function updateCachedChat(chatInfo) {
+export function updateCachedChat(chatInfo, botId = '') {
   if (!chatInfo || !chatInfo.id) return;
   const store = loadTelegramStore();
   const idStr = String(chatInfo.id);
   store.cached_chats[idStr] = {
     id: idStr,
+    bot_id: botId || store.cached_chats[idStr]?.bot_id || '',
     title: chatInfo.title || chatInfo.username || chatInfo.first_name || `Chat ${idStr}`,
     type: chatInfo.type || 'private',
     username: chatInfo.username || '',

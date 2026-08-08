@@ -39,7 +39,7 @@ describe('Telegram Bridge Unit Tests', () => {
   it('getDefaultTelegramStore returns valid default structure', () => {
     const store = getDefaultTelegramStore();
     assert.strictEqual(store.enabled, true);
-    assert.strictEqual(store.bot_token, '');
+    assert.deepStrictEqual(store.bots, []);
     assert.deepStrictEqual(store.mappings, []);
   });
 

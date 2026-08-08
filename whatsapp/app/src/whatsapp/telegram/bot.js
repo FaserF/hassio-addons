@@ -46,20 +46,19 @@ export class TelegramBotClient {
     return await this.request('getMe');
   }
 
-  async fetchUpdates() {
+  async fetchUpdates(botId = '') {
     try {
       const updates = await this.request('getUpdates', { limit: 100, timeout: 0 });
       if (Array.isArray(updates)) {
         for (const update of updates) {
           const msg = update.message || update.channel_post || update.edited_message;
           if (msg && msg.chat) {
-            updateCachedChat(msg.chat);
+            updateCachedChat(msg.chat, botId);
           }
         }
       }
       return updates;
-    } catch (err) {
-      logger.warn({ error: err.message }, '⚠️ Telegram fetchUpdates failed');
+    } catch (e) {
       return [];
     }
   }
@@ -168,13 +167,28 @@ export class TelegramBotClient {
   }
 }
 
-let botClientInstance = null;
+const botClientsMap = new Map();
 
-export function getTelegramBotClient() {
+export function getTelegramBotClient(botId = null) {
   const store = loadTelegramStore();
-  if (!store.bot_token) return null;
-  if (!botClientInstance || botClientInstance.token !== store.bot_token) {
-    botClientInstance = new TelegramBotClient(store.bot_token);
+  const bots = store.bots || [];
+  if (bots.length === 0) return null;
+
+  let targetBot = null;
+  if (botId) {
+    targetBot = bots.find((b) => b.id === botId && b.enabled);
+  } else {
+    targetBot = bots.find((b) => b.enabled);
   }
-  return botClientInstance;
+
+  if (!targetBot || !targetBot.token) return null;
+
+  const existing = botClientsMap.get(targetBot.id);
+  if (existing && existing.token === targetBot.token) {
+    return existing;
+  }
+
+  const client = new TelegramBotClient(targetBot.token);
+  botClientsMap.set(targetBot.id, client);
+  return client;
 }

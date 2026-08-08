@@ -11,51 +11,101 @@ export function registerTelegramRoutes(app) {
   // POST /api/telegram/config
   app.post('/api/telegram/config', async (req, res) => {
     const store = loadTelegramStore();
-    const { bot_token, enabled } = req.body || {};
+    const { enabled } = req.body || {};
 
     if (enabled !== undefined) {
       store.enabled = Boolean(enabled);
-    }
-
-    if (bot_token !== undefined) {
-      const newToken = String(bot_token).trim();
-      store.bot_token = newToken;
-      if (newToken) {
-        try {
-          const bot = new TelegramBotClient(newToken);
-          const me = await bot.getMe();
-          store.bot_username = me.username || '';
-          store.bot_info = me;
-          await bot.fetchUpdates();
-        } catch (err) {
-          saveTelegramStore(store);
-          return res
-            .status(400)
-            .json({ success: false, error: `Invalid Bot Token: ${err.message}` });
-        }
-      } else {
-        store.bot_username = '';
-        store.bot_info = null;
-      }
     }
 
     saveTelegramStore(store);
     res.json({ success: true, data: store });
   });
 
+  // GET /api/telegram/bots
+  app.get('/api/telegram/bots', (req, res) => {
+    const store = loadTelegramStore();
+    res.json({ success: true, data: store.bots || [] });
+  });
+
+  // POST /api/telegram/bots
+  app.post('/api/telegram/bots', async (req, res) => {
+    const store = loadTelegramStore();
+    const { id, name, token, enabled } = req.body || {};
+
+    if (!token || !String(token).trim()) {
+      return res.status(400).json({ success: false, error: 'Bot token is required' });
+    }
+
+    const cleanToken = String(token).trim();
+    let botInfo = null;
+    let username = '';
+    try {
+      const bot = new TelegramBotClient(cleanToken);
+      botInfo = await bot.getMe();
+      username = botInfo.username || '';
+      const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      await bot.fetchUpdates(botId);
+    } catch (err) {
+      return res.status(400).json({ success: false, error: `Invalid Bot Token: ${err.message}` });
+    }
+
+    const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const botName = name && String(name).trim() ? String(name).trim() : `@${username}` || 'Telegram Bot';
+
+    const botRecord = {
+      id: botId,
+      name: botName,
+      token: cleanToken,
+      username: username,
+      info: botInfo,
+      enabled: enabled !== undefined ? Boolean(enabled) : true,
+    };
+
+    if (!store.bots) store.bots = [];
+    const idx = store.bots.findIndex((b) => b.id === botId);
+    if (idx >= 0) {
+      store.bots[idx] = botRecord;
+    } else {
+      store.bots.push(botRecord);
+    }
+
+    saveTelegramStore(store);
+    res.json({ success: true, data: store.bots });
+  });
+
+  // DELETE /api/telegram/bots/:id
+  app.delete('/api/telegram/bots/:id', (req, res) => {
+    const store = loadTelegramStore();
+    const { id } = req.params;
+    store.bots = (store.bots || []).filter((b) => b.id !== id);
+    // Also remove mappings using this bot or unbind them
+    if (Array.isArray(store.mappings)) {
+      store.mappings = store.mappings.filter((m) => m.bot_id !== id);
+    }
+    saveTelegramStore(store);
+    res.json({ success: true, data: store.bots });
+  });
+
   // GET /api/telegram/chats
   app.get('/api/telegram/chats', async (req, res) => {
     const store = loadTelegramStore();
-    if (store.bot_token) {
+    const { bot_id } = req.query || {};
+    const bots = (store.bots || []).filter((b) => b.enabled && b.token);
+    for (const b of bots) {
+      if (bot_id && b.id !== bot_id) continue;
       try {
-        const bot = new TelegramBotClient(store.bot_token);
-        await bot.fetchUpdates();
+        const bot = new TelegramBotClient(b.token);
+        await bot.fetchUpdates(b.id);
       } catch (e) {
         // Ignore fetch updates error
       }
     }
     const updatedStore = loadTelegramStore();
-    res.json({ success: true, data: Object.values(updatedStore.cached_chats || {}) });
+    let chats = Object.values(updatedStore.cached_chats || {});
+    if (bot_id) {
+      chats = chats.filter((c) => !c.bot_id || c.bot_id === bot_id);
+    }
+    res.json({ success: true, data: chats });
   });
 
   // POST /api/telegram/mappings
@@ -63,6 +113,7 @@ export function registerTelegramRoutes(app) {
     const store = loadTelegramStore();
     const {
       id,
+      bot_id,
       mapping_name,
       wa_jid,
       wa_name,
@@ -87,6 +138,9 @@ export function registerTelegramRoutes(app) {
       return res.status(400).json({ success: false, error: 'Missing wa_jid or tg_chat_id' });
     }
 
+    const firstBotId = (store.bots || [])[0]?.id || '';
+    const selectedBotId = bot_id || firstBotId;
+
     const cleanWaName = wa_name && wa_name !== wa_jid ? wa_name : wa_jid.split('@')[0];
     const cleanTgTitle =
       tg_chat_title && !tg_chat_title.startsWith('Chat ') ? tg_chat_title : `TG ${tg_chat_id}`;
@@ -98,6 +152,7 @@ export function registerTelegramRoutes(app) {
     const mappingId = id || `map_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const newMapping = {
       id: mappingId,
+      bot_id: selectedBotId,
       name: finalMappingName,
       wa_jid: String(wa_jid),
       wa_name: wa_name || wa_jid,
