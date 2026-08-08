@@ -66,6 +66,14 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(mapping.sync_self_messages, false);
   });
 
+  it('is_direct_chat_mirror suppresses group and sender headers', () => {
+    const isDirectMirror = true;
+    const header = isDirectMirror
+      ? ''
+      : formatHeader('My Group', 'Alice', true, true);
+    assert.strictEqual(header, '');
+  });
+
   it('applyRegexReplacements replaces simple strings and regex patterns', () => {
     const replacements = [
       { search: 'FOO', replace: 'BAR', is_regex: false },

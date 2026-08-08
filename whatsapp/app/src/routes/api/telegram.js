@@ -36,13 +36,13 @@ export function registerTelegramRoutes(app) {
       return res.status(400).json({ success: false, error: 'Bot token is required' });
     }
 
+    let botInfo;
+    let username;
     const cleanToken = String(token).trim();
-    let botInfo = null;
-    let username = '';
     try {
       const bot = new TelegramBotClient(cleanToken);
       botInfo = await bot.getMe();
-      username = botInfo.username || '';
+      username = botInfo ? (botInfo.username || '') : '';
       const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       await bot.fetchUpdates(botId);
     } catch (err) {
@@ -51,7 +51,7 @@ export function registerTelegramRoutes(app) {
 
     const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const botName =
-      name && String(name).trim() ? String(name).trim() : `@${username}` || 'Telegram Bot';
+      name && String(name).trim() ? String(name).trim() : (username ? `@${username}` : 'Telegram Bot');
 
     const botRecord = {
       id: botId,
@@ -132,6 +132,7 @@ export function registerTelegramRoutes(app) {
       sync_reactions,
       sync_edits,
       sync_deletions,
+      is_direct_chat_mirror,
       enabled,
     } = req.body || {};
 
@@ -161,9 +162,17 @@ export function registerTelegramRoutes(app) {
       tg_chat_title: tg_chat_title || `Chat ${tg_chat_id}`,
       tg_chat_type: tg_chat_type || 'group',
       sync_mode: sync_mode || 'bidirectional',
-      include_group_name: Boolean(include_group_name),
-      include_sender_name: include_sender_name !== undefined ? Boolean(include_sender_name) : true,
-      sync_self_messages: Boolean(sync_self_messages),
+      include_group_name: is_direct_chat_mirror ? false : Boolean(include_group_name),
+      include_sender_name: is_direct_chat_mirror
+        ? false
+        : include_sender_name !== undefined
+        ? Boolean(include_sender_name)
+        : true,
+      sync_self_messages: is_direct_chat_mirror
+        ? sync_self_messages !== undefined
+          ? Boolean(sync_self_messages)
+          : true
+        : Boolean(sync_self_messages),
       tg_thread_id: tg_thread_id ? String(tg_thread_id) : null,
       convert_formatting: convert_formatting !== undefined ? Boolean(convert_formatting) : true,
       anonymize_phone_numbers: Boolean(anonymize_phone_numbers),
@@ -171,6 +180,7 @@ export function registerTelegramRoutes(app) {
       sync_reactions: sync_reactions !== undefined ? Boolean(sync_reactions) : true,
       sync_edits: sync_edits !== undefined ? Boolean(sync_edits) : true,
       sync_deletions: sync_deletions !== undefined ? Boolean(sync_deletions) : true,
+      is_direct_chat_mirror: Boolean(is_direct_chat_mirror),
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 

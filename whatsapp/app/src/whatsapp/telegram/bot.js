@@ -1,5 +1,4 @@
 import { loadTelegramStore, updateCachedChat } from './store.js';
-import { logger } from '../../logger.js';
 
 const ALLOWED_METHODS = new Set([
   'getMe',
@@ -187,12 +186,9 @@ export function getTelegramBotClient(botId = null) {
   const bots = store.bots || [];
   if (bots.length === 0) return null;
 
-  let targetBot = null;
-  if (botId) {
-    targetBot = bots.find((b) => b.id === botId && b.enabled);
-  } else {
-    targetBot = bots.find((b) => b.enabled);
-  }
+  const targetBot = botId
+    ? bots.find((b) => b.id === botId && b.enabled)
+    : bots.find((b) => b.enabled);
 
   if (!targetBot || !targetBot.token) return null;
 

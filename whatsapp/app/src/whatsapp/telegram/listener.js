@@ -7,7 +7,6 @@ import { logger } from '../../logger.js';
 import { getSession, sessions } from '../../session.js';
 
 let pollingTimer = null;
-let lastUpdateId = 0;
 
 export function formatHeader(
   sourceGroup,
@@ -109,13 +108,16 @@ export async function syncWhatsAppToTelegram(
     }
     try {
       const isGroupWa = waJid.endsWith('@g.us');
-      const header = formatHeader(
-        groupName,
-        senderName,
-        isGroupWa ? mapping.include_group_name : false,
-        isGroupWa ? mapping.include_sender_name : false,
-        mapping.anonymize_phone_numbers
-      );
+      const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+      const header = isDirectMirror
+        ? ''
+        : formatHeader(
+            groupName,
+            senderName,
+            isGroupWa ? mapping.include_group_name : false,
+            isGroupWa ? mapping.include_sender_name : false,
+            mapping.anonymize_phone_numbers
+          );
 
       let processedText = applyRegexReplacements(textContent, mapping.regex_replacements || []);
       const formattedBody =
@@ -383,12 +385,15 @@ export async function processTelegramUpdates() {
 
         for (const mapping of mappings) {
           const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
-          const rawHeader = formatHeader(
-            isGroupChat ? msg.chat.title : null,
-            senderName,
-            mapping.include_group_name,
-            isGroupChat ? mapping.include_sender_name : false
-          );
+          const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+          const rawHeader = isDirectMirror
+            ? ''
+            : formatHeader(
+                isGroupChat ? msg.chat.title : null,
+                senderName,
+                mapping.include_group_name,
+                isGroupChat ? mapping.include_sender_name : false
+              );
           const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
           const outboundWaText = `${cleanHeader}${tgText}`;
 
