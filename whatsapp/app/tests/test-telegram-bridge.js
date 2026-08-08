@@ -4,6 +4,7 @@ import { formatHeader } from '../src/whatsapp/telegram/listener.js';
 import { TelegramBotClient } from '../src/whatsapp/telegram/bot.js';
 import { getDefaultTelegramStore } from '../src/whatsapp/telegram/store.js';
 import { waToTelegramHtml, anonymizePhoneNumber } from '../src/whatsapp/telegram/format.js';
+import { applyRegexReplacements } from '../src/whatsapp/telegram/regex.js';
 
 describe('Telegram Bridge Unit Tests', () => {
   it('formatHeader respects group, sender and anonymize flags', () => {
@@ -44,5 +45,14 @@ describe('Telegram Bridge Unit Tests', () => {
       sync_self_messages: false,
     };
     assert.strictEqual(mapping.sync_self_messages, false);
+  });
+
+  it('applyRegexReplacements replaces simple strings and regex patterns', () => {
+    const replacements = [
+      { search: 'FOO', replace: 'BAR', is_regex: false },
+      { search: 'http://\\S+', replace: '[LINK]', is_regex: true },
+    ];
+    assert.strictEqual(applyRegexReplacements('Hello FOO', replacements), 'Hello BAR');
+    assert.strictEqual(applyRegexReplacements('Visit http://example.com now', replacements), 'Visit [LINK] now');
   });
 });

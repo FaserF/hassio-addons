@@ -2,6 +2,7 @@ import { loadTelegramStore, updateCachedChat } from './store.js';
 import { getTelegramBotClient } from './bot.js';
 import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './message_map.js';
 import { waToTelegramHtml, anonymizePhoneNumber } from './format.js';
+import { applyRegexReplacements } from './regex.js';
 import { logger } from '../../logger.js';
 import { getSession } from '../../session.js';
 
@@ -73,18 +74,23 @@ export async function syncWhatsAppToTelegram(
         mapping.include_sender_name,
         mapping.anonymize_phone_numbers
       );
-      const formattedBody = mapping.convert_formatting !== false ? waToTelegramHtml(textContent) : (textContent || '');
+
+      let processedText = applyRegexReplacements(textContent, mapping.regex_replacements || []);
+      const formattedBody = mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : (processedText || '');
       const fullText = `${header}${formattedBody}`;
+
+      const silent = Boolean(mapping.silent_delivery);
+      const threadId = mapping.tg_thread_id || null;
 
       let tgResult = null;
       if (mediaUrl) {
         tgResult = await bot
-          .sendPhoto(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId)
+          .sendPhoto(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId, threadId, silent)
           .catch(() => {
-            return bot.sendDocument(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId);
+            return bot.sendDocument(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId, threadId, silent);
           });
       } else {
-        tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId);
+        tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
       }
 
       if (tgResult && tgResult.message_id && waMsgId) {

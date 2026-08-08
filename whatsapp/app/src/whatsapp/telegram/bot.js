@@ -46,48 +46,52 @@ export class TelegramBotClient {
     }
   }
 
-  async sendMessage(chatId, text, replyToMessageId = null, threadId = null) {
+  async sendMessage(chatId, text, replyToMessageId = null, threadId = null, disableNotification = false) {
     const payload = {
       chat_id: chatId,
       text: text,
       parse_mode: 'HTML',
       disable_web_page_preview: false,
+      disable_notification: Boolean(disableNotification),
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendMessage', payload);
   }
 
-  async sendPhoto(chatId, photoUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
+  async sendPhoto(chatId, photoUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
     const payload = {
       chat_id: chatId,
       photo: photoUrlOrBuffer,
       caption: caption,
       parse_mode: 'HTML',
+      disable_notification: Boolean(disableNotification),
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendPhoto', payload);
   }
 
-  async sendVoice(chatId, voiceUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
+  async sendVoice(chatId, voiceUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
     const payload = {
       chat_id: chatId,
       voice: voiceUrlOrBuffer,
       caption: caption,
       parse_mode: 'HTML',
+      disable_notification: Boolean(disableNotification),
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendVoice', payload);
   }
 
-  async sendDocument(chatId, documentUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
+  async sendDocument(chatId, documentUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null, disableNotification = false) {
     const payload = {
       chat_id: chatId,
       document: documentUrlOrBuffer,
       caption: caption,
       parse_mode: 'HTML',
+      disable_notification: Boolean(disableNotification),
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
