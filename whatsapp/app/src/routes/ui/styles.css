@@ -1007,6 +1007,10 @@ html[data-theme='dark'] .banner-warning-icon {
   display: flex;
 }
 
+#tab-telegram.active {
+  padding-bottom: 60px;
+}
+
 #tab-chats.active {
   flex: 1;
   height: 100%;

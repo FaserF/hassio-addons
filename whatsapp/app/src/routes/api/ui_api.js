@@ -94,13 +94,19 @@ export function registerUiApiRoutes(app) {
           }
         }
 
+        // Identify self WhatsApp user JID
+        const myJidRaw = session.sock?.user?.id || session.sock?.user?.jid;
+        const myJidClean = myJidRaw ? `${myJidRaw.split('@')[0].split(':')[0]}@s.whatsapp.net` : null;
+
         // Resolve final display names synchronously (with async background cache enrichment)
         const chats = Object.values(JidMap)
           .map((c) => {
             if (!c.preview || !c.preview.trim()) {
               c.preview = '[Message]';
             }
-            if (c.jid.endsWith('@g.us')) {
+            if (myJidClean && c.jid === myJidClean) {
+              c.name = 'Me / Self (Bot Account)';
+            } else if (c.jid.endsWith('@g.us')) {
               if (session.groupCache && session.groupCache.has(c.jid)) {
                 c.name = session.groupCache.get(c.jid);
               } else {

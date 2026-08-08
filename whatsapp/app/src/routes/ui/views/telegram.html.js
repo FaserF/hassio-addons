@@ -70,8 +70,8 @@ export default () => `
         </div>
 
         <!-- Mappings Table -->
-        <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-            <table class="data-table" id="tg-mappings-table" style="width:100%; border-collapse:collapse;">
+        <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto;">
+            <table class="data-table" id="tg-mappings-table" style="width:100%; min-width:850px; border-collapse:collapse;">
                 <thead>
                     <tr style="background:var(--bg-body); text-align:left;">
                         <th style="padding:12px 16px; width:70px;">Status</th>
