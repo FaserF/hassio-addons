@@ -285,7 +285,8 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
     waSelect.innerHTML = waOpts;
 
     // Restore preserved WhatsApp selection
-    const targetWaJid = prevWaSelectVal && prevWaSelectVal !== '__custom__' ? prevWaSelectVal : prevWaJidVal;
+    const targetWaJid =
+      prevWaSelectVal && prevWaSelectVal !== '__custom__' ? prevWaSelectVal : prevWaJidVal;
     if (targetWaJid && Array.from(waSelect.options).some((o) => o.value === targetWaJid)) {
       waSelect.value = targetWaJid;
       if (waJidInp) {
@@ -326,7 +327,9 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
     tgSelect.innerHTML = tgOpts;
 
     // Restore preserved Telegram selection
-    const targetTgId = String(prevTgSelectVal && prevTgSelectVal !== '__custom__' ? prevTgSelectVal : prevTgChatIdVal);
+    const targetTgId = String(
+      prevTgSelectVal && prevTgSelectVal !== '__custom__' ? prevTgSelectVal : prevTgChatIdVal
+    );
     if (targetTgId && Array.from(tgSelect.options).some((o) => String(o.value) === targetTgId)) {
       tgSelect.value = targetTgId;
       if (tgChatIdInp) {
