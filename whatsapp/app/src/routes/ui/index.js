@@ -496,7 +496,24 @@ export function renderDashboard(sessionId) {
         }
     });
 
-    function _doSwitchTab(tabId) {
+    const validTabs = ['dashboard', 'logs', 'chats', 'moderation', 'telegram'];
+
+    function getTabFromUrl() {
+        const hash = (window.location.hash || '').replace(/^#/, '').toLowerCase().trim();
+        if (validTabs.includes(hash)) return hash;
+
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryTab = (urlParams.get('tab') || '').toLowerCase().trim();
+            if (validTabs.includes(queryTab)) return queryTab;
+        } catch (e) {}
+
+        return null;
+    }
+
+    function _doSwitchTab(tabId, updateHistory = true) {
+        if (!validTabs.includes(tabId)) tabId = 'dashboard';
+
         navItems.forEach(nav => nav.classList.remove('active'));
         tabPanels.forEach(panel => panel.classList.remove('active'));
         
@@ -512,6 +529,15 @@ export function renderDashboard(sessionId) {
         const contentBody = document.querySelector('.content-body');
         if (contentBody) contentBody.scrollTop = 0;
 
+        if (updateHistory && window.history && typeof window.history.replaceState === 'function') {
+            try {
+                const currentHash = (window.location.hash || '').replace(/^#/, '');
+                if (currentHash !== tabId) {
+                    window.history.replaceState(null, '', '#' + tabId);
+                }
+            } catch (e) {}
+        }
+
         isChatTabActive = (tabId === 'chats');
         if (isChatTabActive) {
             loadChats();
@@ -525,12 +551,19 @@ export function renderDashboard(sessionId) {
     }
 
     function switchTab(tabId) {
-        // Check for unsaved moderation changes before switching away
         const guardFn = typeof _guardDirty === 'function' ? _guardDirty : null;
         if (guardFn && !guardFn(() => _doSwitchTab(tabId))) return;
         _doSwitchTab(tabId);
     }
     window.switchTab = switchTab;
+
+    window.addEventListener('hashchange', () => {
+        const tab = getTabFromUrl();
+        if (tab) _doSwitchTab(tab, false);
+    });
+
+    const initialTab = getTabFromUrl() || 'dashboard';
+    _doSwitchTab(initialTab, true);
 
     function showSystemPropertiesModal() {
         const data = window._latestReleaseData || {};
