@@ -4,6 +4,7 @@ import { logger } from '../../logger.js';
 const ALLOWED_METHODS = new Set([
   'getMe',
   'getUpdates',
+  'getFile',
   'sendMessage',
   'sendPhoto',
   'sendVoice',
@@ -44,6 +45,18 @@ export class TelegramBotClient {
 
   async getMe() {
     return await this.request('getMe');
+  }
+
+  async getFile(fileId) {
+    return await this.request('getFile', { file_id: fileId });
+  }
+
+  async getFileUrl(fileId) {
+    const file = await this.getFile(fileId);
+    if (file && file.file_path) {
+      return `https://api.telegram.org/file/bot${this.token}/${file.file_path}`;
+    }
+    return null;
   }
 
   async fetchUpdates(botId = '') {
