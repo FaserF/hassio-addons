@@ -447,14 +447,20 @@ export function handleIncomingMessages(session) {
           const pollUpdateMsg = msg.message.pollUpdateMessage;
           const pollCreationId = pollUpdateMsg?.pollCreationMessageKey?.id;
           const originalPoll = pollCreationId ? session.messageStore.get(pollCreationId) : null;
+          const pollObj =
+            originalPoll?.message?.pollCreationMessage ||
+            originalPoll?.message?.pollCreationMessageV2 ||
+            originalPoll?.message?.pollCreationMessageV3;
+          const originalPollName = pollObj?.name || '';
           const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
+          const qTitle = originalPollName ? `: ${originalPollName}` : '';
           if (pollResult.error) {
-            text = `[Poll Vote] (${pollResult.error})`;
+            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: (${pollResult.error})`;
           } else if (vote.length > 0) {
-            text = `[Poll Vote] ${vote.join(', ')}`;
+            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: ${vote.join(', ')}`;
           } else {
-            text = `[Poll Vote] (No options selected or vote retracted)`;
+            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: Retracted (No options selected)`;
           }
         } else if (messageType === 'eventMessage') {
           eventType = 'event';
@@ -485,10 +491,13 @@ export function handleIncomingMessages(session) {
             msg.message?.pollCreationMessage ||
             msg.message?.pollCreationMessageV2 ||
             msg.message?.pollCreationMessageV3;
-          const question = pollObj?.name || '';
+          const question = pollObj?.name || 'Untitled';
           const options = pollObj?.options?.map((o) => o.optionName).filter(Boolean) || [];
-          const optStr = options.length > 0 ? ` Options: ${options.join(', ')}` : '';
-          text = `📊 [Poll: ${question || 'Untitled'}${optStr}]`;
+          const optStr =
+            options.length > 0
+              ? `\nOptions:\n${options.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
+              : '';
+          text = `📊 [Poll: ${question}]${optStr}`;
         }
 
         const innerMsgObj = msg.message?.[messageType];

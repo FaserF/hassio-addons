@@ -264,8 +264,8 @@ export async function processTelegramUpdates() {
 
           const voteText =
             selectedOptionIds.length > 0
-              ? `📊 [Poll Vote: ${pollQuestion}]\n${voterName} voted for: ${selectedText}`
-              : `📊 [Poll Vote: ${pollQuestion}]\n${voterName} retracted vote`;
+              ? `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: ${selectedText}`
+              : `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: Retracted (No options selected)`;
 
           const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
           const mappings = (store.mappings || []).filter(
@@ -472,7 +472,7 @@ export async function processTelegramUpdates() {
             const pollOptions = (p.options || []).map((o) => o.text);
             const optStr =
               pollOptions.length > 0
-                ? `\nOptions:\n${pollOptions.map((o) => `• ${o}`).join('\n')}`
+                ? `\nOptions:\n${pollOptions.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
                 : '';
             tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
             const pollId = String(p.id);
