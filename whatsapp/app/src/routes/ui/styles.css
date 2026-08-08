@@ -1,8 +1,4 @@
-@import url('./styles/base.css');
-@import url('./styles/layout.css');
-@import url('./styles/modals.css');
-@import url('./styles/chats.css');
-@import url('./styles/moderation.css');
+/* styles.css - Main UI Stylesheet */
 
 :root {
   --primary: #00a884;

@@ -652,6 +652,26 @@ export function renderDashboard(sessionId) {
             }
         }
     }, 8000);
+    // Ensure mouse-wheel always scrolls the content-body panel,
+    // even in iFrame contexts where events may not propagate correctly
+    (function() {
+      const contentBody = document.querySelector('.content-body');
+      if (!contentBody) return;
+      document.addEventListener('wheel', function(e) {
+        // Only forward if the event target is not already inside a scrollable child
+        const target = e.target;
+        let el = target;
+        while (el && el !== contentBody) {
+          const cs = getComputedStyle(el);
+          const overflowY = cs.overflowY;
+          const canScroll = (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+          if (canScroll && el !== contentBody) return; // let the child scroll
+          el = el.parentElement;
+        }
+        contentBody.scrollTop += e.deltaY;
+        e.preventDefault();
+      }, { passive: false });
+    })();
   </script>
 </body>
 </html>`;
