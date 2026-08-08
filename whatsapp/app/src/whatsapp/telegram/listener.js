@@ -136,6 +136,17 @@ export async function syncWhatsAppToTelegram(
               threadId,
               silent
             );
+          })
+          .catch(() => {
+            // If media send fails (e.g. invalid URL or unaccessible host), fallback to text notification
+            const mediaFallbackText = `${fullText}\n<i>[Media File Attached]</i>`;
+            return bot.sendMessage(
+              mapping.tg_chat_id,
+              mediaFallbackText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            );
           });
       } else {
         tgResult = await bot.sendMessage(
@@ -255,8 +266,16 @@ export async function processTelegramUpdates() {
           msg.from.username ||
           'Telegram User'
         : msg.chat.title || 'Telegram';
-      const tgText = msg.text || msg.caption || '';
-      if (!tgText) continue; // Skip non-text for basic sync
+      let tgText = msg.text || msg.caption || '';
+      if (!tgText) {
+        if (msg.voice) tgText = '[🎤 Voice Note]';
+        else if (msg.audio) tgText = '[🎵 Audio File]';
+        else if (msg.photo) tgText = '[📷 Photo]';
+        else if (msg.document) tgText = '[📄 Document]';
+        else if (msg.sticker) tgText = '[🎨 Sticker]';
+        else if (msg.video) tgText = '[🎥 Video]';
+      }
+      if (!tgText) continue;
 
       const replyToTgId = msg.reply_to_message?.message_id;
       let quotedWaMsgId = null;
