@@ -354,6 +354,7 @@ async function updateDashboard() {
   }
 }
 
+
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -517,6 +518,7 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
 
 // Update & Dependency Modals
 
@@ -716,6 +718,7 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
+
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -2144,6 +2147,7 @@ async function unmuteUserInUi(userId) {
   }
 }
 
+
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
@@ -2513,6 +2517,7 @@ async function sendTestSuiteToGroup() {
   }
 }
 
+
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
@@ -2593,6 +2598,7 @@ async function saveGroupAiConfig() {
     showToast('Failed to save AI settings', 'danger');
   }
 }
+
 
 // Moderation Federation & Import/Export
 
@@ -2920,6 +2926,7 @@ async function submitImportFederation() {
   }
 }
 
+
 // Telegram Bridge Dashboard UI Logic
 
 async function loadTelegramBridgeData() {
@@ -2996,9 +3003,10 @@ async function toggleTelegramBridge(enabled) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
     });
+    showToast(enabled ? 'Telegram Bridge Enabled ✈️' : 'Telegram Bridge Disabled', 'info');
     loadTelegramBridgeData();
   } catch (e) {
-    alert('Failed to update Telegram Bridge state');
+    showToast('Failed to update Telegram Bridge state', 'danger');
   }
 }
 
@@ -3012,24 +3020,26 @@ async function saveTelegramBotToken() {
     });
     const data = await res.json();
     if (!data.success) {
-      alert(data.error || 'Failed to save bot token');
+      showToast(data.error || 'Failed to save bot token', 'danger');
     } else {
-      alert('Bot token validated and saved successfully!');
+      showToast('Bot token validated and saved successfully! 🤖', 'success');
       loadTelegramBridgeData();
     }
   } catch (e) {
-    alert('Error connecting to server');
+    showToast('Error connecting to server', 'danger');
   }
 }
 
 async function toggleTelegramMapping(id) {
   await fetch(`api/telegram/mappings/${id}/toggle`, { method: 'POST' });
+  showToast('Mapping status updated', 'info');
   loadTelegramBridgeData();
 }
 
 async function deleteTelegramMapping(id) {
   if (!confirm('Are you sure you want to remove this Telegram chat mapping?')) return;
   await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
+  showToast('Telegram mapping removed', 'warning');
   loadTelegramBridgeData();
 }
 
@@ -3060,7 +3070,7 @@ async function saveTelegramMappingModal() {
   const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
-    alert('Please enter both WhatsApp Target JID and Telegram Chat ID');
+    showToast('Please enter both WhatsApp Target JID and Telegram Chat ID', 'warning');
     return;
   }
 
@@ -3084,13 +3094,14 @@ async function saveTelegramMappingModal() {
     });
     const data = await res.json();
     if (!data.success) {
-      alert(data.error || 'Failed to save mapping');
+      showToast(data.error || 'Failed to save mapping', 'danger');
     } else {
+      showToast('Telegram mapping saved successfully!', 'success');
       closeTelegramMappingModal();
       loadTelegramBridgeData();
     }
   } catch (e) {
-    alert('Failed to connect to server');
+    showToast('Failed to connect to server', 'danger');
   }
 }
 
@@ -3111,6 +3122,7 @@ window.deleteTelegramMapping = deleteTelegramMapping;
 window.openAddTelegramMappingModal = openAddTelegramMappingModal;
 window.closeTelegramMappingModal = closeTelegramMappingModal;
 window.saveTelegramMappingModal = saveTelegramMappingModal;
+
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
