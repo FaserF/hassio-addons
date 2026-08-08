@@ -1,5 +1,67 @@
 # Changelog
 
+## 1.8.3-dev-20260808-1815-cbf3f8e (2026-08-08)
+
+### ✨ Features
+- remove broken @import stubs + add wheel event forwarder to fix scroll in all contexts ([`61704b49`](https://github.com/FaserF/hassio-addons/commit/61704b49133715aed43945037dc4d7961045089f))
+- optimize thread quote mapping with LRU pruning and visual blockquote fallbacks ([`e46c731d`](https://github.com/FaserF/hassio-addons/commit/e46c731d3e24fa6c541400bcba78e654fb7ea3c3))
+- add 1:1 direct chat mirror mode for whatsapp telegram bridge ([`e8d33765`](https://github.com/FaserF/hassio-addons/commit/e8d3376587dd53fb355be72b5d5987a072028143))
+- implement unlimited multi-bot support with dedicated bot routing per chat mapping ([`958ba527`](https://github.com/FaserF/hassio-addons/commit/958ba52758ac0bb1a7c5163307f796dd3756c0bc))
+- add voice/media message fallback notifications for Telegram and WhatsApp media sync ([`05507745`](https://github.com/FaserF/hassio-addons/commit/055077455b1dfb84a457c71b38ed53c033c7fbc0))
+- add explicit allowed_updates array to getUpdates payload to receive message_reaction and group messages ([`0da62bc3`](https://github.com/FaserF/hassio-addons/commit/0da62bc35eca30d42b149cddaeb2506cacf13d95))
+- add custom & auto-generated mapping name support ([`7f279c1f`](https://github.com/FaserF/hassio-addons/commit/7f279c1f160ea5b9d03bfe3065dfebf1fd37f276))
+- trigger live getUpdates fetching on GET /api/telegram/chats for auto-populating chats ([`3643c15c`](https://github.com/FaserF/hassio-addons/commit/3643c15ca4c3444e6d040a2cdf51c816ef0488b3))
+- add live WhatsApp & Telegram chat selection dropdowns to mapping modal ([`7d3ff12e`](https://github.com/FaserF/hassio-addons/commit/7d3ff12ef6457f36abe7f820e35b1da6eac3220a))
+- remove ES module export keywords from inline Telegram dashboard script and add CI scope check ([`28b57077`](https://github.com/FaserF/hassio-addons/commit/28b57077ba9850fcac3272a220e86deea6baeff4))
+- add queue, regex, and transcribe modules ([`46943675`](https://github.com/FaserF/hassio-addons/commit/469436751f8c634c3916365f8be7357e23df7b3f))
+- implement speech-to-text transcribe, dead letter queue, and regex replacements ([`65fe6ffe`](https://github.com/FaserF/hassio-addons/commit/65fe6ffe44c903792f8e9a13902d811befda2bfb))
+- add modal dialog and complete ui controls for all bridge options ([`d742cc3f`](https://github.com/FaserF/hassio-addons/commit/d742cc3fd2bbfd87e7a7523e86bba74d1fb00543))
+- add reactions, voice notes, edits, and deletions bot client support ([`bb62b3aa`](https://github.com/FaserF/hassio-addons/commit/bb62b3aac539eb555ab8bd843d82d3b6fb39c1e2))
+- add text formatting converter and phone anonymization ([`53cc8924`](https://github.com/FaserF/hassio-addons/commit/53cc89241c6ba2ddba3682b7c46f1a2bdc540d3d))
+
+### 🐛 Bug Fixes
+- small css fixes ([`8e0bde69`](https://github.com/FaserF/hassio-addons/commit/8e0bde69a17aff2d827f687201d70cdaa636ab6f))
+- send unknown command warning with fuzzy suggestions for admins and clean contact/location text ([`513f1da5`](https://github.com/FaserF/hassio-addons/commit/513f1da55e039bc2b7cc9ac6d24a7d77e9f48a7c))
+- switch content-body and tab-panel to display:block for reliable scroll - flex layout was root cause of scroll failure ([`b8e4c155`](https://github.com/FaserF/hassio-addons/commit/b8e4c1556c06dffc4ddc2b94aacb62aaa94fa3e8))
+- flex:1 1 0, overflow-y:scroll, overscroll-behavior:contain, remove animation ([`dff8bc01`](https://github.com/FaserF/hassio-addons/commit/dff8bc0154f245a4899f64136d1c8372d200a75d))
+- remove keyframe animation constraint and fix content-body scroll height ([`05cc9337`](https://github.com/FaserF/hassio-addons/commit/05cc9337affc91fe85131323867df54c151e7a53))
+- enforce min-height: 0 and flex-shrink: 0 for content-body scrolling ([`7e9cc83d`](https://github.com/FaserF/hassio-addons/commit/7e9cc83d4e5e2773b67f8cba18cd0b08c94c107e))
+- label self bot account JID as 'Me / Self (Bot Account)' instead of phone number ([`f1a6e93c`](https://github.com/FaserF/hassio-addons/commit/f1a6e93cf7e3fa9021fd857a5bac6988b8a745a5))
+- fetch Telegram file URL via getFile and forward native media/image/document/video to WhatsApp ([`ddd58f7f`](https://github.com/FaserF/hassio-addons/commit/ddd58f7fa4c0056d06724e717fbf39ce23a8b56c))
+- resolve LID vs Phone Number mismatch in isUserVerified for WhatsApp multidevice accounts ([`d6a7ef47`](https://github.com/FaserF/hassio-addons/commit/d6a7ef4750bb651eb353ef1941e477bb396940cf))
+- preserve message ownership (fromMe) in message_map to target correct WhatsApp reaction message key ([`3f83589f`](https://github.com/FaserF/hassio-addons/commit/3f83589ff7abe4f6ec5396e0f5c3beba13ae443f))
+- handle Telegram message_reaction updates and sync reactions to WhatsApp messages ([`f8c6b95c`](https://github.com/FaserF/hassio-addons/commit/f8c6b95c11efdf8c7075c90848e1fe8855e77fb3))
+- handle WhatsApp reactionMessage nodes by calling Telegram setMessageReaction instead of sending cryptic ID string text ([`efb9b94a`](https://github.com/FaserF/hassio-addons/commit/efb9b94a803c05e82621785eccf4cf555fdaa401))
+- prevent message sync loop, strip HTML tags from WhatsApp text, and omit headers in 1-on-1 chats ([`dbf597de`](https://github.com/FaserF/hassio-addons/commit/dbf597def8c8e6b80cd862474dd2f5b0793353f5))
+- resolve session.sock in listener and clean group header formatting with newlines ([`a1522e70`](https://github.com/FaserF/hassio-addons/commit/a1522e70b9f3d8d7d9d38b7b30b6b6f5e7dd7ecd))
+- allow outgoing/self-sent messages to trigger native group commands ([`93b69fe6`](https://github.com/FaserF/hassio-addons/commit/93b69fe65a73c32a033b55a05a7bfed31ba15a0d))
+
+### 📦 Dependencies
+- ⬆️ Update dependency eslint to v10.8.1 (#962) ([`dd949edf`](https://github.com/FaserF/hassio-addons/commit/dd949edf0e437344ed938c60c4d991cb733fa0a2))
+- Update engine.js ([`29178cd6`](https://github.com/FaserF/hassio-addons/commit/29178cd6003b8f5a1dc7a67cc11aec8b13fb9700))
+- logging(moderation): log group participant join and leave update events ([`9eafb0c4`](https://github.com/FaserF/hassio-addons/commit/9eafb0c49e4f4a212e485934e234ba63d45dca53))
+- ⬆️ Update dependency express-rate-limit to v8.6.2 (#956) ([`f94ec5e4`](https://github.com/FaserF/hassio-addons/commit/f94ec5e4a35feef9f13d3962a61654daf01fc96b))
+
+### 🔧 Configuration
+- expand CI route validation to 54 HA endpoints including groups ([`4335ec07`](https://github.com/FaserF/hassio-addons/commit/4335ec07e7a57dd288e546f3afd3b4ff9cd1c335))
+
+### 📝 Documentation
+- document moderation engine, 37 group commands reference, and AI capabilities ([`d1e65e02`](https://github.com/FaserF/hassio-addons/commit/d1e65e02ac347a9118c591d0e428c80b79955f89))
+
+### 🎨 Style
+- small css fix ([`cbf3f8ed`](https://github.com/FaserF/hassio-addons/commit/cbf3f8ededb642547c7dcbf3dfaf508afc2f2b26))
+- replace browser alert popups with native WhatsApp Gateway toast notifications ([`331899d2`](https://github.com/FaserF/hassio-addons/commit/331899d27e61803a8ac83d15b4155777b5e94926))
+- split dashboard.js monolith into 8 clean, modular sub-files in app/src/routes/ui/dashboard/ ([`5af38dd1`](https://github.com/FaserF/hassio-addons/commit/5af38dd18f7edb2af23f6401e4ed28e5dcaeb39c))
+- modularize run script and ui views ([`d32fac93`](https://github.com/FaserF/hassio-addons/commit/d32fac936d34e3b03bdafaff868dc8df19699ab3))
+
+### 🚀 Other
+- small style fix ([`8fba5e87`](https://github.com/FaserF/hassio-addons/commit/8fba5e879eb984b65fd314c616a753d32908caeb))
+- perf(moderation): unref background timers to prevent blocking event loop and speed up tests ([`87014e84`](https://github.com/FaserF/hassio-addons/commit/87014e84d5757558a4cb1745fd021cfa722b2e48))
+- perf(test): consolidate unit tests into single-process unified runner ([`56ae3cae`](https://github.com/FaserF/hassio-addons/commit/56ae3cae0f41191d97ff080be363fccb6cf7715a))
+- decouple global master switch from group toggles and set global_enabled true by default ([`92e36c8f`](https://github.com/FaserF/hassio-addons/commit/92e36c8ff7545b4850971b586f3584d1f6bb7d70))
+- document group moderation and defender engine in addon docs ([`cf1120e0`](https://github.com/FaserF/hassio-addons/commit/cf1120e06aed2d33996a134ca6a7eec95cca45b8))
+
+
 ## 1.8.2 (2026-08-04)
 
 ### 🐛 Bug Fixes
