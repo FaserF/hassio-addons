@@ -6,6 +6,7 @@ import { registerChannelRoutes } from './channels.js';
 import { registerSystemRoutes } from './system.js';
 import { registerUiApiRoutes } from './ui_api.js';
 import { registerModerationRoutes } from './moderation.js';
+import { registerTelegramRoutes } from './telegram.js';
 
 export function registerAPIRoutes(app) {
   registerSessionRoutes(app);
@@ -16,4 +17,6 @@ export function registerAPIRoutes(app) {
   registerSystemRoutes(app);
   registerUiApiRoutes(app);
   registerModerationRoutes(app);
+  registerTelegramRoutes(app);
 }
+

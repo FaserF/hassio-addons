@@ -11,6 +11,7 @@ import dashboardView from './views/dashboard.html.js';
 import logsView from './views/logs.html.js';
 import chatsView from './views/chats.html.js';
 import moderationView from './views/moderation.html.js';
+import telegramView from './views/telegram.html.js';
 
 const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 
@@ -163,6 +164,10 @@ export function renderDashboard(sessionId) {
             <button class="nav-item" data-tab="moderation" data-tooltip="Group Moderation" onclick="switchTab('moderation')">
                 <i class="fas fa-shield-alt nav-icon"></i>
                 <span>Moderation</span>
+            </button>
+            <button class="nav-item" data-tab="telegram" data-tooltip="Telegram Bridge" onclick="switchTab('telegram')">
+                <i class="fab fa-telegram-plane nav-icon"></i>
+                <span>Telegram Bridge</span>
             </button>
             <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item" data-tooltip="Documentation">
                 <i class="fas fa-book nav-icon"></i>

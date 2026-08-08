@@ -98,6 +98,7 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 - **Auto-Responder Filters & Saved Notes**: Keyword triggers (`!filter`, `!stop`, `!filters`), saved group notes (`!save`, `!get`, `!notes`, `#notename` auto-trigger).
 - **User Management & Muting**: `!promote`, `!demote`, `!approve`, `!unapprove` (whitelist bypass), `!mute`, `!unmute` (messages auto-deleted), `!tban`, `!tmute` (duration-based penalties like `1d`, `12h`), `!info`, `!adminlist`, `!report` (alert admins).
 - **Anti-Raid & Flood Protection**: Message rate limiting per user and high-velocity join detection with automatic group lockdown.
+- **Native WhatsApp <-> Telegram Bridge**: Bi-directional message mirroring, automatic chat discovery, media sync, configurable metadata headers, and intelligent thread quote resolution across WhatsApp and Telegram.
 - **Global Federations**: Network ban propagation across group clusters.
 - **Gemini AI Engine**: Optional AI auto-responder for answering group FAQs, AI rules interpretation, and automated sentiment moderation (toxicity detection).
 - **AI Translation Engine**: `!setlang <code>` and `!translate` via Gemini API.
