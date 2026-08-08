@@ -174,11 +174,22 @@ export function isUserVerified(groupId, userId, session = null, rawMsg = null) {
   const canonicalKey = resolveCanonicalUserKey(userId, session);
   if (canonicalKey && checkId(canonicalKey)) return true;
 
-  // Raw message participant fields
-  const rawParticipant = rawMsg?.key?.participant || rawMsg?.participant;
-  if (rawParticipant && checkId(rawParticipant.split('@')[0])) return true;
-  const participantAlt = rawMsg?.key?.participantAlt;
-  if (participantAlt && checkId(participantAlt.split('@')[0])) return true;
+  // Check if any verified user's digits match the target digits
+  const targetDigits = userId.replace(/\D/g, '');
+  if (targetDigits) {
+    for (const [vKey, vVal] of Object.entries(verifiedUsers)) {
+      if (vVal?.verified === true) {
+        const vDigits = vKey.replace(/\D/g, '');
+        if (
+          vDigits &&
+          (vDigits === targetDigits ||
+            (vDigits.length >= 7 && targetDigits.length >= 7 && (vDigits.endsWith(targetDigits) || targetDigits.endsWith(vDigits))))
+        ) {
+          return true;
+        }
+      }
+    }
+  }
 
   return false;
 }
