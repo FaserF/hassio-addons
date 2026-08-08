@@ -190,7 +190,8 @@ export async function processTelegramUpdates() {
         const tgChatId = String(reactObj.chat.id);
         const tgMsgId = String(reactObj.message_id);
         const newReactions = reactObj.new_reaction || [];
-        const latestEmoji = newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
+        const latestEmoji =
+          newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
 
         const mappings = (store.mappings || []).filter(
           (m) =>
@@ -220,7 +221,10 @@ export async function processTelegramUpdates() {
                   },
                 });
               } catch (reactErr) {
-                logger.error({ error: reactErr.message }, '❌ Failed to sync Telegram reaction to WhatsApp');
+                logger.error(
+                  { error: reactErr.message },
+                  '❌ Failed to sync Telegram reaction to WhatsApp'
+                );
               }
             }
           }
