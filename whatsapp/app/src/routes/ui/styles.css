@@ -76,7 +76,30 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(134, 150, 160, 0.35) transparent;
 }
+
+/* Custom Modern WhatsApp Gateway Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(134, 150, 160, 0.25);
+  border-radius: 999px;
+  transition: background var(--transition-speed);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--bg-app);
@@ -800,6 +823,7 @@ html[data-theme='dark'] .top-header {
   height: 100vh;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .top-header {
@@ -892,13 +916,14 @@ html[data-theme='dark'] .top-header {
 .content-body {
   padding: 32px;
   padding-bottom: 64px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .banner {
@@ -964,6 +989,7 @@ html[data-theme='dark'] .banner-warning-icon {
   flex: 0 0 auto !important;
   height: auto !important;
   min-height: max-content;
+  overflow: visible !important;
   padding-bottom: 32px;
 }
 
