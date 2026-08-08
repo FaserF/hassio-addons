@@ -175,6 +175,51 @@ export async function processTelegramUpdates() {
 
     for (const update of updates) {
       lastUpdateId = Math.max(lastUpdateId, update.update_id);
+
+      // Handle Telegram Message Reactions (message_reaction updates)
+      if (update.message_reaction) {
+        const reactObj = update.message_reaction;
+        const tgChatId = String(reactObj.chat.id);
+        const tgMsgId = String(reactObj.message_id);
+        const newReactions = reactObj.new_reaction || [];
+        const latestEmoji = newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
+
+        const mappings = (store.mappings || []).filter(
+          (m) =>
+            m.enabled &&
+            String(m.tg_chat_id) === tgChatId &&
+            (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+        );
+
+        if (mappings.length > 0) {
+          const mapped = resolveWaMsgFromTg(tgChatId, tgMsgId);
+          if (mapped && mapped.waMsgId && mapped.waJid) {
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) {
+                  session = s;
+                  break;
+                }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                await session.sock.sendMessage(mapped.waJid, {
+                  react: {
+                    text: latestEmoji || '', // Empty string removes reaction in Baileys
+                    key: { remoteJid: mapped.waJid, id: mapped.waMsgId },
+                  },
+                });
+              } catch (reactErr) {
+                logger.error({ error: reactErr.message }, '❌ Failed to sync Telegram reaction to WhatsApp');
+              }
+            }
+          }
+        }
+        continue;
+      }
+
       const msg = update.message || update.channel_post;
       if (!msg || !msg.chat) continue;
 
