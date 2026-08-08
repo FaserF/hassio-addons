@@ -358,6 +358,7 @@ export function handleIncomingMessages(session) {
         let text =
           realMsgObj?.conversation ||
           extMsg?.text ||
+          matchedText ||
           realMsgObj?.buttonsResponseMessage?.selectedDisplayText ||
           realMsgObj?.templateButtonReplyMessage?.selectedId ||
           realMsgObj?.imageMessage?.caption ||
@@ -393,6 +394,13 @@ export function handleIncomingMessages(session) {
                     'jpegThumbnail',
                     'streamingSidecar',
                     'encApiKey',
+                    'vcard',
+                    'vCard',
+                    'degreesLatitude',
+                    'degreesLongitude',
+                    'accuracyInMeters',
+                    'speedInMps',
+                    'degreesClockwiseFromMagneticNorth',
                   ].includes(key)
                 )
                   continue;
@@ -456,15 +464,26 @@ export function handleIncomingMessages(session) {
           mediaType = 'contact';
           const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage;
           const displayName =
-            contactObj?.displayName || (contactObj?.vcard ? 'vCard Contact' : 'Contact Card');
-          text = text || `[Contact: ${displayName}]`;
+            contactObj?.displayName ||
+            (contactObj?.vcard ? contactObj.vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
+            'Contact Card';
+          const phoneMatch = contactObj?.vcard ? contactObj.vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : '';
+          const phoneInfo = phoneMatch ? ` (${phoneMatch})` : '';
+          text = `👤 [Contact: ${displayName}${phoneInfo}]`;
         } else if (messageType === 'locationMessage' || messageType === 'liveLocationMessage') {
           mediaType = 'location';
-          text = text || '[Location Share]';
+          const locObj = msg.message?.locationMessage || msg.message?.liveLocationMessage;
+          const locName = locObj?.name || locObj?.address || '';
+          const locDetails = locName ? `: ${locName}` : '';
+          text = `📍 [Location Share${locDetails}]`;
         } else if (messageType && messageType.startsWith('pollCreation')) {
           mediaType = 'poll';
           eventType = 'poll';
-          text = text || '[Poll Creation]';
+          const pollObj = msg.message?.pollCreationMessage || msg.message?.pollCreationMessageV2 || msg.message?.pollCreationMessageV3;
+          const question = pollObj?.name || '';
+          const options = pollObj?.options?.map((o) => o.optionName).filter(Boolean) || [];
+          const optStr = options.length > 0 ? ` Options: ${options.join(', ')}` : '';
+          text = `📊 [Poll: ${question || 'Untitled'}${optStr}]`;
         }
 
         const innerMsgObj = msg.message?.[messageType];

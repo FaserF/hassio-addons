@@ -447,6 +447,41 @@ async function runTests() {
     'Slash prefix command (/ping) correctly triggers command processing'
   );
 
+  // Test Fuzzy Search Suggestions & Unknown Command Response
+  const { levenshteinDistance, findCommandSuggestions } = await import(
+    '../src/whatsapp/moderation/commands.js'
+  );
+  assert(levenshteinDistance('cat', 'cut') === 1, 'levenshteinDistance calculates single edit correctly');
+  assert(levenshteinDistance('ping', 'pong') === 1, 'levenshteinDistance calculates single edit substitution');
+  assert(levenshteinDistance('pin', 'ping') === 1, 'levenshteinDistance calculates single edit');
+
+  const suggestions = findCommandSuggestions(
+    'pinng',
+    ['ping', 'pong', 'pin', 'setrules', 'lock'],
+    3
+  );
+  assert(
+    suggestions.includes('ping') && suggestions.includes('pin'),
+    'findCommandSuggestions finds close matches for "pinng"'
+  );
+
+  const unknownCmdMsg = {
+    key: { remoteJid: testGroupJid, fromMe: true, id: 'UNKNOWN_MSG_1' },
+    message: { conversation: '!pinng' },
+  };
+  const unknownHandled = await processCommand(
+    mockSession,
+    unknownCmdMsg,
+    '!pinng',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  assert(
+    unknownHandled === true,
+    'Unknown command from admin triggers warning response with fuzzy suggestions'
+  );
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;

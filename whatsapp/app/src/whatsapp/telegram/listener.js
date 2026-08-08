@@ -1,4 +1,4 @@
-import { loadTelegramStore, updateCachedChat } from './store.js';
+import { loadTelegramStore, saveTelegramStore, updateCachedChat } from './store.js';
 import { getTelegramBotClient } from './bot.js';
 import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './message_map.js';
 import { waToTelegramHtml, anonymizePhoneNumber } from './format.js';
@@ -232,6 +232,8 @@ export async function processTelegramUpdates() {
           'edited_channel_post',
           'message_reaction',
           'message_reaction_count',
+          'poll',
+          'poll_answer',
         ],
       });
 
@@ -240,6 +242,74 @@ export async function processTelegramUpdates() {
       for (const update of updates) {
         lastUpdateId = Math.max(lastUpdateId, update.update_id);
         lastUpdateIds.set(botConfig.id, lastUpdateId);
+
+        // Handle Telegram Poll Answers (when a user votes or changes vote in a poll)
+        if (update.poll_answer) {
+          const pa = update.poll_answer;
+          const pollId = String(pa.poll_id);
+          const voterName = pa.user
+            ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() || pa.user.username || 'Telegram User'
+            : 'Telegram User';
+          const selectedOptionIds = pa.option_ids || [];
+
+          // Find stored poll details if cached
+          const cachedPoll = store.cached_polls?.[pollId];
+          const pollQuestion = cachedPoll?.question || 'Poll';
+          const pollOptions = cachedPoll?.options || [];
+          const selectedText = selectedOptionIds
+            .map((idx) => pollOptions[idx] || `Option ${idx + 1}`)
+            .join(', ');
+
+          const voteText = selectedOptionIds.length > 0
+            ? `📊 [Poll Vote: ${pollQuestion}]\n${voterName} voted for: ${selectedText}`
+            : `📊 [Poll Vote: ${pollQuestion}]\n${voterName} retracted vote`;
+
+          const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
+          const mappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              (!tgChatId || String(m.tg_chat_id) === tgChatId) &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          for (const mapping of mappings) {
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) {
+                  session = s;
+                  break;
+                }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                await session.sock.sendMessage(mapping.wa_jid, { text: voteText });
+              } catch (e) {
+                logger.error({ error: e.message }, '❌ Failed to sync Telegram poll vote to WhatsApp');
+              }
+            }
+          }
+          continue;
+        }
+
+        // Handle Telegram Poll Updates (when poll options or total voters change)
+        if (update.poll) {
+          const p = update.poll;
+          const pollId = String(p.id);
+          if (!store.cached_polls) store.cached_polls = {};
+          store.cached_polls[pollId] = {
+            id: pollId,
+            question: p.question,
+            options: (p.options || []).map((o) => o.text),
+            total_voter_count: p.total_voter_count,
+            is_closed: p.is_closed,
+            chat_id: store.cached_polls[pollId]?.chat_id || '',
+          };
+          saveTelegramStore(store);
+          continue;
+        }
 
         // Handle Telegram Message Reactions (message_reaction updates)
         if (update.message_reaction) {
@@ -391,6 +461,20 @@ export async function processTelegramUpdates() {
                 fileName: msg.document.file_name,
               };
             }
+          } else if (msg.poll) {
+            const p = msg.poll;
+            const pollOptions = (p.options || []).map((o) => o.text);
+            const optStr = pollOptions.length > 0 ? `\nOptions:\n${pollOptions.map((o) => `• ${o}`).join('\n')}` : '';
+            tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
+            const pollId = String(p.id);
+            if (!store.cached_polls) store.cached_polls = {};
+            store.cached_polls[pollId] = {
+              id: pollId,
+              question: p.question,
+              options: pollOptions,
+              chat_id: tgChatId,
+            };
+            saveTelegramStore(store);
           }
         } catch (mediaErr) {
           logger.warn({ error: mediaErr.message }, '⚠️ Failed to fetch Telegram file URL');

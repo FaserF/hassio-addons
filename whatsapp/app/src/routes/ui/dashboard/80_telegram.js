@@ -37,7 +37,7 @@ function renderTelegramBots(bots) {
   container.innerHTML = bots
     .map(
       (b) => `
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:8px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px;">
       <div style="display:flex; align-items:center; gap:12px;">
         <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
           <i class="fas fa-robot"></i>

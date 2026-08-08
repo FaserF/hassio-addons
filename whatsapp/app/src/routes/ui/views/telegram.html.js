@@ -71,16 +71,16 @@ export default () => `
 
         <!-- Mappings Table -->
         <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto;">
-            <table class="data-table" id="tg-mappings-table" style="width:100%; min-width:850px; border-collapse:collapse;">
+            <table class="data-table" id="tg-mappings-table" style="width:100%; min-width:850px;">
                 <thead>
-                    <tr style="background:var(--bg-body); text-align:left;">
-                        <th style="padding:12px 16px; width:70px;">Status</th>
-                        <th style="padding:12px 16px;">Mapping Name</th>
-                        <th style="padding:12px 16px;"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Chat</th>
-                        <th style="padding:12px 16px;"><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram Target</th>
-                        <th style="padding:12px 16px;">Direction</th>
-                        <th style="padding:12px 16px;">Settings &amp; Options</th>
-                        <th style="padding:12px 16px; text-align:right;">Actions</th>
+                    <tr>
+                        <th style="width:70px;">Status</th>
+                        <th>Mapping Name</th>
+                        <th><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Chat</th>
+                        <th><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram Target</th>
+                        <th>Direction</th>
+                        <th>Settings &amp; Options</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tg-mappings-tbody">

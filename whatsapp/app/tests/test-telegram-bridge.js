@@ -83,4 +83,9 @@ describe('Telegram Bridge Unit Tests', () => {
       'Visit [LINK] now'
     );
   });
+
+  it('cached_polls initializes correctly in store', () => {
+    const store = getDefaultTelegramStore();
+    assert.deepStrictEqual(store.cached_polls || {}, {});
+  });
 });
