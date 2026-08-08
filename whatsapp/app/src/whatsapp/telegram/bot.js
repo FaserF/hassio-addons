@@ -1,6 +1,22 @@
 import { loadTelegramStore, updateCachedChat } from './store.js';
 import { logger } from '../../logger.js';
 
+const ALLOWED_METHODS = new Set([
+  'getMe',
+  'getUpdates',
+  'sendMessage',
+  'sendPhoto',
+  'sendVoice',
+  'sendDocument',
+  'setMessageReaction',
+  'editMessageText',
+  'deleteMessage',
+  'sendVideo',
+  'sendAudio',
+  'sendSticker',
+  'sendLocation',
+]);
+
 export class TelegramBotClient {
   constructor(token) {
     this.token = token || '';
@@ -10,7 +26,10 @@ export class TelegramBotClient {
     if (!this.token) {
       throw new Error('Telegram Bot Token is not configured');
     }
-    const url = `https://api.telegram.org/bot${this.token}/${method}`;
+    if (typeof method !== 'string' || !ALLOWED_METHODS.has(method)) {
+      throw new Error(`Invalid or unsupported Telegram API method: ${method}`);
+    }
+    const url = `https://api.telegram.org/bot${this.token}/${encodeURIComponent(method)}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

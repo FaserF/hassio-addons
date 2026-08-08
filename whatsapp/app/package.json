@@ -12,7 +12,8 @@
     "test:contacts": "node tests/test-contact-cache.js",
     "test:moderation": "node tests/test-moderation.js",
     "test:commands": "node tests/test-commands.js",
-    "test": "npm run lint && npm run test:ui && npm run test:ui-render && npm run test:contacts && npm run test:moderation && npm run test:commands"
+    "test:telegram": "node --test tests/test-telegram-bridge.js",
+    "test": "npm run lint && npm run test:ui && npm run test:ui-render && npm run test:contacts && npm run test:moderation && npm run test:commands && npm run test:telegram"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",

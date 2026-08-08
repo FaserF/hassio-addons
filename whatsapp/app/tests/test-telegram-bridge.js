@@ -47,6 +47,13 @@ describe('Telegram Bridge Unit Tests', () => {
     }, /Telegram Bot Token is not configured/);
   });
 
+  it('TelegramBotClient rejects invalid or path traversal method', async () => {
+    const client = new TelegramBotClient('123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11');
+    await assert.rejects(async () => {
+      await client.request('../admin');
+    }, /Invalid or unsupported Telegram API method: \.\.\/admin/);
+  });
+
   it('sync_self_messages default state is false in mapping creation', () => {
     const mapping = {
       wa_jid: '12345@g.us',

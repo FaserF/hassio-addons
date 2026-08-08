@@ -1,6 +1,6 @@
 // Telegram Bridge Dashboard UI Logic
 
-export async function loadTelegramBridgeData() {
+async function loadTelegramBridgeData() {
   try {
     const res = await fetch('api/telegram/config');
     const data = await res.json();
@@ -30,7 +30,7 @@ export async function loadTelegramBridgeData() {
   }
 }
 
-export function renderTelegramMappings(mappings) {
+function renderTelegramMappings(mappings) {
   const tbody = document.getElementById('tg-mappings-tbody');
   if (!tbody) return;
 
@@ -67,7 +67,7 @@ export function renderTelegramMappings(mappings) {
     .join('');
 }
 
-export async function toggleTelegramBridge(enabled) {
+async function toggleTelegramBridge(enabled) {
   try {
     await fetch('api/telegram/config', {
       method: 'POST',
@@ -80,7 +80,7 @@ export async function toggleTelegramBridge(enabled) {
   }
 }
 
-export async function saveTelegramBotToken() {
+async function saveTelegramBotToken() {
   const token = document.getElementById('tg-bot-token-input')?.value || '';
   try {
     const res = await fetch('api/telegram/config', {
@@ -100,28 +100,28 @@ export async function saveTelegramBotToken() {
   }
 }
 
-export async function toggleTelegramMapping(id) {
+async function toggleTelegramMapping(id) {
   await fetch(`api/telegram/mappings/${id}/toggle`, { method: 'POST' });
   loadTelegramBridgeData();
 }
 
-export async function deleteTelegramMapping(id) {
+async function deleteTelegramMapping(id) {
   if (!confirm('Are you sure you want to remove this Telegram chat mapping?')) return;
   await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
   loadTelegramBridgeData();
 }
 
-export function openAddTelegramMappingModal() {
+function openAddTelegramMappingModal() {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
 }
 
-export function closeTelegramMappingModal() {
+function closeTelegramMappingModal() {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'none';
 }
 
-export async function saveTelegramMappingModal() {
+async function saveTelegramMappingModal() {
   const wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
   const tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
   const tg_thread_id = document.getElementById('tg-modal-tg-thread-id')?.value || '';

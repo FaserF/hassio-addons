@@ -354,6 +354,7 @@ async function updateDashboard() {
   }
 }
 
+
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -517,6 +518,7 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
 
 // Update & Dependency Modals
 
@@ -717,17 +719,261 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
+
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
 let modStoreCache = null;
 let currentModGroup = '';
+let builtinCommandsCache = [];
+
+// ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────
+const _dirty = {
+  isDirty: false,
+  panelId: null, // e.g. 'rules', 'greetings', …
+  panelLabel: null, // human-readable label shown in the modal
+  saveFn: null, // async function to call when user picks "Save & Switch"
+  onProceed: null, // callback executed after save OR discard
+};
+
+// Snapshot of all tracked field values taken when a group is loaded or saved.
+// Used to detect changes without relying on fragile event delegation.
+let _formSnapshot = null;
+
+const SUB_PANEL_LABELS = {
+  rules: 'Rules',
+  greetings: 'Greetings & Captcha',
+  warnings: 'Warnings',
+  locks: 'Locks',
+  blacklist: 'Blacklist',
+  filters: 'Filters',
+  antispam: 'Anti-Spam',
+  federation: 'Federation',
+  ai: 'Gemini AI',
+  commands: 'Commands',
+  migration: 'Import/Export',
+};
+
+const SAVE_FN_MAP = {
+  rules: () => saveGroupRules(),
+  greetings: () => saveGroupGreetings(),
+  warnings: () => saveGroupWarnings(),
+  locks: () => saveGroupLocks(),
+  blacklist: () => saveGroupBlacklist(),
+  filters: () => saveGroupFilters(),
+  antispam: () => saveGroupAntispam(),
+  federation: () => saveGroupFederation(),
+  ai: () => saveGroupAiConfig(),
+  commands: () => saveGroupCommands(),
+};
+
+// IDs of all fields we track for changes (inputs, selects, textareas).
+const TRACKED_FIELD_IDS = [
+  'mod-rules-text',
+  'mod-rules-show-on-join',
+  'mod-welcome-enabled',
+  'mod-welcome-msg',
+  'mod-welcome-target',
+  'mod-goodbye-enabled',
+  'mod-goodbye-msg',
+  'mod-goodbye-target',
+  'mod-captcha-enabled',
+  'mod-captcha-mode',
+  'mod-captcha-timeout',
+  'mod-max-warns',
+  'mod-warn-action',
+  'mod-lock-image',
+  'mod-lock-video',
+  'mod-lock-audio',
+  'mod-lock-document',
+  'mod-lock-sticker',
+  'mod-lock-url',
+  'mod-lock-invite',
+  'mod-lock-poll',
+  'mod-lock-contact',
+  'mod-lock-location',
+  'mod-lock-forwarded',
+  'mod-lock-rtl',
+  'mod-blacklist-mode',
+  'mod-flood-enabled',
+  'mod-flood-max',
+  'mod-flood-win',
+  'mod-antiraid-enabled',
+  'mod-antiraid-max',
+  'mod-antiraid-win',
+  'mod-antispam-links-enabled',
+  'mod-notify-deleted-action',
+  'mod-notify-bypassed-actions',
+  'mod-ai-enabled',
+  'mod-ai-faq',
+  'mod-ai-sentiment',
+  'mod-ai-prompt',
+  'mod-ai-key',
+  'mod-trans-lang',
+  'mod-trans-mode',
+  'mod-fed-select',
+  'mod-cmds-enabled',
+  'mod-cmds-multi-enabled',
+  'mod-cmds-prefix',
+  'mod-cmds-mute-action',
+];
+
+/** Capture current values of all tracked fields into a snapshot. */
+function _captureSnapshot() {
+  const snap = {};
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    snap[id] = el.type === 'checkbox' ? el.checked : el.value;
+  }
+  _formSnapshot = snap;
+}
+
+/** Compare current field values to snapshot. Returns true if anything changed. */
+function _isSnapshotDirty() {
+  if (!_formSnapshot) return false;
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const current = el.type === 'checkbox' ? el.checked : el.value;
+    if (current !== _formSnapshot[id]) return true;
+  }
+  return false;
+}
+
+/** Find which sub-panel contains the first changed field. */
+function _getDirtyPanel() {
+  if (!_formSnapshot) return null;
+  for (const id of TRACKED_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const current = el.type === 'checkbox' ? el.checked : el.value;
+    if (current !== _formSnapshot[id]) {
+      const panel = el.closest('.mod-subpanel');
+      if (panel) return panel.id.replace('mod-subpanel-', '');
+    }
+  }
+  return null;
+}
+
+/** Call this whenever a tracked input changes. */
+function markDirty(panelId) {
+  _dirty.isDirty = true;
+  _dirty.panelId = panelId;
+  _dirty.panelLabel = SUB_PANEL_LABELS[panelId] || panelId;
+  _dirty.saveFn = SAVE_FN_MAP[panelId] || null;
+  _updateDirtyIndicator(panelId);
+}
+
+/** Call this after a successful save or discard to clear dirty state. */
+function markClean() {
+  _dirty.isDirty = false;
+  _dirty.panelId = null;
+  _dirty.panelLabel = null;
+  _dirty.saveFn = null;
+  _dirty.onProceed = null;
+  _captureSnapshot();
+  document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
+}
+
+function _updateDirtyIndicator(panelId) {
+  document.querySelectorAll('.mod-pill.dirty').forEach((b) => b.classList.remove('dirty'));
+  const pill = document.querySelector(`.mod-pill[data-subtab="${panelId}"]`);
+  if (pill) pill.classList.add('dirty');
+}
+
+/**
+ * Check dirty state before switching. Uses snapshot comparison as the
+ * primary check (reliable across all browsers) and falls back to the
+ * _dirty.isDirty flag for non-field changes (e.g. added filter rows).
+ */
+function _guardDirty(proceedFn) {
+  // First, do a snapshot comparison to catch any field edits
+  if (_isSnapshotDirty()) {
+    const panelId = _getDirtyPanel() || _dirty.panelId || 'settings';
+    _dirty.isDirty = true;
+    _dirty.panelId = panelId;
+    _dirty.panelLabel = SUB_PANEL_LABELS[panelId] || panelId;
+    _dirty.saveFn = SAVE_FN_MAP[panelId] || null;
+    _updateDirtyIndicator(panelId);
+  }
+
+  if (!_dirty.isDirty) return true; // no changes – proceed
+
+  _dirty.onProceed = proceedFn;
+  const modal = document.getElementById('unsaved-changes-modal');
+  const nameEl = document.getElementById('unsaved-panel-name');
+  if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
+  if (modal) modal.classList.add('show');
+  return false;
+}
+
+function _closeUnsavedModal() {
+  const modal = document.getElementById('unsaved-changes-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+// Called by modal button "Stay"
+function unsavedModalCancel() {
+  _dirty.onProceed = null;
+  _closeUnsavedModal();
+}
+
+// Called by modal button "Discard"
+function unsavedModalDiscard() {
+  const proceed = _dirty.onProceed;
+  // Revert UI fields back to the last saved snapshot values
+  if (_formSnapshot) {
+    for (const id of TRACKED_FIELD_IDS) {
+      const el = document.getElementById(id);
+      if (!el || _formSnapshot[id] === undefined) continue;
+      if (el.type === 'checkbox') {
+        el.checked = Boolean(_formSnapshot[id]);
+      } else {
+        el.value = _formSnapshot[id];
+      }
+    }
+  }
+  markClean();
+  _closeUnsavedModal();
+  if (proceed) proceed();
+}
+
+// Called by modal button "Save & Switch"
+async function unsavedModalSaveAndSwitch() {
+  const proceed = _dirty.onProceed;
+  const saveFn = _dirty.saveFn;
+  _closeUnsavedModal();
+  if (saveFn) {
+    try {
+      await saveFn();
+    } catch (e) {
+      console.error('Auto-save failed', e);
+    }
+  }
+  markClean();
+  if (proceed) proceed();
+}
+// ── End Dirty Tracking ────────────────────────────────────────────────────────
 
 async function loadModerationConfig() {
   try {
-    const [modRes, chatsRes] = await Promise.all([
+    const [modRes, chatsRes, cmdsRes] = await Promise.all([
       fetch(basePath + 'api/moderation/config'),
       fetch(basePath + 'api/chats?session_id=' + currentSession),
+      fetch(basePath + 'api/moderation/commands'),
     ]);
+
+    // Cache built-in commands once at load time
+    try {
+      if (cmdsRes.ok) {
+        const cmdsJson = await cmdsRes.json();
+        if (cmdsJson.success && Array.isArray(cmdsJson.data) && cmdsJson.data.length > 0) {
+          builtinCommandsCache = cmdsJson.data;
+        }
+      }
+    } catch (cmdsErr) {
+      console.warn('Failed to load built-in commands list:', cmdsErr);
+    }
 
     if (modRes.ok) {
       const json = await modRes.json();
@@ -856,7 +1102,7 @@ async function toggleGlobalModeration(enabled) {
   }
 }
 
-function selectModerationGroup(groupId) {
+async function selectModerationGroup(groupId) {
   currentModGroup = groupId;
   const contentCard = document.getElementById('mod-group-content');
   const placeholderCard = document.getElementById('mod-no-group-placeholder');
@@ -869,6 +1115,9 @@ function selectModerationGroup(groupId) {
 
   if (contentCard) contentCard.style.display = 'block';
   if (placeholderCard) placeholderCard.style.display = 'none';
+
+  // Clear any pending dirty state when switching groups
+  markClean();
 
   if (!modStoreCache) return;
   const config = modStoreCache.groups?.[groupId] || {};
@@ -895,12 +1144,16 @@ function selectModerationGroup(groupId) {
   if (welcE) welcE.checked = Boolean(config.greetings?.welcome_enabled);
   const welcM = document.getElementById('mod-welcome-msg');
   if (welcM) welcM.value = config.greetings?.welcome_message || '';
+  const welcT = document.getElementById('mod-welcome-target');
+  if (welcT) welcT.value = config.greetings?.welcome_target || 'private';
   const goodE = document.getElementById('mod-goodbye-enabled');
   if (goodE) goodE.checked = Boolean(config.greetings?.goodbye_enabled);
   const goodM =
     document.getElementById('mod-goodbye-msg') || document.getElementById('mod-goodbye-message');
   if (goodM)
     goodM.value = config.greetings?.goodbye_message || config.greetings?.goodbye_text || '';
+  const goodT = document.getElementById('mod-goodbye-target');
+  if (goodT) goodT.value = config.greetings?.goodbye_target || 'private';
 
   // Captcha
   const capE = document.getElementById('mod-captcha-enabled');
@@ -916,9 +1169,15 @@ function selectModerationGroup(groupId) {
     };
   }
   const capMode = document.getElementById('mod-captcha-mode');
-  if (capMode) capMode.value = config.greetings?.captcha_mode || 'button';
+  if (capMode) capMode.value = config.greetings?.captcha_mode || 'math';
+  const capTarget = document.getElementById('mod-captcha-target');
+  if (capTarget) capTarget.value = config.greetings?.captcha_target || 'private';
   const capTime = document.getElementById('mod-captcha-timeout');
   if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+  const namePrio = document.getElementById('mod-name-priority');
+  if (namePrio) namePrio.value = config.greetings?.name_priority || 'name_push_phone';
+  const nameFall = document.getElementById('mod-name-fallback');
+  if (nameFall) nameFall.value = config.greetings?.name_fallback || 'phone';
 
   if (capE && capE.checked) {
     loadCaptchaUsers();
@@ -937,78 +1196,277 @@ function selectModerationGroup(groupId) {
   const warnList = document.getElementById('mod-warns-list');
   if (warnList) {
     const userWarns = config.warnings?.user_warns || {};
-    const entries = Object.keys(userWarns).filter((u) => userWarns[u]?.length);
+    // Merge entries that share the same cleaned digits (resolves LID vs PN split)
+    const mergedWarns = {};
+    for (const key of Object.keys(userWarns)) {
+      const cleanKey = key.replace(/\D/g, '') || key;
+      if (!userWarns[key]?.length) continue;
+      if (!mergedWarns[cleanKey]) mergedWarns[cleanKey] = [];
+      mergedWarns[cleanKey].push(...userWarns[key]);
+    }
+
+    const entries = Object.keys(mergedWarns).filter((u) => mergedWarns[u]?.length);
     if (!entries.length) {
       warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
     } else {
       warnList.innerHTML = entries
+        .map((u) => {
+          const warns = mergedWarns[u];
+          const items = warns
+            .map(
+              (w, i) =>
+                `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">` +
+                `${i + 1}. ${escapeHtml(w.reason)} <span style="font-size:10px;opacity:0.8;">(${new Date(w.timestamp).toLocaleString()})</span>` +
+                `</div>`
+            )
+            .join('');
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div><strong style="color:var(--primary);">@${escapeHtml(u)}</strong> <span class="badge badge-warning" style="font-size:11px;padding:2px 6px;">${warns.length} warning(s)</span></div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">Clear All</button>
+          </div>
+          <div style="border-top:1px solid var(--border-color);padding-top:4px;">
+            ${items}
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
+  // Bans List UI
+  const bansList = document.getElementById('mod-bans-list');
+  if (bansList) {
+    const bannedMap = config.banned_users || {};
+    const bannedUserIds = Object.keys(bannedMap);
+    if (!bannedUserIds.length) {
+      bansList.innerHTML = '<div class="empty-state">No banned users</div>';
+    } else {
+      bansList.innerHTML = bannedUserIds
+        .map((u) => {
+          const info = bannedMap[u];
+          const timeStr = info.timestamp ? new Date(info.timestamp).toLocaleString() : 'N/A';
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong style="color:#e74c3c;">🚫 @${escapeHtml(u)}</strong>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                Reason: ${escapeHtml(info.reason || 'Banned')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> Unban</button>
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
+  // Kicks List UI
+  const kicksList = document.getElementById('mod-kicks-list');
+  if (kicksList) {
+    const kickLogs = config.kick_log || [];
+    if (!kickLogs.length) {
+      kicksList.innerHTML = '<div class="empty-state">No kick history</div>';
+    } else {
+      kicksList.innerHTML = kickLogs
+        .map((k) => {
+          const timeStr = k.timestamp ? new Date(k.timestamp).toLocaleString() : 'N/A';
+          return `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong style="color:var(--warning);">👢 @${escapeHtml(k.userId)}</strong>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                Reason: ${escapeHtml(k.reason || 'Kick')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash"></i> Remove</button>
+          </div>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
+  // Reports List UI
+  const reportsList = document.getElementById('mod-reports-list');
+  if (reportsList) {
+    const reports = config.reports || [];
+    if (!reports.length) {
+      reportsList.innerHTML = '<div class="empty-state">No reports submitted yet</div>';
+    } else {
+      reportsList.innerHTML = reports
+        .slice()
+        .reverse()
         .map(
-          (u) => `
-        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;">
-          <div><strong>@${u}</strong>: ${userWarns[u].length} warning(s)</div>
-          <button class="btn btn-secondary btn-sm" onclick="clearUserWarnInUi('${u}')">Clear</button>
+          (r) => `
+        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div>
+              <span class="badge ${r.status === 'resolved' ? 'badge-success' : 'badge-danger'}" style="font-size:10px;padding:2px 6px;text-transform:uppercase;">${r.status || 'open'}</span>
+              <strong style="color:var(--text-main);margin-left:6px;">Reporter: @${escapeHtml(r.reporter_id)}</strong>
+              ${r.target_id ? ` &rarr; <span style="color:#e74c3c;">Target: @${escapeHtml(r.target_id)}</span>` : ''}
+            </div>
+            ${
+              r.status !== 'resolved'
+                ? `<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="resolveReportInUi('${escapeHtml(r.id)}')"><i class="fas fa-check"></i> Resolve</button>`
+                : `<span style="font-size:11px;color:var(--text-muted);"><i class="fas fa-check-circle" style="color:#2ecc71;"></i> Resolved</span>`
+            }
+          </div>
+          <div style="font-size:12px;color:var(--text-main);margin-top:4px;">
+            <strong>Reason:</strong> ${escapeHtml(r.reason)}
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">
+            <i class="far fa-clock"></i> ${new Date(r.timestamp).toLocaleString()}
+          </div>
         </div>`
         )
         .join('');
     }
   }
 
-  const BUILTIN_COMMANDS_LIST = [
-    { cmd: 'help', label: '!help' },
-    { cmd: 'ping', label: '!ping' },
-    { cmd: 'id', label: '!id' },
-    { cmd: 'rules', label: '!rules' },
-    { cmd: 'info', label: '!info' },
-    { cmd: 'adminlist', label: '!adminlist' },
-    { cmd: 'locktypes', label: '!locktypes' },
-    { cmd: 'translate', label: '!translate' },
-    { cmd: 'warn', label: '!warn' },
-    { cmd: 'warns', label: '!warns' },
-    { cmd: 'unwarn', label: '!unwarn' },
-    { cmd: 'kick', label: '!kick' },
-    { cmd: 'ban', label: '!ban' },
-    { cmd: 'mute', label: '!mute' },
-    { cmd: 'unmute', label: '!unmute' },
-    { cmd: 'tban', label: '!tban' },
-    { cmd: 'tmute', label: '!tmute' },
-    { cmd: 'promote', label: '!promote' },
-    { cmd: 'demote', label: '!demote' },
-    { cmd: 'setrules', label: '!setrules' },
-    { cmd: 'lock', label: '!lock' },
-    { cmd: 'unlock', label: '!unlock' },
-    { cmd: 'locks', label: '!locks' },
-    { cmd: 'report', label: '!report' },
-    { cmd: 'notes', label: '!notes' },
-    { cmd: 'save', label: '!save' },
-    { cmd: 'get', label: '!get' },
-    { cmd: 'filter', label: '!filter' },
-    { cmd: 'filters', label: '!filters' },
-    { cmd: 'stop', label: '!stop' },
-    { cmd: 'welcome', label: '!welcome' },
-    { cmd: 'goodbye', label: '!goodbye' },
-    { cmd: 'del', label: '!del' },
-    { cmd: 'setlang', label: '!setlang' },
-  ];
+  // Use cached built-in commands (loaded once at startup in loadModerationConfig)
+  // Fall back to a live fetch only if cache is still empty
+  let builtinCommands = builtinCommandsCache;
+  if (builtinCommands.length === 0) {
+    try {
+      const res = await fetch(basePath + 'api/moderation/commands');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        builtinCommandsCache = json.data;
+        builtinCommands = builtinCommandsCache;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch dynamic commands list:', err);
+    }
+  }
 
-  // Commands
+  // Commands Config UI
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
-  if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled);
+  if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled !== false);
+  const cmdsMultiEnabled = document.getElementById('mod-cmds-multi-enabled');
+  if (cmdsMultiEnabled) cmdsMultiEnabled.checked = Boolean(config.commands?.multi_command_enabled);
   const cmdsPrefix = document.getElementById('mod-cmds-prefix');
   if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
-  const cmdsMute = document.getElementById('mod-cmds-mute-action');
-  if (cmdsMute) cmdsMute.value = config.commands?.mute_action || 'delete';
+  const cmdsMuteAct = document.getElementById('mod-cmds-mute-action');
+  if (cmdsMuteAct) cmdsMuteAct.value = config.commands?.mute_action || 'delete';
 
   // Default Commands Grid UI
   const defaultCmdsGrid = document.getElementById('mod-default-cmds-grid');
   if (defaultCmdsGrid) {
     const disabledCmds = config.commands?.disabled_commands || [];
-    defaultCmdsGrid.innerHTML = BUILTIN_COMMANDS_LIST.map(
-      (c) => `
-      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
-        <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${c.cmd}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
-        <span><code>${escapeHtml(config.commands?.prefix || '!')}${c.cmd}</code></span>
-      </label>`
-    ).join('');
+    const prefix = config.commands?.prefix || '!';
+
+    // Base docs URL – moderation page on GitHub Pages
+    const DOCS_BASE = 'https://FaserF.github.io/ha-whatsapp/moderation';
+
+    // Map command name → docs anchor (generated from heading text in moderation.md)
+    // Format: "#### N. `!cmd`" → anchor "#n-cmd" (GitHub Pages / just-the-docs convention)
+    const CMD_DOC_ANCHORS = {
+      help: '#1-help',
+      ping: '#2-ping',
+      id: '#3-id',
+      rules: '#4-rules',
+      info: '#5-info',
+      adminlist: '#6-adminlist-alias-admins',
+      admins: '#6-adminlist-alias-admins',
+      admin: '#6-adminlist-alias-admins',
+      approved: '#7-approved',
+      locktypes: '#7-locktypes',
+      report: '#8-report',
+      get: '#9-get',
+      notes: '#10-notes',
+      filters: '#11-filters',
+      translate: '#12-translate',
+      tr: '#12-translate',
+      warn: '#13-warn',
+      unwarn: '#14-unwarn',
+      warns: '#15-warns',
+      kick: '#16-kick-alias-ban',
+      ban: '#16-kick-alias-ban',
+      tban: '#17-tban',
+      mute: '#18-mute',
+      tmute: '#19-tmute',
+      unmute: '#20-unmute',
+      del: '#21-del-alias-delete',
+      delete: '#21-del-alias-delete',
+      approve: '#22-approve',
+      unapprove: '#23-unapprove',
+      setrules: '#24-setrules',
+      promote: '#25-promote',
+      demote: '#26-demote',
+      setwelcome: '#27-setwelcome',
+      welcome: '#28-welcome',
+      setgoodbye: '#29-setgoodbye',
+      goodbye: '#30-goodbye',
+      lock: '#31-lock',
+      unlock: '#32-unlock',
+      locks: '#33-locks',
+      save: '#34-save',
+      filter: '#35-filter',
+      stop: '#36-stop',
+      setlang: '#37-setlang',
+      resetwarn: '#38-resetwarn-alias-rmwarn',
+      rmwarn: '#38-resetwarn-alias-rmwarn',
+      setwarnlimit: '#39-setwarnlimit',
+      setwarnaction: '#40-setwarnaction',
+      whitelist: '#41-whitelist--approve',
+      unwhitelist: '#42-unwhitelist--unapprove',
+      whitelisted: '#43-whitelisted',
+      scan: '#44-scan',
+      autotranslate: '#45-autotranslate',
+      flood: '#46-flood',
+      newfed: '#47-newfed',
+      joinfed: '#48-joinfed',
+      leavefed: '#49-leavefed',
+      fban: '#50-fban',
+      unfban: '#51-unfban',
+      fedinfo: '#52-fedinfo',
+      fbanlist: '#53-fbanlist',
+      fedadmins: '#54-fedadmins',
+      removespamlinks: '#55-removespamlinks',
+      pin: '#56-pin',
+      unpin: '#57-unpin',
+      unpinall: '#58-unpinall',
+      pinned: '#59-pinned',
+      blacklist: '#60-blacklist',
+      rmblacklist: '#61-rmblacklist--unblacklist',
+      unblacklist: '#61-rmblacklist--unblacklist',
+      setblacklistaction: '#62-setblacklistaction',
+      setlog: '#63-setlog',
+      unsetlog: '#64-unsetlog',
+      slowmode: '#65-slowmode',
+      settitle: '#66-settitle',
+      setdescription: '#67-setdescription',
+      setphoto: '#68-setphoto',
+      mode: '#69-mode',
+      unapproveall: '#70-unapproveall',
+      reports: '#71-reports',
+    };
+
+    if (builtinCommands.length > 0) {
+      defaultCmdsGrid.innerHTML = builtinCommands
+        .map((c) => {
+          const docAnchor = CMD_DOC_ANCHORS[c.cmd] || `#${encodeURIComponent(c.cmd)}`;
+          const docHref = DOCS_BASE + docAnchor;
+          const infoBtn = `<a href="${docHref}" target="_blank" rel="noopener" title="View docs for !${escapeHtml(c.cmd)}" style="margin-left:auto; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:rgba(var(--primary-rgb,37,211,102),0.15); color:var(--primary,#25d366); font-size:10px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(var(--primary-rgb,37,211,102),0.35)'" onmouseout="this.style.background='rgba(var(--primary-rgb,37,211,102),0.15)'"><i class="fas fa-info"></i></a>`;
+          return `<label data-cmd="${escapeHtml(c.cmd)}" data-help="${escapeHtml(c.help || '')}" title="${escapeHtml(c.help || '')}" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border-color);">
+            <input type="checkbox" class="mod-default-cmd-toggle" data-cmd="${escapeHtml(c.cmd)}"${!disabledCmds.includes(c.cmd) ? ' checked' : ''}>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><code>${escapeHtml(prefix)}${escapeHtml(c.cmd)}</code>${c.adminOnly ? ' <span style="font-size:9px;color:#e74c3c;">(admin)</span>' : ''}</span>
+            ${infoBtn}
+          </label>`;
+        })
+        .join('');
+    } else {
+      defaultCmdsGrid.innerHTML = '<div class="empty-state">No commands registered</div>';
+    }
+
+    // Clear search box when group changes
+    const searchBox = document.getElementById('mod-default-cmds-search');
+    if (searchBox) searchBox.value = '';
   }
 
   // Custom Commands List UI
@@ -1019,20 +1477,33 @@ function selectModerationGroup(groupId) {
       customCmdsList.innerHTML =
         '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
     } else {
+      const typeLabel = (t) => {
+        if (t === 'webhook')
+          return '<span style="font-size:10px;background:rgba(41,182,246,0.15);color:#29b6f6;padding:2px 6px;border-radius:4px;">🏠 HA/Webhook</span>';
+        if (t === 'alias')
+          return '<span style="font-size:10px;background:rgba(156,39,176,0.15);color:#ce93d8;padding:2px 6px;border-radius:4px;">🔗 Alias</span>';
+        return '<span style="font-size:10px;background:rgba(76,175,80,0.15);color:#81c784;padding:2px 6px;border-radius:4px;">🤖 Auto Reply</span>';
+      };
       customCmdsList.innerHTML = customCmds
         .map(
           (c, idx) => `
         <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div>
-            <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong> 
+            <strong style="color:var(--primary);">${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.command)}</strong>
+            ${typeLabel(c.type)}
             ${c.admin_only ? '<span style="font-size:10px;background:rgba(231,76,60,0.15);color:#e74c3c;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin Only</span>' : ''}
-            &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>
+            ${c.type === 'alias' && c.alias_of ? ` &rarr; <span style="color:var(--text-main);">runs <code>${escapeHtml(config.commands?.prefix || '!')}${escapeHtml(c.alias_of)}</code></span>` : ''}
+            ${c.type === 'auto_reply' && c.response ? ` &rarr; <span style="color:var(--text-main);">${escapeHtml(c.response)}</span>` : ''}
+            ${c.type === 'webhook' ? ` <span style="color:var(--text-muted);font-size:11px;">— forwarded to HA/Webhook</span>` : ''}
+            ${c.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;"><em>Help: ${escapeHtml(c.description)}</em></div>` : ''}
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeCustomCommandRule(${idx})"><i class="fas fa-trash"></i></button>
         </div>`
         )
         .join('');
     }
+    // Populate alias target dropdown with built-in + existing custom commands
+    _refreshAliasDropdown(config);
   }
 
   // AI & Translation
@@ -1067,6 +1538,57 @@ function selectModerationGroup(groupId) {
   const raidWin = document.getElementById('mod-antiraid-win');
   if (raidWin) raidWin.value = config.antispam?.anti_raid?.window_seconds || 10;
 
+  const antispamLinksE = document.getElementById('mod-antispam-links-enabled');
+  if (antispamLinksE) antispamLinksE.checked = Boolean(config.anti_spam_links_enabled);
+
+  const notifyDeletedE = document.getElementById('mod-notify-deleted-action');
+  if (notifyDeletedE) notifyDeletedE.checked = config.antispam?.notify_deleted_action !== false; // Default true
+
+  const notifyBypassedE = document.getElementById('mod-notify-bypassed-actions');
+  if (notifyBypassedE) notifyBypassedE.checked = Boolean(config.antispam?.notify_bypassed_actions);
+
+  const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
+  const platforms = ['whatsapp', 'telegram', 'signal', 'instagram', 'discord', 'other'];
+  for (const plat of platforms) {
+    const el = document.getElementById(`mod-invite-platform-${plat}`);
+    if (el) el.checked = blockedPlatforms[plat] !== false; // Default true if undefined
+  }
+
+  // Muted Users List UI
+  const mutedList = document.getElementById('mod-muted-users-list');
+  if (mutedList) {
+    const mutedUsers = config.muted_users || {};
+    const entries = Object.entries(mutedUsers).filter(
+      ([, data]) => !data.until || data.until > Date.now()
+    );
+    if (!entries.length) {
+      mutedList.innerHTML =
+        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">No muted users currently</div>';
+    } else {
+      mutedList.innerHTML = entries
+        .map(([userKey, data]) => {
+          const reason = data.reason || 'No reason provided';
+          const untilStr = data.until
+            ? `Until ${new Date(data.until).toLocaleTimeString()}`
+            : 'Indefinitely';
+          const dateStr = data.created ? new Date(data.created).toLocaleString() : null;
+          return `
+        <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
+          <div>
+            <strong style="color:var(--text-main);font-size:12px;">@${escapeHtml(userKey)}</strong>
+            <span class="badge badge-warning" style="font-size:10px;margin-left:6px;">${escapeHtml(untilStr)}</span>
+            <div style="font-size:11px;color:var(--text-main);margin-top:2px;">
+              <strong>Reason:</strong> ${escapeHtml(reason)}
+            </div>
+            ${dateStr ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;"><i class="far fa-clock"></i> ${escapeHtml(dateStr)}</div>` : ''}
+          </div>
+          <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="unmuteUserInUi('${escapeHtml(userKey)}')"><i class="fas fa-volume-up"></i> Unmute</button>
+        </div>`;
+        })
+        .join('');
+    }
+  }
+
   // Locks
   const lockKeys = [
     'image',
@@ -1087,7 +1609,10 @@ function selectModerationGroup(groupId) {
     if (el) el.checked = Boolean(config.locks?.[key]?.enabled);
   });
 
-  // Blacklist Tag Cloud
+  // Blacklist Tag Cloud & Mode
+  const blMode = document.getElementById('mod-blacklist-mode');
+  if (blMode) blMode.value = config.blacklist?.matching_mode || 'exact';
+
   const blTags = document.getElementById('mod-blacklist-tags');
   if (blTags) {
     const words = config.blacklist?.words || [];
@@ -1120,7 +1645,9 @@ function selectModerationGroup(groupId) {
           (f, idx) => `
         <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div>
-            <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong> &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>
+            <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong>
+            ${f.type === 'faq' ? '<span style="font-size:10px;background:rgba(52,152,219,0.15);color:#3498db;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">💡 FAQ</span>' : '<span style="font-size:10px;background:rgba(46,204,113,0.15);color:#2ecc71;padding:2px 6px;border-radius:4px;margin-left:6px;">Reply</span>'}
+            &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeFilterRule(${idx})"><i class="fas fa-trash"></i></button>
         </div>`
@@ -1141,6 +1668,9 @@ function selectModerationGroup(groupId) {
     fedSelect.value = activeFedId;
   }
   updateFedBlacklistTagsInUi();
+  // Capture a snapshot of all field values AFTER populating them.
+  // _guardDirty() will diff against this snapshot on every subtab switch.
+  _captureSnapshot();
 }
 
 async function toggleGroupModeration(enabled) {
@@ -1176,9 +1706,14 @@ function _doSwitchModSubTab(subTab) {
 }
 
 function switchModSubTab(subTab) {
-  const guardFn = typeof _guardDirty === 'function' ? _guardDirty : null;
-  if (guardFn && !guardFn(() => _doSwitchModSubTab(subTab))) return;
+  if (!_guardDirty(() => _doSwitchModSubTab(subTab))) return;
   _doSwitchModSubTab(subTab);
+}
+
+/** Register dirty-tracking listeners – now snapshot-based, no event delegation needed. */
+function _registerDirtyListeners() {
+  // The snapshot is captured at the end of selectModerationGroup.
+  // No event listeners needed – _guardDirty() does a snapshot diff on every switch.
 }
 
 async function saveGroupRules() {
@@ -1190,6 +1725,7 @@ async function saveGroupRules() {
   groupConfig.rules = { text, show_on_join: showOnJoin };
 
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Group rules saved!', 'success');
 }
 
@@ -1199,14 +1735,20 @@ async function saveGroupGreetings() {
   groupConfig.greetings = {
     welcome_enabled: Boolean(document.getElementById('mod-welcome-enabled')?.checked),
     welcome_message: document.getElementById('mod-welcome-msg')?.value || '',
+    welcome_target: document.getElementById('mod-welcome-target')?.value || 'private',
     goodbye_enabled: Boolean(document.getElementById('mod-goodbye-enabled')?.checked),
     goodbye_message: document.getElementById('mod-goodbye-msg')?.value || '',
+    goodbye_target: document.getElementById('mod-goodbye-target')?.value || 'private',
     captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
-    captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'button',
+    captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'math',
+    captcha_target: document.getElementById('mod-captcha-target')?.value || 'private',
     captcha_timeout_seconds:
       parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+    name_priority: document.getElementById('mod-name-priority')?.value || 'name_push_phone',
+    name_fallback: document.getElementById('mod-name-fallback')?.value || 'phone',
   };
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Greetings & Captcha saved!', 'success');
   loadCaptchaUsers();
 }
@@ -1230,7 +1772,7 @@ async function loadCaptchaUsers() {
 
   try {
     const res = await fetch(
-      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/users`
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/users`
     );
     const json = await res.json();
     const users = json.data || [];
@@ -1292,7 +1834,7 @@ async function toggleUserCaptchaVerification(userId, verified) {
   if (!currentModGroup || !userId) return;
   try {
     const res = await fetch(
-      `/api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/verify`,
+      basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/captcha/verify`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1320,6 +1862,7 @@ async function saveGroupWarnings() {
     action: document.getElementById('mod-warn-action')?.value || 'mute',
   };
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Warnings config saved!', 'success');
 }
 
@@ -1327,6 +1870,7 @@ async function saveGroupCommands() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
 
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
+  const multi_command_enabled = Boolean(document.getElementById('mod-cmds-multi-enabled')?.checked);
   const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
   const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
 
@@ -1341,6 +1885,7 @@ async function saveGroupCommands() {
   groupConfig.commands = {
     ...(groupConfig.commands || {}),
     enabled,
+    multi_command_enabled,
     prefix,
     mute_action,
     disabled_commands: disabledCmds,
@@ -1351,23 +1896,66 @@ async function saveGroupCommands() {
 }
 
 function toggleAllDefaultCommands(enable) {
+  // Only toggle visible commands (respects active search filter)
   document.querySelectorAll('.mod-default-cmd-toggle').forEach((cb) => {
+    const label = cb.closest('label');
+    if (!label || label.style.display === 'none') return;
     cb.checked = Boolean(enable);
   });
 }
 
+window.filterDefaultCommands = function filterDefaultCommands(query) {
+  const q = (query || '').trim().toLowerCase();
+  const grid = document.getElementById('mod-default-cmds-grid');
+  if (!grid) return;
+  let visibleCount = 0;
+  grid.querySelectorAll('label[data-cmd]').forEach((label) => {
+    const cmd = (label.getAttribute('data-cmd') || '').toLowerCase();
+    const help = (label.getAttribute('data-help') || '').toLowerCase();
+    const matches = !q || cmd.includes(q) || help.includes(q);
+    label.style.display = matches ? '' : 'none';
+    if (matches) visibleCount++;
+  });
+
+  // Show/hide empty state
+  let emptyEl = grid.querySelector('.cmd-search-empty');
+  if (visibleCount === 0 && q) {
+    if (!emptyEl) {
+      emptyEl = document.createElement('div');
+      emptyEl.className = 'cmd-search-empty empty-state';
+      emptyEl.style.cssText =
+        'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
+      grid.appendChild(emptyEl);
+    }
+    emptyEl.textContent = `No commands matching "${query}"`;
+    emptyEl.style.display = '';
+  } else if (emptyEl) {
+    emptyEl.style.display = 'none';
+  }
+};
+window.toggleAllDefaultCommands = toggleAllDefaultCommands;
+
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');
+  const typeInp = document.getElementById('mod-cmd-type');
   const respInp = document.getElementById('mod-cmd-response');
+  const aliasInp = document.getElementById('mod-cmd-alias-target');
   const descInp = document.getElementById('mod-cmd-description');
   const adminOnlyInp = document.getElementById('mod-cmd-admin-only');
 
   const name = nameInp?.value.trim().replace(/^[!/#]+/, '');
+  const cmdType = typeInp?.value || 'auto_reply';
   const resp = respInp?.value.trim();
+  const aliasTarget = aliasInp?.value.trim();
   const desc = descInp?.value.trim();
   const adminOnly = Boolean(adminOnlyInp?.checked);
 
-  if (!name || !resp || !currentModGroup) return;
+  if (!name || !currentModGroup) return;
+  if (cmdType === 'auto_reply' && !resp) return;
+  if (cmdType === 'alias' && !aliasTarget) {
+    showToast('Please select a target command for the alias.', 'error');
+    return;
+  }
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.commands = groupConfig.commands || {
@@ -1376,15 +1964,17 @@ async function addCustomCommandRule() {
     mute_action: 'delete',
   };
   groupConfig.commands.custom_commands = groupConfig.commands.custom_commands || [];
-  groupConfig.commands.custom_commands.push({
-    command: name,
-    response: resp,
-    description: desc || undefined,
-    admin_only: adminOnly,
-  });
+
+  const entry = { command: name, type: cmdType, admin_only: adminOnly };
+  if (cmdType === 'auto_reply') entry.response = resp;
+  if (cmdType === 'alias') entry.alias_of = aliasTarget;
+  if (desc) entry.description = desc;
+
+  groupConfig.commands.custom_commands.push(entry);
 
   if (nameInp) nameInp.value = '';
   if (respInp) respInp.value = '';
+  if (aliasInp) aliasInp.value = '';
   if (descInp) descInp.value = '';
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
@@ -1394,6 +1984,57 @@ async function addCustomCommandRule() {
   setTimeout(() => {
     if (nameInp) nameInp.focus();
   }, 50);
+}
+
+function onCustomCmdTypeChange() {
+  const type = document.getElementById('mod-cmd-type')?.value;
+  const respWrap = document.getElementById('mod-cmd-response-wrap');
+  const aliasWrap = document.getElementById('mod-cmd-alias-wrap');
+  if (!respWrap || !aliasWrap) return;
+  if (type === 'alias') {
+    respWrap.style.display = 'none';
+    aliasWrap.style.display = 'flex';
+  } else if (type === 'webhook') {
+    respWrap.style.display = 'none';
+    aliasWrap.style.display = 'none';
+  } else {
+    respWrap.style.display = 'flex';
+    aliasWrap.style.display = 'none';
+  }
+}
+
+function _refreshAliasDropdown(config) {
+  const aliasSelect = document.getElementById('mod-cmd-alias-target');
+  if (!aliasSelect) return;
+  const builtins = [
+    'ping',
+    'help',
+    'id',
+    'rules',
+    'warn',
+    'warns',
+    'unwarn',
+    'kick',
+    'ban',
+    'mute',
+    'unmute',
+    'promote',
+    'demote',
+    'clear',
+    'report',
+    'notes',
+    'note',
+    'captcha',
+    'test',
+  ];
+  const prefix = config.commands?.prefix || '!';
+  const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
+  const allTargets = [...new Set([...builtins, ...customCmds])];
+  aliasSelect.innerHTML =
+    '<option value="">— select target —</option>' +
+    allTargets
+      .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`)
+      .join('');
 }
 
 async function removeCustomCommandRule(idx) {
@@ -1426,6 +2067,87 @@ async function clearUserWarnInUi(userId) {
   }
 }
 
+async function resolveReportInUi(reportId) {
+  if (!currentModGroup || !reportId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/reports/${encodeURIComponent(reportId)}/resolve`,
+      {
+        method: 'POST',
+      }
+    );
+    if (res.ok) {
+      showToast('Report marked as resolved', 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to resolve report', 'danger');
+  }
+}
+
+async function unbanUserInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/ban/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Unbanned @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to unban user', 'danger');
+  }
+}
+
+async function clearKickLogInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/kick/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Kick log entry removed for @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to remove kick log entry', 'danger');
+  }
+}
+
+async function unmuteUserInUi(userId) {
+  if (!currentModGroup || !userId) return;
+  try {
+    const res = await fetch(
+      basePath +
+        `api/moderation/groups/${encodeURIComponent(currentModGroup)}/mute/${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (res.ok) {
+      showToast(`Unmuted @${userId}`, 'success');
+      loadModerationConfig();
+      setTimeout(() => selectModerationGroup(currentModGroup), 200);
+    }
+  } catch (e) {
+    showToast('Failed to unmute user', 'danger');
+  }
+}
+
+
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
@@ -1451,6 +2173,7 @@ async function saveGroupLocks() {
     groupConfig.locks[k] = { enabled: Boolean(el?.checked), action: 'delete' };
   });
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Content locks saved!', 'success');
 }
 
@@ -1486,7 +2209,11 @@ async function removeBlacklistWord(idx) {
 async function saveGroupBlacklist() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
+  groupConfig.blacklist = groupConfig.blacklist || { enabled: true, words: [], action: 'delete' };
+  groupConfig.blacklist.matching_mode =
+    document.getElementById('mod-blacklist-mode')?.value || 'exact';
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Blacklist saved!', 'success');
 }
 
@@ -1506,27 +2233,308 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    notify_deleted_action: Boolean(document.getElementById('mod-notify-deleted-action')?.checked),
+    notify_bypassed_actions: Boolean(
+      document.getElementById('mod-notify-bypassed-actions')?.checked
+    ),
+    blocked_invite_platforms: {
+      whatsapp: Boolean(document.getElementById('mod-invite-platform-whatsapp')?.checked),
+      telegram: Boolean(document.getElementById('mod-invite-platform-telegram')?.checked),
+      signal: Boolean(document.getElementById('mod-invite-platform-signal')?.checked),
+      instagram: Boolean(document.getElementById('mod-invite-platform-instagram')?.checked),
+      discord: Boolean(document.getElementById('mod-invite-platform-discord')?.checked),
+      other: Boolean(document.getElementById('mod-invite-platform-other')?.checked),
+    },
   };
+  groupConfig.anti_spam_links_enabled = Boolean(
+    document.getElementById('mod-antispam-links-enabled')?.checked
+  );
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Anti-Spam & Anti-Raid saved!', 'success');
 }
+
+let testTargetUser = '';
+
+async function generateGroupTestCommandsModal() {
+  if (!currentModGroup) {
+    showToast('Please select a group first.', 'warning');
+    return;
+  }
+  const modal = document.getElementById('test-commands-modal');
+  const container = document.getElementById('test-commands-modal-content');
+  if (!modal || !container) return;
+
+  const config = modStoreCache?.groups?.[currentModGroup] || {};
+  const prefix = config.commands?.prefix || '!';
+
+  // Use cached commands or fetch with basePath
+  let commandsList = typeof builtinCommandsCache !== 'undefined' ? builtinCommandsCache : [];
+  if (!commandsList || commandsList.length === 0) {
+    try {
+      const res = await fetch(
+        (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands'
+      );
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        commandsList = json.data;
+      }
+    } catch (_e) {
+      /* fallback */
+    }
+  }
+
+  const disabledCmds = new Set(config.commands?.disabled_commands || []);
+  const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
+
+  let html = `<div style="font-size:12px;display:flex;flex-direction:column;gap:12px;">`;
+
+  // 1. Group Info Banner, Prefill Target Input & Send-to-Group button
+  html += `
+    <div style="padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.3);border-radius:6px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+        <div>
+          <strong>Target Group:</strong> <code>${escapeHtml(currentModGroup)}</code> &middot;
+          <strong>Prefix:</strong> <code>${escapeHtml(prefix)}</code> &middot;
+          <strong>Active Commands:</strong> ${activeCmds.length}/${commandsList.length}
+        </div>
+        <button class="btn btn-primary btn-sm" style="padding:4px 12px;font-size:11px;white-space:nowrap;" onclick="sendTestSuiteToGroup()" title="Send all active commands as a WhatsApp message to this group">
+          <i class="fas fa-paper-plane"></i> Send to Group
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg);padding:6px 10px;border-radius:4px;border:1px solid var(--border-color);">
+        <label style="font-weight:600;white-space:nowrap;color:var(--text-main);"><i class="fas fa-user-tag" style="color:var(--primary);"></i> Prefill User / Phone:</label>
+        <input type="text" id="test-target-user-input" class="mod-input" style="flex:1;padding:4px 8px;font-size:12px;" placeholder="e.g. @john, @491761234567 or 491761234567" value="${escapeHtml(testTargetUser)}" oninput="updateTestCommandsPrefill(this.value)">
+      </div>
+    </div>`;
+
+  const userPlaceholder = testTargetUser
+    ? testTargetUser.startsWith('@')
+      ? testTargetUser
+      : '@' + testTargetUser
+    : '@user';
+
+  // Helper for copyable block with per-item copy buttons
+  const makeCopyableBlock = (title, items, icon = 'fas fa-terminal') => {
+    if (!items || items.length === 0) return '';
+    const rawText = items.join('\n');
+
+    let itemsHtml = items
+      .map((item) => {
+        const escapedItem = escapeHtml(item).replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
+        return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--body-bg);border:1px solid var(--border-color);border-radius:4px;margin-bottom:4px;">
+          <code style="font-size:11px;white-space:pre-wrap;word-break:break-all;color:var(--text-main);">${escapedItem}</code>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast('Copied command!','success');" title="Copy command"><i class="fas fa-copy"></i></button>
+        </div>`;
+      })
+      .join('');
+
+    return `
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;padding:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="color:var(--primary);font-size:13px;"><i class="${icon}"></i> ${escapeHtml(title)} (${items.length})</strong>
+          <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="copyAllFromBlock(this);"><i class="fas fa-copy"></i> Copy All</button>
+        </div>
+        <div class="copyable-block-items" style="max-height:180px;overflow-y:auto;">${itemsHtml}</div>
+      </div>`;
+  };
+
+  // 2. Active Built-in Commands (Sampled with realistic parameters)
+  const activeTestPayloads = activeCmds.map((c) => {
+    const p = prefix;
+    const u = userPlaceholder;
+    switch (c.cmd) {
+      case 'setrules':
+        return `${p}setrules 1. Be polite and respectful.\n2. No spam links allowed.`;
+      case 'warn':
+        return `${p}warn ${u} Violation of group rules`;
+      case 'unwarn':
+        return `${p}unwarn ${u}`;
+      case 'mute':
+        return `${p}mute ${u} 10m`;
+      case 'tmute':
+        return `${p}tmute ${u} 15m`;
+      case 'tban':
+        return `${p}tban ${u} 1h`;
+      case 'kick':
+        return `${p}kick ${u}`;
+      case 'ban':
+        return `${p}ban ${u} Rule violation`;
+      case 'promote':
+        return `${p}promote ${u}`;
+      case 'demote':
+        return `${p}demote ${u}`;
+      case 'approve':
+        return `${p}approve ${u}`;
+      case 'unapprove':
+        return `${p}unapprove ${u}`;
+      case 'lock':
+        return `${p}lock url`;
+      case 'unlock':
+        return `${p}unlock url`;
+      case 'setwelcome':
+        return `${p}setwelcome Welcome {mention} to {group}!`;
+      case 'setgoodbye':
+        return `${p}setgoodbye Goodbye {name}!`;
+      case 'report':
+        return `${p}report ${u} Inappropriate message content`;
+      case 'notes':
+        return `${p}notes #wifi 12345678`;
+      case 'filter':
+        return `${p}filter wlan -> Password is 1234`;
+      case 'setlang':
+        return `${p}setlang de`;
+      case 'translate':
+        return `${p}translate de Hello world`;
+      case 'removespamlinks':
+        return `${p}removespamlinks on`;
+      case 'autotranslate':
+        return `${p}autotranslate on`;
+      case 'slowmode':
+        return `${p}slowmode 10s`;
+      default:
+        return `${p}${c.cmd}`;
+    }
+  });
+
+  html += makeCopyableBlock(
+    'Built-in Moderation Commands (Sample Payloads)',
+    activeTestPayloads,
+    'fas fa-terminal'
+  );
+
+  // 3. Spam & Link Triggers (Telegram, WA, Chat Invites)
+  const inviteTestPayloads = [
+    'https://t.me/joinchat/SPAMMER123',
+    'https://telegram.me/spambot_group',
+    'https://chat.whatsapp.com/AbCdEfGhIjKlMnOpQrStUv',
+    'https://wa.me/491761234567',
+    'https://wa.link/spamcode',
+  ];
+  html += makeCopyableBlock(
+    'Fake Anti-Spam & Invite Link Triggers (t.me / wa.me / chat.whatsapp.com)',
+    inviteTestPayloads,
+    'fas fa-link'
+  );
+
+  // 4. Custom Mapped Commands
+  const customCmds = config.commands?.custom_commands || [];
+  if (customCmds.length > 0) {
+    const customPayloads = customCmds.map((c) => `${prefix}${c.command.replace(/^[!/#]+/, '')}`);
+    html += makeCopyableBlock('Configured Custom Commands', customPayloads, 'fas fa-cogs');
+  }
+
+  // 5. Auto-Responder Triggers
+  const filters = config.filters || [];
+  if (filters.length > 0) {
+    const filterPayloads = filters.map((f) => f.trigger);
+    html += makeCopyableBlock('Auto-Responder & FAQ Triggers', filterPayloads, 'fas fa-robot');
+  }
+
+  // 6. Blacklisted Words Triggers
+  const blWords = config.blacklist?.words || [];
+  if (blWords.length > 0) {
+    html += makeCopyableBlock('Blacklist Word Triggers', blWords, 'fas fa-ban');
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+  modal.classList.add('show');
+}
+
+function updateTestCommandsPrefill(val) {
+  testTargetUser = val ? val.trim() : '';
+  generateGroupTestCommandsModal();
+  const inp = document.getElementById('test-target-user-input');
+  if (inp) {
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+  }
+}
+
+function copyAllFromBlock(btnBtn) {
+  const block = btnBtn.closest('div').parentElement;
+  const codes = block.querySelectorAll('.copyable-block-items code');
+  const text = Array.from(codes)
+    .map((c) => c.innerText)
+    .join('\n');
+  navigator.clipboard.writeText(text);
+  showToast('Copied all commands in block!', 'success');
+}
+
+function closeTestCommandsModal() {
+  const modal = document.getElementById('test-commands-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+async function sendTestSuiteToGroup() {
+  if (!currentModGroup) {
+    showToast('No group selected.', 'warning');
+    return;
+  }
+
+  // Collect all visible command codes from the modal
+  const modal = document.getElementById('test-commands-modal');
+  if (!modal) return;
+  const codes = modal.querySelectorAll('.copyable-block-items code');
+  if (!codes || codes.length === 0) {
+    showToast('No commands to send.', 'warning');
+    return;
+  }
+
+  const lines = Array.from(codes)
+    .map((c) => c.innerText.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    showToast('No commands to send.', 'warning');
+    return;
+  }
+
+  const message = lines.join('\n');
+
+  try {
+    const resp = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'send_message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+      },
+      body: JSON.stringify({
+        number: currentModGroup,
+        message,
+        session_id: typeof currentSession !== 'undefined' ? currentSession : undefined,
+      }),
+    });
+    if (resp.ok) {
+      showToast('✅ Test suite sent to group!', 'success');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showToast('Failed to send: ' + (err.detail || resp.status), 'danger');
+    }
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'danger');
+  }
+}
+
 
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
   const trig = document.getElementById('mod-filter-trigger')?.value.trim();
   const resp = document.getElementById('mod-filter-response')?.value.trim();
+  const type = document.getElementById('mod-filter-type')?.value || 'reply';
   if (!trig || !resp || !currentModGroup) return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.filters = groupConfig.filters || [];
-  groupConfig.filters.push({ trigger: trig, response: resp, is_regex: false });
+  groupConfig.filters.push({ trigger: trig, response: resp, type: type, is_regex: false });
 
   document.getElementById('mod-filter-trigger').value = '';
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast('Filter added!', 'success');
+  showToast(`${type === 'faq' ? 'FAQ' : 'Auto-reply'} filter rule added!`, 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');
@@ -1548,6 +2556,7 @@ async function saveGroupFilters() {
   if (!currentModGroup) return;
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Filters saved!', 'success');
 }
 
@@ -1581,6 +2590,7 @@ async function saveGroupAiConfig() {
       }),
     });
     if (res.ok) {
+      markClean();
       showToast('AI & Translation Settings Saved!', 'success');
       loadModerationConfig();
     }
@@ -1588,6 +2598,7 @@ async function saveGroupAiConfig() {
     showToast('Failed to save AI settings', 'danger');
   }
 }
+
 
 // Moderation Federation & Import/Export
 
@@ -1597,6 +2608,7 @@ async function saveGroupFederation() {
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.federation_id = fedId;
   await saveGroupConfig(groupConfig);
+  markClean();
   showToast('Federation settings saved!', 'success');
 }
 
@@ -1643,6 +2655,13 @@ async function removeFedBlacklistWord(idx) {
 }
 
 async function saveGroupConfig(groupConfig) {
+  // Always preserve the current enabled state from the DOM toggle
+  // to prevent it from being silently dropped on partial saves
+  const enabledToggle = document.getElementById('mod-group-toggle');
+  if (enabledToggle !== null) {
+    groupConfig.enabled = Boolean(enabledToggle.checked);
+  }
+
   try {
     const res = await fetch(basePath + 'api/moderation/config', {
       method: 'POST',
@@ -1713,7 +2732,10 @@ function updateFedBlacklistTagsInUi() {
   if (!fedTags || !modStoreCache?.federations) return;
 
   const fedId = fedSelect?.value || 'fed_global_default';
-  const fed = modStoreCache.federations.find((f) => f.id === fedId) || modStoreCache.federations[0];
+  let fed = modStoreCache.federations.find((f) => f.id === fedId);
+  if (!fed && fedId === 'fed_global_default') {
+    fed = modStoreCache.federations[0];
+  }
   const words = fed?.shared_blacklist || [];
 
   if (!words.length) {
@@ -1795,6 +2817,309 @@ async function saveNewCustomFederation() {
   }
 }
 
+function exportFederationConfig() {
+  const fedSelect = document.getElementById('mod-fed-select');
+  const fedId = fedSelect?.value || 'fed_global_default';
+  const fed = (modStoreCache?.federations || []).find((f) => f.id === fedId);
+  if (!fed) return showToast('No active federation selected to export', 'warning');
+
+  const exportData = {
+    version: '1.0',
+    type: 'whatsapp_federation',
+    federation: fed,
+  };
+
+  const str = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([str], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `federation_${fed.id}.json`;
+  a.click();
+  showToast(`Exported Federation "${fed.name || fed.id}"! 🛡️`, 'success');
+}
+
+function openImportFederationModal() {
+  const modal = document.getElementById('import-federation-modal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeImportFederationModal() {
+  const modal = document.getElementById('import-federation-modal');
+  if (modal) modal.classList.remove('show');
+  const urlInp = document.getElementById('mod-import-fed-url');
+  if (urlInp) urlInp.value = '';
+  const fileInp = document.getElementById('mod-import-fed-file');
+  if (fileInp) fileInp.value = '';
+}
+
+async function submitImportFederation() {
+  const urlInp = document.getElementById('mod-import-fed-url')?.value.trim();
+  const fileInp = document.getElementById('mod-import-fed-file');
+  const file = fileInp?.files?.[0];
+
+  let importedData;
+
+  if (urlInp) {
+    try {
+      showToast('Fetching federation JSON from URL...', 'info');
+      const res = await fetch(urlInp);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      importedData = await res.json();
+    } catch (err) {
+      showToast(`Failed to fetch from URL: ${err.message}`, 'danger');
+      return;
+    }
+  } else if (file) {
+    try {
+      const text = await file.text();
+      importedData = JSON.parse(text);
+    } catch (err) {
+      showToast('Invalid JSON file', 'danger');
+      return;
+    }
+  } else {
+    showToast('Please enter a URL or select a JSON file to import', 'warning');
+    return;
+  }
+
+  // Handle either direct federation object or wrapped export structure
+  const fedObj = importedData?.federation || importedData;
+  if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
+    return showToast(
+      'Invalid federation JSON structure. Must contain at least a "name" property.',
+      'danger'
+    );
+  }
+
+  // Ensure unique ID
+  const targetId =
+    fedObj.id && fedObj.id !== 'fed_global_default' ? fedObj.id : `fed_imported_${Date.now()}`;
+  fedObj.id = targetId;
+
+  modStoreCache.federations = modStoreCache.federations || [];
+  const idx = modStoreCache.federations.findIndex((f) => f.id === targetId);
+  if (idx >= 0) {
+    modStoreCache.federations[idx] = fedObj;
+  } else {
+    modStoreCache.federations.push(fedObj);
+  }
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ federations: modStoreCache.federations }),
+    });
+    if (res.ok) {
+      showToast(`Federation "${fedObj.name}" imported successfully! 🛡️`, 'success');
+      closeImportFederationModal();
+      await loadModerationConfig();
+      const fedSelect = document.getElementById('mod-fed-select');
+      if (fedSelect) {
+        fedSelect.value = targetId;
+        updateFedBlacklistTagsInUi();
+      }
+    }
+  } catch (e) {
+    showToast('Failed to save imported federation', 'danger');
+  }
+}
+
+
+// Telegram Bridge Dashboard UI Logic
+
+async function loadTelegramBridgeData() {
+  try {
+    const res = await fetch('api/telegram/config');
+    const data = await res.json();
+    if (data.success && data.data) {
+      const cfg = data.data;
+      const toggle = document.getElementById('tg-global-toggle');
+      if (toggle) toggle.checked = Boolean(cfg.enabled);
+
+      const tokenInput = document.getElementById('tg-bot-token-input');
+      if (tokenInput && cfg.bot_token) tokenInput.value = cfg.bot_token;
+
+      const badge = document.getElementById('tg-bot-status-badge');
+      const badgeText = document.getElementById('tg-bot-status-text');
+      if (badge && badgeText) {
+        if (cfg.bot_username) {
+          badge.style.display = 'flex';
+          badgeText.innerText = `Connected Telegram Bot: @${cfg.bot_username}`;
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+
+      renderTelegramMappings(cfg.mappings || []);
+    }
+  } catch (err) {
+    console.error('Failed to load Telegram bridge config', err);
+  }
+}
+
+function renderTelegramMappings(mappings) {
+  const tbody = document.getElementById('tg-mappings-tbody');
+  if (!tbody) return;
+
+  if (mappings.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">No active chat mappings configured. Click "Add New Mapping" to start bridging.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = mappings
+    .map(
+      (m) => `
+    <tr>
+      <td>
+        <label class="mod-toggle-switch mod-toggle-sm">
+          <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="toggleTelegramMapping('${m.id}')">
+          <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
+        </label>
+      </td>
+      <td><strong>${escapeHtml(m.wa_name || m.wa_jid)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.wa_jid)}</small></td>
+      <td><strong>${escapeHtml(m.tg_chat_title || m.tg_chat_id)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.tg_chat_id)} (${m.tg_chat_type || 'chat'})</small></td>
+      <td><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
+      <td>
+        <small style="color:var(--text-muted);">
+          Group: ${m.include_group_name ? 'Yes' : 'No'} | Sender: ${m.include_sender_name ? 'Yes' : 'No'}<br>
+          Sync Self Messages: <strong>${m.sync_self_messages ? 'Enabled' : 'Disabled (Off)'}</strong>
+        </small>
+      </td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteTelegramMapping('${m.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
+  `
+    )
+    .join('');
+}
+
+async function toggleTelegramBridge(enabled) {
+  try {
+    await fetch('api/telegram/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled }),
+    });
+    loadTelegramBridgeData();
+  } catch (e) {
+    alert('Failed to update Telegram Bridge state');
+  }
+}
+
+async function saveTelegramBotToken() {
+  const token = document.getElementById('tg-bot-token-input')?.value || '';
+  try {
+    const res = await fetch('api/telegram/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bot_token: token }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Failed to save bot token');
+    } else {
+      alert('Bot token validated and saved successfully!');
+      loadTelegramBridgeData();
+    }
+  } catch (e) {
+    alert('Error connecting to server');
+  }
+}
+
+async function toggleTelegramMapping(id) {
+  await fetch(`api/telegram/mappings/${id}/toggle`, { method: 'POST' });
+  loadTelegramBridgeData();
+}
+
+async function deleteTelegramMapping(id) {
+  if (!confirm('Are you sure you want to remove this Telegram chat mapping?')) return;
+  await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
+  loadTelegramBridgeData();
+}
+
+function openAddTelegramMappingModal() {
+  const modal = document.getElementById('tg-mapping-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeTelegramMappingModal() {
+  const modal = document.getElementById('tg-mapping-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveTelegramMappingModal() {
+  const wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
+  const tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
+  const tg_thread_id = document.getElementById('tg-modal-tg-thread-id')?.value || '';
+  const sync_mode = document.getElementById('tg-modal-sync-mode')?.value || 'bidirectional';
+  const ignore_command_prefixes = document.getElementById('tg-modal-ignore-prefixes')?.value || '';
+
+  const include_group_name = document.getElementById('tg-modal-inc-group')?.checked || false;
+  const include_sender_name = document.getElementById('tg-modal-inc-sender')?.checked || false;
+  const sync_self_messages = document.getElementById('tg-modal-sync-self')?.checked || false;
+  const convert_formatting =
+    document.getElementById('tg-modal-convert-formatting')?.checked || false;
+  const anonymize_phone_numbers =
+    document.getElementById('tg-modal-anonymize-phone')?.checked || false;
+  const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
+
+  if (!wa_jid || !tg_chat_id) {
+    alert('Please enter both WhatsApp Target JID and Telegram Chat ID');
+    return;
+  }
+
+  try {
+    const res = await fetch('api/telegram/mappings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        wa_jid,
+        tg_chat_id,
+        tg_thread_id,
+        sync_mode,
+        ignore_command_prefixes,
+        include_group_name,
+        include_sender_name,
+        sync_self_messages,
+        convert_formatting,
+        anonymize_phone_numbers,
+        sync_reactions,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Failed to save mapping');
+    } else {
+      closeTelegramMappingModal();
+      loadTelegramBridgeData();
+    }
+  } catch (e) {
+    alert('Failed to connect to server');
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+window.loadTelegramBridgeData = loadTelegramBridgeData;
+window.toggleTelegramBridge = toggleTelegramBridge;
+window.saveTelegramBotToken = saveTelegramBotToken;
+window.toggleTelegramMapping = toggleTelegramMapping;
+window.deleteTelegramMapping = deleteTelegramMapping;
+window.openAddTelegramMappingModal = openAddTelegramMappingModal;
+window.closeTelegramMappingModal = closeTelegramMappingModal;
+window.saveTelegramMappingModal = saveTelegramMappingModal;
+
+
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
 window.loadLogs = loadLogs;
@@ -1843,6 +3168,24 @@ window.updateFedBlacklistTagsInUi = updateFedBlacklistTagsInUi;
 window.openCreateFederationModal = openCreateFederationModal;
 window.closeCreateFederationModal = closeCreateFederationModal;
 window.saveNewCustomFederation = saveNewCustomFederation;
+window.exportFederationConfig = exportFederationConfig;
+window.openImportFederationModal = openImportFederationModal;
+window.closeImportFederationModal = closeImportFederationModal;
+window.submitImportFederation = submitImportFederation;
 window.addCustomCommandRule = addCustomCommandRule;
 window.removeCustomCommandRule = removeCustomCommandRule;
 window.toggleAllDefaultCommands = toggleAllDefaultCommands;
+window.onCustomCmdTypeChange = onCustomCmdTypeChange;
+window.unsavedModalCancel = unsavedModalCancel;
+window.unsavedModalDiscard = unsavedModalDiscard;
+window.unsavedModalSaveAndSwitch = unsavedModalSaveAndSwitch;
+window.markClean = markClean;
+window.markDirty = markDirty;
+window.unbanUserInUi = unbanUserInUi;
+window.clearKickLogInUi = clearKickLogInUi;
+window.unmuteUserInUi = unmuteUserInUi;
+window.generateGroupTestCommandsModal = generateGroupTestCommandsModal;
+window.closeTestCommandsModal = closeTestCommandsModal;
+window.updateTestCommandsPrefill = updateTestCommandsPrefill;
+window.copyAllFromBlock = copyAllFromBlock;
+window.sendTestSuiteToGroup = sendTestSuiteToGroup;

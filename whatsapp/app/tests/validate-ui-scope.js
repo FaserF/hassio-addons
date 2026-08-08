@@ -13,7 +13,7 @@
  * Run: node tests/validate-ui-scope.js
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -407,6 +407,35 @@ function checkHAEndpoints() {
   info(`API endpoint check complete (${expectedHAEndpoints.length} HA endpoints validated)`);
 }
 
+function checkNoEsModuleKeywords() {
+  const filesToCheck = ['helpers.js', 'dashboard.js', 'chat.js'];
+  const dashDir = join(uiDir, 'dashboard');
+  if (existsSync(dashDir)) {
+    const dashFiles = readdirSync(dashDir).filter((f) => f.endsWith('.js'));
+    for (const df of dashFiles) {
+      filesToCheck.push(join('dashboard', df));
+    }
+  }
+
+  for (const relFile of filesToCheck) {
+    const filepath = join(uiDir, relFile);
+    if (!existsSync(filepath)) continue;
+    const content = readFileSync(filepath, 'utf8');
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/^\s*export\s+/.test(line) || /^\s*import\s+/.test(line)) {
+        error(
+          relFile,
+          i + 1,
+          `Found ES module keyword '${line.trim().split(' ')[0]}' in inline client script. Inline scripts do not use type="module" and will throw a SyntaxError on page load.`
+        );
+      }
+    }
+  }
+  info('No forbidden ES module keywords (export/import) found in inline UI client scripts');
+}
+
 // --------------------------------------------------------------------------
 // Run all checks
 // --------------------------------------------------------------------------
@@ -421,10 +450,11 @@ checkWindowExports('chat.js');
 console.log('\n📋 Test 2: HTML Event Handler Reference Validation\n');
 checkHtmlHandlers();
 
-console.log('\n📋 Test 3: Syntax Balance Validation\n');
+console.log('\n📋 Test 3: Syntax Balance & ES Module Keyword Validation\n');
 checkSyntax('helpers.js');
 checkSyntax('dashboard.js');
 checkSyntax('chat.js');
+checkNoEsModuleKeywords();
 
 console.log('\n📋 Test 4: Duplicate Route Detection\n');
 checkDuplicateRoutes();
