@@ -169,6 +169,14 @@ export async function processTelegramUpdates() {
       offset: lastUpdateId + 1,
       limit: 50,
       timeout: 0,
+      allowed_updates: [
+        'message',
+        'edited_message',
+        'channel_post',
+        'edited_channel_post',
+        'message_reaction',
+        'message_reaction_count',
+      ],
     });
 
     if (!Array.isArray(updates) || updates.length === 0) return;
