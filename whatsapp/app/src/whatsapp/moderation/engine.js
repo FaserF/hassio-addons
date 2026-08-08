@@ -183,7 +183,9 @@ export function isUserVerified(groupId, userId, session = null, rawMsg = null) {
         if (
           vDigits &&
           (vDigits === targetDigits ||
-            (vDigits.length >= 7 && targetDigits.length >= 7 && (vDigits.endsWith(targetDigits) || targetDigits.endsWith(vDigits))))
+            (vDigits.length >= 7 &&
+              targetDigits.length >= 7 &&
+              (vDigits.endsWith(targetDigits) || targetDigits.endsWith(vDigits))))
         ) {
           return true;
         }

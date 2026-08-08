@@ -159,7 +159,14 @@ export async function syncWhatsAppToTelegram(
       }
 
       if (tgResult && tgResult.message_id && waMsgId) {
-        recordMessageMap(waMsgId, mapping.tg_chat_id, tgResult.message_id, waJid, isFromMe, senderName);
+        recordMessageMap(
+          waMsgId,
+          mapping.tg_chat_id,
+          tgResult.message_id,
+          waJid,
+          isFromMe,
+          senderName
+        );
       }
     } catch (err) {
       logger.error(
@@ -320,7 +327,14 @@ export async function processTelegramUpdates() {
               sendOptions
             );
             if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
-              recordMessageMap(sentWaMsg.key.id, tgChatId, msg.message_id, mapping.wa_jid, true, senderName);
+              recordMessageMap(
+                sentWaMsg.key.id,
+                tgChatId,
+                msg.message_id,
+                mapping.wa_jid,
+                true,
+                senderName
+              );
             }
           } catch (waErr) {
             logger.error(
