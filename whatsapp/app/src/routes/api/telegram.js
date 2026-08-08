@@ -44,9 +44,18 @@ export function registerTelegramRoutes(app) {
   });
 
   // GET /api/telegram/chats
-  app.get('/api/telegram/chats', (req, res) => {
+  app.get('/api/telegram/chats', async (req, res) => {
     const store = loadTelegramStore();
-    res.json({ success: true, data: Object.values(store.cached_chats || {}) });
+    if (store.bot_token) {
+      try {
+        const bot = new TelegramBotClient(store.bot_token);
+        await bot.fetchUpdates();
+      } catch (e) {
+        // Ignore fetch updates error
+      }
+    }
+    const updatedStore = loadTelegramStore();
+    res.json({ success: true, data: Object.values(updatedStore.cached_chats || {}) });
   });
 
   // POST /api/telegram/mappings

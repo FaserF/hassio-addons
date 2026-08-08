@@ -2869,7 +2869,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         .replace(/^['"`\s]+|['"`\s]+$/g, '')
         .trim()
     )
-    .filter((l) => l.length > 0 && l.startsWith(prefix));
+    .filter((l) => l.length > 0 && (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/')));
 
   if (rawLines.length === 0) return false;
 
@@ -2961,7 +2961,8 @@ async function executeSingleCommandLine(
   groupId,
   config
 ) {
-  const parts = lineText.slice(prefix.length).trim().split(/\s+/);
+  const cleanLine = lineText.replace(/^[!/#]+/, '');
+  const parts = cleanLine.trim().split(/\s+/);
   if (parts.length === 0 || parts[0] === '') return false;
 
   const cmdStr = parts[0].replace(/[`'"]/g, '').toLowerCase();

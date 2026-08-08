@@ -411,6 +411,42 @@ async function runTests() {
     '!removespamlinks second invocation toggles state back'
   );
 
+  // Test Self/Outgoing Message Command Execution (fromMe: true)
+  const selfMsg = {
+    key: { remoteJid: testGroupJid, fromMe: true, id: 'SELF_MSG_1' },
+    message: { conversation: '!rules' },
+  };
+  const selfHandled = await processCommand(
+    mockSession,
+    selfMsg,
+    '!rules',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  assert(
+    selfHandled === true,
+    'Outgoing self-sent message (fromMe: true) correctly triggers command processing'
+  );
+
+  // Test Slash Prefix Command Execution (/ping, /id, /rules)
+  const slashMsg = {
+    key: { remoteJid: testGroupJid, fromMe: true, id: 'SLASH_MSG_1' },
+    message: { conversation: '/ping' },
+  };
+  const slashHandled = await processCommand(
+    mockSession,
+    slashMsg,
+    '/ping',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  assert(
+    slashHandled === true,
+    'Slash prefix command (/ping) correctly triggers command processing'
+  );
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;

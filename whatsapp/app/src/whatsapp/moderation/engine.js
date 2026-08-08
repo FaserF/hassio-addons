@@ -771,9 +771,16 @@ export async function handleModerationMessage(session, event) {
           isMatch = new RegExp(filter.trigger, 'i').test(text);
         } catch (e) {}
       } else {
-        isMatch =
-          text.toLowerCase() === filter.trigger.toLowerCase() ||
-          text.toLowerCase().includes(filter.trigger.toLowerCase());
+        const cleanTrigger = filter.trigger.toLowerCase().trim();
+        const lowerText = text.toLowerCase().trim();
+        // Exact match OR word boundary match (prevents trigger word 'test' from matching '/test')
+        if (lowerText === cleanTrigger) {
+          isMatch = true;
+        } else {
+          const escapedTrigger = cleanTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const wordBoundaryRegex = new RegExp(`(?:^|[^a-zA-Z0-9_/])${escapedTrigger}(?:$|[^a-zA-Z0-9_])`, 'i');
+          isMatch = wordBoundaryRegex.test(lowerText);
+        }
       }
 
       if (isMatch) {

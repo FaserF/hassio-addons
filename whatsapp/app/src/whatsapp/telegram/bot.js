@@ -43,8 +43,7 @@ export class TelegramBotClient {
   }
 
   async getMe() {
-    const info = await this.request('getMe');
-    return info;
+    return await this.request('getMe');
   }
 
   async fetchUpdates() {

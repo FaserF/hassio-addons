@@ -652,6 +652,30 @@ try {
   );
   console.log('✅ PASSED: WAMessageStubType invite-link join processing verified');
 
+  // Test 12b: WAMessageStubType 29 (Admin promote) must NOT trigger Goodbye message
+  let promoteMessagesSent = [];
+  const mockSessionPromoteTest = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (jid, content) => {
+        promoteMessagesSent.push(content);
+        return { key: { id: 'promote1' } };
+      },
+    },
+  };
+  await handleModerationParticipantUpdate(mockSessionPromoteTest, {
+    id: '1203630123456789@g.us',
+    action: 'promote',
+    participants: ['491768888888@s.whatsapp.net'],
+  });
+  assert.strictEqual(
+    promoteMessagesSent.length,
+    0,
+    'Admin promote (stubType 29) must NOT trigger goodbye message'
+  );
+  console.log('✅ PASSED: WAMessageStubType promote (admin elevation) verified to not send goodbye');
+
   // Test Filter Subscriptions Default
   const finalStore = getDefaultModerationStore();
   assert(
