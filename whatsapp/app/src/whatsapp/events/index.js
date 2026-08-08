@@ -666,7 +666,7 @@ export function handleIncomingMessages(session) {
         syncWhatsAppToTelegram(
           msg,
           senderJid,
-          isGroup ? (session.chatCache.get(senderJid)?.name || senderJid) : null,
+          isGroup ? session.chatCache.get(senderJid)?.name || senderJid : null,
           senderName,
           text,
           mediaUrl
