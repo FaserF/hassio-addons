@@ -28,7 +28,7 @@ export default () => `
                 </div>
 
                 <!-- No Group Selected & Global Settings Card -->
-                <div id="mod-no-group-placeholder" class="card mod-settings-card" style="margin-top: 16px;">
+                <div id="mod-no-group-placeholder" class="card mod-settings-card" style="margin-top: 16px; padding: 24px;">
                     <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
                         <div style="font-size: 28px; color: var(--primary);"><i class="fas fa-globe"></i></div>
                         <div>

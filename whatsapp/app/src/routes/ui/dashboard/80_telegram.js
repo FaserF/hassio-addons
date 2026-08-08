@@ -108,6 +108,7 @@ function renderTelegramMappings(mappings, bots = []) {
       <td style="vertical-align:middle; padding:12px 14px;"><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
       <td style="vertical-align:middle; padding:12px 14px;">
         <small style="color:var(--text-muted); line-height:1.4; display:block;">
+          ${m.is_direct_chat_mirror ? '<span class="badge" style="background:rgba(40,167,69,0.15); color:#28a745; font-size:10px; padding:2px 6px; border-radius:4px; margin-bottom:4px; display:inline-block;"><i class="fas fa-user"></i> 1:1 Direct Mirror</span><br>' : ''}
           Group: ${m.include_group_name ? 'Yes' : 'No'} | Sender: ${m.include_sender_name ? 'Yes' : 'No'}<br>
           Sync Self: <strong>${m.sync_self_messages ? 'Enabled' : 'Off'}</strong>
         </small>
@@ -232,6 +233,14 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   const botSelect = document.getElementById('tg-modal-bot-select');
   const waSelect = document.getElementById('tg-modal-wa-select');
   const tgSelect = document.getElementById('tg-modal-tg-select');
+  const waJidInp = document.getElementById('tg-modal-wa-jid');
+  const tgChatIdInp = document.getElementById('tg-modal-tg-chat-id');
+
+  // Preserve existing selections before updating innerHTML
+  const prevWaSelectVal = waSelect?.value || '';
+  const prevWaJidVal = waJidInp?.value || '';
+  const prevTgSelectVal = tgSelect?.value || '';
+  const prevTgChatIdVal = tgChatIdInp?.value || '';
 
   // 0. Populate Bot Select
   if (botSelect) {
@@ -274,6 +283,22 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
     }
     waOpts += '<option value="__custom__">✏️ Custom JID (Manual Entry)</option>';
     waSelect.innerHTML = waOpts;
+
+    // Restore preserved WhatsApp selection
+    const targetWaJid = prevWaSelectVal && prevWaSelectVal !== '__custom__' ? prevWaSelectVal : prevWaJidVal;
+    if (targetWaJid && Array.from(waSelect.options).some((o) => o.value === targetWaJid)) {
+      waSelect.value = targetWaJid;
+      if (waJidInp) {
+        waJidInp.style.display = 'none';
+        waJidInp.value = targetWaJid;
+      }
+    } else if (prevWaSelectVal === '__custom__' || targetWaJid) {
+      waSelect.value = '__custom__';
+      if (waJidInp) {
+        waJidInp.style.display = 'block';
+        waJidInp.value = targetWaJid;
+      }
+    }
   }
 
   // 2. Populate Telegram Cached Chats Dropdown (filtered by activeBotId if set)
@@ -299,6 +324,22 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
     }
     tgOpts += '<option value="__custom__">✏️ Custom Chat ID (Manual Entry)</option>';
     tgSelect.innerHTML = tgOpts;
+
+    // Restore preserved Telegram selection
+    const targetTgId = String(prevTgSelectVal && prevTgSelectVal !== '__custom__' ? prevTgSelectVal : prevTgChatIdVal);
+    if (targetTgId && Array.from(tgSelect.options).some((o) => String(o.value) === targetTgId)) {
+      tgSelect.value = targetTgId;
+      if (tgChatIdInp) {
+        tgChatIdInp.style.display = 'none';
+        tgChatIdInp.value = targetTgId;
+      }
+    } else if (prevTgSelectVal === '__custom__' || targetTgId) {
+      tgSelect.value = '__custom__';
+      if (tgChatIdInp) {
+        tgChatIdInp.style.display = 'block';
+        tgChatIdInp.value = targetTgId;
+      }
+    }
   }
 }
 
@@ -351,6 +392,9 @@ function getTgMappingCurrentState() {
     convert_formatting: document.getElementById('tg-modal-convert-formatting')?.checked || false,
     anonymize_phone: document.getElementById('tg-modal-anonymize-phone')?.checked || false,
     sync_reactions: document.getElementById('tg-modal-sync-reactions')?.checked || false,
+    direct_mirror: document.getElementById('tg-modal-direct-mirror')?.checked || false,
+    sync_edits: document.getElementById('tg-modal-sync-edits')?.checked || false,
+    sync_deletions: document.getElementById('tg-modal-sync-deletions')?.checked || false,
   };
 }
 
@@ -373,6 +417,13 @@ function openAddTelegramMappingModal() {
 
   const prefixesEl = document.getElementById('tg-modal-ignore-prefixes');
   if (prefixesEl) prefixesEl.value = '';
+
+  const directMirrorEl = document.getElementById('tg-modal-direct-mirror');
+  if (directMirrorEl) directMirrorEl.checked = false;
+  const syncEditsEl = document.getElementById('tg-modal-sync-edits');
+  if (syncEditsEl) syncEditsEl.checked = true;
+  const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
+  if (syncDeletionsEl) syncDeletionsEl.checked = true;
 
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
@@ -432,6 +483,15 @@ async function editTelegramMapping(id) {
 
     const syncReactionsEl = document.getElementById('tg-modal-sync-reactions');
     if (syncReactionsEl) syncReactionsEl.checked = mapping.sync_reactions !== false;
+
+    const directMirrorEl = document.getElementById('tg-modal-direct-mirror');
+    if (directMirrorEl) directMirrorEl.checked = Boolean(mapping.is_direct_chat_mirror);
+
+    const syncEditsEl = document.getElementById('tg-modal-sync-edits');
+    if (syncEditsEl) syncEditsEl.checked = mapping.sync_edits !== false;
+
+    const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
+    if (syncDeletionsEl) syncDeletionsEl.checked = mapping.sync_deletions !== false;
 
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
@@ -518,6 +578,9 @@ async function saveTelegramMappingModal() {
   const anonymize_phone_numbers =
     document.getElementById('tg-modal-anonymize-phone')?.checked || false;
   const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
+  const is_direct_chat_mirror = document.getElementById('tg-modal-direct-mirror')?.checked || false;
+  const sync_edits = document.getElementById('tg-modal-sync-edits')?.checked || false;
+  const sync_deletions = document.getElementById('tg-modal-sync-deletions')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
     showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
@@ -545,6 +608,9 @@ async function saveTelegramMappingModal() {
         convert_formatting,
         anonymize_phone_numbers,
         sync_reactions,
+        is_direct_chat_mirror,
+        sync_edits,
+        sync_deletions,
       }),
     });
     const data = await res.json();
@@ -585,3 +651,15 @@ window.saveTelegramMappingModal = saveTelegramMappingModal;
 window.onTgBotSelectChange = onTgBotSelectChange;
 window.onTgWaSelectChange = onTgWaSelectChange;
 window.onTgTgSelectChange = onTgTgSelectChange;
+
+function onTgDirectMirrorToggle(checked) {
+  if (checked) {
+    const syncSelf = document.getElementById('tg-modal-sync-self');
+    const incGroup = document.getElementById('tg-modal-inc-group');
+    const incSender = document.getElementById('tg-modal-inc-sender');
+    if (syncSelf) syncSelf.checked = true;
+    if (incGroup) incGroup.checked = false;
+    if (incSender) incSender.checked = false;
+  }
+}
+window.onTgDirectMirrorToggle = onTgDirectMirrorToggle;

@@ -155,6 +155,15 @@ export default () => `
                     <input type="text" id="tg-modal-ignore-prefixes" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. !, / (Comma separated)">
                 </div>
 
+                <div style="background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:10px; margin-top:4px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; cursor:pointer; color:var(--primary);">
+                        <input type="checkbox" id="tg-modal-direct-mirror" onchange="onTgDirectMirrorToggle(this.checked)"> 💬 1:1 Direct Chat Mirror Mode
+                    </label>
+                    <p style="margin:2px 0 0 24px; font-size:11px; color:var(--text-muted);">
+                        Suppresses sender/group headers for clean 1-to-1 private chat mirroring and enables self-message syncing.
+                    </p>
+                </div>
+
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-inc-group"> Include Group Name
@@ -173,6 +182,12 @@ export default () => `
                     </label>
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-sync-reactions" checked> Sync Reactions
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-edits" checked> Sync Message Edits
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-deletions" checked> Sync Message Deletions
                     </label>
                 </div>
             </div>
