@@ -1940,6 +1940,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               rawMsg
             );
           }, timeoutSec * 1000);
+          if (timeoutHandle.unref) timeoutHandle.unref();
 
           const captchaObj = {
             answer,

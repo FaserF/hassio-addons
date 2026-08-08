@@ -1813,6 +1813,7 @@ registry.register(
           rawMsg
         );
       }, durationMs);
+      if (timeout.unref) timeout.unref();
       pendingTempActions.set(key, timeout);
     }
 
@@ -1914,6 +1915,7 @@ registry.register(
           rawMsg
         );
       }, durationMs);
+      if (timeout.unref) timeout.unref();
       pendingTempActions.set(key, timeout);
     }
 
