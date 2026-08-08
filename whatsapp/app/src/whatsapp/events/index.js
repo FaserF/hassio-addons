@@ -663,10 +663,13 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
+        const resolvedGroupName = isGroup
+          ? session.groupCache?.get(senderJid) || session.chatCache?.get(senderJid)?.name || senderJid
+          : null;
         syncWhatsAppToTelegram(
           msg,
           senderJid,
-          isGroup ? session.chatCache.get(senderJid)?.name || senderJid : null,
+          resolvedGroupName,
           senderName,
           text,
           mediaUrl

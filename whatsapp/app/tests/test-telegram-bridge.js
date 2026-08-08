@@ -8,13 +8,13 @@ import { applyRegexReplacements } from '../src/whatsapp/telegram/regex.js';
 
 describe('Telegram Bridge Unit Tests', () => {
   it('formatHeader respects group, sender and anonymize flags', () => {
-    assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '[My Group | Alice]: ');
+    assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '<b>[My Group | Alice]</b>:\n');
     assert.strictEqual(
       formatHeader('My Group', '+491761234567', false, true, true),
-      '[+49176***567]: '
+      '<b>[+49176***567]</b>:\n'
     );
-    assert.strictEqual(formatHeader('My Group', 'Alice', false, true), '[Alice]: ');
-    assert.strictEqual(formatHeader('My Group', 'Alice', true, false), '[My Group]: ');
+    assert.strictEqual(formatHeader('My Group', 'Alice', false, true), '<b>[Alice]</b>:\n');
+    assert.strictEqual(formatHeader('My Group', 'Alice', true, false), '<b>[My Group]</b>:\n');
     assert.strictEqual(formatHeader('My Group', 'Alice', false, false), '');
   });
 

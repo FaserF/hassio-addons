@@ -41,34 +41,42 @@ function renderTelegramMappings(mappings) {
 
   tbody.innerHTML = mappings
     .map((m) => {
-      const cleanWa = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : m.wa_jid.split('@')[0];
-      const cleanTg =
-        m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ')
-          ? m.tg_chat_title
-          : `TG ${m.tg_chat_id}`;
+      const waTitle = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : '';
+      const tgTitle = m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ') ? m.tg_chat_title : '';
+
+      const cleanWa = waTitle || m.wa_jid.split('@')[0];
+      const cleanTg = tgTitle || `TG ${m.tg_chat_id}`;
       const threadLabel = m.tg_thread_id ? ` (Topic ${m.tg_thread_id})` : '';
       const autoName = `${cleanWa} ↔ ${cleanTg}${threadLabel}`;
       const displayName = m.name || autoName;
 
+      const waDisplay = waTitle
+        ? `<strong>${escapeHtml(waTitle)}</strong><br><small style="color:var(--text-muted);">(${escapeHtml(m.wa_jid)})</small>`
+        : `<strong>${escapeHtml(m.wa_jid)}</strong>`;
+
+      const tgDisplay = tgTitle
+        ? `<strong>${escapeHtml(tgTitle)}</strong><br><small style="color:var(--text-muted);">(${escapeHtml(m.tg_chat_id)})</small>`
+        : `<strong>${escapeHtml(m.tg_chat_id)}</strong><br><small style="color:var(--text-muted);">(${m.tg_chat_type || 'chat'})</small>`;
+
       return `
     <tr>
-      <td>
+      <td style="vertical-align:middle; padding:12px 14px;">
         <label class="mod-toggle-switch mod-toggle-sm">
           <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="toggleTelegramMapping('${m.id}')">
           <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
         </label>
       </td>
-      <td><strong>${escapeHtml(displayName)}</strong></td>
-      <td><strong>${escapeHtml(m.wa_name || m.wa_jid)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.wa_jid)}</small></td>
-      <td><strong>${escapeHtml(m.tg_chat_title || m.tg_chat_id)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(m.tg_chat_id)} (${m.tg_chat_type || 'chat'})</small></td>
-      <td><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
-      <td>
-        <small style="color:var(--text-muted);">
+      <td style="vertical-align:middle; padding:12px 14px;"><strong>${escapeHtml(displayName)}</strong></td>
+      <td style="vertical-align:middle; padding:12px 14px;">${waDisplay}</td>
+      <td style="vertical-align:middle; padding:12px 14px;">${tgDisplay}</td>
+      <td style="vertical-align:middle; padding:12px 14px;"><span class="badge" style="background:var(--bg-card); border:1px solid var(--border-color);">${m.sync_mode}</span></td>
+      <td style="vertical-align:middle; padding:12px 14px;">
+        <small style="color:var(--text-muted); line-height:1.4; display:block;">
           Group: ${m.include_group_name ? 'Yes' : 'No'} | Sender: ${m.include_sender_name ? 'Yes' : 'No'}<br>
-          Sync Self Messages: <strong>${m.sync_self_messages ? 'Enabled' : 'Disabled (Off)'}</strong>
+          Sync Self: <strong>${m.sync_self_messages ? 'Enabled' : 'Off'}</strong>
         </small>
       </td>
-      <td style="text-align:right; white-space:nowrap;">
+      <td style="text-align:right; vertical-align:middle; padding:12px 14px; white-space:nowrap;">
         <button class="btn btn-secondary btn-sm" style="margin-right:6px;" onclick="editTelegramMapping('${m.id}')" title="Edit mapping settings"><i class="fas fa-edit"></i> Edit</button>
         <button class="btn btn-danger btn-sm" onclick="deleteTelegramMapping('${m.id}')" title="Delete mapping"><i class="fas fa-trash"></i></button>
       </td>
@@ -316,12 +324,24 @@ async function saveTelegramMappingModal() {
   const id = document.getElementById('tg-modal-id')?.value || '';
   const mapping_name = document.getElementById('tg-modal-mapping-name')?.value || '';
 
-  let wa_jid = document.getElementById('tg-modal-wa-select')?.value || '';
+  const waSelect = document.getElementById('tg-modal-wa-select');
+  let wa_jid = waSelect?.value || '';
+  let wa_name = '';
+  if (waSelect && waSelect.selectedIndex >= 0 && wa_jid !== '__custom__') {
+    const optText = waSelect.options[waSelect.selectedIndex].text;
+    wa_name = optText.replace(/\s*\((Group|Direct)\)$/, '').trim();
+  }
   if (wa_jid === '__custom__' || !wa_jid) {
     wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
   }
 
-  let tg_chat_id = document.getElementById('tg-modal-tg-select')?.value || '';
+  const tgSelect = document.getElementById('tg-modal-tg-select');
+  let tg_chat_id = tgSelect?.value || '';
+  let tg_chat_title = '';
+  if (tgSelect && tgSelect.selectedIndex >= 0 && tg_chat_id !== '__custom__') {
+    const optText = tgSelect.options[tgSelect.selectedIndex].text;
+    tg_chat_title = optText.replace(/\s*\([^)]+\)$/, '').trim();
+  }
   if (tg_chat_id === '__custom__' || !tg_chat_id) {
     tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
   }
@@ -352,7 +372,9 @@ async function saveTelegramMappingModal() {
         id: id || undefined,
         mapping_name,
         wa_jid,
+        wa_name: wa_name || undefined,
         tg_chat_id,
+        tg_chat_title: tg_chat_title || undefined,
         tg_thread_id,
         sync_mode,
         ignore_command_prefixes,

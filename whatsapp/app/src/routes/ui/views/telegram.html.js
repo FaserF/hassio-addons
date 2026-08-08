@@ -1,5 +1,5 @@
 export default () => `
-<section id="tab-telegram" class="tab-panel">
+<section id="tab-telegram" class="tab-panel" style="padding-bottom: 40px;">
 
     <!-- Hero Header -->
     <div class="mod-hero">

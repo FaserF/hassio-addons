@@ -4,7 +4,7 @@ import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './mess
 import { waToTelegramHtml, anonymizePhoneNumber } from './format.js';
 import { applyRegexReplacements } from './regex.js';
 import { logger } from '../../logger.js';
-import { getSession } from '../../session.js';
+import { getSession, sessions } from '../../session.js';
 
 let pollingTimer = null;
 let lastUpdateId = 0;
@@ -18,14 +18,17 @@ export function formatHeader(
 ) {
   const parts = [];
   if (includeGroup && sourceGroup) {
-    parts.push(sourceGroup);
+    const cleanGroup = String(sourceGroup).endsWith('@g.us')
+      ? `Group ${sourceGroup.split('@')[0]}`
+      : sourceGroup;
+    parts.push(cleanGroup);
   }
   if (includeSender && senderName) {
     const displayName = anonymizePhone ? anonymizePhoneNumber(senderName) : senderName;
     parts.push(displayName);
   }
   if (parts.length === 0) return '';
-  return `[${parts.join(' | ')}]: `;
+  return `<b>[${parts.join(' | ')}]</b>:\n`;
 }
 
 export async function syncWhatsAppToTelegram(
@@ -186,14 +189,22 @@ export async function processTelegramUpdates() {
         );
         const outboundWaText = `${header}${tgText}`;
 
-        const session = getSession('default');
-        if (session && session.client && session.isConnected) {
+        let session = getSession('default');
+        if (!session || !session.sock || !session.isConnected) {
+          for (const s of sessions.values()) {
+            if (s.sock && s.isConnected) {
+              session = s;
+              break;
+            }
+          }
+        }
+        if (session && session.sock && session.isConnected) {
           try {
             const sendOptions = {};
             if (quotedWaMsgId) {
               sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
             }
-            const sentWaMsg = await session.client.sendMessage(
+            const sentWaMsg = await session.sock.sendMessage(
               mapping.wa_jid,
               { text: outboundWaText },
               sendOptions
