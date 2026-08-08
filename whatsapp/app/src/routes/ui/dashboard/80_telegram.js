@@ -111,6 +111,65 @@ export async function deleteTelegramMapping(id) {
   loadTelegramBridgeData();
 }
 
+export function openAddTelegramMappingModal() {
+  const modal = document.getElementById('tg-mapping-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+export function closeTelegramMappingModal() {
+  const modal = document.getElementById('tg-mapping-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+export async function saveTelegramMappingModal() {
+  const wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
+  const tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
+  const tg_thread_id = document.getElementById('tg-modal-tg-thread-id')?.value || '';
+  const sync_mode = document.getElementById('tg-modal-sync-mode')?.value || 'bidirectional';
+  const ignore_command_prefixes = document.getElementById('tg-modal-ignore-prefixes')?.value || '';
+
+  const include_group_name = document.getElementById('tg-modal-inc-group')?.checked || false;
+  const include_sender_name = document.getElementById('tg-modal-inc-sender')?.checked || false;
+  const sync_self_messages = document.getElementById('tg-modal-sync-self')?.checked || false;
+  const convert_formatting = document.getElementById('tg-modal-convert-formatting')?.checked || false;
+  const anonymize_phone_numbers = document.getElementById('tg-modal-anonymize-phone')?.checked || false;
+  const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
+
+  if (!wa_jid || !tg_chat_id) {
+    alert('Please enter both WhatsApp Target JID and Telegram Chat ID');
+    return;
+  }
+
+  try {
+    const res = await fetch('api/telegram/mappings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        wa_jid,
+        tg_chat_id,
+        tg_thread_id,
+        sync_mode,
+        ignore_command_prefixes,
+        include_group_name,
+        include_sender_name,
+        sync_self_messages,
+        convert_formatting,
+        anonymize_phone_numbers,
+        sync_reactions,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Failed to save mapping');
+    } else {
+      closeTelegramMappingModal();
+      loadTelegramBridgeData();
+    }
+  } catch (e) {
+    alert('Failed to connect to server');
+  }
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -125,3 +184,6 @@ window.toggleTelegramBridge = toggleTelegramBridge;
 window.saveTelegramBotToken = saveTelegramBotToken;
 window.toggleTelegramMapping = toggleTelegramMapping;
 window.deleteTelegramMapping = deleteTelegramMapping;
+window.openAddTelegramMappingModal = openAddTelegramMappingModal;
+window.closeTelegramMappingModal = closeTelegramMappingModal;
+window.saveTelegramMappingModal = saveTelegramMappingModal;

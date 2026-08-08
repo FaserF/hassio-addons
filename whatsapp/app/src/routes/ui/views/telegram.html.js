@@ -83,5 +83,72 @@ export default () => `
         </div>
     </div>
 
+    <!-- Add/Edit Mapping Modal -->
+    <div id="tg-mapping-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
+        <div class="card" style="width:520px; max-width:90%; max-height:90vh; overflow-y:auto; background:var(--bg-card); padding:24px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+                <h3 style="margin:0; font-size:16px; font-weight:600;"><i class="fas fa-link"></i> Add Telegram Chat Mapping</h3>
+                <button class="btn btn-secondary btn-sm" onclick="closeTelegramMappingModal()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label class="mod-field-label">WhatsApp Target JID / Phone / Group</label>
+                    <input type="text" id="tg-modal-wa-jid" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. 1203630123456789@g.us or 491761234567@s.whatsapp.net">
+                </div>
+
+                <div>
+                    <label class="mod-field-label">Telegram Chat / Channel ID</label>
+                    <input type="text" id="tg-modal-tg-chat-id" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. -1001234567890 or 123456789">
+                </div>
+
+                <div>
+                    <label class="mod-field-label">Telegram Forum Topic ID (Optional)</label>
+                    <input type="text" id="tg-modal-tg-thread-id" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. 2 (Leave empty if not a Forum Topic)">
+                </div>
+
+                <div>
+                    <label class="mod-field-label">Sync Direction Mode</label>
+                    <select id="tg-modal-sync-mode" class="mod-select" style="width:100%;">
+                        <option value="bidirectional">Bi-directional (WhatsApp &lt;-&gt; Telegram)</option>
+                        <option value="outbound">Outbound only (WhatsApp -&gt; Telegram)</option>
+                        <option value="inbound">Inbound only (Telegram -&gt; WhatsApp)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mod-field-label">Ignore Command Prefixes (Optional)</label>
+                    <input type="text" id="tg-modal-ignore-prefixes" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. !, / (Comma separated)">
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-inc-group"> Include Group Name
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-inc-sender" checked> Include Sender Name
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-self"> Sync Own Self Messages
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-convert-formatting" checked> Convert Formatting
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-anonymize-phone"> Anonymize Phones
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-reactions" checked> Sync Reactions
+                    </label>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--border-color); padding-top:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="closeTelegramMappingModal()">Cancel</button>
+                <button class="btn btn-primary btn-sm" onclick="saveTelegramMappingModal()"><i class="fas fa-save"></i> Save Mapping</button>
+            </div>
+        </div>
+    </div>
+
 </section>
 `;

@@ -63,6 +63,13 @@ export function registerTelegramRoutes(app) {
       include_group_name,
       include_sender_name,
       sync_self_messages,
+      tg_thread_id,
+      convert_formatting,
+      anonymize_phone_numbers,
+      ignore_command_prefixes,
+      sync_reactions,
+      sync_edits,
+      sync_deletions,
       enabled,
     } = req.body || {};
 
@@ -82,6 +89,13 @@ export function registerTelegramRoutes(app) {
       include_group_name: Boolean(include_group_name),
       include_sender_name: include_sender_name !== undefined ? Boolean(include_sender_name) : true,
       sync_self_messages: Boolean(sync_self_messages),
+      tg_thread_id: tg_thread_id ? String(tg_thread_id) : null,
+      convert_formatting: convert_formatting !== undefined ? Boolean(convert_formatting) : true,
+      anonymize_phone_numbers: Boolean(anonymize_phone_numbers),
+      ignore_command_prefixes: ignore_command_prefixes ? String(ignore_command_prefixes) : '',
+      sync_reactions: sync_reactions !== undefined ? Boolean(sync_reactions) : true,
+      sync_edits: sync_edits !== undefined ? Boolean(sync_edits) : true,
+      sync_deletions: sync_deletions !== undefined ? Boolean(sync_deletions) : true,
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 
