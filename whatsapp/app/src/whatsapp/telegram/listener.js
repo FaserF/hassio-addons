@@ -410,7 +410,11 @@ export async function processTelegramUpdates() {
             const qSender =
               qMsg.from?.first_name || qMsg.from?.username || qMsg.author_signature || 'User';
             const qText = qMsg.text || qMsg.caption || '';
-            const snippet = qText ? (qText.length > 80 ? `${qText.substring(0, 80)}...` : qText) : '';
+            const snippet = qText
+              ? qText.length > 80
+                ? `${qText.substring(0, 80)}...`
+                : qText
+              : '';
             if (snippet || qSender) {
               tgQuoteSnippet = `> [${qSender}]: ${snippet}\n`;
             }
