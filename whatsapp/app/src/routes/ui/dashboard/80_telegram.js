@@ -42,7 +42,8 @@ function renderTelegramMappings(mappings) {
   tbody.innerHTML = mappings
     .map((m) => {
       const waTitle = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : '';
-      const tgTitle = m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ') ? m.tg_chat_title : '';
+      const tgTitle =
+        m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ') ? m.tg_chat_title : '';
 
       const cleanWa = waTitle || m.wa_jid.split('@')[0];
       const cleanTg = tgTitle || `TG ${m.tg_chat_id}`;

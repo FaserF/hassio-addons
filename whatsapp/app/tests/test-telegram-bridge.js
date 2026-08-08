@@ -8,7 +8,10 @@ import { applyRegexReplacements } from '../src/whatsapp/telegram/regex.js';
 
 describe('Telegram Bridge Unit Tests', () => {
   it('formatHeader respects group, sender and anonymize flags', () => {
-    assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '<b>[My Group | Alice]</b>:\n');
+    assert.strictEqual(
+      formatHeader('My Group', 'Alice', true, true),
+      '<b>[My Group | Alice]</b>:\n'
+    );
     assert.strictEqual(
       formatHeader('My Group', '+491761234567', false, true, true),
       '<b>[+49176***567]</b>:\n'

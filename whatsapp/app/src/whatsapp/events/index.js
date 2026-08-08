@@ -664,16 +664,11 @@ export function handleIncomingMessages(session) {
         triggerWebhook(event);
         handleFirstContact(session, event);
         const resolvedGroupName = isGroup
-          ? session.groupCache?.get(senderJid) || session.chatCache?.get(senderJid)?.name || senderJid
+          ? session.groupCache?.get(senderJid) ||
+            session.chatCache?.get(senderJid)?.name ||
+            senderJid
           : null;
-        syncWhatsAppToTelegram(
-          msg,
-          senderJid,
-          resolvedGroupName,
-          senderName,
-          text,
-          mediaUrl
-        );
+        syncWhatsAppToTelegram(msg, senderJid, resolvedGroupName, senderName, text, mediaUrl);
 
         logger.info(
           {
