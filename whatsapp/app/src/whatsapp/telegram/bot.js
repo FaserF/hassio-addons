@@ -46,20 +46,19 @@ export class TelegramBotClient {
     }
   }
 
-  async sendMessage(chatId, text, replyToMessageId = null) {
+  async sendMessage(chatId, text, replyToMessageId = null, threadId = null) {
     const payload = {
       chat_id: chatId,
       text: text,
       parse_mode: 'HTML',
       disable_web_page_preview: false,
     };
-    if (replyToMessageId) {
-      payload.reply_to_message_id = replyToMessageId;
-    }
+    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendMessage', payload);
   }
 
-  async sendPhoto(chatId, photoUrlOrBuffer, caption = '', replyToMessageId = null) {
+  async sendPhoto(chatId, photoUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
     const payload = {
       chat_id: chatId,
       photo: photoUrlOrBuffer,
@@ -67,10 +66,23 @@ export class TelegramBotClient {
       parse_mode: 'HTML',
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendPhoto', payload);
   }
 
-  async sendDocument(chatId, documentUrlOrBuffer, caption = '', replyToMessageId = null) {
+  async sendVoice(chatId, voiceUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
+    const payload = {
+      chat_id: chatId,
+      voice: voiceUrlOrBuffer,
+      caption: caption,
+      parse_mode: 'HTML',
+    };
+    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
+    return await this.request('sendVoice', payload);
+  }
+
+  async sendDocument(chatId, documentUrlOrBuffer, caption = '', replyToMessageId = null, threadId = null) {
     const payload = {
       chat_id: chatId,
       document: documentUrlOrBuffer,
@@ -78,7 +90,16 @@ export class TelegramBotClient {
       parse_mode: 'HTML',
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
     return await this.request('sendDocument', payload);
+  }
+
+  async setMessageReaction(chatId, messageId, emoji) {
+    return await this.request('setMessageReaction', {
+      chat_id: chatId,
+      message_id: messageId,
+      reaction: emoji ? [{ type: 'emoji', emoji }] : [],
+    });
   }
 
   async editMessageText(chatId, messageId, text) {
