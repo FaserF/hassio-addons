@@ -1,6 +1,6 @@
 import { loadTelegramStore, saveTelegramStore } from './store.js';
 
-export function recordMessageMap(waMsgId, tgChatId, tgMsgId, waJid) {
+export function recordMessageMap(waMsgId, tgChatId, tgMsgId, waJid, fromMe = false, senderJid = '') {
   if (!waMsgId || !tgMsgId) return;
   const store = loadTelegramStore();
   if (!store.message_maps) store.message_maps = {};
@@ -13,6 +13,8 @@ export function recordMessageMap(waMsgId, tgChatId, tgMsgId, waJid) {
     tgChatId: String(tgChatId),
     tgMsgId: String(tgMsgId),
     waJid,
+    fromMe: Boolean(fromMe),
+    senderJid: senderJid || '',
     timestamp: Date.now(),
   };
 

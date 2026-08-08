@@ -94,10 +94,12 @@ export async function syncWhatsAppToTelegram(
       continue;
     }
     if (mapping.ignore_command_prefixes && textContent) {
+      const cleanText = textContent.trim();
       const prefixes = String(mapping.ignore_command_prefixes)
-        .split(',')
-        .map((s) => s.trim());
-      if (prefixes.some((p) => p && textContent.startsWith(p))) {
+        .split(/[,;\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (prefixes.some((p) => cleanText.startsWith(p))) {
         continue;
       }
     }
@@ -146,7 +148,7 @@ export async function syncWhatsAppToTelegram(
       }
 
       if (tgResult && tgResult.message_id && waMsgId) {
-        recordMessageMap(waMsgId, mapping.tg_chat_id, tgResult.message_id, waJid);
+        recordMessageMap(waMsgId, mapping.tg_chat_id, tgResult.message_id, waJid, isFromMe, senderName);
       }
     } catch (err) {
       logger.error(
@@ -213,10 +215,15 @@ export async function processTelegramUpdates() {
             }
             if (session && session.sock && session.isConnected) {
               try {
+                const reactionKey = {
+                  remoteJid: mapped.waJid,
+                  id: mapped.waMsgId,
+                  fromMe: mapped.fromMe !== undefined ? mapped.fromMe : false,
+                };
                 await session.sock.sendMessage(mapped.waJid, {
                   react: {
                     text: latestEmoji || '', // Empty string removes reaction in Baileys
-                    key: { remoteJid: mapped.waJid, id: mapped.waMsgId },
+                    key: reactionKey,
                   },
                 });
               } catch (reactErr) {
@@ -290,7 +297,7 @@ export async function processTelegramUpdates() {
               sendOptions
             );
             if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
-              recordMessageMap(sentWaMsg.key.id, tgChatId, msg.message_id, mapping.wa_jid);
+              recordMessageMap(sentWaMsg.key.id, tgChatId, msg.message_id, mapping.wa_jid, true, senderName);
             }
           } catch (waErr) {
             logger.error(
