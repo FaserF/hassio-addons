@@ -1,13 +1,12 @@
 import { renderDashboard } from '../src/routes/ui/index.js';
 
-async function runTests() {
+export async function runUiRenderTests() {
   console.log('🧪 Running UI Render Unit Test');
   console.log('==================================================');
 
   try {
     const htmlOutput = renderDashboard('mock-session-id');
 
-    // Basic sanity checks
     if (!htmlOutput.includes('<!DOCTYPE html>')) {
       console.error('❌ FAILED: Response missing DOCTYPE');
       process.exit(1);
@@ -28,7 +27,6 @@ async function runTests() {
     );
     console.log('==================================================');
     console.log('✅ ALL UI RENDER TESTS PASSED');
-    process.exit(0);
   } catch (err) {
     console.error('❌ FAILED: Unhandled exception during UI render:');
     console.error(err);
@@ -36,4 +34,4 @@ async function runTests() {
   }
 }
 
-runTests();
+await runUiRenderTests();

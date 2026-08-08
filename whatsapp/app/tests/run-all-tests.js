@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+/**
+ * Fast Unified Test Runner
+ * Runs all unit tests and validation checks in a single Node process.
+ */
+
+import { performance } from 'perf_hooks';
+
+async function run() {
+  const startTime = performance.now();
+  console.log('🚀 Running WhatsApp Addon Unified Test Suite...\n');
+
+  try {
+    console.log('--- 1/6 Validating UI Scope & References ---');
+    await import('./validate-ui-scope.js');
+
+    console.log('\n--- 2/6 Testing UI Rendering ---');
+    const { runUiRenderTests } = await import('./test-ui-render.js');
+    await runUiRenderTests();
+
+    console.log('\n--- 3/6 Testing Contact Cache ---');
+    await import('./test-contact-cache.js');
+
+    console.log('\n--- 4/6 Testing Moderation Engine ---');
+    await import('./test-moderation.js');
+
+    console.log('\n--- 5/6 Testing Commands Engine ---');
+    await import('./test-commands.js');
+
+    console.log('\n--- 6/6 Testing Telegram Bridge ---');
+    await import('./test-telegram-bridge.js');
+
+    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+    console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);
+  } catch (err) {
+    console.error('\n❌ TEST SUITE FAILED:', err);
+    process.exit(1);
+  }
+}
+
+run();

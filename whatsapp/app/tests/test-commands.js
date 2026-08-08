@@ -429,8 +429,7 @@ async function runTests() {
   } else {
     console.log('==================================================');
     console.log('✅ ALL COMMAND TESTS PASSED');
-    process.exit(0);
   }
 }
 
-runTests();
+await runTests();

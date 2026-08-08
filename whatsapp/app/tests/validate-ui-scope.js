@@ -470,5 +470,4 @@ if (errors > 0) {
   process.exit(1);
 } else {
   console.log('✅ ALL CHECKS PASSED\n');
-  process.exit(0);
 }

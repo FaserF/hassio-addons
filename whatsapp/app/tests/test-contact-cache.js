@@ -151,5 +151,4 @@ if (failed) {
   process.exit(1);
 } else {
   console.log('✅ ALL TESTS PASSED\n');
-  process.exit(0);
 }

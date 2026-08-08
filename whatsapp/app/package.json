@@ -13,7 +13,7 @@
     "test:moderation": "node tests/test-moderation.js",
     "test:commands": "node tests/test-commands.js",
     "test:telegram": "node --test tests/test-telegram-bridge.js",
-    "test": "npm run lint && npm run test:ui && npm run test:ui-render && npm run test:contacts && npm run test:moderation && npm run test:commands && npm run test:telegram"
+    "test": "npm run lint && node tests/run-all-tests.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",
