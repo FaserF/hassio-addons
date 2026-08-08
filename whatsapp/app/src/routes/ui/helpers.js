@@ -88,10 +88,17 @@ const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalClose = document.getElementById('modal-close');
 let modalResolver = null;
 
-function showConfirm(title, msg) {
-  modalTitle.innerText = title;
-  modalMessage.innerText = msg;
-  confirmModal.classList.add('show');
+function showConfirm(title, msg, confirmText = 'Confirm', cancelText = 'Cancel', btnType = 'danger') {
+  if (modalTitle) modalTitle.innerHTML = title;
+  if (modalMessage) modalMessage.innerHTML = msg;
+  if (modalConfirmBtn) {
+    modalConfirmBtn.innerHTML = confirmText;
+    modalConfirmBtn.className = `btn btn-${btnType} btn-sm`;
+  }
+  if (modalCancelBtn) {
+    modalCancelBtn.innerHTML = cancelText;
+  }
+  if (confirmModal) confirmModal.classList.add('show');
   return new Promise((resolve) => {
     modalResolver = resolve;
   });
@@ -130,4 +137,5 @@ const toggleTheme = () => {
 };
 
 setTheme(getInitialTheme());
+window.showConfirm = showConfirm;
 window.toggleTheme = toggleTheme;

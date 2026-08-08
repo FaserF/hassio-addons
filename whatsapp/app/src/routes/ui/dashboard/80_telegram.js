@@ -205,8 +205,14 @@ async function saveTelegramBotModal() {
 }
 
 async function deleteTelegramBot(botId) {
-  if (!confirm('Are you sure you want to remove this Telegram Bot and all associated mappings?'))
-    return;
+  const confirmed = await showConfirm(
+    '<i class="fas fa-robot" style="color:#dc3545; margin-right:8px;"></i> Delete Telegram Bot',
+    'Are you sure you want to remove this Telegram Bot and all associated mappings?',
+    '<i class="fas fa-trash"></i> Delete Bot',
+    'Cancel',
+    'danger'
+  );
+  if (!confirmed) return;
   try {
     await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
     showToast('Telegram Bot removed', 'warning');
@@ -223,7 +229,14 @@ async function toggleTelegramMapping(id) {
 }
 
 async function deleteTelegramMapping(id) {
-  if (!confirm('Are you sure you want to remove this Telegram chat mapping?')) return;
+  const confirmed = await showConfirm(
+    '<i class="fas fa-link" style="color:#dc3545; margin-right:8px;"></i> Remove Mapping',
+    'Are you sure you want to remove this Telegram chat mapping?',
+    '<i class="fas fa-trash"></i> Remove Mapping',
+    'Cancel',
+    'danger'
+  );
+  if (!confirmed) return;
   await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
   showToast('Telegram mapping removed', 'warning');
   loadTelegramBridgeData();
@@ -531,9 +544,16 @@ async function editTelegramMapping(id) {
   }
 }
 
-function closeTelegramMappingModal(force = false) {
+async function closeTelegramMappingModal(force = false) {
   if (!force && hasTgMappingUnsavedChanges()) {
-    if (!confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
+    const confirmClose = await showConfirm(
+      '<i class="fas fa-exclamation-triangle" style="color:#ffc107; margin-right:8px;"></i> Unsaved Changes',
+      'You have unsaved changes. Are you sure you want to close without saving?',
+      '<i class="fas fa-trash"></i> Discard Changes',
+      '<i class="fas fa-undo"></i> Keep Editing',
+      'danger'
+    );
+    if (!confirmClose) {
       return;
     }
   }
