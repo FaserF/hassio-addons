@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-08T18:50:13.526335",
+  "timestamp": "2026-08-08T18:57:37.698025",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -1120,7 +1120,6 @@
       "test-moderation.js",
       "test-telegram-bridge.js",
       "test-ui-render.js",
-      "test-ui-scroll.js",
       "validate-ui-scope.js"
     ],
     "whatsapp/app/src": [

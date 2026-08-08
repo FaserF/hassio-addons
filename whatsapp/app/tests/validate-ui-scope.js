@@ -436,7 +436,6 @@ function checkNoEsModuleKeywords() {
   info('No forbidden ES module keywords (export/import) found in inline UI client scripts');
 }
 
-
 // --------------------------------------------------------------------------
 // Test 6: HTML View Tag Balance & DOM Hierarchy Validation
 // --------------------------------------------------------------------------

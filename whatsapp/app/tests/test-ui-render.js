@@ -12,7 +12,13 @@ export async function runUiRenderTests() {
       process.exit(1);
     }
 
-    const requiredTabs = ['tab-dashboard', 'tab-logs', 'tab-chats', 'tab-moderation', 'tab-telegram'];
+    const requiredTabs = [
+      'tab-dashboard',
+      'tab-logs',
+      'tab-chats',
+      'tab-moderation',
+      'tab-telegram',
+    ];
     for (const tabId of requiredTabs) {
       if (!htmlOutput.includes(`id="${tabId}"`)) {
         console.error(`❌ FAILED: Missing ${tabId} tab in output`);
@@ -32,7 +38,9 @@ export async function runUiRenderTests() {
     const footerIndex = htmlOutput.indexOf('footer-info');
 
     if (telegramIndex < cbIndex || telegramIndex > mainCloseIndex) {
-      console.error('❌ FAILED: tab-telegram is not properly positioned inside <main class="main-content">');
+      console.error(
+        '❌ FAILED: tab-telegram is not properly positioned inside <main class="main-content">'
+      );
       process.exit(1);
     }
 
