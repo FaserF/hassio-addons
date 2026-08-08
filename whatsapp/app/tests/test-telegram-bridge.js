@@ -68,9 +68,7 @@ describe('Telegram Bridge Unit Tests', () => {
 
   it('is_direct_chat_mirror suppresses group and sender headers', () => {
     const isDirectMirror = true;
-    const header = isDirectMirror
-      ? ''
-      : formatHeader('My Group', 'Alice', true, true);
+    const header = isDirectMirror ? '' : formatHeader('My Group', 'Alice', true, true);
     assert.strictEqual(header, '');
   });
 

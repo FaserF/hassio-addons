@@ -42,7 +42,7 @@ export function registerTelegramRoutes(app) {
     try {
       const bot = new TelegramBotClient(cleanToken);
       botInfo = await bot.getMe();
-      username = botInfo ? (botInfo.username || '') : '';
+      username = botInfo ? botInfo.username || '' : '';
       const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       await bot.fetchUpdates(botId);
     } catch (err) {
@@ -51,7 +51,11 @@ export function registerTelegramRoutes(app) {
 
     const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const botName =
-      name && String(name).trim() ? String(name).trim() : (username ? `@${username}` : 'Telegram Bot');
+      name && String(name).trim()
+        ? String(name).trim()
+        : username
+          ? `@${username}`
+          : 'Telegram Bot';
 
     const botRecord = {
       id: botId,
@@ -166,8 +170,8 @@ export function registerTelegramRoutes(app) {
       include_sender_name: is_direct_chat_mirror
         ? false
         : include_sender_name !== undefined
-        ? Boolean(include_sender_name)
-        : true,
+          ? Boolean(include_sender_name)
+          : true,
       sync_self_messages: is_direct_chat_mirror
         ? sync_self_messages !== undefined
           ? Boolean(sync_self_messages)
