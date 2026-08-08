@@ -662,7 +662,7 @@ export function handleIncomingMessages(session) {
 
         // 1. Process as group command (requiring actual WhatsApp Group Admin status for admin commands)
         let handledAsCommand = false;
-        if (text && isGroup && !msg.key?.fromMe) {
+        if (text && isGroup) {
           handledAsCommand = await processCommand(
             session,
             msg,
