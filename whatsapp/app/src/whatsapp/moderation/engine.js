@@ -778,7 +778,10 @@ export async function handleModerationMessage(session, event) {
           isMatch = true;
         } else {
           const escapedTrigger = cleanTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          const wordBoundaryRegex = new RegExp(`(?:^|[^a-zA-Z0-9_/])${escapedTrigger}(?:$|[^a-zA-Z0-9_])`, 'i');
+          const wordBoundaryRegex = new RegExp(
+            `(?:^|[^a-zA-Z0-9_/])${escapedTrigger}(?:$|[^a-zA-Z0-9_])`,
+            'i'
+          );
           isMatch = wordBoundaryRegex.test(lowerText);
         }
       }

@@ -674,7 +674,9 @@ try {
     0,
     'Admin promote (stubType 29) must NOT trigger goodbye message'
   );
-  console.log('✅ PASSED: WAMessageStubType promote (admin elevation) verified to not send goodbye');
+  console.log(
+    '✅ PASSED: WAMessageStubType promote (admin elevation) verified to not send goodbye'
+  );
 
   // Test Filter Subscriptions Default
   const finalStore = getDefaultModerationStore();

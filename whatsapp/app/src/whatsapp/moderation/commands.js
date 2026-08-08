@@ -2869,7 +2869,9 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         .replace(/^['"`\s]+|['"`\s]+$/g, '')
         .trim()
     )
-    .filter((l) => l.length > 0 && (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/')));
+    .filter(
+      (l) => l.length > 0 && (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/'))
+    );
 
   if (rawLines.length === 0) return false;
 
