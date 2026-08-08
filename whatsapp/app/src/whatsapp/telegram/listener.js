@@ -76,9 +76,11 @@ export async function syncWhatsAppToTelegram(
           if (mapping.sync_reactions !== false) {
             const bot = getTelegramBotClient(mapping.bot_id);
             if (bot) {
-              bot.setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji).catch((err) => {
-                logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
-              });
+              bot
+                .setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji)
+                .catch((err) => {
+                  logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
+                });
             }
           }
         }
@@ -283,79 +285,79 @@ export async function processTelegramUpdates() {
             (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
         );
 
-      if (mappings.length === 0) continue;
+        if (mappings.length === 0) continue;
 
-      const senderName = msg.from
-        ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
-          msg.from.username ||
-          'Telegram User'
-        : msg.chat.title || 'Telegram';
-      let tgText = msg.text || msg.caption || '';
-      if (!tgText) {
-        if (msg.voice) tgText = '[🎤 Voice Note]';
-        else if (msg.audio) tgText = '[🎵 Audio File]';
-        else if (msg.photo) tgText = '[📷 Photo]';
-        else if (msg.document) tgText = '[📄 Document]';
-        else if (msg.sticker) tgText = '[🎨 Sticker]';
-        else if (msg.video) tgText = '[🎥 Video]';
-      }
-      if (!tgText) continue;
+        const senderName = msg.from
+          ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
+            msg.from.username ||
+            'Telegram User'
+          : msg.chat.title || 'Telegram';
+        let tgText = msg.text || msg.caption || '';
+        if (!tgText) {
+          if (msg.voice) tgText = '[🎤 Voice Note]';
+          else if (msg.audio) tgText = '[🎵 Audio File]';
+          else if (msg.photo) tgText = '[📷 Photo]';
+          else if (msg.document) tgText = '[📄 Document]';
+          else if (msg.sticker) tgText = '[🎨 Sticker]';
+          else if (msg.video) tgText = '[🎥 Video]';
+        }
+        if (!tgText) continue;
 
-      const replyToTgId = msg.reply_to_message?.message_id;
-      let quotedWaMsgId = null;
-      if (replyToTgId) {
-        const mapped = resolveWaMsgFromTg(tgChatId, replyToTgId);
-        if (mapped) quotedWaMsgId = mapped.waMsgId;
-      }
+        const replyToTgId = msg.reply_to_message?.message_id;
+        let quotedWaMsgId = null;
+        if (replyToTgId) {
+          const mapped = resolveWaMsgFromTg(tgChatId, replyToTgId);
+          if (mapped) quotedWaMsgId = mapped.waMsgId;
+        }
 
-      for (const mapping of mappings) {
-        const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
-        const rawHeader = formatHeader(
-          isGroupChat ? msg.chat.title : null,
-          senderName,
-          mapping.include_group_name,
-          isGroupChat ? mapping.include_sender_name : false
-        );
-        const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
-        const outboundWaText = `${cleanHeader}${tgText}`;
+        for (const mapping of mappings) {
+          const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
+          const rawHeader = formatHeader(
+            isGroupChat ? msg.chat.title : null,
+            senderName,
+            mapping.include_group_name,
+            isGroupChat ? mapping.include_sender_name : false
+          );
+          const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
+          const outboundWaText = `${cleanHeader}${tgText}`;
 
-        let session = getSession('default');
-        if (!session || !session.sock || !session.isConnected) {
-          for (const s of sessions.values()) {
-            if (s.sock && s.isConnected) {
-              session = s;
-              break;
+          let session = getSession('default');
+          if (!session || !session.sock || !session.isConnected) {
+            for (const s of sessions.values()) {
+              if (s.sock && s.isConnected) {
+                session = s;
+                break;
+              }
             }
           }
-        }
-        if (session && session.sock && session.isConnected) {
-          try {
-            const sendOptions = {};
-            if (quotedWaMsgId) {
-              sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
-            }
-            const sentWaMsg = await session.sock.sendMessage(
-              mapping.wa_jid,
-              { text: outboundWaText },
-              sendOptions
-            );
-            if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
-              recordMessageMap(
-                sentWaMsg.key.id,
-                tgChatId,
-                msg.message_id,
+          if (session && session.sock && session.isConnected) {
+            try {
+              const sendOptions = {};
+              if (quotedWaMsgId) {
+                sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
+              }
+              const sentWaMsg = await session.sock.sendMessage(
                 mapping.wa_jid,
-                true,
-                senderName
+                { text: outboundWaText },
+                sendOptions
+              );
+              if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
+                recordMessageMap(
+                  sentWaMsg.key.id,
+                  tgChatId,
+                  msg.message_id,
+                  mapping.wa_jid,
+                  true,
+                  senderName
+                );
+              }
+            } catch (waErr) {
+              logger.error(
+                { error: waErr.message, waJid: mapping.wa_jid },
+                '❌ Error syncing Telegram message to WhatsApp'
               );
             }
-          } catch (waErr) {
-            logger.error(
-              { error: waErr.message, waJid: mapping.wa_jid },
-              '❌ Error syncing Telegram message to WhatsApp'
-            );
           }
-        }
         }
       }
     } catch (err) {

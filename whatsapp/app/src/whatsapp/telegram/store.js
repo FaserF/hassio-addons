@@ -45,7 +45,10 @@ export function loadTelegramStore() {
       telegramStoreMemory = { ...getDefaultTelegramStore(), ...parsed };
 
       // Migration: convert single legacy bot_token to bots array if present
-      if (parsed.bot_token && (!telegramStoreMemory.bots || telegramStoreMemory.bots.length === 0)) {
+      if (
+        parsed.bot_token &&
+        (!telegramStoreMemory.bots || telegramStoreMemory.bots.length === 0)
+      ) {
         const botId = `bot_${Date.now()}`;
         const legacyBot = {
           id: botId,

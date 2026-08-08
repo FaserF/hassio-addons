@@ -204,7 +204,8 @@ async function saveTelegramBotModal() {
 }
 
 async function deleteTelegramBot(botId) {
-  if (!confirm('Are you sure you want to remove this Telegram Bot and all associated mappings?')) return;
+  if (!confirm('Are you sure you want to remove this Telegram Bot and all associated mappings?'))
+    return;
   try {
     await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
     showToast('Telegram Bot removed', 'warning');
@@ -279,7 +280,9 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   if (tgSelect) {
     let tgOpts = '<option value="">-- Select Telegram Chat / Group --</option>';
     try {
-      const url = activeBotId ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}` : 'api/telegram/chats';
+      const url = activeBotId
+        ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}`
+        : 'api/telegram/chats';
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();

@@ -50,7 +50,8 @@ export function registerTelegramRoutes(app) {
     }
 
     const botId = id || `bot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const botName = name && String(name).trim() ? String(name).trim() : `@${username}` || 'Telegram Bot';
+    const botName =
+      name && String(name).trim() ? String(name).trim() : `@${username}` || 'Telegram Bot';
 
     const botRecord = {
       id: botId,

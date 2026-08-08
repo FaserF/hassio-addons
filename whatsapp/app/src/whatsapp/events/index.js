@@ -402,9 +402,10 @@ export function handleIncomingMessages(session) {
             return found;
           };
           const allStrings = extractStrings(msg.message);
-          const urlMatch = allStrings.find((s) =>
-            /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s) &&
-            !/(a\.whatsapp\.net|mmg\.whatsapp\.net)/i.test(s)
+          const urlMatch = allStrings.find(
+            (s) =>
+              /(https?:\/\/|t\.me\/|wa\.me\/|chat\.whatsapp\.com\/)/i.test(s) &&
+              !/(a\.whatsapp\.net|mmg\.whatsapp\.net)/i.test(s)
           );
           if (urlMatch && !text.includes(urlMatch)) {
             text = text ? `${text} ${urlMatch}` : urlMatch;
