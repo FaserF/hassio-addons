@@ -114,9 +114,88 @@ async function deleteTelegramMapping(id) {
   loadTelegramBridgeData();
 }
 
+async function populateTelegramModalDropdowns() {
+  const waSelect = document.getElementById('tg-modal-wa-select');
+  const tgSelect = document.getElementById('tg-modal-tg-select');
+
+  // 1. Populate WhatsApp Chats Dropdown
+  if (waSelect) {
+    let waOpts = '<option value="">-- Select WhatsApp Chat / Group --</option>';
+    try {
+      const res = await fetch('api/chats?session_id=' + (window.currentSession || ''));
+      if (res.ok) {
+        const chats = await res.json();
+        if (Array.isArray(chats)) {
+          chats.forEach((c) => {
+            const jid = c.jid || c.id;
+            if (jid) {
+              const name = c.name || c.formattedTitle || jid;
+              const typeLabel = jid.endsWith('@g.us') ? 'Group' : 'Direct';
+              waOpts += `<option value="${escapeHtml(jid)}">${escapeHtml(name)} (${typeLabel})</option>`;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch WhatsApp chats for modal', e);
+    }
+    waOpts += '<option value="__custom__">✏️ Custom JID (Manual Entry)</option>';
+    waSelect.innerHTML = waOpts;
+  }
+
+  // 2. Populate Telegram Cached Chats Dropdown
+  if (tgSelect) {
+    let tgOpts = '<option value="">-- Select Telegram Chat / Group --</option>';
+    try {
+      const res = await fetch('api/telegram/chats');
+      if (res.ok) {
+        const json = await res.json();
+        const tgChats = json.data || [];
+        if (Array.isArray(tgChats)) {
+          tgChats.forEach((tc) => {
+            const title = tc.title || tc.username || tc.id;
+            tgOpts += `<option value="${escapeHtml(tc.id)}">${escapeHtml(title)} (${tc.type || 'chat'})</option>`;
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch Telegram chats for modal', e);
+    }
+    tgOpts += '<option value="__custom__">✏️ Custom Chat ID (Manual Entry)</option>';
+    tgSelect.innerHTML = tgOpts;
+  }
+}
+
+function onTgWaSelectChange(val) {
+  const customInp = document.getElementById('tg-modal-wa-jid');
+  if (!customInp) return;
+  if (val === '__custom__') {
+    customInp.style.display = 'block';
+    customInp.value = '';
+    customInp.focus();
+  } else {
+    customInp.style.display = 'none';
+    customInp.value = val;
+  }
+}
+
+function onTgTgSelectChange(val) {
+  const customInp = document.getElementById('tg-modal-tg-chat-id');
+  if (!customInp) return;
+  if (val === '__custom__') {
+    customInp.style.display = 'block';
+    customInp.value = '';
+    customInp.focus();
+  } else {
+    customInp.style.display = 'none';
+    customInp.value = val;
+  }
+}
+
 function openAddTelegramMappingModal() {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
+  populateTelegramModalDropdowns();
 }
 
 function closeTelegramMappingModal() {
@@ -125,8 +204,16 @@ function closeTelegramMappingModal() {
 }
 
 async function saveTelegramMappingModal() {
-  const wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
-  const tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
+  let wa_jid = document.getElementById('tg-modal-wa-select')?.value || '';
+  if (wa_jid === '__custom__' || !wa_jid) {
+    wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
+  }
+
+  let tg_chat_id = document.getElementById('tg-modal-tg-select')?.value || '';
+  if (tg_chat_id === '__custom__' || !tg_chat_id) {
+    tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
+  }
+
   const tg_thread_id = document.getElementById('tg-modal-tg-thread-id')?.value || '';
   const sync_mode = document.getElementById('tg-modal-sync-mode')?.value || 'bidirectional';
   const ignore_command_prefixes = document.getElementById('tg-modal-ignore-prefixes')?.value || '';
@@ -141,7 +228,7 @@ async function saveTelegramMappingModal() {
   const sync_reactions = document.getElementById('tg-modal-sync-reactions')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
-    showToast('Please enter both WhatsApp Target JID and Telegram Chat ID', 'warning');
+    showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
     return;
   }
 
@@ -193,3 +280,5 @@ window.deleteTelegramMapping = deleteTelegramMapping;
 window.openAddTelegramMappingModal = openAddTelegramMappingModal;
 window.closeTelegramMappingModal = closeTelegramMappingModal;
 window.saveTelegramMappingModal = saveTelegramMappingModal;
+window.onTgWaSelectChange = onTgWaSelectChange;
+window.onTgTgSelectChange = onTgTgSelectChange;
