@@ -354,7 +354,6 @@ async function updateDashboard() {
   }
 }
 
-
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -518,7 +517,6 @@ function switchSession(id) {
   }
   updateDashboard();
 }
-
 
 // Update & Dependency Modals
 
@@ -718,7 +716,6 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
-
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -2147,7 +2144,6 @@ async function unmuteUserInUi(userId) {
   }
 }
 
-
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
@@ -2517,7 +2513,6 @@ async function sendTestSuiteToGroup() {
   }
 }
 
-
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
@@ -2598,7 +2593,6 @@ async function saveGroupAiConfig() {
     showToast('Failed to save AI settings', 'danger');
   }
 }
-
 
 // Moderation Federation & Import/Export
 
@@ -2926,7 +2920,6 @@ async function submitImportFederation() {
   }
 }
 
-
 // Telegram Bridge Dashboard UI Logic
 
 async function loadTelegramBridgeData() {
@@ -3122,7 +3115,6 @@ window.deleteTelegramMapping = deleteTelegramMapping;
 window.openAddTelegramMappingModal = openAddTelegramMappingModal;
 window.closeTelegramMappingModal = closeTelegramMappingModal;
 window.saveTelegramMappingModal = saveTelegramMappingModal;
-
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
