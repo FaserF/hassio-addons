@@ -158,12 +158,24 @@ export function handleIncomingMessages(session) {
           st === 27 ||
           st === 31 ||
           st === 71 ||
-          st === 143 ||
+          st === 140 ||
+          st === 141 ||
+          st === 151 ||
+          st === 161 ||
+          st === 166 ||
+          st === 168 ||
+          st === 189 ||
           stNum === 27 ||
           stNum === 31 ||
           stNum === 71 ||
-          stNum === 143 ||
-          stStr.includes('ADD') ||
+          stNum === 140 ||
+          stNum === 141 ||
+          stNum === 151 ||
+          stNum === 161 ||
+          stNum === 166 ||
+          stNum === 168 ||
+          stNum === 189 ||
+          (stStr.includes('ADD') && !stStr.includes('DEMOTE')) ||
           stStr.includes('JOIN')
         ) {
           action = 'add';
@@ -172,27 +184,25 @@ export function handleIncomingMessages(session) {
         } else if (
           st === 28 ||
           st === 33 ||
-          st === 144 ||
           stNum === 28 ||
           stNum === 33 ||
-          stNum === 144 ||
-          stStr.includes('REMOVE')
+          (stStr.includes('REMOVE') && !stStr.includes('DEMOTE'))
         ) {
           action = 'remove';
         } else if (
           st === 29 ||
           st === 30 ||
-          st === 145 ||
-          st === 146 ||
+          st === 147 ||
+          st === 148 ||
           stNum === 29 ||
           stNum === 30 ||
-          stNum === 145 ||
-          stNum === 146 ||
+          stNum === 147 ||
+          stNum === 148 ||
           stStr.includes('PROMOTE') ||
           stStr.includes('DEMOTE')
         ) {
           action =
-            st === 30 || stNum === 30 || st === 146 || stNum === 146 || stStr.includes('DEMOTE')
+            st === 30 || stNum === 30 || st === 148 || stNum === 148 || stStr.includes('DEMOTE')
               ? 'demote'
               : 'promote';
         }
