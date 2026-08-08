@@ -45,7 +45,7 @@ function renderTelegramBots(bots) {
         <div>
           <div style="font-weight:600; font-size:14px;">${escapeHtml(b.name || '@' + b.username)}</div>
           <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">
-            Username: @${escapeHtml(b.username || 'unknown')} | Token: ${escapeHtml(b.token ? b.token.substring(0, 10) + '...' : 'none')}
+            Username: @${escapeHtml(b.username || 'unknown')}
           </div>
         </div>
       </div>

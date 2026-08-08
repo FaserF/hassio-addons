@@ -509,6 +509,9 @@ export function renderDashboard(sessionId) {
             if (pageTitle) pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
         }
 
+        const contentBody = document.querySelector('.content-body');
+        if (contentBody) contentBody.scrollTop = 0;
+
         isChatTabActive = (tabId === 'chats');
         if (isChatTabActive) {
             loadChats();

@@ -959,7 +959,10 @@ html[data-theme='dark'] .banner-warning-icon {
 #tab-dashboard.active,
 #tab-logs.active,
 #tab-moderation.active {
-  flex: 0 0 auto;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
   min-height: max-content;
   padding-bottom: 32px;
 }
