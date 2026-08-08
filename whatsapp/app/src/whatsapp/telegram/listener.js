@@ -19,13 +19,23 @@ export function formatHeader(sourceGroup, senderName, includeGroup, includeSende
   return `[${parts.join(' | ')}]: `;
 }
 
-export async function syncWhatsAppToTelegram(msg, waJid, groupName, senderName, textContent, mediaUrl = null) {
+export async function syncWhatsAppToTelegram(
+  msg,
+  waJid,
+  groupName,
+  senderName,
+  textContent,
+  mediaUrl = null
+) {
   const store = loadTelegramStore();
   if (!store.enabled || !store.bot_token) return;
 
   // Find active mappings for this WhatsApp JID
   const mappings = (store.mappings || []).filter(
-    (m) => m.enabled && m.wa_jid === waJid && (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
+    (m) =>
+      m.enabled &&
+      m.wa_jid === waJid &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
   if (mappings.length === 0) return;
@@ -58,9 +68,11 @@ export async function syncWhatsAppToTelegram(msg, waJid, groupName, senderName, 
 
       let tgResult = null;
       if (mediaUrl) {
-        tgResult = await bot.sendPhoto(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId).catch(() => {
-          return bot.sendDocument(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId);
-        });
+        tgResult = await bot
+          .sendPhoto(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId)
+          .catch(() => {
+            return bot.sendDocument(mapping.tg_chat_id, mediaUrl, fullText, replyToTgMsgId);
+          });
       } else {
         tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId);
       }
@@ -69,7 +81,10 @@ export async function syncWhatsAppToTelegram(msg, waJid, groupName, senderName, 
         recordMessageMap(waMsgId, mapping.tg_chat_id, tgResult.message_id, waJid);
       }
     } catch (err) {
-      logger.error({ error: err.message, waJid, tgChatId: mapping.tg_chat_id }, '❌ Error syncing WA message to Telegram');
+      logger.error(
+        { error: err.message, waJid, tgChatId: mapping.tg_chat_id },
+        '❌ Error syncing WA message to Telegram'
+      );
     }
   }
 }
@@ -99,13 +114,18 @@ export async function processTelegramUpdates() {
 
       const tgChatId = String(msg.chat.id);
       const mappings = (store.mappings || []).filter(
-        (m) => m.enabled && String(m.tg_chat_id) === tgChatId && (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+        (m) =>
+          m.enabled &&
+          String(m.tg_chat_id) === tgChatId &&
+          (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
       );
 
       if (mappings.length === 0) continue;
 
       const senderName = msg.from
-        ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() || msg.from.username || 'Telegram User'
+        ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
+          msg.from.username ||
+          'Telegram User'
         : msg.chat.title || 'Telegram';
       const tgText = msg.text || msg.caption || '';
       if (!tgText) continue; // Skip non-text for basic sync
@@ -133,12 +153,19 @@ export async function processTelegramUpdates() {
             if (quotedWaMsgId) {
               sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
             }
-            const sentWaMsg = await session.client.sendMessage(mapping.wa_jid, { text: outboundWaText }, sendOptions);
+            const sentWaMsg = await session.client.sendMessage(
+              mapping.wa_jid,
+              { text: outboundWaText },
+              sendOptions
+            );
             if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
               recordMessageMap(sentWaMsg.key.id, tgChatId, msg.message_id, mapping.wa_jid);
             }
           } catch (waErr) {
-            logger.error({ error: waErr.message, waJid: mapping.wa_jid }, '❌ Error syncing Telegram message to WhatsApp');
+            logger.error(
+              { error: waErr.message, waJid: mapping.wa_jid },
+              '❌ Error syncing Telegram message to WhatsApp'
+            );
           }
         }
       }

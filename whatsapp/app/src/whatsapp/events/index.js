@@ -77,7 +77,8 @@ export function registerAllListeners(session) {
           .filter(Boolean);
 
         if (update?.id && update?.action && normalizedParticipants.length > 0) {
-          const departureAction = (update.action === 'remove' || update.action === 'leave') ? 'departure' : update.action;
+          const departureAction =
+            update.action === 'remove' || update.action === 'leave' ? 'departure' : update.action;
           const updateWindowKey = `part_upd:${update.id}:${departureAction}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
           if (
@@ -221,7 +222,7 @@ export function handleIncomingMessages(session) {
 
         if (action && normalizedParticipants.length > 0) {
           // Deduplicate events to prevent double processing (since Baileys emits both group-participants.update and messageStubType for the same change)
-          const departureAction = (action === 'remove' || action === 'leave') ? 'departure' : action;
+          const departureAction = action === 'remove' || action === 'leave' ? 'departure' : action;
           const updateWindowKey = `part_upd:${groupId}:${departureAction}:${normalizedParticipants.sort().join(',')}`;
           const now = Date.now();
           if (

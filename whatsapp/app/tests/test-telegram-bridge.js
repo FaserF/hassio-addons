@@ -6,22 +6,10 @@ import { getDefaultTelegramStore } from '../src/whatsapp/telegram/store.js';
 
 describe('Telegram Bridge Unit Tests', () => {
   it('formatHeader respects group and sender inclusion flags', () => {
-    assert.strictEqual(
-      formatHeader('My Group', 'Alice', true, true),
-      '[My Group | Alice]: '
-    );
-    assert.strictEqual(
-      formatHeader('My Group', 'Alice', false, true),
-      '[Alice]: '
-    );
-    assert.strictEqual(
-      formatHeader('My Group', 'Alice', true, false),
-      '[My Group]: '
-    );
-    assert.strictEqual(
-      formatHeader('My Group', 'Alice', false, false),
-      ''
-    );
+    assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '[My Group | Alice]: ');
+    assert.strictEqual(formatHeader('My Group', 'Alice', false, true), '[Alice]: ');
+    assert.strictEqual(formatHeader('My Group', 'Alice', true, false), '[My Group]: ');
+    assert.strictEqual(formatHeader('My Group', 'Alice', false, false), '');
   });
 
   it('getDefaultTelegramStore returns valid default structure', () => {

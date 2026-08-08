@@ -48,10 +48,7 @@ export function loadTelegramStore() {
       return telegramStoreMemory;
     }
   } catch (err) {
-    logger.error(
-      { error: err.message },
-      '⚠️ Failed to read telegram_config.json, using defaults.'
-    );
+    logger.error({ error: err.message }, '⚠️ Failed to read telegram_config.json, using defaults.');
   }
   telegramStoreMemory = getDefaultTelegramStore();
   saveTelegramStore(telegramStoreMemory);

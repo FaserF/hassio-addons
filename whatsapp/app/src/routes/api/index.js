@@ -19,4 +19,3 @@ export function registerAPIRoutes(app) {
   registerModerationRoutes(app);
   registerTelegramRoutes(app);
 }
-

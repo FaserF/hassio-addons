@@ -29,7 +29,9 @@ export function registerTelegramRoutes(app) {
           await bot.fetchUpdates();
         } catch (err) {
           saveTelegramStore(store);
-          return res.status(400).json({ success: false, error: `Invalid Bot Token: ${err.message}` });
+          return res
+            .status(400)
+            .json({ success: false, error: `Invalid Bot Token: ${err.message}` });
         }
       } else {
         store.bot_username = '';
