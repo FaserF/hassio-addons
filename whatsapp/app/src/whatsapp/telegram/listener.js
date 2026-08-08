@@ -1,19 +1,21 @@
 import { loadTelegramStore, updateCachedChat } from './store.js';
 import { getTelegramBotClient } from './bot.js';
 import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './message_map.js';
+import { waToTelegramHtml, anonymizePhoneNumber } from './format.js';
 import { logger } from '../../logger.js';
 import { getSession } from '../../session.js';
 
 let pollingTimer = null;
 let lastUpdateId = 0;
 
-export function formatHeader(sourceGroup, senderName, includeGroup, includeSender) {
+export function formatHeader(sourceGroup, senderName, includeGroup, includeSender, anonymizePhone = false) {
   const parts = [];
   if (includeGroup && sourceGroup) {
     parts.push(sourceGroup);
   }
   if (includeSender && senderName) {
-    parts.push(senderName);
+    const displayName = anonymizePhone ? anonymizePhoneNumber(senderName) : senderName;
+    parts.push(displayName);
   }
   if (parts.length === 0) return '';
   return `[${parts.join(' | ')}]: `;
@@ -57,14 +59,22 @@ export async function syncWhatsAppToTelegram(
     if (isFromMe && !mapping.sync_self_messages) {
       continue;
     }
+    if (mapping.ignore_command_prefixes && textContent) {
+      const prefixes = String(mapping.ignore_command_prefixes).split(',').map(s => s.trim());
+      if (prefixes.some(p => p && textContent.startsWith(p))) {
+        continue;
+      }
+    }
     try {
       const header = formatHeader(
         groupName,
         senderName,
         mapping.include_group_name,
-        mapping.include_sender_name
+        mapping.include_sender_name,
+        mapping.anonymize_phone_numbers
       );
-      const fullText = `${header}${textContent || ''}`;
+      const formattedBody = mapping.convert_formatting !== false ? waToTelegramHtml(textContent) : (textContent || '');
+      const fullText = `${header}${formattedBody}`;
 
       let tgResult = null;
       if (mediaUrl) {

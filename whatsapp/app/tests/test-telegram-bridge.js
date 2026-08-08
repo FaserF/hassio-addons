@@ -3,13 +3,24 @@ import assert from 'node:assert';
 import { formatHeader } from '../src/whatsapp/telegram/listener.js';
 import { TelegramBotClient } from '../src/whatsapp/telegram/bot.js';
 import { getDefaultTelegramStore } from '../src/whatsapp/telegram/store.js';
+import { waToTelegramHtml, anonymizePhoneNumber } from '../src/whatsapp/telegram/format.js';
 
 describe('Telegram Bridge Unit Tests', () => {
-  it('formatHeader respects group and sender inclusion flags', () => {
+  it('formatHeader respects group, sender and anonymize flags', () => {
     assert.strictEqual(formatHeader('My Group', 'Alice', true, true), '[My Group | Alice]: ');
+    assert.strictEqual(formatHeader('My Group', '+491761234567', false, true, true), '[+49176***567]: ');
     assert.strictEqual(formatHeader('My Group', 'Alice', false, true), '[Alice]: ');
     assert.strictEqual(formatHeader('My Group', 'Alice', true, false), '[My Group]: ');
     assert.strictEqual(formatHeader('My Group', 'Alice', false, false), '');
+  });
+
+  it('waToTelegramHtml converts WhatsApp formatting to HTML', () => {
+    assert.strictEqual(waToTelegramHtml('Hello *bold* and _italic_ world'), 'Hello <b>bold</b> and <i>italic</i> world');
+    assert.strictEqual(waToTelegramHtml('Check ~strike~ and ```code block```'), 'Check <s>strike</s> and <code>code block</code>');
+  });
+
+  it('anonymizePhoneNumber masks middle digits', () => {
+    assert.strictEqual(anonymizePhoneNumber('491761234567'), '+49176***567');
   });
 
   it('getDefaultTelegramStore returns valid default structure', () => {
