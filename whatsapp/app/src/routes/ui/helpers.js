@@ -47,7 +47,7 @@ window.addEventListener('unhandledrejection', function (event) {
 
 // Global fetch interceptor to auto-inject X-Auth-Token for all gateway REST endpoints
 if (typeof window !== 'undefined' && window.fetch && !window._fetchAuthPatched) {
-  window._fetchAuthPatched = true;
+  window._fetchAuthPatched = 1;
   const _origFetch = window.fetch;
   window.fetch = function (input, init = {}) {
     let url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url;

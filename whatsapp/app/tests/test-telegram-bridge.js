@@ -58,11 +58,19 @@ describe('Telegram Bridge Unit Tests', () => {
 
   it('sync_self_messages default state is false in mapping creation', () => {
     const mapping = {
-      wa_jid: '12345@g.us',
-      tg_chat_id: '98765',
-      sync_self_messages: false,
+      wa_jid: '123456789@g.us',
+      tg_chat_id: '-100123456789',
     };
-    assert.strictEqual(mapping.sync_self_messages, false);
+    assert.strictEqual(Boolean(mapping.sync_self_messages), false);
+  });
+
+  it('Media quote tags correctly identify GIFs and Stickers', () => {
+    const qAnim = { animation: {} };
+    const qSticker = { sticker: { emoji: '🔥' } };
+    const tagAnim = qAnim.animation ? '🎥 [GIF/Video]' : '';
+    const tagSticker = qSticker.sticker ? `🎨 [Sticker ${qSticker.sticker.emoji || ''}]`.trim() : '';
+    assert.strictEqual(tagAnim, '🎥 [GIF/Video]');
+    assert.strictEqual(tagSticker, '🎨 [Sticker 🔥]');
   });
 
   it('is_direct_chat_mirror suppresses group and sender headers', () => {

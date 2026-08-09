@@ -503,11 +503,12 @@ export async function syncWhatsAppToTelegram(
         );
       }
 
-      if (tgResult && tgResult.message_id && waMsgId) {
+      const sentTgMsgId = tgResult?.message_id || tgResult?.result?.message_id;
+      if (sentTgMsgId && waMsgId) {
         recordMessageMap(
           waMsgId,
           mapping.tg_chat_id,
-          tgResult.message_id,
+          sentTgMsgId,
           waJid,
           isFromMe,
           senderName
@@ -609,7 +610,20 @@ export async function processTelegramUpdates() {
             }
             if (session && session.sock && session.isConnected) {
               try {
-                await session.sock.sendMessage(mapping.wa_jid, { text: voteText });
+                // Delete previous poll vote update message if stored to avoid chat cluttering
+                const oldWaVoteMsgKey = cachedPoll?.last_wa_vote_msg_key;
+                if (oldWaVoteMsgKey && mapping.poll_delete_old_update !== false) {
+                  try {
+                    await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
+                  } catch (_delErr) {}
+                }
+                const sentWaMsg = await session.sock.sendMessage(mapping.wa_jid, { text: voteText });
+                if (sentWaMsg?.key && pollId) {
+                  if (!store.cached_polls) store.cached_polls = {};
+                  if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
+                  store.cached_polls[pollId].last_wa_vote_msg_key = sentWaMsg.key;
+                  saveTelegramStore(store);
+                }
               } catch (e) {
                 logger.error(
                   { error: e.message },
@@ -972,7 +986,20 @@ export async function processTelegramUpdates() {
             const qMsg = msg.reply_to_message;
             const qSender =
               qMsg.from?.first_name || qMsg.from?.username || qMsg.author_signature || 'User';
-            const qText = qMsg.text || qMsg.caption || '';
+            const qMediaTag = qMsg.animation
+              ? '🎥 [GIF/Video]'
+              : qMsg.sticker
+              ? `🎨 [Sticker ${qMsg.sticker.emoji || ''}]`.trim()
+              : qMsg.photo
+              ? '📷 [Photo]'
+              : qMsg.video
+              ? '🎥 [Video]'
+              : qMsg.audio || qMsg.voice
+              ? '🎵 [Audio]'
+              : qMsg.document
+              ? `📄 [Document: ${qMsg.document.file_name || ''}]`.trim()
+              : '';
+            const qText = qMsg.text || qMsg.caption || qMediaTag;
             const snippet = qText
               ? qText.length > 80
                 ? `${qText.substring(0, 80)}...`

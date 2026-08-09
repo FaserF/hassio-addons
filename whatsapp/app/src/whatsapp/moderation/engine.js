@@ -775,8 +775,14 @@ export async function handleModerationMessage(session, event) {
   );
 
   // 0. Auto-Responder / Custom Filters & FAQ triggers check (runs for everyone including admins)
-  if (text && Array.isArray(config.filters)) {
-    for (const filter of config.filters) {
+  const allFilters = [
+    ...(Array.isArray(config.filters) ? config.filters : []),
+    ...(Array.isArray(config.autoresponder?.rules) ? config.autoresponder.rules : []),
+    ...(Array.isArray(config.faq?.rules) ? config.faq.rules : []),
+  ];
+
+  if (text && allFilters.length > 0) {
+    for (const filter of allFilters) {
       if (!filter.trigger) continue;
       let isMatch = false;
       if (filter.is_regex) {
@@ -786,16 +792,8 @@ export async function handleModerationMessage(session, event) {
       } else {
         const cleanTrigger = filter.trigger.toLowerCase().trim();
         const lowerText = text.toLowerCase().trim();
-        // Exact match OR word boundary match (prevents trigger word 'test' from matching '/test')
-        if (lowerText === cleanTrigger) {
+        if (lowerText === cleanTrigger || lowerText.includes(cleanTrigger)) {
           isMatch = true;
-        } else {
-          const escapedTrigger = cleanTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          const wordBoundaryRegex = new RegExp(
-            `(?:^|[^a-zA-Z0-9_/])${escapedTrigger}(?:$|[^a-zA-Z0-9_])`,
-            'i'
-          );
-          isMatch = wordBoundaryRegex.test(lowerText);
         }
       }
 
@@ -1224,11 +1222,18 @@ export async function handleModerationMessage(session, event) {
   }
 
   // 4. Blacklist / Prohibited Words check
-  if (config.blacklist?.enabled && Array.isArray(config.blacklist.words)) {
-    const lowerText = text.toLowerCase();
-    const matchingMode = config.blacklist.matching_mode || 'exact'; // default 'exact'
+  const blacklistWords = [
+    ...(Array.isArray(config.blacklist?.words) ? config.blacklist.words : []),
+    ...(Array.isArray(config.blacklisted_words) ? config.blacklisted_words : []),
+  ];
+  const isBlacklistEnabled =
+    config.blacklist?.enabled !== false && blacklistWords.length > 0;
 
-    for (const word of config.blacklist.words) {
+  if (isBlacklistEnabled) {
+    const lowerText = text.toLowerCase();
+    const matchingMode = config.blacklist?.matching_mode || 'exact'; // default 'exact'
+
+    for (const word of blacklistWords) {
       if (!word) continue;
       const lowerWord = word.toLowerCase();
       let matched = false;

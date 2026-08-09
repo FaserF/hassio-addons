@@ -30,7 +30,7 @@ These rules apply to **every response** without exception:
 
 ---
 
-## Subagent Strategy
+## Subagent Strategy (Antigravity 2.0)
 
 Use subagents proactively whenever a task has independent subtasks, requires heavy research, or would bloat the main context:
 
@@ -130,7 +130,7 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 
 ---
 
-## Coding Rules
+## Coding Rules & Quality Standards
 
 ### Home Assistant Addon Standards
 
@@ -139,6 +139,12 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 - **Base images**: Use pinned `ghcr.io/hassio-addons/base` or `ghcr.io/hassio-addons/base-python` versions. Never use generic `alpine` or `debian` directly.
 - **Multi-arch**: All addons must support at minimum `aarch64` and `amd64`. Set `arch` in `config.yaml` accordingly.
 - **config.yaml schema**: Every option exposed to users must have a matching `schema` entry with correct type. Use `str?`, `bool?`, `int?` for optional fields.
+
+### Mandatory Quality & Code Hygiene (From AegisBot Standards)
+
+- **Traceback Preservation**: NEVER use `raise e`. ALWAYS use `raise ... from e` or a naked `raise` to prevent stack trace destruction in Python scripts/tests.
+- **Silent Failure Prohibition**: `except: pass` is FORBIDDEN. All exceptions must be wrapped and propagated, or logged with context.
+- **No Third-Party Bot Names**: Never mention names or handles of external/third-party bots in Git commits, docstrings, or UI text.
 
 ### Dockerfile Standards
 
