@@ -189,9 +189,7 @@ function updateChatHeaderBadges(jid) {
     const tgEnabled = tgData.enabled !== false;
     const mappings = tgData.mappings || [];
     if (tgEnabled && Array.isArray(mappings)) {
-      activeMapping = mappings.find(
-        (m) => m.enabled !== false && matchJid(m.wa_jid, jid)
-      );
+      activeMapping = mappings.find((m) => m.enabled !== false && matchJid(m.wa_jid, jid));
     }
   }
 
@@ -311,9 +309,7 @@ function renderChatList(chats) {
         const tgEnabled = tgData.enabled !== false;
         const mappings = tgData.mappings || [];
         if (tgEnabled && Array.isArray(mappings)) {
-          activeMapping = mappings.find(
-            (m) => m.enabled !== false && matchJid(m.wa_jid, c.jid)
-          );
+          activeMapping = mappings.find((m) => m.enabled !== false && matchJid(m.wa_jid, c.jid));
         }
       }
 
