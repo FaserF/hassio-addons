@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { resetBotOutboundSpamGuard } from '../src/whatsapp/actions.js';
 import {
   getDefaultModerationStore,
   getGroupModerationConfig,
@@ -6,6 +7,8 @@ import {
   saveModerationStore,
   clearModerationStoreCache,
 } from '../src/whatsapp/moderation/store.js';
+
+
 import {
   issueUserWarning,
   clearUserWarnings,
@@ -17,6 +20,7 @@ import {
   formatMessageTemplate,
   cleanCaptchaInput,
   findPendingCaptcha,
+  clearParticipantEventDeduper,
 } from '../src/whatsapp/moderation/engine.js';
 import {
   isSameUser,
@@ -527,15 +531,21 @@ try {
     'Direct generator documentation link path'
   );
 
+  // 6.6: Bot join event -> Bot welcome message (with documentation URL)
+  resetBotOutboundSpamGuard();
+  clearParticipantEventDeduper();
   let botWelcomeSent = false;
   let botWelcomeText = '';
   const mockSessionBotJoin = {
     ...mockSession,
     sock: {
       ...mockSession.sock,
+      user: { id: '491761234599@s.whatsapp.net' },
       sendMessage: async (jid, content) => {
-        botWelcomeSent = true;
-        botWelcomeText = content.text;
+        if (content && content.text && content.text.includes('Documentation')) {
+          botWelcomeSent = true;
+          botWelcomeText = content.text;
+        }
         return { key: { id: 'bot_welcome_msg_id' } };
       },
     },
@@ -544,7 +554,7 @@ try {
   await handleModerationParticipantUpdate(mockSessionBotJoin, {
     id: '1203630123456789@g.us',
     action: 'add',
-    participants: ['491761234567@s.whatsapp.net'],
+    participants: ['491761234599@s.whatsapp.net'],
   });
 
   assert.strictEqual(botWelcomeSent, true, 'Bot welcome message should be sent on bot join');

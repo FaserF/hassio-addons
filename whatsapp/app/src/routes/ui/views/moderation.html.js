@@ -329,6 +329,13 @@ export default () => `
                             </div>
                             <div class="mod-feature-block mod-feature-block-full" style="margin-top:16px;">
                                 <div class="mod-feature-header">
+                                    <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-robot"></i></div>
+                                    <div><div class="mod-feature-title">Bot Outbound Anti-Spam Shield 🛡️</div><div class="mod-feature-desc">Prevents bot loops and accidental message floods. Automatically mutes bot replies for <code>msgs_in_5s * group_members</code> seconds if the bot sends 5+ messages in 5 seconds in this chat. (Exempts Telegram Relay messages).</div></div>
+                                </div>
+                                <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-bot-enabled" checked><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable Bot Outbound Rate Limit &amp; Loop Protection (Enabled by Default)</span></div>
+                            </div>
+                            <div class="mod-feature-block mod-feature-block-full" style="margin-top:16px;">
+                                <div class="mod-feature-header">
                                     <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-comment-slash"></i></div>
                                     <div><div class="mod-feature-title">Notify Bypassed Moderation Actions</div><div class="mod-feature-desc">Send an explanatory message in group when a moderation action (spam link, lock, blacklist) is intentionally skipped because the sender is a Group Admin.</div></div>
                                 </div>
@@ -336,6 +343,7 @@ export default () => `
                             </div>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> Save Anti-Spam Config</button></div>
+
                     </div>
 
                     <!-- FEDERATION -->
@@ -638,22 +646,61 @@ export default () => `
                                             <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
                                         </label>
                                     </div>
-                                    <div id="mod-autotest-options" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
-                                        <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
-                                            <input type="checkbox" id="mod-autotest-safe-only" checked>
-                                            <span><i class="fas fa-shield-alt" style="color:var(--success);"></i> Safe-Only Commands</span>
-                                        </label>
-                                        <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
-                                            <span>Delay:</span>
-                                            <input type="number" id="mod-autotest-delay" class="mod-number-input" value="1000" min="200" max="10000" style="width:70px;">
-                                            <span>ms</span>
+                                     <div id="mod-autotest-options" style="display:none; flex-direction:column; gap:10px; width:100%; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                                                    <input type="checkbox" id="mod-autotest-safe-only" checked>
+                                                    <span><i class="fas fa-shield-alt" style="color:var(--success);"></i> Safe-Only Commands</span>
+                                                </label>
+                                                <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                                                    <span>Delay:</span>
+                                                    <input type="number" id="mod-autotest-delay" class="mod-number-input" value="1000" min="200" max="10000" style="width:70px;">
+                                                    <span>ms</span>
+                                                </div>
+                                            </div>
+                                            <button id="btn-run-autotest" class="btn btn-primary btn-sm" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
                                         </div>
-                                        <button id="btn-run-autotest" class="btn btn-primary btn-sm" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
+                                        
+                                        <!-- Subtest Selection Matrix -->
+                                        <div style="background:var(--bg-app); border:1px solid var(--border-color); border-radius:6px; padding:10px; margin-top:4px;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                                <label class="mod-field-label" style="margin:0; font-size:11px;"><i class="fas fa-list-check"></i> Select Moderation Features to Test</label>
+                                                <div style="display:flex; gap:4px;">
+                                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="selectAllModSubtests(true)">Select All</button>
+                                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="selectAllModSubtests(false)">Select None</button>
+                                                </div>
+                                            </div>
+                                            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:4px; font-size:11px;">
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="diagnostics" checked> <span>🛠️ Diagnostic Commands</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="addressing" checked> <span>👤 User Addressing</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="custom_cmds" checked> <span>🤖 Custom Commands</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="locks" checked> <span>🔒 Content Locks</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="blacklist" checked> <span>🚫 Word Blacklist</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="spam_links" checked> <span>🔗 Platform Spam Links</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="warnings" checked> <span>⚠️ Warnings &amp; Decay</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="captcha" checked> <span>👤 Welcome &amp; Captcha</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="antiraid" checked> <span>⚡ Anti-Raid &amp; Flood</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="federation" checked> <span>🌐 Global Federation</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="ai" checked> <span>🧠 Gemini AI Assistant</span></label>
+                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="bot_antispam" checked> <span>🛡️ Bot Outbound Rate Limit</span></label>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                                 <!-- Live Log Streaming Container -->
-                                <div id="mod-autotest-log-stream" style="display:none; margin-top:12px; padding:10px; background:#181818; border:1px solid #333; border-radius:6px; font-family:Consolas, monospace; font-size:11px; color:#33ff33; max-height:180px; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
-                                    <div style="color:#aaa; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:6px; font-weight:600;"><i class="fas fa-terminal"></i> Live Test Log Stream</div>
+                                <div id="mod-autotest-log-stream" style="display:none; margin-top:12px; padding:10px; background:#181818; border:1px solid #333; border-radius:6px; font-family:Consolas, monospace; font-size:11px; color:#33ff33; max-height:220px; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; color:#aaa; border-bottom:1px solid #333; padding-bottom:6px; margin-bottom:6px; font-weight:600;">
+                                        <span><i class="fas fa-terminal"></i> Live Moderation Auto-Test Stream</span>
+                                        <div style="display:flex; gap:6px;">
+                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
+                                        </div>
+                                    </div>
+                                    <div id="mod-autotest-progress-bar-container" style="display:none; height:4px; background:#333; border-radius:2px; margin-bottom:8px; overflow:hidden;">
+                                        <div id="mod-autotest-progress-bar" style="height:100%; width:0%; background:#33ff33; transition:width 0.2s;"></div>
+                                    </div>
                                     <div id="mod-autotest-log-content"></div>
                                 </div>
                             </div>

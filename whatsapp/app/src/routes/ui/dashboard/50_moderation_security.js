@@ -83,7 +83,12 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    bot_anti_spam: {
+      enabled: Boolean(document.getElementById('mod-antispam-bot-enabled')?.checked),
+      max_messages_5s: 5,
+    },
     notify_deleted_action: Boolean(document.getElementById('mod-notify-deleted-action')?.checked),
+
     notify_bypassed_actions: Boolean(
       document.getElementById('mod-notify-bypassed-actions')?.checked
     ),
@@ -378,6 +383,40 @@ function toggleAutoTestModeUI(enabled) {
   }
 }
 
+function selectAllModSubtests(select) {
+  const checkboxes = document.querySelectorAll('.mod-subtest-cb');
+  checkboxes.forEach((cb) => {
+    cb.checked = Boolean(select);
+  });
+}
+
+function clearAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  const progressBar = document.getElementById('mod-autotest-progress-bar');
+  const progressContainer = document.getElementById('mod-autotest-progress-bar-container');
+  if (logContent) logContent.innerHTML = '';
+  if (progressBar) progressBar.style.width = '0%';
+  if (progressContainer) progressContainer.style.display = 'none';
+}
+
+function exportAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  if (!logContent || !logContent.innerText.trim()) {
+    showToast('No auto-test logs available to export.', 'warning');
+    return;
+  }
+  const text = logContent.innerText;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `moderation-autotest-log-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 async function runAutonomousModerationTest() {
   if (!currentModGroup) {
     showToast('Please select a group first.', 'warning');
@@ -385,43 +424,75 @@ async function runAutonomousModerationTest() {
   }
 
   const safeOnly = Boolean(document.getElementById('mod-autotest-safe-only')?.checked);
-  const delayMs = parseInt(document.getElementById('mod-autotest-delay')?.value, 10) || 1000;
-
+  const delayMs = parseInt(document.getElementById('mod-autotest-delay')?.value, 10) || 500;
+  const runBtn = document.getElementById('btn-run-autotest');
   const logStream = document.getElementById('mod-autotest-log-stream');
   const logContent = document.getElementById('mod-autotest-log-content');
-  const runBtn = document.getElementById('btn-run-autotest');
+  const progressBar = document.getElementById('mod-autotest-progress-bar');
+  const progressContainer = document.getElementById('mod-autotest-progress-bar-container');
+
+  const selected_subtests = Array.from(document.querySelectorAll('.mod-subtest-cb:checked')).map(
+    (cb) => cb.value
+  );
+
+  if (selected_subtests.length === 0) {
+    showToast('Please select at least one moderation subtest feature to test.', 'warning');
+    return;
+  }
 
   if (logStream) logStream.style.display = 'block';
+  if (progressContainer) progressContainer.style.display = 'block';
+  if (progressBar) progressBar.style.width = '0%';
   if (logContent) logContent.innerHTML = '';
   if (runBtn) {
     runBtn.disabled = true;
     runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
   }
 
-  const appendLog = (msg, isError = false) => {
+  const appendLog = (msg, styleType = 'normal') => {
     if (!logContent) return;
     const div = document.createElement('div');
-    div.style.color = isError ? '#ff5555' : '#33ff33';
+    if (styleType === 'error') {
+      div.style.color = '#ff5555';
+    } else if (styleType === 'category') {
+      div.style.color = '#00e5ff';
+      div.style.fontWeight = 'bold';
+      div.style.marginTop = '6px';
+    } else if (styleType === 'header') {
+      div.style.color = '#ffcc00';
+      div.style.fontWeight = 'bold';
+    } else if (styleType === 'success') {
+      div.style.color = '#33ff33';
+    } else {
+      div.style.color = '#cccccc';
+    }
     div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
     logContent.appendChild(div);
     if (logStream) logStream.scrollTop = logStream.scrollHeight;
   };
 
-  appendLog(`🚀 Initiating autonomous auto-test for group: ${currentModGroup} (Safe-Only: ${safeOnly}, Delay: ${delayMs}ms)...`);
+  appendLog(
+    `🚀 Initiating autonomous auto-test for group: ${currentModGroup} (Safe-Only: ${safeOnly}, Delay: ${delayMs}ms)...`,
+    'header'
+  );
 
   try {
-    const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/autotest', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
-      },
-      body: JSON.stringify({
-        group_id: currentModGroup,
-        safe_only: safeOnly,
-        delay_ms: delayMs,
-      }),
-    });
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/autotest',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+        },
+        body: JSON.stringify({
+          group_id: currentModGroup,
+          safe_only: safeOnly,
+          delay_ms: delayMs,
+          selected_subtests,
+        }),
+      }
+    );
 
     if (!res.ok) {
       const errText = await res.text();
@@ -448,25 +519,34 @@ async function runAutonomousModerationTest() {
         if (!line.trim()) continue;
         try {
           const event = JSON.parse(line);
-          if (event.type === 'progress') {
+          if (event.type === 'log') {
+            const style = event.level === 'category_start' ? 'category' : event.level === 'error' ? 'error' : 'normal';
+            appendLog(event.message, style);
+          } else if (event.type === 'progress') {
+            const pct = Math.round((event.step / event.total) * 100);
+            if (progressBar) progressBar.style.width = `${pct}%`;
             const statusSymbol = event.status === 'PASSED' ? '✅' : '❌';
             appendLog(
-              `Step ${event.step}/${event.total}: Executed "${event.command}" -> ${event.status} ${statusSymbol} (${event.details})`,
-              event.status !== 'PASSED'
+              `Step ${event.step}/${event.total} [${event.category.split('.')[0]}]: "${event.command}" -> ${event.status} ${statusSymbol} (${event.details})`,
+              event.status === 'PASSED' ? 'success' : 'error'
             );
           } else if (event.type === 'complete') {
-            appendLog(`----------------------------------------`);
-            appendLog(`✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`);
-            appendLog(`📩 Markdown summary report delivered to WhatsApp group!`);
+            if (progressBar) progressBar.style.width = '100%';
+            appendLog(`----------------------------------------`, 'header');
+            appendLog(
+              `✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`,
+              'success'
+            );
+            appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
             showToast('Auto-test completed successfully!', 'success');
           }
         } catch (_err) {
-          appendLog(line);
+          appendLog(line, 'normal');
         }
       }
     }
   } catch (err) {
-    appendLog(`❌ Auto-test error: ${err.message}`, true);
+    appendLog(`❌ Auto-test error: ${err.message}`, 'error');
     showToast('Auto-test failed: ' + err.message, 'danger');
   } finally {
     if (runBtn) {
@@ -475,4 +555,5 @@ async function runAutonomousModerationTest() {
     }
   }
 }
+
 

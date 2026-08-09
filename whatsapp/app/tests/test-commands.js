@@ -4,6 +4,7 @@ import {
   setGroupModerationConfig,
   loadModerationStore,
 } from '../src/whatsapp/moderation/store.js';
+import { resetBotOutboundSpamGuard } from '../src/whatsapp/actions.js';
 
 let failed = 0;
 function assert(condition, message) {
@@ -18,6 +19,8 @@ function assert(condition, message) {
 async function runTests() {
   console.log('🧪 Running Command Engine Unit Tests (Full Suite)');
   console.log('==================================================');
+  resetBotOutboundSpamGuard();
+
 
   // Phase 1 Commands
   assert(registry.getCommand('help') !== undefined, 'help command is registered');
@@ -175,6 +178,7 @@ async function runTests() {
     { command: 'adminsecret', response: 'Secret', admin_only: true },
   ];
   setGroupModerationConfig('1203630123456789@g.us', groupConfig);
+  resetBotOutboundSpamGuard();
 
   let helpOutput = '';
   const mockSessionHelp = {
@@ -319,6 +323,7 @@ async function runTests() {
   console.log('✅ PASSED: Multi-line safe command block execution verified');
 
   // Test conflicting command batch detection
+  resetBotOutboundSpamGuard();
   batchOutputMessages = [];
   const conflictingMultiLineText = '!ping\n!kick @user\n!ban @user\n!id';
   await processCommand(

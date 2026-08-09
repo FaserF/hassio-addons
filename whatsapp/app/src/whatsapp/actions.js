@@ -7,11 +7,127 @@ import { formatHATime } from '../utils/format.js';
 import { markUserAsSeen } from '../state.js';
 import { sessions, enqueue } from '../session.js';
 import { sendHANotification } from '../ha.js';
+import { getGroupModerationConfig, loadModerationStore } from './moderation/store.js';
+
+// Sliding window store for bot outbound message rate limiting
+// Map<jid, Array<timestamp>>
+const botOutboundWindows = new Map();
+// Map<jid, number> (timestamp until muted)
+const botMutedUntilMap = new Map();
+
+/**
+ * Resets the bot outbound rate limit window and mute state.
+ * If jid is null, resets for all chats.
+ */
+export function resetBotOutboundSpamGuard(jid = null) {
+  if (jid) {
+    botOutboundWindows.delete(jid);
+    botMutedUntilMap.delete(jid);
+  } else {
+    botOutboundWindows.clear();
+    botMutedUntilMap.clear();
+  }
+}
+
+
+
+/**
+ * Checks and updates the bot outbound anti-spam rate limiter for a specific chat/group JID.
+ * EXEMPT: Telegram Relay messages (options.isTelegramRelay) or options.skipSpamGuard.
+ */
+export async function checkBotOutboundSpamGuard(session, jid, options = {}) {
+  if (options?.isTelegramRelay || options?.skipSpamGuard) {
+    return { allowed: true };
+  }
+
+  const now = Date.now();
+  const targetJid = String(jid || '').trim();
+  if (!targetJid) return { allowed: true };
+
+  // 1. Check if chat is currently stummschaltet (muted)
+  const mutedUntil = botMutedUntilMap.get(targetJid) || 0;
+  if (now < mutedUntil) {
+    const remainingSec = Math.ceil((mutedUntil - now) / 1000);
+    logger.warn(
+      { jid: maskData(targetJid), remainingSec },
+      '🚫 Bot reply blocked by Outbound Anti-Spam Mute'
+    );
+    return { allowed: false, remainingSec };
+  }
+
+  // 2. Check moderation config for this group / chat
+  let enabled = true;
+  let maxMessagesIn5s = 5;
+  try {
+    const modStore = loadModerationStore();
+    if (modStore && modStore.global_enabled === false) {
+      enabled = false;
+    } else {
+      const groupCfg = getGroupModerationConfig(targetJid);
+      if (groupCfg && groupCfg.antispam && groupCfg.antispam.bot_anti_spam) {
+        enabled = groupCfg.antispam.bot_anti_spam.enabled !== false;
+        maxMessagesIn5s = groupCfg.antispam.bot_anti_spam.max_messages_5s || 5;
+      }
+    }
+  } catch (_e) {
+    // Default to enabled
+  }
+
+  if (!enabled) {
+    return { allowed: true };
+  }
+
+  // 3. Update 5s sliding window
+  const windowMs = 5000;
+  let timestamps = botOutboundWindows.get(targetJid) || [];
+  timestamps = timestamps.filter((t) => now - t < windowMs);
+  timestamps.push(now);
+  botOutboundWindows.set(targetJid, timestamps);
+
+  // 4. Check if limit is exceeded
+  if (timestamps.length >= maxMessagesIn5s) {
+    let memberCount = 2; // Default for 1:1 chats
+    if (targetJid.includes('@g.us')) {
+      memberCount = 10; // Default estimate for groups
+      try {
+        if (session?.sock?.groupMetadata) {
+          const meta = await session.sock.groupMetadata(targetJid).catch(() => null);
+          if (meta && Array.isArray(meta.participants) && meta.participants.length > 0) {
+            memberCount = meta.participants.length;
+          }
+        }
+      } catch (_e) {}
+    }
+
+    const msgCount = timestamps.length;
+    // Formula: X = Nachrichten_in_5s * Mitgliederauszahl_Gruppe
+    const muteSeconds = Math.max(10, msgCount * memberCount);
+    const muteDurationMs = muteSeconds * 1000;
+
+    botMutedUntilMap.set(targetJid, now + muteDurationMs);
+    botOutboundWindows.set(targetJid, []);
+
+    logger.warn(
+      { jid: maskData(targetJid), msgCount, memberCount, muteSeconds },
+      '⚠️ Bot Outbound Anti-Spam limit reached! Muting bot responses in chat.'
+    );
+
+    return {
+      allowed: true,
+      triggerWarning: true,
+      muteSeconds,
+      msgCount,
+      memberCount,
+    };
+  }
+
+  return { allowed: true };
+}
 
 /**
  * Sends a relative-path reply and tracks it in stats.
  */
-export async function reply(session, jid, content, quotedMsg = null) {
+export async function reply(session, jid, content, quotedMsg = null, options = {}) {
   if (!session.sock) {
     logger.warn(
       { sessionId: session.id, jid: maskData(jid) },
@@ -19,6 +135,27 @@ export async function reply(session, jid, content, quotedMsg = null) {
     );
     return null;
   }
+
+  // Check Outbound Anti-Spam Guard (Exempt: Telegram Relay / skipSpamGuard)
+  if (!options?.skipSpamGuard && !options?.isTelegramRelay) {
+    const spamCheck = await checkBotOutboundSpamGuard(session, jid, options);
+    if (!spamCheck.allowed) {
+      return null;
+    }
+    if (spamCheck.triggerWarning) {
+      const warningText = `⚠️ *Bot Anti-Spam Schutz*: Outbound-Limit (${spamCheck.msgCount} Nachrichten in 5s) in diesem Chat überschritten.\n\nDer Bot pausiert automatische Antworten in dieser Gruppe/Chat für *${spamCheck.muteSeconds} Sekunden* (${spamCheck.msgCount} Msg × ${spamCheck.memberCount} Mitglieder), um Spam-Loops und Fehler zu vermeiden.`;
+      try {
+        await enqueue(session, () =>
+          session.sock.sendMessage(
+            jid,
+            { text: warningText },
+            quotedMsg ? { quoted: quotedMsg } : {}
+          )
+        );
+      } catch (_e) {}
+    }
+  }
+
   try {
     // Build sendMessage options — attach quoted for context in busy groups
     const sendOptions = quotedMsg ? { quoted: quotedMsg } : {};
@@ -48,6 +185,7 @@ export async function reply(session, jid, content, quotedMsg = null) {
     return null;
   }
 }
+
 
 export function trackSent(session, target, message) {
   const timestamp = formatHATime(new Date());

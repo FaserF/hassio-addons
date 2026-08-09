@@ -778,6 +778,14 @@ function populateTelegramTestMappingDropdown(mappings = []) {
 }
 window.populateTelegramTestMappingDropdown = populateTelegramTestMappingDropdown;
 
+function selectAllTgSubtests(select) {
+  const checkboxes = document.querySelectorAll('.tg-subtest-cb');
+  checkboxes.forEach((cb) => {
+    cb.checked = Boolean(select);
+  });
+}
+window.selectAllTgSubtests = selectAllTgSubtests;
+
 let tgTestPollInterval = null;
 
 async function runTelegramBridgeTest() {
@@ -793,8 +801,17 @@ async function runTelegramBridgeTest() {
   const mapping_id = mappingSelect?.value;
   const direction = directionSelect?.value || 'wa_to_tg';
 
+  const selected_subtests = Array.from(document.querySelectorAll('.tg-subtest-cb:checked')).map(
+    (cb) => cb.value
+  );
+
   if (!mapping_id) {
     showToast('Please select a target mapping to run integration test', 'warning');
+    return;
+  }
+
+  if (selected_subtests.length === 0) {
+    showToast('Please select at least one subtest to execute', 'warning');
     return;
   }
 
@@ -808,7 +825,7 @@ async function runTelegramBridgeTest() {
     statusBadge.style.background = '#0088cc';
     statusBadge.textContent = 'RUNNING';
   }
-  if (progressText) progressText.textContent = 'Progress: 0 / 7 steps';
+  if (progressText) progressText.textContent = `Progress: 0 / ${selected_subtests.length} steps`;
   if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
   if (logOutput) logOutput.textContent = 'Starting integration test...\n';
 
@@ -816,8 +833,9 @@ async function runTelegramBridgeTest() {
     const res = await fetch('api/telegram/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mapping_id, direction }),
+      body: JSON.stringify({ mapping_id, direction, selected_subtests }),
     });
+
 
     const data = await res.json();
     if (!data.success) {

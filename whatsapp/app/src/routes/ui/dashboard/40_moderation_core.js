@@ -79,6 +79,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antiraid-max',
   'mod-antiraid-win',
   'mod-antispam-links-enabled',
+  'mod-antispam-bot-enabled',
   'mod-notify-deleted-action',
   'mod-notify-bypassed-actions',
   'mod-ai-enabled',

@@ -162,7 +162,9 @@ export function getDefaultGroupConfig() {
     antispam: {
       flood_protection: { enabled: false, max_messages: 5, window_seconds: 5, action: 'mute' },
       anti_raid: { enabled: false, max_joins: 5, window_seconds: 10, action: 'lockdown' },
+      bot_anti_spam: { enabled: true, max_messages_5s: 5 },
       notify_bypassed_actions: false, // Send explanation note in group when an admin bypasses a moderation action
+
       blocked_invite_platforms: {
         whatsapp: true,
         telegram: true,

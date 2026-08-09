@@ -762,7 +762,8 @@ export async function handleModerationMessage(session, event) {
           {
             text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is on the Approved Users Whitelist.`,
           },
-          rawMsg
+          rawMsg,
+          { skipSpamGuard: true }
         );
       }
     }
@@ -883,7 +884,8 @@ export async function handleModerationMessage(session, event) {
           {
             text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is a Group Admin.`,
           },
-          rawMsg
+          rawMsg,
+          { skipSpamGuard: true }
         );
       }
     }
@@ -1570,7 +1572,11 @@ export function formatMessageTemplate(
     .replace(/{time}/g, timeStr);
 }
 
-const participantEventDeduper = new Map(); // key -> timestamp
+export const participantEventDeduper = new Map(); // key -> timestamp
+
+export function clearParticipantEventDeduper() {
+  participantEventDeduper.clear();
+}
 
 export async function handleModerationParticipantUpdate(session, update) {
   const groupId = update.id;
@@ -1685,7 +1691,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
 
         const botWelcomeText = generateBotWelcomeMessage(isBotAdmin);
-        await reply(session, groupId, { text: botWelcomeText }, rawMsg);
+        await reply(session, groupId, { text: botWelcomeText }, rawMsg, { skipSpamGuard: true });
         continue;
       }
 
@@ -1738,7 +1744,8 @@ export async function handleModerationParticipantUpdate(session, update) {
                 text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
                 mentions: [participantJid],
               },
-              rawMsg
+              rawMsg,
+              { skipSpamGuard: true }
             );
           }
         } catch (kickErr) {

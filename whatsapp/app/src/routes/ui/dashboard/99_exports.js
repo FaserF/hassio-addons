@@ -70,4 +70,8 @@ window.copyAllFromBlock = copyAllFromBlock;
 window.sendTestSuiteToGroup = sendTestSuiteToGroup;
 window.toggleAutoTestModeUI = toggleAutoTestModeUI;
 window.runAutonomousModerationTest = runAutonomousModerationTest;
+window.selectAllModSubtests = selectAllModSubtests;
+window.clearAutoTestLogs = clearAutoTestLogs;
+window.exportAutoTestLogs = exportAutoTestLogs;
+
 
