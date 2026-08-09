@@ -155,21 +155,86 @@ export async function syncWhatsAppToTelegram(
       const threadId = mapping.tg_thread_id || null;
 
       let tgResult = null;
-      const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
-      if (mediaSource) {
+      if (mediaType === 'location' && msg.message?.locationMessage) {
+        const loc = msg.message.locationMessage;
+        tgResult = await bot.request('sendLocation', {
+          chat_id: mapping.tg_chat_id,
+          latitude: loc.degreesLatitude,
+          longitude: loc.degreesLongitude,
+          reply_to_message_id: replyToTgMsgId || undefined,
+          message_thread_id: threadId || undefined,
+          disable_notification: silent,
+        }).catch(() => null);
+        if (tgResult && fullText.trim() && !fullText.includes('📍 [Location Share')) {
+          await bot.sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent).catch(() => null);
+        }
+      } else if (mediaType === 'contact') {
+        const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage?.contacts?.[0];
+        const vcard = contactObj?.vcard || '';
+        const displayName =
+          contactObj?.displayName ||
+          (vcard ? vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
+          'Contact';
+        const phoneMatch = vcard ? vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : '';
+
+        if (phoneMatch || displayName) {
+          tgResult = await bot.request('sendContact', {
+            chat_id: mapping.tg_chat_id,
+            phone_number: phoneMatch || '0000000',
+            first_name: displayName,
+            vcard: vcard || undefined,
+            reply_to_message_id: replyToTgMsgId || undefined,
+            message_thread_id: threadId || undefined,
+            disable_notification: silent,
+          }).catch(() => null);
+        }
+        if (!tgResult) {
+          tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+        }
+      } else if (mediaType === 'poll') {
+        const pollMode = mapping.poll_sync_mode || 'text_diagram';
+        const pollObj =
+          msg.message?.pollCreationMessage ||
+          msg.message?.pollCreationMessageV2 ||
+          msg.message?.pollCreationMessageV3;
+        const question = pollObj?.name || 'Poll';
+        const options = (pollObj?.options || []).map((o) => o.optionName).filter(Boolean);
+
+        if (pollMode === 'native_sync' || pollMode === 'native_no_vote') {
+          if (question && options.length > 0) {
+            tgResult = await bot.sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent).catch(() => null);
+          }
+        }
+        if (!tgResult) {
+          if (pollMode === 'once_no_update') {
+            const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;
+            tgResult = await bot.sendMessage(mapping.tg_chat_id, shortPollText, replyToTgMsgId, threadId, silent);
+          } else {
+            // text_diagram mode or fallback
+            if (mapping.poll_send_text_diagram !== false) {
+              tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+            }
+          }
+        }
+      } else if (mediaType === 'poll_update') {
+        const pollMode = mapping.poll_sync_mode || 'text_diagram';
+        if (pollMode === 'once_no_update') {
+          // Do not send updates
+          return;
+        }
+        if (mapping.poll_send_update_message !== false) {
+          tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+        }
+        return;
+      }
+
+      const mediaSource = (mediaPath && fs.existsSync(mediaPath)) ? mediaPath : mediaUrl;
+      if (!tgResult && mediaSource) {
         if (mediaType === 'sticker') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendSticker',
-              mapping.tg_chat_id,
-              mediaSource,
-              'sticker',
-              '',
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
+          tgResult = await bot.sendMediaFile('sendSticker', mapping.tg_chat_id, mediaSource, 'sticker', '', replyToTgMsgId, threadId, silent).catch(() => null);
+          if (tgResult && fullText.trim()) {
+            await bot.sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent).catch(() => null);
+          }
         } else if (mediaType === 'image') {
           tgResult = await bot
             .sendMediaFile(
@@ -360,6 +425,10 @@ export async function processTelegramUpdates() {
           );
 
           for (const mapping of mappings) {
+            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            if (pollMode === 'once_no_update') continue;
+            if (mapping.poll_send_update_message === false) continue;
+
             let session = getSession('default');
             if (!session || !session.sock || !session.isConnected) {
               for (const s of sessions.values()) {
@@ -487,7 +556,7 @@ export async function processTelegramUpdates() {
             if (fileUrl) {
               mediaPayload = {
                 url: fileUrl,
-                type: msg.sticker.is_animated || msg.sticker.is_video ? 'document' : 'image',
+                type: msg.sticker.is_animated || msg.sticker.is_video ? 'document' : 'sticker',
                 mimetype: msg.sticker.is_video ? 'video/webm' : 'image/webp',
               };
             }
@@ -507,7 +576,12 @@ export async function processTelegramUpdates() {
             const bestPhoto = msg.photo[msg.photo.length - 1];
             const fileUrl = await bot.getFileUrl(bestPhoto.file_id);
             if (fileUrl) {
-              mediaPayload = { url: fileUrl, type: 'image', mimetype: 'image/jpeg' };
+              mediaPayload = {
+                url: fileUrl,
+                type: 'image',
+                mimetype: 'image/jpeg',
+                mediaGroupId: msg.media_group_id || null,
+              };
             }
           } else if (msg.video) {
             tgText = tgText || '[🎥 Video]';
@@ -517,6 +591,18 @@ export async function processTelegramUpdates() {
                 url: fileUrl,
                 type: 'video',
                 mimetype: msg.video.mime_type || 'video/mp4',
+                mediaGroupId: msg.media_group_id || null,
+              };
+            }
+          } else if (msg.video_note) {
+            tgText = tgText || '[📹 Video Note]';
+            const fileUrl = await bot.getFileUrl(msg.video_note.file_id);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: 'video/mp4',
+                ptv: true,
               };
             }
           } else if (msg.voice) {
@@ -550,6 +636,26 @@ export async function processTelegramUpdates() {
                 fileName: msg.document.file_name,
               };
             }
+          } else if (msg.contact) {
+            const c = msg.contact;
+            const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Contact';
+            const phone = c.phone_number || '';
+            const vcardStr = `BEGIN:VCARD\nVERSION:3.0\nN:${c.last_name || ''};${c.first_name || ''};;;\nFN:${fullName}\nTEL;type=CELL;type=VOICE;waid=${phone.replace(/\D/g, '')}:+${phone.replace(/\D/g, '')}\nEND:VCARD`;
+            mediaPayload = {
+              type: 'contact',
+              displayName: fullName,
+              vcard: vcardStr,
+            };
+            tgText = tgText || `👤 [Contact: ${fullName} (${phone})]`;
+          } else if (msg.location) {
+            const loc = msg.location;
+            const isLive = Boolean(loc.live_period || msg.live_location);
+            mediaPayload = {
+              type: isLive ? 'live_location' : 'location',
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+            };
+            tgText = tgText || (isLive ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]` : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
           } else if (msg.poll) {
             const p = msg.poll;
             const pollOptions = (p.options || []).map((o) => o.text);
@@ -628,32 +734,56 @@ export async function processTelegramUpdates() {
               }
 
               let waContent = { text: outboundWaText };
-              if (mediaPayload && mediaPayload.url) {
-                if (mediaPayload.type === 'image') {
-                  waContent = { image: { url: mediaPayload.url }, caption: outboundWaText };
-                } else if (mediaPayload.type === 'video') {
+              if (mediaPayload) {
+                if (mediaPayload.type === 'location' || mediaPayload.type === 'liveLocation') {
                   waContent = {
-                    video: { url: mediaPayload.url },
-                    caption: outboundWaText,
-                    gifPlayback: Boolean(msg.animation),
+                    location: {
+                      degreesLatitude: mediaPayload.latitude,
+                      degreesLongitude: mediaPayload.longitude,
+                    },
                   };
-                } else if (mediaPayload.type === 'audio') {
+                } else if (mediaPayload.type === 'live_location') {
                   waContent = {
-                    audio: { url: mediaPayload.url },
-                    mimetype: mediaPayload.mimetype,
-                    ptt: Boolean(msg.voice),
+                    liveLocation: {
+                      degreesLatitude: mediaPayload.latitude,
+                      degreesLongitude: mediaPayload.longitude,
+                    },
                   };
-                } else if (mediaPayload.type === 'sticker') {
+                } else if (mediaPayload.type === 'contact') {
                   waContent = {
-                    sticker: { url: mediaPayload.url },
+                    contacts: {
+                      displayName: mediaPayload.displayName,
+                      contacts: [{ vcard: mediaPayload.vcard }],
+                    },
                   };
-                } else if (mediaPayload.type === 'document') {
-                  waContent = {
-                    document: { url: mediaPayload.url },
-                    mimetype: mediaPayload.mimetype,
-                    fileName: mediaPayload.fileName || 'file',
-                    caption: outboundWaText,
-                  };
+                } else if (mediaPayload.url) {
+                  if (mediaPayload.type === 'image') {
+                    waContent = { image: { url: mediaPayload.url }, caption: outboundWaText };
+                  } else if (mediaPayload.type === 'video') {
+                    waContent = {
+                      video: { url: mediaPayload.url },
+                      caption: outboundWaText,
+                      gifPlayback: Boolean(msg.animation),
+                      ptv: Boolean(mediaPayload.ptv),
+                    };
+                  } else if (mediaPayload.type === 'audio') {
+                    waContent = {
+                      audio: { url: mediaPayload.url },
+                      mimetype: mediaPayload.mimetype,
+                      ptt: Boolean(msg.voice),
+                    };
+                  } else if (mediaPayload.type === 'sticker') {
+                    waContent = {
+                      sticker: { url: mediaPayload.url },
+                    };
+                  } else if (mediaPayload.type === 'document') {
+                    waContent = {
+                      document: { url: mediaPayload.url },
+                      mimetype: mediaPayload.mimetype,
+                      fileName: mediaPayload.fileName || 'file',
+                      caption: outboundWaText,
+                    };
+                  }
                 }
               }
 
@@ -662,6 +792,13 @@ export async function processTelegramUpdates() {
                 waContent,
                 sendOptions
               );
+              if (mediaPayload && mediaPayload.type === 'sticker' && outboundWaText.trim()) {
+                await session.sock.sendMessage(
+                  mapping.wa_jid,
+                  { text: outboundWaText.trim() },
+                  sentWaMsg && sentWaMsg.key?.id ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } } : {}
+                ).catch(() => null);
+              }
               if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
                 recordMessageMap(
                   sentWaMsg.key.id,

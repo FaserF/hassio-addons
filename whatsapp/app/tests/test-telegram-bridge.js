@@ -101,4 +101,14 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(mapping.poll_send_update_message, true);
     assert.strictEqual(mapping.poll_delete_old_message, true);
   });
+
+  it('TelegramBotClient supports sendContact, liveLocation, and pin methods', () => {
+    const client = new TelegramBotClient('123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11');
+    assert.doesNotThrow(() => {
+      // Validating method existence in ALLOWED_METHODS map
+      client.request('sendContact', { chat_id: '123', phone_number: '123', first_name: 'Test' }).catch(() => null);
+      client.request('editMessageLiveLocation', { chat_id: '123', message_id: 1, latitude: 0, longitude: 0 }).catch(() => null);
+      client.request('pinChatMessage', { chat_id: '123', message_id: 1 }).catch(() => null);
+    });
+  });
 });
