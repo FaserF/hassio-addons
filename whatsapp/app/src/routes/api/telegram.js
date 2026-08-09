@@ -1,5 +1,5 @@
 import { loadTelegramStore, saveTelegramStore } from '../../whatsapp/telegram/store.js';
-import { TelegramBotClient } from '../../whatsapp/telegram/bot.js';
+import { TelegramBotClient, sanitizeTelegramToken } from '../../whatsapp/telegram/bot.js';
 
 export function registerTelegramRoutes(app) {
   // GET /api/telegram/config
@@ -38,8 +38,9 @@ export function registerTelegramRoutes(app) {
 
     let botInfo;
     let username;
-    const cleanToken = String(token).trim();
+    let cleanToken;
     try {
+      cleanToken = sanitizeTelegramToken(token);
       const bot = new TelegramBotClient(cleanToken);
       botInfo = await bot.getMe();
       username = botInfo ? botInfo.username || '' : '';

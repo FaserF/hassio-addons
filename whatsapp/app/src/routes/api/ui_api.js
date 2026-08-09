@@ -354,7 +354,8 @@ export function registerUiApiRoutes(app) {
             m.location ||
             m.contact ||
             m.eventData ||
-            m.mediaType
+            m.mediaType ||
+            m.id
         )
         .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -373,6 +374,27 @@ export function registerUiApiRoutes(app) {
       const p = session._presenceStore?.get(jid);
       if (!p || Date.now() - p.lastSeen > 10000) return res.json({ typing: false });
       res.json({ typing: p.status === 'composing', status: p.status });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
+
+  app.post('/api/poll/vote', uiAuthMiddleware, async (req, res) => {
+    try {
+      const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+      const session = getSession(sessionId);
+      if (!session || !session.sock || !session.isConnected) {
+        return res.status(400).json({ detail: 'WhatsApp session not connected' });
+      }
+      const { jid, option } = req.body;
+      if (!jid || !option) {
+        return res.status(400).json({ detail: 'Missing jid or option' });
+      }
+
+      await session.sock.sendMessage(jid, {
+        text: `🗳️ Vote: ${option}`,
+      });
+      res.json({ success: true, option });
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }

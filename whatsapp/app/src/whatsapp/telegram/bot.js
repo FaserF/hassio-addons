@@ -2,6 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { loadTelegramStore, updateCachedChat } from './store.js';
 
+const TELEGRAM_TOKEN_REGEX = /^[0-9]{6,}:[A-Za-z0-9_-]{20,}$/;
+
+export function sanitizeTelegramToken(token) {
+  const cleanToken = String(token || '').trim();
+  if (!TELEGRAM_TOKEN_REGEX.test(cleanToken)) {
+    throw new Error('Invalid Telegram bot token format');
+  }
+  return cleanToken;
+}
+
 const ALLOWED_METHODS = new Map([
   ['getMe', 'getMe'],
   ['getUpdates', 'getUpdates'],
@@ -27,18 +37,17 @@ const ALLOWED_METHODS = new Map([
 
 export class TelegramBotClient {
   constructor(token) {
-    this.token = token || '';
+    this.token = sanitizeTelegramToken(token);
   }
 
   async request(method, payload = {}) {
     const sanitizedMethod = ALLOWED_METHODS.get(method);
-    if (!this.token) {
-      throw new Error('Telegram Bot Token is not configured');
-    }
     if (!sanitizedMethod) {
       throw new Error(`Invalid or unsupported Telegram API method: ${method}`);
     }
-    const url = `https://api.telegram.org/bot${this.token}/${sanitizedMethod}`;
+    const safeToken = encodeURIComponent(this.token);
+    const safeMethod = encodeURIComponent(sanitizedMethod);
+    const url = `https://api.telegram.org/bot${safeToken}/${safeMethod}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,7 +71,8 @@ export class TelegramBotClient {
   async getFileUrl(fileId) {
     const file = await this.getFile(fileId);
     if (file && file.file_path) {
-      return `https://api.telegram.org/file/bot${this.token}/${file.file_path}`;
+      const safeToken = encodeURIComponent(this.token);
+      return `https://api.telegram.org/file/bot${safeToken}/${file.file_path}`;
     }
     return null;
   }
@@ -210,7 +220,9 @@ export class TelegramBotClient {
       if (!sanitizedMethod) {
         throw new Error(`Invalid or unsupported Telegram API method: ${method}`);
       }
-      const url = `https://api.telegram.org/bot${this.token}/${sanitizedMethod}`;
+      const safeToken = encodeURIComponent(this.token);
+      const safeMethod = encodeURIComponent(sanitizedMethod);
+      const url = `https://api.telegram.org/bot${safeToken}/${safeMethod}`;
       const response = await fetch(url, {
         method: 'POST',
         body: formData,

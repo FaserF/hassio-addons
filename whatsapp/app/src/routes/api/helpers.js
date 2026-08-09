@@ -14,7 +14,12 @@ export async function ensureConnected(session, maxWaitMs = 3000) {
 }
 
 export function getMessageText(msg) {
-  if (!msg || !msg.message) return '';
+  if (!msg) return '';
+  if (typeof msg === 'string') return msg;
+  if (msg._text) return msg._text;
+  if (msg.text && typeof msg.text === 'string') return msg.text;
+  if (!msg.message) return '';
+
   let m = msg.message;
   if (m.ephemeralMessage) m = m.ephemeralMessage.message;
   if (m.viewOnceMessage) m = m.viewOnceMessage.message;
@@ -27,6 +32,7 @@ export function getMessageText(msg) {
     m.extendedTextMessage?.text ||
     m.imageMessage?.caption ||
     m.videoMessage?.caption ||
+    m.documentMessage?.caption ||
     m.buttonsMessage?.contentText ||
     m.buttonsMessage?.text ||
     m.buttonsMessage?.headerType ||
@@ -37,11 +43,23 @@ export function getMessageText(msg) {
     m.listMessage?.title ||
     m.buttonsResponseMessage?.selectedDisplayText ||
     m.templateButtonReplyMessage?.selectedId ||
+    m.templateButtonReplyMessage?.selectedDisplayText ||
+    m.interactiveResponseMessage?.body?.text ||
+    m.groupInviteMessage?.caption ||
+    m.locationMessage?.name ||
+    m.locationMessage?.address ||
+    (m.contactMessage ? `👤 Contact: ${m.contactMessage.displayName || 'Card'}` : '') ||
+    (m.locationMessage ? '📍 Location' : '') ||
+    (m.liveLocationMessage ? '📍 Live Location' : '') ||
+    (m.eventMessage ? `📅 Event: ${m.eventMessage.name || 'Event'}` : '') ||
     (m.imageMessage ? '🖼️ Image' : '') ||
     (m.videoMessage ? '📹 Video' : '') ||
     (m.audioMessage ? '🎵 Audio' : '') ||
+    (m.stickerMessage ? '🎨 Sticker' : '') ||
     (m.documentMessage ? '📄 Document' : '') ||
-    (m.pollCreationMessage ? `📊 Poll: ${m.pollCreationMessage.name}` : '') ||
+    (m.pollCreationMessage || m.pollCreationMessageV2 || m.pollCreationMessageV3
+      ? `📊 Poll: ${(m.pollCreationMessage || m.pollCreationMessageV2 || m.pollCreationMessageV3).name || 'Poll'}`
+      : '') ||
     ''
   );
 }

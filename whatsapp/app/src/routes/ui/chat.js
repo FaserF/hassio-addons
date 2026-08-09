@@ -53,13 +53,39 @@ function startNewChatSubmit(e) {
   showToast(`Chat initialized for ${displayName}`, 'success');
 }
 
+let chatModConfigCache = null;
+let chatTgConfigCache = null;
+
+async function fetchChatBadgesConfig() {
+  try {
+    const [modRes, tgRes] = await Promise.all([
+      fetch(basePath + 'api/moderation/config').catch(() => null),
+      fetch(basePath + 'api/telegram/config').catch(() => null),
+    ]);
+    if (modRes && modRes.ok) {
+      const json = await modRes.json();
+      if (json.success && json.data) chatModConfigCache = json.data;
+    }
+    if (tgRes && tgRes.ok) {
+      const json = await tgRes.json();
+      if (json.success && json.data) chatTgConfigCache = json.data;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch chat badges config:', e);
+  }
+}
+
 async function loadChats() {
   if (!isChatTabActive) return;
   try {
+    await fetchChatBadgesConfig();
     const response = await fetch(basePath + 'api/chats?session_id=' + currentSession);
     if (!response.ok) return;
     allChats = await response.json();
-    const chatsKey = JSON.stringify(allChats);
+    const chatsKey =
+      JSON.stringify(allChats) +
+      JSON.stringify(chatModConfigCache) +
+      JSON.stringify(chatTgConfigCache);
     if (chatsKey !== lastChatsCache) {
       lastChatsCache = chatsKey;
       renderChatList(allChats);
@@ -67,6 +93,41 @@ async function loadChats() {
   } catch (e) {
     console.error('Failed to load chats:', e);
   }
+}
+
+function navigateToModerationGroup(event, jid) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (window.switchTab) {
+    window.switchTab('moderation');
+  }
+  setTimeout(() => {
+    if (window.selectModerationGroup) {
+      window.selectModerationGroup(jid);
+    }
+    const select = document.getElementById('mod-group-select');
+    if (select) {
+      select.value = jid;
+      select.dispatchEvent(new Event('change'));
+    }
+  }, 120);
+}
+
+function navigateToTelegramMapping(event, jid, mappingId) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (window.switchTab) {
+    window.switchTab('telegram');
+  }
+  setTimeout(() => {
+    if (window.editTelegramMapping && mappingId) {
+      window.editTelegramMapping(mappingId);
+    }
+  }, 120);
 }
 
 function renderChatList(chats) {
@@ -102,6 +163,44 @@ function renderChatList(chats) {
         fetchAvatar(c.jid);
       }
 
+      // Check Moderation active state for this group
+      let hasModActive = false;
+      if (
+        c.jid.endsWith('@g.us') &&
+        chatModConfigCache &&
+        chatModConfigCache.global_enabled !== false
+      ) {
+        const grpCfg = chatModConfigCache.groups?.[c.jid];
+        if (grpCfg && grpCfg.enabled !== false) {
+          hasModActive = true;
+        }
+      }
+
+      // Check Telegram Bridge active state for this chat/group
+      let activeMapping = null;
+      if (
+        chatTgConfigCache &&
+        chatTgConfigCache.enabled !== false &&
+        Array.isArray(chatTgConfigCache.mappings)
+      ) {
+        activeMapping = chatTgConfigCache.mappings.find(
+          (m) => m.enabled !== false && String(m.wa_jid) === String(c.jid)
+        );
+      }
+
+      const modBadgeHtml = hasModActive
+        ? `<span class="chat-badge-icon mod-badge" onclick="navigateToModerationGroup(event, '${c.jid}')" title="Moderation Active — Click to configure"><i class="fas fa-shield-alt"></i></span>`
+        : '';
+
+      const tgBadgeHtml = activeMapping
+        ? `<span class="chat-badge-icon tg-badge" onclick="navigateToTelegramMapping(event, '${c.jid}', '${activeMapping.id}')" title="Telegram Bridge Active — Click to edit mapping"><i class="fab fa-telegram-plane"></i></span>`
+        : '';
+
+      const badgesContainer =
+        modBadgeHtml || tgBadgeHtml
+          ? `<span class="chat-badges">${modBadgeHtml}${tgBadgeHtml}</span>`
+          : '';
+
       return `
             <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeHtml(c.name)}')">
                 <div class="chat-avatar" data-avatar-jid="${c.jid}">
@@ -109,7 +208,7 @@ function renderChatList(chats) {
                 </div>
                 <div class="chat-info">
                     <div class="chat-meta">
-                        <span class="chat-name">${escapeHtml(c.name)}</span>
+                        <span class="chat-name">${escapeHtml(c.name)}${badgesContainer}</span>
                         <span class="chat-time">${timeStr}</span>
                     </div>
                     <div class="chat-last-msg">${escapeHtml(c.preview || 'No messages')}</div>
@@ -236,30 +335,52 @@ function selectChat(jid, name) {
 let ctxTargetMsg = null;
 let replyToMsg = null;
 
+async function voteOnPollOption(e, optText) {
+  if (e) e.stopPropagation();
+  if (!activeChatJid) return;
+  try {
+    const res = await fetch(basePath + 'api/poll/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': apiToken },
+      body: JSON.stringify({ jid: activeChatJid, option: optText, session_id: currentSession }),
+    });
+    if (res.ok) {
+      showToast(`Voted: "${optText}" 🗳️`, 'success');
+      loadChatMessages(activeChatJid);
+    } else {
+      showToast('Failed to cast vote', 'danger');
+    }
+  } catch (err) {
+    showToast('Failed to cast vote', 'danger');
+  }
+}
+
 function renderPollBlock(m) {
   if (!m.poll) return '';
   const p = m.poll;
   const title = escapeHtml(p.name || 'Poll');
   const optionsHtml = (p.options || [])
-    .map(
-      (opt, idx) => `
-    <div class="msg-poll-option">
+    .map((opt, idx) => {
+      const optStr = typeof opt === 'string' ? opt : opt.text || `Option ${idx + 1}`;
+      const escapedOpt = escapeAttr(optStr);
+      return `
+    <div class="msg-poll-option" onclick="voteOnPollOption(event, '${escapedOpt}')" style="cursor:pointer;" title="Click to vote for '${escapeAttr(optStr)}'">
       <div class="msg-poll-option-name">
-        <i class="far fa-circle" style="font-size:12px;margin-right:6px;opacity:0.7;"></i>
-        ${escapeHtml(typeof opt === 'string' ? opt : opt.text || `Option ${idx + 1}`)}
+        <i class="far fa-circle msg-poll-check" style="font-size:12px;margin-right:6px;opacity:0.7;"></i>
+        ${escapeHtml(optStr)}
       </div>
       <div class="msg-poll-bar-container">
         <div class="msg-poll-bar-fill" style="width: 0%;"></div>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join('');
 
   return `
     <div class="msg-poll-card">
       <div class="msg-poll-title"><i class="fas fa-poll" style="color:var(--primary);margin-right:8px;"></i>${title}</div>
       <div class="msg-poll-options">${optionsHtml}</div>
-      <div class="msg-poll-footer"><i class="fas fa-info-circle" style="margin-right:4px;"></i>${p.selectableCount > 1 ? 'Select one or more' : 'Select one'}</div>
+      <div class="msg-poll-footer"><i class="fas fa-hand-pointer" style="margin-right:4px;"></i>Click option to vote &middot; ${p.selectableCount > 1 ? 'Multiple Choice' : 'Single Choice'}</div>
     </div>`;
 }
 
@@ -290,6 +411,7 @@ function renderContactBlock(m) {
   const c = m.contact;
   const name = escapeHtml(c.displayName || 'Contact Card');
   const phone = escapeHtml(c.phone || '');
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
 
   return `
     <div class="msg-contact-card">
@@ -300,7 +422,10 @@ function renderContactBlock(m) {
           ${phone ? `<div class="msg-contact-phone">${phone}</div>` : ''}
         </div>
       </div>
-      ${phone ? `<a href="tel:${phone}" class="msg-contact-action"><i class="fas fa-phone-alt" style="margin-right:6px;"></i> Call</a>` : ''}
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        ${cleanPhone ? `<button class="btn btn-primary btn-sm" onclick="selectChat('${cleanPhone}@s.whatsapp.net', '${escapeAttr(name)}')" style="font-size:11.5px;padding:3px 10px;"><i class="fas fa-comment-alt" style="margin-right:4px;"></i> Chat</button>` : ''}
+        ${phone ? `<a href="tel:${phone}" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:3px 10px;text-decoration:none;"><i class="fas fa-phone-alt" style="margin-right:4px;"></i> Call</a>` : ''}
+      </div>
     </div>`;
 }
 
@@ -1112,3 +1237,8 @@ window.openChatInfoDrawer = openChatInfoDrawer;
 window.closeChatInfoDrawer = closeChatInfoDrawer;
 window.sendChatMessage = sendChatMessage;
 window.sendInteractiveReply = sendInteractiveReply;
+window.voteOnPollOption = voteOnPollOption;
+window.navigateToModerationGroup = navigateToModerationGroup;
+window.navigateToTelegramMapping = navigateToTelegramMapping;
+
+

@@ -43,11 +43,10 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.deepStrictEqual(store.mappings, []);
   });
 
-  it('TelegramBotClient throws when token is missing', async () => {
-    const client = new TelegramBotClient('');
-    await assert.rejects(async () => {
-      await client.getMe();
-    }, /Telegram Bot Token is not configured/);
+  it('TelegramBotClient throws when token is missing', () => {
+    assert.throws(() => {
+      new TelegramBotClient('');
+    }, /Invalid Telegram bot token format/);
   });
 
   it('TelegramBotClient rejects invalid or path traversal method', async () => {

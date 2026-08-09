@@ -1690,6 +1690,40 @@ code {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.chat-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.chat-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  user-select: none;
+}
+.chat-badge-icon:hover {
+  transform: scale(1.25);
+  filter: brightness(1.2);
+}
+.chat-badge-icon.mod-badge {
+  background: rgba(37, 211, 102, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+}
+.chat-badge-icon.tg-badge {
+  background: rgba(0, 136, 204, 0.15);
+  color: #0088cc;
+  border: 1px solid rgba(0, 136, 204, 0.3);
+}
 .chat-time {
   font-size: 11px;
   color: var(--text-muted);
@@ -1815,13 +1849,15 @@ code {
 
 .msg-bubble {
   max-width: 68%;
-  min-width: 80px;
-  padding: 8px 12px 6px;
-  border-radius: 18px;
+  min-width: 0;
+  padding: 6px 10px 5px 11px;
+  border-radius: 12px;
   position: relative;
   box-shadow: var(--shadow-bubble);
   word-break: break-word;
   animation: bubbleIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: inline-block;
+  width: fit-content;
 }
 @keyframes bubbleIn {
   from {
@@ -1836,12 +1872,12 @@ code {
 .msg-bubble-row.outbound .msg-bubble {
   background-color: var(--bg-bubble-out);
   color: var(--text-bubble-out);
-  border-bottom-right-radius: 5px;
+  border-bottom-right-radius: 4px;
 }
 .msg-bubble-row.inbound .msg-bubble {
   background-color: var(--bg-bubble-in);
   color: var(--text-bubble-in);
-  border-bottom-left-radius: 5px;
+  border-bottom-left-radius: 4px;
 }
 [data-theme='light'] .msg-bubble-row.inbound .msg-bubble {
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -1849,16 +1885,23 @@ code {
 
 .msg-bubble-text {
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.4;
   word-break: break-word;
   white-space: pre-wrap;
+  display: inline;
 }
 .msg-bubble-time {
   font-size: 10px;
-  margin-top: 3px;
-  text-align: right;
-  opacity: 0.55;
-  letter-spacing: 0.1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  float: right;
+  margin-left: 8px;
+  margin-top: 4px;
+  opacity: 0.65;
+  white-space: nowrap;
+  user-select: none;
+  vertical-align: baseline;
 }
 .msg-sender-name {
   font-size: 11.5px;
