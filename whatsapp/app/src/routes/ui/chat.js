@@ -661,7 +661,11 @@ function renderMediaBlock(m) {
   if (url.startsWith('/media/') || url.startsWith('media/')) {
     url = basePath + url.replace(/^\//, '');
   }
-  if (typeof apiToken !== 'undefined' && apiToken && (url.includes('api/') || url.includes('media/'))) {
+  if (
+    typeof apiToken !== 'undefined' &&
+    apiToken &&
+    (url.includes('api/') || url.includes('media/'))
+  ) {
     if (!url.includes('token=')) {
       url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(apiToken);
     }
