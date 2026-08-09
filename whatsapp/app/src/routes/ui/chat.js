@@ -138,12 +138,13 @@ function matchJid(a, b, extraName = '') {
   const sA = String(a).trim().toLowerCase();
   const sB = String(b).trim().toLowerCase();
   if (sA === sB) return true;
-  const rawA = sA.split('@')[0];
-  const rawB = sB.split('@')[0];
-  if (rawA === rawB) return true;
+  const rawA = sA.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+  const rawB = sB.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+  if (rawA && rawB && rawA === rawB) return true;
+  if (sA.split('@')[0] === sB.split('@')[0]) return true;
   if (extraName) {
     const cName = String(extraName).trim().toLowerCase();
-    if (sA === cName || rawA === cName) return true;
+    if (sA === cName || sA.split('@')[0] === cName) return true;
   }
   return false;
 }
@@ -666,8 +667,11 @@ function renderMediaBlock(m) {
     return '';
   }
   let url = m.mediaUrl;
-  if (url.startsWith('/media/') || url.startsWith('media/')) {
-    url = basePath + url.replace(/^\//, '');
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!url.startsWith('/')) url = '/' + url;
+    if (basePath && !url.startsWith(basePath)) {
+      url = basePath + url.replace(/^\//, '');
+    }
   }
   if (
     typeof apiToken !== 'undefined' &&
@@ -679,7 +683,8 @@ function renderMediaBlock(m) {
     }
   }
   if (m.mediaType === 'image' || (m.mediaMime && m.mediaMime.startsWith('image/'))) {
-    return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-image\\' style=\\'color:var(--primary);\\'></i> Photo Attachment</div>';" loading="lazy">`;
+    const fallbackText = m.caption ? escapeHtml(m.caption) : 'Photo Attachment';
+    return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-image\\' style=\\'color:var(--primary);\\'></i> ${fallbackText}</div>';" loading="lazy">`;
   }
   if (m.mediaType === 'video' || (m.mediaMime && m.mediaMime.startsWith('video/'))) {
     return `<video class="msg-media msg-media-video" controls><source src="${url}" type="${escapeHtml(m.mediaMime || 'video/mp4')}"></video>`;
@@ -819,7 +824,7 @@ async function loadChatMessages(jid) {
             ?.emoji || '';
 
         const hasContent = Boolean(
-          textBlock ||
+          (textBlock && textBlock.trim()) ||
           captionBlock ||
           mediaBlock ||
           quoteBlock ||
@@ -831,7 +836,7 @@ async function loadChatMessages(jid) {
         );
 
         if (!hasContent) {
-          const sysText = m.text || m.caption;
+          const sysText = (m.text || m.caption || '').trim();
           if (sysText) {
             return `<div class="msg-system-row"><span class="msg-system-pill">${escapeHtml(sysText)}</span></div>`;
           }
@@ -1274,18 +1279,20 @@ function closeAllOverlays(e) {
   if (em) em.style.display = 'none';
 }
 
-document.addEventListener('click', (e) => closeAllOverlays(e));
-document.addEventListener('contextmenu', (e) => {
-  if (!e.target.closest('.msg-bubble-row')) closeAllOverlays(e);
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeAllOverlays();
-    closeChatInfoDrawer();
-    closeChatSearch();
-    closeNewChatModal();
-  }
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => closeAllOverlays(e));
+  document.addEventListener('contextmenu', (e) => {
+    if (!e.target.closest('.msg-bubble-row')) closeAllOverlays(e);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllOverlays();
+      closeChatInfoDrawer();
+      closeChatSearch();
+      closeNewChatModal();
+    }
+  });
+}
 
 async function sendChatMessage(event) {
   event.preventDefault();
@@ -1435,37 +1442,39 @@ function closeChatInfoDrawer() {
   if (drawer) drawer.style.display = 'none';
 }
 
-window.loadChats = loadChats;
-window.filterChatList = filterChatList;
-window.goBackToChatList = goBackToChatList;
-window.selectChat = selectChat;
-window.openNewChatModal = openNewChatModal;
-window.closeNewChatModal = closeNewChatModal;
-window.startNewChatSubmit = startNewChatSubmit;
-window.showContextMenu = showContextMenu;
-window.showReactionBtn = showReactionBtn;
-window.showReactionPicker = showReactionPicker;
-window.sendReaction = sendReaction;
-window.ctxReply = ctxReply;
-window.ctxCopy = ctxCopy;
-window.ctxForward = ctxForward;
-window.ctxReact = ctxReact;
-window.ctxDelete = ctxDelete;
-window.startReply = startReply;
-window.cancelReply = cancelReply;
-window.toggleEmojiPicker = toggleEmojiPicker;
-window.insertEmoji = insertEmoji;
-window.sendFileMessage = sendFileMessage;
-window.toggleChatSearch = toggleChatSearch;
-window.searchChatMessages = searchChatMessages;
-window.searchInActiveChat = searchInActiveChat;
-window.closeChatSearch = closeChatSearch;
-window.openChatInfoDrawer = openChatInfoDrawer;
-window.closeChatInfoDrawer = closeChatInfoDrawer;
-window.sendChatMessage = sendChatMessage;
-window.sendInteractiveReply = sendInteractiveReply;
-window.voteOnPollOption = voteOnPollOption;
-window.navigateToModerationGroup = navigateToModerationGroup;
-window.navigateToTelegramMapping = navigateToTelegramMapping;
-window.switchNewChatTab = switchNewChatTab;
-window.createNewGroupSubmit = createNewGroupSubmit;
+if (typeof window !== 'undefined') {
+  window.loadChats = loadChats;
+  window.filterChatList = filterChatList;
+  window.goBackToChatList = goBackToChatList;
+  window.selectChat = selectChat;
+  window.openNewChatModal = openNewChatModal;
+  window.closeNewChatModal = closeNewChatModal;
+  window.startNewChatSubmit = startNewChatSubmit;
+  window.showContextMenu = showContextMenu;
+  window.showReactionBtn = showReactionBtn;
+  window.showReactionPicker = showReactionPicker;
+  window.sendReaction = sendReaction;
+  window.ctxReply = ctxReply;
+  window.ctxCopy = ctxCopy;
+  window.ctxForward = ctxForward;
+  window.ctxReact = ctxReact;
+  window.ctxDelete = ctxDelete;
+  window.startReply = startReply;
+  window.cancelReply = cancelReply;
+  window.toggleEmojiPicker = toggleEmojiPicker;
+  window.insertEmoji = insertEmoji;
+  window.sendFileMessage = sendFileMessage;
+  window.toggleChatSearch = toggleChatSearch;
+  window.searchChatMessages = searchChatMessages;
+  window.searchInActiveChat = searchInActiveChat;
+  window.closeChatSearch = closeChatSearch;
+  window.openChatInfoDrawer = openChatInfoDrawer;
+  window.closeChatInfoDrawer = closeChatInfoDrawer;
+  window.sendChatMessage = sendChatMessage;
+  window.sendInteractiveReply = sendInteractiveReply;
+  window.voteOnPollOption = voteOnPollOption;
+  window.navigateToModerationGroup = navigateToModerationGroup;
+  window.navigateToTelegramMapping = navigateToTelegramMapping;
+  window.switchNewChatTab = switchNewChatTab;
+  window.createNewGroupSubmit = createNewGroupSubmit;
+}
