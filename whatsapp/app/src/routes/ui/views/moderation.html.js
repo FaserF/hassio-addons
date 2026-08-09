@@ -530,8 +530,7 @@ export default () => `
                         <div class="mod-field-group"><label class="mod-field-label">Import JSON Configuration</label><textarea id="mod-import-text" class="mod-textarea" style="height:100px;" placeholder="Paste moderation JSON configuration here…"></textarea></div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="importGroupModerationConfig()"><i class="fas fa-upload"></i> Import Config</button></div>
                     </div>
-
-                    </div>
+                </div>
 
 
                 <!-- Global Default Rules Modal -->
@@ -625,92 +624,94 @@ export default () => `
 
                 <!-- Test Commands Generator Modal -->
                 <div id="test-commands-modal" class="modal-overlay">
-                    <div class="modal-card" style="max-width:700px;">
-                        <div class="modal-header">
-                            <h3 style="display:flex;align-items:center;gap:10px;">
+                    <div class="modal-card" style="max-width:820px; width:90%; max-height:85vh; display:flex; flex-direction:column; background:var(--bg-card); border-radius:12px; overflow:hidden; border:1px solid var(--border-color);">
+                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border-color); flex-shrink:0;">
+                            <h3 style="display:flex;align-items:center;gap:10px; margin:0; font-size:16px; font-weight:600;">
                                 <span style="width:32px;height:32px;border-radius:8px;background:rgba(41,182,246,0.15);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
                                     <i class="fas fa-vial" style="color:var(--info);font-size:14px;"></i>
                                 </span>
                                 Test Suite &amp; Commands Generator 🧪
                             </h3>
-                            <button class="modal-close-btn" onclick="closeTestCommandsModal()"><i class="fas fa-times"></i></button>
+                            <button class="modal-close-btn" onclick="closeTestCommandsModal()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="modal-body" style="max-height:520px; overflow-y:auto;">
-                            <!--                            <div class="card" style="background:var(--card-bg); border:1px solid var(--border-color); padding:12px; border-radius:8px; margin-bottom:14px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div class="modal-body" style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+                            <!-- Autonomous Auto-Test Card -->
+                            <div class="card" style="background:var(--bg-app); border:1px solid var(--border-color); padding:16px; border-radius:8px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <span style="font-weight:600; font-size:13px; color:var(--text-main);"><i class="fas fa-robot" style="color:var(--primary);"></i> Autonomous Auto-Test Engine</span>
+                                        <span style="font-weight:600; font-size:14px; color:var(--text-main);"><i class="fas fa-robot" style="color:var(--primary);"></i> Autonomous Auto-Test Engine</span>
                                         <label class="mod-toggle-switch mod-toggle-sm">
                                             <input type="checkbox" id="mod-autotest-toggle" checked onchange="toggleAutoTestModeUI(this.checked)">
                                             <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
                                         </label>
                                     </div>
-                                     <div id="mod-autotest-options" style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
-                                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
-                                                    <input type="checkbox" id="mod-autotest-safe-only" checked>
-                                                    <span><i class="fas fa-shield-alt" style="color:var(--success);"></i> Safe-Only Commands</span>
-                                                </label>
-                                                <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
-                                                    <span>Delay:</span>
-                                                    <input type="number" id="mod-autotest-delay" class="mod-number-input" value="500" min="50" max="10000" style="width:70px;">
-                                                    <span>ms</span>
-                                                </div>
-                                            </div>
-                                            <button id="btn-run-autotest" class="btn btn-primary btn-sm" style="font-weight:700; padding:4px 16px;" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
-                                        </div>
-                                        
-                                        <!-- Subtest Selection Matrix -->
-                                        <div style="background:var(--bg-app); border:1px solid var(--border-color); border-radius:6px; padding:10px; margin-top:4px;">
-                                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                                <label class="mod-field-label" style="margin:0; font-size:11px;"><i class="fas fa-list-check"></i> Select Moderation Features to Test</label>
-                                                <div style="display:flex; gap:4px;">
-                                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="selectAllModSubtests(true)">Select All</button>
-                                                    <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="selectAllModSubtests(false)">Select None</button>
-                                                </div>
-                                            </div>
-                                            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:4px; font-size:11px;">
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="diagnostics" checked> <span>🛠️ Diagnostic Commands</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="addressing" checked> <span>👤 User Addressing</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="custom_cmds" checked> <span>🤖 Custom Commands</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="locks" checked> <span>🔒 Content Locks</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="blacklist" checked> <span>🚫 Word Blacklist</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="spam_links" checked> <span>🔗 Platform Spam Links</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="warnings" checked> <span>⚠️ Warnings &amp; Decay</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="captcha" checked> <span>👤 Welcome &amp; Captcha</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="antiraid" checked> <span>⚡ Anti-Raid &amp; Flood</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="federation" checked> <span>🌐 Global Federation</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="ai" checked> <span>🧠 Gemini AI Assistant</span></label>
-                                                <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="bot_antispam" checked> <span>🛡️ Bot Outbound Rate Limit</span></label>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                 </div>
-                                <!-- Live Log Streaming Container -->
-                                <div id="mod-autotest-log-stream" style="display:block; margin-top:12px; padding:10px; background:#181818; border:1px solid #333; border-radius:6px; font-family:Consolas, monospace; font-size:11px; color:#33ff33; max-height:220px; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; color:#aaa; border-bottom:1px solid #333; padding-bottom:6px; margin-bottom:6px; font-weight:600;">
-                                        <span><i class="fas fa-terminal"></i> Live Moderation Auto-Test Stream</span>
-                                        <div style="display:flex; gap:6px;">
-                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="copyAutoTestLogs()"><i class="fas fa-copy"></i> Copy All</button>
-                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
-                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
+
+                                <div id="mod-autotest-options" style="display:flex; flex-direction:column; gap:12px; width:100%; border-top:1px solid var(--border-color); padding-top:12px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                                            <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; font-weight:600;">
+                                                <input type="checkbox" id="mod-autotest-safe-only" checked>
+                                                <span><i class="fas fa-shield-alt" style="color:var(--success);"></i> Safe-Only Commands</span>
+                                            </label>
+                                            <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                                                <span style="font-weight:600;">Delay:</span>
+                                                <input type="number" id="mod-autotest-delay" class="mod-number-input" value="500" min="50" max="10000" style="width:70px; height:32px; font-weight:600;">
+                                                <span>ms</span>
+                                            </div>
+                                        </div>
+                                        <button id="btn-run-autotest" class="btn btn-primary btn-sm" style="font-weight:700; padding:6px 18px; display:flex; align-items:center; gap:6px;" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
+                                    </div>
+                                    
+                                    <!-- Subtest Selection Matrix -->
+                                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; padding:12px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                            <label class="mod-field-label" style="margin:0; font-size:11px; font-weight:700;"><i class="fas fa-list-check"></i> Select Moderation Features to Test</label>
+                                            <div style="display:flex; gap:6px;">
+                                                <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="selectAllModSubtests(true)">Select All</button>
+                                                <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="selectAllModSubtests(false)">Select None</button>
+                                            </div>
+                                        </div>
+                                        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:6px; font-size:11px;">
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="diagnostics" checked> <span>🛠️ Diagnostic Commands</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="addressing" checked> <span>👤 User Addressing</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="custom_cmds" checked> <span>🤖 Custom Commands</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="locks" checked> <span>🔒 Content Locks</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="blacklist" checked> <span>🚫 Word Blacklist</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="spam_links" checked> <span>🔗 Platform Spam Links</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="warnings" checked> <span>⚠️ Warnings &amp; Decay</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="captcha" checked> <span>👤 Welcome &amp; Captcha</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="antiraid" checked> <span>⚡ Anti-Raid &amp; Flood</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="federation" checked> <span>🌐 Global Federation</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="ai" checked> <span>🧠 Gemini AI Assistant</span></label>
+                                            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="mod-subtest-cb" value="bot_antispam" checked> <span>🛡️ Bot Outbound Rate Limit</span></label>
                                         </div>
                                     </div>
-                                    <div id="mod-autotest-progress-bar-container" style="display:none; height:4px; background:#333; border-radius:2px; margin-bottom:8px; overflow:hidden;">
-                                        <div id="mod-autotest-progress-bar" style="height:100%; width:0%; background:#33ff33; transition:width 0.2s;"></div>
-                                    </div>
-                                    <div id="mod-autotest-log-content">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</div>
                                 </div>
                             </div>
 
-                            <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+                            <!-- Live Log Streaming Container -->
+                            <div id="mod-autotest-log-stream" style="display:block; padding:12px; background:#111827; border:1px solid #374151; border-radius:8px; font-family:Consolas, Monaco, monospace; font-size:11px; color:#38bdf8; max-height:240px; overflow-y:auto; white-space:pre-wrap; line-height:1.5;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; color:#9ca3af; border-bottom:1px solid #374151; padding-bottom:6px; margin-bottom:8px; font-weight:600;">
+                                    <span><i class="fas fa-terminal"></i> Live Moderation Auto-Test Stream</span>
+                                    <div style="display:flex; gap:6px;">
+                                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="copyAutoTestLogs()"><i class="fas fa-copy"></i> Copy All</button>
+                                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
+                                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
+                                    </div>
+                                </div>
+                                <div id="mod-autotest-progress-bar-container" style="display:none; height:4px; background:#374151; border-radius:2px; margin-bottom:8px; overflow:hidden;">
+                                    <div id="mod-autotest-progress-bar" style="height:100%; width:0%; background:#38bdf8; transition:width 0.2s;"></div>
+                                </div>
+                                <div id="mod-autotest-log-content" style="color:#38bdf8;">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</div>
+                            </div>
+
+                            <p style="font-size:13px; color:var(--text-muted); margin:4px 0;">
                                 Ready-to-use test commands and sample payload triggers customized specifically for the selected group. Copy and paste them into WhatsApp to test all features:
                             </p>
                             <div id="test-commands-modal-content"></div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer" style="padding:12px 20px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; flex-shrink:0;">
                             <button class="btn btn-secondary btn-sm" onclick="closeTestCommandsModal()">Close</button>
                         </div>
                     </div>

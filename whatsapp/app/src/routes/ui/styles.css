@@ -929,9 +929,11 @@ html[data-theme='dark'] .top-header {
   padding-bottom: 64px;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  flex: 1 1 0%;
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: 100%;
+  height: calc(100vh - var(--header-height));
+  max-height: calc(100vh - var(--header-height));
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 24px;
