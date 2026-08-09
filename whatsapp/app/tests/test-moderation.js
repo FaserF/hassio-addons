@@ -8,7 +8,6 @@ import {
   clearModerationStoreCache,
 } from '../src/whatsapp/moderation/store.js';
 
-
 import {
   issueUserWarning,
   clearUserWarnings,

@@ -520,7 +520,12 @@ async function runAutonomousModerationTest() {
         try {
           const event = JSON.parse(line);
           if (event.type === 'log') {
-            const style = event.level === 'category_start' ? 'category' : event.level === 'error' ? 'error' : 'normal';
+            const style =
+              event.level === 'category_start'
+                ? 'category'
+                : event.level === 'error'
+                  ? 'error'
+                  : 'normal';
             appendLog(event.message, style);
           } else if (event.type === 'progress') {
             const pct = Math.round((event.step / event.total) * 100);
@@ -555,5 +560,3 @@ async function runAutonomousModerationTest() {
     }
   }
 }
-
-

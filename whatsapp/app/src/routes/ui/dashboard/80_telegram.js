@@ -836,7 +836,6 @@ async function runTelegramBridgeTest() {
       body: JSON.stringify({ mapping_id, direction, selected_subtests }),
     });
 
-
     const data = await res.json();
     if (!data.success) {
       showToast(data.error || 'Failed to start test', 'danger');
@@ -894,7 +893,14 @@ async function pollTelegramTestResults(runId) {
       const formattedLogs = testRun.logs
         .map((l) => {
           const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
-          const prefix = l.level === 'error' ? '❌' : l.level === 'success' ? '✅' : l.level === 'warn' ? '⚠️' : 'ℹ️';
+          const prefix =
+            l.level === 'error'
+              ? '❌'
+              : l.level === 'success'
+                ? '✅'
+                : l.level === 'warn'
+                  ? '⚠️'
+                  : 'ℹ️';
           return `[${time}] ${prefix} [${l.step}] ${l.msg}`;
         })
         .join('\n');
@@ -928,4 +934,3 @@ async function pollTelegramTestResults(runId) {
   }
 }
 window.pollTelegramTestResults = pollTelegramTestResults;
-

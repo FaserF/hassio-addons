@@ -309,7 +309,9 @@ export function registerModerationRoutes(app) {
 
     const session = Array.from(sessions.values()).find((s) => s.isConnected);
     if (!session) {
-      return res.status(400).json({ success: false, error: 'No active WhatsApp session connected' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'No active WhatsApp session connected' });
     }
 
     const config = getGroupModerationConfig(group_id);
@@ -674,7 +676,8 @@ export function registerModerationRoutes(app) {
       selected_category === 'all'
         ? allTestSuites
         : allTestSuites.filter(
-            (s) => s.id === selected_category || s.category.toLowerCase().includes(selected_category)
+            (s) =>
+              s.id === selected_category || s.category.toLowerCase().includes(selected_category)
           );
 
     let totalSteps = 0;
@@ -692,7 +695,12 @@ export function registerModerationRoutes(app) {
     let currentStep = 0;
 
     // Helper mock raw message builder
-    const createMockMsg = (text, mentions = [], quotedParticipant = null, extraMsgPayload = {}) => ({
+    const createMockMsg = (
+      text,
+      mentions = [],
+      quotedParticipant = null,
+      extraMsgPayload = {}
+    ) => ({
       key: {
         remoteJid: group_id,
         fromMe: false,
@@ -759,13 +767,16 @@ export function registerModerationRoutes(app) {
           else if (testItem.type === 'addressing') {
             if (testItem.sub === 'mention') {
               const mockMsg = createMockMsg('Warn @12345678901', ['12345678901@s.whatsapp.net']);
-              const mentioned = mockMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-              if (!mentioned.includes('12345678901@s.whatsapp.net')) throw new Error('Mention JID resolution failed');
+              const mentioned =
+                mockMsg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+              if (!mentioned.includes('12345678901@s.whatsapp.net'))
+                throw new Error('Mention JID resolution failed');
               details = 'Mention JID (@user) extracted correctly';
             } else if (testItem.sub === 'quoted') {
               const mockMsg = createMockMsg('Warn user', [], '98765432109@s.whatsapp.net');
               const quoted = mockMsg.message?.extendedTextMessage?.contextInfo?.participant;
-              if (quoted !== '98765432109@s.whatsapp.net') throw new Error('Quoted message participant resolution failed');
+              if (quoted !== '98765432109@s.whatsapp.net')
+                throw new Error('Quoted message participant resolution failed');
               details = 'Quoted participant JID resolved correctly';
             } else if (testItem.sub === 'phone') {
               const cleaned = testItem.target.replace(/\D/g, '');
@@ -794,8 +805,13 @@ export function registerModerationRoutes(app) {
               }
               details = `Auto-reply template interpolated: "${formatted}"`;
             } else if (testItem.sub === 'webhook') {
-              const payload = { event: 'custom_command', trigger: testItem.trigger, group: group_id };
-              if (!payload.trigger || !payload.group) throw new Error('Webhook payload construction failed');
+              const payload = {
+                event: 'custom_command',
+                trigger: testItem.trigger,
+                group: group_id,
+              };
+              if (!payload.trigger || !payload.group)
+                throw new Error('Webhook payload construction failed');
               details = `Webhook payload prepared for ${testItem.url}`;
             } else if (testItem.sub === 'alias') {
               const target = testItem.targetCmd;
@@ -811,8 +827,12 @@ export function registerModerationRoutes(app) {
               typeof testItem.payload === 'object' && !Array.isArray(testItem.payload)
                 ? testItem.payload
                 : { conversation: testItem.payload };
-            const testLockConfig = { ...config, locks: { ...(config.locks || {}), [lockName]: true } };
-            if (!testLockConfig.locks[lockName] || !samplePayload) throw new Error(`Lock configuration for ${lockName} failed`);
+            const testLockConfig = {
+              ...config,
+              locks: { ...(config.locks || {}), [lockName]: true },
+            };
+            if (!testLockConfig.locks[lockName] || !samplePayload)
+              throw new Error(`Lock configuration for ${lockName} failed`);
             details = `Lock check [${lockName}] verified with sample payload`;
           }
           // --- 5. Blacklist & Regex Word Filters ---
@@ -823,7 +843,8 @@ export function registerModerationRoutes(app) {
               details = `Blacklist matched word "${testItem.word}"`;
             } else if (testItem.sub === 'regex') {
               const regex = new RegExp(testItem.pattern, testItem.flags);
-              if (!regex.test(testItem.text)) throw new Error('Regex word filter pattern matching failed');
+              if (!regex.test(testItem.text))
+                throw new Error('Regex word filter pattern matching failed');
               details = `Regex /${testItem.pattern}/${testItem.flags} matched text`;
             } else if (testItem.sub === 'clean') {
               const isBlacklisted = (config.blacklist || []).some((w) => testItem.text.includes(w));
@@ -833,9 +854,12 @@ export function registerModerationRoutes(app) {
           }
           // --- 6. Spam Invite Link Platform Detection ---
           else if (testItem.type === 'invite_platform') {
-            const regex = SPAM_INVITE_LINK_PATTERNS[testItem.platform] || SPAM_INVITE_LINK_PATTERNS.all;
+            const regex =
+              SPAM_INVITE_LINK_PATTERNS[testItem.platform] || SPAM_INVITE_LINK_PATTERNS.all;
             if (!regex.test(testItem.url)) {
-              throw new Error(`Platform invite pattern for [${testItem.platform}] failed to match ${testItem.url}`);
+              throw new Error(
+                `Platform invite pattern for [${testItem.platform}] failed to match ${testItem.url}`
+              );
             }
             details = `Platform regex [${testItem.platform}] successfully detected link ${testItem.url}`;
           }
@@ -884,13 +908,18 @@ export function registerModerationRoutes(app) {
             } else if (testItem.sub === 'captcha_code') {
               const rawInput = ' 👉 *AbCd12*! ';
               const cleaned = cleanCaptchaInput(rawInput);
-              if (cleaned !== 'abcd12') throw new Error(`Captcha code cleaning failed: expected 'abcd12', got '${cleaned}'`);
+              if (cleaned !== 'abcd12')
+                throw new Error(
+                  `Captcha code cleaning failed: expected 'abcd12', got '${cleaned}'`
+                );
               details = `Captcha input cleaning verified: "${rawInput}" -> "${cleaned}"`;
             } else if (testItem.sub === 'captcha_math') {
-              const num1 = 7, num2 = 5;
+              const num1 = 7,
+                num2 = 5;
               const expectedAnswer = String(num1 + num2);
               const cleanedInput = cleanCaptchaInput(' 12 ');
-              if (cleanedInput !== expectedAnswer) throw new Error('Captcha math evaluation failed');
+              if (cleanedInput !== expectedAnswer)
+                throw new Error('Captcha math evaluation failed');
               details = `Math Captcha verified (${num1} + ${num2} = ${expectedAnswer})`;
             } else if (testItem.sub === 'captcha_target') {
               const targetGroup = group_id;
@@ -901,15 +930,28 @@ export function registerModerationRoutes(app) {
           // --- 9. Anti-Raid & Flood Protection ---
           else if (testItem.type === 'rate_protection') {
             if (testItem.sub === 'antiraid') {
-              const joinTimes = [Date.now() - 1000, Date.now() - 2000, Date.now() - 3000, Date.now() - 4000, Date.now() - 5000];
-              const recentJoins = joinTimes.filter((t) => Date.now() - t < testItem.windowSec * 1000);
-              if (recentJoins.length < testItem.burstCount) throw new Error('Anti-raid burst join calculation failed');
+              const joinTimes = [
+                Date.now() - 1000,
+                Date.now() - 2000,
+                Date.now() - 3000,
+                Date.now() - 4000,
+                Date.now() - 5000,
+              ];
+              const recentJoins = joinTimes.filter(
+                (t) => Date.now() - t < testItem.windowSec * 1000
+              );
+              if (recentJoins.length < testItem.burstCount)
+                throw new Error('Anti-raid burst join calculation failed');
               details = `Anti-raid detected ${recentJoins.length} joins within ${testItem.windowSec}s -> Lockdown triggered`;
             } else if (testItem.sub === 'antiflood') {
-              const msgTimes = Array.from({ length: testItem.burstCount }, (_, i) => Date.now() - i * 500);
+              const msgTimes = Array.from(
+                { length: testItem.burstCount },
+                (_, i) => Date.now() - i * 500
+              );
               const windowMs = testItem.windowSec * 1000;
               const recentMsgs = msgTimes.filter((t) => Date.now() - t < windowMs);
-              if (recentMsgs.length < testItem.burstCount) throw new Error('Flood protection message rate calculation failed');
+              if (recentMsgs.length < testItem.burstCount)
+                throw new Error('Flood protection message rate calculation failed');
               details = `Flood protection detected ${recentMsgs.length} msgs in ${testItem.windowSec}s -> Rate limit violation`;
             }
           }
@@ -968,14 +1010,18 @@ export function registerModerationRoutes(app) {
               const timestamps = [now - 4000, now - 3000, now - 2000, now - 1000, now];
               const windowMs = testItem.windowSec * 1000;
               const recentBotMsgs = timestamps.filter((t) => now - t <= windowMs);
-              if (recentBotMsgs.length < 5) throw new Error('Outbound bot rate limiter burst tracking failed');
+              if (recentBotMsgs.length < 5)
+                throw new Error('Outbound bot rate limiter burst tracking failed');
               details = `Outbound bot rate limiter detected ${recentBotMsgs.length} messages in ${testItem.windowSec}s -> Warning triggered`;
             } else if (testItem.sub === 'formula_mute') {
               const baseMute = testItem.baseMuteSec;
               const violations = testItem.violations;
               // Mute duration formula: baseMute * (2 ** (violations - 1))
               const formulaMuteSec = baseMute * Math.pow(2, violations - 1);
-              if (formulaMuteSec !== 600) throw new Error(`Formula mute duration mismatch: expected 600s, got ${formulaMuteSec}s`);
+              if (formulaMuteSec !== 600)
+                throw new Error(
+                  `Formula mute duration mismatch: expected 600s, got ${formulaMuteSec}s`
+                );
               details = `Formula mute duration verified: Base ${baseMute}s × 2^(${violations}-1) = ${formulaMuteSec}s (${formulaMuteSec / 60} minutes)`;
             }
           }
@@ -1052,7 +1098,10 @@ export function registerModerationRoutes(app) {
         message: '📩 Automatic Markdown summary report dispatched to WhatsApp group!',
       });
     } catch (sendErr) {
-      logger.warn({ error: sendErr.message, group_id }, 'Failed to send auto-test summary to group');
+      logger.warn(
+        { error: sendErr.message, group_id },
+        'Failed to send auto-test summary to group'
+      );
     }
 
     const finalData = {
@@ -1074,4 +1123,3 @@ export function registerModerationRoutes(app) {
     res.end();
   });
 }
-

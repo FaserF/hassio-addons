@@ -73,5 +73,3 @@ window.runAutonomousModerationTest = runAutonomousModerationTest;
 window.selectAllModSubtests = selectAllModSubtests;
 window.clearAutoTestLogs = clearAutoTestLogs;
 window.exportAutoTestLogs = exportAutoTestLogs;
-
-

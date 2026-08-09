@@ -43,7 +43,10 @@ export async function syncWhatsAppGroupEventToTelegram(
   if (!store.enabled) return;
 
   const departureAction = action === 'remove' || action === 'leave' ? 'departure' : action;
-  const partStr = participants.map((p) => String(p).split('@')[0]).sort().join(',');
+  const partStr = participants
+    .map((p) => String(p).split('@')[0])
+    .sort()
+    .join(',');
   const eventKey = `tg_sys_evt:${waJid}:${departureAction}:${partStr}`;
   const now = Date.now();
   const lastTime = recentTgSystemEvents.get(eventKey) || 0;

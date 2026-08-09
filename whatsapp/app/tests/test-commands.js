@@ -21,7 +21,6 @@ async function runTests() {
   console.log('==================================================');
   resetBotOutboundSpamGuard();
 
-
   // Phase 1 Commands
   assert(registry.getCommand('help') !== undefined, 'help command is registered');
   assert(registry.getCommand('ping') !== undefined, 'ping command is registered');

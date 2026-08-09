@@ -29,8 +29,6 @@ export function resetBotOutboundSpamGuard(jid = null) {
   }
 }
 
-
-
 /**
  * Checks and updates the bot outbound anti-spam rate limiter for a specific chat/group JID.
  * EXEMPT: Telegram Relay messages (options.isTelegramRelay) or options.skipSpamGuard.
@@ -185,7 +183,6 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
     return null;
   }
 }
-
 
 export function trackSent(session, target, message) {
   const timestamp = formatHATime(new Date());
