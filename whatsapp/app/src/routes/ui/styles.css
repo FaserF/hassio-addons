@@ -2748,6 +2748,47 @@ html[data-theme='light'] .data-table tbody tr:hover {
   cursor: not-allowed !important;
 }
 
+/* Chat Header Action Buttons */
+.chat-header-btn {
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  color: var(--text-muted) !important;
+  background: transparent;
+  transition: all 0.2s ease;
+  flex-shrink: 0 !important;
+}
+.chat-header-btn:hover {
+  background-color: var(--bg-input, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--text-main) !important;
+}
+
+/* System Message Row & Pill */
+.msg-system-row {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 6px 0 !important;
+  width: 100% !important;
+}
+.msg-system-pill {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-muted) !important;
+  font-size: 11px !important;
+  padding: 4px 14px !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-sm) !important;
+  text-align: center !important;
+  max-width: 80%;
+  word-break: break-word;
+}
+
 
 
 

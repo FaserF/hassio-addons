@@ -145,9 +145,13 @@ function matchJid(a, b) {
 
 async function fetchChatBadgesConfig() {
   try {
+    const headers = {};
+    if (typeof apiToken !== 'undefined' && apiToken) {
+      headers['X-Auth-Token'] = apiToken;
+    }
     const [modRes, tgRes] = await Promise.all([
-      fetch(basePath + 'api/moderation/config').catch(() => null),
-      fetch(basePath + 'api/telegram/config').catch(() => null),
+      fetch(basePath + 'api/moderation/config', { headers }).catch(() => null),
+      fetch(basePath + 'api/telegram/config', { headers }).catch(() => null),
     ]);
     if (modRes && modRes.ok) {
       const json = await modRes.json();
@@ -363,8 +367,13 @@ const avatarCache = {};
 async function fetchAvatar(jid) {
   if (avatarCache[jid] !== undefined) return avatarCache[jid];
   try {
+    const headers = {};
+    if (typeof apiToken !== 'undefined' && apiToken) {
+      headers['X-Auth-Token'] = apiToken;
+    }
     const res = await fetch(
-      basePath + 'api/avatar?session_id=' + currentSession + '&jid=' + encodeURIComponent(jid)
+      basePath + 'api/avatar?session_id=' + currentSession + '&jid=' + encodeURIComponent(jid),
+      { headers }
     );
     if (res.ok) {
       const data = await res.json();
@@ -749,6 +758,26 @@ async function loadChatMessages(jid) {
           (m.reactions || []).find((r) => r.sender === 'me' || r.sender === (m.fromMe ? 'You' : ''))
             ?.emoji || '';
 
+        const hasContent = Boolean(
+          textBlock ||
+            captionBlock ||
+            mediaBlock ||
+            quoteBlock ||
+            pollBlock ||
+            locationBlock ||
+            contactBlock ||
+            eventBlock ||
+            buttonsBlock
+        );
+
+        if (!hasContent) {
+          const sysText = m.text || m.caption;
+          if (sysText) {
+            return `<div class="msg-system-row"><span class="msg-system-pill">${escapeHtml(sysText)}</span></div>`;
+          }
+          return '';
+        }
+
         return `<div class="msg-bubble-row ${direction}" data-msg-id="${m.id}" data-msg-text="${escapeAttr(m.text || m.caption || '')}" data-sender="${escapeAttr(m.senderName || '')}" data-my-reaction="${escapeAttr(myReaction)}"
                          oncontextmenu="showContextMenu(event,'${m.id}')">
                         <div class="msg-bubble">
@@ -767,6 +796,7 @@ async function loadChatMessages(jid) {
                         ${reactBlock}
                     </div>`;
       })
+      .filter(Boolean)
       .join('');
 
     if (wasScrolledToBottom) {

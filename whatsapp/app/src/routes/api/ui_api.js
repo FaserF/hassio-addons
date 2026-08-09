@@ -2,6 +2,7 @@ import { uiAuthMiddleware } from '../../middleware.js';
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
 import { getJid } from '../../utils/jid.js';
+import { resolveCanonicalUserKey } from '../../utils/security.js';
 
 export function registerUiApiRoutes(app) {
   app.get(
@@ -53,8 +54,22 @@ export function registerUiApiRoutes(app) {
 
         messages.forEach((msg) => {
           if (!msg.key || !msg.key.remoteJid) return;
-          const jid = msg.key.remoteJid;
+          let jid = msg.key.remoteJid;
+          if (!jid || jid.endsWith('@lid')) return;
           if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
+
+          // Check if JID is an internal LID (starts with 1576... or length >= 14)
+          const rawUser = jid.split('@')[0];
+          const digits = rawUser.replace(/\D/g, '');
+          if (!jid.endsWith('@g.us') && digits.length >= 14 && digits.startsWith('1576')) {
+            const resolvedPn = resolveCanonicalUserKey(jid, session);
+            if (resolvedPn && resolvedPn !== digits) {
+              jid = `${resolvedPn}@s.whatsapp.net`;
+            } else {
+              // Internal bot LID or test runner mock JID -> skip ghost chat
+              return;
+            }
+          }
 
           const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
           const previewText = getMessageText(msg);
@@ -81,8 +96,19 @@ export function registerUiApiRoutes(app) {
 
         // Also incorporate chats from session.chatCache that might not have stored messages yet
         if (session.chatCache) {
-          for (const jid of session.chatCache.keys()) {
+          for (let jid of session.chatCache.keys()) {
+            if (!jid || jid.endsWith('@lid')) continue;
             if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) continue;
+            const rawUser = jid.split('@')[0];
+            const digits = rawUser.replace(/\D/g, '');
+            if (!jid.endsWith('@g.us') && digits.length >= 14 && digits.startsWith('1576')) {
+              const resolvedPn = resolveCanonicalUserKey(jid, session);
+              if (resolvedPn && resolvedPn !== digits) {
+                jid = `${resolvedPn}@s.whatsapp.net`;
+              } else {
+                continue;
+              }
+            }
             if (!JidMap[jid]) {
               JidMap[jid] = {
                 jid,
