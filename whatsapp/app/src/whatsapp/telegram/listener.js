@@ -31,6 +31,52 @@ export function formatHeader(
   return `<b>[${parts.join(' | ')}]</b>:\n`;
 }
 
+export async function syncWhatsAppGroupEventToTelegram(waJid, groupName, action, participants = []) {
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) =>
+      m.enabled &&
+      m.wa_jid === waJid &&
+      m.sync_system_events !== false &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
+  );
+
+  if (mappings.length === 0) return;
+
+  const partNames = participants.map((p) => String(p).split('@')[0]).join(', ');
+  let eventText = '';
+  if (action === 'add') {
+    eventText = `👥 [System: ${partNames || 'Member'} joined WhatsApp group]`;
+  } else if (action === 'leave' || action === 'remove') {
+    eventText = `👥 [System: ${partNames || 'Member'} left WhatsApp group]`;
+  } else if (action === 'promote') {
+    eventText = `⭐ [System: ${partNames} was promoted to admin]`;
+  } else if (action === 'demote') {
+    eventText = `🔻 [System: ${partNames} was demoted from admin]`;
+  }
+
+  if (!eventText) return;
+
+  for (const mapping of mappings) {
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) continue;
+    try {
+      const header = mapping.include_group_name && groupName ? `<b>[${groupName}]</b>:\n` : '';
+      await bot.sendMessage(
+        mapping.tg_chat_id,
+        `${header}${eventText}`,
+        null,
+        mapping.tg_thread_id || null,
+        Boolean(mapping.silent_delivery)
+      );
+    } catch (e) {
+      logger.warn({ error: e.message }, '⚠️ Failed to sync WA group event to Telegram');
+    }
+  }
+}
+
 export async function syncWhatsAppToTelegram(
   msg,
   waJid,
@@ -656,6 +702,21 @@ export async function processTelegramUpdates() {
               longitude: loc.longitude,
             };
             tgText = tgText || (isLive ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]` : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
+          } else if (msg.new_chat_members && Array.isArray(msg.new_chat_members) && msg.new_chat_members.length > 0) {
+            const names = msg.new_chat_members
+              .map((m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User')
+              .join(', ');
+            tgText = `👥 [System: ${names} joined the Telegram group]`;
+          } else if (msg.left_chat_member) {
+            const m = msg.left_chat_member;
+            const name = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
+            tgText = `👥 [System: ${name} left the Telegram group]`;
+          } else if (msg.pinned_message) {
+            const pinnedSender = msg.pinned_message.from
+              ? `${msg.pinned_message.from.first_name || ''} ${msg.pinned_message.from.last_name || ''}`.trim() || msg.pinned_message.from.username
+              : 'User';
+            const snippet = (msg.pinned_message.text || msg.pinned_message.caption || '').slice(0, 60);
+            tgText = `📌 [Pinned Message by ${pinnedSender}]: ${snippet}`;
           } else if (msg.poll) {
             const p = msg.poll;
             const pollOptions = (p.options || []).map((o) => o.text);
@@ -704,6 +765,11 @@ export async function processTelegramUpdates() {
         }
 
         for (const mapping of mappings) {
+          const isSystemMsg = Boolean(msg.new_chat_members || msg.left_chat_member);
+          const isPinMsg = Boolean(msg.pinned_message);
+          if (isSystemMsg && mapping.sync_system_events === false) continue;
+          if (isPinMsg && mapping.sync_pins === false) continue;
+
           const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
           const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
           const rawHeader = isDirectMirror

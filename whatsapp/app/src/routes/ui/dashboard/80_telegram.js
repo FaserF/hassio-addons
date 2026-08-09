@@ -415,6 +415,8 @@ function getTgMappingCurrentState() {
     poll_diagram_text: document.getElementById('tg-modal-poll-diagram-text')?.checked || false,
     poll_update_msg: document.getElementById('tg-modal-poll-update-msg')?.checked || false,
     poll_delete_old: document.getElementById('tg-modal-poll-delete-old')?.checked || false,
+    sync_system_events: document.getElementById('tg-modal-sync-system-events')?.checked || false,
+    sync_pins: document.getElementById('tg-modal-sync-pins')?.checked || false,
   };
 }
 
@@ -453,6 +455,11 @@ function openAddTelegramMappingModal() {
   if (pollUpdateEl) pollUpdateEl.checked = true;
   const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
   if (pollDeleteEl) pollDeleteEl.checked = true;
+
+  const sysEvEl = document.getElementById('tg-modal-sync-system-events');
+  if (sysEvEl) sysEvEl.checked = true;
+  const pinsEl = document.getElementById('tg-modal-sync-pins');
+  if (pinsEl) pinsEl.checked = true;
 
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
@@ -533,6 +540,12 @@ async function editTelegramMapping(id) {
 
     const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
     if (pollDeleteEl) pollDeleteEl.checked = mapping.poll_delete_old_message !== false;
+
+    const sysEvEl = document.getElementById('tg-modal-sync-system-events');
+    if (sysEvEl) sysEvEl.checked = mapping.sync_system_events !== false;
+
+    const pinsEl = document.getElementById('tg-modal-sync-pins');
+    if (pinsEl) pinsEl.checked = mapping.sync_pins !== false;
 
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
@@ -633,6 +646,8 @@ async function saveTelegramMappingModal() {
   const poll_send_text_diagram = document.getElementById('tg-modal-poll-diagram-text')?.checked || false;
   const poll_send_update_message = document.getElementById('tg-modal-poll-update-msg')?.checked || false;
   const poll_delete_old_message = document.getElementById('tg-modal-poll-delete-old')?.checked || false;
+  const sync_system_events = document.getElementById('tg-modal-sync-system-events')?.checked || false;
+  const sync_pins = document.getElementById('tg-modal-sync-pins')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
     showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
@@ -667,6 +682,8 @@ async function saveTelegramMappingModal() {
         poll_send_text_diagram,
         poll_send_update_message,
         poll_delete_old_message,
+        sync_system_events,
+        sync_pins,
       }),
     });
     const data = await res.json();

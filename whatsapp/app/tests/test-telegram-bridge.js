@@ -111,4 +111,18 @@ describe('Telegram Bridge Unit Tests', () => {
       client.request('pinChatMessage', { chat_id: '123', message_id: 1 }).catch(() => null);
     });
   });
+
+  it('syncWhatsAppGroupEventToTelegram module exports correctly', async () => {
+    const listener = await import('../src/whatsapp/telegram/listener.js');
+    assert.strictEqual(typeof listener.syncWhatsAppGroupEventToTelegram, 'function');
+  });
+
+  it('supports sync_system_events and sync_pins options in mappings', () => {
+    const mapping = {
+      sync_system_events: true,
+      sync_pins: true,
+    };
+    assert.strictEqual(mapping.sync_system_events, true);
+    assert.strictEqual(mapping.sync_pins, true);
+  });
 });

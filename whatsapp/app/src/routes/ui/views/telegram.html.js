@@ -218,6 +218,12 @@ export default () => `
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-sync-deletions" checked> Sync Message Deletions
                     </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-system-events" checked> Sync System Events
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-sync-pins" checked> Sync Pinned Messages
+                    </label>
                 </div>
             </div>
 

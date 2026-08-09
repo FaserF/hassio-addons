@@ -23,7 +23,7 @@ import { resolvePollVotes } from './poll.js';
 import { registerAckListener } from './ack.js';
 import { registerReactionListener } from './reactions.js';
 import { registerPresenceListener } from './presence.js';
-import { syncWhatsAppToTelegram, startTelegramPolling } from '../telegram/listener.js';
+import { syncWhatsAppToTelegram, syncWhatsAppGroupEventToTelegram, startTelegramPolling } from '../telegram/listener.js';
 
 startTelegramPolling();
 import {
@@ -111,6 +111,9 @@ export function registerAllListeners(session) {
             }
           } catch (_e) {}
         }
+
+        const resolvedGroupName = session.groupCache?.get(update.id) || update.id;
+        syncWhatsAppGroupEventToTelegram(update.id, resolvedGroupName, update.action, normalizedParticipants);
 
         await handleModerationParticipantUpdate(session, {
           ...update,
@@ -291,6 +294,9 @@ export function handleIncomingMessages(session) {
               }
             } catch (_e) {}
           }
+
+          const resolvedGroupName = session.groupCache?.get(groupId) || groupId;
+          syncWhatsAppGroupEventToTelegram(groupId, resolvedGroupName, action, normalizedParticipants);
 
           handleModerationParticipantUpdate(session, {
             id: groupId,

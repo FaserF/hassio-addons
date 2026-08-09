@@ -141,6 +141,8 @@ export function registerTelegramRoutes(app) {
       poll_send_text_diagram,
       poll_send_update_message,
       poll_delete_old_message,
+      sync_system_events,
+      sync_pins,
       enabled,
     } = req.body || {};
 
@@ -193,6 +195,8 @@ export function registerTelegramRoutes(app) {
       poll_send_text_diagram: poll_send_text_diagram !== undefined ? Boolean(poll_send_text_diagram) : true,
       poll_send_update_message: poll_send_update_message !== undefined ? Boolean(poll_send_update_message) : true,
       poll_delete_old_message: poll_delete_old_message !== undefined ? Boolean(poll_delete_old_message) : true,
+      sync_system_events: sync_system_events !== undefined ? Boolean(sync_system_events) : true,
+      sync_pins: sync_pins !== undefined ? Boolean(sync_pins) : true,
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 
