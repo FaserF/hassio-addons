@@ -2759,14 +2759,15 @@ html[data-theme='light'] .data-table tbody tr:hover {
   border: none !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  color: var(--text-muted) !important;
-  background: transparent;
+  color: var(--text-main, #e9edef) !important;
+  background: var(--bg-input, rgba(255, 255, 255, 0.08)) !important;
+  opacity: 0.9 !important;
   transition: all 0.2s ease;
   flex-shrink: 0 !important;
 }
 .chat-header-btn:hover {
-  background-color: var(--bg-input, rgba(255, 255, 255, 0.08)) !important;
-  color: var(--text-main) !important;
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  opacity: 1 !important;
 }
 
 /* System Message Row & Pill */

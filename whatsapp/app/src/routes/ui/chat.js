@@ -412,23 +412,28 @@ async function fetchAvatar(jid) {
 }
 
 function updateAvatarElements(jid, url) {
-  if (!url) return;
   const safeJid = jid.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   const els = document.querySelectorAll(`[data-avatar-jid="${safeJid}"]`);
+  const iconClass = jid.endsWith('@g.us') ? 'fa-users' : 'fa-user';
+  const html = url
+    ? `<img src="${url}" class="avatar-img" alt="Avatar">`
+    : `<i class="fas ${iconClass}"></i>`;
+
   els.forEach((el) => {
-    el.innerHTML = `<img src="${url}" class="avatar-img" alt="Avatar">`;
+    el.innerHTML = html;
   });
 
   if (activeChatJid === jid) {
     const headerAvatar = document.getElementById('active-chat-avatar');
     if (headerAvatar) {
-      headerAvatar.innerHTML = `<img src="${url}" class="avatar-img" alt="Avatar">`;
+      headerAvatar.innerHTML = html;
     }
   }
 }
 
 function selectChat(jid, name) {
   activeChatJid = jid;
+  activeChatName = name || jid.split('@')[0];
   delete lastLoadedMessagesCache[jid];
   document.body.classList.add('chat-open');
   cancelReply();
@@ -437,6 +442,16 @@ function selectChat(jid, name) {
 
   document.getElementById('chat-thread-empty').style.display = 'none';
   document.getElementById('chat-thread-active').style.display = 'flex';
+
+  const avatarEl = document.getElementById('active-chat-avatar');
+  if (avatarEl) {
+    const cached = avatarCache[jid];
+    const iconClass = jid.endsWith('@g.us') ? 'fa-users' : 'fa-user';
+    avatarEl.innerHTML = cached
+      ? `<img src="${cached}" class="avatar-img" alt="Avatar">`
+      : `<i class="fas ${iconClass}"></i>`;
+  }
+  fetchAvatar(jid);
 
   document.getElementById('active-chat-name').textContent = name;
   const jidText = document.getElementById('active-chat-jid-text');
@@ -643,13 +658,16 @@ function renderMediaBlock(m) {
     return '';
   }
   let url = m.mediaUrl;
-  if (typeof apiToken !== 'undefined' && apiToken && url.includes('api/')) {
+  if (url.startsWith('/media/') || url.startsWith('media/')) {
+    url = basePath + url.replace(/^\//, '');
+  }
+  if (typeof apiToken !== 'undefined' && apiToken && (url.includes('api/') || url.includes('media/'))) {
     if (!url.includes('token=')) {
       url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(apiToken);
     }
   }
   if (m.mediaType === 'image' || (m.mediaMime && m.mediaMime.startsWith('image/'))) {
-    return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" loading="lazy">`;
+    return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-image\\' style=\\'color:var(--primary);\\'></i> Photo Attachment</div>';" loading="lazy">`;
   }
   if (m.mediaType === 'video' || (m.mediaMime && m.mediaMime.startsWith('video/'))) {
     return `<video class="msg-media msg-media-video" controls><source src="${url}" type="${escapeHtml(m.mediaMime || 'video/mp4')}"></video>`;

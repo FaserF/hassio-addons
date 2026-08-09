@@ -40,17 +40,36 @@ export let SYSTEM_STATE = {
   last_integration_online: null,
 };
 
-// --- Health State (Volatile) ---
-export const HEALTH_STATE = {
+// --- Health State (Persistent across restarts) ---
+const HEALTH_STATE_FILE = path.join(DATA_DIR, 'health_state.json');
+export let HEALTH_STATE = {
   status: 'starting', // starting, running, connected, faulty
   details: 'Addon is initializing',
   last_update: Date.now(),
+  inbound_count: 0,
+  outbound_count: 0,
 };
 
-export function setHealthStatus(status, details = '') {
+if (fs.existsSync(HEALTH_STATE_FILE)) {
+  try {
+    const savedHealth = JSON.parse(fs.readFileSync(HEALTH_STATE_FILE, 'utf8'));
+    HEALTH_STATE = { ...HEALTH_STATE, ...savedHealth };
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to load health state');
+  }
+}
+
+export function setHealthStatus(status, details = '', metrics = {}) {
   HEALTH_STATE.status = status;
   HEALTH_STATE.details = details || (status === 'running' ? 'Addon is operational' : '');
   HEALTH_STATE.last_update = Date.now();
+  if (metrics.inbound_count !== undefined) HEALTH_STATE.inbound_count = metrics.inbound_count;
+  if (metrics.outbound_count !== undefined) HEALTH_STATE.outbound_count = metrics.outbound_count;
+  try {
+    fs.writeFileSync(HEALTH_STATE_FILE, JSON.stringify(HEALTH_STATE, null, 2));
+  } catch (e) {
+    logger.error({ error: e.message }, '❌ Failed to save health state');
+  }
   logger.debug({ status, details: HEALTH_STATE.details }, 'Health status updated');
 }
 

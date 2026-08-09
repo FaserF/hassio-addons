@@ -1,4 +1,4 @@
-import { uiAuthMiddleware } from '../../middleware.js';
+import { uiAuthMiddleware, anyAuthMiddleware } from '../../middleware.js';
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
 import { getJid } from '../../utils/jid.js';
@@ -474,7 +474,7 @@ export function registerUiApiRoutes(app) {
 
   app.get(
     '/api/avatar',
-    uiAuthMiddleware,
+    anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       const sessionId = sanitizeSessionId(req.query.session_id || 'default');
       const session = getSession(sessionId);

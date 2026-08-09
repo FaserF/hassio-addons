@@ -24,8 +24,8 @@ export default () => `
                         </div>
 
                         <div class="chat-thread-active" id="chat-thread-active" style="display: none;">
-                            <div class="chat-thread-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;min-height:62px;width:100%;border-bottom:1px solid var(--border-color);background-color:var(--bg-card);gap:16px;">
-                                <div class="chat-thread-info" onclick="openChatInfoDrawer()" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer;" title="Click to view Contact / Group Details">
+                            <div class="chat-thread-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;min-height:62px;width:100%;border-bottom:1px solid var(--border-color);background-color:var(--bg-card);gap:12px;overflow:visible;">
+                                <div class="chat-thread-info" onclick="openChatInfoDrawer()" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;max-width:calc(100% - 150px);cursor:pointer;" title="Click to view Contact / Group Details">
                                     <button class="chat-back-btn" onclick="event.stopPropagation();goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
                                     <div class="chat-thread-avatar" id="active-chat-avatar" style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
                                     <div style="flex:1;min-width:0;">
@@ -36,7 +36,7 @@ export default () => `
                                         </p>
                                     </div>
                                 </div>
-                                <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+                                <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;z-index:2;">
                                     <span id="active-chat-header-badges" style="display:inline-flex;gap:6px;align-items:center;"></span>
                                     <button class="btn btn-ghost chat-header-btn" id="chat-search-toggle" title="Search in chat" onclick="toggleChatSearch()"><i class="fas fa-search"></i></button>
                                     <button class="btn btn-ghost chat-header-btn" title="Contact / Group Info" onclick="openChatInfoDrawer()"><i class="fas fa-info-circle"></i></button>
