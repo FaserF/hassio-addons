@@ -2,6 +2,23 @@
 
 let cachedTelegramBots = [];
 
+function updateTelegramBridgeDisabledState(enabled) {
+  const tab = document.getElementById('tab-telegram');
+  if (!tab) return;
+  const cards = tab.querySelectorAll('.mod-settings-card, .card');
+  cards.forEach((card) => {
+    if (enabled) {
+      card.classList.remove('disabled-section');
+    } else {
+      card.classList.add('disabled-section');
+    }
+    const inputs = card.querySelectorAll('input, select, button, textarea');
+    inputs.forEach((el) => {
+      el.disabled = !enabled;
+    });
+  });
+}
+
 async function loadTelegramBridgeData() {
   try {
     const res = await fetch('api/telegram/config');
@@ -10,6 +27,7 @@ async function loadTelegramBridgeData() {
       const cfg = data.data;
       const toggle = document.getElementById('tg-global-toggle');
       if (toggle) toggle.checked = Boolean(cfg.enabled);
+      updateTelegramBridgeDisabledState(Boolean(cfg.enabled));
 
       cachedTelegramBots = cfg.bots || [];
       renderTelegramBots(cachedTelegramBots);
@@ -125,6 +143,7 @@ function renderTelegramMappings(mappings, bots = []) {
 
 async function toggleTelegramBridge(enabled) {
   try {
+    updateTelegramBridgeDisabledState(enabled);
     await fetch('api/telegram/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

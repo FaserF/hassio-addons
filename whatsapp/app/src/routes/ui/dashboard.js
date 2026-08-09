@@ -952,6 +952,55 @@ async function unsavedModalSaveAndSwitch() {
 }
 // ── End Dirty Tracking ────────────────────────────────────────────────────────
 
+function updateModerationDisabledState() {
+  const globalToggle = document.getElementById('mod-global-toggle');
+  const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
+
+  const tab = document.getElementById('tab-moderation');
+  if (!tab) return;
+
+  // 1) Global moderation toggle: disable all settings cards if global is off
+  const settingsCards = tab.querySelectorAll('.mod-settings-card, .mod-grid, .card');
+  settingsCards.forEach((card) => {
+    if (card.closest('.mod-hero')) return;
+
+    if (!isGlobalEnabled) {
+      card.classList.add('disabled-section');
+      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+        if (el.id !== 'mod-global-toggle') el.disabled = true;
+      });
+    } else {
+      card.classList.remove('disabled-section');
+      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+        el.disabled = false;
+      });
+    }
+  });
+
+  // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
+  const groupToggle = document.getElementById('mod-group-toggle');
+  const isGroupEnabled = groupToggle ? groupToggle.checked : true;
+  if (isGlobalEnabled && currentModGroup) {
+    const groupContent = document.getElementById('mod-group-content');
+    if (groupContent) {
+      const subCards = groupContent.querySelectorAll('.mod-settings-card, .mod-sub-panel, .card');
+      subCards.forEach((card) => {
+        if (!isGroupEnabled) {
+          card.classList.add('disabled-section');
+          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+            if (el.id !== 'mod-group-toggle') el.disabled = true;
+          });
+        } else {
+          card.classList.remove('disabled-section');
+          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+            el.disabled = false;
+          });
+        }
+      });
+    }
+  }
+}
+
 async function loadModerationConfig() {
   try {
     const [modRes, chatsRes, cmdsRes] = await Promise.all([
@@ -986,6 +1035,7 @@ async function loadModerationConfig() {
         if (globalRulesInp && modStoreCache.global_rules !== undefined) {
           globalRulesInp.value = modStoreCache.global_rules;
         }
+        updateModerationDisabledState();
       }
     }
 
@@ -1085,6 +1135,7 @@ async function saveGlobalRulesFromModal() {
 
 async function toggleGlobalModeration(enabled) {
   try {
+    updateModerationDisabledState();
     const res = await fetch(basePath + 'api/moderation/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1668,10 +1719,12 @@ async function selectModerationGroup(groupId) {
   // Capture a snapshot of all field values AFTER populating them.
   // _guardDirty() will diff against this snapshot on every subtab switch.
   _captureSnapshot();
+  updateModerationDisabledState();
 }
 
 async function toggleGroupModeration(enabled) {
   if (!currentModGroup) return;
+  updateModerationDisabledState();
   const url =
     basePath +
     `api/moderation/groups/${encodeURIComponent(currentModGroup)}/${enabled ? 'enable' : 'disable'}`;
@@ -2925,6 +2978,23 @@ async function submitImportFederation() {
 let cachedTelegramBots = [];
 let cachedTelegramMappings = [];
 
+function updateTelegramBridgeDisabledState(enabled) {
+  const tab = document.getElementById('tab-telegram');
+  if (!tab) return;
+  const cards = tab.querySelectorAll('.mod-settings-card, .card');
+  cards.forEach((card) => {
+    if (enabled) {
+      card.classList.remove('disabled-section');
+    } else {
+      card.classList.add('disabled-section');
+    }
+    const inputs = card.querySelectorAll('input, select, button, textarea');
+    inputs.forEach((el) => {
+      el.disabled = !enabled;
+    });
+  });
+}
+
 async function loadTelegramBridgeData() {
   try {
     const res = await fetch('api/telegram/config');
@@ -2933,6 +3003,7 @@ async function loadTelegramBridgeData() {
       const cfg = data.data;
       const toggle = document.getElementById('tg-global-toggle');
       if (toggle) toggle.checked = Boolean(cfg.enabled);
+      updateTelegramBridgeDisabledState(Boolean(cfg.enabled));
 
       cachedTelegramBots = cfg.bots || [];
       cachedTelegramMappings = cfg.mappings || [];
@@ -3049,6 +3120,7 @@ function renderTelegramMappings(mappings, bots = []) {
 
 async function toggleTelegramBridge(enabled) {
   try {
+    updateTelegramBridgeDisabledState(enabled);
     await fetch('api/telegram/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
