@@ -253,43 +253,22 @@ async function loadModerationConfig() {
       console.warn('Failed to load built-in commands list:', cmdsErr);
     }
 
-function updateModerationDisabledState() {
-  const globalToggle = document.getElementById('mod-global-toggle');
-  const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
+    function updateModerationDisabledState() {
+      const globalToggle = document.getElementById('mod-global-toggle');
+      const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
 
-  const tab = document.getElementById('tab-moderation');
-  if (!tab) return;
+      const tab = document.getElementById('tab-moderation');
+      if (!tab) return;
 
-  // 1) Global moderation toggle: disable all settings cards if global is off
-  const settingsCards = tab.querySelectorAll('.mod-settings-card, .mod-grid, .card');
-  settingsCards.forEach((card) => {
-    if (card.closest('.mod-hero')) return;
+      // 1) Global moderation toggle: disable all settings cards if global is off
+      const settingsCards = tab.querySelectorAll('.mod-settings-card, .mod-grid, .card');
+      settingsCards.forEach((card) => {
+        if (card.closest('.mod-hero')) return;
 
-    if (!isGlobalEnabled) {
-      card.classList.add('disabled-section');
-      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-        if (el.id !== 'mod-global-toggle') el.disabled = true;
-      });
-    } else {
-      card.classList.remove('disabled-section');
-      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-        el.disabled = false;
-      });
-    }
-  });
-
-  // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
-  const groupToggle = document.getElementById('mod-group-toggle');
-  const isGroupEnabled = groupToggle ? groupToggle.checked : true;
-  if (isGlobalEnabled && currentModGroup) {
-    const groupContent = document.getElementById('mod-group-content');
-    if (groupContent) {
-      const subCards = groupContent.querySelectorAll('.mod-settings-card, .mod-sub-panel, .card');
-      subCards.forEach((card) => {
-        if (!isGroupEnabled) {
+        if (!isGlobalEnabled) {
           card.classList.add('disabled-section');
           card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-            if (el.id !== 'mod-group-toggle') el.disabled = true;
+            if (el.id !== 'mod-global-toggle') el.disabled = true;
           });
         } else {
           card.classList.remove('disabled-section');
@@ -298,9 +277,32 @@ function updateModerationDisabledState() {
           });
         }
       });
+
+      // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
+      const groupToggle = document.getElementById('mod-group-toggle');
+      const isGroupEnabled = groupToggle ? groupToggle.checked : true;
+      if (isGlobalEnabled && currentModGroup) {
+        const groupContent = document.getElementById('mod-group-content');
+        if (groupContent) {
+          const subCards = groupContent.querySelectorAll(
+            '.mod-settings-card, .mod-sub-panel, .card'
+          );
+          subCards.forEach((card) => {
+            if (!isGroupEnabled) {
+              card.classList.add('disabled-section');
+              card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+                if (el.id !== 'mod-group-toggle') el.disabled = true;
+              });
+            } else {
+              card.classList.remove('disabled-section');
+              card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+                el.disabled = false;
+              });
+            }
+          });
+        }
+      }
     }
-  }
-}
 
     if (modRes.ok) {
       const json = await modRes.json();

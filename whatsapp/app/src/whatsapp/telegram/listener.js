@@ -307,7 +307,16 @@ export async function syncWhatsAppToTelegram(
             const isAnon = Boolean(mapping.poll_is_anonymous ?? false);
             const isMulti = Boolean((pollObj?.selectableCount || 1) > 1);
             tgResult = await bot
-              .sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent, isAnon, isMulti)
+              .sendPoll(
+                mapping.tg_chat_id,
+                question,
+                options,
+                replyToTgMsgId,
+                threadId,
+                silent,
+                isAnon,
+                isMulti
+              )
               .catch(() => null);
           }
           // Also send header so sender is known (polls have no caption in Telegram)
@@ -348,7 +357,11 @@ export async function syncWhatsAppToTelegram(
         // text_diagram mode: send update text (and optionally delete old diagram)
         if (mapping.poll_send_update_message !== false) {
           const pollKey = msg.message?.pollUpdateMessage?.pollCreationMessageKey?.id;
-          if (pollKey && store.cached_polls?.[pollKey]?.last_diagram_tg_msg_id && mapping.poll_delete_old_diagram !== false) {
+          if (
+            pollKey &&
+            store.cached_polls?.[pollKey]?.last_diagram_tg_msg_id &&
+            mapping.poll_delete_old_diagram !== false
+          ) {
             const oldId = store.cached_polls[pollKey].last_diagram_tg_msg_id;
             await bot.deleteMessage(mapping.tg_chat_id, oldId).catch(() => null);
           }
@@ -636,14 +649,15 @@ export async function processTelegramUpdates() {
 
           for (const mapping of pollMappings) {
             const pollMode = mapping.poll_sync_mode || 'text_diagram';
-            if (pollMode === 'once_no_update' || pollMode === 'native_no_vote')
-              continue;
+            if (pollMode === 'once_no_update' || pollMode === 'native_no_vote') continue;
 
             const totalVotes = p.total_voter_count || 0;
             if (pollMode === 'native_sync') {
               // Auto-vote mode: find leading option with highest votes and relay winner update
               if (totalVotes > 0) {
-                const sortedOpts = [...(p.options || [])].sort((a, b) => (b.voter_count || 0) - (a.voter_count || 0));
+                const sortedOpts = [...(p.options || [])].sort(
+                  (a, b) => (b.voter_count || 0) - (a.voter_count || 0)
+                );
                 const winner = sortedOpts[0];
                 if (winner && winner.voter_count > 0) {
                   const winnerText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
@@ -657,7 +671,9 @@ export async function processTelegramUpdates() {
                     }
                   }
                   if (session && session.sock && session.isConnected) {
-                    await session.sock.sendMessage(mapping.wa_jid, { text: winnerText }).catch(() => null);
+                    await session.sock
+                      .sendMessage(mapping.wa_jid, { text: winnerText })
+                      .catch(() => null);
                   }
                 }
               }

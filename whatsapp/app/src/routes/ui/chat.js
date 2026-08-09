@@ -309,9 +309,13 @@ function renderEventBlock(m) {
   const ev = m.eventData;
   const name = escapeHtml(ev.name || 'Event');
   const desc = escapeHtml(ev.description || '');
-  const dateStr = ev.startTime ? new Date(ev.startTime * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  const dateStr = ev.startTime
+    ? new Date(ev.startTime * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+    : '';
   const loc = escapeHtml(ev.location || '');
-  const canceled = ev.isCanceled ? '<span style="color:#ef4444;font-weight:bold;margin-left:6px;">[Canceled]</span>' : '';
+  const canceled = ev.isCanceled
+    ? '<span style="color:#ef4444;font-weight:bold;margin-left:6px;">[Canceled]</span>'
+    : '';
 
   return `
     <div class="msg-event-card">

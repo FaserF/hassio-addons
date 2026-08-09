@@ -210,7 +210,9 @@ export function registerUiApiRoutes(app) {
           if (pollCreation) {
             pollData = {
               name: pollCreation.name || 'Poll',
-              options: (pollCreation.options || []).map((o) => (typeof o === 'string' ? o : o.optionName || 'Option')),
+              options: (pollCreation.options || []).map((o) =>
+                typeof o === 'string' ? o : o.optionName || 'Option'
+              ),
               selectableCount: pollCreation.selectableCount || 1,
             };
           }
@@ -236,7 +238,9 @@ export function registerUiApiRoutes(app) {
               contactMsg.displayName ||
               (contactMsg.vcard ? contactMsg.vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
               'Contact';
-            const phone = contactMsg.vcard ? contactMsg.vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : null;
+            const phone = contactMsg.vcard
+              ? contactMsg.vcard.match(/TEL.*:(.*)/)?.[1]?.trim()
+              : null;
             contactData = {
               displayName,
               phone,
