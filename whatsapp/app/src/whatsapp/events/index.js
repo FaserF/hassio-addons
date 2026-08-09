@@ -485,7 +485,24 @@ export function handleIncomingMessages(session) {
         } else if (messageType === 'eventMessage') {
           eventType = 'event';
           const evData = msg.message.eventMessage;
-          text = `[Event] ${evData?.name || 'Untitled'}${evData?.description ? `: ${evData.description}` : ''}`;
+          const evName = evData?.name || 'Untitled Event';
+          const evDesc = evData?.description || '';
+          const evStart = evData?.startTime
+            ? new Date(Number(evData.startTime) * 1000).toLocaleString('de-DE', {
+                dateStyle: 'full',
+                timeStyle: 'short',
+                timeZone: 'Europe/Berlin',
+              })
+            : null;
+          const evLoc = evData?.location?.name || '';
+          const evLink = evData?.joinLink || '';
+          const evCanceled = evData?.isCanceled ? ' ❌ ABGESAGT' : '';
+          const lines = [`📅 *[Event${evCanceled}]: ${evName}*`];
+          if (evStart) lines.push(`🕐 ${evStart}`);
+          if (evDesc) lines.push(`📝 ${evDesc}`);
+          if (evLoc) lines.push(`📍 ${evLoc}`);
+          if (evLink) lines.push(`🔗 ${evLink}`);
+          text = lines.join('\n');
         } else if (messageType === 'contactMessage' || messageType === 'contactsArrayMessage') {
           mediaType = 'contact';
           const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage;

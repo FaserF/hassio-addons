@@ -206,22 +206,50 @@ export async function syncWhatsAppToTelegram(
       const threadId = mapping.tg_thread_id || null;
 
       let tgResult = null;
-      if (mediaType === 'location' && msg.message?.locationMessage) {
-        const loc = msg.message.locationMessage;
-        tgResult = await bot
-          .request('sendLocation', {
+      if (mediaType === 'event') {
+        // WA eventMessage → Telegram: send as rich HTML card (Telegram has no native event type)
+        const evData = msg.message?.eventMessage;
+        if (evData) {
+          const evName = evData.name || 'Untitled Event';
+          const evDesc = evData.description || '';
+          const evStart = evData.startTime
+            ? new Date(Number(evData.startTime) * 1000).toLocaleString('de-DE', {
+                dateStyle: 'full', timeStyle: 'short', timeZone: 'Europe/Berlin',
+              })
+            : null;
+          const evLoc = evData.location?.name || '';
+          const evLink = evData.joinLink || '';
+          const evCanceled = evData.isCanceled ? ' ❌ ABGESAGT' : '';
+          const htmlLines = [`${header}<b>📅 [Event${evCanceled}]: ${evName}</b>`];
+          if (evStart) htmlLines.push(`🕐 ${evStart}`);
+          if (evDesc) htmlLines.push(`📝 ${evDesc}`);
+          if (evLoc) htmlLines.push(`📍 ${evLoc}`);
+          if (evLink) htmlLines.push(`🔗 <a href="${evLink}">Join Link</a>`);
+          const eventHtml = htmlLines.join('\n');
+          tgResult = await bot.request('sendMessage', {
             chat_id: mapping.tg_chat_id,
-            latitude: loc.degreesLatitude,
-            longitude: loc.degreesLongitude,
+            text: eventHtml,
+            parse_mode: 'HTML',
             reply_to_message_id: replyToTgMsgId || undefined,
             message_thread_id: threadId || undefined,
             disable_notification: silent,
-          })
-          .catch(() => null);
-        if (tgResult && fullText.trim() && !fullText.includes('📍 [Location Share')) {
-          await bot
-            .sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent)
-            .catch(() => null);
+          }).catch(() => null);
+        }
+      } else if (mediaType === 'location' && msg.message?.locationMessage) {
+        const loc = msg.message.locationMessage;
+        tgResult = await bot.request('sendLocation', {
+          chat_id: mapping.tg_chat_id,
+          latitude: loc.degreesLatitude,
+          longitude: loc.degreesLongitude,
+          reply_to_message_id: replyToTgMsgId || undefined,
+          message_thread_id: threadId || undefined,
+          disable_notification: silent,
+        }).catch(() => null);
+        // Always send sender info + location label after the pin (Telegram location pins carry no caption)
+        const locLabel = loc.name || loc.address || `${loc.degreesLatitude}, ${loc.degreesLongitude}`;
+        const locCaption = `${header}📍 ${locLabel}`;
+        if (tgResult) {
+          await bot.sendMessage(mapping.tg_chat_id, locCaption, tgResult.message_id, threadId, silent).catch(() => null);
         }
       } else if (mediaType === 'contact') {
         const contactObj =
@@ -265,51 +293,40 @@ export async function syncWhatsAppToTelegram(
         const options = (pollObj?.options || []).map((o) => o.optionName).filter(Boolean);
 
         if (pollMode === 'native_sync' || pollMode === 'native_no_vote') {
+          // Native mode: send as real Telegram poll, skip all text messages
           if (question && options.length > 0) {
             tgResult = await bot
               .sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent)
               .catch(() => null);
           }
-        }
-        if (!tgResult) {
-          if (pollMode === 'once_no_update') {
-            const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;
-            tgResult = await bot.sendMessage(
-              mapping.tg_chat_id,
-              shortPollText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            );
-          } else {
-            // text_diagram mode or fallback
-            if (mapping.poll_send_text_diagram !== false) {
-              tgResult = await bot.sendMessage(
-                mapping.tg_chat_id,
-                fullText,
-                replyToTgMsgId,
-                threadId,
-                silent
-              );
-            }
+          // Also send header so sender is known (polls have no caption in Telegram)
+          if (tgResult && header.trim()) {
+            await bot.sendMessage(mapping.tg_chat_id, header.trim(), tgResult.message_id, threadId, silent).catch(() => null);
+          }
+          if (!tgResult) {
+            // Fallback to text if sendPoll failed
+            tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent).catch(() => null);
+          }
+        } else if (pollMode === 'once_no_update') {
+          const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;
+          tgResult = await bot.sendMessage(mapping.tg_chat_id, shortPollText, replyToTgMsgId, threadId, silent).catch(() => null);
+        } else {
+          // text_diagram mode (default)
+          if (mapping.poll_send_text_diagram !== false) {
+            tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent).catch(() => null);
           }
         }
       } else if (mediaType === 'poll_update') {
         const pollMode = mapping.poll_sync_mode || 'text_diagram';
-        if (pollMode === 'once_no_update') {
-          // Do not send updates
-          return;
+        if (pollMode === 'once_no_update' || pollMode === 'native_sync' || pollMode === 'native_no_vote') {
+          // In native mode: Telegram manages the poll natively, no extra text updates needed
+          continue;
         }
+        // text_diagram mode: send update text
         if (mapping.poll_send_update_message !== false) {
-          tgResult = await bot.sendMessage(
-            mapping.tg_chat_id,
-            fullText,
-            replyToTgMsgId,
-            threadId,
-            silent
-          );
+          await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent).catch(() => null);
         }
-        return;
+        continue;
       }
 
       const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
@@ -560,15 +577,56 @@ export async function processTelegramUpdates() {
           const p = update.poll;
           const pollId = String(p.id);
           if (!store.cached_polls) store.cached_polls = {};
+          const previousPoll = store.cached_polls[pollId];
           store.cached_polls[pollId] = {
             id: pollId,
             question: p.question,
             options: (p.options || []).map((o) => o.text),
             total_voter_count: p.total_voter_count,
             is_closed: p.is_closed,
-            chat_id: store.cached_polls[pollId]?.chat_id || '',
+            chat_id: previousPoll?.chat_id || '',
           };
           saveTelegramStore(store);
+
+          // Build text diagram update and send to mapped WhatsApp chats
+          const tgChatIdForPoll = String(previousPoll?.chat_id || '');
+          const pollMappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              (!tgChatIdForPoll || String(m.tg_chat_id) === tgChatIdForPoll) &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          for (const mapping of pollMappings) {
+            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            // In native modes the WA poll manages itself — no text updates needed
+            if (pollMode === 'once_no_update' || pollMode === 'native_sync' || pollMode === 'native_no_vote') continue;
+            if (mapping.poll_send_update_message === false) continue;
+
+            const totalVotes = p.total_voter_count || 0;
+            const optLines = (p.options || []).map((opt) => {
+              const pct = totalVotes > 0 ? Math.round((opt.voter_count / totalVotes) * 100) : 0;
+              const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+              return `  ${opt.text}\n  ${bar} ${opt.voter_count} (${pct}%)`;
+            });
+            const closedLabel = p.is_closed ? ' ✅ Closed' : '';
+            const updateText = `📊 [Poll Update${closedLabel}: ${p.question}]\n${optLines.join('\n')}\n👥 Total voters: ${totalVotes}`;
+
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) { session = s; break; }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                await session.sock.sendMessage(mapping.wa_jid, { text: updateText });
+              } catch (e) {
+                logger.error({ error: e.message }, '❌ Failed to send Telegram poll update to WhatsApp');
+              }
+            }
+          }
           continue;
         }
 
@@ -797,6 +855,12 @@ export async function processTelegramUpdates() {
                 ? `\nOptions:\n${pollOptions.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
                 : '';
             tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
+            // Store native poll payload so per-mapping handler can create a native WA poll
+            mediaPayload = {
+              type: 'poll',
+              question: p.question || 'Poll',
+              options: pollOptions,
+            };
             const pollId = String(p.id);
             if (!store.cached_polls) store.cached_polls = {};
             store.cached_polls[pollId] = {
@@ -894,6 +958,24 @@ export async function processTelegramUpdates() {
                       contacts: [{ vcard: mediaPayload.vcard }],
                     },
                   };
+                } else if (mediaPayload.type === 'poll') {
+                  const pollMode = mapping.poll_sync_mode || 'text_diagram';
+                  if ((pollMode === 'native_sync' || pollMode === 'native_no_vote') && mediaPayload.options?.length > 0) {
+                    // Send native WhatsApp poll
+                    waContent = {
+                      poll: {
+                        name: mediaPayload.question,
+                        values: mediaPayload.options,
+                        selectableCount: 1,
+                      },
+                    };
+                  } else if (pollMode === 'once_no_update') {
+                    // Send short text once
+                    waContent = { text: `📊 [Poll: ${mediaPayload.question}]\nOptions: ${(mediaPayload.options || []).join(', ')}` };
+                  } else {
+                    // text_diagram: already in outboundWaText, use default text
+                    waContent = { text: outboundWaText };
+                  }
                 } else if (mediaPayload.url) {
                   if (mediaPayload.type === 'image') {
                     waContent = { image: { url: mediaPayload.url }, caption: outboundWaText };
@@ -930,6 +1012,14 @@ export async function processTelegramUpdates() {
                 waContent,
                 sendOptions
               );
+              // For location/live_location: follow up with sender info as text (WA native pins carry no caption)
+              if (sentWaMsg && (mediaPayload?.type === 'location' || mediaPayload?.type === 'live_location') && outboundWaText.trim()) {
+                await session.sock.sendMessage(
+                  mapping.wa_jid,
+                  { text: outboundWaText.trim() },
+                  sentWaMsg.key?.id ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } } : {}
+                ).catch(() => null);
+              }
               if (mediaPayload && mediaPayload.type === 'sticker' && outboundWaText.trim()) {
                 await session.sock
                   .sendMessage(
