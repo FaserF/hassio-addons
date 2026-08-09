@@ -5,6 +5,7 @@ import {
   sanitizeTelegramToken,
 } from '../../whatsapp/telegram/bot.js';
 import { getReqSession } from '../../session.js';
+import { ensureConnected } from './helpers.js';
 
 export function registerTelegramRoutes(app) {
   // GET /api/telegram/config
@@ -288,13 +289,13 @@ export function registerTelegramRoutes(app) {
     }
 
     const session = getReqSession(req);
-    if (!session || !session.isConnected || !session.sock) {
+    const connected = await ensureConnected(session, 8000);
+    if (!connected) {
       return res
         .status(400)
         .json({
           success: false,
-          error:
-            'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
+          error: 'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
         });
     }
 

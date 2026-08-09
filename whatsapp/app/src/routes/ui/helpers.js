@@ -250,8 +250,14 @@ function applyI18nDOM() {
 }
 
 async function setAppLanguage(lang) {
-  await initI18n(lang);
-  showToast(t('common.save') + ` (${lang.toUpperCase()})`, 'success');
+  try {
+    await initI18n(lang);
+    const langName = lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English';
+    showToast(`Language switched to ${langName}`, 'success');
+  } catch (err) {
+    console.error('setAppLanguage failed:', err);
+    showToast('Failed to switch language', 'danger');
+  }
 }
 
 window.t = t;
