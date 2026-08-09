@@ -396,7 +396,8 @@ export function registerTelegramRoutes(app) {
           mapping.tg_chat_id,
           noticeTextTg,
           null,
-          mapping.tg_thread_id || null
+          mapping.tg_thread_id || null,
+          true
         );
         if (tgRes && tgRes.message_id) {
           startNoticeTgMsgId = tgRes.message_id;
@@ -434,7 +435,8 @@ export function registerTelegramRoutes(app) {
               mapping.tg_chat_id,
               htmlText,
               null,
-              mapping.tg_thread_id || null
+              mapping.tg_thread_id || null,
+              true
             );
             log(
               'STEP_1',

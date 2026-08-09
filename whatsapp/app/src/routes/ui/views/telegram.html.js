@@ -95,61 +95,56 @@ export default () => `
         </div>
     </div>
 
-    <!-- Bridge Integration Test Collapsible Card (At the bottom, default collapsed) -->
-    <details class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
-        <summary style="display:flex; align-items:center; justify-content:space-between; list-style:none; outline:none; cursor:pointer;">
+    <!-- Bridge Integration Test Card (At the bottom) -->
+    <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
             <div style="display:flex; align-items:center; gap:14px;">
                 <div style="font-size: 22px; color: #ff9800; background: rgba(255, 152, 0, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
                     <i class="fas fa-vial"></i>
                 </div>
                 <div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <h3 style="margin: 0; font-weight: 600; font-size:16px; display:inline;">Bridge Integration Test</h3>
+                        <h3 style="margin: 0; font-weight: 600; font-size:16px; display:inline;" data-i18n="telegram.test_suite">Bridge Integration Test</h3>
                         <span class="badge" style="background:rgba(255,152,0,0.15); color:#ff9800; font-size:11px; padding:2px 8px; border-radius:10px;">End-to-End Suite</span>
                     </div>
                     <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 13px;">
-                        Click to expand end-to-end automated verification for ALL 16 message &amp; media types.
+                        Run comprehensive end-to-end verification of ALL 16 message &amp; media types (text, polls, votes, location, events, photos, audio, video, docs, stickers, contacts, reactions, edits, deletions, reply chains, system events).
                     </p>
                 </div>
             </div>
-            <span style="font-size:13px; font-weight:600; color:var(--primary); white-space:nowrap; display:flex; align-items:center; gap:6px;">
-                <i class="fas fa-chevron-down"></i> Expand Test Panel
-            </span>
-        </summary>
+            <button class="btn btn-primary" style="height:42px; padding:0 24px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border:none; box-shadow:0 4px 12px rgba(255,152,0,0.3);" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
+                <i class="fas fa-play"></i> <span data-i18n="telegram.run_test">Run Integration Test</span>
+            </button>
+        </div>
 
-        <div style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px;">
-            <!-- Controls Row: Target Mapping + Direction + RUN BUTTON -->
-            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:16px; background:rgba(255,152,0,0.05); border:1px solid rgba(255,152,0,0.2); padding:16px; border-radius:8px;">
-                <div style="flex:1; min-width:220px;">
-                    <label class="mod-field-label" style="font-weight:600;"><i class="fas fa-link"></i> Target Mapping</label>
-                    <select id="tg-test-mapping-select" class="mod-select" style="width:100%; height:38px;">
-                        <option value="">Loading mappings...</option>
+        <div>
+            <!-- Controls Row: Target Mapping + Direction -->
+            <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:16px; background:rgba(255,152,0,0.06); border:1px solid rgba(255,152,0,0.25); padding:16px; border-radius:10px;">
+                <div style="flex:1; min-width:240px;">
+                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-link"></i> Select Target Chat / Group Mapping to Test</label>
+                    <select id="tg-test-mapping-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
+                        <option value="">Loading active mappings...</option>
                     </select>
                 </div>
-                <div style="flex:1; min-width:200px;">
-                    <label class="mod-field-label" style="font-weight:600;"><i class="fas fa-exchange-alt"></i> Test Direction</label>
-                    <select id="tg-test-direction-select" class="mod-select" style="width:100%; height:38px;">
+                <div style="flex:1; min-width:220px;">
+                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-exchange-alt"></i> Sync Direction</label>
+                    <select id="tg-test-direction-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
                         <option value="wa_to_tg">WhatsApp ➔ Telegram (WA to TG)</option>
                         <option value="tg_to_wa">Telegram ➔ WhatsApp (TG to WA)</option>
                     </select>
                 </div>
-                <div>
-                    <button class="btn btn-primary" style="height:38px; padding:0 24px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border:none;" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
-                        <i class="fas fa-play"></i> Run Integration Test
-                    </button>
-                </div>
             </div>
 
             <!-- Subtest Selection Matrix -->
-            <div style="margin-bottom:16px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <label class="mod-field-label" style="margin:0;"><i class="fas fa-tasks"></i> Select Subtests to Execute (Message &amp; Media Types)</label>
+            <div style="margin-bottom:16px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <label class="mod-field-label" style="margin:0; font-weight:600;"><i class="fas fa-tasks"></i> Select Subtests to Execute (Message &amp; Media Types)</label>
                     <div style="display:flex; gap:6px;">
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="selectAllTgSubtests(true)">Select All</button>
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="selectAllTgSubtests(false)">Select None</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px; font-size:11px;" onclick="selectAllTgSubtests(true)" data-i18n="common.select_all">Select All</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px; font-size:11px;" onclick="selectAllTgSubtests(false)" data-i18n="common.select_none">Select None</button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:6px; font-size:12px;">
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:8px; font-size:12px;">
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="text" checked> <span>💬 Text &amp; Formatting</span></label>
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll" checked> <span>📊 Native Polls</span></label>
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll_vote" checked> <span>🗳️ Poll Vote Sync</span></label>
@@ -169,19 +164,22 @@ export default () => `
                 </div>
             </div>
 
-            <!-- Live Log Output Panel (Always visible terminal console) -->
-            <div id="tg-test-results-panel" style="display:block; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-top:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+            <!-- Live Log Output Panel (Terminal Console) -->
+            <div id="tg-test-results-panel" style="display:block; background:#111827; border:1px solid #374151; border-radius:10px; padding:16px; margin-top:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #374151; padding-bottom:8px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span id="tg-test-status-badge" class="badge" style="background:#777; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;">READY</span>
-                        <strong id="tg-test-progress-text" style="font-size:14px;">Progress: Ready to execute</strong>
+                        <span id="tg-test-status-badge" class="badge" style="background:#4b5563; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;">READY</span>
+                        <strong id="tg-test-progress-text" style="font-size:14px; color:#e5e7eb;">Progress: Ready to execute</strong>
                     </div>
-                    <div style="font-size:12px; color:var(--text-muted);" id="tg-test-run-id"><i class="fas fa-terminal"></i> Integration Test Console</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> Copy All</button>
+                        <div style="font-size:12px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> Live Bridge Test Console</div>
+                    </div>
                 </div>
-                <pre id="tg-test-log-output" style="background:var(--bg-input); color:#0088cc; font-family:Consolas, monospace; font-size:12px; padding:12px; border-radius:6px; max-height:280px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid var(--border-color);">Ready. Select a target mapping above and click "Run Integration Test" to stream real-time logs.</pre>
+                <pre id="tg-test-log-output" style="background:#030712; color:#38bdf8; font-family:Consolas, Monaco, monospace; font-size:12px; padding:14px; border-radius:8px; max-height:300px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid #1f2937; line-height:1.5;">Console Ready. Select a target chat mapping above and click "Run Integration Test" to stream live logs.</pre>
             </div>
         </div>
-    </details>
+    </div>
 
 
 

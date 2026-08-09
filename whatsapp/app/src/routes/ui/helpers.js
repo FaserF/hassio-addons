@@ -181,7 +181,17 @@ window.showConfirm = showConfirm;
 window.toggleTheme = toggleTheme;
 
 // Client-side i18n Engine
-const initialLang = localStorage.getItem('ha-whatsapp-lang') || 'de';
+const getInitialLanguage = () => {
+  const saved = localStorage.getItem('ha-whatsapp-lang');
+  if (saved) return saved;
+  if (typeof navigator !== 'undefined') {
+    const browserLang = (navigator.language || navigator.userLanguage || '').split('-')[0].toLowerCase();
+    if (browserLang && ['de', 'en'].includes(browserLang)) return browserLang;
+  }
+  return 'en';
+};
+
+const initialLang = getInitialLanguage();
 let currentLang = initialLang;
 let currentTranslations = {};
 
@@ -196,6 +206,8 @@ async function initI18n(lang = currentLang) {
       window.currentLang = currentLang;
       localStorage.setItem('ha-whatsapp-lang', lang);
       document.documentElement.setAttribute('lang', lang);
+      const langSelect = document.getElementById('language-select');
+      if (langSelect) langSelect.value = lang;
       applyI18nDOM();
     }
   } catch (err) {

@@ -891,6 +891,8 @@ async function pollTelegramTestResults(runId) {
     }
 
     if (logOutput && Array.isArray(testRun.logs)) {
+      const isAtBottom =
+        logOutput.scrollHeight - logOutput.scrollTop <= logOutput.clientHeight + 60;
       const formattedLogs = testRun.logs
         .map((l) => {
           const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
@@ -906,7 +908,9 @@ async function pollTelegramTestResults(runId) {
         })
         .join('\n');
       logOutput.textContent = formattedLogs;
-      logOutput.scrollTop = logOutput.scrollHeight;
+      if (isAtBottom) {
+        logOutput.scrollTop = logOutput.scrollHeight;
+      }
     }
 
     if (testRun.status !== 'running') {
@@ -934,4 +938,18 @@ async function pollTelegramTestResults(runId) {
     console.error('Error polling Telegram test results', err);
   }
 }
+
+function copyTgTestLogs() {
+  const logOutput = document.getElementById('tg-test-log-output');
+  if (logOutput && logOutput.textContent) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(logOutput.textContent);
+    }
+    showToast('Telegram test logs copied to clipboard!', 'success');
+  }
+}
+
+window.runTelegramBridgeTest = runTelegramBridgeTest;
+window.selectAllTgSubtests = selectAllTgSubtests;
+window.copyTgTestLogs = copyTgTestLogs;
 window.pollTelegramTestResults = pollTelegramTestResults;

@@ -693,6 +693,7 @@ export default () => `
                                     <div style="display:flex; justify-content:space-between; align-items:center; color:#aaa; border-bottom:1px solid #333; padding-bottom:6px; margin-bottom:6px; font-weight:600;">
                                         <span><i class="fas fa-terminal"></i> Live Moderation Auto-Test Stream</span>
                                         <div style="display:flex; gap:6px;">
+                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="copyAutoTestLogs()"><i class="fas fa-copy"></i> Copy All</button>
                                             <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
                                             <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
                                         </div>

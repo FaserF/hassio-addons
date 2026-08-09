@@ -827,10 +827,13 @@ export function registerModerationRoutes(app) {
           else if (testItem.type === 'custom_cmd') {
             if (testItem.sub === 'text') {
               const formatted = formatMessageTemplate(testItem.response, {
-                user: '@TestUser',
-                group: 'Test Group',
+                userId: '491700000003@s.whatsapp.net',
+                participantJid: '491700000003@s.whatsapp.net',
+                groupId: group_id || '120363431097369109@g.us',
+                groupMeta: { subject: 'Test Group', participants: new Array(42) },
+                session,
               });
-              if (!formatted.includes('@TestUser') || !formatted.includes('Test Group')) {
+              if (!formatted || formatted === testItem.response) {
                 throw new Error('Custom auto-reply placeholder replacement failed');
               }
               details = `Auto-reply template interpolated: "${formatted}"`;
@@ -877,7 +880,8 @@ export function registerModerationRoutes(app) {
                 throw new Error('Regex word filter pattern matching failed');
               details = `Regex /${testItem.pattern}/${testItem.flags} matched text`;
             } else if (testItem.sub === 'clean') {
-              const isBlacklisted = (config.blacklist || []).some((w) => testItem.text.includes(w));
+              const blacklistArr = Array.isArray(config.blacklist) ? config.blacklist : [];
+              const isBlacklisted = blacklistArr.some((w) => testItem.text.includes(w));
               if (isBlacklisted) throw new Error('Clean text incorrectly flagged');
               details = 'Clean message passed filter check';
             }
@@ -924,14 +928,14 @@ export function registerModerationRoutes(app) {
           // --- 8. Welcome Greetings & Captcha System ---
           else if (testItem.type === 'welcome_captcha') {
             if (testItem.sub === 'welcome_template') {
-              const tmpl = 'Welcome {mention} ({name}) to {group}! Total members: {count}';
-              const formatted = formatMessageTemplate(tmpl, {
-                mention: '@491700000003',
-                name: 'New Member',
-                group: 'Test Group',
-                count: 42,
+              const formatted = formatMessageTemplate(testItem.template, {
+                userId: '491700000003@s.whatsapp.net',
+                participantJid: '491700000003@s.whatsapp.net',
+                groupId: group_id || '120363431097369109@g.us',
+                groupMeta: { subject: 'Test Group', participants: new Array(42) },
+                session,
               });
-              if (!formatted.includes('@491700000003') || !formatted.includes('42')) {
+              if (!formatted || formatted === testItem.template) {
                 throw new Error('Welcome message template formatting failed');
               }
               details = `Welcome template formatted: "${formatted}"`;

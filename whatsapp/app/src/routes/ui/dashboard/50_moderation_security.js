@@ -451,6 +451,8 @@ async function runAutonomousModerationTest() {
 
   const appendLog = (msg, styleType = 'normal') => {
     if (!logContent) return;
+    const isAtBottom =
+      logStream ? logStream.scrollHeight - logStream.scrollTop <= logStream.clientHeight + 60 : true;
     const div = document.createElement('div');
     if (styleType === 'error') {
       div.style.color = '#ff5555';
@@ -468,7 +470,9 @@ async function runAutonomousModerationTest() {
     }
     div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
     logContent.appendChild(div);
-    if (logStream) logStream.scrollTop = logStream.scrollHeight;
+    if (logStream && isAtBottom) {
+      logStream.scrollTop = logStream.scrollHeight;
+    }
   };
 
   appendLog(
@@ -560,3 +564,18 @@ async function runAutonomousModerationTest() {
     }
   }
 }
+
+function copyAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  if (logContent && logContent.textContent) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(logContent.textContent);
+    }
+    showToast('Auto-test logs copied to clipboard!', 'success');
+  }
+}
+
+window.runAutonomousModerationTest = runAutonomousModerationTest;
+window.clearAutoTestLogs = clearAutoTestLogs;
+window.exportAutoTestLogs = exportAutoTestLogs;
+window.copyAutoTestLogs = copyAutoTestLogs;
