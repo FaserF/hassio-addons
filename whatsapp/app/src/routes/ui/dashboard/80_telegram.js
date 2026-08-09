@@ -818,7 +818,10 @@ async function runTelegramBridgeTest() {
 
   // Pre-flight: check WhatsApp connection status before launching
   if (typeof isConnected !== 'undefined' && !isConnected) {
-    showToast('⚠️ WhatsApp is not connected. Please connect your WhatsApp session first.', 'danger');
+    showToast(
+      '⚠️ WhatsApp is not connected. Please connect your WhatsApp session first.',
+      'danger'
+    );
     return;
   }
 

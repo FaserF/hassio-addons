@@ -289,9 +289,14 @@ export function registerTelegramRoutes(app) {
 
     const session = getReqSession(req);
     if (!session || !session.isConnected || !session.sock) {
-      return res.status(400).json({ success: false, error: 'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
+        });
     }
-
 
     const enabledSubtests =
       Array.isArray(selected_subtests) && selected_subtests.length > 0
