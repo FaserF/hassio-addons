@@ -243,15 +243,15 @@ function renderChatList(chats) {
         fetchAvatar(c.jid);
       }
 
-function matchJid(a, b) {
-  if (!a || !b) return false;
-  const sA = String(a).trim().toLowerCase();
-  const sB = String(b).trim().toLowerCase();
-  if (sA === sB) return true;
-  const rawA = sA.split('@')[0];
-  const rawB = sB.split('@')[0];
-  return rawA === rawB;
-}
+      function matchJid(a, b) {
+        if (!a || !b) return false;
+        const sA = String(a).trim().toLowerCase();
+        const sB = String(b).trim().toLowerCase();
+        if (sA === sB) return true;
+        const rawA = sA.split('@')[0];
+        const rawB = sB.split('@')[0];
+        return rawA === rawB;
+      }
 
       // Check Moderation active state for this group
       let hasModActive = false;
@@ -1380,4 +1380,3 @@ window.navigateToModerationGroup = navigateToModerationGroup;
 window.navigateToTelegramMapping = navigateToTelegramMapping;
 window.switchNewChatTab = switchNewChatTab;
 window.createNewGroupSubmit = createNewGroupSubmit;
-
