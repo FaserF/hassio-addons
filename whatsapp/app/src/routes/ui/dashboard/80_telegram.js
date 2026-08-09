@@ -843,7 +843,12 @@ async function runTelegramBridgeTest() {
     const res = await fetch('api/telegram/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mapping_id, direction, selected_subtests, session_id: currentSession }),
+      body: JSON.stringify({
+        mapping_id,
+        direction,
+        selected_subtests,
+        session_id: currentSession,
+      }),
     });
 
     const data = await res.json();

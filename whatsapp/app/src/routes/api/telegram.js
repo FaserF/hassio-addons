@@ -291,12 +291,11 @@ export function registerTelegramRoutes(app) {
     const session = getReqSession(req);
     const connected = await ensureConnected(session, 8000);
     if (!connected) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: 'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
-        });
+      return res.status(400).json({
+        success: false,
+        error:
+          'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
+      });
     }
 
     const enabledSubtests =
