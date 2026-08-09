@@ -304,8 +304,10 @@ export async function syncWhatsAppToTelegram(
         if (pollMode === 'native_sync' || pollMode === 'native_no_vote') {
           // Native mode: send as real Telegram poll, skip all text messages
           if (question && options.length > 0) {
+            const isAnon = Boolean(mapping.poll_is_anonymous ?? false);
+            const isMulti = Boolean((pollObj?.selectableCount || 1) > 1);
             tgResult = await bot
-              .sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent)
+              .sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent, isAnon, isMulti)
               .catch(() => null);
           }
           // Also send header so sender is known (polls have no caption in Telegram)
@@ -343,11 +345,22 @@ export async function syncWhatsAppToTelegram(
           // In native mode: Telegram manages the poll natively, no extra text updates needed
           continue;
         }
-        // text_diagram mode: send update text
+        // text_diagram mode: send update text (and optionally delete old diagram)
         if (mapping.poll_send_update_message !== false) {
-          await bot
+          const pollKey = msg.message?.pollUpdateMessage?.pollCreationMessageKey?.id;
+          if (pollKey && store.cached_polls?.[pollKey]?.last_diagram_tg_msg_id && mapping.poll_delete_old_diagram !== false) {
+            const oldId = store.cached_polls[pollKey].last_diagram_tg_msg_id;
+            await bot.deleteMessage(mapping.tg_chat_id, oldId).catch(() => null);
+          }
+          const sentDiag = await bot
             .sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent)
             .catch(() => null);
+          if (pollKey && sentDiag?.message_id) {
+            if (!store.cached_polls) store.cached_polls = {};
+            if (!store.cached_polls[pollKey]) store.cached_polls[pollKey] = {};
+            store.cached_polls[pollKey].last_diagram_tg_msg_id = sentDiag.message_id;
+            saveTelegramStore(store);
+          }
         }
         continue;
       }
@@ -623,16 +636,35 @@ export async function processTelegramUpdates() {
 
           for (const mapping of pollMappings) {
             const pollMode = mapping.poll_sync_mode || 'text_diagram';
-            // In native modes the WA poll manages itself — no text updates needed
-            if (
-              pollMode === 'once_no_update' ||
-              pollMode === 'native_sync' ||
-              pollMode === 'native_no_vote'
-            )
+            if (pollMode === 'once_no_update' || pollMode === 'native_no_vote')
               continue;
-            if (mapping.poll_send_update_message === false) continue;
 
             const totalVotes = p.total_voter_count || 0;
+            if (pollMode === 'native_sync') {
+              // Auto-vote mode: find leading option with highest votes and relay winner update
+              if (totalVotes > 0) {
+                const sortedOpts = [...(p.options || [])].sort((a, b) => (b.voter_count || 0) - (a.voter_count || 0));
+                const winner = sortedOpts[0];
+                if (winner && winner.voter_count > 0) {
+                  const winnerText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
+                  let session = getSession('default');
+                  if (!session || !session.sock || !session.isConnected) {
+                    for (const s of sessions.values()) {
+                      if (s.sock && s.isConnected) {
+                        session = s;
+                        break;
+                      }
+                    }
+                  }
+                  if (session && session.sock && session.isConnected) {
+                    await session.sock.sendMessage(mapping.wa_jid, { text: winnerText }).catch(() => null);
+                  }
+                }
+              }
+              continue;
+            }
+            if (mapping.poll_send_update_message === false) continue;
+
             const optLines = (p.options || []).map((opt) => {
               const pct = totalVotes > 0 ? Math.round((opt.voter_count / totalVotes) * 100) : 0;
               const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
@@ -894,6 +926,8 @@ export async function processTelegramUpdates() {
               type: 'poll',
               question: p.question || 'Poll',
               options: pollOptions,
+              allows_multiple_answers: Boolean(p.allows_multiple_answers),
+              is_anonymous: Boolean(p.is_anonymous),
             };
             const pollId = String(p.id);
             if (!store.cached_polls) store.cached_polls = {};
@@ -1003,7 +1037,9 @@ export async function processTelegramUpdates() {
                       poll: {
                         name: mediaPayload.question,
                         values: mediaPayload.options,
-                        selectableCount: 1,
+                        selectableCount: mediaPayload.allows_multiple_answers
+                          ? mediaPayload.options.length
+                          : 1,
                       },
                     };
                   } else if (pollMode === 'once_no_update') {

@@ -240,12 +240,16 @@ export class TelegramBotClient {
     options = [],
     replyToMessageId = null,
     threadId = null,
-    disableNotification = false
+    disableNotification = false,
+    isAnonymous = false,
+    allowsMultipleAnswers = false
   ) {
     const payload = {
       chat_id: chatId,
       question: question,
       options: JSON.stringify(options),
+      is_anonymous: Boolean(isAnonymous),
+      allows_multiple_answers: Boolean(allowsMultipleAnswers),
       disable_notification: Boolean(disableNotification),
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
