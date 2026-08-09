@@ -68,7 +68,9 @@ describe('Telegram Bridge Unit Tests', () => {
     const qAnim = { animation: {} };
     const qSticker = { sticker: { emoji: '🔥' } };
     const tagAnim = qAnim.animation ? '🎥 [GIF/Video]' : '';
-    const tagSticker = qSticker.sticker ? `🎨 [Sticker ${qSticker.sticker.emoji || ''}]`.trim() : '';
+    const tagSticker = qSticker.sticker
+      ? `🎨 [Sticker ${qSticker.sticker.emoji || ''}]`.trim()
+      : '';
     assert.strictEqual(tagAnim, '🎥 [GIF/Video]');
     assert.strictEqual(tagSticker, '🎨 [Sticker 🔥]');
   });

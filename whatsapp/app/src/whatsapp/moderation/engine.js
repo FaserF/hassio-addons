@@ -1226,8 +1226,7 @@ export async function handleModerationMessage(session, event) {
     ...(Array.isArray(config.blacklist?.words) ? config.blacklist.words : []),
     ...(Array.isArray(config.blacklisted_words) ? config.blacklisted_words : []),
   ];
-  const isBlacklistEnabled =
-    config.blacklist?.enabled !== false && blacklistWords.length > 0;
+  const isBlacklistEnabled = config.blacklist?.enabled !== false && blacklistWords.length > 0;
 
   if (isBlacklistEnabled) {
     const lowerText = text.toLowerCase();

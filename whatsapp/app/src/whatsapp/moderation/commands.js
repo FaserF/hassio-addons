@@ -2297,11 +2297,11 @@ registry.register(
     const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage;
     const hasAttachment = Boolean(
       quotedMsg?.imageMessage ||
-        quotedMsg?.videoMessage ||
-        quotedMsg?.documentMessage ||
-        quotedMsg?.audioMessage ||
-        rawMsg?.message?.imageMessage ||
-        rawMsg?.message?.documentMessage
+      quotedMsg?.videoMessage ||
+      quotedMsg?.documentMessage ||
+      quotedMsg?.audioMessage ||
+      rawMsg?.message?.imageMessage ||
+      rawMsg?.message?.documentMessage
     );
 
     // Extract links
@@ -2341,8 +2341,8 @@ registry.register(
     const typeDesc = hasAttachment
       ? 'Attachment (Media/Document)'
       : urlMatches.length > 0
-      ? `URL Link (${urlMatches.length})`
-      : 'Message Text';
+        ? `URL Link (${urlMatches.length})`
+        : 'Message Text';
 
     await reply(
       session,

@@ -262,9 +262,7 @@ function updateModerationDisabledState() {
   if (isGlobalEnabled && typeof currentModGroup !== 'undefined' && currentModGroup) {
     const groupContent = document.getElementById('mod-group-content');
     if (groupContent) {
-      const subCards = groupContent.querySelectorAll(
-        '.mod-settings-card, .mod-sub-panel, .card'
-      );
+      const subCards = groupContent.querySelectorAll('.mod-settings-card, .mod-sub-panel, .card');
       subCards.forEach((card) => {
         if (!isGroupEnabled) {
           card.classList.add('disabled-section');
@@ -298,27 +296,27 @@ async function loadModerationConfig() {
           builtinCommandsCache = cmdsJson.data;
         }
       }
-  } catch (cmdsErr) {
-    console.warn('Failed to load built-in commands list:', cmdsErr);
-  }
-
-  if (modRes.ok) {
-    const json = await modRes.json();
-    if (json.success && json.data) {
-      modStoreCache = json.data;
-      const globalToggle = document.getElementById('mod-global-toggle');
-      if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
-      const aiKeyEl = document.getElementById('mod-ai-key');
-      if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
-        aiKeyEl.value = modStoreCache.gemini_api_key;
-      }
-      const globalRulesInp = document.getElementById('mod-global-rules-input');
-      if (globalRulesInp && modStoreCache.global_rules !== undefined) {
-        globalRulesInp.value = modStoreCache.global_rules;
-      }
-      updateModerationDisabledState();
+    } catch (cmdsErr) {
+      console.warn('Failed to load built-in commands list:', cmdsErr);
     }
-  }
+
+    if (modRes.ok) {
+      const json = await modRes.json();
+      if (json.success && json.data) {
+        modStoreCache = json.data;
+        const globalToggle = document.getElementById('mod-global-toggle');
+        if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+        const aiKeyEl = document.getElementById('mod-ai-key');
+        if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
+          aiKeyEl.value = modStoreCache.gemini_api_key;
+        }
+        const globalRulesInp = document.getElementById('mod-global-rules-input');
+        if (globalRulesInp && modStoreCache.global_rules !== undefined) {
+          globalRulesInp.value = modStoreCache.global_rules;
+        }
+        updateModerationDisabledState();
+      }
+    }
 
     // Populate group select dropdown from live chat list and moderation store
     const select = document.getElementById('mod-group-select');

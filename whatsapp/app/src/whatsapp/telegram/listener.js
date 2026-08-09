@@ -505,14 +505,7 @@ export async function syncWhatsAppToTelegram(
 
       const sentTgMsgId = tgResult?.message_id || tgResult?.result?.message_id;
       if (sentTgMsgId && waMsgId) {
-        recordMessageMap(
-          waMsgId,
-          mapping.tg_chat_id,
-          sentTgMsgId,
-          waJid,
-          isFromMe,
-          senderName
-        );
+        recordMessageMap(waMsgId, mapping.tg_chat_id, sentTgMsgId, waJid, isFromMe, senderName);
       }
     } catch (err) {
       logger.error(
@@ -617,7 +610,9 @@ export async function processTelegramUpdates() {
                     await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
                   } catch (_delErr) {}
                 }
-                const sentWaMsg = await session.sock.sendMessage(mapping.wa_jid, { text: voteText });
+                const sentWaMsg = await session.sock.sendMessage(mapping.wa_jid, {
+                  text: voteText,
+                });
                 if (sentWaMsg?.key && pollId) {
                   if (!store.cached_polls) store.cached_polls = {};
                   if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
@@ -989,16 +984,16 @@ export async function processTelegramUpdates() {
             const qMediaTag = qMsg.animation
               ? '🎥 [GIF/Video]'
               : qMsg.sticker
-              ? `🎨 [Sticker ${qMsg.sticker.emoji || ''}]`.trim()
-              : qMsg.photo
-              ? '📷 [Photo]'
-              : qMsg.video
-              ? '🎥 [Video]'
-              : qMsg.audio || qMsg.voice
-              ? '🎵 [Audio]'
-              : qMsg.document
-              ? `📄 [Document: ${qMsg.document.file_name || ''}]`.trim()
-              : '';
+                ? `🎨 [Sticker ${qMsg.sticker.emoji || ''}]`.trim()
+                : qMsg.photo
+                  ? '📷 [Photo]'
+                  : qMsg.video
+                    ? '🎥 [Video]'
+                    : qMsg.audio || qMsg.voice
+                      ? '🎵 [Audio]'
+                      : qMsg.document
+                        ? `📄 [Document: ${qMsg.document.file_name || ''}]`.trim()
+                        : '';
             const qText = qMsg.text || qMsg.caption || qMediaTag;
             const snippet = qText
               ? qText.length > 80
