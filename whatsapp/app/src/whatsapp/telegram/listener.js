@@ -31,7 +31,12 @@ export function formatHeader(
   return `<b>[${parts.join(' | ')}]</b>:\n`;
 }
 
-export async function syncWhatsAppGroupEventToTelegram(waJid, groupName, action, participants = []) {
+export async function syncWhatsAppGroupEventToTelegram(
+  waJid,
+  groupName,
+  action,
+  participants = []
+) {
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
@@ -203,19 +208,24 @@ export async function syncWhatsAppToTelegram(
       let tgResult = null;
       if (mediaType === 'location' && msg.message?.locationMessage) {
         const loc = msg.message.locationMessage;
-        tgResult = await bot.request('sendLocation', {
-          chat_id: mapping.tg_chat_id,
-          latitude: loc.degreesLatitude,
-          longitude: loc.degreesLongitude,
-          reply_to_message_id: replyToTgMsgId || undefined,
-          message_thread_id: threadId || undefined,
-          disable_notification: silent,
-        }).catch(() => null);
+        tgResult = await bot
+          .request('sendLocation', {
+            chat_id: mapping.tg_chat_id,
+            latitude: loc.degreesLatitude,
+            longitude: loc.degreesLongitude,
+            reply_to_message_id: replyToTgMsgId || undefined,
+            message_thread_id: threadId || undefined,
+            disable_notification: silent,
+          })
+          .catch(() => null);
         if (tgResult && fullText.trim() && !fullText.includes('📍 [Location Share')) {
-          await bot.sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent).catch(() => null);
+          await bot
+            .sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent)
+            .catch(() => null);
         }
       } else if (mediaType === 'contact') {
-        const contactObj = msg.message?.contactMessage || msg.message?.contactsArrayMessage?.contacts?.[0];
+        const contactObj =
+          msg.message?.contactMessage || msg.message?.contactsArrayMessage?.contacts?.[0];
         const vcard = contactObj?.vcard || '';
         const displayName =
           contactObj?.displayName ||
@@ -224,18 +234,26 @@ export async function syncWhatsAppToTelegram(
         const phoneMatch = vcard ? vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : '';
 
         if (phoneMatch || displayName) {
-          tgResult = await bot.request('sendContact', {
-            chat_id: mapping.tg_chat_id,
-            phone_number: phoneMatch || '0000000',
-            first_name: displayName,
-            vcard: vcard || undefined,
-            reply_to_message_id: replyToTgMsgId || undefined,
-            message_thread_id: threadId || undefined,
-            disable_notification: silent,
-          }).catch(() => null);
+          tgResult = await bot
+            .request('sendContact', {
+              chat_id: mapping.tg_chat_id,
+              phone_number: phoneMatch || '0000000',
+              first_name: displayName,
+              vcard: vcard || undefined,
+              reply_to_message_id: replyToTgMsgId || undefined,
+              message_thread_id: threadId || undefined,
+              disable_notification: silent,
+            })
+            .catch(() => null);
         }
         if (!tgResult) {
-          tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+          tgResult = await bot.sendMessage(
+            mapping.tg_chat_id,
+            fullText,
+            replyToTgMsgId,
+            threadId,
+            silent
+          );
         }
       } else if (mediaType === 'poll') {
         const pollMode = mapping.poll_sync_mode || 'text_diagram';
@@ -248,17 +266,31 @@ export async function syncWhatsAppToTelegram(
 
         if (pollMode === 'native_sync' || pollMode === 'native_no_vote') {
           if (question && options.length > 0) {
-            tgResult = await bot.sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent).catch(() => null);
+            tgResult = await bot
+              .sendPoll(mapping.tg_chat_id, question, options, replyToTgMsgId, threadId, silent)
+              .catch(() => null);
           }
         }
         if (!tgResult) {
           if (pollMode === 'once_no_update') {
             const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;
-            tgResult = await bot.sendMessage(mapping.tg_chat_id, shortPollText, replyToTgMsgId, threadId, silent);
+            tgResult = await bot.sendMessage(
+              mapping.tg_chat_id,
+              shortPollText,
+              replyToTgMsgId,
+              threadId,
+              silent
+            );
           } else {
             // text_diagram mode or fallback
             if (mapping.poll_send_text_diagram !== false) {
-              tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+              tgResult = await bot.sendMessage(
+                mapping.tg_chat_id,
+                fullText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              );
             }
           }
         }
@@ -269,17 +301,42 @@ export async function syncWhatsAppToTelegram(
           return;
         }
         if (mapping.poll_send_update_message !== false) {
-          tgResult = await bot.sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent);
+          tgResult = await bot.sendMessage(
+            mapping.tg_chat_id,
+            fullText,
+            replyToTgMsgId,
+            threadId,
+            silent
+          );
         }
         return;
       }
 
-      const mediaSource = (mediaPath && fs.existsSync(mediaPath)) ? mediaPath : mediaUrl;
+      const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
       if (!tgResult && mediaSource) {
         if (mediaType === 'sticker') {
-          tgResult = await bot.sendMediaFile('sendSticker', mapping.tg_chat_id, mediaSource, 'sticker', '', replyToTgMsgId, threadId, silent).catch(() => null);
+          tgResult = await bot
+            .sendMediaFile(
+              'sendSticker',
+              mapping.tg_chat_id,
+              mediaSource,
+              'sticker',
+              '',
+              replyToTgMsgId,
+              threadId,
+              silent
+            )
+            .catch(() => null);
           if (tgResult && fullText.trim()) {
-            await bot.sendMessage(mapping.tg_chat_id, fullText.trim(), tgResult.message_id, threadId, silent).catch(() => null);
+            await bot
+              .sendMessage(
+                mapping.tg_chat_id,
+                fullText.trim(),
+                tgResult.message_id,
+                threadId,
+                silent
+              )
+              .catch(() => null);
           }
         } else if (mediaType === 'image') {
           tgResult = await bot
@@ -701,21 +758,36 @@ export async function processTelegramUpdates() {
               latitude: loc.latitude,
               longitude: loc.longitude,
             };
-            tgText = tgText || (isLive ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]` : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
-          } else if (msg.new_chat_members && Array.isArray(msg.new_chat_members) && msg.new_chat_members.length > 0) {
+            tgText =
+              tgText ||
+              (isLive
+                ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]`
+                : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
+          } else if (
+            msg.new_chat_members &&
+            Array.isArray(msg.new_chat_members) &&
+            msg.new_chat_members.length > 0
+          ) {
             const names = msg.new_chat_members
-              .map((m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User')
+              .map(
+                (m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User'
+              )
               .join(', ');
             tgText = `👥 [System: ${names} joined the Telegram group]`;
           } else if (msg.left_chat_member) {
             const m = msg.left_chat_member;
-            const name = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
+            const name =
+              `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
             tgText = `👥 [System: ${name} left the Telegram group]`;
           } else if (msg.pinned_message) {
             const pinnedSender = msg.pinned_message.from
-              ? `${msg.pinned_message.from.first_name || ''} ${msg.pinned_message.from.last_name || ''}`.trim() || msg.pinned_message.from.username
+              ? `${msg.pinned_message.from.first_name || ''} ${msg.pinned_message.from.last_name || ''}`.trim() ||
+                msg.pinned_message.from.username
               : 'User';
-            const snippet = (msg.pinned_message.text || msg.pinned_message.caption || '').slice(0, 60);
+            const snippet = (msg.pinned_message.text || msg.pinned_message.caption || '').slice(
+              0,
+              60
+            );
             tgText = `📌 [Pinned Message by ${pinnedSender}]: ${snippet}`;
           } else if (msg.poll) {
             const p = msg.poll;
@@ -859,11 +931,15 @@ export async function processTelegramUpdates() {
                 sendOptions
               );
               if (mediaPayload && mediaPayload.type === 'sticker' && outboundWaText.trim()) {
-                await session.sock.sendMessage(
-                  mapping.wa_jid,
-                  { text: outboundWaText.trim() },
-                  sentWaMsg && sentWaMsg.key?.id ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } } : {}
-                ).catch(() => null);
+                await session.sock
+                  .sendMessage(
+                    mapping.wa_jid,
+                    { text: outboundWaText.trim() },
+                    sentWaMsg && sentWaMsg.key?.id
+                      ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } }
+                      : {}
+                  )
+                  .catch(() => null);
               }
               if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
                 recordMessageMap(
