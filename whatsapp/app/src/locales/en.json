@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "code": "en",
+    "name": "English",
+    "flag": "🇬🇧"
+  },
+  "nav": {
+    "status": "Status & Session",
+    "moderation": "Group Moderation",
+    "telegram": "Telegram Bridge",
+    "logs": "System Logs",
+    "settings": "Settings",
+    "docs": "Documentation"
+  },
+  "common": {
+    "save": "Save Settings",
+    "cancel": "Cancel",
+    "close": "Close",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "loading": "Loading...",
+    "running": "RUNNING",
+    "ready": "READY",
+    "passed": "PASSED",
+    "failed": "FAILED",
+    "actions": "Actions",
+    "select_all": "Select All",
+    "select_none": "Select None",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "header": {
+    "title": "WhatsApp Web Gateway",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "connecting": "Connecting...",
+    "language": "Language"
+  },
+  "moderation": {
+    "title": "WhatsApp Group Moderation & Security Shield",
+    "subtitle": "Automated spam protection, content locks, anti-raid & community management",
+    "active_groups": "Configured Groups",
+    "select_group": "Select a Group to Configure",
+    "tabs": {
+      "core": "General & Anti-Spam",
+      "locks": "Content Locks",
+      "greetings": "Greetings & Captcha",
+      "commands": "Commands & Auto-Reply",
+      "intelligence": "AI & Language"
+    },
+    "bot_antispam": {
+      "title": "Outbound Bot Anti-Spam Rate Limiter",
+      "description": "Automatically mutes bot replies for X seconds when 5+ bot messages are sent in 5 seconds to prevent spam loops.",
+      "label": "Enable Bot Rate Limiter"
+    },
+    "language_setting": {
+      "title": "Group Response Language",
+      "description": "Select language for bot command replies, warnings and greetings for this group",
+      "default_lang": "Group Language"
+    }
+  },
+  "telegram": {
+    "title": "WhatsApp & Telegram Native Bridge",
+    "subtitle": "Bi-directional message mirroring, media sync & thread quotes",
+    "bot_config": "Telegram Bots Configuration",
+    "add_bot": "Add Telegram Bot",
+    "mappings": "Active Chat & Group Mappings",
+    "add_mapping": "Add New Mapping",
+    "test_suite": "Bridge Integration Test",
+    "run_test": "Run Integration Test",
+    "expand_test": "Expand Test Panel"
+  }
+}

@@ -27,8 +27,12 @@ async function run() {
     console.log('\n--- 5/6 Testing Commands Engine ---');
     await import('./test-commands.js');
 
-    console.log('\n--- 6/6 Testing Telegram Bridge ---');
+    console.log('\n--- 6/7 Testing Telegram Bridge ---');
     await import('./test-telegram-bridge.js');
+
+    console.log('\n--- 7/7 Testing Dynamic i18n & Translation Parity ---');
+    const { runI18nTests } = await import('./test-i18n.js');
+    await runI18nTests();
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);

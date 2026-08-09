@@ -220,6 +220,13 @@ export function renderDashboard(sessionId) {
                         <option value="${escapeHtml(sessionId)}">${escapeHtml(sessionId)}</option>
                     </select>
                 </div>
+                <div class="language-selector-container" style="display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-globe" style="color:var(--text-muted);font-size:14px;"></i>
+                    <select id="language-select" class="session-select" style="min-width:85px;" onchange="setAppLanguage(this.value)">
+                        <option value="de">🇩🇪 DE</option>
+                        <option value="en">🇬🇧 EN</option>
+                    </select>
+                </div>
                 <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">🌓</button>
             </div>
         </header>

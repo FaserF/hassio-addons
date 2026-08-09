@@ -179,3 +179,79 @@ const toggleTheme = () => {
 setTheme(getInitialTheme());
 window.showConfirm = showConfirm;
 window.toggleTheme = toggleTheme;
+
+// Client-side i18n Engine
+const initialLang = localStorage.getItem('ha-whatsapp-lang') || 'de';
+let currentLang = initialLang;
+let currentTranslations = {};
+
+async function initI18n(lang = currentLang) {
+  try {
+    const res = await fetch(`api/i18n/translations/${lang}`);
+    const data = await res.json();
+    if (data.success && data.dictionary) {
+      currentTranslations = data.dictionary;
+      currentLang = lang;
+      window.currentTranslations = currentTranslations;
+      window.currentLang = currentLang;
+      localStorage.setItem('ha-whatsapp-lang', lang);
+      document.documentElement.setAttribute('lang', lang);
+      applyI18nDOM();
+    }
+  } catch (err) {
+    console.warn('Failed to load i18n translations:', err);
+  }
+}
+
+function t(keyPath, params = {}) {
+  const keys = keyPath.split('.');
+  let val = window.currentTranslations;
+  for (const k of keys) {
+    if (val && typeof val === 'object' && k in val) {
+      val = val[k];
+    } else {
+      val = null;
+      break;
+    }
+  }
+
+  if (typeof val !== 'string') {
+    return keyPath;
+  }
+
+  let text = val;
+  for (const [pKey, pVal] of Object.entries(params)) {
+    text = text.replace(new RegExp(`\\{${pKey}\\}`, 'g'), String(pVal));
+  }
+  return text;
+}
+
+function applyI18nDOM() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    if (key) {
+      el.textContent = t(key);
+    }
+  });
+}
+
+async function setAppLanguage(lang) {
+  await initI18n(lang);
+  showToast(t('common.save') + ` (${lang.toUpperCase()})`, 'success');
+}
+
+window.t = t;
+window.initI18n = initI18n;
+window.setAppLanguage = setAppLanguage;
+window.currentLang = currentLang;
+window.currentTranslations = currentTranslations;
+
+// Auto-initialize i18n on DOM ready
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initI18n());
+  } else {
+    initI18n();
+  }
+}
+

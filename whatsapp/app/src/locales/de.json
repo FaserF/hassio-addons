@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "code": "de",
+    "name": "Deutsch",
+    "flag": "🇩🇪"
+  },
+  "nav": {
+    "status": "Status & Sitzung",
+    "moderation": "Gruppen-Moderation",
+    "telegram": "Telegram Bridge",
+    "logs": "System-Protokolle",
+    "settings": "Einstellungen",
+    "docs": "Dokumentation"
+  },
+  "common": {
+    "save": "Einstellungen speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "loading": "Laden...",
+    "running": "LÄUFT",
+    "ready": "BEREIT",
+    "passed": "ERFOLGREICH",
+    "failed": "FEHLGESCHLAGEN",
+    "actions": "Aktionen",
+    "select_all": "Alle auswählen",
+    "select_none": "Keine auswählen",
+    "confirm": "Bestätigen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "active": "Aktiv",
+    "inactive": "Inaktiv"
+  },
+  "header": {
+    "title": "WhatsApp Web Gateway",
+    "connected": "Verbunden",
+    "disconnected": "Getrennt",
+    "connecting": "Verbinde...",
+    "language": "Sprache"
+  },
+  "moderation": {
+    "title": "WhatsApp Gruppen-Moderation & Sicherheits-Schutz",
+    "subtitle": "Automatische Spam-Abwehr, Inhalts-Sperren, Anti-Raid & Community-Verwaltung",
+    "active_groups": "Konfigurierte Gruppen",
+    "select_group": "Gruppe zur Konfiguration auswählen",
+    "tabs": {
+      "core": "Allgemein & Anti-Spam",
+      "locks": "Inhalts-Sperren",
+      "greetings": "Begrüßung & Captcha",
+      "commands": "Befehle & Auto-Antwort",
+      "intelligence": "KI & Sprache"
+    },
+    "bot_antispam": {
+      "title": "Ausgehender Bot Anti-Spam Ratenbegrenzer",
+      "description": "Schaltet Bot-Antworten automatisch für X Sekunden stumm, wenn 5+ Nachrichten in 5 Sekunden gesendet werden, um Schleifen zu verhindern.",
+      "label": "Bot-Ratenbegrenzer aktivieren"
+    },
+    "language_setting": {
+      "title": "Gruppen-Antwortsprache",
+      "description": "Sprache für Bot-Befehlsantworten, Warnungen und Begrüßungen für diese Gruppe auswählen",
+      "default_lang": "Gruppensprache"
+    }
+  },
+  "telegram": {
+    "title": "WhatsApp & Telegram Native Bridge",
+    "subtitle": "Bi-direktionale Nachrichtenspiegelung, Medien-Sync & Thread-Zitate",
+    "bot_config": "Telegram Bots Konfiguration",
+    "add_bot": "Telegram Bot hinzufügen",
+    "mappings": "Aktive Chat- & Gruppen-Zuordnungen",
+    "add_mapping": "Neue Zuordnung hinzufügen",
+    "test_suite": "Bridge Integrationstest",
+    "run_test": "Integrationstest starten",
+    "expand_test": "Test-Panel aufklappen"
+  }
+}

@@ -28,7 +28,30 @@ import { connectToWhatsApp } from '../../whatsapp/connection.js';
 import { getLatestReleases } from '../../utils/versionCheck.js';
 import { asyncHandler } from './helpers.js';
 
+import { getAvailableLanguages, getLocaleDictionary } from '../../locales/loader.js';
+
 export function registerSystemRoutes(app) {
+  // GET /api/i18n/languages — List dynamically discovered languages
+  app.get('/api/i18n/languages', (req, res) => {
+    try {
+      const languages = getAvailableLanguages();
+      res.json({ success: true, languages });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // GET /api/i18n/translations/:lang — Get full translation dictionary for a language
+  app.get('/api/i18n/translations/:lang', (req, res) => {
+    try {
+      const lang = req.params.lang || 'en';
+      const dictionary = getLocaleDictionary(lang);
+      res.json({ success: true, lang, dictionary });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   app.get('/health', uiLimiter, (req, res) => {
     try {
       res.json({
