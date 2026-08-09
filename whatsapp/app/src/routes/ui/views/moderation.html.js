@@ -636,17 +636,16 @@ export default () => `
                             <button class="modal-close-btn" onclick="closeTestCommandsModal()"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="modal-body" style="max-height:520px; overflow-y:auto;">
-                            <!-- Autonomous Auto-Test Controls Panel -->
-                            <div class="card" style="background:var(--card-bg); border:1px solid var(--border-color); padding:12px; border-radius:8px; margin-bottom:14px;">
+                            <!--                            <div class="card" style="background:var(--card-bg); border:1px solid var(--border-color); padding:12px; border-radius:8px; margin-bottom:14px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <span style="font-weight:600; font-size:13px; color:var(--text-main);"><i class="fas fa-robot" style="color:var(--primary);"></i> Autonomous Mode</span>
+                                        <span style="font-weight:600; font-size:13px; color:var(--text-main);"><i class="fas fa-robot" style="color:var(--primary);"></i> Autonomous Auto-Test Engine</span>
                                         <label class="mod-toggle-switch mod-toggle-sm">
-                                            <input type="checkbox" id="mod-autotest-toggle" onchange="toggleAutoTestModeUI(this.checked)">
+                                            <input type="checkbox" id="mod-autotest-toggle" checked onchange="toggleAutoTestModeUI(this.checked)">
                                             <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
                                         </label>
                                     </div>
-                                     <div id="mod-autotest-options" style="display:none; flex-direction:column; gap:10px; width:100%; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
+                                     <div id="mod-autotest-options" style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
                                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                                             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                                 <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
@@ -655,11 +654,11 @@ export default () => `
                                                 </label>
                                                 <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
                                                     <span>Delay:</span>
-                                                    <input type="number" id="mod-autotest-delay" class="mod-number-input" value="1000" min="200" max="10000" style="width:70px;">
+                                                    <input type="number" id="mod-autotest-delay" class="mod-number-input" value="500" min="50" max="10000" style="width:70px;">
                                                     <span>ms</span>
                                                 </div>
                                             </div>
-                                            <button id="btn-run-autotest" class="btn btn-primary btn-sm" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
+                                            <button id="btn-run-autotest" class="btn btn-primary btn-sm" style="font-weight:700; padding:4px 16px;" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
                                         </div>
                                         
                                         <!-- Subtest Selection Matrix -->
@@ -690,18 +689,20 @@ export default () => `
 
                                 </div>
                                 <!-- Live Log Streaming Container -->
-                                <div id="mod-autotest-log-stream" style="display:none; margin-top:12px; padding:10px; background:#181818; border:1px solid #333; border-radius:6px; font-family:Consolas, monospace; font-size:11px; color:#33ff33; max-height:220px; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
+                                <div id="mod-autotest-log-stream" style="display:block; margin-top:12px; padding:10px; background:#181818; border:1px solid #333; border-radius:6px; font-family:Consolas, monospace; font-size:11px; color:#33ff33; max-height:220px; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; color:#aaa; border-bottom:1px solid #333; padding-bottom:6px; margin-bottom:6px; font-weight:600;">
                                         <span><i class="fas fa-terminal"></i> Live Moderation Auto-Test Stream</span>
                                         <div style="display:flex; gap:6px;">
-                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
-                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="clearAutoTestLogs()"><i class="fas fa-eraser"></i> Clear</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="exportAutoTestLogs()"><i class="fas fa-download"></i> Export Log</button>
                                         </div>
                                     </div>
                                     <div id="mod-autotest-progress-bar-container" style="display:none; height:4px; background:#333; border-radius:2px; margin-bottom:8px; overflow:hidden;">
                                         <div id="mod-autotest-progress-bar" style="height:100%; width:0%; background:#33ff33; transition:width 0.2s;"></div>
                                     </div>
-                                    <div id="mod-autotest-log-content"></div>
+                                    <div id="mod-autotest-log-content">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</div>
+                                </div>
+                            </div>></div>
                                 </div>
                             </div>
 

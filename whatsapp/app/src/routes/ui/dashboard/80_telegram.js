@@ -766,13 +766,13 @@ function populateTelegramTestMappingDropdown(mappings = []) {
   const select = document.getElementById('tg-test-mapping-select');
   if (!select) return;
   if (mappings.length === 0) {
-    select.innerHTML = '<option value="">No mappings configured - Add a mapping first</option>';
+    select.innerHTML = '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
     return;
   }
   select.innerHTML = mappings
     .map(
       (m) =>
-        `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)} (WA: ${escapeHtml(m.wa_jid)} ↔ TG: ${escapeHtml(m.tg_chat_id)})</option>`
+        `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name || 'Chat Bridge')} (WA: ${escapeHtml(m.wa_jid)} ↔ TG: ${escapeHtml(m.tg_chat_id)})</option>`
     )
     .join('');
 }

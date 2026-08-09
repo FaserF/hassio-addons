@@ -24,6 +24,8 @@ import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/sec
 import { sessions } from '../../session.js';
 
 import { logger } from '../../logger.js';
+import { reply } from '../../whatsapp/actions.js';
+
 
 export function registerModerationRoutes(app) {
   // GET /api/moderation/commands — Dynamically list all registered built-in commands
@@ -723,6 +725,35 @@ export function registerModerationRoutes(app) {
       },
     });
 
+    let startNoticeMsgKey = null;
+    const startNoticeText =
+      `📌 *Autonomous Moderation Integration Test Started*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `🤖 The system is running automated verification tests across selected moderation modules.\n\n` +
+      `🛡️ *Mode:* ${isSafeOnly ? 'Safe-Only (No destructive actions)' : 'Full Suite ⚡'}\n` +
+      `⏱️ *Total Tests:* ${totalSteps} scenarios\n\n` +
+      `_This notice is pinned for the duration of the test run._`;
+
+    try {
+      const startMsg = await reply(session, group_id, { text: startNoticeText }, null, {
+        skipSpamGuard: true,
+      });
+      if (startMsg && startMsg.key) {
+        startNoticeMsgKey = startMsg.key;
+        try {
+          await session.sock.sendMessage(group_id, {
+            pin: startNoticeMsgKey,
+            type: 1,
+            time: 86400,
+          });
+        } catch (pinErr) {
+          logger.debug({ error: pinErr.message }, 'Failed to pin start notice message');
+        }
+      }
+    } catch (e) {
+      logger.warn({ error: e.message }, 'Failed to send start notice to group');
+    }
+
     for (const suite of selectedSuites) {
       sendEvent({
         type: 'log',
@@ -1090,8 +1121,19 @@ export function registerModerationRoutes(app) {
     summaryMarkdown += `━━━━━━━━━━━━━━━━━━━\n`;
     summaryMarkdown += `🤖 *Auto-Test Verification Complete*`;
 
+    if (startNoticeMsgKey) {
+      try {
+        await session.sock.sendMessage(group_id, {
+          pin: startNoticeMsgKey,
+          type: 2,
+        });
+      } catch (unpinErr) {
+        logger.debug({ error: unpinErr.message }, 'Failed to unpin start notice message');
+      }
+    }
+
     try {
-      await session.sock.sendMessage(group_id, { text: summaryMarkdown });
+      await session.sock.sendMessage(group_id, { text: summaryMarkdown }, { skipSpamGuard: true });
       sendEvent({
         type: 'log',
         level: 'info',
