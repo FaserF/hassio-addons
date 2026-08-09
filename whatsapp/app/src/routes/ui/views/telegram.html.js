@@ -129,8 +129,9 @@ export default () => `
                 <div style="flex:1; min-width:220px;">
                     <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-exchange-alt"></i> Sync Direction</label>
                     <select id="tg-test-direction-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
-                        <option value="wa_to_tg">WhatsApp ➔ Telegram (WA to TG)</option>
-                        <option value="tg_to_wa">Telegram ➔ WhatsApp (TG to WA)</option>
+                        <option value="bidirectional" selected>Bi-directional (WhatsApp ↔ Telegram)</option>
+                        <option value="wa_to_tg">Outbound Only (WhatsApp ➔ Telegram)</option>
+                        <option value="tg_to_wa">Inbound Only (Telegram ➔ WhatsApp)</option>
                     </select>
                 </div>
             </div>

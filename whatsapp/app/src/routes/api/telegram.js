@@ -4,7 +4,7 @@ import {
   getTelegramBotClient,
   sanitizeTelegramToken,
 } from '../../whatsapp/telegram/bot.js';
-import { getSession } from '../../session.js';
+import { getReqSession } from '../../session.js';
 
 export function registerTelegramRoutes(app) {
   // GET /api/telegram/config
@@ -287,9 +287,9 @@ export function registerTelegramRoutes(app) {
         .json({ success: false, error: 'Telegram Bot client not configured or disabled' });
     }
 
-    const session = getSession('default');
+    const session = getReqSession(req);
     if (!session || !session.sock) {
-      return res.status(400).json({ success: false, error: 'WhatsApp session not connected' });
+      return res.status(400).json({ success: false, error: 'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.' });
     }
 
     const enabledSubtests =
@@ -350,6 +350,12 @@ export function registerTelegramRoutes(app) {
       log('INIT', `Subtests Selected (${enabledSubtests.length}): ${enabledSubtests.join(', ')}`);
 
       const isWaToTg = direction === 'wa_to_tg';
+      const directionText =
+        direction === 'bidirectional'
+          ? 'Bi-directional (WhatsApp ↔ Telegram)'
+          : isWaToTg
+          ? 'WhatsApp ➔ Telegram'
+          : 'Telegram ➔ WhatsApp';
 
       let startNoticeWaKey = null;
       let startNoticeTgMsgId = null;
@@ -358,7 +364,7 @@ export function registerTelegramRoutes(app) {
         `📌 *Telegram & WhatsApp Bridge Integration Test Started*\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
         `🤖 Running automated verification across ${enabledSubtests.length} message & media categories.\n\n` +
-        `🔄 *Direction:* ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+        `🔄 *Direction:* ${directionText}\n` +
         `📋 *Mapping:* ${mapping.name}\n\n` +
         `_This notice is pinned in both chats for the duration of the test run._`;
 
@@ -366,7 +372,7 @@ export function registerTelegramRoutes(app) {
         `📌 <b>Telegram & WhatsApp Bridge Integration Test Started</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
         `🤖 Running automated verification across ${enabledSubtests.length} message & media categories.\n\n` +
-        `🔄 <b>Direction:</b> ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+        `🔄 <b>Direction:</b> ${directionText}\n` +
         `📋 <b>Mapping:</b> ${mapping.name}\n\n` +
         `<i>This notice is pinned in both chats for the duration of the test run.</i>`;
 
@@ -1011,7 +1017,7 @@ export function registerTelegramRoutes(app) {
           `🏁 <b>[Telegram Bridge 16-Type E2E Integration Test Complete]</b>\n` +
           `• Result: ${testRun.status === 'passed' ? '✅ ALL 16 STEPS PASSED' : '⚠️ PARTIAL / FAILED'}\n` +
           `• Passed Steps: ${testRun.passedSteps}/${testRun.totalSteps}\n` +
-          `• Direction: ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+          `• Direction: ${directionText}\n` +
           `• Mapping: ${mapping.name}\n` +
           `• Run ID: ${runId}\n` +
           `• Duration: ${Math.round((new Date(testRun.endTime) - new Date(testRun.startTime)) / 1000)}s\n` +
