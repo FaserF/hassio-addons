@@ -1240,5 +1240,3 @@ window.sendInteractiveReply = sendInteractiveReply;
 window.voteOnPollOption = voteOnPollOption;
 window.navigateToModerationGroup = navigateToModerationGroup;
 window.navigateToTelegramMapping = navigateToTelegramMapping;
-
-
