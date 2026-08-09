@@ -133,8 +133,15 @@ function startNewChatSubmit(e) {
   showToast(`Chat initialized for ${displayName}`, 'success');
 }
 
-let chatModConfigCache = null;
-let chatTgConfigCache = null;
+function matchJid(a, b) {
+  if (!a || !b) return false;
+  const sA = String(a).trim().toLowerCase();
+  const sB = String(b).trim().toLowerCase();
+  if (sA === sB) return true;
+  const rawA = sA.split('@')[0];
+  const rawB = sB.split('@')[0];
+  return rawA === rawB;
+}
 
 async function fetchChatBadgesConfig() {
   try {
@@ -144,15 +151,59 @@ async function fetchChatBadgesConfig() {
     ]);
     if (modRes && modRes.ok) {
       const json = await modRes.json();
-      if (json.success && json.data) chatModConfigCache = json.data;
+      chatModConfigCache = json.data || json;
     }
     if (tgRes && tgRes.ok) {
       const json = await tgRes.json();
-      if (json.success && json.data) chatTgConfigCache = json.data;
+      chatTgConfigCache = json.data || json;
+    }
+    if (activeChatJid) {
+      updateChatHeaderBadges(activeChatJid);
     }
   } catch (e) {
     console.warn('Failed to fetch chat badges config:', e);
   }
+}
+
+function updateChatHeaderBadges(jid) {
+  if (!jid || jid !== activeChatJid) return;
+  const headerBadgesEl = document.getElementById('active-chat-header-badges');
+  if (!headerBadgesEl) return;
+
+  let hasModActive = false;
+  if (jid.endsWith('@g.us') && chatModConfigCache) {
+    const modData = chatModConfigCache.data || chatModConfigCache;
+    const globalEnabled = modData.global_enabled !== false;
+    if (globalEnabled) {
+      const groups = modData.groups || {};
+      const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, jid));
+      if (groupEntry && groupEntry[1]?.enabled !== false) {
+        hasModActive = true;
+      }
+    }
+  }
+
+  let activeMapping = null;
+  if (chatTgConfigCache) {
+    const tgData = chatTgConfigCache.data || chatTgConfigCache;
+    const tgEnabled = tgData.enabled !== false;
+    const mappings = tgData.mappings || [];
+    if (tgEnabled && Array.isArray(mappings)) {
+      activeMapping = mappings.find(
+        (m) => m.enabled !== false && matchJid(m.wa_jid, jid)
+      );
+    }
+  }
+
+  const modBtn = hasModActive
+    ? `<button class="btn btn-ghost chat-header-btn" style="color:var(--primary);background:rgba(37,211,102,0.12);" onclick="navigateToModerationGroup(event, '${jid}')" title="Moderation Active — Click to configure"><i class="fas fa-shield-alt"></i></button>`
+    : '';
+
+  const tgBtn = activeMapping
+    ? `<button class="btn btn-ghost chat-header-btn" style="color:#0088cc;background:rgba(0,136,204,0.12);" onclick="navigateToTelegramMapping(event, '${jid}', '${activeMapping.id}')" title="Telegram Bridge Active — Click to edit mapping"><i class="fab fa-telegram-plane"></i></button>`
+    : '';
+
+  headerBadgesEl.innerHTML = `${modBtn}${tgBtn}`;
 }
 
 async function loadChats() {
@@ -239,44 +290,31 @@ function renderChatList(chats) {
         ? `<img src="${cachedUrl}" class="avatar-img" alt="Avatar">`
         : `<i class="fas ${avatarIcon}"></i>`;
 
-      if (!cachedUrl && avatarCache[c.jid] === undefined) {
-        fetchAvatar(c.jid);
-      }
-
-      function matchJid(a, b) {
-        if (!a || !b) return false;
-        const sA = String(a).trim().toLowerCase();
-        const sB = String(b).trim().toLowerCase();
-        if (sA === sB) return true;
-        const rawA = sA.split('@')[0];
-        const rawB = sB.split('@')[0];
-        return rawA === rawB;
-      }
-
       // Check Moderation active state for this group
       let hasModActive = false;
-      if (
-        c.jid.endsWith('@g.us') &&
-        chatModConfigCache &&
-        chatModConfigCache.global_enabled !== false
-      ) {
-        const groups = chatModConfigCache.groups || {};
-        const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, c.jid));
-        if (!groupEntry || groupEntry[1]?.enabled !== false) {
-          hasModActive = true;
+      if (c.jid.endsWith('@g.us') && chatModConfigCache) {
+        const modData = chatModConfigCache.data || chatModConfigCache;
+        const globalEnabled = modData.global_enabled !== false;
+        if (globalEnabled) {
+          const groups = modData.groups || {};
+          const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, c.jid));
+          if (groupEntry && groupEntry[1]?.enabled !== false) {
+            hasModActive = true;
+          }
         }
       }
 
       // Check Telegram Bridge active state for this chat/group
       let activeMapping = null;
-      if (
-        chatTgConfigCache &&
-        chatTgConfigCache.enabled !== false &&
-        Array.isArray(chatTgConfigCache.mappings)
-      ) {
-        activeMapping = chatTgConfigCache.mappings.find(
-          (m) => m.enabled !== false && matchJid(m.wa_jid, c.jid)
-        );
+      if (chatTgConfigCache) {
+        const tgData = chatTgConfigCache.data || chatTgConfigCache;
+        const tgEnabled = tgData.enabled !== false;
+        const mappings = tgData.mappings || [];
+        if (tgEnabled && Array.isArray(mappings)) {
+          activeMapping = mappings.find(
+            (m) => m.enabled !== false && matchJid(m.wa_jid, c.jid)
+          );
+        }
       }
 
       const modBadgeHtml = hasModActive
@@ -386,42 +424,7 @@ function selectChat(jid, name) {
   }
 
   // Update header badges (Moderation & Telegram Bridge)
-  const headerBadgesEl = document.getElementById('active-chat-header-badges');
-  if (headerBadgesEl) {
-    let hasModActive = false;
-    if (
-      jid.endsWith('@g.us') &&
-      chatModConfigCache &&
-      chatModConfigCache.global_enabled !== false
-    ) {
-      const groups = chatModConfigCache.groups || {};
-      const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, jid));
-      if (!groupEntry || groupEntry[1]?.enabled !== false) {
-        hasModActive = true;
-      }
-    }
-
-    let activeMapping = null;
-    if (
-      chatTgConfigCache &&
-      chatTgConfigCache.enabled !== false &&
-      Array.isArray(chatTgConfigCache.mappings)
-    ) {
-      activeMapping = chatTgConfigCache.mappings.find(
-        (m) => m.enabled !== false && matchJid(m.wa_jid, jid)
-      );
-    }
-
-    const modBtn = hasModActive
-      ? `<button class="btn btn-ghost chat-header-btn" style="color:var(--primary);background:rgba(37,211,102,0.12);" onclick="navigateToModerationGroup(event, '${jid}')" title="Moderation Active — Click to configure"><i class="fas fa-shield-alt"></i></button>`
-      : '';
-
-    const tgBtn = activeMapping
-      ? `<button class="btn btn-ghost chat-header-btn" style="color:#0088cc;background:rgba(0,136,204,0.12);" onclick="navigateToTelegramMapping(event, '${jid}', '${activeMapping.id}')" title="Telegram Bridge Active — Click to edit mapping"><i class="fab fa-telegram-plane"></i></button>`
-      : '';
-
-    headerBadgesEl.innerHTML = `${modBtn}${tgBtn}`;
-  }
+  updateChatHeaderBadges(jid);
 
   document.getElementById('chat-thread-messages').innerHTML =
     '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
