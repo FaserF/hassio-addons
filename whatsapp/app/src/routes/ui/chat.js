@@ -760,14 +760,14 @@ async function loadChatMessages(jid) {
 
         const hasContent = Boolean(
           textBlock ||
-            captionBlock ||
-            mediaBlock ||
-            quoteBlock ||
-            pollBlock ||
-            locationBlock ||
-            contactBlock ||
-            eventBlock ||
-            buttonsBlock
+          captionBlock ||
+          mediaBlock ||
+          quoteBlock ||
+          pollBlock ||
+          locationBlock ||
+          contactBlock ||
+          eventBlock ||
+          buttonsBlock
         );
 
         if (!hasContent) {
