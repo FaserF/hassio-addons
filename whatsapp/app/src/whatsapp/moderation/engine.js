@@ -154,6 +154,25 @@ export function findPendingCaptcha(groupId, userId, session = null, rawMsg = nul
   return null;
 }
 
+/**
+ * Clears and removes a pending captcha and its timeout timer for a given user in a group.
+ */
+export function clearPendingCaptcha(groupId, userId, session = null) {
+  if (!groupId || !userId) return;
+  const entry = findPendingCaptcha(groupId, userId, session);
+  if (!entry || !entry.captchaObj) return;
+
+  if (entry.captchaObj.timeoutHandle) {
+    clearTimeout(entry.captchaObj.timeoutHandle);
+  }
+
+  for (const [k, obj] of pendingCaptchas.entries()) {
+    if (obj === entry.captchaObj) {
+      pendingCaptchas.delete(k);
+    }
+  }
+}
+
 export function isUserVerified(groupId, userId, session = null, rawMsg = null) {
   if (!groupId || !userId) return false;
   const config = getGroupModerationConfig(groupId);
@@ -1590,7 +1609,7 @@ export async function handleModerationParticipantUpdate(session, update) {
   // (Baileys fires both group-participants.update AND messageStubType for the exact same event)
   const filteredParticipants = participants.filter((p) => {
     const pStr = typeof p === 'string' ? p : p?.id || p?.jid || '';
-    const cleanUser = pStr.split('@')[0].replace(/\D/g, '') || pStr;
+    const cleanUser = pStr.split('@')[0].split(':')[0].replace(/\D/g, '') || pStr;
     const key = `${groupId}:${action}:${cleanUser}`;
     const lastTime = participantEventDeduper.get(key) || 0;
     if (now - lastTime < 10000) {
@@ -1872,18 +1891,25 @@ export async function handleModerationParticipantUpdate(session, update) {
 
           messageParts.push(captchaSection);
 
+          // Clear any pre-existing pending Captcha and its timeout handle for this user
+          clearPendingCaptcha(groupId, userId, session);
+          clearPendingCaptcha(groupId, participantJid, session);
+
           const captchaKey = getWindowKey(groupId, userId);
           const timeoutSec = config.greetings.captcha_timeout_seconds || 120;
           const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
 
           const timeoutHandle = setTimeout(async () => {
             // Check if user is verified before executing removal
+            const pendingCheck =
+              findPendingCaptcha(groupId, userId, session) ||
+              findPendingCaptcha(groupId, participantJid, session);
             if (
-              !pendingCaptchas.has(captchaKey) ||
+              !pendingCheck ||
               isUserVerified(groupId, userId, session) ||
               isUserVerified(groupId, participantJid, session)
             ) {
-              pendingCaptchas.delete(captchaKey);
+              clearPendingCaptcha(groupId, userId, session);
               return;
             }
 
@@ -1929,7 +1955,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             }
 
             if (userIsAdmin) {
-              pendingCaptchas.delete(captchaKey);
+              clearPendingCaptcha(groupId, userId, session);
               logger.info(
                 { groupId, userId },
                 '🛡️ User is an admin, skipping Captcha timeout kick'
@@ -1942,7 +1968,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               findPendingCaptcha(groupId, userId, session) ||
               findPendingCaptcha(groupId, participantJid, session);
             if (!pendingEntry?.captchaObj?.delivered) {
-              pendingCaptchas.delete(captchaKey);
+              clearPendingCaptcha(groupId, userId, session);
               logger.warn(
                 { groupId, userId },
                 '⚠️ Skipping Captcha timeout kick because challenge message delivery was not confirmed.'
@@ -1950,7 +1976,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               return;
             }
 
-            pendingCaptchas.delete(captchaKey);
+            clearPendingCaptcha(groupId, userId, session);
             const userLabel = resolveUserDisplayName(userId, session);
 
             // Record kick reason so goodbye message can display it
