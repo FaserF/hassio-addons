@@ -289,7 +289,13 @@ export function registerTelegramRoutes(app) {
 
     const session = getReqSession(req);
     if (!session || !session.sock) {
-      return res.status(400).json({ success: false, error: 'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            'WhatsApp session not connected. Please ensure your WhatsApp session is active and connected before running the bridge test.',
+        });
     }
 
     const enabledSubtests =
@@ -354,8 +360,8 @@ export function registerTelegramRoutes(app) {
         direction === 'bidirectional'
           ? 'Bi-directional (WhatsApp ↔ Telegram)'
           : isWaToTg
-          ? 'WhatsApp ➔ Telegram'
-          : 'Telegram ➔ WhatsApp';
+            ? 'WhatsApp ➔ Telegram'
+            : 'Telegram ➔ WhatsApp';
 
       let startNoticeWaKey = null;
       let startNoticeTgMsgId = null;
