@@ -1,7 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadAllLocales, getAvailableLanguages, getLocaleDictionary, t } from '../src/locales/loader.js';
+import {
+  loadAllLocales,
+  getAvailableLanguages,
+  getLocaleDictionary,
+  t,
+} from '../src/locales/loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,14 +46,23 @@ async function runI18nTests() {
 
   // Test 1: Dynamic Locale Loader Discovery
   const localesMap = loadAllLocales();
-  assertTest(localesMap.size >= 2, `Dynamically discovered at least 2 locale files (found ${localesMap.size})`);
+  assertTest(
+    localesMap.size >= 2,
+    `Dynamically discovered at least 2 locale files (found ${localesMap.size})`
+  );
   assertTest(localesMap.has('en'), 'English locale (en.json) is loaded');
   assertTest(localesMap.has('de'), 'German locale (de.json) is loaded');
 
   // Test 2: Available Languages Metadata
   const langList = getAvailableLanguages();
-  assertTest(langList.some((l) => l.code === 'de' && l.flag === '🇩🇪'), 'German language metadata correct');
-  assertTest(langList.some((l) => l.code === 'en' && l.flag === '🇬🇧'), 'English language metadata correct');
+  assertTest(
+    langList.some((l) => l.code === 'de' && l.flag === '🇩🇪'),
+    'German language metadata correct'
+  );
+  assertTest(
+    langList.some((l) => l.code === 'en' && l.flag === '🇬🇧'),
+    'English language metadata correct'
+  );
 
   // Test 3: Key Parity across all Addon Locale Files
   const enDict = getLocaleDictionary('en');
@@ -78,15 +92,23 @@ async function runI18nTests() {
     const enPlaceholders = extractPlaceholders(enVal);
     const dePlaceholders = extractPlaceholders(deVal);
     if (JSON.stringify(enPlaceholders) !== JSON.stringify(dePlaceholders)) {
-      console.error(`⚠️ Placeholder mismatch in key "${key}": EN=${enPlaceholders.join()} vs DE=${dePlaceholders.join()}`);
+      console.error(
+        `⚠️ Placeholder mismatch in key "${key}": EN=${enPlaceholders.join()} vs DE=${dePlaceholders.join()}`
+      );
       placeholderMismatches++;
     }
   }
-  assertTest(placeholderMismatches === 0, `Template interpolation placeholders match 100% across EN and DE`);
+  assertTest(
+    placeholderMismatches === 0,
+    `Template interpolation placeholders match 100% across EN and DE`
+  );
 
   // Test 5: Dynamic Parameter Substitution Function
   const subResult = t('en', 'moderation.language_setting.title', { group: 'Test Group' });
-  assertTest(typeof subResult === 'string' && subResult.length > 0, 't() function resolves key correctly with parameters');
+  assertTest(
+    typeof subResult === 'string' && subResult.length > 0,
+    't() function resolves key correctly with parameters'
+  );
 
   // Test 6: HA Integration Translation Files Key Parity
   const haRoot = path.resolve(__dirname, '../../../ha-whatsapp/custom_components/whatsapp');

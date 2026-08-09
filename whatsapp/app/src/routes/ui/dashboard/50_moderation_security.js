@@ -451,8 +451,9 @@ async function runAutonomousModerationTest() {
 
   const appendLog = (msg, styleType = 'normal') => {
     if (!logContent) return;
-    const isAtBottom =
-      logStream ? logStream.scrollHeight - logStream.scrollTop <= logStream.clientHeight + 60 : true;
+    const isAtBottom = logStream
+      ? logStream.scrollHeight - logStream.scrollTop <= logStream.clientHeight + 60
+      : true;
     const div = document.createElement('div');
     if (styleType === 'error') {
       div.style.color = '#ff5555';

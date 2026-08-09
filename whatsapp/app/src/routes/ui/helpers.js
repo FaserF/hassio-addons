@@ -185,7 +185,9 @@ const getInitialLanguage = () => {
   const saved = localStorage.getItem('ha-whatsapp-lang');
   if (saved) return saved;
   if (typeof navigator !== 'undefined') {
-    const browserLang = (navigator.language || navigator.userLanguage || '').split('-')[0].toLowerCase();
+    const browserLang = (navigator.language || navigator.userLanguage || '')
+      .split('-')[0]
+      .toLowerCase();
     if (browserLang && ['de', 'en'].includes(browserLang)) return browserLang;
   }
   return 'en';
@@ -266,4 +268,3 @@ if (typeof document !== 'undefined') {
     initI18n();
   }
 }
-
