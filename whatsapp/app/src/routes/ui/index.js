@@ -704,6 +704,13 @@ export function renderDashboard(sessionId) {
     if (diagPathname) diagPathname.textContent = window.location.pathname;
     updateRawLogsLink();
 
+    // Check initial active tab and trigger instant load if on chats tab
+    const initialNav = document.querySelector('.nav-item.active');
+    if (initialNav && initialNav.getAttribute('data-tab') === 'chats') {
+        isChatTabActive = true;
+        loadChats();
+    }
+
     updateDashboard();
     setInterval(updateDashboard, 10000);
     setInterval(() => {

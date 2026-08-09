@@ -2769,6 +2769,11 @@ html[data-theme='light'] .data-table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.18) !important;
   opacity: 1 !important;
 }
+.chat-header-btn i {
+  font-weight: 900 !important;
+  font-style: normal !important;
+  display: inline-block !important;
+}
 
 /* System Message Row & Pill */
 .msg-system-row {

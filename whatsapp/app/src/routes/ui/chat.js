@@ -371,6 +371,13 @@ function renderChatList(chats) {
         `;
     })
     .join('');
+
+  // Fetch avatars for list items in background
+  filtered.forEach((c) => {
+    if (avatarCache[c.jid] === undefined) {
+      fetchAvatar(c.jid);
+    }
+  });
 }
 
 function filterChatList() {
@@ -408,6 +415,7 @@ async function fetchAvatar(jid) {
     }
   } catch (e) {}
   avatarCache[jid] = null;
+  updateAvatarElements(jid, null);
   return null;
 }
 
@@ -469,7 +477,7 @@ function selectChat(jid, name) {
   }
 
   // Update header badges (Moderation & Telegram Bridge)
-  updateChatHeaderBadges(jid);
+  updateChatHeaderBadges(jid, name || activeChatName);
 
   document.getElementById('chat-thread-messages').innerHTML =
     '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
