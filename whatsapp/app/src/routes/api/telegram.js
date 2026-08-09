@@ -351,6 +351,66 @@ export function registerTelegramRoutes(app) {
 
       const isWaToTg = direction === 'wa_to_tg';
 
+      let startNoticeWaKey = null;
+      let startNoticeTgMsgId = null;
+
+      const noticeTextWa =
+        `📌 *Telegram & WhatsApp Bridge Integration Test Started*\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `🤖 Running automated verification across ${enabledSubtests.length} message & media categories.\n\n` +
+        `🔄 *Direction:* ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+        `📋 *Mapping:* ${mapping.name}\n\n` +
+        `_This notice is pinned in both chats for the duration of the test run._`;
+
+      const noticeTextTg =
+        `📌 <b>Telegram & WhatsApp Bridge Integration Test Started</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `🤖 Running automated verification across ${enabledSubtests.length} message & media categories.\n\n` +
+        `🔄 <b>Direction:</b> ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+        `📋 <b>Mapping:</b> ${mapping.name}\n\n` +
+        `<i>This notice is pinned in both chats for the duration of the test run.</i>`;
+
+      // 1. Dispatch & Pin Start Notice in WhatsApp
+      try {
+        const waRes = await session.sock.sendMessage(mapping.wa_jid, { text: noticeTextWa });
+        if (waRes && waRes.key) {
+          startNoticeWaKey = waRes.key;
+          try {
+            await session.sock.sendMessage(mapping.wa_jid, {
+              pin: startNoticeWaKey,
+              type: 1,
+              time: 86400,
+            });
+            log('PIN', 'Pinned start notice message in WhatsApp chat', 'info');
+          } catch (pWaErr) {
+            log('PIN', `WhatsApp pin notice warning: ${pWaErr.message}`, 'warn');
+          }
+        }
+      } catch (waErr) {
+        log('PIN', `Failed to send WhatsApp start notice: ${waErr.message}`, 'warn');
+      }
+
+      // 2. Dispatch & Pin Start Notice in Telegram
+      try {
+        const tgRes = await bot.sendMessage(
+          mapping.tg_chat_id,
+          noticeTextTg,
+          null,
+          mapping.tg_thread_id || null
+        );
+        if (tgRes && tgRes.message_id) {
+          startNoticeTgMsgId = tgRes.message_id;
+          try {
+            await bot.pinChatMessage(mapping.tg_chat_id, startNoticeTgMsgId, true);
+            log('PIN', 'Pinned start notice message in Telegram chat', 'info');
+          } catch (pTgErr) {
+            log('PIN', `Telegram pin notice warning: ${pTgErr.message}`, 'warn');
+          }
+        }
+      } catch (tgErr) {
+        log('PIN', `Failed to send Telegram start notice: ${tgErr.message}`, 'warn');
+      }
+
       try {
         let textMsgRef = null;
 
@@ -961,6 +1021,29 @@ export function registerTelegramRoutes(app) {
 
         testRun.summary = summaryText;
         log('SUMMARY', summaryText, testRun.status === 'passed' ? 'success' : 'warn');
+
+        // Unpin start notice message in Telegram
+        if (startNoticeTgMsgId) {
+          try {
+            await bot.unpinChatMessage(mapping.tg_chat_id, startNoticeTgMsgId);
+            log('UNPIN', 'Unpinned start notice message in Telegram chat', 'info');
+          } catch (uTgErr) {
+            log('UNPIN', `Telegram unpin notice warning: ${uTgErr.message}`, 'warn');
+          }
+        }
+
+        // Unpin start notice message in WhatsApp
+        if (startNoticeWaKey) {
+          try {
+            await session.sock.sendMessage(mapping.wa_jid, {
+              pin: startNoticeWaKey,
+              type: 2,
+            });
+            log('UNPIN', 'Unpinned start notice message in WhatsApp chat', 'info');
+          } catch (uWaErr) {
+            log('UNPIN', `WhatsApp unpin notice warning: ${uWaErr.message}`, 'warn');
+          }
+        }
 
         // Dispatch summary to both Telegram and WhatsApp
         try {

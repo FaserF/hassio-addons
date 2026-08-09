@@ -32,6 +32,7 @@ async function run() {
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);
+    process.exit(0);
   } catch (err) {
     console.error('\n❌ TEST SUITE FAILED:', err);
     process.exit(1);

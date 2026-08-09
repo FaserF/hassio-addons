@@ -702,8 +702,6 @@ export default () => `
                                     </div>
                                     <div id="mod-autotest-log-content">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</div>
                                 </div>
-                            </div>></div>
-                                </div>
                             </div>
 
                             <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">

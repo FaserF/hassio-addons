@@ -294,6 +294,20 @@ export class TelegramBotClient {
       message_id: messageId,
     });
   }
+
+  async pinChatMessage(chatId, messageId, disableNotification = true) {
+    return await this.request('pinChatMessage', {
+      chat_id: chatId,
+      message_id: messageId,
+      disable_notification: Boolean(disableNotification),
+    });
+  }
+
+  async unpinChatMessage(chatId, messageId = null) {
+    const payload = { chat_id: chatId };
+    if (messageId) payload.message_id = messageId;
+    return await this.request('unpinChatMessage', payload);
+  }
 }
 
 const botClientsMap = new Map();
