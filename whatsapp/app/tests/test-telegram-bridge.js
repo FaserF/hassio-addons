@@ -88,4 +88,17 @@ describe('Telegram Bridge Unit Tests', () => {
     const store = getDefaultTelegramStore();
     assert.deepStrictEqual(store.cached_polls || {}, {});
   });
+
+  it('supports poll sync mode options in mappings', () => {
+    const mapping = {
+      poll_sync_mode: 'native_sync',
+      poll_send_text_diagram: true,
+      poll_send_update_message: true,
+      poll_delete_old_message: true,
+    };
+    assert.strictEqual(mapping.poll_sync_mode, 'native_sync');
+    assert.strictEqual(mapping.poll_send_text_diagram, true);
+    assert.strictEqual(mapping.poll_send_update_message, true);
+    assert.strictEqual(mapping.poll_delete_old_message, true);
+  });
 });

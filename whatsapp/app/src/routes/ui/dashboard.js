@@ -2923,6 +2923,7 @@ async function submitImportFederation() {
 // Telegram Bridge Dashboard UI Logic
 
 let cachedTelegramBots = [];
+let cachedTelegramMappings = [];
 
 async function loadTelegramBridgeData() {
   try {
@@ -2934,8 +2935,9 @@ async function loadTelegramBridgeData() {
       if (toggle) toggle.checked = Boolean(cfg.enabled);
 
       cachedTelegramBots = cfg.bots || [];
+      cachedTelegramMappings = cfg.mappings || [];
       renderTelegramBots(cachedTelegramBots);
-      renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
+      renderTelegramMappings(cachedTelegramMappings, cachedTelegramBots);
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
@@ -3281,8 +3283,67 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   }
 }
 
+function checkTelegramMappingConflict() {
+  const currentId = document.getElementById('tg-modal-id')?.value || '';
+  const waSelect = document.getElementById('tg-modal-wa-select');
+  let wa_jid = waSelect?.value || '';
+  if (wa_jid === '__custom__' || !wa_jid) {
+    wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
+  }
+
+  const tgSelect = document.getElementById('tg-modal-tg-select');
+  let tg_chat_id = tgSelect?.value || '';
+  if (tg_chat_id === '__custom__' || !tg_chat_id) {
+    tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
+  }
+
+  const warningContainer = document.getElementById('tg-modal-conflict-warning');
+  const warningText = document.getElementById('tg-modal-conflict-text');
+  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
+
+  if (!warningContainer || !warningText || !confirmCheckbox) return false;
+
+  if (!wa_jid || !tg_chat_id || !Array.isArray(cachedTelegramMappings)) {
+    warningContainer.style.display = 'none';
+    confirmCheckbox.checked = false;
+    return false;
+  }
+
+  // Conflict 1: Multiple Telegram sources mapping into the SAME WhatsApp destination
+  const waConflicts = cachedTelegramMappings.filter(
+    (m) => m.id !== currentId && m.wa_jid === wa_jid && m.enabled !== false
+  );
+
+  // Conflict 2: Multiple WhatsApp sources mapping into the SAME Telegram destination
+  const tgConflicts = cachedTelegramMappings.filter(
+    (m) => m.id !== currentId && String(m.tg_chat_id) === String(tg_chat_id) && m.enabled !== false
+  );
+
+  if (waConflicts.length > 0 || tgConflicts.length > 0) {
+    const details = [];
+    if (waConflicts.length > 0) {
+      details.push(
+        `Target WhatsApp chat (<code>${escapeHtml(wa_jid)}</code>) is already targeted by ${waConflicts.length} other mapping(s).`
+      );
+    }
+    if (tgConflicts.length > 0) {
+      details.push(
+        `Target Telegram chat (<code>${escapeHtml(tg_chat_id)}</code>) is already targeted by ${tgConflicts.length} other mapping(s).`
+      );
+    }
+    warningText.innerHTML = `${details.join('<br>')}<br>Mapping multiple sources to the same destination can cause infinite message loops, duplicate forwarding, or severe chat spam.`;
+    warningContainer.style.display = 'block';
+    return true;
+  } else {
+    warningContainer.style.display = 'none';
+    confirmCheckbox.checked = false;
+    return false;
+  }
+}
+
 function onTgBotSelectChange(botId) {
   populateTelegramModalDropdowns(botId);
+  checkTelegramMappingConflict();
 }
 
 function onTgWaSelectChange(val) {
@@ -3296,6 +3357,7 @@ function onTgWaSelectChange(val) {
     customInp.style.display = 'none';
     customInp.value = val;
   }
+  checkTelegramMappingConflict();
 }
 
 function onTgTgSelectChange(val) {
@@ -3309,6 +3371,7 @@ function onTgTgSelectChange(val) {
     customInp.style.display = 'none';
     customInp.value = val;
   }
+  checkTelegramMappingConflict();
 }
 
 let tgMappingInitialState = null;
@@ -3366,6 +3429,7 @@ function openAddTelegramMappingModal() {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
   populateTelegramModalDropdowns();
+  checkTelegramMappingConflict();
   setTimeout(() => {
     tgMappingInitialState = getTgMappingCurrentState();
   }, 100);
@@ -3481,6 +3545,10 @@ async function closeTelegramMappingModal(force = false) {
   }
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'none';
+  const warningContainer = document.getElementById('tg-modal-conflict-warning');
+  if (warningContainer) warningContainer.style.display = 'none';
+  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
+  if (confirmCheckbox) confirmCheckbox.checked = false;
   tgMappingInitialState = null;
 }
 
@@ -3529,6 +3597,13 @@ async function saveTelegramMappingModal() {
 
   if (!wa_jid || !tg_chat_id) {
     showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
+    return;
+  }
+
+  const isConflict = checkTelegramMappingConflict();
+  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
+  if (isConflict && confirmCheckbox && !confirmCheckbox.checked) {
+    showToast('Please confirm the Security & Spam Warning before saving this mapping', 'warning');
     return;
   }
 

@@ -136,6 +136,16 @@ export default () => `
                     <input type="text" id="tg-modal-tg-chat-id" class="mod-textarea" style="height:36px; width:100%; display:none;" placeholder="Or enter manual Telegram Chat ID (e.g. -1001234567890)">
                 </div>
 
+                <div id="tg-modal-conflict-warning" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #ef4444; border-radius:8px; padding:12px; font-size:12px; color:var(--text-color);">
+                    <div style="display:flex; align-items:center; gap:8px; color:#ef4444; font-weight:bold; margin-bottom:4px;">
+                        <i class="fas fa-exclamation-triangle"></i> Security & Spam Warning: Multi-Source Destination Conflict
+                    </div>
+                    <div id="tg-modal-conflict-text" style="margin-bottom:8px; line-height:1.4;"></div>
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-confirm-conflict"> I understand the risk of message loops / spam and confirm this configuration.
+                    </label>
+                </div>
+
                 <div>
                     <label class="mod-field-label">Telegram Forum Topic ID (Optional)</label>
                     <input type="text" id="tg-modal-tg-thread-id" class="mod-textarea" style="height:36px; width:100%;" placeholder="e.g. 2 (Leave empty if not a Forum Topic)">
@@ -164,12 +174,31 @@ export default () => `
                     </p>
                 </div>
 
+                <div>
+                    <label class="mod-field-label"><i class="fas fa-poll"></i> Poll Sync Mode (WhatsApp &amp; Telegram)</label>
+                    <select id="tg-modal-poll-sync-mode" class="mod-select" style="width:100%;">
+                        <option value="text_diagram">Text Diagram &amp; Updates (Default: Status text diagram + update messages)</option>
+                        <option value="native_sync">Native Poll Sync &amp; Auto-Vote (Send poll to target + vote for current winner)</option>
+                        <option value="native_no_vote">Native Poll Sync (Send poll to target without voting)</option>
+                        <option value="once_no_update">Single Notification Only (Send initial info once, no updates/votes)</option>
+                    </select>
+                </div>
+
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-inc-group"> Include Group Name
                     </label>
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-inc-sender" checked> Include Sender Name
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-poll-diagram-text" checked> Poll Text Diagram
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-poll-update-msg" checked> Poll Chat Updates
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-poll-delete-old" checked> Delete Old Poll Msg
                     </label>
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-sync-self"> Sync Own Self Messages

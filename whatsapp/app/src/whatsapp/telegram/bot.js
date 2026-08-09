@@ -2,22 +2,27 @@ import fs from 'fs';
 import path from 'path';
 import { loadTelegramStore, updateCachedChat } from './store.js';
 
-const ALLOWED_METHODS = new Set([
-  'getMe',
-  'getUpdates',
-  'getFile',
-  'sendMessage',
-  'sendPhoto',
-  'sendVoice',
-  'sendDocument',
-  'setMessageReaction',
-  'editMessageText',
-  'deleteMessage',
-  'sendVideo',
-  'sendAudio',
-  'sendSticker',
-  'sendLocation',
-  'sendPoll',
+const ALLOWED_METHODS = new Map([
+  ['getMe', 'getMe'],
+  ['getUpdates', 'getUpdates'],
+  ['getFile', 'getFile'],
+  ['sendMessage', 'sendMessage'],
+  ['sendPhoto', 'sendPhoto'],
+  ['sendVoice', 'sendVoice'],
+  ['sendDocument', 'sendDocument'],
+  ['setMessageReaction', 'setMessageReaction'],
+  ['editMessageText', 'editMessageText'],
+  ['deleteMessage', 'deleteMessage'],
+  ['sendVideo', 'sendVideo'],
+  ['sendAudio', 'sendAudio'],
+  ['sendSticker', 'sendSticker'],
+  ['sendLocation', 'sendLocation'],
+  ['sendPoll', 'sendPoll'],
+  ['sendContact', 'sendContact'],
+  ['editMessageLiveLocation', 'editMessageLiveLocation'],
+  ['stopMessageLiveLocation', 'stopMessageLiveLocation'],
+  ['pinChatMessage', 'pinChatMessage'],
+  ['unpinChatMessage', 'unpinChatMessage'],
 ]);
 
 export class TelegramBotClient {
@@ -26,13 +31,14 @@ export class TelegramBotClient {
   }
 
   async request(method, payload = {}) {
+    const sanitizedMethod = ALLOWED_METHODS.get(method);
     if (!this.token) {
       throw new Error('Telegram Bot Token is not configured');
     }
-    if (typeof method !== 'string' || !ALLOWED_METHODS.has(method)) {
+    if (!sanitizedMethod) {
       throw new Error(`Invalid or unsupported Telegram API method: ${method}`);
     }
-    const url = `https://api.telegram.org/bot${this.token}/${encodeURIComponent(method)}`;
+    const url = `https://api.telegram.org/bot${this.token}/${sanitizedMethod}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,7 +46,7 @@ export class TelegramBotClient {
     });
     const data = await response.json();
     if (!data.ok) {
-      throw new Error(data.description || `Telegram API error on ${method}`);
+      throw new Error(data.description || `Telegram API error on ${sanitizedMethod}`);
     }
     return data.result;
   }
@@ -200,14 +206,18 @@ export class TelegramBotClient {
       const blob = new Blob([fileBuffer]);
       formData.append(mediaField, blob, filename);
 
-      const url = `https://api.telegram.org/bot${this.token}/${encodeURIComponent(method)}`;
+      const sanitizedMethod = ALLOWED_METHODS.get(method);
+      if (!sanitizedMethod) {
+        throw new Error(`Invalid or unsupported Telegram API method: ${method}`);
+      }
+      const url = `https://api.telegram.org/bot${this.token}/${sanitizedMethod}`;
       const response = await fetch(url, {
         method: 'POST',
         body: formData,
       });
       const data = await response.json();
       if (!data.ok) {
-        throw new Error(data.description || `Telegram API error on ${method}`);
+        throw new Error(data.description || `Telegram API error on ${sanitizedMethod}`);
       }
       return data.result;
     } else {

@@ -137,6 +137,10 @@ export function registerTelegramRoutes(app) {
       sync_edits,
       sync_deletions,
       is_direct_chat_mirror,
+      poll_sync_mode,
+      poll_send_text_diagram,
+      poll_send_update_message,
+      poll_delete_old_message,
       enabled,
     } = req.body || {};
 
@@ -185,6 +189,10 @@ export function registerTelegramRoutes(app) {
       sync_edits: sync_edits !== undefined ? Boolean(sync_edits) : true,
       sync_deletions: sync_deletions !== undefined ? Boolean(sync_deletions) : true,
       is_direct_chat_mirror: Boolean(is_direct_chat_mirror),
+      poll_sync_mode: poll_sync_mode || 'text_diagram',
+      poll_send_text_diagram: poll_send_text_diagram !== undefined ? Boolean(poll_send_text_diagram) : true,
+      poll_send_update_message: poll_send_update_message !== undefined ? Boolean(poll_send_update_message) : true,
+      poll_delete_old_message: poll_delete_old_message !== undefined ? Boolean(poll_delete_old_message) : true,
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 

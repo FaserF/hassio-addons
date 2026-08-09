@@ -411,6 +411,10 @@ function getTgMappingCurrentState() {
     direct_mirror: document.getElementById('tg-modal-direct-mirror')?.checked || false,
     sync_edits: document.getElementById('tg-modal-sync-edits')?.checked || false,
     sync_deletions: document.getElementById('tg-modal-sync-deletions')?.checked || false,
+    poll_sync_mode: document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram',
+    poll_diagram_text: document.getElementById('tg-modal-poll-diagram-text')?.checked || false,
+    poll_update_msg: document.getElementById('tg-modal-poll-update-msg')?.checked || false,
+    poll_delete_old: document.getElementById('tg-modal-poll-delete-old')?.checked || false,
   };
 }
 
@@ -440,6 +444,15 @@ function openAddTelegramMappingModal() {
   if (syncEditsEl) syncEditsEl.checked = true;
   const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
   if (syncDeletionsEl) syncDeletionsEl.checked = true;
+
+  const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
+  if (pollModeEl) pollModeEl.value = 'text_diagram';
+  const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
+  if (pollDiagramEl) pollDiagramEl.checked = true;
+  const pollUpdateEl = document.getElementById('tg-modal-poll-update-msg');
+  if (pollUpdateEl) pollUpdateEl.checked = true;
+  const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
+  if (pollDeleteEl) pollDeleteEl.checked = true;
 
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
@@ -508,6 +521,18 @@ async function editTelegramMapping(id) {
 
     const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
     if (syncDeletionsEl) syncDeletionsEl.checked = mapping.sync_deletions !== false;
+
+    const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
+    if (pollModeEl) pollModeEl.value = mapping.poll_sync_mode || 'text_diagram';
+
+    const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
+    if (pollDiagramEl) pollDiagramEl.checked = mapping.poll_send_text_diagram !== false;
+
+    const pollUpdateEl = document.getElementById('tg-modal-poll-update-msg');
+    if (pollUpdateEl) pollUpdateEl.checked = mapping.poll_send_update_message !== false;
+
+    const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
+    if (pollDeleteEl) pollDeleteEl.checked = mapping.poll_delete_old_message !== false;
 
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
@@ -604,6 +629,10 @@ async function saveTelegramMappingModal() {
   const is_direct_chat_mirror = document.getElementById('tg-modal-direct-mirror')?.checked || false;
   const sync_edits = document.getElementById('tg-modal-sync-edits')?.checked || false;
   const sync_deletions = document.getElementById('tg-modal-sync-deletions')?.checked || false;
+  const poll_sync_mode = document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram';
+  const poll_send_text_diagram = document.getElementById('tg-modal-poll-diagram-text')?.checked || false;
+  const poll_send_update_message = document.getElementById('tg-modal-poll-update-msg')?.checked || false;
+  const poll_delete_old_message = document.getElementById('tg-modal-poll-delete-old')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
     showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
@@ -634,6 +663,10 @@ async function saveTelegramMappingModal() {
         is_direct_chat_mirror,
         sync_edits,
         sync_deletions,
+        poll_sync_mode,
+        poll_send_text_diagram,
+        poll_send_update_message,
+        poll_delete_old_message,
       }),
     });
     const data = await res.json();
