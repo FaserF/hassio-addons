@@ -1463,6 +1463,13 @@ export async function handlePrivateCaptchaMessage(session, event) {
     if (cleanUserDigits) pendingCaptchas.delete(`${targetGroupId}:${cleanUserDigits}`);
     const userCanonical = resolveCanonicalUserKey(userId, session);
     if (userCanonical) pendingCaptchas.delete(`${targetGroupId}:${userCanonical}`);
+    const participantUser = userId.split('@')[0];
+    if (participantUser) pendingCaptchas.delete(`${targetGroupId}:${participantUser}`);
+    if (foundMatch.captchaObj?.participantJid) {
+      pendingCaptchas.delete(`${targetGroupId}:${foundMatch.captchaObj.participantJid}`);
+      const partUser = foundMatch.captchaObj.participantJid.split('@')[0];
+      if (partUser) pendingCaptchas.delete(`${targetGroupId}:${partUser}`);
+    }
 
     const store = loadModerationStore();
     const config = getGroupModerationConfig(targetGroupId);
@@ -1942,7 +1949,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             // Record kick reason so goodbye message can display it
             const recObj = {
               reason: '⏱️ Removed — Captcha verification timed out',
-              expires: Date.now() + 30000,
+              expires: Date.now() + 120000,
             };
             recentKickReasons.set(getWindowKey(groupId, userId), recObj);
             if (cleanDigits) recentKickReasons.set(getWindowKey(groupId, cleanDigits), recObj);

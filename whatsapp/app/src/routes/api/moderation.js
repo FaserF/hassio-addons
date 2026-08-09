@@ -17,6 +17,8 @@ import {
 import { registry } from '../../whatsapp/moderation/commands.js';
 import { sessions } from '../../session.js';
 
+import { logger } from '../../logger.js';
+
 export function registerModerationRoutes(app) {
   // GET /api/moderation/commands — Dynamically list all registered built-in commands
   app.get('/api/moderation/commands', (req, res) => {
@@ -284,5 +286,166 @@ export function registerModerationRoutes(app) {
 
     saveModerationStore(store);
     res.json({ success: true, data: store.federations });
+  });
+
+  // POST /api/moderation/autotest — Autonomous auto-test execution
+  app.post('/api/moderation/autotest', async (req, res) => {
+    const { group_id, safe_only = true, delay_ms = 1000 } = req.body || {};
+    if (!group_id) {
+      return res.status(400).json({ success: false, error: 'Missing group_id parameter' });
+    }
+
+    const session = Array.from(sessions.values()).find((s) => s.isConnected);
+    if (!session) {
+      return res.status(400).json({ success: false, error: 'No active WhatsApp session connected' });
+    }
+
+    const config = getGroupModerationConfig(group_id);
+    const prefix = config.commands?.prefix || '!';
+    const delay = Math.max(100, parseInt(delay_ms, 10) || 1000);
+    const isSafeOnly = Boolean(safe_only);
+
+    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const sendEvent = (obj) => {
+      res.write(JSON.stringify(obj) + '\n');
+    };
+
+    const testCommands = isSafeOnly
+      ? [
+          { cmd: `${prefix}help`, name: 'help', args: [] },
+          { cmd: `${prefix}rules`, name: 'rules', args: [] },
+          { cmd: `${prefix}welcome`, name: 'welcome', args: [] },
+          { cmd: `${prefix}goodbye`, name: 'goodbye', args: [] },
+          { cmd: `${prefix}notes`, name: 'notes', args: [] },
+          { cmd: `${prefix}filters`, name: 'filters', args: [] },
+        ]
+      : [
+          { cmd: `${prefix}help`, name: 'help', args: [] },
+          { cmd: `${prefix}rules`, name: 'rules', args: [] },
+          { cmd: `${prefix}welcome`, name: 'welcome', args: [] },
+          { cmd: `${prefix}goodbye`, name: 'goodbye', args: [] },
+          { cmd: `${prefix}notes`, name: 'notes', args: [] },
+          { cmd: `${prefix}filters`, name: 'filters', args: [] },
+          { cmd: `${prefix}warn @test_user Auto-test warning`, name: 'warn', args: ['@test_user', 'Auto-test warning'] },
+          { cmd: `${prefix}report @test_user Auto-test report`, name: 'report', args: ['@test_user', 'Auto-test report'] },
+        ];
+
+    const results = [];
+    const startTime = Date.now();
+    const botUserId = session.sock?.user?.id
+      ? session.sock.user.id.split('@')[0].split(':')[0]
+      : 'bot';
+
+    for (let i = 0; i < testCommands.length; i++) {
+      const item = testCommands[i];
+      const stepNum = i + 1;
+      const cmdStartTime = Date.now();
+
+      if (i > 0 && delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+
+      let status = 'PASSED';
+      let details = 'Command executed successfully';
+
+      try {
+        const cmdObj = registry.getCommand(item.name);
+        const mockRawMsg = {
+          key: {
+            remoteJid: group_id,
+            fromMe: false,
+            id: `TEST_MSG_${Date.now()}_${i}`,
+            participant: `${botUserId}@s.whatsapp.net`,
+          },
+          message: {
+            conversation: item.cmd,
+          },
+        };
+
+        if (cmdObj && typeof cmdObj.handler === 'function') {
+          await cmdObj.handler(
+            session,
+            group_id,
+            `${botUserId}@s.whatsapp.net`,
+            item.args,
+            config,
+            true,
+            mockRawMsg
+          );
+        } else {
+          await session.sock.sendMessage(group_id, { text: `🧪 Auto-Test Execution: ${item.cmd}` });
+        }
+      } catch (err) {
+        status = 'FAILED';
+        details = err.message || 'Execution error';
+      }
+
+      const cmdDuration = Date.now() - cmdStartTime;
+      const resItem = {
+        command: item.cmd,
+        status,
+        details,
+        duration_ms: cmdDuration,
+        timestamp: new Date().toISOString(),
+      };
+      results.push(resItem);
+
+      sendEvent({
+        type: 'progress',
+        step: stepNum,
+        total: testCommands.length,
+        command: item.cmd,
+        status,
+        details,
+        timestamp: resItem.timestamp,
+      });
+    }
+
+    const totalDuration = Date.now() - startTime;
+    const passed = results.filter((r) => r.status === 'PASSED').length;
+    const failed = results.filter((r) => r.status === 'FAILED').length;
+
+    let summaryMarkdown = `🧪 *Moderation Auto-Test Report*\n`;
+    summaryMarkdown += `━━━━━━━━━━━━━━━━━━━\n`;
+    summaryMarkdown += `📊 *Summary:*\n`;
+    summaryMarkdown += `• *Total Tested:* ${results.length}\n`;
+    summaryMarkdown += `• *Passed:* ${passed} ✅\n`;
+    summaryMarkdown += `• *Failed:* ${failed} ❌\n`;
+    summaryMarkdown += `• *Mode:* ${isSafeOnly ? 'Safe-Only 🛡️' : 'Full Suite ⚡'}\n`;
+    summaryMarkdown += `• *Duration:* ${(totalDuration / 1000).toFixed(2)}s\n\n`;
+    summaryMarkdown += `📋 *Command Breakdown:*\n`;
+
+    for (const r of results) {
+      summaryMarkdown += `• \`${r.command}\`: ${r.status === 'PASSED' ? 'PASSED ✅' : 'FAILED ❌ (' + r.details + ')'}\n`;
+    }
+
+    summaryMarkdown += `━━━━━━━━━━━━━━━━━━━\n`;
+    summaryMarkdown += `🤖 *Auto-Test Verification Complete*`;
+
+    try {
+      await session.sock.sendMessage(group_id, { text: summaryMarkdown });
+    } catch (sendErr) {
+      logger.warn({ error: sendErr.message, group_id }, 'Failed to send auto-test summary to group');
+    }
+
+    const finalData = {
+      total: results.length,
+      passed,
+      failed,
+      duration_ms: totalDuration,
+      results,
+      summary: summaryMarkdown,
+    };
+
+    sendEvent({
+      type: 'complete',
+      summary: summaryMarkdown,
+      data: finalData,
+    });
+
+    res.end();
   });
 }

@@ -366,3 +366,113 @@ async function sendTestSuiteToGroup() {
     showToast('Network error: ' + e.message, 'danger');
   }
 }
+
+function toggleAutoTestModeUI(enabled) {
+  const optionsDiv = document.getElementById('mod-autotest-options');
+  const logStream = document.getElementById('mod-autotest-log-stream');
+  if (optionsDiv) {
+    optionsDiv.style.display = enabled ? 'flex' : 'none';
+  }
+  if (!enabled && logStream) {
+    logStream.style.display = 'none';
+  }
+}
+
+async function runAutonomousModerationTest() {
+  if (!currentModGroup) {
+    showToast('Please select a group first.', 'warning');
+    return;
+  }
+
+  const safeOnly = Boolean(document.getElementById('mod-autotest-safe-only')?.checked);
+  const delayMs = parseInt(document.getElementById('mod-autotest-delay')?.value, 10) || 1000;
+
+  const logStream = document.getElementById('mod-autotest-log-stream');
+  const logContent = document.getElementById('mod-autotest-log-content');
+  const runBtn = document.getElementById('btn-run-autotest');
+
+  if (logStream) logStream.style.display = 'block';
+  if (logContent) logContent.innerHTML = '';
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+  }
+
+  const appendLog = (msg, isError = false) => {
+    if (!logContent) return;
+    const div = document.createElement('div');
+    div.style.color = isError ? '#ff5555' : '#33ff33';
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    logContent.appendChild(div);
+    if (logStream) logStream.scrollTop = logStream.scrollHeight;
+  };
+
+  appendLog(`🚀 Initiating autonomous auto-test for group: ${currentModGroup} (Safe-Only: ${safeOnly}, Delay: ${delayMs}ms)...`);
+
+  try {
+    const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/autotest', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+      },
+      body: JSON.stringify({
+        group_id: currentModGroup,
+        safe_only: safeOnly,
+        delay_ms: delayMs,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      let errMsg = res.statusText;
+      try {
+        const jsonErr = JSON.parse(errText);
+        errMsg = jsonErr.error || jsonErr.message || errMsg;
+      } catch (_e) {}
+      throw new Error(errMsg);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep last incomplete line in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const event = JSON.parse(line);
+          if (event.type === 'progress') {
+            const statusSymbol = event.status === 'PASSED' ? '✅' : '❌';
+            appendLog(
+              `Step ${event.step}/${event.total}: Executed "${event.command}" -> ${event.status} ${statusSymbol} (${event.details})`,
+              event.status !== 'PASSED'
+            );
+          } else if (event.type === 'complete') {
+            appendLog(`----------------------------------------`);
+            appendLog(`✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`);
+            appendLog(`📩 Markdown summary report delivered to WhatsApp group!`);
+            showToast('Auto-test completed successfully!', 'success');
+          }
+        } catch (_err) {
+          appendLog(line);
+        }
+      }
+    }
+  } catch (err) {
+    appendLog(`❌ Auto-test error: ${err.message}`, true);
+    showToast('Auto-test failed: ' + err.message, 'danger');
+  } finally {
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '<i class="fas fa-play"></i> Start Auto-Test';
+    }
+  }
+}
+

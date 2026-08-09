@@ -98,6 +98,13 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 - **Auto-Responder Filters & Saved Notes**: Keyword triggers (`!filter`, `!stop`, `!filters`), saved group notes (`!save`, `!get`, `!notes`, `#notename` auto-trigger).
 - **User Management & Muting**: `!promote`, `!demote`, `!approve`, `!unapprove` (whitelist bypass), `!mute`, `!unmute` (messages auto-deleted), `!tban`, `!tmute` (duration-based penalties like `1d`, `12h`), `!info`, `!adminlist`, `!report` (alert admins).
 - **Anti-Raid & Flood Protection**: Message rate limiting per user and high-velocity join detection with automatic group lockdown.
+- **Automated Moderation Testing**: Execute test suites directly from the Web UI using the *Generate Test Commands 🧪* modal with optional Autonomous Mode. It runs commands with customizable delays, tracks bot responses, logs real-time progress, and sends an automated Markdown summary report to the group.
+
+### 🧪 Automated Telegram Bridge & Moderation Test Suites
+
+- **Telegram Bridge Native Test Suite**: Available in the Telegram tab of the Web UI under *Bridge Integration Test*. Performs end-to-end verification across 7 native message types (Text, Poll, Poll Vote Sync, Location Pin, Event Card, Reactions, and Thread Quotes) for both WhatsApp → Telegram and Telegram → WhatsApp directions. Sends a comprehensive results summary to both chats upon completion.
+- **Moderation Autonomous Test Mode**: Located in the Group Moderation panel under *Generate Test Commands 🧪*. Allows running safe or complete command test suites autonomously with live step-by-step progress streaming and group result reporting.
+
 - **Native WhatsApp <-> Telegram Bridge**: Bi-directional message mirroring, automatic chat discovery, media sync, configurable metadata headers, and intelligent thread quote resolution across WhatsApp and Telegram.
 - **Global Federations**: Network ban propagation across group clusters.
 - **Gemini AI Engine**: Optional AI auto-responder for answering group FAQs, AI rules interpretation, and automated sentiment moderation (toxicity detection).

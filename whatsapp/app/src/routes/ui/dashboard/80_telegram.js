@@ -32,6 +32,7 @@ async function loadTelegramBridgeData() {
       cachedTelegramBots = cfg.bots || [];
       renderTelegramBots(cachedTelegramBots);
       renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
+      populateTelegramTestMappingDropdown(cfg.mappings || []);
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
@@ -760,3 +761,153 @@ function onTgDirectMirrorToggle(checked) {
   }
 }
 window.onTgDirectMirrorToggle = onTgDirectMirrorToggle;
+
+function populateTelegramTestMappingDropdown(mappings = []) {
+  const select = document.getElementById('tg-test-mapping-select');
+  if (!select) return;
+  if (mappings.length === 0) {
+    select.innerHTML = '<option value="">No mappings configured - Add a mapping first</option>';
+    return;
+  }
+  select.innerHTML = mappings
+    .map(
+      (m) =>
+        `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)} (WA: ${escapeHtml(m.wa_jid)} ↔ TG: ${escapeHtml(m.tg_chat_id)})</option>`
+    )
+    .join('');
+}
+window.populateTelegramTestMappingDropdown = populateTelegramTestMappingDropdown;
+
+let tgTestPollInterval = null;
+
+async function runTelegramBridgeTest() {
+  const mappingSelect = document.getElementById('tg-test-mapping-select');
+  const directionSelect = document.getElementById('tg-test-direction-select');
+  const runBtn = document.getElementById('tg-run-test-btn');
+  const panel = document.getElementById('tg-test-results-panel');
+  const statusBadge = document.getElementById('tg-test-status-badge');
+  const progressText = document.getElementById('tg-test-progress-text');
+  const runIdEl = document.getElementById('tg-test-run-id');
+  const logOutput = document.getElementById('tg-test-log-output');
+
+  const mapping_id = mappingSelect?.value;
+  const direction = directionSelect?.value || 'wa_to_tg';
+
+  if (!mapping_id) {
+    showToast('Please select a target mapping to run integration test', 'warning');
+    return;
+  }
+
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+  }
+
+  if (panel) panel.style.display = 'block';
+  if (statusBadge) {
+    statusBadge.style.background = '#0088cc';
+    statusBadge.textContent = 'RUNNING';
+  }
+  if (progressText) progressText.textContent = 'Progress: 0 / 7 steps';
+  if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
+  if (logOutput) logOutput.textContent = 'Starting integration test...\n';
+
+  try {
+    const res = await fetch('api/telegram/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mapping_id, direction }),
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || 'Failed to start test', 'danger');
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+      }
+      if (statusBadge) {
+        statusBadge.style.background = '#dc3545';
+        statusBadge.textContent = 'FAILED';
+      }
+      if (logOutput) logOutput.textContent += `\nError: ${data.error || 'Failed to start test'}`;
+      return;
+    }
+
+    const runId = data.runId;
+    if (runIdEl) runIdEl.textContent = `Run ID: ${runId}`;
+
+    if (tgTestPollInterval) clearInterval(tgTestPollInterval);
+
+    tgTestPollInterval = setInterval(() => {
+      pollTelegramTestResults(runId);
+    }, 1000);
+
+    pollTelegramTestResults(runId);
+  } catch (err) {
+    showToast(`Error launching test: ${err.message}`, 'danger');
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+    }
+  }
+}
+window.runTelegramBridgeTest = runTelegramBridgeTest;
+
+async function pollTelegramTestResults(runId) {
+  try {
+    const res = await fetch(`api/telegram/test/results/${runId}`);
+    if (!res.ok) return;
+
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const testRun = json.data;
+    const statusBadge = document.getElementById('tg-test-status-badge');
+    const progressText = document.getElementById('tg-test-progress-text');
+    const logOutput = document.getElementById('tg-test-log-output');
+    const runBtn = document.getElementById('tg-run-test-btn');
+
+    if (progressText) {
+      progressText.textContent = `Progress: ${testRun.passedSteps} / ${testRun.totalSteps} steps`;
+    }
+
+    if (logOutput && Array.isArray(testRun.logs)) {
+      const formattedLogs = testRun.logs
+        .map((l) => {
+          const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
+          const prefix = l.level === 'error' ? '❌' : l.level === 'success' ? '✅' : l.level === 'warn' ? '⚠️' : 'ℹ️';
+          return `[${time}] ${prefix} [${l.step}] ${l.msg}`;
+        })
+        .join('\n');
+      logOutput.textContent = formattedLogs;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    if (testRun.status !== 'running') {
+      if (tgTestPollInterval) {
+        clearInterval(tgTestPollInterval);
+        tgTestPollInterval = null;
+      }
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+      }
+      if (statusBadge) {
+        if (testRun.status === 'passed') {
+          statusBadge.style.background = '#28a745';
+          statusBadge.textContent = 'PASSED ✅';
+          showToast('Telegram Bridge Integration Test Passed! 🎉', 'success');
+        } else {
+          statusBadge.style.background = '#dc3545';
+          statusBadge.textContent = 'FAILED ❌';
+          showToast('Telegram Bridge Integration Test Completed with Warnings/Failures', 'warning');
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error polling Telegram test results', err);
+  }
+}
+window.pollTelegramTestResults = pollTelegramTestResults;
+

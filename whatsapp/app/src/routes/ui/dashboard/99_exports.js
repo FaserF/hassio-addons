@@ -68,3 +68,6 @@ window.closeTestCommandsModal = closeTestCommandsModal;
 window.updateTestCommandsPrefill = updateTestCommandsPrefill;
 window.copyAllFromBlock = copyAllFromBlock;
 window.sendTestSuiteToGroup = sendTestSuiteToGroup;
+window.toggleAutoTestModeUI = toggleAutoTestModeUI;
+window.runAutonomousModerationTest = runAutonomousModerationTest;
+

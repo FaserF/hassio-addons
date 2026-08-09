@@ -31,6 +31,8 @@ export function formatHeader(
   return `<b>[${parts.join(' | ')}]</b>:\n`;
 }
 
+const recentTgSystemEvents = new Map();
+
 export async function syncWhatsAppGroupEventToTelegram(
   waJid,
   groupName,
@@ -39,6 +41,21 @@ export async function syncWhatsAppGroupEventToTelegram(
 ) {
   const store = loadTelegramStore();
   if (!store.enabled) return;
+
+  const departureAction = action === 'remove' || action === 'leave' ? 'departure' : action;
+  const partStr = participants.map((p) => String(p).split('@')[0]).sort().join(',');
+  const eventKey = `tg_sys_evt:${waJid}:${departureAction}:${partStr}`;
+  const now = Date.now();
+  const lastTime = recentTgSystemEvents.get(eventKey) || 0;
+  if (now - lastTime < 15000) {
+    return; // Skip duplicate Telegram event within 15 seconds
+  }
+  recentTgSystemEvents.set(eventKey, now);
+  if (recentTgSystemEvents.size > 100) {
+    for (const [k, ts] of recentTgSystemEvents.entries()) {
+      if (now - ts > 30000) recentTgSystemEvents.delete(k);
+    }
+  }
 
   const mappings = (store.mappings || []).filter(
     (m) =>

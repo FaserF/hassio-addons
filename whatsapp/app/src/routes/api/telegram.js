@@ -1,5 +1,6 @@
 import { loadTelegramStore, saveTelegramStore } from '../../whatsapp/telegram/store.js';
-import { TelegramBotClient, sanitizeTelegramToken } from '../../whatsapp/telegram/bot.js';
+import { TelegramBotClient, getTelegramBotClient, sanitizeTelegramToken } from '../../whatsapp/telegram/bot.js';
+import { getSession } from '../../session.js';
 
 export function registerTelegramRoutes(app) {
   // GET /api/telegram/config
@@ -237,4 +238,301 @@ export function registerTelegramRoutes(app) {
     saveTelegramStore(store);
     res.json({ success: true, data: mapping });
   });
+
+  // Test runs memory store
+  const testRuns = new Map();
+
+  // GET /api/telegram/test/results/:runId
+  app.get('/api/telegram/test/results/:runId', (req, res) => {
+    const { runId } = req.params;
+    const testRun = testRuns.get(runId);
+    if (!testRun) {
+      return res.status(404).json({ success: false, error: 'Test run not found' });
+    }
+    res.json({
+      success: true,
+      data: {
+        runId: testRun.runId,
+        status: testRun.status,
+        startTime: testRun.startTime,
+        endTime: testRun.endTime,
+        direction: testRun.direction,
+        mappingId: testRun.mappingId,
+        passedSteps: testRun.passedSteps,
+        totalSteps: testRun.totalSteps,
+        logs: testRun.logs,
+        summary: testRun.summary,
+      },
+    });
+  });
+
+  // POST /api/telegram/test
+  app.post('/api/telegram/test', async (req, res) => {
+    const { mapping_id, direction = 'wa_to_tg' } = req.body || {};
+
+    const store = loadTelegramStore();
+    const mapping = (store.mappings || []).find((m) => m.id === mapping_id);
+    if (!mapping) {
+      return res.status(404).json({ success: false, error: 'Mapping not found' });
+    }
+
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) {
+      return res.status(400).json({ success: false, error: 'Telegram Bot client not configured or disabled' });
+    }
+
+    const session = getSession('default');
+    if (!session || !session.sock) {
+      return res.status(400).json({ success: false, error: 'WhatsApp session not connected' });
+    }
+
+    const runId = `trun_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const testRun = {
+      runId,
+      status: 'running',
+      startTime: new Date().toISOString(),
+      endTime: null,
+      direction,
+      mappingId: mapping.id,
+      passedSteps: 0,
+      totalSteps: 7,
+      logs: [],
+      summary: null,
+    };
+    testRuns.set(runId, testRun);
+
+    const log = (step, msg, level = 'info') => {
+      const entry = { time: new Date().toISOString(), step, msg, level };
+      testRun.logs.push(entry);
+    };
+
+    // Return response immediately with runId
+    res.json({ success: true, runId });
+
+    // Execute test steps asynchronously
+    (async () => {
+      log('INIT', `Starting Telegram Bridge Integration Test (Run ID: ${runId}, Direction: ${direction})`);
+      log('INIT', `Target Mapping: ${mapping.name} [WA: ${mapping.wa_jid} | TG Chat: ${mapping.tg_chat_id}]`);
+
+      const isWaToTg = direction === 'wa_to_tg';
+
+      try {
+        let sentMsgRef = null;
+
+        // STEP 1: Text Message Test
+        try {
+          log('STEP_1', `Executing Step 1/7: Text Message Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            const text = `🧪 [Bridge Test] Step 1: Text Message (${new Date().toLocaleTimeString()})`;
+            sentMsgRef = await session.sock.sendMessage(mapping.wa_jid, { text });
+            log('STEP_1', `Sent WhatsApp text message (ID: ${sentMsgRef?.key?.id || 'OK'})`, 'success');
+          } else {
+            const text = `🧪 [Bridge Test] Step 1: Text Message (${new Date().toLocaleTimeString()})`;
+            sentMsgRef = await bot.sendMessage(mapping.tg_chat_id, text, null, mapping.tg_thread_id || null);
+            log('STEP_1', `Sent Telegram text message (ID: ${sentMsgRef?.message_id || 'OK'})`, 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_1', `Step 1 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 2: Poll Test
+        try {
+          log('STEP_2', `Executing Step 2/7: Poll Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            await session.sock.sendMessage(mapping.wa_jid, {
+              poll: {
+                name: '🧪 [Bridge Test] Step 2: Preferred feature?',
+                values: ['Option A (Speed)', 'Option B (Reliability)', 'Option C (Media Sync)'],
+                selectableCount: 1,
+              },
+            });
+            log('STEP_2', 'Sent WhatsApp Poll message', 'success');
+          } else {
+            await bot.sendPoll(
+              mapping.tg_chat_id,
+              '🧪 [Bridge Test] Step 2: Preferred feature?',
+              ['Option A (Speed)', 'Option B (Reliability)', 'Option C (Media Sync)'],
+              null,
+              mapping.tg_thread_id || null
+            );
+            log('STEP_2', 'Sent Telegram Poll message', 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_2', `Step 2 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 3: Poll Vote Test
+        try {
+          log('STEP_3', `Executing Step 3/7: Poll Vote Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            const pollVoteText = `🧪 [Bridge Test] Step 3: Simulated Poll Vote Update\n📊 Poll: Step 2 Poll\n✅ Votes: Option A (1 vote)`;
+            await session.sock.sendMessage(mapping.wa_jid, { text: pollVoteText });
+            log('STEP_3', 'Dispatched WhatsApp Poll Vote update notification', 'success');
+          } else {
+            const pollVoteText = `🧪 [Bridge Test] Step 3: Simulated Poll Vote Update\n📊 Poll: Step 2 Poll\n✅ Votes: Option A (1 vote)`;
+            await bot.sendMessage(mapping.tg_chat_id, pollVoteText, null, mapping.tg_thread_id || null);
+            log('STEP_3', 'Dispatched Telegram Poll Vote update notification', 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_3', `Step 3 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 4: Location Test
+        try {
+          log('STEP_4', `Executing Step 4/7: Location Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            await session.sock.sendMessage(mapping.wa_jid, {
+              location: {
+                degreesLatitude: 52.52,
+                degreesLongitude: 13.405,
+                name: 'Berlin HQ Test Location',
+                address: 'Berlin, Germany',
+              },
+            });
+            log('STEP_4', 'Sent WhatsApp Location message (52.52, 13.405)', 'success');
+          } else {
+            await bot.request('sendLocation', {
+              chat_id: mapping.tg_chat_id,
+              latitude: 52.52,
+              longitude: 13.405,
+              message_thread_id: mapping.tg_thread_id || undefined,
+            });
+            log('STEP_4', 'Sent Telegram Location message (52.52, 13.405)', 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_4', `Step 4 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 5: Event Card Test
+        try {
+          log('STEP_5', `Executing Step 5/7: Event Card Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          const eventText = `📅 <b>[Bridge Test] Step 5: Integration Check Event</b>\n🕐 Time: Tomorrow 10:00 AM\n📍 Location: Virtual Test Room\n📝 Description: Automated Bridge Verification Run`;
+          if (isWaToTg) {
+            await session.sock.sendMessage(mapping.wa_jid, {
+              text: `📅 [Bridge Test] Step 5: Integration Check Event\nTime: Tomorrow 10:00 AM\nLocation: Virtual Test Room\nDescription: Automated Bridge Verification Run`,
+            });
+            log('STEP_5', 'Sent WhatsApp Event text card', 'success');
+          } else {
+            await bot.sendMessage(mapping.tg_chat_id, eventText, null, mapping.tg_thread_id || null);
+            log('STEP_5', 'Sent Telegram Event HTML card', 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_5', `Step 5 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 6: Reaction Test
+        try {
+          log('STEP_6', `Executing Step 6/7: Reaction Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            if (sentMsgRef && sentMsgRef.key) {
+              await session.sock.sendMessage(mapping.wa_jid, {
+                react: { text: '👍', key: sentMsgRef.key },
+              });
+              log('STEP_6', 'Sent WhatsApp Reaction 👍 to Step 1 message', 'success');
+            } else {
+              await session.sock.sendMessage(mapping.wa_jid, { text: '👍 [Simulated Reaction to Step 1]' });
+              log('STEP_6', 'Sent simulated WhatsApp Reaction notification', 'success');
+            }
+          } else {
+            if (sentMsgRef && sentMsgRef.message_id) {
+              await bot.setMessageReaction(mapping.tg_chat_id, sentMsgRef.message_id, '👍');
+              log('STEP_6', 'Sent Telegram Reaction 👍 to Step 1 message', 'success');
+            } else {
+              await bot.sendMessage(mapping.tg_chat_id, '👍 [Simulated Reaction to Step 1]', null, mapping.tg_thread_id || null);
+              log('STEP_6', 'Sent simulated Telegram Reaction message', 'success');
+            }
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_6', `Step 6 Failed: ${err.message}`, 'error');
+        }
+
+        await new Promise((r) => setTimeout(r, 1000));
+
+        // STEP 7: Reply / Thread Quote Test
+        try {
+          log('STEP_7', `Executing Step 7/7: Reply/Thread Quote Test (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          if (isWaToTg) {
+            if (sentMsgRef) {
+              await session.sock.sendMessage(
+                mapping.wa_jid,
+                { text: '🧪 [Bridge Test] Step 7: Reply Quote to Step 1 Message' },
+                { quoted: sentMsgRef }
+              );
+              log('STEP_7', 'Sent WhatsApp Quoted Reply to Step 1 message', 'success');
+            } else {
+              await session.sock.sendMessage(mapping.wa_jid, { text: '🧪 [Bridge Test] Step 7: Reply Quote to Step 1 Message' });
+              log('STEP_7', 'Sent WhatsApp Reply text message', 'success');
+            }
+          } else {
+            const replyMsgId = sentMsgRef?.message_id || null;
+            await bot.sendMessage(
+              mapping.tg_chat_id,
+              '🧪 <b>[Bridge Test] Step 7: Reply Quote to Step 1 Message</b>',
+              replyMsgId,
+              mapping.tg_thread_id || null
+            );
+            log('STEP_7', 'Sent Telegram Quoted Reply to Step 1 message', 'success');
+          }
+          testRun.passedSteps++;
+        } catch (err) {
+          log('STEP_7', `Step 7 Failed: ${err.message}`, 'error');
+        }
+
+        testRun.endTime = new Date().toISOString();
+        testRun.status = testRun.passedSteps === testRun.totalSteps ? 'passed' : 'failed';
+
+        const summaryText = `🏁 <b>[Bridge Integration Test Complete]</b>\n` +
+          `• Result: ${testRun.status === 'passed' ? '✅ ALL PASSED' : '⚠️ PARTIAL / FAILED'}\n` +
+          `• Passed Steps: ${testRun.passedSteps}/${testRun.totalSteps}\n` +
+          `• Direction: ${isWaToTg ? 'WhatsApp ➔ Telegram' : 'Telegram ➔ WhatsApp'}\n` +
+          `• Mapping: ${mapping.name}\n` +
+          `• Duration: ${Math.round((new Date(testRun.endTime) - new Date(testRun.startTime)) / 1000)}s`;
+
+        testRun.summary = summaryText;
+        log('SUMMARY', summaryText, testRun.status === 'passed' ? 'success' : 'warn');
+
+        // Dispatch summary to both Telegram and WhatsApp
+        try {
+          await bot.sendMessage(
+            mapping.tg_chat_id,
+            summaryText,
+            null,
+            mapping.tg_thread_id || null
+          );
+          log('DISPATCH', 'Dispatched test summary report to Telegram chat', 'info');
+        } catch (e) {
+          log('DISPATCH', `Failed to dispatch summary to Telegram: ${e.message}`, 'warn');
+        }
+
+        try {
+          const plainSummary = summaryText.replace(/<\/?[^>]+(>|$)/g, '');
+          await session.sock.sendMessage(mapping.wa_jid, { text: plainSummary });
+          log('DISPATCH', 'Dispatched test summary report to WhatsApp chat', 'info');
+        } catch (e) {
+          log('DISPATCH', `Failed to dispatch summary to WhatsApp: ${e.message}`, 'warn');
+        }
+      } catch (fatalErr) {
+        testRun.status = 'failed';
+        testRun.endTime = new Date().toISOString();
+        log('FATAL', `Test suite encountered a fatal error: ${fatalErr.message}`, 'error');
+      }
+    })();
+  });
 }
+

@@ -47,6 +47,56 @@ export default () => `
         </div>
     </div>
 
+    <!-- Bridge Integration Test Card -->
+    <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
+        <div style="display:flex; align-items:center; justify-space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div style="font-size: 24px; color: #ff9800; background: rgba(255, 152, 0, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-vial"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-weight: 600; font-size:16px;">Bridge Integration Test</h3>
+                    <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 13px;">
+                        Run automated end-to-end bridge test steps (text, poll, poll vote, location, event, reaction, reply) between WA and TG.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end; margin-bottom: 16px;">
+            <div>
+                <label class="mod-field-label"><i class="fas fa-link"></i> Select Target Mapping</label>
+                <select id="tg-test-mapping-select" class="mod-select" style="width:100%;">
+                    <option value="">Loading mappings...</option>
+                </select>
+            </div>
+            <div>
+                <label class="mod-field-label"><i class="fas fa-exchange-alt"></i> Test Direction</label>
+                <select id="tg-test-direction-select" class="mod-select" style="width:100%;">
+                    <option value="wa_to_tg">WhatsApp ➔ Telegram (WA to TG)</option>
+                    <option value="tg_to_wa">Telegram ➔ WhatsApp (TG to WA)</option>
+                </select>
+            </div>
+            <div>
+                <button class="btn btn-primary" style="height:38px; padding:0 20px; font-weight:600; display:flex; align-items:center; gap:8px;" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
+                    <i class="fas fa-play"></i> Run Integration Test
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Log Output Panel -->
+        <div id="tg-test-results-panel" style="display:none; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-top:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="tg-test-status-badge" class="badge" style="background:#0088cc; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;">RUNNING</span>
+                    <strong id="tg-test-progress-text" style="font-size:14px;">Progress: 0 / 7 steps</strong>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted);" id="tg-test-run-id"></div>
+            </div>
+            <pre id="tg-test-log-output" style="background:var(--bg-input); color:var(--text-color); font-family:monospace; font-size:12px; padding:12px; border-radius:6px; max-height:280px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid var(--border-color);"></pre>
+        </div>
+    </div>
+
     <!-- Mappings Section -->
     <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
