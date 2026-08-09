@@ -40,7 +40,7 @@ export const ipFilterMiddleware = (req, res, next) => {
 };
 
 export const authMiddleware = (req, res, next) => {
-  const providedToken = req.header('X-Auth-Token');
+  const providedToken = req.header('X-Auth-Token') || req.query?.token;
 
   if (!providedToken) {
     logger.warn({ ip: req.ip, path: req.originalUrl }, '[AUTH] Missing X-Auth-Token in request');
@@ -68,7 +68,7 @@ export const authMiddleware = (req, res, next) => {
 };
 
 export const anyAuthMiddleware = (req, res, next) => {
-  const providedToken = req.header('X-Auth-Token');
+  const providedToken = req.header('X-Auth-Token') || req.query?.token;
   if (providedToken) {
     if (providedToken === API_TOKEN) {
       SYSTEM_STATE.last_integration_online = Date.now();

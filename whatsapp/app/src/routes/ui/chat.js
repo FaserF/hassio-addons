@@ -133,14 +133,19 @@ function startNewChatSubmit(e) {
   showToast(`Chat initialized for ${displayName}`, 'success');
 }
 
-function matchJid(a, b) {
+function matchJid(a, b, extraName = '') {
   if (!a || !b) return false;
   const sA = String(a).trim().toLowerCase();
   const sB = String(b).trim().toLowerCase();
   if (sA === sB) return true;
   const rawA = sA.split('@')[0];
   const rawB = sB.split('@')[0];
-  return rawA === rawB;
+  if (rawA === rawB) return true;
+  if (extraName) {
+    const cName = String(extraName).trim().toLowerCase();
+    if (sA === cName || rawA === cName) return true;
+  }
+  return false;
 }
 
 async function fetchChatBadgesConfig() {
@@ -162,14 +167,14 @@ async function fetchChatBadgesConfig() {
       chatTgConfigCache = json.data || json;
     }
     if (activeChatJid) {
-      updateChatHeaderBadges(activeChatJid);
+      updateChatHeaderBadges(activeChatJid, activeChatName);
     }
   } catch (e) {
     console.warn('Failed to fetch chat badges config:', e);
   }
 }
 
-function updateChatHeaderBadges(jid) {
+function updateChatHeaderBadges(jid, chatName = '') {
   if (!jid || jid !== activeChatJid) return;
   const headerBadgesEl = document.getElementById('active-chat-header-badges');
   if (!headerBadgesEl) return;
@@ -180,7 +185,12 @@ function updateChatHeaderBadges(jid) {
     const globalEnabled = modData.global_enabled !== false;
     if (globalEnabled) {
       const groups = modData.groups || {};
-      const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, jid));
+      const groupEntry = Object.entries(groups).find(([gKey, gVal]) => {
+        if (matchJid(gKey, jid, chatName)) return true;
+        if (gVal?.jid && matchJid(gVal.jid, jid, chatName)) return true;
+        if (gVal?.name && matchJid(gVal.name, jid, chatName)) return true;
+        return false;
+      });
       if (groupEntry && groupEntry[1]?.enabled !== false) {
         hasModActive = true;
       }
@@ -193,7 +203,12 @@ function updateChatHeaderBadges(jid) {
     const tgEnabled = tgData.enabled !== false;
     const mappings = tgData.mappings || [];
     if (tgEnabled && Array.isArray(mappings)) {
-      activeMapping = mappings.find((m) => m.enabled !== false && matchJid(m.wa_jid, jid));
+      activeMapping = mappings.find((m) => {
+        if (m.enabled === false) return false;
+        if (matchJid(m.wa_jid, jid, chatName)) return true;
+        if (m.wa_name && matchJid(m.wa_name, jid, chatName)) return true;
+        return false;
+      });
     }
   }
 
@@ -299,7 +314,12 @@ function renderChatList(chats) {
         const globalEnabled = modData.global_enabled !== false;
         if (globalEnabled) {
           const groups = modData.groups || {};
-          const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, c.jid));
+          const groupEntry = Object.entries(groups).find(([gKey, gVal]) => {
+            if (matchJid(gKey, c.jid, c.name)) return true;
+            if (gVal?.jid && matchJid(gVal.jid, c.jid, c.name)) return true;
+            if (gVal?.name && matchJid(gVal.name, c.jid, c.name)) return true;
+            return false;
+          });
           if (groupEntry && groupEntry[1]?.enabled !== false) {
             hasModActive = true;
           }
@@ -313,7 +333,12 @@ function renderChatList(chats) {
         const tgEnabled = tgData.enabled !== false;
         const mappings = tgData.mappings || [];
         if (tgEnabled && Array.isArray(mappings)) {
-          activeMapping = mappings.find((m) => m.enabled !== false && matchJid(m.wa_jid, c.jid));
+          activeMapping = mappings.find((m) => {
+            if (m.enabled === false) return false;
+            if (matchJid(m.wa_jid, c.jid, c.name)) return true;
+            if (m.wa_name && matchJid(m.wa_name, c.jid, c.name)) return true;
+            return false;
+          });
         }
       }
 
@@ -617,7 +642,12 @@ function renderMediaBlock(m) {
     }
     return '';
   }
-  const url = m.mediaUrl;
+  let url = m.mediaUrl;
+  if (typeof apiToken !== 'undefined' && apiToken && url.includes('api/')) {
+    if (!url.includes('token=')) {
+      url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(apiToken);
+    }
+  }
   if (m.mediaType === 'image' || (m.mediaMime && m.mediaMime.startsWith('image/'))) {
     return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" loading="lazy">`;
   }
