@@ -231,7 +231,56 @@ async function unsavedModalSaveAndSwitch() {
   markClean();
   if (proceed) proceed();
 }
-// ── End Dirty Tracking ────────────────────────────────────────────────────────
+function updateModerationDisabledState() {
+  const globalToggle = document.getElementById('mod-global-toggle');
+  const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
+
+  const tab = document.getElementById('tab-moderation');
+  if (!tab) return;
+
+  // 1) Global moderation toggle: disable all settings cards if global is off
+  const settingsCards = tab.querySelectorAll('.mod-settings-card, .mod-grid, .card');
+  settingsCards.forEach((card) => {
+    if (card.closest('.mod-hero')) return;
+
+    if (!isGlobalEnabled) {
+      card.classList.add('disabled-section');
+      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+        if (el.id !== 'mod-global-toggle') el.disabled = true;
+      });
+    } else {
+      card.classList.remove('disabled-section');
+      card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+        el.disabled = false;
+      });
+    }
+  });
+
+  // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
+  const groupToggle = document.getElementById('mod-group-toggle');
+  const isGroupEnabled = groupToggle ? groupToggle.checked : true;
+  if (isGlobalEnabled && typeof currentModGroup !== 'undefined' && currentModGroup) {
+    const groupContent = document.getElementById('mod-group-content');
+    if (groupContent) {
+      const subCards = groupContent.querySelectorAll(
+        '.mod-settings-card, .mod-sub-panel, .card'
+      );
+      subCards.forEach((card) => {
+        if (!isGroupEnabled) {
+          card.classList.add('disabled-section');
+          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+            if (el.id !== 'mod-group-toggle') el.disabled = true;
+          });
+        } else {
+          card.classList.remove('disabled-section');
+          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
+            el.disabled = false;
+          });
+        }
+      });
+    }
+  }
+}
 
 async function loadModerationConfig() {
   try {
@@ -249,78 +298,27 @@ async function loadModerationConfig() {
           builtinCommandsCache = cmdsJson.data;
         }
       }
-    } catch (cmdsErr) {
-      console.warn('Failed to load built-in commands list:', cmdsErr);
-    }
+  } catch (cmdsErr) {
+    console.warn('Failed to load built-in commands list:', cmdsErr);
+  }
 
-    function updateModerationDisabledState() {
+  if (modRes.ok) {
+    const json = await modRes.json();
+    if (json.success && json.data) {
+      modStoreCache = json.data;
       const globalToggle = document.getElementById('mod-global-toggle');
-      const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
-
-      const tab = document.getElementById('tab-moderation');
-      if (!tab) return;
-
-      // 1) Global moderation toggle: disable all settings cards if global is off
-      const settingsCards = tab.querySelectorAll('.mod-settings-card, .mod-grid, .card');
-      settingsCards.forEach((card) => {
-        if (card.closest('.mod-hero')) return;
-
-        if (!isGlobalEnabled) {
-          card.classList.add('disabled-section');
-          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-            if (el.id !== 'mod-global-toggle') el.disabled = true;
-          });
-        } else {
-          card.classList.remove('disabled-section');
-          card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-            el.disabled = false;
-          });
-        }
-      });
-
-      // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
-      const groupToggle = document.getElementById('mod-group-toggle');
-      const isGroupEnabled = groupToggle ? groupToggle.checked : true;
-      if (isGlobalEnabled && currentModGroup) {
-        const groupContent = document.getElementById('mod-group-content');
-        if (groupContent) {
-          const subCards = groupContent.querySelectorAll(
-            '.mod-settings-card, .mod-sub-panel, .card'
-          );
-          subCards.forEach((card) => {
-            if (!isGroupEnabled) {
-              card.classList.add('disabled-section');
-              card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-                if (el.id !== 'mod-group-toggle') el.disabled = true;
-              });
-            } else {
-              card.classList.remove('disabled-section');
-              card.querySelectorAll('input, select, button, textarea').forEach((el) => {
-                el.disabled = false;
-              });
-            }
-          });
-        }
+      if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
+      const aiKeyEl = document.getElementById('mod-ai-key');
+      if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
+        aiKeyEl.value = modStoreCache.gemini_api_key;
       }
-    }
-
-    if (modRes.ok) {
-      const json = await modRes.json();
-      if (json.success && json.data) {
-        modStoreCache = json.data;
-        const globalToggle = document.getElementById('mod-global-toggle');
-        if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
-        const aiKeyEl = document.getElementById('mod-ai-key');
-        if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
-          aiKeyEl.value = modStoreCache.gemini_api_key;
-        }
-        const globalRulesInp = document.getElementById('mod-global-rules-input');
-        if (globalRulesInp && modStoreCache.global_rules !== undefined) {
-          globalRulesInp.value = modStoreCache.global_rules;
-        }
-        updateModerationDisabledState();
+      const globalRulesInp = document.getElementById('mod-global-rules-input');
+      if (globalRulesInp && modStoreCache.global_rules !== undefined) {
+        globalRulesInp.value = modStoreCache.global_rules;
       }
+      updateModerationDisabledState();
     }
+  }
 
     // Populate group select dropdown from live chat list and moderation store
     const select = document.getElementById('mod-group-select');

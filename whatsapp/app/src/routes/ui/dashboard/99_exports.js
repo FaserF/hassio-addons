@@ -19,6 +19,7 @@ window.openDependencyModal = openDependencyModal;
 window.closeDependencyModal = closeDependencyModal;
 window.loadModerationConfig = loadModerationConfig;
 window.toggleGlobalModeration = toggleGlobalModeration;
+window.updateModerationDisabledState = updateModerationDisabledState;
 window.selectModerationGroup = selectModerationGroup;
 window.toggleGroupModeration = toggleGroupModeration;
 window.switchModSubTab = switchModSubTab;

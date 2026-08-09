@@ -45,6 +45,40 @@ window.addEventListener('unhandledrejection', function (event) {
   }
 });
 
+// Global fetch interceptor to auto-inject X-Auth-Token for all gateway REST endpoints
+if (typeof window !== 'undefined' && window.fetch && !window._fetchAuthPatched) {
+  window._fetchAuthPatched = true;
+  const _origFetch = window.fetch;
+  window.fetch = function (input, init = {}) {
+    let url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url;
+    if (
+      url &&
+      (url.startsWith('api/') ||
+        url.includes('/api/') ||
+        url.startsWith('logs') ||
+        url.startsWith('session') ||
+        url.startsWith('mark_as_read') ||
+        url.startsWith('send_message') ||
+        url.startsWith('send_reaction'))
+    ) {
+      init = init || {};
+      init.headers = init.headers || {};
+      if (typeof apiToken !== 'undefined' && apiToken) {
+        if (init.headers instanceof Headers) {
+          if (!init.headers.has('X-Auth-Token')) init.headers.set('X-Auth-Token', apiToken);
+        } else if (Array.isArray(init.headers)) {
+          if (!init.headers.some(([k]) => k.toLowerCase() === 'x-auth-token')) {
+            init.headers.push(['X-Auth-Token', apiToken]);
+          }
+        } else {
+          if (!init.headers['X-Auth-Token']) init.headers['X-Auth-Token'] = apiToken;
+        }
+      }
+    }
+    return _origFetch.call(this, input, init);
+  };
+}
+
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
