@@ -400,23 +400,51 @@ export function renderDashboard(sessionId) {
     </div>
   </div>
 
-  <!-- New Chat Modal Dialog -->
+  <!-- New Chat / Create Group Modal Dialog -->
   <div class="modal-overlay" id="new-chat-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3><i class="fas fa-comment-medical" style="color:var(--primary);margin-right:8px;"></i> Start New Chat</h3>
+        <h3><i class="fas fa-comment-medical" style="color:var(--primary);margin-right:8px;"></i> New Conversation</h3>
         <button class="modal-close-btn" onclick="closeNewChatModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
-        <form onsubmit="startNewChatSubmit(event)">
+        <!-- Mode Switcher Tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border-color);padding-bottom:12px;">
+          <button type="button" id="tab-btn-direct-chat" class="btn btn-primary btn-sm" onclick="switchNewChatTab('direct')" style="flex:1;">
+            <i class="fas fa-user" style="margin-right:6px;"></i> Direct Chat
+          </button>
+          <button type="button" id="tab-btn-group-chat" class="btn btn-secondary btn-sm" onclick="switchNewChatTab('group')" style="flex:1;">
+            <i class="fas fa-users" style="margin-right:6px;"></i> Create Group
+          </button>
+        </div>
+
+        <!-- Mode 1: Direct Chat Form -->
+        <form id="new-direct-chat-form" onsubmit="startNewChatSubmit(event)">
           <div class="form-group" style="margin-bottom:16px;">
             <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Phone Number or Chat JID</label>
-            <input type="text" id="new-chat-number" class="chat-message-input" placeholder="e.g. 4917612345678 or 4917612345678@s.whatsapp.net" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);" required>
+            <input type="text" id="new-chat-number" class="chat-message-input" placeholder="e.g. 4917612345678 or 4917612345678@s.whatsapp.net" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
             <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Include country code without + or spaces (e.g. 49... for Germany).</p>
           </div>
           <div class="modal-footer" style="margin-top:16px;padding:0;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()">Cancel</button>
             <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Open Chat</button>
+          </div>
+        </form>
+
+        <!-- Mode 2: Create Group Form -->
+        <form id="new-group-chat-form" onsubmit="createNewGroupSubmit(event)" style="display:none;">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Group Subject / Name</label>
+            <input type="text" id="new-group-subject" class="chat-message-input" placeholder="e.g. Project Team Chat" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Participant Phone Numbers (comma separated)</label>
+            <input type="text" id="new-group-participants" class="chat-message-input" placeholder="e.g. 491761234567, 491769876543" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">At least 1 participant number required. Country code without +.</p>
+          </div>
+          <div class="modal-footer" style="margin-top:16px;padding:0;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-users"></i> Create & Open Group</button>
           </div>
         </form>
       </div>

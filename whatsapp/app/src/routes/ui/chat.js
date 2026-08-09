@@ -4,6 +4,90 @@ let lastLoadedMessagesCache = {};
 let lastChatsCache = '';
 let reactionTargetMsgId = null;
 
+function switchNewChatTab(mode) {
+  const directForm = document.getElementById('new-direct-chat-form');
+  const groupForm = document.getElementById('new-group-chat-form');
+  const directBtn = document.getElementById('tab-btn-direct-chat');
+  const groupBtn = document.getElementById('tab-btn-group-chat');
+
+  if (mode === 'group') {
+    if (directForm) directForm.style.display = 'none';
+    if (groupForm) groupForm.style.display = 'block';
+    if (directBtn) {
+      directBtn.classList.remove('btn-primary');
+      directBtn.classList.add('btn-secondary');
+    }
+    if (groupBtn) {
+      groupBtn.classList.remove('btn-secondary');
+      groupBtn.classList.add('btn-primary');
+    }
+    const subjInp = document.getElementById('new-group-subject');
+    if (subjInp) setTimeout(() => subjInp.focus(), 50);
+  } else {
+    if (directForm) directForm.style.display = 'block';
+    if (groupForm) groupForm.style.display = 'none';
+    if (directBtn) {
+      directBtn.classList.remove('btn-secondary');
+      directBtn.classList.add('btn-primary');
+    }
+    if (groupBtn) {
+      groupBtn.classList.remove('btn-primary');
+      groupBtn.classList.add('btn-secondary');
+    }
+    const inp = document.getElementById('new-chat-number');
+    if (inp) setTimeout(() => inp.focus(), 50);
+  }
+}
+
+async function createNewGroupSubmit(event) {
+  if (event) event.preventDefault();
+  const subjectEl = document.getElementById('new-group-subject');
+  const partEl = document.getElementById('new-group-participants');
+  const subject = subjectEl ? subjectEl.value.trim() : '';
+  const rawParts = partEl ? partEl.value.trim() : '';
+
+  if (!subject) {
+    showToast('Please enter a group subject / name', 'warning');
+    return;
+  }
+  if (!rawParts) {
+    showToast('Please enter at least one participant phone number', 'warning');
+    return;
+  }
+
+  const participants = rawParts
+    .split(',')
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  if (participants.length === 0) {
+    showToast('Please enter at least one valid participant number', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch(basePath + 'api/groups/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': apiToken },
+      body: JSON.stringify({ subject, participants, session_id: currentSession }),
+    });
+    const data = await res.json();
+    if (res.ok && (data.success || data.status === 'created')) {
+      showToast(`Group "${subject}" created successfully! 👥`, 'success');
+      closeNewChatModal();
+      await loadChats();
+      const newJid = data.group?.id || data.group?.gid;
+      if (newJid) {
+        selectChat(newJid, subject);
+      }
+    } else {
+      showToast(data.detail || 'Failed to create group', 'danger');
+    }
+  } catch (err) {
+    showToast('Error creating group: ' + err.message, 'danger');
+  }
+}
+
 function openNewChatModal() {
   if (!isConnected) {
     showToast('WhatsApp is not connected. Scan QR Code first.', 'warning');
@@ -15,11 +99,7 @@ function openNewChatModal() {
     modal.style.display = 'flex';
     modal.style.opacity = '1';
     modal.style.zIndex = '999999';
-    const inp = document.getElementById('new-chat-number');
-    if (inp) {
-      inp.value = '';
-      setTimeout(() => inp.focus(), 50);
-    }
+    switchNewChatTab('direct');
   }
 }
 
@@ -163,6 +243,16 @@ function renderChatList(chats) {
         fetchAvatar(c.jid);
       }
 
+function matchJid(a, b) {
+  if (!a || !b) return false;
+  const sA = String(a).trim().toLowerCase();
+  const sB = String(b).trim().toLowerCase();
+  if (sA === sB) return true;
+  const rawA = sA.split('@')[0];
+  const rawB = sB.split('@')[0];
+  return rawA === rawB;
+}
+
       // Check Moderation active state for this group
       let hasModActive = false;
       if (
@@ -170,8 +260,9 @@ function renderChatList(chats) {
         chatModConfigCache &&
         chatModConfigCache.global_enabled !== false
       ) {
-        const grpCfg = chatModConfigCache.groups?.[c.jid];
-        if (grpCfg && grpCfg.enabled !== false) {
+        const groups = chatModConfigCache.groups || {};
+        const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, c.jid));
+        if (!groupEntry || groupEntry[1]?.enabled !== false) {
           hasModActive = true;
         }
       }
@@ -184,7 +275,7 @@ function renderChatList(chats) {
         Array.isArray(chatTgConfigCache.mappings)
       ) {
         activeMapping = chatTgConfigCache.mappings.find(
-          (m) => m.enabled !== false && String(m.wa_jid) === String(c.jid)
+          (m) => m.enabled !== false && matchJid(m.wa_jid, c.jid)
         );
       }
 
@@ -294,6 +385,44 @@ function selectChat(jid, name) {
     }
   }
 
+  // Update header badges (Moderation & Telegram Bridge)
+  const headerBadgesEl = document.getElementById('active-chat-header-badges');
+  if (headerBadgesEl) {
+    let hasModActive = false;
+    if (
+      jid.endsWith('@g.us') &&
+      chatModConfigCache &&
+      chatModConfigCache.global_enabled !== false
+    ) {
+      const groups = chatModConfigCache.groups || {};
+      const groupEntry = Object.entries(groups).find(([gId]) => matchJid(gId, jid));
+      if (!groupEntry || groupEntry[1]?.enabled !== false) {
+        hasModActive = true;
+      }
+    }
+
+    let activeMapping = null;
+    if (
+      chatTgConfigCache &&
+      chatTgConfigCache.enabled !== false &&
+      Array.isArray(chatTgConfigCache.mappings)
+    ) {
+      activeMapping = chatTgConfigCache.mappings.find(
+        (m) => m.enabled !== false && matchJid(m.wa_jid, jid)
+      );
+    }
+
+    const modBtn = hasModActive
+      ? `<button class="btn btn-ghost chat-header-btn" style="color:var(--primary);background:rgba(37,211,102,0.12);" onclick="navigateToModerationGroup(event, '${jid}')" title="Moderation Active — Click to configure"><i class="fas fa-shield-alt"></i></button>`
+      : '';
+
+    const tgBtn = activeMapping
+      ? `<button class="btn btn-ghost chat-header-btn" style="color:#0088cc;background:rgba(0,136,204,0.12);" onclick="navigateToTelegramMapping(event, '${jid}', '${activeMapping.id}')" title="Telegram Bridge Active — Click to edit mapping"><i class="fab fa-telegram-plane"></i></button>`
+      : '';
+
+    headerBadgesEl.innerHTML = `${modBtn}${tgBtn}`;
+  }
+
   document.getElementById('chat-thread-messages').innerHTML =
     '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
 
@@ -313,6 +442,15 @@ function selectChat(jid, name) {
   }).catch(() => {});
 
   loadChatMessages(jid);
+
+  if (window._msgPollInterval) clearInterval(window._msgPollInterval);
+  window._msgPollInterval = setInterval(() => {
+    if (activeChatJid === jid && isChatTabActive) {
+      loadChatMessages(jid);
+    } else {
+      clearInterval(window._msgPollInterval);
+    }
+  }, 2500);
 
   if (window._typingPollInterval) clearInterval(window._typingPollInterval);
   window._typingPollInterval = setInterval(async () => {
@@ -1240,3 +1378,6 @@ window.sendInteractiveReply = sendInteractiveReply;
 window.voteOnPollOption = voteOnPollOption;
 window.navigateToModerationGroup = navigateToModerationGroup;
 window.navigateToTelegramMapping = navigateToTelegramMapping;
+window.switchNewChatTab = switchNewChatTab;
+window.createNewGroupSubmit = createNewGroupSubmit;
+

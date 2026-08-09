@@ -1,6 +1,7 @@
 import { uiAuthMiddleware } from '../../middleware.js';
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
+import { getJid } from '../../utils/jid.js';
 
 export function registerUiApiRoutes(app) {
   app.get(
@@ -374,6 +375,25 @@ export function registerUiApiRoutes(app) {
       const p = session._presenceStore?.get(jid);
       if (!p || Date.now() - p.lastSeen > 10000) return res.json({ typing: false });
       res.json({ typing: p.status === 'composing', status: p.status });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
+
+  app.post('/api/groups/create', uiAuthMiddleware, async (req, res) => {
+    try {
+      const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+      const session = getSession(sessionId);
+      if (!session || !session.sock || !session.isConnected) {
+        return res.status(400).json({ detail: 'WhatsApp session not connected' });
+      }
+      const { subject, participants } = req.body;
+      if (!subject || !participants || !Array.isArray(participants) || participants.length === 0) {
+        return res.status(400).json({ detail: 'Missing subject or participants list' });
+      }
+      const formattedParticipants = participants.map((p) => getJid(p));
+      const group = await session.sock.groupCreate(subject, formattedParticipants);
+      res.json({ success: true, status: 'created', group });
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }

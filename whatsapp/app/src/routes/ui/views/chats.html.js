@@ -37,6 +37,7 @@ export default () => `
                                     </div>
                                 </div>
                                 <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+                                    <span id="active-chat-header-badges" style="display:inline-flex;gap:6px;align-items:center;"></span>
                                     <button class="btn btn-ghost chat-header-btn" id="chat-search-toggle" title="Search in chat" onclick="toggleChatSearch()"><i class="fas fa-search"></i></button>
                                     <button class="btn btn-ghost chat-header-btn" title="Contact / Group Info" onclick="openChatInfoDrawer()"><i class="fas fa-info-circle"></i></button>
                                 </div>

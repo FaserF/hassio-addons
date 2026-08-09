@@ -26,6 +26,9 @@ export async function reply(session, jid, content, quotedMsg = null) {
     const result = await enqueue(session, () =>
       session.sock.sendMessage(jid, contentObj, sendOptions)
     );
+    if (result && result.key && result.key.id && session.messageStore) {
+      session.messageStore.set(result.key.id, result);
+    }
     const text = contentObj.text || '[Mixed Content]';
     const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
 
