@@ -138,8 +138,14 @@ function matchJid(a, b, extraName = '') {
   const sA = String(a).trim().toLowerCase();
   const sB = String(b).trim().toLowerCase();
   if (sA === sB) return true;
-  const rawA = sA.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
-  const rawB = sB.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+  const rawA = sA
+    .split('@')[0]
+    .split(':')[0]
+    .replace(/[^0-9]/g, '');
+  const rawB = sB
+    .split('@')[0]
+    .split(':')[0]
+    .replace(/[^0-9]/g, '');
   if (rawA && rawB && rawA === rawB) return true;
   if (sA.split('@')[0] === sB.split('@')[0]) return true;
   if (extraName) {

@@ -60,7 +60,10 @@ export async function runUiRenderTests() {
       !htmlOutput.includes('max-width:calc(100% - 150px)'),
       'Rigid header max-width removed'
     );
-    assert.ok(htmlOutput.includes('id="chat-search-toggle"'), 'Search toggle button exists in header');
+    assert.ok(
+      htmlOutput.includes('id="chat-search-toggle"'),
+      'Search toggle button exists in header'
+    );
 
     const chatJs = await import('../src/routes/ui/chat.js');
     if (typeof chatJs.renderMediaBlock === 'function') {
@@ -80,10 +83,7 @@ export async function runUiRenderTests() {
         chatJs.matchJid('12036301234567890:1@g.us', '12036301234567890@g.us'),
         true
       );
-      assert.strictEqual(
-        chatJs.matchJid('12036301234567890@g.us', '12036301234567890'),
-        true
-      );
+      assert.strictEqual(chatJs.matchJid('12036301234567890@g.us', '12036301234567890'), true);
     }
 
     console.log(
