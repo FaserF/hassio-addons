@@ -236,8 +236,112 @@ function selectChat(jid, name) {
 let ctxTargetMsg = null;
 let replyToMsg = null;
 
+function renderPollBlock(m) {
+  if (!m.poll) return '';
+  const p = m.poll;
+  const title = escapeHtml(p.name || 'Poll');
+  const optionsHtml = (p.options || [])
+    .map(
+      (opt, idx) => `
+    <div class="msg-poll-option">
+      <div class="msg-poll-option-name">
+        <i class="far fa-circle" style="font-size:12px;margin-right:6px;opacity:0.7;"></i>
+        ${escapeHtml(typeof opt === 'string' ? opt : opt.text || `Option ${idx + 1}`)}
+      </div>
+      <div class="msg-poll-bar-container">
+        <div class="msg-poll-bar-fill" style="width: 0%;"></div>
+      </div>
+    </div>`
+    )
+    .join('');
+
+  return `
+    <div class="msg-poll-card">
+      <div class="msg-poll-title"><i class="fas fa-poll" style="color:var(--primary);margin-right:8px;"></i>${title}</div>
+      <div class="msg-poll-options">${optionsHtml}</div>
+      <div class="msg-poll-footer"><i class="fas fa-info-circle" style="margin-right:4px;"></i>${p.selectableCount > 1 ? 'Select one or more' : 'Select one'}</div>
+    </div>`;
+}
+
+function renderLocationBlock(m) {
+  if (!m.location) return '';
+  const loc = m.location;
+  const lat = loc.degreesLatitude || 0;
+  const lng = loc.degreesLongitude || 0;
+  const label = escapeHtml(loc.name || loc.address || `${lat}, ${lng}`);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const icon = loc.isLive ? 'fa-broadcast-tower' : 'fa-map-marker-alt';
+
+  return `
+    <div class="msg-location-card" onclick="window.open('${mapsUrl}','_blank')">
+      <div class="msg-location-header">
+        <div class="msg-location-icon"><i class="fas ${icon}"></i></div>
+        <div class="msg-location-details">
+          <div class="msg-location-title">${label}</div>
+          <div class="msg-location-coords">${lat.toFixed(4)}, ${lng.toFixed(4)}${loc.isLive ? ' • Live Location' : ''}</div>
+        </div>
+      </div>
+      <div class="msg-location-action"><i class="fas fa-external-link-alt" style="margin-right:4px;"></i> Open in Google Maps</div>
+    </div>`;
+}
+
+function renderContactBlock(m) {
+  if (!m.contact) return '';
+  const c = m.contact;
+  const name = escapeHtml(c.displayName || 'Contact Card');
+  const phone = escapeHtml(c.phone || '');
+
+  return `
+    <div class="msg-contact-card">
+      <div class="msg-contact-body">
+        <div class="msg-contact-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="msg-contact-info">
+          <div class="msg-contact-name">${name}</div>
+          ${phone ? `<div class="msg-contact-phone">${phone}</div>` : ''}
+        </div>
+      </div>
+      ${phone ? `<a href="tel:${phone}" class="msg-contact-action"><i class="fas fa-phone-alt" style="margin-right:6px;"></i> Call</a>` : ''}
+    </div>`;
+}
+
+function renderEventBlock(m) {
+  if (!m.eventData) return '';
+  const ev = m.eventData;
+  const name = escapeHtml(ev.name || 'Event');
+  const desc = escapeHtml(ev.description || '');
+  const dateStr = ev.startTime ? new Date(ev.startTime * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  const loc = escapeHtml(ev.location || '');
+  const canceled = ev.isCanceled ? '<span style="color:#ef4444;font-weight:bold;margin-left:6px;">[Canceled]</span>' : '';
+
+  return `
+    <div class="msg-event-card">
+      <div class="msg-event-header">
+        <i class="far fa-calendar-alt" style="font-size:18px;color:var(--primary);"></i>
+        <div class="msg-event-title">${name}${canceled}</div>
+      </div>
+      ${dateStr ? `<div class="msg-event-detail"><i class="far fa-clock"></i> ${dateStr}</div>` : ''}
+      ${loc ? `<div class="msg-event-detail"><i class="fas fa-map-marker-alt"></i> ${loc}</div>` : ''}
+      ${desc ? `<div class="msg-event-desc">${desc}</div>` : ''}
+      ${ev.joinLink ? `<a href="${escapeAttr(ev.joinLink)}" target="_blank" class="msg-event-link"><i class="fas fa-link"></i> Join Event</a>` : ''}
+    </div>`;
+}
+
 function renderMediaBlock(m) {
-  if (!m.mediaUrl) return '';
+  if (!m.mediaUrl) {
+    if (m.mediaType) {
+      const typeIcons = {
+        image: 'fa-image',
+        video: 'fa-video',
+        audio: 'fa-music',
+        sticker: 'fa-sticky-note',
+        document: 'fa-file-alt',
+      };
+      const icon = typeIcons[m.mediaType] || 'fa-paperclip';
+      const label = m.mediaType.charAt(0).toUpperCase() + m.mediaType.slice(1);
+      return `<div class="msg-media-badge"><i class="fas ${icon}" style="color:var(--primary);"></i> ${escapeHtml(label)}</div>`;
+    }
+    return '';
+  }
   const url = m.mediaUrl;
   if (m.mediaType === 'image' || (m.mediaMime && m.mediaMime.startsWith('image/'))) {
     return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" loading="lazy">`;
@@ -354,13 +458,21 @@ async function loadChatMessages(jid) {
             : '';
 
         const quoteBlock = renderQuote(m);
+        const pollBlock = renderPollBlock(m);
+        const locationBlock = renderLocationBlock(m);
+        const contactBlock = renderContactBlock(m);
+        const eventBlock = renderEventBlock(m);
         const mediaBlock = renderMediaBlock(m);
+
+        // Don't duplicate text if native poll/location/contact/event block is rendered
+        const hasNativeWidget = Boolean(pollBlock || locationBlock || contactBlock || eventBlock);
+        const rawText = m.text && !hasNativeWidget ? m.text : '';
         const textBlock =
-          m.text && !(m.mediaType && !m.caption)
-            ? `<div class="msg-bubble-text">${escapeHtml(m.text)}</div>`
+          rawText && !(m.mediaType && !m.caption && m.mediaUrl)
+            ? `<div class="msg-bubble-text">${escapeHtml(rawText)}</div>`
             : '';
         const captionBlock =
-          m.caption && m.mediaType
+          m.caption && m.mediaType && m.mediaUrl
             ? `<div class="msg-bubble-text" style="margin-top:4px;">${escapeHtml(m.caption)}</div>`
             : '';
         const ackBlock = renderAck(m);
@@ -376,6 +488,10 @@ async function loadChatMessages(jid) {
                         <div class="msg-bubble">
                             ${senderLabel}
                             ${quoteBlock}
+                            ${pollBlock}
+                            ${locationBlock}
+                            ${contactBlock}
+                            ${eventBlock}
                             ${mediaBlock}
                             ${textBlock}
                             ${captionBlock}

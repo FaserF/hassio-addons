@@ -2490,4 +2490,217 @@ html[data-theme='light'] .data-table tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.015);
 }
 
+/* --- Native UI Message Widgets (Poll, Location, Contact, Event, Sticker, Badges) --- */
+.msg-poll-card {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  min-width: 240px;
+}
+[data-theme='light'] .msg-poll-card {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.msg-poll-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.msg-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.msg-poll-option {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+[data-theme='light'] .msg-poll-option {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.msg-poll-option-name {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+.msg-poll-bar-container {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.msg-poll-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 4px;
+}
+.msg-poll-footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+
+/* Location Card */
+.msg-location-card {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 4px 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  min-width: 220px;
+}
+.msg-location-card:hover {
+  background: rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+.msg-location-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.msg-location-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.msg-location-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  line-height: 1.2;
+}
+.msg-location-coords {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.msg-location-action {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Contact Card */
+.msg-contact-card {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  min-width: 200px;
+}
+.msg-contact-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.msg-contact-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.msg-contact-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.msg-contact-phone {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.msg-contact-action {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* Event Card */
+.msg-event-card {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  min-width: 220px;
+}
+.msg-event-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.msg-event-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+.msg-event-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.msg-event-desc {
+  font-size: 12.5px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.msg-event-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* Media Badges for missing downloads */
+.msg-media-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 2px 0;
+}
+
+
 

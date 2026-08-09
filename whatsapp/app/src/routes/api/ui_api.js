@@ -201,6 +201,63 @@ export function registerUiApiRoutes(app) {
           if (rawMsg?.viewOnceMessage) rawMsg = rawMsg.viewOnceMessage.message;
           if (rawMsg?.viewOnceMessageV2) rawMsg = rawMsg.viewOnceMessageV2.message;
 
+          // Poll extraction
+          const pollCreation =
+            rawMsg?.pollCreationMessage ||
+            rawMsg?.pollCreationMessageV2 ||
+            rawMsg?.pollCreationMessageV3;
+          let pollData = null;
+          if (pollCreation) {
+            pollData = {
+              name: pollCreation.name || 'Poll',
+              options: (pollCreation.options || []).map((o) => (typeof o === 'string' ? o : o.optionName || 'Option')),
+              selectableCount: pollCreation.selectableCount || 1,
+            };
+          }
+
+          // Location extraction
+          const locMsg = rawMsg?.locationMessage || rawMsg?.liveLocationMessage;
+          let locationData = null;
+          if (locMsg) {
+            locationData = {
+              degreesLatitude: locMsg.degreesLatitude,
+              degreesLongitude: locMsg.degreesLongitude,
+              name: locMsg.name || locMsg.address || null,
+              address: locMsg.address || null,
+              isLive: Boolean(rawMsg?.liveLocationMessage),
+            };
+          }
+
+          // Contact extraction
+          const contactMsg = rawMsg?.contactMessage || rawMsg?.contactsArrayMessage?.contacts?.[0];
+          let contactData = null;
+          if (contactMsg) {
+            const displayName =
+              contactMsg.displayName ||
+              (contactMsg.vcard ? contactMsg.vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
+              'Contact';
+            const phone = contactMsg.vcard ? contactMsg.vcard.match(/TEL.*:(.*)/)?.[1]?.trim() : null;
+            contactData = {
+              displayName,
+              phone,
+              vcard: contactMsg.vcard || null,
+            };
+          }
+
+          // Event extraction
+          const evMsg = rawMsg?.eventMessage;
+          let eventData = null;
+          if (evMsg) {
+            eventData = {
+              name: evMsg.name || 'Event',
+              description: evMsg.description || '',
+              startTime: evMsg.startTime ? Number(evMsg.startTime) : null,
+              location: evMsg.location?.name || null,
+              joinLink: evMsg.joinLink || null,
+              isCanceled: Boolean(evMsg.isCanceled),
+            };
+          }
+
           if (rawMsg?.buttonsMessage?.buttons) {
             buttons = rawMsg.buttonsMessage.buttons.map((b) => ({
               id: b.buttonId || b.nativeFlowInfo?.name || '',
@@ -246,6 +303,20 @@ export function registerUiApiRoutes(app) {
             });
           }
 
+          const effectiveMediaType =
+            mediaType ||
+            (rawMsg?.stickerMessage
+              ? 'sticker'
+              : rawMsg?.imageMessage
+                ? 'image'
+                : rawMsg?.videoMessage
+                  ? 'video'
+                  : rawMsg?.audioMessage
+                    ? 'audio'
+                    : rawMsg?.documentMessage
+                      ? 'document'
+                      : null);
+
           return {
             id: msg.key.id,
             fromMe: msg.key.fromMe || false,
@@ -255,8 +326,12 @@ export function registerUiApiRoutes(app) {
             caption,
             timestamp,
             mediaUrl,
-            mediaType,
+            mediaType: effectiveMediaType,
             mediaMime,
+            poll: pollData,
+            location: locationData,
+            contact: contactData,
+            eventData,
             quotedId,
             quotedText,
             quotedSender,
@@ -266,7 +341,17 @@ export function registerUiApiRoutes(app) {
             starred: msg.starred || false,
           };
         })
-        .filter((m) => m.text || m.mediaUrl || (m.buttons && m.buttons.length > 0))
+        .filter(
+          (m) =>
+            m.text ||
+            m.mediaUrl ||
+            (m.buttons && m.buttons.length > 0) ||
+            m.poll ||
+            m.location ||
+            m.contact ||
+            m.eventData ||
+            m.mediaType
+        )
         .sort((a, b) => a.timestamp - b.timestamp);
 
       res.json(messages);
