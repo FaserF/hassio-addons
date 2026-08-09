@@ -26,7 +26,6 @@ import { sessions } from '../../session.js';
 import { logger } from '../../logger.js';
 import { reply } from '../../whatsapp/actions.js';
 
-
 export function registerModerationRoutes(app) {
   // GET /api/moderation/commands — Dynamically list all registered built-in commands
   app.get('/api/moderation/commands', (req, res) => {

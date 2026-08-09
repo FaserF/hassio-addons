@@ -766,7 +766,8 @@ function populateTelegramTestMappingDropdown(mappings = []) {
   const select = document.getElementById('tg-test-mapping-select');
   if (!select) return;
   if (mappings.length === 0) {
-    select.innerHTML = '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
+    select.innerHTML =
+      '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
     return;
   }
   select.innerHTML = mappings
