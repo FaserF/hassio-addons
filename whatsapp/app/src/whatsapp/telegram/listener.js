@@ -1235,8 +1235,14 @@ export async function processTelegramUpdates() {
                 }
               }
 
-              const cleanCmd = tgText.trim().toLowerCase().replace(/^[!/#]+/, '');
-              if ((cleanCmd === 'del' || cleanCmd === 'delete' || cleanCmd === 'revoke') && replyToTgId) {
+              const cleanCmd = tgText
+                .trim()
+                .toLowerCase()
+                .replace(/^[!/#]+/, '');
+              if (
+                (cleanCmd === 'del' || cleanCmd === 'delete' || cleanCmd === 'revoke') &&
+                replyToTgId
+              ) {
                 const mapped = resolveWaMsgFromTg(tgChatId, String(replyToTgId));
                 if (mapped && mapped.waMsgId) {
                   await session.sock.sendMessage(mapping.wa_jid, {

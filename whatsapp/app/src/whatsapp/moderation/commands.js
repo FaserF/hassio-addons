@@ -3249,7 +3249,9 @@ async function executeSingleCommandLine(
       }
 
       const unknownTitle = gt(config, 'bot_replies.unknown_command_title');
-      const unknownDesc = gt(config, 'bot_replies.unknown_command_desc', { cmd: `${prefix}${cmdStr}` });
+      const unknownDesc = gt(config, 'bot_replies.unknown_command_desc', {
+        cmd: `${prefix}${cmdStr}`,
+      });
       const helpHint = gt(config, 'bot_replies.type_help_hint', { prefix });
 
       await reply(
