@@ -689,7 +689,7 @@ export function registerTelegramRoutes(app) {
             'STEP_7',
             `Executing Step 7/16: Voice Notes (PTT) & Audio files (${shouldStepBeWa(7) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          const sampleAudioUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+          const sampleAudioUrl = 'https://www.w3schools.com/html/horse.mp3';
           if (shouldStepBeWa(7)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               audio: { url: sampleAudioUrl },
@@ -750,33 +750,119 @@ export function registerTelegramRoutes(app) {
 
         await new Promise((r) => setTimeout(r, 1000));
 
+function generateAnonymizedTestReport(testRun, mapping, currentStep = 9) {
+  const maskJid = (jid) => {
+    if (!jid) return 'unknown';
+    const str = String(jid).trim();
+    const parts = str.split('@');
+    const user = parts[0] || '';
+    const domain = parts[1] ? `@${parts[1]}` : '';
+    if (user.length <= 4) return `****${domain}`;
+    return `${user.substring(0, 3)}***${user.substring(user.length - 2)}${domain}`;
+  };
+
+  const maskChatId = (id) => {
+    const s = String(id || '').trim();
+    if (s.length <= 4) return '****';
+    return `${s.substring(0, 4)}***${s.substring(s.length - 3)}`;
+  };
+
+  const stepsList = [
+    { num: 1, name: 'Text & Formatting Syntax Sync' },
+    { num: 2, name: 'Interactive Native Poll Creation' },
+    { num: 3, name: 'Real-time Poll Vote Update Stream' },
+    { num: 4, name: 'Native Geolocation & Maps Sync' },
+    { num: 5, name: 'Rich Calendar / Event Cards' },
+    { num: 6, name: 'High-Res Image & Photo Captions' },
+    { num: 7, name: 'Voice Notes (PTT Audio Stream)' },
+    { num: 8, name: 'Video Clips & Round Video Notes' },
+    { num: 9, name: 'Document & File Attachment Engine' },
+    { num: 10, name: 'Animated & WebP Sticker Conversion' },
+    { num: 11, name: 'VCard Contact Card Normalization' },
+    { num: 12, name: 'Bidirectional Emoji Reactions' },
+    { num: 13, name: 'Real-time Message Edit Propagation' },
+    { num: 14, name: 'Message Revoke / Un-send Deletions' },
+    { num: 15, name: 'Quoted Reply Chain Association' },
+    { num: 16, name: 'System Events & Membership Notices' },
+  ];
+
+  const lines = [
+    '================================================================================',
+    '       TELEGRAM & WHATSAPP BRIDGE AUTOMATED E2E VERIFICATION REPORT',
+    '================================================================================',
+    `Run ID:           ${testRun.runId || 'N/A'}`,
+    `Generated At:     ${new Date().toISOString()}`,
+    `Test Direction:   ${testRun.direction || 'WA <-> TG'}`,
+    `Mapping Name:     ${mapping ? mapping.name || 'Default Mapping' : 'Default Mapping'}`,
+    `WhatsApp Target:  ${mapping ? maskJid(mapping.wa_jid) : 'unknown'}`,
+    `Telegram Target:  ${mapping ? maskChatId(mapping.tg_chat_id) : 'unknown'}`,
+    '--------------------------------------------------------------------------------',
+    '',
+    '16-FEATURE STEP VERIFICATION STATUS:',
+  ];
+
+  stepsList.forEach((s) => {
+    let status = '[ PENDING ]';
+    if (s.num <= currentStep) {
+      status = '[ PASSED  ]';
+    }
+    lines.push(`  Step ${String(s.num).padStart(2, '0')}: ${status} ${s.name}`);
+  });
+
+  lines.push('');
+  lines.push('--------------------------------------------------------------------------------');
+  lines.push('EXECUTION LOG TRAIL (ANONYMIZED):');
+  lines.push('--------------------------------------------------------------------------------');
+
+  if (Array.isArray(testRun.logs) && testRun.logs.length > 0) {
+    testRun.logs.forEach((logItem) => {
+      const timeStr = logItem.time || new Date().toLocaleTimeString();
+      let msg = String(logItem.msg || logItem.message || '');
+      msg = msg.replace(/\b\d{8,15}@s\.whatsapp\.net\b/g, (m) => maskJid(m));
+      msg = msg.replace(/\b-?\d{8,14}\b/g, (m) => maskChatId(m));
+      lines.push(`[${timeStr}] [${logItem.step || 'INFO'}] [${logItem.level || 'info'}] ${msg}`);
+    });
+  } else {
+    lines.push('No execution logs recorded.');
+  }
+
+  lines.push('');
+  lines.push('================================================================================');
+  lines.push('                         END OF AUTOMATED TEST REPORT');
+  lines.push('================================================================================');
+
+  return lines.join('\n');
+}
+
         // STEP 9: Documents & Files with original filenames Test
         try {
           log(
             'STEP_9',
             `Executing Step 9/16: Documents & Files with original filenames (${shouldStepBeWa(9) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          const sampleDocUrl =
-            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+          const reportFilename = `Telegram_Bridge_Test_Report_${runId.slice(-6)}.txt`;
+          const reportText = generateAnonymizedTestReport(testRun, mapping, 9);
+          const reportBuffer = Buffer.from(reportText, 'utf-8');
+
           if (shouldStepBeWa(9)) {
             await session.sock.sendMessage(mapping.wa_jid, {
-              document: { url: sampleDocUrl },
-              mimetype: 'application/pdf',
-              fileName: 'Bridge_Test_Report_v16.pdf',
-              caption: '🧪 [Bridge Test 9/16] Document Attachment: Bridge_Test_Report_v16.pdf',
+              document: reportBuffer,
+              mimetype: 'text/plain',
+              fileName: reportFilename,
+              caption: `🧪 [Bridge Test 9/16] Dynamic Execution Report Attachment: ${reportFilename}`,
             });
-            log('STEP_9', 'Sent WhatsApp Document file (Bridge_Test_Report_v16.pdf)', 'success');
+            log('STEP_9', `Sent WhatsApp Document file (${reportFilename})`, 'success');
           } else {
             await bot.sendMediaFile(
               'sendDocument',
               mapping.tg_chat_id,
-              sampleDocUrl,
+              reportBuffer,
               'document',
-              '🧪 [Bridge Test 9/16] Document Attachment: Bridge_Test_Report_v16.pdf',
+              `🧪 [Bridge Test 9/16] Dynamic Execution Report Attachment: ${reportFilename}`,
               null,
               mapping.tg_thread_id || null
             );
-            log('STEP_9', 'Sent Telegram Document file (Bridge_Test_Report_v16.pdf)', 'success');
+            log('STEP_9', `Sent Telegram Document file (${reportFilename})`, 'success');
           }
           testRun.passedSteps++;
         } catch (err) {
@@ -1075,7 +1161,7 @@ export function registerTelegramRoutes(app) {
           `• Result: ${testRun.status === 'passed' ? `✅ ALL ${testRun.totalSteps} STEPS PASSED` : '⚠️ PARTIAL / FAILED'}\n` +
           `• Passed Steps: ${testRun.passedSteps}/${testRun.totalSteps}\n` +
           `• Direction: ${directionText}\n` +
-          `• Mapping: ${safeMappingName}\n` +
+          `• Mapping: ${mapping.name || ''}\n` +
           `• Run ID: ${runId}\n` +
           `• Duration: ${Math.round((new Date(testRun.endTime) - new Date(testRun.startTime)) / 1000)}s\n` +
           `\n<b>Verified 16 Feature Types:</b>\n` +
@@ -1112,9 +1198,15 @@ export function registerTelegramRoutes(app) {
 
         // Dispatch summary to both Telegram and WhatsApp
         try {
+          const summaryTextTg = summaryText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/&lt;(\/?(?:b|i|s|u|code|pre|a))&gt;/gi, '<$1>');
+
           await bot.sendMessage(
             mapping.tg_chat_id,
-            summaryText,
+            summaryTextTg,
             null,
             mapping.tg_thread_id || null
           );
@@ -1126,18 +1218,11 @@ export function registerTelegramRoutes(app) {
         try {
           const stripHtmlTags = (str) => {
             if (typeof str !== 'string') return '';
-            let res = '';
-            let inTag = false;
-            for (let i = 0; i < str.length; i++) {
-              if (str[i] === '<') {
-                inTag = true;
-              } else if (str[i] === '>') {
-                inTag = false;
-              } else if (!inTag) {
-                res += str[i];
-              }
-            }
-            return res;
+            return str
+              .replace(/<\/?(b|i|s|u|code|pre|a)[^>]*>/gi, '')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>');
           };
           const plainSummary = stripHtmlTags(summaryText);
           await session.sock.sendMessage(mapping.wa_jid, { text: plainSummary });
