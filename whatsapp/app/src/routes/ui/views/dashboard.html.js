@@ -88,7 +88,7 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
 
                     <div class="card">
                         <div class="card-title"><i class="fas fa-sliders-h"></i> <span data-i18n="dashboard.system_maintenance">System Maintenance</span></div>
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px;">
                             <button class="btn btn-secondary" onclick="restartSession()" title="Restart Daemon" data-i18n-title="dashboard.restart_daemon_title"><i class="fas fa-sync-alt"></i> <span data-i18n="dashboard.restart_daemon">Restart Daemon</span></button>
                             <button class="btn btn-secondary" onclick="purgeSessions()" title="Clean Inactive Sessions" data-i18n-title="dashboard.clean_sessions_title"><i class="fas fa-broom"></i> <span data-i18n="dashboard.clean_sessions">Clean Sessions</span></button>
                             <button class="btn btn-danger" onclick="logoutSession()" title="Hard Reset / Logout" data-i18n-title="dashboard.hard_reset_title"><i class="fas fa-sign-out-alt"></i> <span data-i18n="dashboard.hard_reset">Hard Reset</span></button>
@@ -99,7 +99,7 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                     <div class="card">
                         <div class="card-title"><i class="fas fa-bug"></i> <span data-i18n="dashboard.bug_report">Integration Bug Report</span></div>
                         <p style="font-size:12px; color:var(--text-muted); line-height:1.4; margin:0;"><span data-i18n="dashboard.bug_report_desc">Encountered an issue? Download an anonymized debug bundle and report it on GitHub.</span></p>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: auto;">
                             <button class="btn btn-primary" onclick="downloadDebugInfo()"><i class="fas fa-download"></i> <span data-i18n="dashboard.download_logs">Anonymized Logs</span></button>
                             <a href="https://github.com/FaserF/ha-whatsapp/issues/new?template=bug_report.yml" target="_blank" class="btn btn-secondary"><i class="fas fa-external-link-alt"></i> <span data-i18n="dashboard.open_issue">Open GitHub Issue</span></a>
                         </div>

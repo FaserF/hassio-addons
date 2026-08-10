@@ -21,7 +21,7 @@ function updateTelegramBridgeDisabledState(enabled) {
 
 async function loadTelegramBridgeData() {
   try {
-    const res = await fetch('api/telegram/config');
+    const res = await fetch(basePath + 'api/telegram/config');
     const data = await res.json();
     if (data.success && data.data) {
       const cfg = data.data;
@@ -145,7 +145,7 @@ function renderTelegramMappings(mappings, bots = []) {
 async function toggleTelegramBridge(enabled) {
   try {
     updateTelegramBridgeDisabledState(enabled);
-    await fetch('api/telegram/config', {
+    await fetch(basePath + 'api/telegram/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
@@ -212,7 +212,7 @@ async function saveTelegramBotModal() {
   }
 
   try {
-    const res = await fetch('api/telegram/bots', {
+    const res = await fetch(basePath + 'api/telegram/bots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id || undefined, name, token }),
@@ -285,7 +285,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   if (botSelect) {
     let botOpts = '';
     if (cachedTelegramBots.length === 0) {
-      botOpts = '<option value="">No bots configured - Add a bot first</option>';
+      botOpts = `<option value="">${window.t('telegram.no_bots_configured')}</option>`;
     } else {
       cachedTelegramBots.forEach((b) => {
         botOpts += `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || '@' + b.username)} (@${escapeHtml(b.username)})</option>`;
@@ -301,9 +301,9 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 1. Populate WhatsApp Chats Dropdown
   if (waSelect) {
-    let waOpts = '<option value="">-- Select WhatsApp Chat / Group --</option>';
+    let waOpts = `<option value="">-- ${window.t('telegram.select_wa_chat')} --</option>`;
     try {
-      const res = await fetch('api/chats?session_id=' + (window.currentSession || ''));
+      const res = await fetch(basePath + 'api/chats?session_id=' + (window.currentSession || ''));
       if (res.ok) {
         const chats = await res.json();
         if (Array.isArray(chats)) {
@@ -343,7 +343,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 2. Populate Telegram Cached Chats Dropdown (filtered by activeBotId if set)
   if (tgSelect) {
-    let tgOpts = '<option value="">-- Select Telegram Chat / Group --</option>';
+    let tgOpts = `<option value="">-- ${window.t('telegram.select_tg_chat')} --</option>`;
     try {
       const url = activeBotId
         ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}`
@@ -500,7 +500,7 @@ function openAddTelegramMappingModal() {
 
 async function editTelegramMapping(id) {
   try {
-    const res = await fetch('api/telegram/config');
+    const res = await fetch(basePath + 'api/telegram/config');
     const json = await res.json();
     if (!json.success || !json.data) return;
 
@@ -692,7 +692,7 @@ async function saveTelegramMappingModal() {
   }
 
   try {
-    const res = await fetch('api/telegram/mappings', {
+    const res = await fetch(basePath + 'api/telegram/mappings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -779,7 +779,7 @@ function populateTelegramTestMappingDropdown(mappings = []) {
   if (!select) return;
   if (mappings.length === 0) {
     select.innerHTML =
-      '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
+      `<option value="">${window.t('telegram.no_mappings_configured')}</option>`;
     return;
   }
   select.innerHTML = mappings
@@ -861,7 +861,7 @@ async function runTelegramBridgeTest() {
       : 'Starting integration test...\n';
 
   try {
-    const res = await fetch('api/telegram/test', {
+    const res = await fetch(basePath + 'api/telegram/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

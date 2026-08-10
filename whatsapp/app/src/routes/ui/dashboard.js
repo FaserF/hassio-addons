@@ -1147,7 +1147,7 @@ async function loadModerationConfig() {
 
       const groups = Array.from(groupMap.values());
       const preserved = select.value;
-      let opts = '<option value="">Select a group...</option>';
+      let opts = `<option value="">${window.t('moderation.select_group')}</option>`;
       groups.forEach((g) => {
         opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${g.name}</option>`;
       });
@@ -1787,7 +1787,7 @@ async function selectModerationGroup(groupId) {
   const fedSelect = document.getElementById('mod-fed-select');
   if (fedSelect && modStoreCache?.federations) {
     const activeFedId = config.federation_id || 'fed_global_default';
-    let opts = '<option value="">No Federation Joined</option>';
+    let opts = `<option value="">${window.t('moderation.no_federation_joined')}</option>`;
     modStoreCache.federations.forEach((f) => {
       opts += `<option value="${f.id}"${f.id === activeFedId ? ' selected' : ''}>${escapeHtml(f.name || f.id)}</option>`;
     });
@@ -2173,7 +2173,7 @@ function _refreshAliasDropdown(config) {
   const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
   const allTargets = [...new Set([...builtins, ...customCmds])];
   aliasSelect.innerHTML =
-    '<option value="">— select target —</option>' +
+    `<option value="">— ${window.t('moderation.select_target')} —</option>` +
     allTargets
       .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`)
       .join('');
@@ -3597,7 +3597,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   if (botSelect) {
     let botOpts = '';
     if (cachedTelegramBots.length === 0) {
-      botOpts = '<option value="">No bots configured - Add a bot first</option>';
+      botOpts = `<option value="">${window.t('telegram.no_bots_configured')}</option>`;
     } else {
       cachedTelegramBots.forEach((b) => {
         botOpts += `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || '@' + b.username)} (@${escapeHtml(b.username)})</option>`;
@@ -3613,7 +3613,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 1. Populate WhatsApp Chats Dropdown
   if (waSelect) {
-    let waOpts = '<option value="">-- Select WhatsApp Chat / Group --</option>';
+    let waOpts = `<option value="">-- ${window.t('telegram.select_wa_chat')} --</option>`;
     try {
       const res = await fetch('api/chats?session_id=' + (window.currentSession || ''));
       if (res.ok) {
@@ -3655,7 +3655,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 2. Populate Telegram Cached Chats Dropdown (filtered by activeBotId if set)
   if (tgSelect) {
-    let tgOpts = '<option value="">-- Select Telegram Chat / Group --</option>';
+    let tgOpts = `<option value="">-- ${window.t('telegram.select_tg_chat')} --</option>`;
     try {
       const url = activeBotId
         ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}`
@@ -4091,7 +4091,7 @@ function populateTelegramTestMappingDropdown(mappings = []) {
   if (!select) return;
   if (mappings.length === 0) {
     select.innerHTML =
-      '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
+      `<option value="">${window.t('telegram.no_mappings_configured')}</option>`;
     return;
   }
   select.innerHTML = mappings

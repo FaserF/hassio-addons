@@ -348,7 +348,7 @@ async function loadModerationConfig() {
 
       const groups = Array.from(groupMap.values());
       const preserved = select.value;
-      let opts = '<option value="">Select a group...</option>';
+      let opts = `<option value="">${window.t('moderation.select_group')}</option>`;
       groups.forEach((g) => {
         opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${g.name}</option>`;
       });
@@ -988,7 +988,7 @@ async function selectModerationGroup(groupId) {
   const fedSelect = document.getElementById('mod-fed-select');
   if (fedSelect && modStoreCache?.federations) {
     const activeFedId = config.federation_id || 'fed_global_default';
-    let opts = '<option value="">No Federation Joined</option>';
+    let opts = `<option value="">${window.t('moderation.no_federation_joined')}</option>`;
     modStoreCache.federations.forEach((f) => {
       opts += `<option value="${f.id}"${f.id === activeFedId ? ' selected' : ''}>${escapeHtml(f.name || f.id)}</option>`;
     });
@@ -1374,7 +1374,7 @@ function _refreshAliasDropdown(config) {
   const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
   const allTargets = [...new Set([...builtins, ...customCmds])];
   aliasSelect.innerHTML =
-    '<option value="">— select target —</option>' +
+    `<option value="">— ${window.t('moderation.select_target')} —</option>` +
     allTargets
       .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`)
       .join('');

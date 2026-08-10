@@ -404,8 +404,8 @@ async function runI18nTests() {
 
   // Test 13: Technical German terms translations verification
   assertTest(
-    t('de', 'dashboard.hard_reset') === 'Vollständiges Zurücksetzen',
-    'German translation for hard_reset is "Vollständiges Zurücksetzen"'
+    t('de', 'dashboard.hard_reset') === 'Zurücksetzen',
+    'German translation for hard_reset is "Zurücksetzen"'
   );
   assertTest(
     t('de', 'dashboard.reset_confirm_title') === 'Vollständiges Zurücksetzen & Abmelden?',

@@ -52,6 +52,10 @@
     "failed_switch_language": "Fehler beim Wechseln der Sprache",
     "or": "ODER"
   },
+  "languages": {
+    "en": "Englisch",
+    "de": "Deutsch"
+  },
   "header": {
     "title": "WhatsApp Web Gateway",
     "connected": "Verbunden",
@@ -100,7 +104,7 @@
     "system_maintenance": "Systemwartung",
     "restart_daemon": "Daemon neu starten",
     "clean_sessions": "Sitzungen bereinigen",
-    "hard_reset": "Vollständiges Zurücksetzen",
+    "hard_reset": "Zurücksetzen",
     "restart_hint": "Neustart versucht eine neue Verbindung ohne Anmeldedaten zu löschen.",
     "bug_report": "Integrations-Fehlerbericht",
     "bug_report_desc": "Problem festgestellt? Anonymisiertes Debug-Paket herunterladen und auf GitHub melden.",

@@ -720,14 +720,15 @@ body {
   }
 
   /* Prevent button text wrapping / overflow across cards */
+  button,
   .btn,
   .btn-sm,
   .btn-primary,
   .btn-secondary,
   .btn-danger {
-    white-space: nowrap !important;
-    word-break: normal !important;
-    flex-shrink: 0 !important;
+    max-width: 100% !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
     font-size: 12px !important;
   }
 
@@ -1097,7 +1098,7 @@ html[data-theme='dark'] .banner-warning-icon {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 
@@ -1110,6 +1111,8 @@ html[data-theme='dark'] .banner-warning-icon {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .card-title {
@@ -1347,6 +1350,7 @@ code {
   color: var(--warning);
 }
 
+button,
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1365,9 +1369,17 @@ code {
   text-align: center;
   box-sizing: border-box;
   max-width: 100%;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: normal;
   word-break: break-word;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+button > span,
+.btn > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn:active {
@@ -1824,9 +1836,11 @@ code {
 }
 .chat-thread-panel {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-chat-wall);
+  position: relative;
 }
 .chat-thread-empty {
   flex: 1;
@@ -1846,6 +1860,7 @@ code {
 }
 .chat-thread-active {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   height: 100%;

@@ -52,6 +52,10 @@
     "failed_switch_language": "Failed to switch language",
     "or": "OR"
   },
+  "languages": {
+    "en": "English",
+    "de": "German"
+  },
   "header": {
     "title": "WhatsApp Web Gateway",
     "connected": "Connected",

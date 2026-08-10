@@ -271,7 +271,7 @@ export default () => `
                     </select>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:6px;">
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-inc-group"> <span data-i18n="telegram.opt_inc_group">Include Group Name</span>
                     </label>
