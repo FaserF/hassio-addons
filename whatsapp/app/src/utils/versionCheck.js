@@ -93,7 +93,8 @@ export async function getLatestReleases(
     }
 
     // 2. Fetch Addon release notes from local CHANGELOG.md (FaserF/hassio-addons does not use GitHub releases)
-    cache.data.addonReleaseUrl = 'https://github.com/FaserF/hassio-addons/blob/master/whatsapp/CHANGELOG.md';
+    cache.data.addonReleaseUrl =
+      'https://github.com/FaserF/hassio-addons/blob/master/whatsapp/CHANGELOG.md';
     try {
       const fs = await import('fs');
       const path = await import('path');
