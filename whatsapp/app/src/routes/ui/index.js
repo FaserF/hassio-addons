@@ -592,7 +592,11 @@ export function renderDashboard(sessionId) {
         const queryString = queryParts.length > 0 ? '?' + queryParts.join('&') : '';
         const newHash = '#' + tabId + queryString;
 
-        if (window.location.hash === newHash) return;
+        try {
+            if (decodeURIComponent(window.location.hash || '') === decodeURIComponent(newHash)) return;
+        } catch (e) {
+            if (window.location.hash === newHash) return;
+        }
 
         if (window.history && typeof window.history.replaceState === 'function') {
             try {

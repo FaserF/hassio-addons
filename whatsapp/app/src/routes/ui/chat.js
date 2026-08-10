@@ -1448,13 +1448,13 @@ async function openChatInfoDrawer() {
     }
 
     const tgActionBtn = activeMapping
-      ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0088cc;border-color:rgba(0,136,204,0.3);" onclick="navigateToTelegramMapping(event, '${escapeAttr(activeChatJid)}', '${escapeAttr(activeMapping.id)}')"><i class="fab fa-telegram-plane"></i> Manage Telegram Bridge</button>`
-      : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToTelegramMapping(event, '${escapeAttr(activeChatJid)}', null)"><i class="fab fa-telegram-plane"></i> Setup Telegram Bridge</button>`;
+      ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0088cc;border-color:rgba(0,136,204,0.3);" onclick="navigateToTelegramMapping(event, '${escapeJs(activeChatJid)}', '${escapeJs(activeMapping.id)}')"><i class="fab fa-telegram-plane"></i> Manage Telegram Bridge</button>`
+      : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToTelegramMapping(event, '${escapeJs(activeChatJid)}', null)"><i class="fab fa-telegram-plane"></i> Setup Telegram Bridge</button>`;
 
     const modActionBtn = info.isGroup
       ? hasModActive
-        ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary);border-color:rgba(37,211,102,0.3);" onclick="navigateToModerationGroup(event, '${escapeAttr(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Manage Moderation Features</button>`
-        : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToModerationGroup(event, '${escapeAttr(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Setup Moderation Features</button>`
+        ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary);border-color:rgba(37,211,102,0.3);" onclick="navigateToModerationGroup(event, '${escapeJs(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Manage Moderation Features</button>`
+        : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToModerationGroup(event, '${escapeJs(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Setup Moderation Features</button>`
       : '';
 
     const actionButtonsHtml = `

@@ -138,6 +138,11 @@ function escapeAttr(str) {
   return str.replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, ' ');
 }
 
+function escapeJs(str) {
+  if (!str) return '';
+  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
 // Confirmation Modal
 const confirmModal = document.getElementById('confirm-modal');
 const modalTitle = document.getElementById('modal-title');
