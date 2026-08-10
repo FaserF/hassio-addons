@@ -147,6 +147,46 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   }
 }
 
+export async function syncTelegramDeleteToWhatsApp(tgChatId, tgMsgId) {
+  if (!tgChatId || !tgMsgId) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mapped = resolveWaMsgFromTg(String(tgChatId), String(tgMsgId));
+  if (!mapped || !mapped.waMsgId || !mapped.waJid) return;
+
+  let session = getSession('default');
+  if (!session || !session.sock || !session.isConnected) {
+    for (const s of sessions.values()) {
+      if (s.sock && s.isConnected) {
+        session = s;
+        break;
+      }
+    }
+  }
+
+  if (session && session.sock && session.isConnected) {
+    try {
+      await session.sock.sendMessage(mapped.waJid, {
+        delete: {
+          remoteJid: mapped.waJid,
+          fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+          id: mapped.waMsgId,
+        },
+      });
+      logger.info(
+        { tgChatId, tgMsgId, waMsgId: mapped.waMsgId },
+        '🗑️ Successfully mirrored Telegram message deletion to WhatsApp'
+      );
+    } catch (err) {
+      logger.debug(
+        { error: err.message, tgChatId, tgMsgId, waMsgId: mapped.waMsgId },
+        'Failed to delete WhatsApp message for Telegram delete request'
+      );
+    }
+  }
+}
+
 export async function syncWhatsAppEditToTelegram(
   waMsgId,
   waJid,
@@ -1190,6 +1230,25 @@ export async function processTelegramUpdates() {
                   logger.info(
                     { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
                     '✏️ Mirrored Telegram message edit to WhatsApp'
+                  );
+                  continue;
+                }
+              }
+
+              const cleanCmd = tgText.trim().toLowerCase().replace(/^[!/#]+/, '');
+              if ((cleanCmd === 'del' || cleanCmd === 'delete' || cleanCmd === 'revoke') && replyToTgId) {
+                const mapped = resolveWaMsgFromTg(tgChatId, String(replyToTgId));
+                if (mapped && mapped.waMsgId) {
+                  await session.sock.sendMessage(mapping.wa_jid, {
+                    delete: {
+                      remoteJid: mapping.wa_jid,
+                      fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                      id: mapped.waMsgId,
+                    },
+                  });
+                  logger.info(
+                    { tgChatId, tgMsgId: replyToTgId, waMsgId: mapped.waMsgId },
+                    '🗑️ Mirrored Telegram delete command to WhatsApp'
                   );
                   continue;
                 }

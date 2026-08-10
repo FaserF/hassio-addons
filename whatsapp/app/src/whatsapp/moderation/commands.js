@@ -3245,14 +3245,18 @@ async function executeSingleCommandLine(
 
       let suggestText = '';
       if (suggestions.length > 0) {
-        suggestText = `\n\n💡 *Did you mean?*\n${suggestions.map((s) => `• \`${prefix}${s}\``).join('\n')}`;
+        suggestText = `\n\n${gt(config, 'bot_replies.did_you_mean')}\n${suggestions.map((s) => `• \`${prefix}${s}\``).join('\n')}`;
       }
+
+      const unknownTitle = gt(config, 'bot_replies.unknown_command_title');
+      const unknownDesc = gt(config, 'bot_replies.unknown_command_desc', { cmd: `${prefix}${cmdStr}` });
+      const helpHint = gt(config, 'bot_replies.type_help_hint', { prefix });
 
       await reply(
         session,
         groupId,
         {
-          text: `⚠️ *Unknown Command:*\nThe command \`${prefix}${cmdStr}\` does not exist.${suggestText}\n\nType \`${prefix}help\` to see all available commands.`,
+          text: `${unknownTitle}\n${unknownDesc}${suggestText}\n\n${helpHint}`,
         },
         msg
       );

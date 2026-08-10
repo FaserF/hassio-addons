@@ -1008,6 +1008,10 @@
     "type_unlocked": "🔓 `{type}` entsperrt",
     "no_locks": "Keine Sperren konfiguriert.",
     "all_locks_disabled": "🔓 Alle Sperren sind derzeit deaktiviert.",
-    "active_locks": "🔒 *Aktive Sperren:*\n{list}"
+    "active_locks": "🔒 *Aktive Sperren:*\n{list}",
+    "unknown_command_title": "⚠️ *Unbekannter Befehl:*",
+    "unknown_command_desc": "Der Befehl `{cmd}` existiert nicht.",
+    "did_you_mean": "💡 *Meintest du vielleicht?*",
+    "type_help_hint": "Tippe `{prefix}help` um alle verfügbaren Befehle zu sehen."
   }
 }

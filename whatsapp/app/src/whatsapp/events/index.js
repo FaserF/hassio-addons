@@ -45,6 +45,15 @@ export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js'
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 const processedParticipantEvents = new Map();
 
+function unwrapProtocolNode(m) {
+  if (!m) return null;
+  if (m.protocolMessage) return m.protocolMessage;
+  if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
+  if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
+  if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
+  return null;
+}
+
 export function registerAllListeners(session) {
   registerAckListener(session);
   registerReactionListener(session);
@@ -334,14 +343,6 @@ export function handleIncomingMessages(session) {
       }
 
       // Check for incoming REVOKE / message deletion protocol nodes
-      const unwrapProtocolNode = (m) => {
-        if (!m) return null;
-        if (m.protocolMessage) return m.protocolMessage;
-        if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
-        if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
-        if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
-        return null;
-      };
       const protNode = unwrapProtocolNode(msg.message);
       if (
         protNode &&
@@ -386,7 +387,7 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.messageStubType) return false; // Skip system notifications (member join/leave/promotions) from moderation processing
-        if (msg.message?.protocolMessage) return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
+        if (unwrapProtocolNode(msg.message)) return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
@@ -837,9 +838,9 @@ export function handleIncomingMessages(session) {
           '🛡️ Moderation evaluation for group message'
         );
 
-        // 1. Process as group command (requiring actual WhatsApp Group Admin status for admin commands)
+        // 1. Process as command (requiring actual admin status for admin commands)
         let handledAsCommand = false;
-        if (text && isGroup) {
+        if (text) {
           handledAsCommand = await processCommand(
             session,
             msg,

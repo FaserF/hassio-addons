@@ -994,6 +994,10 @@
     "type_unlocked": "🔓 Unlocked `{type}`",
     "no_locks": "No locks configured.",
     "all_locks_disabled": "🔓 All locks are currently disabled.",
-    "active_locks": "🔒 *Active Locks:*\n{list}"
+    "active_locks": "🔒 *Active Locks:*\n{list}",
+    "unknown_command_title": "⚠️ *Unknown Command:*",
+    "unknown_command_desc": "The command `{cmd}` does not exist.",
+    "did_you_mean": "💡 *Did you mean?*",
+    "type_help_hint": "Type `{prefix}help` to see all available commands."
   }
 }
