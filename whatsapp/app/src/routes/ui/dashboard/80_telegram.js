@@ -250,16 +250,89 @@ async function saveTelegramBotModal() {
 }
 
 async function deleteTelegramBot(botId) {
+  const store = telegramStore || { bots: [], mappings: [] };
+  const allBots = store.bots || [];
+  const allMappings = store.mappings || [];
+  const defaultBot = allBots[0];
+  const isDefault = defaultBot && defaultBot.id === botId;
+
+  // Count active mappings using this bot
+  const boundMappings = allMappings.filter(
+    (m) => m.bot_id === botId || (!m.bot_id && isDefault)
+  );
+  const count = boundMappings.length;
+  const otherBots = allBots.filter((b) => b.id !== botId);
+
+  let confirmMsg = t('telegram.delete_bot_confirm_msg');
+  if (count > 0) {
+    let choicesHtml = '';
+    if (otherBots.length > 0) {
+      const botOptionsHtml = otherBots
+        .map(
+          (b) =>
+            `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || b.username || b.id)}</option>`
+        )
+        .join('');
+
+      choicesHtml = `
+        <div style="margin-top: 12px; margin-bottom: 10px;">
+          <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-weight: 500;">
+            <input type="radio" name="del_bot_act" value="transfer" checked id="del_bot_act_transfer" style="margin-top: 3px;">
+            <div>
+              <span>${t('telegram.delete_bot_transfer_label')}</span>
+              <select id="del_bot_target_bot" class="mod-input" style="margin-top: 6px; width: 100%;">
+                ${botOptionsHtml}
+              </select>
+            </div>
+          </label>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--danger-color, #ef4444);">
+            <input type="radio" name="del_bot_act" value="delete_all" id="del_bot_act_delete">
+            <span>${t('telegram.delete_bot_delete_all_label', { count })}</span>
+          </label>
+        </div>
+      `;
+    } else {
+      choicesHtml = `
+        <div style="margin-top: 12px; margin-bottom: 12px; color: var(--danger-color, #ef4444); font-size: 0.9em;">
+          <b>${t('telegram.delete_bot_no_other_bots_warn', { count })}</b>
+        </div>
+      `;
+    }
+
+    confirmMsg = `
+      <div style="margin-bottom: 10px; color: var(--danger-color, #ef4444); font-weight: 600;">
+        ⚠️ ${t('telegram.delete_bot_bridges_warning', { count })}
+      </div>
+      <p style="margin-bottom: 6px;">${t('telegram.delete_bot_choice_prompt')}</p>
+      ${choicesHtml}
+    `;
+  }
+
   const confirmed = await showConfirm(
     t('telegram.delete_bot_confirm_title'),
-    t('telegram.delete_bot_confirm_msg'),
+    confirmMsg,
     t('common.delete'),
     t('common.cancel'),
     'danger'
   );
   if (!confirmed) return;
+
+  let transferToBotId = '';
+  if (count > 0 && otherBots.length > 0) {
+    const transferRadio = document.getElementById('del_bot_act_transfer');
+    if (transferRadio && transferRadio.checked) {
+      const selectEl = document.getElementById('del_bot_target_bot');
+      if (selectEl) {
+        transferToBotId = selectEl.value;
+      }
+    }
+  }
+
   try {
-    await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
+    const query = transferToBotId ? `?transfer_to_bot_id=${encodeURIComponent(transferToBotId)}` : '';
+    await fetch(`api/telegram/bots/${botId}${query}`, { method: 'DELETE' });
     showToast(t('telegram.bot_deleted'), 'warning');
     loadTelegramBridgeData();
   } catch (e) {
@@ -320,7 +393,11 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 1. Populate WhatsApp Chats Dropdown
   if (waSelect) {
-    let waOpts = `<option value="">-- ${window.t('telegram.select_wa_chat')} --</option>`;
+    const selectPlaceholder =
+      window.t('telegram.modal.select_wa_chat') ||
+      window.t('telegram.select_wa_chat') ||
+      'WhatsApp Chat / Gruppe auswählen';
+    let waOpts = `<option value="">-- ${selectPlaceholder} --</option>`;
     try {
       const res = await fetch(basePath + 'api/chats?session_id=' + (window.currentSession || ''));
       if (res.ok) {
@@ -329,7 +406,12 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
           chats.forEach((c) => {
             const jid = c.jid || c.id;
             if (jid) {
-              const name = c.name || c.formattedTitle || jid;
+              let name = c.name || c.formattedTitle || jid;
+              if (name === '__ME_SELF_BOT__') {
+                name = window.t('chats.me_self') || 'Me / Self (Bot Account)';
+              } else if (typeof name === 'string' && name.startsWith('__GROUP_FALLBACK__:')) {
+                name = `${window.t('common.group') || 'Group'} (${name.split(':')[1]})`;
+              }
               const typeLabel = jid.endsWith('@g.us') ? 'Group' : 'Direct';
               waOpts += `<option value="${escapeHtml(jid)}">${escapeHtml(name)} (${typeLabel})</option>`;
             }

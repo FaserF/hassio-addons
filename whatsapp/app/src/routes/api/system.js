@@ -31,6 +31,17 @@ import { asyncHandler } from './helpers.js';
 import { getAvailableLanguages, getLocaleDictionary } from '../../locales/loader.js';
 
 export function registerSystemRoutes(app) {
+  // POST /api/system/prepare_update — Mark addon as updating before restart
+  app.post('/api/system/prepare_update', (req, res) => {
+    try {
+      const flagPath = path.join(DATA_DIR, 'updating.flag');
+      fs.writeFileSync(flagPath, String(Date.now()));
+      res.json({ success: true, status: 'updating' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // GET /api/i18n/languages — List dynamically discovered languages
   app.get('/api/i18n/languages', (req, res) => {
     try {

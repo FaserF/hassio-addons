@@ -14,8 +14,8 @@ export function registerTelegramRoutes(app) {
     res.json({ success: true, data: store });
   });
 
-  // POST /api/telegram/config
-  app.post('/api/telegram/config', async (req, res) => {
+  // POST /api/telegram/config & POST /api/telegram/toggle
+  const handleTelegramConfigUpdate = async (req, res) => {
     const store = loadTelegramStore();
     const { enabled } = req.body || {};
 
@@ -25,7 +25,9 @@ export function registerTelegramRoutes(app) {
 
     saveTelegramStore(store);
     res.json({ success: true, data: store });
-  });
+  };
+  app.post('/api/telegram/config', handleTelegramConfigUpdate);
+  app.post('/api/telegram/toggle', handleTelegramConfigUpdate);
 
   // GET /api/telegram/bots
   app.get('/api/telegram/bots', (req, res) => {
@@ -89,10 +91,20 @@ export function registerTelegramRoutes(app) {
   app.delete('/api/telegram/bots/:id', (req, res) => {
     const store = loadTelegramStore();
     const { id } = req.params;
+    const transferToBotId = req.query.transfer_to_bot_id || req.body?.transfer_to_bot_id;
+
     store.bots = (store.bots || []).filter((b) => b.id !== id);
-    // Also remove mappings using this bot or unbind them
+
     if (Array.isArray(store.mappings)) {
-      store.mappings = store.mappings.filter((m) => m.bot_id !== id);
+      if (transferToBotId) {
+        store.mappings.forEach((m) => {
+          if (m.bot_id === id || (!m.bot_id && store.bots.length > 0)) {
+            m.bot_id = transferToBotId;
+          }
+        });
+      } else {
+        store.mappings = store.mappings.filter((m) => m.bot_id !== id);
+      }
     }
     saveTelegramStore(store);
     res.json({ success: true, data: store.bots });
