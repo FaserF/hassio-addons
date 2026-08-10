@@ -274,7 +274,7 @@ function t(keyPath, params = {}) {
 
 function applyI18nDOM() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
-    if (el.id === 'status-badge') return;
+    if (el.id === 'status-badge' || el.tagName === 'OPTION') return;
     const key = el.getAttribute('data-i18n');
     if (key) {
       el.textContent = t(key);

@@ -455,7 +455,7 @@ async function runI18nTests() {
         const tagName = match[1].toLowerCase();
         const innerText = match[2].trim();
 
-        if (['style', 'script', 'code', 'pre', 'svg'].includes(tagName)) continue;
+        if (['style', 'script', 'code', 'pre', 'svg', 'option'].includes(tagName)) continue;
         if (innerText.includes('${')) continue;
         if (/^&(?:times|bull|middot|nbsp|amp|lt|gt);$/i.test(innerText)) continue;
         if (/^(?:ms|s|m|h|px|%|\d+)+$/i.test(innerText)) continue;

@@ -1677,6 +1677,9 @@ async function selectModerationGroup(groupId) {
   const notifyBypassedE = document.getElementById('mod-notify-bypassed-actions');
   if (notifyBypassedE) notifyBypassedE.checked = Boolean(config.antispam?.notify_bypassed_actions);
 
+  const botAntispamE = document.getElementById('mod-antispam-bot-enabled');
+  if (botAntispamE) botAntispamE.checked = config.antispam?.bot_anti_spam?.enabled !== false; // Default true
+
   const blockedPlatforms = config.antispam?.blocked_invite_platforms || {};
   const platforms = ['whatsapp', 'telegram', 'signal', 'instagram', 'discord', 'other'];
   for (const plat of platforms) {

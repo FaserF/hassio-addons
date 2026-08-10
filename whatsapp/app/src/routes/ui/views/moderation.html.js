@@ -21,7 +21,7 @@ export default () => `
                         <div class="mod-group-picker">
                             <i class="fas fa-users" style="color:var(--text-muted);font-size:13px;"></i>
                             <select id="mod-group-select" class="mod-select" onchange="selectModerationGroup(this.value)">
-                                <option value="" data-i18n="moderation.select_group">Select a group…</option>
+                                <option value="">Select a group…</option>
                             </select>
                         </div>
                     </div>
@@ -321,18 +321,18 @@ export default () => `
                             <span class="mod-option-label" data-i18n="moderation.enable_antispam_links">Enable auto-removal of spam &amp; invite links</span>
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:12px;">
-                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-deleted-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-deleted-action"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.notify_deleted_action">Send notification message with quote when a prohibited message is deleted (Default: Enabled)</span>
                         </div>
                         <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:6px; padding:12px; margin-bottom:12px;">
                             <div style="font-size:12px; font-weight:600; color:var(--text-main); margin-bottom:6px;" data-i18n="moderation.blocked_platforms">Blocked Invite Link Platforms (Default: All Enabled):</div>
-                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px 16px;">
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-wa" checked> <span data-i18n="moderation.platform_whatsapp">WhatsApp</span></label>
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-tg" checked> <span data-i18n="moderation.platform_telegram">Telegram</span></label>
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-signal" checked> <span data-i18n="moderation.platform_signal">Signal</span></label>
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-ig" checked> <span data-i18n="moderation.platform_instagram">Instagram</span></label>
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-discord" checked> <span data-i18n="moderation.platform_discord">Discord</span></label>
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;"><input type="checkbox" id="mod-antispam-link-other" checked> <span data-i18n="moderation.platform_other">Others (Line, Snapchat, Viber, Matrix)</span></label>
+                            <div class="mod-chip-group">
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-whatsapp" checked> <span data-i18n="moderation.platform_whatsapp">WhatsApp</span></label>
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-telegram" checked> <span data-i18n="moderation.platform_telegram">Telegram</span></label>
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-signal" checked> <span data-i18n="moderation.platform_signal">Signal</span></label>
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-instagram" checked> <span data-i18n="moderation.platform_instagram">Instagram</span></label>
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-discord" checked> <span data-i18n="moderation.platform_discord">Discord</span></label>
+                                <label class="mod-chip-checkbox"><input type="checkbox" id="mod-invite-platform-other" checked> <span data-i18n="moderation.platform_other">Others (Line, Snapchat, Viber, Matrix)</span></label>
                             </div>
                         </div>
 
@@ -343,7 +343,7 @@ export default () => `
                             <div><div class="mod-feature-title" data-i18n="moderation.bot_antispam_title">Bot Outbound Anti-Spam Shield 🛡️</div><div class="mod-feature-desc" data-i18n="moderation.bot_antispam_desc">Prevents bot loops and accidental message floods. Automatically mutes bot replies for msgs_in_5s * group_members seconds if the bot sends 5+ messages in 5 seconds in this chat. (Exempts Telegram Relay messages).</div></div>
                         </div>
                         <div class="mod-inline-controls">
-                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-bot-antispam-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-bot-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.enable_bot_antispam">Enable Bot Outbound Rate Limit &amp; Loop Protection (Enabled by Default)</span>
                         </div>
 
@@ -354,7 +354,7 @@ export default () => `
                             <div><div class="mod-feature-title" data-i18n="moderation.notify_bypassed_title">Notify Bypassed Moderation Actions</div><div class="mod-feature-desc" data-i18n="moderation.notify_bypassed_desc">Send an explanatory message in group when a moderation action (spam link, lock, blacklist) is intentionally skipped because the sender is a Group Admin.</div></div>
                         </div>
                         <div class="mod-inline-controls">
-                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-bypassed-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-bypassed-actions"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.enable_notify_bypassed">Notify in group when moderation is bypassed for admins</span>
                         </div>
 

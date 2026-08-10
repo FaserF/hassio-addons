@@ -3139,3 +3139,75 @@ select.mod-select option {
   background-position: right 8px center !important;
   background-size: 12px !important;
 }
+
+/* ── Modern Custom Chip & Button Checkboxes (WhatsApp Gateway Theme) ── */
+.mod-chip-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 6px !important;
+}
+
+.mod-chip-checkbox,
+label.mod-chip-checkbox {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 14px !important;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05)) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+  border-radius: 20px !important;
+  color: var(--text-muted) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.mod-chip-checkbox input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 1.5px solid var(--text-muted) !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  outline: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.mod-chip-checkbox input[type="checkbox"]:checked {
+  background-color: var(--primary, #25d366) !important;
+  border-color: var(--primary, #25d366) !important;
+}
+
+.mod-chip-checkbox input[type="checkbox"]:checked::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 4px !important;
+  top: 1px !important;
+  width: 4px !important;
+  height: 8px !important;
+  border: solid #fff !important;
+  border-width: 0 2px 2px 0 !important;
+  transform: rotate(45deg) !important;
+}
+
+.mod-chip-checkbox:has(input[type="checkbox"]:checked) {
+  background: rgba(37, 211, 102, 0.12) !important;
+  border-color: var(--primary, #25d366) !important;
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.15) !important;
+}
+
+.mod-chip-checkbox:hover {
+  border-color: var(--primary, #25d366) !important;
+  color: var(--text-main) !important;
+  background: var(--bg-hover) !important;
+}

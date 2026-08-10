@@ -143,23 +143,23 @@ export default () => `
                         <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="selectAllTgSubtests(false)" data-i18n="common.select_none">Select None</button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:6px; font-size:11px;">
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="text" checked> <span data-i18n="telegram.subtest_text">💬 Text &amp; Formatting</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll" checked> <span data-i18n="telegram.subtest_poll">📊 Native Polls</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll_vote" checked> <span data-i18n="telegram.subtest_poll_vote">🗳️ Poll Vote Sync</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="location" checked> <span data-i18n="telegram.subtest_location">📍 Location Pins</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="event" checked> <span data-i18n="telegram.subtest_event">📅 Event Cards</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="image" checked> <span data-i18n="telegram.subtest_image">🖼️ Images &amp; Captions</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="voice" checked> <span data-i18n="telegram.subtest_voice">🎙️ Voice Notes (PTT)</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="video" checked> <span data-i18n="telegram.subtest_video">🎥 Video &amp; Notes</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="document" checked> <span data-i18n="telegram.subtest_document">📁 Documents &amp; Files</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="sticker" checked> <span data-i18n="telegram.subtest_sticker">🏷️ WebP Stickers</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="contact" checked> <span data-i18n="telegram.subtest_contact">📇 Contact Cards</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reaction" checked> <span data-i18n="telegram.subtest_reaction">😀 Emoji Reactions</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="edit" checked> <span data-i18n="telegram.subtest_edit">✏️ Message Edits</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="delete" checked> <span data-i18n="telegram.subtest_delete">🗑️ Message Deletions</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reply" checked> <span data-i18n="telegram.subtest_reply">💬 Quoted Replies</span></label>
-                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="system_event" checked> <span data-i18n="telegram.subtest_system_event">🔔 System Events</span></label>
+                <div class="mod-chip-group">
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="text" checked> <span data-i18n="telegram.subtest_text">💬 Text &amp; Formatting</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="poll" checked> <span data-i18n="telegram.subtest_poll">📊 Native Polls</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="poll_vote" checked> <span data-i18n="telegram.subtest_poll_vote">🗳️ Poll Vote Sync</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="location" checked> <span data-i18n="telegram.subtest_location">📍 Location Pins</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="event" checked> <span data-i18n="telegram.subtest_event">📅 Event Cards</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="image" checked> <span data-i18n="telegram.subtest_image">🖼️ Images &amp; Captions</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="voice" checked> <span data-i18n="telegram.subtest_voice">🎙️ Voice Notes (PTT)</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="video" checked> <span data-i18n="telegram.subtest_video">🎥 Video &amp; Notes</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="document" checked> <span data-i18n="telegram.subtest_document">📁 Documents &amp; Files</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="sticker" checked> <span data-i18n="telegram.subtest_sticker">🏷️ WebP Stickers</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="contact" checked> <span data-i18n="telegram.subtest_contact">📇 Contact Cards</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="reaction" checked> <span data-i18n="telegram.subtest_reaction">😀 Emoji Reactions</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="edit" checked> <span data-i18n="telegram.subtest_edit">✏️ Message Edits</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="delete" checked> <span data-i18n="telegram.subtest_delete">🗑️ Message Deletions</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="reply" checked> <span data-i18n="telegram.subtest_reply">💬 Quoted Replies</span></label>
+                    <label class="mod-chip-checkbox"><input type="checkbox" class="tg-subtest-cb" value="system_event" checked> <span data-i18n="telegram.subtest_system_event">🔔 System Events</span></label>
                 </div>
             </div>
 
